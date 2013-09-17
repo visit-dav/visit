@@ -85,6 +85,8 @@ class     avtVariableCache;
 //    Eric Brugger, Fri Mar  9 14:42:04 PST 2007
 //    Added support for element block names.
 //
+//    Mark C. Miller, Mon Sep 16 15:04:12 PDT 2013
+//    Removed SetTimestep method.
 // ****************************************************************************
 
 class avtExodusFileFormat : public avtMTSDFileFormat
@@ -98,7 +100,6 @@ class avtExodusFileFormat : public avtMTSDFileFormat
 
     virtual void                GetTimes(std::vector<double> &);
     virtual int                 GetNTimesteps(void);
-    void                        SetTimestep(int ts);
  
     virtual vtkDataSet         *GetMesh(int, const char *);
     virtual vtkDataArray       *GetVar(int, const char *);

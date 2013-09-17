@@ -1496,6 +1496,9 @@ avtExodusFileFormat::AddVar(avtDatabaseMetaData *md, char const *vname,
 //    Hank Childs, Thu Dec  2 08:45:31 PST 2010
 //    No longer sort the block names.  It creates indexing issues later.
 //
+//    Mark C. Miller, Tue Sep 17 16:04:32 PDT 2013
+//    Add logic to populate *both* composite variables like vectors and
+//    tensors as well as scalar components.
 // ****************************************************************************
 
 #ifdef MAX
@@ -1633,41 +1636,47 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     char **node_var_names = GetStringListFromExodusIINCvar(ncExIIId, "name_nod_var");
     i = 0;
+    int skip_composite = -1;
     while (node_var_names[i])
     {
-        char composite_name[NC_MAX_NAME];
-        int ncomps;
-        if (AreSuccessiveStringsRelatedComponentNames(node_var_names, i,
+        if (i > skip_composite)
+        {
+            char composite_name[NC_MAX_NAME];
+            int ncomps;
+            if (AreSuccessiveStringsRelatedComponentNames(node_var_names, i,
                 &ncomps, composite_name))
-        {
-            AddVar(md, composite_name, topologicalDimension, ncomps, AVT_NODECENT);
-            i += ncomps;
+            {
+                AddVar(md, composite_name, topologicalDimension, ncomps, AVT_NODECENT);
+                skip_composite = i + ncomps - 1;
+            }
         }
-        else
-        {
-            AddVar(md, node_var_names[i], topologicalDimension, 1, AVT_NODECENT);
-            i++;
-        }
+
+        // Add the scalar (component) variable.
+        AddVar(md, node_var_names[i], topologicalDimension, 1, AVT_NODECENT);
+        i++;
     }
     FreeStringListFromExodusIINCvar(node_var_names);
 
     char **elem_var_names = GetStringListFromExodusIINCvar(ncExIIId, "name_elem_var");
     i = 0;
+    skip_composite = -1;
     while (elem_var_names[i])
     {
-        char composite_name[NC_MAX_NAME];
-        int ncomps;
-        if (AreSuccessiveStringsRelatedComponentNames(elem_var_names, i,
+        if (i > skip_composite)
+        {
+            char composite_name[NC_MAX_NAME];
+            int ncomps;
+            if (AreSuccessiveStringsRelatedComponentNames(elem_var_names, i,
                 &ncomps, composite_name))
-        {
-            AddVar(md, composite_name, topologicalDimension, ncomps, AVT_ZONECENT);
-            i += ncomps;
+            {
+                AddVar(md, composite_name, topologicalDimension, ncomps, AVT_ZONECENT);
+                skip_composite = i + ncomps - 1;
+            }
         }
-        else
-        {
-            AddVar(md, elem_var_names[i], topologicalDimension, 1, AVT_ZONECENT);
-            i++;
-        }
+
+        // Add the scalar (component) variable.
+        AddVar(md, elem_var_names[i], topologicalDimension, 1, AVT_ZONECENT);
+        i++;
     }
     FreeStringListFromExodusIINCvar(elem_var_names);
 
@@ -2287,27 +2296,4 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
     }
 
     return NULL;
-}
-
-
-// ****************************************************************************
-//  Method: avtExodusFileFormat::SetTimestep
-//
-//  Purpose:
-//      Sets the timestep of the Exodus file.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 9, 2001
-//
-// ****************************************************************************
-
-void
-avtExodusFileFormat::SetTimestep(int ts)
-{
-    int nTimesteps = GetNTimesteps();
-    if (ts < 0 || ts >= nTimesteps)
-    {
-        EXCEPTION2(BadIndexException, ts, nTimesteps);
-    }
-    debug1 << "avtExodusFileFormat::SetTimestep called but don't know what to do about about" << endl;
 }
