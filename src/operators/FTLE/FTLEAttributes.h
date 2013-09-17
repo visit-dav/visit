@@ -62,7 +62,7 @@ class FTLEAttributes : public AttributeSubject
 public:
     enum SourceType
     {
-        NativeResolutionOfMesh,
+        NativeMesh,
         RegularGrid
     };
     enum Extents
