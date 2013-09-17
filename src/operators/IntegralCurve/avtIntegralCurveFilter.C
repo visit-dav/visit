@@ -62,36 +62,12 @@
 #include <vector>
 #include <limits>
 
-std::string avtIntegralCurveFilter::colorvarArrayName = "colorVar";
+std::string avtIntegralCurveFilter::colorVarArrayName = "colorVar";
 std::string avtIntegralCurveFilter::paramArrayName = "params";
 std::string avtIntegralCurveFilter::opacityArrayName = "opacity";
 std::string avtIntegralCurveFilter::thetaArrayName = "theta";
 std::string avtIntegralCurveFilter::tangentsArrayName = "tangents";
 std::string avtIntegralCurveFilter::scaleRadiusArrayName = "scaleRadius";
-
-
-
-#define PICS_SOURCE_POINT      0
-#define PICS_SOURCE_POINT_LIST 1
-#define PICS_SOURCE_LINE       2
-#define PICS_SOURCE_CIRCLE     3
-#define PICS_SOURCE_PLANE      4
-#define PICS_SOURCE_SPHERE     5
-#define PICS_SOURCE_BOX        6
-#define PICS_SOURCE_SELECTION  7
-
-#define PICS_COLOR_SOLID       0
-#define PICS_COLOR_SPEED       1
-#define PICS_COLOR_VORTICITY   2
-#define PICS_COLOR_ARCLENGTH   3
-#define PICS_COLOR_TIME        4
-#define PICS_COLOR_ID          5
-#define PICS_COLOR_VARIABLE    6
-#define PICS_CORRELATION_DISTANCE 7
-
-#define PICS_DISPLAY_LINES     0
-#define PICS_DISPLAY_TUBES     1
-#define PICS_DISPLAY_RIBBONS   2
 
 
 // ****************************************************************************
@@ -215,14 +191,14 @@ avtIntegralCurveFilter::avtIntegralCurveFilter() : seedVelocity(0,0,0),
   coordinateSystem(0), phiScalingFlag( false ), phiScaling( 1.0 )
 
 {
-    coloringMethod = PICS_COLOR_SPEED;
-    displayMethod = PICS_DISPLAY_LINES;
+    dataValue = IntegralCurveAttributes::TimeAbsolute;
+    displayGeometry = IntegralCurveAttributes::Lines;
     referenceTypeForDisplay = 0;
 
     //
     // Initialize source values.
     //
-    sourceType = PICS_SOURCE_POINT;
+    sourceType = IntegralCurveAttributes::Point;
     sampleDensity[0] = sampleDensity[1] = sampleDensity[2] = 0;
     sampleDistance[0] = sampleDistance[1] = sampleDistance[2] = 0.0;
     numSamplePoints = 0;
@@ -397,8 +373,8 @@ avtIntegralCurveFilter::ModifyContract(avtContract_p in_contract)
     else
         out_dr = new avtDataRequest(in_dr);
 
-    if (coloringMethod == PICS_COLOR_VARIABLE)
-        out_dr->AddSecondaryVariable(coloringVariable.c_str());
+    if (dataValue == IntegralCurveAttributes::Variable)
+        out_dr->AddSecondaryVariable(dataVariable.c_str());
 
     if (!opacityVariable.empty())
         out_dr->AddSecondaryVariable(opacityVariable.c_str());
@@ -447,7 +423,7 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 
-    if(displayMethod == PICS_DISPLAY_LINES)
+    if(displayGeometry == IntegralCurveAttributes::Lines)
         GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
 
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
@@ -516,19 +492,19 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
     //
     switch (atts.GetSourceType())
     {
-      case IntegralCurveAttributes::SpecifiedPoint:
+      case IntegralCurveAttributes::Point:
         SetPointSource(atts.GetPointSource());
         break;
-      case IntegralCurveAttributes::SpecifiedPointList:
+      case IntegralCurveAttributes::PointList:
         SetPointListSource(atts.GetPointList());
         break;
 
-      case IntegralCurveAttributes::SpecifiedLine:
+      case IntegralCurveAttributes::Line_:
         SetLineSource(atts.GetLineStart(), atts.GetLineEnd(),
                       atts.GetSampleDensity0(), atts.GetRandomSamples(),
                       atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
-      case IntegralCurveAttributes::SpecifiedPlane:
+      case IntegralCurveAttributes::Plane:
         SetPlaneSource(atts.GetPlaneOrigin(), atts.GetPlaneNormal(),
                        atts.GetPlaneUpAxis(), atts.GetSampleDensity0(),
                        atts.GetSampleDensity1(), atts.GetSampleDistance0(),
@@ -537,14 +513,14 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                        atts.GetNumberOfRandomSamples());
         break;
 
-      case IntegralCurveAttributes::SpecifiedCircle:
+      case IntegralCurveAttributes::Circle:
         SetCircleSource(atts.GetPlaneOrigin(), atts.GetPlaneNormal(),
                         atts.GetPlaneUpAxis(), atts.GetRadius(),
                         atts.GetSampleDensity0(), atts.GetSampleDensity1(),
                         atts.GetFillInterior(), atts.GetRandomSamples(),
                         atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
-      case IntegralCurveAttributes::SpecifiedSphere:
+      case IntegralCurveAttributes::Sphere:
         SetSphereSource(atts.GetSphereOrigin(), atts.GetRadius(),
                         atts.GetSampleDensity0(), atts.GetSampleDensity1(),
                         atts.GetSampleDensity2(), atts.GetFillInterior(),
@@ -552,7 +528,7 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                         atts.GetNumberOfRandomSamples());
         break;
 
-      case IntegralCurveAttributes::SpecifiedBox:
+      case IntegralCurveAttributes::Box:
         SetBoxSource(atts.GetBoxExtents(),atts.GetUseWholeBox(),
                      atts.GetSampleDensity0(), atts.GetSampleDensity1(),
                      atts.GetSampleDensity2(), atts.GetFillInterior(),
@@ -618,10 +594,9 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
     IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(),
                                   atts.GetCriticalPointThreshold());
 
-    SetColoringMethod(int(atts.GetColoringMethod()),
-                      atts.GetColoringVariable());
+    SetDataValue(int(atts.GetDataValue()), atts.GetDataVariable());
 
-    if (atts.GetColoringMethod() == IntegralCurveAttributes::ColorByCorrelationDistance)
+    if (atts.GetDataValue() == IntegralCurveAttributes::CorrelationDistance)
     {
         bool doBBox = (atts.GetCorrelationDistanceMinDistType() ==
                        IntegralCurveAttributes::FractionOfBBox);
@@ -630,7 +605,7 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                                    atts.GetCorrelationDistanceMinDistAbsolute());
         double angTol = atts.GetCorrelationDistanceAngTol();
 
-        SetColorByCorrelationDistanceTol(angTol, minDist, doBBox);
+        SetCorrelationDistanceTol(angTol, minDist, doBBox);
     }
 
     SetVelocitiesForLighting(1);
@@ -690,12 +665,13 @@ avtIntegralCurveFilter::PostExecute(void)
 {
     avtPICSFilter::PostExecute();
 
-    if (coloringMethod == PICS_COLOR_VORTICITY ||
-        coloringMethod == PICS_COLOR_SPEED ||
-        coloringMethod == PICS_COLOR_ARCLENGTH ||
-        coloringMethod == PICS_COLOR_TIME ||
-        coloringMethod == PICS_COLOR_ID ||
-        coloringMethod == PICS_COLOR_VARIABLE)
+    if (dataValue == IntegralCurveAttributes::Vorticity ||
+        dataValue == IntegralCurveAttributes::Speed ||
+        dataValue == IntegralCurveAttributes::ArcLength ||
+        dataValue == IntegralCurveAttributes::TimeAbsolute ||
+        dataValue == IntegralCurveAttributes::TimeRelative ||
+        dataValue == IntegralCurveAttributes::SeedPointID ||
+        dataValue == IntegralCurveAttributes::Variable)
     {
         double range[2];
         avtDataset_p ds = GetTypedOutput();
@@ -793,22 +769,23 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
         break;
     }
 
-    // color scalars
-    switch( coloringMethod )
+    // data scalars
+    switch( dataValue )
     {
-      case PICS_COLOR_SPEED:
+      case IntegralCurveAttributes::Speed:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
         break;
-      case PICS_COLOR_TIME:
+      case IntegralCurveAttributes::TimeAbsolute:
+      case IntegralCurveAttributes::TimeRelative:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
         break;
-      case PICS_COLOR_VORTICITY:
+      case IntegralCurveAttributes::Vorticity:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
         break;
-      case PICS_COLOR_ARCLENGTH:
+      case IntegralCurveAttributes::ArcLength:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
         break;
-      case PICS_COLOR_VARIABLE:
+      case IntegralCurveAttributes::Variable:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
         break;
     }
@@ -911,7 +888,7 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
 {
     unsigned char attr = GenerateAttributeFields();
 
-    double t = maxTime;
+    double t;
 
     if (doPathlines)
     {
@@ -924,6 +901,8 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
             t = -maxTime;
+        else
+            t = maxTime;
     }
 
     avtStateRecorderIntegralCurve *rv = 
@@ -935,14 +914,14 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
 
 
 // ****************************************************************************
-// Method: avtIntegralCurveFilter::SetColoringMethod
+// Method: avtIntegralCurveFilter::SetDataValue
 //
 // Purpose: 
-//   Set the coloring method to use, which determines which auxiliary arrays
+//   Sets data value to use, which determines which auxiliary arrays
 //   (if any) are also generated.
 //
 // Arguments:
-//   m : The coloring method.
+//   m : The data value.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Dec 22 12:41:08 PDT 2004
@@ -950,15 +929,15 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
 // Modifications:
 //
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
-//   Added color by secondary variable.
+//   Added secondary variable.
 //   
 // ****************************************************************************
 
 void
-avtIntegralCurveFilter::SetColoringMethod(int m, const std::string &var)
+avtIntegralCurveFilter::SetDataValue(int m, const std::string &var)
 {
-    coloringMethod = m;
-    coloringVariable = var;
+    dataValue = m;
+    dataVariable = var;
 }
 
 // ****************************************************************************
@@ -1018,9 +997,9 @@ avtIntegralCurveFilter::SetScaleTubeRadiusVariable(const std::string &var)
 // ****************************************************************************
 
 void
-avtIntegralCurveFilter::SetDisplayMethod(int d)
+avtIntegralCurveFilter::SetDisplayGeometry(int d)
 {
-    displayMethod = d;
+    displayGeometry = d;
 }
 
 
@@ -1067,7 +1046,7 @@ avtIntegralCurveFilter::SetVelocitySource(const double *p)
 void
 avtIntegralCurveFilter::SetPointSource(const double *p)
 {
-    sourceType = PICS_SOURCE_POINT;
+    sourceType = IntegralCurveAttributes::Point;
     points[0].set(p);
 }
 
@@ -1094,9 +1073,9 @@ avtIntegralCurveFilter::SetPointSource(const double *p)
 
 void
 avtIntegralCurveFilter::SetLineSource(const double *p0, const double *p1,
-                                   int den, bool rand, int seed, int numPts)
+                                      int den, bool rand, int seed, int numPts)
 {
-    sourceType = PICS_SOURCE_LINE;
+    sourceType = IntegralCurveAttributes::Line_;
     points[0].set(p0);
     points[1].set(p1);
     
@@ -1134,11 +1113,11 @@ avtIntegralCurveFilter::SetLineSource(const double *p0, const double *p1,
 
 void
 avtIntegralCurveFilter::SetPlaneSource(double O[3], double N[3], double U[3],
-                                    int den1, int den2, double dist1, double dist2,
-                                    bool f, 
-                                    bool rand, int seed, int numPts)
+                                       int den1, int den2, double dist1, double dist2,
+                                       bool f, 
+                                       bool rand, int seed, int numPts)
 {
-    sourceType = PICS_SOURCE_PLANE;
+    sourceType = IntegralCurveAttributes::Plane;
     points[0].set(O);
     vectors[0].set(N);
     vectors[1].set(U);
@@ -1181,7 +1160,7 @@ avtIntegralCurveFilter::SetCircleSource(double O[3], double N[3], double U[3], d
                                      int den1, int den2,
                                      bool f, bool rand, int seed, int numPts)
 {
-    sourceType = PICS_SOURCE_CIRCLE;
+    sourceType = IntegralCurveAttributes::Circle;
     points[0].set(O);
     vectors[0].set(N);
     vectors[1].set(U);
@@ -1225,7 +1204,7 @@ avtIntegralCurveFilter::SetSphereSource(double O[3], double R,
                                      int den1, int den2, int den3,
                                      bool f, bool rand, int seed, int numPts)
 {
-    sourceType = PICS_SOURCE_SPHERE;
+    sourceType = IntegralCurveAttributes::Sphere;
     points[0].set(O);
     sampleDistance[0] = R;
     sampleDistance[1] = 0.0;
@@ -1265,7 +1244,7 @@ avtIntegralCurveFilter::SetBoxSource(double E[6], bool wholeBox,
                                   int den1, int den2, int den3,
                                   bool f, bool rand, int seed, int numPts)
 {
-    sourceType = PICS_SOURCE_BOX;
+    sourceType = IntegralCurveAttributes::Box;
     points[0].set(E[0], E[2], E[4]);
     points[1].set(E[1], E[3], E[5]);
 
@@ -1303,7 +1282,7 @@ avtIntegralCurveFilter::SetBoxSource(double E[6], bool wholeBox,
 void
 avtIntegralCurveFilter::SetPointListSource(const std::vector<double> &ptList)
 {
-    sourceType = PICS_SOURCE_POINT_LIST;
+    sourceType = IntegralCurveAttributes::PointList;
     listOfPoints = ptList;
 }
 
@@ -1314,7 +1293,7 @@ avtIntegralCurveFilter::SetSelectionSource(std::string nm,
                                         bool random, int seed, int numPts)
 
 {
-    sourceType = PICS_SOURCE_SELECTION;
+    sourceType = IntegralCurveAttributes::Selection;
     sourceSelection = nm;
     sampleDensity[0] = stride;
     numSamplePoints = numPts;
@@ -1351,35 +1330,35 @@ std::string
 avtIntegralCurveFilter::SeedInfoString() const
 {
     char buff[256];
-    if (sourceType == PICS_SOURCE_POINT)
+    if (sourceType == IntegralCurveAttributes::Point)
         sprintf(buff, "Point [%g %g %g]", 
                 points[0].x, points[0].y, points[0].z);
-    else if (sourceType == PICS_SOURCE_LINE)
+    else if (sourceType == IntegralCurveAttributes::Line_)
         sprintf(buff, "Line [%g %g %g] [%g %g %g] D: %d",
                 points[0].x, points[0].y, points[0].z,
                 points[1].x, points[1].y, points[1].z, sampleDensity[0]);
-    else if (sourceType == PICS_SOURCE_PLANE)
+    else if (sourceType == IntegralCurveAttributes::Plane)
         sprintf(buff, "Plane O[%g %g %g] N[%g %g %g] D: %d %d",
                 points[0].x, points[0].y, points[0].z,
                 vectors[0].x, vectors[0].y, vectors[0].z,
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == PICS_SOURCE_SPHERE)
+    else if (sourceType == IntegralCurveAttributes::Sphere)
         sprintf(buff, "Sphere [%g %g %g] %g D: %d %d",
                 points[0].x, points[0].y, points[0].z, sampleDistance[0],
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == PICS_SOURCE_BOX)
+    else if (sourceType == IntegralCurveAttributes::Box)
         sprintf(buff, "Box [%g %g] [%g %g] [%g %g] D: %d %d %d",
                 points[0].x, points[1].x,
                 points[0].y, points[1].y,
                 points[0].z, points[1].z,
                 sampleDensity[0], sampleDensity[1], sampleDensity[2]);
-    else if (sourceType == PICS_SOURCE_CIRCLE)
+    else if (sourceType == IntegralCurveAttributes::Circle)
         sprintf(buff, "Cirlce O[%g %g %g] N[%g %g %g] R: %g D: %d %d",
                 points[0].x, points[0].y, points[0].z,
                 vectors[0].x, vectors[0].y, vectors[0].z,
                 sampleDistance[0],
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == PICS_SOURCE_POINT_LIST)
+    else if (sourceType == IntegralCurveAttributes::PointList)
         strcpy(buff, "Point list [points not printed]");
     else
         sprintf(buff, "%s", "UNKNOWN");
@@ -1440,21 +1419,21 @@ avtIntegralCurveFilter::GetInitialLocations(void)
         srand(randomSeed);
 
     // Add seed points based on the source.
-    if(sourceType == PICS_SOURCE_POINT)
+    if(sourceType == IntegralCurveAttributes::Point)
         GenerateSeedPointsFromPoint(seedPts);
-    else if(sourceType == PICS_SOURCE_LINE)
+    else if(sourceType == IntegralCurveAttributes::Line_)
         GenerateSeedPointsFromLine(seedPts);
-    else if(sourceType == PICS_SOURCE_PLANE)
+    else if(sourceType == IntegralCurveAttributes::Plane)
         GenerateSeedPointsFromPlane(seedPts);
-    else if(sourceType == PICS_SOURCE_SPHERE)
+    else if(sourceType == IntegralCurveAttributes::Sphere)
         GenerateSeedPointsFromSphere(seedPts);
-    else if(sourceType == PICS_SOURCE_BOX)
+    else if(sourceType == IntegralCurveAttributes::Box)
         GenerateSeedPointsFromBox(seedPts);
-    else if(sourceType == PICS_SOURCE_CIRCLE)
+    else if(sourceType == IntegralCurveAttributes::Circle)
         GenerateSeedPointsFromCircle(seedPts);
-    else if(sourceType == PICS_SOURCE_POINT_LIST)
+    else if(sourceType == IntegralCurveAttributes::PointList)
         GenerateSeedPointsFromPointList(seedPts);
-    else if (sourceType == PICS_SOURCE_SELECTION)
+    else if (sourceType == IntegralCurveAttributes::Selection)
         GenerateSeedPointsFromSelection(seedPts);
 
     //Check for 2D input.
@@ -2043,7 +2022,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &
 //
 //  Purpose:
 //      Calls avtPICSFilter::GetFieldForDomain and enables scalar 
-//      variables according to coloringVariable and opacityVariable.
+//      variables according to dataValue and opacityVariable.
 //
 //  Programmer: Christoph Garth
 //  Creation:   July 14, 2010
@@ -2060,9 +2039,9 @@ avtIntegralCurveFilter::GetFieldForDomain(const BlockIDType& dom, vtkDataSet* ds
 {
     avtIVPField* field = avtPICSFilter::GetFieldForDomain( dom, ds );
 
-    if( coloringMethod == PICS_COLOR_VARIABLE && 
-        !coloringVariable.empty() )
-        field->SetScalarVariable( 0, coloringVariable );
+    if( dataValue == IntegralCurveAttributes::Variable && 
+        !dataVariable.empty() )
+        field->SetScalarVariable( 0, dataVariable );
 
     if( !opacityVariable.empty() )
         field->SetScalarVariable( 1, opacityVariable );
@@ -2123,25 +2102,25 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
             numStiff++;
     }
 
+    char str[4096] = "";
+
     if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
     {
         SumIntAcrossAllProcessors(numEarlyTerminators);
         if (numEarlyTerminators > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines terminated because they "
-               "reached the maximum number of steps.  This may be indicative of your "
-               "time or distance criteria being too large or of other attributes being "
-               "set incorrectly (example: your step size is too small).  If you are "
-               "confident in your settings and want the particles to advect farther, "
-               "you should increase the maximum number of steps.  If you want to disable "
-               "this message, you can do this under the Advaced tab of the streamline plot."
-               "  Note that this message does not mean that an error has occurred; it simply "
-               "means that VisIt stopped advecting particles because it reached the maximum "
-               "number of steps. (That said, this case happens most often when other attributes "
-               "are set incorrectly.)", numEarlyTerminators);
-            avtCallback::IssueWarning(str);
+          SNPRINTF(str, 4096,
+                   "%s\n%d of your integral curves terminated because they "
+                   "reached the maximum number of steps.  This may be indicative of your "
+                   "time or distance criteria being too large or of other attributes being "
+                   "set incorrectly (example: your step size is too small).  If you are "
+                   "confident in your settings and want the particles to advect farther, "
+                   "you should increase the maximum number of steps.  If you want to disable "
+                   "this message, you can do this under the Advaced tab."
+                   "  Note that this message does not mean that an error has occurred; it simply "
+                   "means that VisIt stopped advecting particles because it reached the maximum "
+                   "number of steps. (That said, this case happens most often when other attributes "
+                   "are set incorrectly.)\n", str, numEarlyTerminators);
         }
     }
 
@@ -2150,16 +2129,14 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numCritPts);
         if (numCritPts > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines circled round and round a critical point (a zero"
-               " velocity location).  Normally, VisIt is able to advect the particle "
-               "to the critical point location and terminate.  However, VisIt was not able "
-               "to do this for these particles due to numerical issues.  In all likelihood, "
-               "additional steps will _not_ help this problem and only cause execution to "
-               "take longer.  If you want to disable this message, you can do this under "
-               "the Advanced tab of the streamline plot.", numCritPts);
-            avtCallback::IssueWarning(str);
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves circled round and round a critical point (a zero"
+                     " velocity location).  Normally, VisIt is able to advect the particle "
+                     "to the critical point location and terminate.  However, VisIt was not able "
+                     "to do this for these particles due to numerical issues.  In all likelihood, "
+                     "additional steps will _not_ help this problem and only cause execution to "
+                     "take longer.  If you want to disable this message, you can do this under "
+                     "the Advanced tab.\n", str, numCritPts);
         }
     }
 
@@ -2168,17 +2145,18 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numStiff);
         if (numStiff > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines were unable to advect because of \"stiffness\".  "
-               "When one component of a velocity field varies quickly and another stays "
-               "relatively constant, then it is not possible to choose step sizes that "
-               "remain within tolerances.  This condition is referred to as stiffness and "
-               "VisIt stops advecting in this case.  If you want to disable this message, "
-               "you can do this under the Advanced tab of the streamline plot.", numStiff);
-            avtCallback::IssueWarning(str);
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves were unable to advect because of \"stiffness\".  "
+                     "When one component of a velocity field varies quickly and another stays "
+                     "relatively constant, then it is not possible to choose step sizes that "
+                     "remain within tolerances.  This condition is referred to as stiffness and "
+                     "VisIt stops advecting in this case.  If you want to disable this message, "
+                     "you can do this under the Advanced tab.\n", str,numStiff);
         }
     }
+
+    if( strlen( str ) )
+      avtCallback::IssueWarning(str);
 }
 
 // ****************************************************************************
@@ -2221,7 +2199,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //   Optimize the creation of vtkPolyData.
 //
 //   Dave Pugmire, Wed Sep 29 14:57:59 EDT 2010
-//   Initialize scalar array if coloring by solid.
+//   Initialize scalar array if data value is solid.
 //
 //   Hank Childs, Wed Oct  6 20:07:28 PDT 2010
 //   Initialize referenceTypeForDisplay.
@@ -2239,7 +2217,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //   Add vary tube radius by variable.
 //
 //   Dave Pugmire, Mon Feb 21 08:22:30 EST 2011
-//   Color by correlation distance.
+//   Set the dataValue by correlation distance.
 //
 // ****************************************************************************
 
@@ -2279,7 +2257,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     vtkPolyData *pd = vtkPolyData::New();
     pd->SetPoints(points);
     pd->SetLines(lines);
-    scalars->SetName(colorvarArrayName.c_str());
+    scalars->SetName(colorVarArrayName.c_str());
     params->SetName(paramArrayName.c_str());
     tangents->SetName(tangentsArrayName.c_str());
 
@@ -2289,7 +2267,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     pd->GetPointData()->AddArray(tangents);
 
     // theta/opacity/scaleTubeRad scalars
-    if (displayMethod == PICS_DISPLAY_RIBBONS)
+    if(displayGeometry == IntegralCurveAttributes::Ribbons)
     {
         thetas = vtkFloatArray::New();
         thetas->Allocate(numPts);
@@ -2318,7 +2296,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     double correlationDistMinDistToUse = correlationDistanceMinDist;
     double correlationDistAngTolToUse = 0.0;
 
-    if (coloringMethod == PICS_CORRELATION_DISTANCE)
+    if (dataValue == IntegralCurveAttributes::CorrelationDistance)
     {
         if (correlationDistanceDoBBox)
             correlationDistMinDistToUse *= GetLengthScale();
@@ -2341,9 +2319,14 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
         //cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
 
+        avtStateRecorderIntegralCurve::Sample s = ic->GetSample(0);
+
+        double startTime = s.time;
+
         for (int j = 0; j < numSamps; j++)
         {
-            avtStateRecorderIntegralCurve::Sample s = ic->GetSample(j);
+            s = ic->GetSample(j);
+
             line->GetPointIds()->SetId(j, pIdx);
 
             double pt[3];
@@ -2395,40 +2378,46 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 s.velocity *= 1.0f/speed;
             tangents->InsertTuple3(pIdx, s.velocity.x, s.velocity.y, s.velocity.z);
 
-            double color_value;
+            double data_value;
 
             // color scalars
-            switch (coloringMethod)
+            switch (dataValue)
             {
-              case PICS_COLOR_SOLID:
-                color_value = 0.0f;
+              case IntegralCurveAttributes::Solid:
+                data_value = 0.0f;
                 break;
-              case PICS_COLOR_SPEED:
-                color_value = speed;
+              case IntegralCurveAttributes::Speed:
+                data_value = speed;
                 break;
-              case PICS_COLOR_VORTICITY:
-                color_value = s.vorticity;
+              case IntegralCurveAttributes::Vorticity:
+                data_value = s.vorticity;
                 break;
-              case PICS_COLOR_ARCLENGTH:
-                color_value = s.arclength;
+              case IntegralCurveAttributes::ArcLength:
+                data_value = s.arclength;
                 break;
-              case PICS_COLOR_TIME:
-                color_value = s.time;
+              case IntegralCurveAttributes::TimeAbsolute:
+                data_value = s.time;
                 break;
-              case PICS_COLOR_ID:
-                color_value = ic->id;
+              case IntegralCurveAttributes::TimeRelative:
+                data_value = s.time - startTime;
                 break;
-              case PICS_COLOR_VARIABLE:
-                color_value = s.scalar0;
+              case IntegralCurveAttributes::SeedPointID:
+                data_value = ic->id;
                 break;
-              case PICS_CORRELATION_DISTANCE:
-                color_value = ComputeCorrelationDistance(j, ic,
-                                                         correlationDistAngTolToUse,
-                                                         correlationDistMinDistToUse);
+              case IntegralCurveAttributes::Variable:
+                data_value = s.scalar0;
+                break;
+              case IntegralCurveAttributes::CorrelationDistance:
+                data_value =
+                  ComputeCorrelationDistance(j, ic,
+                                             correlationDistAngTolToUse,
+                                             correlationDistMinDistToUse);
                 break;
             }
 
-            scalars->InsertTuple1(pIdx, color_value);
+            std::cerr <<  data_value << std::endl;
+
+            scalars->InsertTuple1(pIdx, data_value);
 
             // parameter scalars
             switch (referenceTypeForDisplay)
@@ -2445,7 +2434,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             }
             
             // theta/opacity/scaleTubeRad scalars
-            if (thetas)
+            if(displayGeometry == IntegralCurveAttributes::Ribbons)
             {
                 float scaledVort = s.vorticity * (prevT-s.time);
                 theta += scaledVort;
@@ -2461,7 +2450,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             
             if( atts.GetShowPoints() )
             {
-              vtkPolyData *vert = CreateVTKVertex(color_value, pt);
+              vtkPolyData *vert = CreateVTKVertex(data_value, pt);
                     
               append->AddInputData(vert);
               vert->Delete();
@@ -2479,7 +2468,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     scalars->Delete();
     params->Delete();
     tangents->Delete();
-    if (thetas)
+    if(displayGeometry == IntegralCurveAttributes::Ribbons)
         thetas->Delete();
     if (opacity)
         opacity->Delete();

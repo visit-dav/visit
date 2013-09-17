@@ -759,27 +759,28 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->setColumnStretch(2,10);
 
     // Create the data value.
-    dataLayout->addWidget(new QLabel(tr("Data Value"), dataGroup), 0, 0);
+    dataLayout->addWidget(new QLabel(tr("Data value"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
-    dataValueComboBox->addItem(tr("Solid"),0);
-    dataValueComboBox->addItem(tr("Speed"),1);
-    dataValueComboBox->addItem(tr("Vorticity magnitude"),2);
-    dataValueComboBox->addItem(tr("Arc length"),3);
-    dataValueComboBox->addItem(tr("Time"),4);
-    dataValueComboBox->addItem(tr("Seed point ID"),5);
-    dataValueComboBox->addItem(tr("Variable"),6);
-    dataValueComboBox->addItem(tr("Correlation Distance"),7);
+    dataValueComboBox->addItem(tr("Solid"), 0);
+    dataValueComboBox->addItem(tr("Speed"), 1);
+    dataValueComboBox->addItem(tr("Vorticity magnitude"), 2);
+    dataValueComboBox->addItem(tr("Arc length"), 3);
+    dataValueComboBox->addItem(tr("Absolute time"), 4);
+    dataValueComboBox->addItem(tr("Relative time"), 5);
+    dataValueComboBox->addItem(tr("Seed point ID"), 6);
+    dataValueComboBox->addItem(tr("Variable"), 7);
+    dataValueComboBox->addItem(tr("Correlation distance"), 8);
     connect(dataValueComboBox, SIGNAL(activated(int)),
-            this, SLOT(coloringMethodChanged(int)));
+            this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueComboBox, 0, 1);
 
-    coloringVar = new QvisVariableButton(false, true, true,
+    dataVariable = new QvisVariableButton(false, true, true,
                                          QvisVariableButton::Scalars,
                                          dataGroup);
-    dataLayout->addWidget(coloringVar, 0, 2);
-    connect(coloringVar, SIGNAL(activated(const QString &)),
-            this, SLOT(coloringVariableChanged(const QString&)));
+    dataLayout->addWidget(dataVariable, 0, 2);
+    connect(dataVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(dataVariableChanged(const QString&)));
 
     //Correlation distance widgets.
     correlationDistanceAngTolLabel = new QLabel(tr("Angular tolerance (degrees)"), dataGroup);
@@ -811,15 +812,35 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     displayLayout->setMargin(5);
     displayLayout->setSpacing(10);
 
-    showLines = new QCheckBox(tr("Show Lines"), displayGroup);
+    showLines = new QCheckBox(tr("Show lines"), displayGroup);
     connect(showLines, SIGNAL(toggled(bool)),
             this, SLOT(showLinesChanged(bool)));
     displayLayout->addWidget(showLines, 0, 0);
 
-    showPoints = new QCheckBox(tr("Show Points"), displayGroup);
+    showPoints = new QCheckBox(tr("Show points"), displayGroup);
     connect(showPoints, SIGNAL(toggled(bool)), this,
             SLOT(showPointsChanged(bool)));
     displayLayout->addWidget(showPoints, 0, 1);
+
+
+    geometryLabel = new QLabel(tr("Line geometry"), central);
+    displayLayout->addWidget(geometryLabel, 1, 0);
+
+    geometryButtonGroup = new QButtonGroup(central);
+    QRadioButton *rb = new QRadioButton(tr("Line"), central);
+    geometryButtonGroup->addButton(rb, 0);
+    displayLayout->addWidget(rb, 1, 1);
+
+    rb = new QRadioButton(tr("Tubes"), central);
+    geometryButtonGroup->addButton(rb, 1);
+    displayLayout->addWidget(rb, 1, 2);
+
+    rb = new QRadioButton(tr("Ribbons"), central);
+    displayLayout->addWidget(rb, 1, 3);
+    geometryButtonGroup->addButton(rb, 2);
+
+    connect(geometryButtonGroup, SIGNAL(buttonClicked(int)), this,
+            SLOT(geometryButtonGroupChanged(int)));
 
 
     // Create the coordinate group
@@ -888,7 +909,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineOptionsGrpLayout->setSpacing(10);
     pathlineOptionsGrpLayout->setColumnStretch(1,10);
 
-    pathlineOverrideStartingTimeFlag = new QCheckBox(tr("Override Starting Time"), pathlineOptionsGrp);
+    pathlineOverrideStartingTimeFlag = new QCheckBox(tr("Override starting time"), pathlineOptionsGrp);
     connect(pathlineOverrideStartingTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(pathlineOverrideStartingTimeFlagChanged(bool)));
     pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTimeFlag, 1, 0);
@@ -1280,29 +1301,29 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             sampleDistance[2]->setText(temp);
             break;
 
-        case IntegralCurveAttributes::ID_coloringVariable:
-            coloringVar->blockSignals(true);
-            temp = atts->GetColoringVariable().c_str();
-            coloringVar->setText(temp);
-            coloringVar->blockSignals(false);
+        case IntegralCurveAttributes::ID_dataVariable:
+            dataVariable->blockSignals(true);
+            temp = atts->GetDataVariable().c_str();
+            dataVariable->setText(temp);
+            dataVariable->blockSignals(false);
           break;
           
-        case IntegralCurveAttributes::ID_coloringMethod:
+        case IntegralCurveAttributes::ID_dataValue:
             dataValueComboBox->blockSignals(true);
-            dataValueComboBox->setCurrentIndex(int(atts->GetColoringMethod()));
+            dataValueComboBox->setCurrentIndex(int(atts->GetDataValue()));
             dataValueComboBox->blockSignals(false);
 
-            if (atts->GetColoringMethod() == IntegralCurveAttributes::ColorByVariable)
+            if (atts->GetDataValue() == IntegralCurveAttributes::Variable)
             {
-                coloringVar->setEnabled(true);
-                coloringVar->show();
+                dataVariable->setEnabled(true);
+                dataVariable->show();
             }
             else
             {
-                coloringVar->setEnabled(false);
-                coloringVar->hide();
+                dataVariable->setEnabled(false);
+                dataVariable->hide();
             }
-            if (atts->GetColoringMethod() == IntegralCurveAttributes::ColorByCorrelationDistance)
+            if (atts->GetDataValue() == IntegralCurveAttributes::CorrelationDistance)
             {
                 TurnOn(correlationDistanceAngTolLabel);
                 TurnOn(correlationDistanceMinDistLabel);
@@ -1323,11 +1344,22 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             showLines->blockSignals(true);
             showLines->setChecked(atts->GetShowLines());
             showLines->blockSignals(false);
+
+            geometryLabel->setEnabled(atts->GetShowLines());
+            geometryButtonGroup->button(0)->setEnabled(atts->GetShowLines());
+            geometryButtonGroup->button(1)->setEnabled(atts->GetShowLines());
+            geometryButtonGroup->button(2)->setEnabled(atts->GetShowLines());
+            
             break;
         case IntegralCurveAttributes::ID_showPoints:
             showPoints->blockSignals(true);
             showPoints->setChecked(atts->GetShowPoints());
             showPoints->blockSignals(false);
+            break;
+        case IntegralCurveAttributes::ID_displayGeometry:
+            geometryButtonGroup->blockSignals(true);
+            geometryButtonGroup->button(atts->GetDisplayGeometry())->setChecked(true);
+            geometryButtonGroup->blockSignals(false);
             break;
         case IntegralCurveAttributes::ID_integrationDirection:
             directionType->blockSignals(true);
@@ -1689,9 +1721,9 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
 
     bool showSampling = false, enableFill = false;
     
-    if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedPoint)
+    if (atts->GetSourceType() == IntegralCurveAttributes::Point)
         TurnOn(pointSource, pointSourceLabel);
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedPointList)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::PointList)
     {
         TurnOn(pointList);
         TurnOn(pointListDelPoint);
@@ -1699,7 +1731,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
         TurnOn(pointListAddPoint);
         TurnOn(pointListReadPoints);
     }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedLine)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Line_)
     {
         TurnOn(lineStart, lineStartLabel);
         TurnOn(lineEnd, lineEndLabel);
@@ -1718,7 +1750,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
             sampleDensity[0]->setMinimum(1);
         }
     }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedPlane)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Plane)
     {
         TurnOn(planeOrigin, planeOriginLabel);
         TurnOn(planeNormal, planeNormalLabel);
@@ -1746,7 +1778,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
                 sampleDensity[i]->setMinimum(2);
         }
     }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedCircle)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Circle)
     {
         TurnOn(planeOrigin, planeOriginLabel);
         TurnOn(planeNormal, planeNormalLabel);
@@ -1777,7 +1809,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
             }
         }
     }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedSphere)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Sphere)
     {
         TurnOn(sphereOrigin, sphereOriginLabel);
         TurnOn(radius, radiusLabel);
@@ -1804,7 +1836,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
             }
         }
      }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedBox)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Box)
     {
         TurnOn(useWholeBox);
         for (int i = 0; i < 3; i++)
@@ -2831,6 +2863,13 @@ QvisIntegralCurveWindow::showPointsChanged(bool val)
 }
 
 void
+QvisIntegralCurveWindow::geometryButtonGroupChanged(int val)
+{
+    atts->SetDisplayGeometry((IntegralCurveAttributes::DisplayGeometry) val);
+    Apply();
+}
+
+void
 QvisIntegralCurveWindow::useWholeBoxChanged(bool val)
 {
     atts->SetUseWholeBox(val);
@@ -2846,37 +2885,25 @@ QvisIntegralCurveWindow::boxExtentsProcessText()
 }
 
 void
-QvisIntegralCurveWindow::coloringMethodChanged(int val)
+QvisIntegralCurveWindow::dataValueChanged(int val)
 {
-    atts->SetColoringMethod((IntegralCurveAttributes::ColoringMethod)val);
+    atts->SetDataValue((IntegralCurveAttributes::DataValue)val);
     Apply();
 }
 
 void
-QvisIntegralCurveWindow::coloringVariableChanged(const QString &var)
+QvisIntegralCurveWindow::dataVariableChanged(const QString &var)
 {
-    atts->SetColoringVariable(var.toStdString());
+    atts->SetDataVariable(var.toStdString());
     Apply();
 }
 
 void
 QvisIntegralCurveWindow::coordinateButtonGroupChanged(int val)
 {
-    switch( val )
-    {
-        case 0:
-          atts->SetCoordinateSystem(IntegralCurveAttributes::AsIs);
-          break;
-        case 1:
-          atts->SetCoordinateSystem(IntegralCurveAttributes::CylindricalToCartesian);
-          break;
-        case 2:
-          atts->SetCoordinateSystem(IntegralCurveAttributes::CartesianToCylindrical);
-          break;
-    }
+    atts->SetCoordinateSystem((IntegralCurveAttributes::CoordinateSystem) val);
     Apply();
 }
-
 
 void
 QvisIntegralCurveWindow::phiScalingToggled(bool val)

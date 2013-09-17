@@ -7,24 +7,30 @@
     </Files>
     <Attribute name="IntegralCurveAttributes" purpose="Attributes for the IntegralCurve" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="IntegralCurve.code">
       <Enum name="SourceType">
-        SpecifiedPoint
-        SpecifiedPointList
-        SpecifiedLine
-        SpecifiedCircle
-        SpecifiedPlane
-        SpecifiedSphere
-        SpecifiedBox
+        Point
+        PointList
+        Line_
+        Circle
+        Plane
+        Sphere
+        Box
         Selection
       </Enum>
-      <Enum name="ColoringMethod">
+      <Enum name="DataValue">
         Solid
-        ColorBySpeed
-        ColorByVorticity
-        ColorByLength
-        ColorByTime
-        ColorBySeedPointID
-        ColorByVariable
-        ColorByCorrelationDistance
+        Speed
+        Vorticity
+        ArcLength
+        TimeAbsolute
+        TimeRelative
+        SeedPointID
+        Variable
+        CorrelationDistance
+      </Enum>
+      <Enum name="DisplayGeometry">
+        Lines
+        Tubes
+        Ribbons
       </Enum>
       <Enum name="CoordinateSystem">
         AsIs
@@ -67,34 +73,34 @@
         FractionOfBBox
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
-        SpecifiedPoint
+        Point
       </Field>
-      <Field name="pointSource" label="Starting point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
-        0.000000
-        0.000000
-        0.000000
-      </Field>
-      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+      <Field name="pointSource" label="Starting point" type="doubleArray" length="3" enabler="sourceType:Point">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:Line">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:Line">
         1.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:Plane">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:Plane">
         0.000000
         0.000000
         1.000000
       </Field>
-      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:Plane">
         0.000000
         1.000000
         0.000000
@@ -102,12 +108,12 @@
       <Field name="radius" label="Radius" type="double">
         1.000000
       </Field>
-      <Field name="sphereOrigin" label="Sphere origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedSphere">
+      <Field name="sphereOrigin" label="Sphere origin" type="doubleArray" length="3" enabler="sourceType:Sphere">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="boxExtents" label="Box extents" type="doubleArray" length="6" enabler="sourceType:SpecifiedBox">
+      <Field name="boxExtents" label="Box extents" type="doubleArray" length="6" enabler="sourceType:Box">
         0.000000
         1.000000
         0.000000
@@ -115,10 +121,10 @@
         0.000000
         1.000000
       </Field>
-      <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:SpecifiedBox">
+      <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:Box">
         true
       </Field>
-      <Field name="pointList" label="List of Points" type="doubleVector" enabler="sourceType:SpecifiedPointList">
+      <Field name="pointList" label="List of Points" type="doubleVector" enabler="sourceType:PointList">
         0.000000
         0.000000
         0.000000
@@ -138,10 +144,10 @@
       <Field name="sampleDensity2" label="sampleDensity2" type="int">
         2
       </Field>
-      <Field name="coloringMethod" label="Coloring method" type="enum" subtype="ColoringMethod">
-        ColorByTime
+      <Field name="dataValue" label="Data value" type="enum" subtype="DataValue">
+        TimeAbsolute
       </Field>
-      <Field name="coloringVariable" label="unnamed1" type="string">
+      <Field name="dataVariable" label="unnamed1" type="string">
       </Field>
       <Field name="integrationDirection" label="integrationDirection" type="enum" subtype="IntegrationDirection">
         Forward
@@ -220,6 +226,9 @@
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
       </Field>
+      <Field name="displayGeometry" label="Display geometry" type="enum" subtype="DisplayGeometry">
+        Lines
+      </Field>
       <Field name="coordinateSystem" label="coordinateSystem" type="enum" subtype="CoordinateSystem">
         AsIs
       </Field>
@@ -290,8 +299,6 @@
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
-      </Function>
-      <Function name="ProcessOldVersions" user="true" member="true" access="private">
       </Function>
       <Function name="IntegralCurveViewerPluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>

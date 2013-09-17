@@ -51,9 +51,9 @@
 //
 
 static const char *SourceType_strings[] = {
-"SpecifiedPoint", "SpecifiedPointList", "SpecifiedLine", 
-"SpecifiedCircle", "SpecifiedPlane", "SpecifiedSphere", 
-"SpecifiedBox", "Selection"};
+"Point", "PointList", "Line_", 
+"Circle", "Plane", "Sphere", 
+"Box", "Selection"};
 
 std::string
 IntegralCurveAttributes::SourceType_ToString(IntegralCurveAttributes::SourceType t)
@@ -73,7 +73,7 @@ IntegralCurveAttributes::SourceType_ToString(int t)
 bool
 IntegralCurveAttributes::SourceType_FromString(const std::string &s, IntegralCurveAttributes::SourceType &val)
 {
-    val = IntegralCurveAttributes::SpecifiedPoint;
+    val = IntegralCurveAttributes::Point;
     for(int i = 0; i < 8; ++i)
     {
         if(s == SourceType_strings[i])
@@ -86,38 +86,77 @@ IntegralCurveAttributes::SourceType_FromString(const std::string &s, IntegralCur
 }
 
 //
-// Enum conversion methods for IntegralCurveAttributes::ColoringMethod
+// Enum conversion methods for IntegralCurveAttributes::DataValue
 //
 
-static const char *ColoringMethod_strings[] = {
-"Solid", "ColorBySpeed", "ColorByVorticity", 
-"ColorByLength", "ColorByTime", "ColorBySeedPointID", 
-"ColorByVariable", "ColorByCorrelationDistance"};
+static const char *DataValue_strings[] = {
+"Solid", "Speed", "Vorticity", 
+"ArcLength", "TimeAbsolute", "TimeRelative", 
+"SeedPointID", "Variable", "CorrelationDistance"
+};
 
 std::string
-IntegralCurveAttributes::ColoringMethod_ToString(IntegralCurveAttributes::ColoringMethod t)
+IntegralCurveAttributes::DataValue_ToString(IntegralCurveAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 8) index = 0;
-    return ColoringMethod_strings[index];
+    if(index < 0 || index >= 9) index = 0;
+    return DataValue_strings[index];
 }
 
 std::string
-IntegralCurveAttributes::ColoringMethod_ToString(int t)
+IntegralCurveAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 8) ? 0 : t;
-    return ColoringMethod_strings[index];
+    int index = (t < 0 || t >= 9) ? 0 : t;
+    return DataValue_strings[index];
 }
 
 bool
-IntegralCurveAttributes::ColoringMethod_FromString(const std::string &s, IntegralCurveAttributes::ColoringMethod &val)
+IntegralCurveAttributes::DataValue_FromString(const std::string &s, IntegralCurveAttributes::DataValue &val)
 {
     val = IntegralCurveAttributes::Solid;
-    for(int i = 0; i < 8; ++i)
+    for(int i = 0; i < 9; ++i)
     {
-        if(s == ColoringMethod_strings[i])
+        if(s == DataValue_strings[i])
         {
-            val = (ColoringMethod)i;
+            val = (DataValue)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for IntegralCurveAttributes::DisplayGeometry
+//
+
+static const char *DisplayGeometry_strings[] = {
+"Lines", "Tubes", "Ribbons"
+};
+
+std::string
+IntegralCurveAttributes::DisplayGeometry_ToString(IntegralCurveAttributes::DisplayGeometry t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return DisplayGeometry_strings[index];
+}
+
+std::string
+IntegralCurveAttributes::DisplayGeometry_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return DisplayGeometry_strings[index];
+}
+
+bool
+IntegralCurveAttributes::DisplayGeometry_FromString(const std::string &s, IntegralCurveAttributes::DisplayGeometry &val)
+{
+    val = IntegralCurveAttributes::Lines;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == DisplayGeometry_strings[i])
+        {
+            val = (DisplayGeometry)i;
             return true;
         }
     }
@@ -407,7 +446,7 @@ IntegralCurveAttributes::SizeType_FromString(const std::string &s, IntegralCurve
 
 void IntegralCurveAttributes::Init()
 {
-    sourceType = SpecifiedPoint;
+    sourceType = Point;
     pointSource[0] = 0;
     pointSource[1] = 0;
     pointSource[2] = 0;
@@ -449,7 +488,7 @@ void IntegralCurveAttributes::Init()
     sampleDensity0 = 2;
     sampleDensity1 = 2;
     sampleDensity2 = 2;
-    coloringMethod = ColorByTime;
+    dataValue = TimeAbsolute;
     integrationDirection = Forward;
     maxSteps = 1000;
     terminateByDistance = false;
@@ -477,6 +516,7 @@ void IntegralCurveAttributes::Init()
     pathlinesOverrideStartingTimeFlag = false;
     pathlinesOverrideStartingTime = 0;
     pathlinesCMFE = POS_CMFE;
+    displayGeometry = Lines;
     coordinateSystem = AsIs;
     phiScalingFlag = false;
     phiScaling = 1;
@@ -558,8 +598,8 @@ void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
     sampleDensity0 = obj.sampleDensity0;
     sampleDensity1 = obj.sampleDensity1;
     sampleDensity2 = obj.sampleDensity2;
-    coloringMethod = obj.coloringMethod;
-    coloringVariable = obj.coloringVariable;
+    dataValue = obj.dataValue;
+    dataVariable = obj.dataVariable;
     integrationDirection = obj.integrationDirection;
     maxSteps = obj.maxSteps;
     terminateByDistance = obj.terminateByDistance;
@@ -588,6 +628,7 @@ void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
     pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
     pathlinesCMFE = obj.pathlinesCMFE;
+    displayGeometry = obj.displayGeometry;
     coordinateSystem = obj.coordinateSystem;
     phiScalingFlag = obj.phiScalingFlag;
     phiScaling = obj.phiScaling;
@@ -827,8 +868,8 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
             (sampleDensity0 == obj.sampleDensity0) &&
             (sampleDensity1 == obj.sampleDensity1) &&
             (sampleDensity2 == obj.sampleDensity2) &&
-            (coloringMethod == obj.coloringMethod) &&
-            (coloringVariable == obj.coloringVariable) &&
+            (dataValue == obj.dataValue) &&
+            (dataVariable == obj.dataVariable) &&
             (integrationDirection == obj.integrationDirection) &&
             (maxSteps == obj.maxSteps) &&
             (terminateByDistance == obj.terminateByDistance) &&
@@ -854,6 +895,7 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
             (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
+            (displayGeometry == obj.displayGeometry) &&
             (coordinateSystem == obj.coordinateSystem) &&
             (phiScalingFlag == obj.phiScalingFlag) &&
             (phiScaling == obj.phiScaling) &&
@@ -955,7 +997,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PointAttributes")
     {
-        if(sourceType == SpecifiedPoint)
+        if(sourceType == Point)
         {
             const PointAttributes *p = (PointAttributes *)atts;
             SetPointSource(p->GetPoint());
@@ -964,7 +1006,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     } 
     else if(atts->TypeName() == "Line")
     {
-        if(sourceType == SpecifiedLine)
+        if(sourceType == Line_)
         {
             const Line *line = (const Line *)atts;
             SetLineStart(line->GetPoint1());
@@ -974,20 +1016,20 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PlaneAttributes")
     {
-        if(sourceType == SpecifiedPlane || sourceType == SpecifiedCircle)
+        if(sourceType == Plane || sourceType == Circle)
         {
             const PlaneAttributes *plane = (const PlaneAttributes *)atts;
             SetPlaneOrigin(plane->GetOrigin());
             SetPlaneNormal(plane->GetNormal());
             SetPlaneUpAxis(plane->GetUpAxis());
-            if (sourceType == SpecifiedCircle)
+            if (sourceType == Circle)
                 SetRadius(plane->GetRadius());
             retval = true;
         }
     }
     else if(atts->TypeName() == "SphereAttributes")
     {
-        if(sourceType == SpecifiedSphere)
+        if(sourceType == Sphere)
         {
             const SphereAttributes *sphere = (const SphereAttributes *)atts;
             SetSphereOrigin(sphere->GetOrigin());
@@ -997,7 +1039,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }   
     else if(atts->TypeName() == "BoxExtents")
     {
-        if(sourceType == SpecifiedBox)
+        if(sourceType == Box)
         {
             const BoxExtents *box = (const BoxExtents *)atts;
             SetBoxExtents(box->GetExtents());
@@ -1147,8 +1189,8 @@ IntegralCurveAttributes::SelectAll()
     Select(ID_sampleDensity0,                     (void *)&sampleDensity0);
     Select(ID_sampleDensity1,                     (void *)&sampleDensity1);
     Select(ID_sampleDensity2,                     (void *)&sampleDensity2);
-    Select(ID_coloringMethod,                     (void *)&coloringMethod);
-    Select(ID_coloringVariable,                   (void *)&coloringVariable);
+    Select(ID_dataValue,                          (void *)&dataValue);
+    Select(ID_dataVariable,                       (void *)&dataVariable);
     Select(ID_integrationDirection,               (void *)&integrationDirection);
     Select(ID_maxSteps,                           (void *)&maxSteps);
     Select(ID_terminateByDistance,                (void *)&terminateByDistance);
@@ -1174,6 +1216,7 @@ IntegralCurveAttributes::SelectAll()
     Select(ID_pathlinesOverrideStartingTimeFlag,  (void *)&pathlinesOverrideStartingTimeFlag);
     Select(ID_pathlinesOverrideStartingTime,      (void *)&pathlinesOverrideStartingTime);
     Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
+    Select(ID_displayGeometry,                    (void *)&displayGeometry);
     Select(ID_coordinateSystem,                   (void *)&coordinateSystem);
     Select(ID_phiScalingFlag,                     (void *)&phiScalingFlag);
     Select(ID_phiScaling,                         (void *)&phiScaling);
@@ -1318,16 +1361,16 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
         node->AddNode(new DataNode("sampleDensity2", sampleDensity2));
     }
 
-    if(completeSave || !FieldsEqual(ID_coloringMethod, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_dataValue, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("coloringMethod", ColoringMethod_ToString(coloringMethod)));
+        node->AddNode(new DataNode("dataValue", DataValue_ToString(dataValue)));
     }
 
-    if(completeSave || !FieldsEqual(ID_coloringVariable, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_dataVariable, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("coloringVariable", coloringVariable));
+        node->AddNode(new DataNode("dataVariable", dataVariable));
     }
 
     if(completeSave || !FieldsEqual(ID_integrationDirection, &defaultObject))
@@ -1478,6 +1521,12 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     {
         addToParent = true;
         node->AddNode(new DataNode("pathlinesCMFE", PathlinesCMFE_ToString(pathlinesCMFE)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_displayGeometry, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayGeometry", DisplayGeometry_ToString(displayGeometry)));
     }
 
     if(completeSave || !FieldsEqual(ID_coordinateSystem, &defaultObject))
@@ -1692,24 +1741,24 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         SetSampleDensity1(node->AsInt());
     if((node = searchNode->GetNode("sampleDensity2")) != 0)
         SetSampleDensity2(node->AsInt());
-    if((node = searchNode->GetNode("coloringMethod")) != 0)
+    if((node = searchNode->GetNode("dataValue")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 8)
-                SetColoringMethod(ColoringMethod(ival));
+            if(ival >= 0 && ival < 9)
+                SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            ColoringMethod value;
-            if(ColoringMethod_FromString(node->AsString(), value))
-                SetColoringMethod(value);
+            DataValue value;
+            if(DataValue_FromString(node->AsString(), value))
+                SetDataValue(value);
         }
     }
-    if((node = searchNode->GetNode("coloringVariable")) != 0)
-        SetColoringVariable(node->AsString());
+    if((node = searchNode->GetNode("dataVariable")) != 0)
+        SetDataVariable(node->AsString());
     if((node = searchNode->GetNode("integrationDirection")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1842,6 +1891,22 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
             PathlinesCMFE value;
             if(PathlinesCMFE_FromString(node->AsString(), value))
                 SetPathlinesCMFE(value);
+        }
+    }
+    if((node = searchNode->GetNode("displayGeometry")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetDisplayGeometry(DisplayGeometry(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            DisplayGeometry value;
+            if(DisplayGeometry_FromString(node->AsString(), value))
+                SetDisplayGeometry(value);
         }
     }
     if((node = searchNode->GetNode("coordinateSystem")) != 0)
@@ -2043,17 +2108,17 @@ IntegralCurveAttributes::SetSampleDensity2(int sampleDensity2_)
 }
 
 void
-IntegralCurveAttributes::SetColoringMethod(IntegralCurveAttributes::ColoringMethod coloringMethod_)
+IntegralCurveAttributes::SetDataValue(IntegralCurveAttributes::DataValue dataValue_)
 {
-    coloringMethod = coloringMethod_;
-    Select(ID_coloringMethod, (void *)&coloringMethod);
+    dataValue = dataValue_;
+    Select(ID_dataValue, (void *)&dataValue);
 }
 
 void
-IntegralCurveAttributes::SetColoringVariable(const std::string &coloringVariable_)
+IntegralCurveAttributes::SetDataVariable(const std::string &dataVariable_)
 {
-    coloringVariable = coloringVariable_;
-    Select(ID_coloringVariable, (void *)&coloringVariable);
+    dataVariable = dataVariable_;
+    Select(ID_dataVariable, (void *)&dataVariable);
 }
 
 void
@@ -2231,6 +2296,13 @@ IntegralCurveAttributes::SetPathlinesCMFE(IntegralCurveAttributes::PathlinesCMFE
 {
     pathlinesCMFE = pathlinesCMFE_;
     Select(ID_pathlinesCMFE, (void *)&pathlinesCMFE);
+}
+
+void
+IntegralCurveAttributes::SetDisplayGeometry(IntegralCurveAttributes::DisplayGeometry displayGeometry_)
+{
+    displayGeometry = displayGeometry_;
+    Select(ID_displayGeometry, (void *)&displayGeometry);
 }
 
 void
@@ -2535,22 +2607,22 @@ IntegralCurveAttributes::GetSampleDensity2() const
     return sampleDensity2;
 }
 
-IntegralCurveAttributes::ColoringMethod
-IntegralCurveAttributes::GetColoringMethod() const
+IntegralCurveAttributes::DataValue
+IntegralCurveAttributes::GetDataValue() const
 {
-    return ColoringMethod(coloringMethod);
+    return DataValue(dataValue);
 }
 
 const std::string &
-IntegralCurveAttributes::GetColoringVariable() const
+IntegralCurveAttributes::GetDataVariable() const
 {
-    return coloringVariable;
+    return dataVariable;
 }
 
 std::string &
-IntegralCurveAttributes::GetColoringVariable()
+IntegralCurveAttributes::GetDataVariable()
 {
-    return coloringVariable;
+    return dataVariable;
 }
 
 IntegralCurveAttributes::IntegrationDirection
@@ -2707,6 +2779,12 @@ IntegralCurveAttributes::PathlinesCMFE
 IntegralCurveAttributes::GetPathlinesCMFE() const
 {
     return PathlinesCMFE(pathlinesCMFE);
+}
+
+IntegralCurveAttributes::DisplayGeometry
+IntegralCurveAttributes::GetDisplayGeometry() const
+{
+    return DisplayGeometry(displayGeometry);
 }
 
 IntegralCurveAttributes::CoordinateSystem
@@ -2906,9 +2984,9 @@ IntegralCurveAttributes::SelectPointList()
 }
 
 void
-IntegralCurveAttributes::SelectColoringVariable()
+IntegralCurveAttributes::SelectDataVariable()
 {
-    Select(ID_coloringVariable, (void *)&coloringVariable);
+    Select(ID_dataVariable, (void *)&dataVariable);
 }
 
 void
@@ -2962,8 +3040,8 @@ IntegralCurveAttributes::GetFieldName(int index) const
     case ID_sampleDensity0:                     return "sampleDensity0";
     case ID_sampleDensity1:                     return "sampleDensity1";
     case ID_sampleDensity2:                     return "sampleDensity2";
-    case ID_coloringMethod:                     return "coloringMethod";
-    case ID_coloringVariable:                   return "coloringVariable";
+    case ID_dataValue:                          return "dataValue";
+    case ID_dataVariable:                       return "dataVariable";
     case ID_integrationDirection:               return "integrationDirection";
     case ID_maxSteps:                           return "maxSteps";
     case ID_terminateByDistance:                return "terminateByDistance";
@@ -2989,6 +3067,7 @@ IntegralCurveAttributes::GetFieldName(int index) const
     case ID_pathlinesOverrideStartingTimeFlag:  return "pathlinesOverrideStartingTimeFlag";
     case ID_pathlinesOverrideStartingTime:      return "pathlinesOverrideStartingTime";
     case ID_pathlinesCMFE:                      return "pathlinesCMFE";
+    case ID_displayGeometry:                    return "displayGeometry";
     case ID_coordinateSystem:                   return "coordinateSystem";
     case ID_phiScalingFlag:                     return "phiScalingFlag";
     case ID_phiScaling:                         return "phiScaling";
@@ -3050,8 +3129,8 @@ IntegralCurveAttributes::GetFieldType(int index) const
     case ID_sampleDensity0:                     return FieldType_int;
     case ID_sampleDensity1:                     return FieldType_int;
     case ID_sampleDensity2:                     return FieldType_int;
-    case ID_coloringMethod:                     return FieldType_enum;
-    case ID_coloringVariable:                   return FieldType_string;
+    case ID_dataValue:                          return FieldType_enum;
+    case ID_dataVariable:                       return FieldType_string;
     case ID_integrationDirection:               return FieldType_enum;
     case ID_maxSteps:                           return FieldType_int;
     case ID_terminateByDistance:                return FieldType_bool;
@@ -3077,6 +3156,7 @@ IntegralCurveAttributes::GetFieldType(int index) const
     case ID_pathlinesOverrideStartingTimeFlag:  return FieldType_bool;
     case ID_pathlinesOverrideStartingTime:      return FieldType_double;
     case ID_pathlinesCMFE:                      return FieldType_enum;
+    case ID_displayGeometry:                    return FieldType_enum;
     case ID_coordinateSystem:                   return FieldType_enum;
     case ID_phiScalingFlag:                     return FieldType_bool;
     case ID_phiScaling:                         return FieldType_double;
@@ -3138,8 +3218,8 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
     case ID_sampleDensity0:                     return "int";
     case ID_sampleDensity1:                     return "int";
     case ID_sampleDensity2:                     return "int";
-    case ID_coloringMethod:                     return "enum";
-    case ID_coloringVariable:                   return "string";
+    case ID_dataValue:                          return "enum";
+    case ID_dataVariable:                       return "string";
     case ID_integrationDirection:               return "enum";
     case ID_maxSteps:                           return "int";
     case ID_terminateByDistance:                return "bool";
@@ -3165,6 +3245,7 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesOverrideStartingTimeFlag:  return "bool";
     case ID_pathlinesOverrideStartingTime:      return "double";
     case ID_pathlinesCMFE:                      return "enum";
+    case ID_displayGeometry:                    return "enum";
     case ID_coordinateSystem:                   return "enum";
     case ID_phiScalingFlag:                     return "bool";
     case ID_phiScaling:                         return "double";
@@ -3328,14 +3409,14 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
         retval = (sampleDensity2 == obj.sampleDensity2);
         }
         break;
-    case ID_coloringMethod:
+    case ID_dataValue:
         {  // new scope
-        retval = (coloringMethod == obj.coloringMethod);
+        retval = (dataValue == obj.dataValue);
         }
         break;
-    case ID_coloringVariable:
+    case ID_dataVariable:
         {  // new scope
-        retval = (coloringVariable == obj.coloringVariable);
+        retval = (dataVariable == obj.dataVariable);
         }
         break;
     case ID_integrationDirection:
@@ -3466,6 +3547,11 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_pathlinesCMFE:
         {  // new scope
         retval = (pathlinesCMFE == obj.pathlinesCMFE);
+        }
+        break;
+    case ID_displayGeometry:
+        {  // new scope
+        retval = (displayGeometry == obj.displayGeometry);
         }
         break;
     case ID_coordinateSystem:
@@ -3665,9 +3751,9 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
         pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||
         pathlinesCMFE != obj.pathlinesCMFE ||
-        coloringVariable != obj.coloringVariable ||
-        (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
-        ((coloringMethod == ColorByCorrelationDistance) && (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
+        dataVariable != obj.dataVariable ||
+        (dataValue != obj.dataValue && obj.dataValue != Solid) ||
+        ((dataValue == CorrelationDistance) && (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
                                                      correlationDistanceMinDistAbsolute != obj.correlationDistanceMinDistAbsolute ||
                                                      correlationDistanceMinDistBBox != obj.correlationDistanceMinDistBBox ||
                                                      correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
@@ -3689,12 +3775,12 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
     }
 
     //Check by source type.
-    if ((sourceType == SpecifiedPoint) && POINT_DIFFERS(pointSource, obj.pointSource))
+    if ((sourceType == Point) && POINT_DIFFERS(pointSource, obj.pointSource))
     {
         return true;
     }
 
-    if (sourceType == SpecifiedLine)
+    if (sourceType == Line_)
     {
         if (POINT_DIFFERS(lineStart, obj.lineStart) ||
             POINT_DIFFERS(lineEnd, obj.lineEnd) ||
@@ -3707,7 +3793,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedPlane)
+    if (sourceType == Plane)
     {
         if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
             POINT_DIFFERS(planeNormal, obj.planeNormal) ||
@@ -3725,7 +3811,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedCircle)
+    if (sourceType == Circle)
     {
         if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
             POINT_DIFFERS(planeNormal, obj.planeNormal) ||
@@ -3743,7 +3829,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedSphere)
+    if (sourceType == Sphere)
     {
         if (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
             radius != obj.radius ||
@@ -3759,7 +3845,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedBox)
+    if (sourceType == Box)
     {
         if (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
             POINT_DIFFERS(boxExtents+3, obj.boxExtents+3) ||
@@ -3776,7 +3862,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
     
-    if (sourceType == SpecifiedPointList)
+    if (sourceType == PointList)
     {
         if (pointList.size() != obj.pointList.size())
             return true;
@@ -3798,109 +3884,5 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
     }
 
     return false;
-}
-
-// ****************************************************************************
-// Method: IntegralCurveAttributes::ProcessOldVersions
-//
-// Purpose: 
-//   This method creates modifies a DataNode representation of the object
-//   so it conforms to the newest representation of the object, which can
-//   can be read back in.
-//
-// Programmer: Dave Pugmire
-// Creation:   January 20 2010
-//
-// Modifications:
-//
-//   Dave Pugmire, Fri Sep 24 10:27:47 EDT 2010
-//   Fix handling of radius and pointDensity fields.
-//
-// ****************************************************************************
-
-void
-IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
-                                         const char *configVersion)
-{
-    char num1[2] = {configVersion[0], '\0'}, num2[2] = {configVersion[2], '\0'}, num3[2] = {configVersion[4], '\0'};
-    int major = atoi(num1), minor = atoi(num2), patch = atoi(num3);
-    
-    DataNode *searchNode = parentNode->GetNode("streamlineAlgorithmType");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("parallelizationAlgorithmType", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("maxStreamlineProcessCount");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("maxProcessCount", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("streamlineDirection");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("integrationDirection", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("StreamlineDirection");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("integrationDirection", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("showStart");
-    if (searchNode)
-    {
-        bool val = searchNode->AsBool();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("showSeeds", val);
-        parentNode->AddNode(newNode);
-    }
-    
-    if (major < 2)
-    {
-        searchNode = parentNode->GetNode("radius");
-        if (searchNode)
-        {
-            double val = searchNode->AsDouble();
-            parentNode->RemoveNode(searchNode);
-            DataNode *newNode = new DataNode("tubeRadius", val);
-            parentNode->AddNode(newNode);
-            
-            newNode = new DataNode("ribbonWidth", val);
-            parentNode->AddNode(newNode);
-        }
-    }
-
-    searchNode = parentNode->GetNode("pointDensity");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        DataNode *newNode0 = new DataNode("sampleDensity0", val);
-        parentNode->AddNode(newNode0);
-        DataNode *newNode1 = new DataNode("sampleDensity1", val);
-        parentNode->AddNode(newNode1);
-        DataNode *newNode2 = new DataNode("sampleDensity2", val);
-        parentNode->AddNode(newNode2);
-    }
 }
 

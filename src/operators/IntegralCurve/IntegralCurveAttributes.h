@@ -62,25 +62,32 @@ class IntegralCurveAttributes : public AttributeSubject
 public:
     enum SourceType
     {
-        SpecifiedPoint,
-        SpecifiedPointList,
-        SpecifiedLine,
-        SpecifiedCircle,
-        SpecifiedPlane,
-        SpecifiedSphere,
-        SpecifiedBox,
+        Point,
+        PointList,
+        Line_,
+        Circle,
+        Plane,
+        Sphere,
+        Box,
         Selection
     };
-    enum ColoringMethod
+    enum DataValue
     {
         Solid,
-        ColorBySpeed,
-        ColorByVorticity,
-        ColorByLength,
-        ColorByTime,
-        ColorBySeedPointID,
-        ColorByVariable,
-        ColorByCorrelationDistance
+        Speed,
+        Vorticity,
+        ArcLength,
+        TimeAbsolute,
+        TimeRelative,
+        SeedPointID,
+        Variable,
+        CorrelationDistance
+    };
+    enum DisplayGeometry
+    {
+        Lines,
+        Tubes,
+        Ribbons
     };
     enum CoordinateSystem
     {
@@ -164,7 +171,7 @@ public:
     void SelectSphereOrigin();
     void SelectBoxExtents();
     void SelectPointList();
-    void SelectColoringVariable();
+    void SelectDataVariable();
     void SelectVelocitySource();
     void SelectSelection();
 
@@ -184,8 +191,8 @@ public:
     void SetSampleDensity0(int sampleDensity0_);
     void SetSampleDensity1(int sampleDensity1_);
     void SetSampleDensity2(int sampleDensity2_);
-    void SetColoringMethod(ColoringMethod coloringMethod_);
-    void SetColoringVariable(const std::string &coloringVariable_);
+    void SetDataValue(DataValue dataValue_);
+    void SetDataVariable(const std::string &dataVariable_);
     void SetIntegrationDirection(IntegrationDirection integrationDirection_);
     void SetMaxSteps(int maxSteps_);
     void SetTerminateByDistance(bool terminateByDistance_);
@@ -211,6 +218,7 @@ public:
     void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
+    void SetDisplayGeometry(DisplayGeometry displayGeometry_);
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
     void SetPhiScalingFlag(bool phiScalingFlag_);
     void SetPhiScaling(double phiScaling_);
@@ -259,9 +267,9 @@ public:
     int                GetSampleDensity0() const;
     int                GetSampleDensity1() const;
     int                GetSampleDensity2() const;
-    ColoringMethod     GetColoringMethod() const;
-    const std::string  &GetColoringVariable() const;
-          std::string  &GetColoringVariable();
+    DataValue          GetDataValue() const;
+    const std::string  &GetDataVariable() const;
+          std::string  &GetDataVariable();
     IntegrationDirection GetIntegrationDirection() const;
     int                GetMaxSteps() const;
     bool               GetTerminateByDistance() const;
@@ -288,6 +296,7 @@ public:
     bool               GetPathlinesOverrideStartingTimeFlag() const;
     double             GetPathlinesOverrideStartingTime() const;
     PathlinesCMFE      GetPathlinesCMFE() const;
+    DisplayGeometry    GetDisplayGeometry() const;
     CoordinateSystem   GetCoordinateSystem() const;
     bool               GetPhiScalingFlag() const;
     double             GetPhiScaling() const;
@@ -322,10 +331,15 @@ public:
 protected:
     static std::string SourceType_ToString(int);
 public:
-    static std::string ColoringMethod_ToString(ColoringMethod);
-    static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
+    static std::string DataValue_ToString(DataValue);
+    static bool DataValue_FromString(const std::string &, DataValue &);
 protected:
-    static std::string ColoringMethod_ToString(int);
+    static std::string DataValue_ToString(int);
+public:
+    static std::string DisplayGeometry_ToString(DisplayGeometry);
+    static bool DisplayGeometry_FromString(const std::string &, DisplayGeometry &);
+protected:
+    static std::string DisplayGeometry_ToString(int);
 public:
     static std::string CoordinateSystem_ToString(CoordinateSystem);
     static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
@@ -371,7 +385,6 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const IntegralCurveAttributes &) const;
-    virtual void  ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -390,8 +403,8 @@ public:
         ID_sampleDensity0,
         ID_sampleDensity1,
         ID_sampleDensity2,
-        ID_coloringMethod,
-        ID_coloringVariable,
+        ID_dataValue,
+        ID_dataVariable,
         ID_integrationDirection,
         ID_maxSteps,
         ID_terminateByDistance,
@@ -417,6 +430,7 @@ public:
         ID_pathlinesOverrideStartingTimeFlag,
         ID_pathlinesOverrideStartingTime,
         ID_pathlinesCMFE,
+        ID_displayGeometry,
         ID_coordinateSystem,
         ID_phiScalingFlag,
         ID_phiScaling,
@@ -458,8 +472,8 @@ private:
     int          sampleDensity0;
     int          sampleDensity1;
     int          sampleDensity2;
-    int          coloringMethod;
-    std::string  coloringVariable;
+    int          dataValue;
+    std::string  dataVariable;
     int          integrationDirection;
     int          maxSteps;
     bool         terminateByDistance;
@@ -485,6 +499,7 @@ private:
     bool         pathlinesOverrideStartingTimeFlag;
     double       pathlinesOverrideStartingTime;
     int          pathlinesCMFE;
+    int          displayGeometry;
     int          coordinateSystem;
     bool         phiScalingFlag;
     double       phiScaling;
@@ -512,6 +527,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbdiibdbbdddbbiibbbbddddis"
+#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbdiiibdbbdddbbiibbbbddddis"
 
 #endif

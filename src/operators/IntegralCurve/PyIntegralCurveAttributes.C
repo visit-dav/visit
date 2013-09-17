@@ -76,36 +76,36 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *sourceType_names = "SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, "
-        "SpecifiedSphere, SpecifiedBox, Selection";
+    const char *sourceType_names = "Point, PointList, Line_, Circle, Plane, "
+        "Sphere, Box, Selection";
     switch (atts->GetSourceType())
     {
-      case IntegralCurveAttributes::SpecifiedPoint:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPoint  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::Point:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPoint  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::SpecifiedPointList:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPointList  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::PointList:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPointList  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::SpecifiedLine:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::Line_:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sLine_  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::SpecifiedCircle:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedCircle  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::Circle:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sCircle  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::SpecifiedPlane:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPlane  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::Plane:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPlane  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::SpecifiedSphere:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedSphere  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::Sphere:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSphere  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::SpecifiedBox:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedBox  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::Box:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sBox  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::Selection:
@@ -273,47 +273,51 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleDensity2 = %d\n", prefix, atts->GetSampleDensity2());
     str += tmpStr;
-    const char *coloringMethod_names = "Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, "
-        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance";
-    switch (atts->GetColoringMethod())
+    const char *dataValue_names = "Solid, Speed, Vorticity, ArcLength, TimeAbsolute, "
+        "TimeRelative, SeedPointID, Variable, CorrelationDistance";
+    switch (atts->GetDataValue())
     {
       case IntegralCurveAttributes::Solid:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sSolid  # %s\n", prefix, prefix, coloringMethod_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::ColorBySpeed:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorBySpeed  # %s\n", prefix, prefix, coloringMethod_names);
+      case IntegralCurveAttributes::Speed:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSpeed  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::ColorByVorticity:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByVorticity  # %s\n", prefix, prefix, coloringMethod_names);
+      case IntegralCurveAttributes::Vorticity:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sVorticity  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::ColorByLength:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByLength  # %s\n", prefix, prefix, coloringMethod_names);
+      case IntegralCurveAttributes::ArcLength:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sArcLength  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::ColorByTime:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByTime  # %s\n", prefix, prefix, coloringMethod_names);
+      case IntegralCurveAttributes::TimeAbsolute:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sTimeAbsolute  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::ColorBySeedPointID:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorBySeedPointID  # %s\n", prefix, prefix, coloringMethod_names);
+      case IntegralCurveAttributes::TimeRelative:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sTimeRelative  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::ColorByVariable:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByVariable  # %s\n", prefix, prefix, coloringMethod_names);
+      case IntegralCurveAttributes::SeedPointID:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSeedPointID  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::ColorByCorrelationDistance:
-          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByCorrelationDistance  # %s\n", prefix, prefix, coloringMethod_names);
+      case IntegralCurveAttributes::Variable:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sVariable  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::CorrelationDistance:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sCorrelationDistance  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scoloringVariable = \"%s\"\n", prefix, atts->GetColoringVariable().c_str());
+    SNPRINTF(tmpStr, 1000, "%sdataVariable = \"%s\"\n", prefix, atts->GetDataVariable().c_str());
     str += tmpStr;
     const char *integrationDirection_names = "Forward, Backward, Both";
     switch (atts->GetIntegrationDirection())
@@ -518,6 +522,25 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
     }
 
+    const char *displayGeometry_names = "Lines, Tubes, Ribbons";
+    switch (atts->GetDisplayGeometry())
+    {
+      case IntegralCurveAttributes::Lines:
+          SNPRINTF(tmpStr, 1000, "%sdisplayGeometry = %sLines  # %s\n", prefix, prefix, displayGeometry_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::Tubes:
+          SNPRINTF(tmpStr, 1000, "%sdisplayGeometry = %sTubes  # %s\n", prefix, prefix, displayGeometry_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::Ribbons:
+          SNPRINTF(tmpStr, 1000, "%sdisplayGeometry = %sRibbons  # %s\n", prefix, prefix, displayGeometry_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *coordinateSystem_names = "AsIs, CylindricalToCartesian, CartesianToCylindrical";
     switch (atts->GetCoordinateSystem())
     {
@@ -648,8 +671,8 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid sourceType value was given. "
                         "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
-                        "SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, "
-                        "SpecifiedSphere, SpecifiedBox, Selection.");
+                        "Point, PointList, Line_, Circle, Plane, "
+                        "Sphere, Box, Selection.");
         return NULL;
     }
 
@@ -1281,7 +1304,7 @@ IntegralCurveAttributes_GetSampleDensity2(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_SetColoringMethod(PyObject *self, PyObject *args)
+IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
 
@@ -1289,16 +1312,17 @@ IntegralCurveAttributes_SetColoringMethod(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the coloringMethod in the object.
-    if(ival >= 0 && ival < 8)
-        obj->data->SetColoringMethod(IntegralCurveAttributes::ColoringMethod(ival));
+    // Set the dataValue in the object.
+    if(ival >= 0 && ival < 9)
+        obj->data->SetDataValue(IntegralCurveAttributes::DataValue(ival));
     else
     {
-        fprintf(stderr, "An invalid coloringMethod value was given. "
-                        "Valid values are in the range of [0,7]. "
+        fprintf(stderr, "An invalid dataValue value was given. "
+                        "Valid values are in the range of [0,8]. "
                         "You can also use the following names: "
-                        "Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, "
-                        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance.");
+                        "Solid, Speed, Vorticity, ArcLength, TimeAbsolute, "
+                        "TimeRelative, SeedPointID, Variable, CorrelationDistance"
+                        ".");
         return NULL;
     }
 
@@ -1307,15 +1331,15 @@ IntegralCurveAttributes_SetColoringMethod(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_GetColoringMethod(PyObject *self, PyObject *args)
+IntegralCurveAttributes_GetDataValue(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColoringMethod()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataValue()));
     return retval;
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_SetColoringVariable(PyObject *self, PyObject *args)
+IntegralCurveAttributes_SetDataVariable(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
 
@@ -1323,18 +1347,18 @@ IntegralCurveAttributes_SetColoringVariable(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the coloringVariable in the object.
-    obj->data->SetColoringVariable(std::string(str));
+    // Set the dataVariable in the object.
+    obj->data->SetDataVariable(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_GetColoringVariable(PyObject *self, PyObject *args)
+IntegralCurveAttributes_GetDataVariable(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetColoringVariable().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetDataVariable().c_str());
     return retval;
 }
 
@@ -2025,6 +2049,39 @@ IntegralCurveAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+IntegralCurveAttributes_SetDisplayGeometry(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the displayGeometry in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetDisplayGeometry(IntegralCurveAttributes::DisplayGeometry(ival));
+    else
+    {
+        fprintf(stderr, "An invalid displayGeometry value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Lines, Tubes, Ribbons.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetDisplayGeometry(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayGeometry()));
+    return retval;
+}
+
+/*static*/ PyObject *
 IntegralCurveAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
@@ -2604,10 +2661,10 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetSampleDensity1", IntegralCurveAttributes_GetSampleDensity1, METH_VARARGS},
     {"SetSampleDensity2", IntegralCurveAttributes_SetSampleDensity2, METH_VARARGS},
     {"GetSampleDensity2", IntegralCurveAttributes_GetSampleDensity2, METH_VARARGS},
-    {"SetColoringMethod", IntegralCurveAttributes_SetColoringMethod, METH_VARARGS},
-    {"GetColoringMethod", IntegralCurveAttributes_GetColoringMethod, METH_VARARGS},
-    {"SetColoringVariable", IntegralCurveAttributes_SetColoringVariable, METH_VARARGS},
-    {"GetColoringVariable", IntegralCurveAttributes_GetColoringVariable, METH_VARARGS},
+    {"SetDataValue", IntegralCurveAttributes_SetDataValue, METH_VARARGS},
+    {"GetDataValue", IntegralCurveAttributes_GetDataValue, METH_VARARGS},
+    {"SetDataVariable", IntegralCurveAttributes_SetDataVariable, METH_VARARGS},
+    {"GetDataVariable", IntegralCurveAttributes_GetDataVariable, METH_VARARGS},
     {"SetIntegrationDirection", IntegralCurveAttributes_SetIntegrationDirection, METH_VARARGS},
     {"GetIntegrationDirection", IntegralCurveAttributes_GetIntegrationDirection, METH_VARARGS},
     {"SetMaxSteps", IntegralCurveAttributes_SetMaxSteps, METH_VARARGS},
@@ -2658,6 +2715,8 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetPathlinesOverrideStartingTime", IntegralCurveAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
     {"SetPathlinesCMFE", IntegralCurveAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", IntegralCurveAttributes_GetPathlinesCMFE, METH_VARARGS},
+    {"SetDisplayGeometry", IntegralCurveAttributes_SetDisplayGeometry, METH_VARARGS},
+    {"GetDisplayGeometry", IntegralCurveAttributes_GetDisplayGeometry, METH_VARARGS},
     {"SetCoordinateSystem", IntegralCurveAttributes_SetCoordinateSystem, METH_VARARGS},
     {"GetCoordinateSystem", IntegralCurveAttributes_GetCoordinateSystem, METH_VARARGS},
     {"SetPhiScalingFlag", IntegralCurveAttributes_SetPhiScalingFlag, METH_VARARGS},
@@ -2732,20 +2791,20 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "sourceType") == 0)
         return IntegralCurveAttributes_GetSourceType(self, NULL);
-    if(strcmp(name, "SpecifiedPoint") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedPoint));
-    if(strcmp(name, "SpecifiedPointList") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedPointList));
-    if(strcmp(name, "SpecifiedLine") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedLine));
-    if(strcmp(name, "SpecifiedCircle") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedCircle));
-    if(strcmp(name, "SpecifiedPlane") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedPlane));
-    if(strcmp(name, "SpecifiedSphere") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedSphere));
-    if(strcmp(name, "SpecifiedBox") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedBox));
+    if(strcmp(name, "Point") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Point));
+    if(strcmp(name, "PointList") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::PointList));
+    if(strcmp(name, "Line_") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Line_));
+    if(strcmp(name, "Circle") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Circle));
+    if(strcmp(name, "Plane") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Plane));
+    if(strcmp(name, "Sphere") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Sphere));
+    if(strcmp(name, "Box") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Box));
     if(strcmp(name, "Selection") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Selection));
 
@@ -2777,27 +2836,29 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return IntegralCurveAttributes_GetSampleDensity1(self, NULL);
     if(strcmp(name, "sampleDensity2") == 0)
         return IntegralCurveAttributes_GetSampleDensity2(self, NULL);
-    if(strcmp(name, "coloringMethod") == 0)
-        return IntegralCurveAttributes_GetColoringMethod(self, NULL);
+    if(strcmp(name, "dataValue") == 0)
+        return IntegralCurveAttributes_GetDataValue(self, NULL);
     if(strcmp(name, "Solid") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Solid));
-    if(strcmp(name, "ColorBySpeed") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::ColorBySpeed));
-    if(strcmp(name, "ColorByVorticity") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::ColorByVorticity));
-    if(strcmp(name, "ColorByLength") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::ColorByLength));
-    if(strcmp(name, "ColorByTime") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::ColorByTime));
-    if(strcmp(name, "ColorBySeedPointID") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::ColorBySeedPointID));
-    if(strcmp(name, "ColorByVariable") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::ColorByVariable));
-    if(strcmp(name, "ColorByCorrelationDistance") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::ColorByCorrelationDistance));
+    if(strcmp(name, "Speed") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Speed));
+    if(strcmp(name, "Vorticity") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Vorticity));
+    if(strcmp(name, "ArcLength") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::ArcLength));
+    if(strcmp(name, "TimeAbsolute") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::TimeAbsolute));
+    if(strcmp(name, "TimeRelative") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::TimeRelative));
+    if(strcmp(name, "SeedPointID") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::SeedPointID));
+    if(strcmp(name, "Variable") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Variable));
+    if(strcmp(name, "CorrelationDistance") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::CorrelationDistance));
 
-    if(strcmp(name, "coloringVariable") == 0)
-        return IntegralCurveAttributes_GetColoringVariable(self, NULL);
+    if(strcmp(name, "dataVariable") == 0)
+        return IntegralCurveAttributes_GetDataVariable(self, NULL);
     if(strcmp(name, "integrationDirection") == 0)
         return IntegralCurveAttributes_GetIntegrationDirection(self, NULL);
     if(strcmp(name, "Forward") == 0)
@@ -2900,6 +2961,15 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "POS_CMFE") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::POS_CMFE));
 
+    if(strcmp(name, "displayGeometry") == 0)
+        return IntegralCurveAttributes_GetDisplayGeometry(self, NULL);
+    if(strcmp(name, "Lines") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Lines));
+    if(strcmp(name, "Tubes") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Tubes));
+    if(strcmp(name, "Ribbons") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Ribbons));
+
     if(strcmp(name, "coordinateSystem") == 0)
         return IntegralCurveAttributes_GetCoordinateSystem(self, NULL);
     if(strcmp(name, "AsIs") == 0)
@@ -3000,10 +3070,10 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetSampleDensity1(self, tuple);
     else if(strcmp(name, "sampleDensity2") == 0)
         obj = IntegralCurveAttributes_SetSampleDensity2(self, tuple);
-    else if(strcmp(name, "coloringMethod") == 0)
-        obj = IntegralCurveAttributes_SetColoringMethod(self, tuple);
-    else if(strcmp(name, "coloringVariable") == 0)
-        obj = IntegralCurveAttributes_SetColoringVariable(self, tuple);
+    else if(strcmp(name, "dataValue") == 0)
+        obj = IntegralCurveAttributes_SetDataValue(self, tuple);
+    else if(strcmp(name, "dataVariable") == 0)
+        obj = IntegralCurveAttributes_SetDataVariable(self, tuple);
     else if(strcmp(name, "integrationDirection") == 0)
         obj = IntegralCurveAttributes_SetIntegrationDirection(self, tuple);
     else if(strcmp(name, "maxSteps") == 0)
@@ -3054,6 +3124,8 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetPathlinesOverrideStartingTime(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = IntegralCurveAttributes_SetPathlinesCMFE(self, tuple);
+    else if(strcmp(name, "displayGeometry") == 0)
+        obj = IntegralCurveAttributes_SetDisplayGeometry(self, tuple);
     else if(strcmp(name, "coordinateSystem") == 0)
         obj = IntegralCurveAttributes_SetCoordinateSystem(self, tuple);
     else if(strcmp(name, "phiScalingFlag") == 0)
