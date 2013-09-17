@@ -192,7 +192,7 @@ QvisFTLEWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the source type combo box.
     sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
     sourceType = new QComboBox(sourceGroup);
-    sourceType->addItem(tr("Native Resolution of the Mesh"));
+    sourceType->addItem(tr("Native Mesh"));
     sourceType->addItem(tr("Regular Grid"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));

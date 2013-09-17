@@ -76,11 +76,11 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *sourceType_names = "NativeResolutionOfMesh, RegularGrid";
+    const char *sourceType_names = "NativeMesh, RegularGrid";
     switch (atts->GetSourceType())
     {
-      case FTLEAttributes::NativeResolutionOfMesh:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sNativeResolutionOfMesh  # %s\n", prefix, prefix, sourceType_names);
+      case FTLEAttributes::NativeMesh:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sNativeMesh  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case FTLEAttributes::RegularGrid:
@@ -449,7 +449,7 @@ FTLEAttributes_SetSourceType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid sourceType value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "NativeResolutionOfMesh, RegularGrid.");
+                        "NativeMesh, RegularGrid.");
         return NULL;
     }
 
@@ -1692,8 +1692,8 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "sourceType") == 0)
         return FTLEAttributes_GetSourceType(self, NULL);
-    if(strcmp(name, "NativeResolutionOfMesh") == 0)
-        return PyInt_FromLong(long(FTLEAttributes::NativeResolutionOfMesh));
+    if(strcmp(name, "NativeMesh") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::NativeMesh));
     if(strcmp(name, "RegularGrid") == 0)
         return PyInt_FromLong(long(FTLEAttributes::RegularGrid));
 

@@ -54,7 +54,6 @@
 #include <vector>
 
 class vtkDataSet;
-class vtkRectilinearGrid;
 
 
 // ****************************************************************************
@@ -115,86 +114,106 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     virtual void CreateIntegralCurveOutput(
                     std::vector<avtIntegralCurve*> &);
 
-    void CreateNativeResolutionFSLEOutput(std::vector<avtIntegralCurve*> &ics);
-    void CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurve*> &ics);
-
     virtual avtContract_p   ModifyContract(avtContract_p);
 
-    virtual void         PreExecute(void);
-    virtual void         Execute(void);
-    virtual bool         ContinueExecute();
+    virtual void  PreExecute(void);
+    virtual void  Execute(void);
+    virtual bool  ContinueExecute();
 
-    virtual void         SetAtts(const AttributeGroup*);
-    virtual bool         Equivalent(const AttributeGroup*);
+    virtual void  SetAtts(const AttributeGroup*);
+    virtual bool  Equivalent(const AttributeGroup*);
 
-    virtual void         UpdateDataObjectInfo(void);
+    virtual void  UpdateDataObjectInfo(void);
 
 protected:
-    virtual void         ReportWarnings(std::vector<avtIntegralCurve *> &ics);
+    virtual void  ReportWarnings(std::vector<avtIntegralCurve *> &ics);
 
     //helper functions
-    // size_t               ComputeBoundsAndResolution(vtkDataSet* in_ds,
+    // size_t         ComputeBoundsAndResolution(vtkDataSet* in_ds,
     //                                              double bounds[6],
     //                                              int resolution[3]);
 
-    void                 GetInitialLocationsFromMesh(avtDataTree_p);
-    void                 GetInitialLocationsFromGrid();
+    void GetInitialLocationsFromNativeMesh(avtDataTree_p);
+    void GetInitialLocationsFromRectilinearGrid();
 
+    void ComputeRectilinearGridFTLE(std::vector<avtIntegralCurve*> &ics);
+    void ComputeNativeMeshFTLE( std::vector<avtIntegralCurve*> &ics);
 
-    bool ComputeNativeResolutionFSLE(std::vector<avtIntegralCurve*> &ics);
-    bool ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &ics);
-
-
-    void                 ComputeRectilinearDataResolution(
-                                          std::vector<avtIntegralCurve*> &ics);
-    void                 ComputeNativeDataSetResolution(
-                                          std::vector<avtIntegralCurve*> &ics);
-    avtDataTree_p        MultiBlockComputeFTLE(avtDataTree_p,
-                                          std::vector<avtIntegralCurve*> &,
-                                          int &, double &, double &);
-    vtkDataSet          *SingleBlockComputeFTLE(vtkDataSet *, 
+    avtDataTree_p MultiBlockComputeFTLE(avtDataTree_p,
+                                         std::vector<avtIntegralCurve*> &,
+                                         int &, double &, double &);
+    vtkDataSet   *SingleBlockComputeFTLE(vtkDataSet *, 
                                           std::vector<avtIntegralCurve*> &,
                                           int &, int, double &, double &);
 
-    bool                 Value( int x, int y, int z, vtkDataArray *array);
-    void                 Increment( int x, int y, int z, vtkDataArray *mask);
-    int                  InBounds( int x, int y, int z );
+    void          ComputeFTLE(vtkDataArray* jacobian[3], 
+                              vtkDataArray* result);
 
-    void                 ComputeFsle(vtkDataArray* jacobian[3], 
-                                     vtkDataArray* times,
-                                     vtkDataArray* lengths,
-                                     vtkDataArray* result,
-                                     vtkDataArray* mask);
-    void                 ComputeFtle(vtkDataArray* jacobian[3], 
-                                     vtkDataArray* result);
+  
+    bool ComputeRectilinearGridFSLE(std::vector<avtIntegralCurve*> &ics);
+    bool ComputeNativeMeshFSLE(std::vector<avtIntegralCurve*> &ics);
 
-    std::string          CreateCacheString(void);
-    avtDataTree_p        GetCachedDataSet();
-    avtDataTree_p        GetCachedResampledDataSet();
-    avtDataTree_p        GetCachedNativeDataSet(avtDataTree_p);
+    avtDataTree_p CreateFSLEDataTree(avtDataTree_p);
+    vtkDataSet*   CreateFSLEDataSet();
 
-    void                 SetTermination(int maxSteps, 
-                                        bool doDistance, double maxDistance, 
-                                        bool doTime, double maxTime,
-                                        bool doSize, double maxSize);
+    bool   MultiBlockComputeFSLE(avtDataTree_p,
+                                 std::vector<avtIntegralCurve*> &,
+                                 int &);
+    bool   SingleBlockComputeFSLE(vtkDataSet *_ds,
+                                  std::vector<avtIntegralCurve*> &,
+                                  int &);
+  
+    void   MultiBlockCreateFSLEOutput(avtDataTree_p, avtDataTree_p,
+                                      std::vector<avtIntegralCurve*> &,
+                                      int &, double &, double &, int &);
+    void   SingleBlockCreateFSLEOutput(vtkDataSet *, vtkDataSet *,
+                                       std::vector<avtIntegralCurve*> &,
+                                       int &, int, double &, double &, int &);
 
-    void                 SetVelocitySource(const double *v);
+    void   ComputeFSLE(vtkDataArray* jacobian[3], 
+                       vtkDataArray* times,
+                       vtkDataArray* lengths,
+                       vtkDataArray* result,
+                       vtkDataArray* mask,
+                       int, int, int);
 
-    void                 IssueWarningForMaxStepsTermination(bool v) 
-                                  { issueWarningForMaxStepsTermination = v; };
-    void                 IssueWarningForStiffness(bool v) 
-                                  { issueWarningForStiffness = v; };
-    void                 IssueWarningForCriticalPoints(bool v, double speed) 
-                                  { issueWarningForCriticalPoints = v;
-                                    criticalPointThreshold = speed; };
+    bool   Value( int x, int y, int z, vtkDataArray *array,
+                  int x_max, int y_max, int z_max );
+    void   Increment( int x, int y, int z, vtkDataArray *mask,
+                      int x_max, int y_max, int z_max );
+    int    InBounds( int x, int y, int z,
+                     int x_max, int y_max, int z_max );
+
+    void CreateNativeMeshFSLEOutput(std::vector<avtIntegralCurve*> &ics);
+    void CreateRectilinearGridFSLEOutput(std::vector<avtIntegralCurve*> &ics);
+
+    std::string   CreateCacheString(void);
+    avtDataTree_p GetCachedDataSet();
+    avtDataTree_p GetCachedResampledDataSet();
+    avtDataTree_p GetCachedNativeDataSet(avtDataTree_p);
+
+    void          SetTermination(int maxSteps, 
+                                 bool doDistance, double maxDistance, 
+                                 bool doTime, double maxTime,
+                                 bool doSize, double maxSize);
+
+    void          SetVelocitySource(const double *v);
+
+    void          IssueWarningForMaxStepsTermination(bool v) 
+                               { issueWarningForMaxStepsTermination = v; };
+    void          IssueWarningForStiffness(bool v) 
+                               { issueWarningForStiffness = v; };
+    void          IssueWarningForCriticalPoints(bool v, double speed) 
+                               { issueWarningForCriticalPoints = v;
+                                 criticalPointThreshold = speed; };
 
   protected:
-    FTLEAttributes     atts;
-    bool               needsRecalculation;
-    std::string        outVarName;
-    double             global_bounds[6];
-    int                global_resolution[3];
-    int                timeState;
+    FTLEAttributes  atts;
+    bool            needsRecalculation;
+    std::string     outVarName;
+    double          global_bounds[6];
+    int             global_resolution[3];
+    int             timeState;
 
     int      numSteps;
     int      maxSteps;
@@ -217,7 +236,8 @@ protected:
     //input seed points..
     std::vector<avtVector> seedPoints;
 
-    vtkRectilinearGrid* fsle_rect_grid;
+    avtDataTree_p fsle_dt;
+    vtkDataSet*   fsle_ds;
 };
 
 #endif

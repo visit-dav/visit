@@ -62,7 +62,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     private static int FTLEAttributes_numAdditionalAtts = 39;
 
     // Enum values
-    public final static int SOURCETYPE_NATIVERESOLUTIONOFMESH = 0;
+    public final static int SOURCETYPE_NATIVEMESH = 0;
     public final static int SOURCETYPE_REGULARGRID = 1;
 
     public final static int EXTENTS_FULL = 0;
@@ -106,7 +106,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     {
         super(FTLEAttributes_numAdditionalAtts);
 
-        sourceType = SOURCETYPE_NATIVERESOLUTIONOFMESH;
+        sourceType = SOURCETYPE_NATIVEMESH;
         Resolution = new int[3];
         Resolution[0] = 10;
         Resolution[1] = 10;
@@ -163,7 +163,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     {
         super(FTLEAttributes_numAdditionalAtts + nMoreFields);
 
-        sourceType = SOURCETYPE_NATIVERESOLUTIONOFMESH;
+        sourceType = SOURCETYPE_NATIVEMESH;
         Resolution = new int[3];
         Resolution[0] = 10;
         Resolution[1] = 10;
@@ -887,8 +887,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + indent + "sourceType = ";
-        if(sourceType == SOURCETYPE_NATIVERESOLUTIONOFMESH)
-            str = str + "SOURCETYPE_NATIVERESOLUTIONOFMESH";
+        if(sourceType == SOURCETYPE_NATIVEMESH)
+            str = str + "SOURCETYPE_NATIVEMESH";
         if(sourceType == SOURCETYPE_REGULARGRID)
             str = str + "SOURCETYPE_REGULARGRID";
         str = str + "\n";

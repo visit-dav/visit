@@ -2,7 +2,7 @@
   <Plugin name="FTLE" type="operator" label="FTLE" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="vector" exprOutType="scalar">
     <Attribute name="FTLEAttributes" purpose="Attributes for FTLE" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="FTLEAttributes.code">
       <Enum name="SourceType">
-        NativeResolutionOfMesh
+        NativeMesh
         RegularGrid
       </Enum>
       <Enum name="Extents">
@@ -50,7 +50,7 @@
         POS_CMFE
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
-        NativeResolutionOfMesh
+        NativeMesh
       </Field>
       <Field name="Resolution" label="Resolution" type="intArray" length="3" enabler="sourceType:RegularGrid">
         10
