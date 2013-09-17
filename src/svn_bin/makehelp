@@ -495,7 +495,7 @@ def HTMLize(chapterName, filename, pages):
     # Make a temporary directory and unzip the file to it.
     tmpdir = temp_directory()
     os.mkdir(tmpdir)
-    cmd = "pushd .; cd %s; unzip %s > /dev/null; popd" % (tmpdir, filename)
+    cmd = "cd %s; unzip %s > /dev/null" % (tmpdir, filename)
     s = os.system(cmd)
     xmlfile = MakePath(tmpdir, "content.xml")
 
@@ -723,7 +723,7 @@ for arg in sys.argv[1:]:
 # Make sure the manual and help paths exist
 #
 manualPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../../docs/UserManual")
-helpPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../help")
+helpPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../resources/help")
 if not os.path.exists(manualPath):
     print "The manual does not exist at the path %s. Did you check out the docs directory? Did you run makehelp from the src/svn_bin directory?" % manualPath
     sys.exit(1)
