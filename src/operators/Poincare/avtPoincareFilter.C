@@ -557,7 +557,6 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     SetShowIslands( atts.GetShowIslands() );
     SetShowLines(atts.GetShowLines());
     SetShowPoints(atts.GetShowPoints());
-    SetPointScale(atts.GetPointSize());
     SetShow1DPlots(atts.GetShow1DPlots());
     SetSummaryFlag( atts.GetSummaryFlag() );
     SetVerboseFlag( atts.GetVerboseFlag() );
