@@ -37,7 +37,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PointAttributes")
     {
-        if(sourceType == SpecifiedPoint)
+        if(sourceType == Point)
         {
             const PointAttributes *p = (PointAttributes *)atts;
             SetPointSource(p->GetPoint());
@@ -46,7 +46,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     } 
     else if(atts->TypeName() == "Line")
     {
-        if(sourceType == SpecifiedLine)
+        if(sourceType == Line_)
         {
             const Line *line = (const Line *)atts;
             SetLineStart(line->GetPoint1());
@@ -56,20 +56,20 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PlaneAttributes")
     {
-        if(sourceType == SpecifiedPlane || sourceType == SpecifiedCircle)
+        if(sourceType == Plane || sourceType == Circle)
         {
             const PlaneAttributes *plane = (const PlaneAttributes *)atts;
             SetPlaneOrigin(plane->GetOrigin());
             SetPlaneNormal(plane->GetNormal());
             SetPlaneUpAxis(plane->GetUpAxis());
-            if (sourceType == SpecifiedCircle)
+            if (sourceType == Circle)
                 SetRadius(plane->GetRadius());
             retval = true;
         }
     }
     else if(atts->TypeName() == "SphereAttributes")
     {
-        if(sourceType == SpecifiedSphere)
+        if(sourceType == Sphere)
         {
             const SphereAttributes *sphere = (const SphereAttributes *)atts;
             SetSphereOrigin(sphere->GetOrigin());
@@ -79,7 +79,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }   
     else if(atts->TypeName() == "BoxExtents")
     {
-        if(sourceType == SpecifiedBox)
+        if(sourceType == Box)
         {
             const BoxExtents *box = (const BoxExtents *)atts;
             SetBoxExtents(box->GetExtents());
@@ -254,9 +254,9 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
         pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||
         pathlinesCMFE != obj.pathlinesCMFE ||
-        coloringVariable != obj.coloringVariable ||
-        (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
-        ((coloringMethod == ColorByCorrelationDistance) && (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
+        dataVariable != obj.dataVariable ||
+        (dataValue != obj.dataValue && obj.dataValue != Solid) ||
+        ((dataValue == CorrelationDistance) && (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
                                                      correlationDistanceMinDistAbsolute != obj.correlationDistanceMinDistAbsolute ||
                                                      correlationDistanceMinDistBBox != obj.correlationDistanceMinDistBBox ||
                                                      correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
@@ -278,12 +278,12 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
     }
 
     //Check by source type.
-    if ((sourceType == SpecifiedPoint) && POINT_DIFFERS(pointSource, obj.pointSource))
+    if ((sourceType == Point) && POINT_DIFFERS(pointSource, obj.pointSource))
     {
         return true;
     }
 
-    if (sourceType == SpecifiedLine)
+    if (sourceType == Line_)
     {
         if (POINT_DIFFERS(lineStart, obj.lineStart) ||
             POINT_DIFFERS(lineEnd, obj.lineEnd) ||
@@ -296,7 +296,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedPlane)
+    if (sourceType == Plane)
     {
         if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
             POINT_DIFFERS(planeNormal, obj.planeNormal) ||
@@ -314,7 +314,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedCircle)
+    if (sourceType == Circle)
     {
         if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
             POINT_DIFFERS(planeNormal, obj.planeNormal) ||
@@ -332,7 +332,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedSphere)
+    if (sourceType == Sphere)
     {
         if (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
             radius != obj.radius ||
@@ -348,7 +348,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedBox)
+    if (sourceType == Box)
     {
         if (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
             POINT_DIFFERS(boxExtents+3, obj.boxExtents+3) ||
@@ -365,7 +365,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
     
-    if (sourceType == SpecifiedPointList)
+    if (sourceType == PointList)
     {
         if (pointList.size() != obj.pointList.size())
             return true;
@@ -388,115 +388,6 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
 
     return false;
 }
-
-Target: xml2atts
-Function: ProcessOldVersions
-Declaration: virtual void  ProcessOldVersions(DataNode *parentNode, const char *configVersion);
-Definition:
-// ****************************************************************************
-// Method: IntegralCurveAttributes::ProcessOldVersions
-//
-// Purpose: 
-//   This method creates modifies a DataNode representation of the object
-//   so it conforms to the newest representation of the object, which can
-//   can be read back in.
-//
-// Programmer: Dave Pugmire
-// Creation:   January 20 2010
-//
-// Modifications:
-//
-//   Dave Pugmire, Fri Sep 24 10:27:47 EDT 2010
-//   Fix handling of radius and pointDensity fields.
-//
-// ****************************************************************************
-
-void
-IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
-                                         const char *configVersion)
-{
-    char num1[2] = {configVersion[0], '\0'}, num2[2] = {configVersion[2], '\0'}, num3[2] = {configVersion[4], '\0'};
-    int major = atoi(num1), minor = atoi(num2), patch = atoi(num3);
-    
-    DataNode *searchNode = parentNode->GetNode("streamlineAlgorithmType");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("parallelizationAlgorithmType", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("maxStreamlineProcessCount");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("maxProcessCount", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("streamlineDirection");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("integrationDirection", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("StreamlineDirection");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("integrationDirection", val);
-        parentNode->AddNode(newNode);
-    }
-
-    searchNode = parentNode->GetNode("showStart");
-    if (searchNode)
-    {
-        bool val = searchNode->AsBool();
-        parentNode->RemoveNode(searchNode);
-        
-        DataNode *newNode = new DataNode("showSeeds", val);
-        parentNode->AddNode(newNode);
-    }
-    
-    if (major < 2)
-    {
-        searchNode = parentNode->GetNode("radius");
-        if (searchNode)
-        {
-            double val = searchNode->AsDouble();
-            parentNode->RemoveNode(searchNode);
-            DataNode *newNode = new DataNode("tubeRadius", val);
-            parentNode->AddNode(newNode);
-            
-            newNode = new DataNode("ribbonWidth", val);
-            parentNode->AddNode(newNode);
-        }
-    }
-
-    searchNode = parentNode->GetNode("pointDensity");
-    if (searchNode)
-    {
-        int val = searchNode->AsInt();
-        parentNode->RemoveNode(searchNode);
-        DataNode *newNode0 = new DataNode("sampleDensity0", val);
-        parentNode->AddNode(newNode0);
-        DataNode *newNode1 = new DataNode("sampleDensity1", val);
-        parentNode->AddNode(newNode1);
-        DataNode *newNode2 = new DataNode("sampleDensity2", val);
-        parentNode->AddNode(newNode2);
-    }
-}
-
 
 Target: xml2info
 Function: IntegralCurveViewerPluginInfo::GetOperatorVarDescription
@@ -525,9 +416,10 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
-    const char numTypes = 8;
-    const char *typeString[8] =
-      { "None", "Speed", "Vorticity", "Arc Length", "Time", "Seed Point ID",
+    const char numTypes = 9;
+    const char *typeString[9] =
+      { "None", "Speed", "Vorticity", "Arc Length",
+         "Absolute Time", "Relative Time", "Seed Point ID",
         "Variable", "CorrelationDistance" };
 
     std::string var = plot->GetVariableName();
@@ -541,11 +433,11 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
     }
     
     var += std::string(" - ") +
-        std::string(typeString[atts_in->GetColoringMethod()]);
+        std::string(typeString[atts_in->GetDataValue()]);
 
-    if( atts_in->GetColoringMethod() == IntegralCurveAttributes::ColorByVariable ) 
+    if( atts_in->GetDataValue() == IntegralCurveAttributes::Variable ) 
     {
-        var += std::string(": ") + atts_in->GetColoringVariable();
+        var += std::string(": ") + atts_in->GetDataVariable();
     }
 
     return var;
