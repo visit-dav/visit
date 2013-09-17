@@ -44,7 +44,7 @@
 //
 
 static const char *SourceType_strings[] = {
-"NativeResolutionOfMesh", "RegularGrid"};
+"NativeMesh", "RegularGrid"};
 
 std::string
 FTLEAttributes::SourceType_ToString(FTLEAttributes::SourceType t)
@@ -64,7 +64,7 @@ FTLEAttributes::SourceType_ToString(int t)
 bool
 FTLEAttributes::SourceType_FromString(const std::string &s, FTLEAttributes::SourceType &val)
 {
-    val = FTLEAttributes::NativeResolutionOfMesh;
+    val = FTLEAttributes::NativeMesh;
     for(int i = 0; i < 2; ++i)
     {
         if(s == SourceType_strings[i])
@@ -396,7 +396,7 @@ FTLEAttributes::PathlinesCMFE_FromString(const std::string &s, FTLEAttributes::P
 
 void FTLEAttributes::Init()
 {
-    sourceType = NativeResolutionOfMesh;
+    sourceType = NativeMesh;
     Resolution[0] = 10;
     Resolution[1] = 10;
     Resolution[2] = 10;
