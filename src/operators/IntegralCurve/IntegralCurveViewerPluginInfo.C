@@ -236,9 +236,10 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
-    const char numTypes = 8;
-    const char *typeString[8] =
-      { "None", "Speed", "Vorticity", "Arc Length", "Time", "Seed Point ID",
+    const char numTypes = 9;
+    const char *typeString[9] =
+      { "None", "Speed", "Vorticity", "Arc Length",
+         "Absolute Time", "Relative Time", "Seed Point ID",
         "Variable", "CorrelationDistance" };
 
     std::string var = plot->GetVariableName();
@@ -252,11 +253,11 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
     }
     
     var += std::string(" - ") +
-        std::string(typeString[atts_in->GetColoringMethod()]);
+        std::string(typeString[atts_in->GetDataValue()]);
 
-    if( atts_in->GetColoringMethod() == IntegralCurveAttributes::ColorByVariable ) 
+    if( atts_in->GetDataValue() == IntegralCurveAttributes::Variable ) 
     {
-        var += std::string(": ") + atts_in->GetColoringVariable();
+        var += std::string(": ") + atts_in->GetDataVariable();
     }
 
     return var;

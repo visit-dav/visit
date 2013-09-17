@@ -151,10 +151,10 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
                             int stride,
                             bool random, int seed, int numPts);
     
-    void SetDisplayMethod(int d);
-    void SetColoringMethod(int, const std::string &var="");
-    void SetColorByCorrelationDistanceTol(double angTol,
-                                          double minDist, bool doBBox)
+    void SetDisplayGeometry(int d);
+    void SetDataValue(int, const std::string &var="");
+    void SetCorrelationDistanceTol(double angTol,
+                                   double minDist, bool doBBox)
     {
         correlationDistanceAngTol = angTol;
         correlationDistanceMinDist = minDist;
@@ -190,7 +190,7 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
 
     virtual void ReportWarnings(std::vector<avtIntegralCurve *> &ics);
 
-    static std::string colorvarArrayName;
+    static std::string colorVarArrayName;
     static std::string paramArrayName;
     static std::string opacityArrayName;
     static std::string thetaArrayName;
@@ -231,10 +231,10 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     bool               needsRecalculation;
 
     int    sourceType;   
-    int    displayMethod;
-    int    coloringMethod;
+    int    displayGeometry;
+    int    dataValue;
     int    referenceTypeForDisplay;
-    std::string coloringVariable, opacityVariable, scaleTubeRadiusVariable;
+    std::string dataVariable, opacityVariable, scaleTubeRadiusVariable;
     double correlationDistanceAngTol, correlationDistanceMinDist;
     bool correlationDistanceDoBBox;
 
