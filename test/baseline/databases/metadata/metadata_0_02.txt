@@ -453,6 +453,7 @@ GetMeshes(0).numGroups = 0
 GetMeshes(0).groupOrigin = 0
 GetMeshes(0).groupPieceName = "block"
 GetMeshes(0).groupTitle = "blocks"
+GetMeshes(0).groupNames = ()
 GetMeshes(0).groupIds = ()
 GetMeshes(0).groupIdsBasedOnRange = ()
 GetMeshes(0).disjointElements = 0
