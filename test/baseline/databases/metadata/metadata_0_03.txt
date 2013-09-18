@@ -163,6 +163,7 @@ GetMeshes(0).numGroups = 3
 GetMeshes(0).groupOrigin = 0
 GetMeshes(0).groupPieceName = "level"
 GetMeshes(0).groupTitle = "levels"
+GetMeshes(0).groupNames = ()
 GetMeshes(0).groupIds = (0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2)
 GetMeshes(0).groupIdsBasedOnRange = ()
 GetMeshes(0).disjointElements = 0
