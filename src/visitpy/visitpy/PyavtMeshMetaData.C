@@ -269,6 +269,22 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sgroupTitle = \"%s\"\n", prefix, atts->groupTitle.c_str());
     str += tmpStr;
+    {   const stringVector &groupNames = atts->groupNames;
+        SNPRINTF(tmpStr, 1000, "%sgroupNames = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < groupNames.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "\"%s\"", groupNames[i].c_str());
+            str += tmpStr;
+            if(i < groupNames.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     {   const intVector &groupIds = atts->groupIds;
         SNPRINTF(tmpStr, 1000, "%sgroupIds = (", prefix);
         str += tmpStr;
@@ -1341,6 +1357,55 @@ avtMeshMetaData_GetGroupTitle(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+
+    stringVector  &vec = obj->data->groupNames;
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyString_Check(item))
+                vec[i] = std::string(PyString_AS_STRING(item));
+            else
+                vec[i] = std::string("");
+        }
+    }
+    else if(PyString_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = std::string(PyString_AS_STRING(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the groupNames in the object as modified.
+    obj->data->SelectAll();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtMeshMetaData_GetGroupNames(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    // Allocate a tuple the with enough entries to hold the groupNames.
+    const stringVector &groupNames = obj->data->groupNames;
+    PyObject *retval = PyTuple_New(groupNames.size());
+    for(size_t i = 0; i < groupNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(groupNames[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
 avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
@@ -2028,6 +2093,8 @@ PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
     {"GetGroupPieceName", avtMeshMetaData_GetGroupPieceName, METH_VARARGS},
     {"SetGroupTitle", avtMeshMetaData_SetGroupTitle, METH_VARARGS},
     {"GetGroupTitle", avtMeshMetaData_GetGroupTitle, METH_VARARGS},
+    {"SetGroupNames", avtMeshMetaData_SetGroupNames, METH_VARARGS},
+    {"GetGroupNames", avtMeshMetaData_GetGroupNames, METH_VARARGS},
     {"SetGroupIds", avtMeshMetaData_SetGroupIds, METH_VARARGS},
     {"GetGroupIds", avtMeshMetaData_GetGroupIds, METH_VARARGS},
     {"SetGroupIdsBasedOnRange", avtMeshMetaData_SetGroupIdsBasedOnRange, METH_VARARGS},
@@ -2180,6 +2247,8 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
         return avtMeshMetaData_GetGroupPieceName(self, NULL);
     if(strcmp(name, "groupTitle") == 0)
         return avtMeshMetaData_GetGroupTitle(self, NULL);
+    if(strcmp(name, "groupNames") == 0)
+        return avtMeshMetaData_GetGroupNames(self, NULL);
     if(strcmp(name, "groupIds") == 0)
         return avtMeshMetaData_GetGroupIds(self, NULL);
     if(strcmp(name, "groupIdsBasedOnRange") == 0)
@@ -2318,6 +2387,8 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtMeshMetaData_SetGroupPieceName(self, tuple);
     else if(strcmp(name, "groupTitle") == 0)
         obj = avtMeshMetaData_SetGroupTitle(self, tuple);
+    else if(strcmp(name, "groupNames") == 0)
+        obj = avtMeshMetaData_SetGroupNames(self, tuple);
     else if(strcmp(name, "groupIds") == 0)
         obj = avtMeshMetaData_SetGroupIds(self, tuple);
     else if(strcmp(name, "groupIdsBasedOnRange") == 0)
