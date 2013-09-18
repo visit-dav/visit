@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class avtMeshMetaData extends AttributeSubject
 {
-    private static int avtMeshMetaData_numAdditionalAtts = 50;
+    private static int avtMeshMetaData_numAdditionalAtts = 51;
 
     public avtMeshMetaData()
     {
@@ -104,6 +104,7 @@ public class avtMeshMetaData extends AttributeSubject
         groupOrigin = 0;
         groupPieceName = new String("group");
         groupTitle = new String("groups");
+        groupNames = new Vector();
         groupIds = new Vector();
         groupIdsBasedOnRange = new Vector();
         disjointElements = false;
@@ -197,6 +198,7 @@ public class avtMeshMetaData extends AttributeSubject
         groupOrigin = 0;
         groupPieceName = new String("group");
         groupTitle = new String("groups");
+        groupNames = new Vector();
         groupIds = new Vector();
         groupIdsBasedOnRange = new Vector();
         disjointElements = false;
@@ -298,6 +300,10 @@ public class avtMeshMetaData extends AttributeSubject
         groupOrigin = obj.groupOrigin;
         groupPieceName = new String(obj.groupPieceName);
         groupTitle = new String(obj.groupTitle);
+        groupNames = new Vector(obj.groupNames.size());
+        for(i = 0; i < obj.groupNames.size(); ++i)
+            groupNames.addElement(new String((String)obj.groupNames.elementAt(i)));
+
         groupIds = new Vector();
         for(i = 0; i < obj.groupIds.size(); ++i)
         {
@@ -379,6 +385,15 @@ public class avtMeshMetaData extends AttributeSubject
             String blockNames2 = (String)obj.blockNames.elementAt(i);
             blockNames_equal = blockNames1.equals(blockNames2);
         }
+        // Compare the elements in the groupNames vector.
+        boolean groupNames_equal = (obj.groupNames.size() == groupNames.size());
+        for(i = 0; (i < groupNames.size()) && groupNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String groupNames1 = (String)groupNames.elementAt(i);
+            String groupNames2 = (String)obj.groupNames.elementAt(i);
+            groupNames_equal = groupNames1.equals(groupNames2);
+        }
         // Compare the elements in the groupIds vector.
         boolean groupIds_equal = (obj.groupIds.size() == groupIds.size());
         for(i = 0; (i < groupIds.size()) && groupIds_equal; ++i)
@@ -444,6 +459,7 @@ public class avtMeshMetaData extends AttributeSubject
                 (groupOrigin == obj.groupOrigin) &&
                 (groupPieceName.equals(obj.groupPieceName)) &&
                 (groupTitle.equals(obj.groupTitle)) &&
+                groupNames_equal &&
                 groupIds_equal &&
                 groupIdsBasedOnRange_equal &&
                 (disjointElements == obj.disjointElements) &&
@@ -682,71 +698,77 @@ public class avtMeshMetaData extends AttributeSubject
         Select(30);
     }
 
+    public void SetGroupNames(Vector groupNames_)
+    {
+        groupNames = groupNames_;
+        Select(31);
+    }
+
     public void SetGroupIds(Vector groupIds_)
     {
         groupIds = groupIds_;
-        Select(31);
+        Select(32);
     }
 
     public void SetGroupIdsBasedOnRange(Vector groupIdsBasedOnRange_)
     {
         groupIdsBasedOnRange = groupIdsBasedOnRange_;
-        Select(32);
+        Select(33);
     }
 
     public void SetDisjointElements(boolean disjointElements_)
     {
         disjointElements = disjointElements_;
-        Select(33);
+        Select(34);
     }
 
     public void SetContainsGhostZones(int containsGhostZones_)
     {
         containsGhostZones = containsGhostZones_;
-        Select(34);
+        Select(35);
     }
 
     public void SetContainsOriginalCells(boolean containsOriginalCells_)
     {
         containsOriginalCells = containsOriginalCells_;
-        Select(35);
+        Select(36);
     }
 
     public void SetContainsOriginalNodes(boolean containsOriginalNodes_)
     {
         containsOriginalNodes = containsOriginalNodes_;
-        Select(36);
+        Select(37);
     }
 
     public void SetContainsGlobalNodeIds(boolean containsGlobalNodeIds_)
     {
         containsGlobalNodeIds = containsGlobalNodeIds_;
-        Select(37);
+        Select(38);
     }
 
     public void SetContainsGlobalZoneIds(boolean containsGlobalZoneIds_)
     {
         containsGlobalZoneIds = containsGlobalZoneIds_;
-        Select(38);
+        Select(39);
     }
 
     public void SetLoadBalanceScheme(int loadBalanceScheme_)
     {
         loadBalanceScheme = loadBalanceScheme_;
-        Select(39);
+        Select(40);
     }
 
     public void SetNodesAreCritical(boolean nodesAreCritical_)
     {
         nodesAreCritical = nodesAreCritical_;
-        Select(40);
+        Select(41);
     }
 
     public void SetUnitCellVectors(float[] unitCellVectors_)
     {
         for(int i = 0; i < 9; ++i)
              unitCellVectors[i] = unitCellVectors_[i];
-        Select(41);
+        Select(42);
     }
 
     public void SetUnitCellOrigin(float[] unitCellOrigin_)
@@ -754,7 +776,7 @@ public class avtMeshMetaData extends AttributeSubject
         unitCellOrigin[0] = unitCellOrigin_[0];
         unitCellOrigin[1] = unitCellOrigin_[1];
         unitCellOrigin[2] = unitCellOrigin_[2];
-        Select(42);
+        Select(43);
     }
 
     public void SetUnitCellOrigin(float e0, float e1, float e2)
@@ -762,50 +784,50 @@ public class avtMeshMetaData extends AttributeSubject
         unitCellOrigin[0] = e0;
         unitCellOrigin[1] = e1;
         unitCellOrigin[2] = e2;
-        Select(42);
+        Select(43);
     }
 
     public void SetRectilinearGridHasTransform(boolean rectilinearGridHasTransform_)
     {
         rectilinearGridHasTransform = rectilinearGridHasTransform_;
-        Select(43);
+        Select(44);
     }
 
     public void SetRectilinearGridTransform(double[] rectilinearGridTransform_)
     {
         for(int i = 0; i < 16; ++i)
              rectilinearGridTransform[i] = rectilinearGridTransform_[i];
-        Select(44);
+        Select(45);
     }
 
     public void SetNodeOrigin(int nodeOrigin_)
     {
         nodeOrigin = nodeOrigin_;
-        Select(45);
+        Select(46);
     }
 
     public void SetContainsExteriorBoundaryGhosts(boolean containsExteriorBoundaryGhosts_)
     {
         containsExteriorBoundaryGhosts = containsExteriorBoundaryGhosts_;
-        Select(46);
+        Select(47);
     }
 
     public void SetHideFromGUI(boolean hideFromGUI_)
     {
         hideFromGUI = hideFromGUI_;
-        Select(47);
+        Select(48);
     }
 
     public void SetLODs(int LODs_)
     {
         LODs = LODs_;
-        Select(48);
+        Select(49);
     }
 
     public void SetPresentGhostZoneTypes(int presentGhostZoneTypes_)
     {
         presentGhostZoneTypes = presentGhostZoneTypes_;
-        Select(49);
+        Select(50);
     }
 
     // Property getting methods
@@ -840,6 +862,7 @@ public class avtMeshMetaData extends AttributeSubject
     public int                  GetGroupOrigin() { return groupOrigin; }
     public String               GetGroupPieceName() { return groupPieceName; }
     public String               GetGroupTitle() { return groupTitle; }
+    public Vector               GetGroupNames() { return groupNames; }
     public Vector               GetGroupIds() { return groupIds; }
     public Vector               GetGroupIdsBasedOnRange() { return groupIdsBasedOnRange; }
     public boolean              GetDisjointElements() { return disjointElements; }
@@ -926,42 +949,44 @@ public class avtMeshMetaData extends AttributeSubject
         if(WriteSelect(30, buf))
             buf.WriteString(groupTitle);
         if(WriteSelect(31, buf))
-            buf.WriteIntVector(groupIds);
+            buf.WriteStringVector(groupNames);
         if(WriteSelect(32, buf))
-            buf.WriteIntVector(groupIdsBasedOnRange);
+            buf.WriteIntVector(groupIds);
         if(WriteSelect(33, buf))
-            buf.WriteBool(disjointElements);
+            buf.WriteIntVector(groupIdsBasedOnRange);
         if(WriteSelect(34, buf))
-            buf.WriteInt(containsGhostZones);
+            buf.WriteBool(disjointElements);
         if(WriteSelect(35, buf))
-            buf.WriteBool(containsOriginalCells);
+            buf.WriteInt(containsGhostZones);
         if(WriteSelect(36, buf))
-            buf.WriteBool(containsOriginalNodes);
+            buf.WriteBool(containsOriginalCells);
         if(WriteSelect(37, buf))
-            buf.WriteBool(containsGlobalNodeIds);
+            buf.WriteBool(containsOriginalNodes);
         if(WriteSelect(38, buf))
-            buf.WriteBool(containsGlobalZoneIds);
+            buf.WriteBool(containsGlobalNodeIds);
         if(WriteSelect(39, buf))
-            buf.WriteInt(loadBalanceScheme);
+            buf.WriteBool(containsGlobalZoneIds);
         if(WriteSelect(40, buf))
-            buf.WriteBool(nodesAreCritical);
+            buf.WriteInt(loadBalanceScheme);
         if(WriteSelect(41, buf))
-            buf.WriteFloatArray(unitCellVectors);
+            buf.WriteBool(nodesAreCritical);
         if(WriteSelect(42, buf))
-            buf.WriteFloatArray(unitCellOrigin);
+            buf.WriteFloatArray(unitCellVectors);
         if(WriteSelect(43, buf))
-            buf.WriteBool(rectilinearGridHasTransform);
+            buf.WriteFloatArray(unitCellOrigin);
         if(WriteSelect(44, buf))
-            buf.WriteDoubleArray(rectilinearGridTransform);
+            buf.WriteBool(rectilinearGridHasTransform);
         if(WriteSelect(45, buf))
-            buf.WriteInt(nodeOrigin);
+            buf.WriteDoubleArray(rectilinearGridTransform);
         if(WriteSelect(46, buf))
-            buf.WriteBool(containsExteriorBoundaryGhosts);
+            buf.WriteInt(nodeOrigin);
         if(WriteSelect(47, buf))
-            buf.WriteBool(hideFromGUI);
+            buf.WriteBool(containsExteriorBoundaryGhosts);
         if(WriteSelect(48, buf))
-            buf.WriteInt(LODs);
+            buf.WriteBool(hideFromGUI);
         if(WriteSelect(49, buf))
+            buf.WriteInt(LODs);
+        if(WriteSelect(50, buf))
             buf.WriteInt(presentGhostZoneTypes);
     }
 
@@ -1064,60 +1089,63 @@ public class avtMeshMetaData extends AttributeSubject
             SetGroupTitle(buf.ReadString());
             break;
         case 31:
-            SetGroupIds(buf.ReadIntVector());
+            SetGroupNames(buf.ReadStringVector());
             break;
         case 32:
-            SetGroupIdsBasedOnRange(buf.ReadIntVector());
+            SetGroupIds(buf.ReadIntVector());
             break;
         case 33:
-            SetDisjointElements(buf.ReadBool());
+            SetGroupIdsBasedOnRange(buf.ReadIntVector());
             break;
         case 34:
-            SetContainsGhostZones(buf.ReadInt());
+            SetDisjointElements(buf.ReadBool());
             break;
         case 35:
-            SetContainsOriginalCells(buf.ReadBool());
+            SetContainsGhostZones(buf.ReadInt());
             break;
         case 36:
-            SetContainsOriginalNodes(buf.ReadBool());
+            SetContainsOriginalCells(buf.ReadBool());
             break;
         case 37:
-            SetContainsGlobalNodeIds(buf.ReadBool());
+            SetContainsOriginalNodes(buf.ReadBool());
             break;
         case 38:
-            SetContainsGlobalZoneIds(buf.ReadBool());
+            SetContainsGlobalNodeIds(buf.ReadBool());
             break;
         case 39:
-            SetLoadBalanceScheme(buf.ReadInt());
+            SetContainsGlobalZoneIds(buf.ReadBool());
             break;
         case 40:
-            SetNodesAreCritical(buf.ReadBool());
+            SetLoadBalanceScheme(buf.ReadInt());
             break;
         case 41:
-            SetUnitCellVectors(buf.ReadFloatArray());
+            SetNodesAreCritical(buf.ReadBool());
             break;
         case 42:
-            SetUnitCellOrigin(buf.ReadFloatArray());
+            SetUnitCellVectors(buf.ReadFloatArray());
             break;
         case 43:
-            SetRectilinearGridHasTransform(buf.ReadBool());
+            SetUnitCellOrigin(buf.ReadFloatArray());
             break;
         case 44:
-            SetRectilinearGridTransform(buf.ReadDoubleArray());
+            SetRectilinearGridHasTransform(buf.ReadBool());
             break;
         case 45:
-            SetNodeOrigin(buf.ReadInt());
+            SetRectilinearGridTransform(buf.ReadDoubleArray());
             break;
         case 46:
-            SetContainsExteriorBoundaryGhosts(buf.ReadBool());
+            SetNodeOrigin(buf.ReadInt());
             break;
         case 47:
-            SetHideFromGUI(buf.ReadBool());
+            SetContainsExteriorBoundaryGhosts(buf.ReadBool());
             break;
         case 48:
-            SetLODs(buf.ReadInt());
+            SetHideFromGUI(buf.ReadBool());
             break;
         case 49:
+            SetLODs(buf.ReadInt());
+            break;
+        case 50:
             SetPresentGhostZoneTypes(buf.ReadInt());
             break;
         }
@@ -1157,6 +1185,7 @@ public class avtMeshMetaData extends AttributeSubject
         str = str + intToString("groupOrigin", groupOrigin, indent) + "\n";
         str = str + stringToString("groupPieceName", groupPieceName, indent) + "\n";
         str = str + stringToString("groupTitle", groupTitle, indent) + "\n";
+        str = str + stringVectorToString("groupNames", groupNames, indent) + "\n";
         str = str + intVectorToString("groupIds", groupIds, indent) + "\n";
         str = str + intVectorToString("groupIdsBasedOnRange", groupIdsBasedOnRange, indent) + "\n";
         str = str + boolToString("disjointElements", disjointElements, indent) + "\n";
@@ -1212,6 +1241,7 @@ public class avtMeshMetaData extends AttributeSubject
     private int                  groupOrigin;
     private String               groupPieceName;
     private String               groupTitle;
+    private Vector               groupNames; // vector of String objects
     private Vector               groupIds; // vector of Integer objects
     private Vector               groupIdsBasedOnRange; // vector of Integer objects
     private boolean              disjointElements;
