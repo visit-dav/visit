@@ -95,7 +95,7 @@ Extrude
 FFT
 FiveFoldTetSubdivision
 Flux
-FTLE
+LCS
 IndexSelect
 IntegralCurve
 InverseGhostZone
