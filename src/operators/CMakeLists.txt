@@ -95,13 +95,13 @@ Extrude
 FFT
 FiveFoldTetSubdivision
 Flux
-FTLE
 IndexSelect
 IntegralCurve
 InverseGhostZone
 Isosurface
 Isovolume
 Lagrangian
+LCS
 Lineout
 LineSampler
 Merge

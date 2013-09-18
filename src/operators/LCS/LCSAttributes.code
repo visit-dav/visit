@@ -1,0 +1,249 @@
+Target: xml2atts
+Function: CopyAttributes
+Declaration: bool CopyAttributes(const AttributeGroup *atts);
+Definition:
+// ****************************************************************************
+// Method: LCSAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the LCSAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+// Modifications:
+//    Brad Whitlock, Wed Dec 22 12:57:53 PDT 2004
+//    I added code to support the point tool.
+//
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Disable useWholeBox if we are copying box extents.
+//
+//    Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//    New seed sources.
+//
+// ****************************************************************************
+
+bool
+LCSAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const LCSAttributes *tmp = (const LCSAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    return retval;
+}
+
+Target: xml2atts
+Function: CreateCompatible
+Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
+Definition:
+// ****************************************************************************
+//  Method: LCSAttributes::CreateCompatible
+//
+//  Purpose:
+//     Creates a new state object of the desired type.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jan 21 12:33:04 PDT 2003
+//    I added code to set the "have radius" flag to true so the plane tool
+//    resizes properly when resizing the plane radius.
+//
+//    Brad Whitlock, Wed Dec 22 12:54:43 PDT 2004
+//    I added code to support the point tool.
+//
+// ****************************************************************************
+
+AttributeSubject *
+LCSAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new LCSAttributes(*this);
+    }
+
+    return retval;
+}
+
+Target: xml2atts
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const LCSAttributes &) const;
+Definition:
+// ****************************************************************************
+//  Method: LCSAttributes::ChangesRequireRecalculation
+//
+//  Purpose:
+//     Determines whether or not the plot must be recalculated based on the
+//     new attributes.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+//  Notes:  Most attributes cause the LCS to change.
+//
+//  Modifications:
+//    Brad Whitlock, Wed Dec 22 12:52:45 PDT 2004
+//    I made the coloring method matter when comparing LCS attributes
+//    and I added support for ribbons.
+//
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Add support for useWholeBox.
+//
+//    Hank Childs, Sun May  3 11:49:31 CDT 2009
+//    Add support for point lists.
+//
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the LCSs plots.
+//
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Add support for circle source.
+//
+//   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
+//   Add support for absTol that is fraction of the bounding box.
+//
+//   Hank Childs, Mon Oct  4 14:32:06 PDT 2010
+//   Add support for having multiple termination criterias.
+//
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
+// ****************************************************************************
+
+#define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
+#define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
+
+bool
+LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
+{
+    //Check the general stuff first...
+
+    if( sourceType != obj.sourceType ||
+        integrationDirection != obj.integrationDirection ||
+        maxSteps != obj.maxSteps ||
+        terminationType != obj.terminationType ||
+        terminateBySize != obj.terminateBySize ||
+        termSize != obj.termSize ||
+        terminateByDistance != obj.terminateByDistance ||
+        termDistance != obj.termDistance ||
+        terminateByTime != obj.terminateByTime ||
+        termTime != obj.termTime ||
+        maxStepLength != obj.maxStepLength ||
+        limitMaximumTimestep != obj.limitMaximumTimestep ||
+        maxTimeStep != obj.maxTimeStep ||
+        relTol != obj.relTol ||
+        absTolSizeType != obj.absTolSizeType ||
+        absTolAbsolute != obj.absTolAbsolute ||
+        absTolBBox != obj.absTolBBox ||
+        fieldType != obj.fieldType ||
+        fieldConstant != obj. fieldConstant||
+        integrationType != obj.integrationType ||
+        parallelizationAlgorithmType != obj.parallelizationAlgorithmType ||
+        maxProcessCount != obj.maxProcessCount ||
+        maxDomainCacheSize != obj.maxDomainCacheSize ||
+        workGroupSize != obj.workGroupSize ||
+        pathlines != obj.pathlines ||
+        pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
+        pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||
+        pathlinesCMFE != obj.pathlinesCMFE ||
+        forceNodeCenteredData != obj.forceNodeCenteredData ||
+        issueTerminationWarnings != obj.issueTerminationWarnings ||
+        issueStiffnessWarnings != obj.issueStiffnessWarnings ||
+        issueCriticalPointsWarnings != obj.issueCriticalPointsWarnings ||
+        criticalPointThreshold != obj.criticalPointThreshold )
+    {
+        return true;
+    }
+         
+    // If they say they don't want warnings, then don't re-execute. If
+    // they do, then re-execute so we can give them that warning.
+    if (issueTerminationWarnings != obj.issueTerminationWarnings &&
+        obj.issueTerminationWarnings == true)
+        return true;
+
+    if (fieldType == FlashField &&
+        POINT_DIFFERS(velocitySource, obj.velocitySource))
+    {
+        return true;
+    }
+
+    //Check by source type.
+    if ((sourceType == RegularGrid) &&
+         POINT_DIFFERS(Resolution, obj.Resolution))
+    {
+        return true;
+    }
+
+    if ((sourceType == RegularGrid) &&
+         UseDataSetStart == true &&
+         POINT_DIFFERS(StartPosition, obj.StartPosition))
+    {
+        return true;
+    }
+
+    if ((sourceType == RegularGrid) &&
+         UseDataSetEnd == true &&
+         POINT_DIFFERS(EndPosition, obj.EndPosition))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+Target: xml2info
+Function: LCSViewerPluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const ViewerPlot *plot);
+Definition:
+// ****************************************************************************
+//  Method: LCSViewerPluginInfo::GetOperatorVarDescription
+//
+//  Purpose:
+//    Return the operator variable description.
+//
+//  Arguments:
+//    atts        The attribute subject to initialize.
+//    plot        The viewer plot that owns the operator.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   19 August 2013
+//
+// ****************************************************************************
+
+#include <ViewerPlot.h>
+
+std::string
+LCSViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                const ViewerPlot *plot)
+{
+    LCSAttributes *atts_in = (LCSAttributes *)atts;
+
+    const char numTypes = 3;
+    const char *typeString[3] = { "FTLE", "FDLE", "FSLE" };
+
+    std::string var = plot->GetVariableName();
+
+    if( strncmp(var.c_str(), "operators/LCS/",
+                strlen("operators/LCS/")) == 0)
+    {
+      std::string justTheVar = var.substr(strlen("operators/LCS/"));
+
+      var = justTheVar;
+    }
+    
+    var += std::string(" - ") +
+        std::string(typeString[atts_in->GetTerminationType()]);
+
+    return var;
+}

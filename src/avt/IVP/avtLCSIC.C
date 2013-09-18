@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtFTLEIC.C                             //
+//                             avtLCSIC.C                             //
 // ************************************************************************* //
 
-#include <avtFTLEIC.h>
+#include <avtLCSIC.h>
 
 #include <list>
 #include <cmath>
@@ -54,7 +54,7 @@
 
 
 // ****************************************************************************
-//  Method: avtFTLEIC constructor
+//  Method: avtLCSIC constructor
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 14, 2013
@@ -62,7 +62,7 @@
 //  Modifications:
 //
 // ****************************************************************************
-avtFTLEIC::avtFTLEIC(
+avtLCSIC::avtLCSIC(
     int maxSteps_,
     bool doDistance_,
     double maxDistance_,
@@ -93,7 +93,7 @@ avtFTLEIC::avtFTLEIC(
 
 
 // ****************************************************************************
-//  Method: avtFTLEIC constructor
+//  Method: avtLCSIC constructor
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 14, 2013
@@ -101,7 +101,7 @@ avtFTLEIC::avtFTLEIC(
 //  Modifications:
 //
 // ****************************************************************************
-avtFTLEIC::avtFTLEIC() : avtIntegralCurve()
+avtLCSIC::avtLCSIC() : avtIntegralCurve()
 {
     numSteps = 0;
 
@@ -119,20 +119,20 @@ avtFTLEIC::avtFTLEIC() : avtIntegralCurve()
 
 
 // ****************************************************************************
-//  Method: avtFTLEIC destructor
+//  Method: avtLCSIC destructor
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 14, 2013
 //
 // ****************************************************************************
 
-avtFTLEIC::~avtFTLEIC()
+avtLCSIC::~avtLCSIC()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtFTLEIC::LessThan
+//  Method: avtLCSIC::LessThan
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 14, 2013
@@ -140,11 +140,11 @@ avtFTLEIC::~avtFTLEIC()
 //  Modifications:
 //
 // ****************************************************************************
-bool avtFTLEIC::LessThan(const avtIntegralCurve *ic) const
+bool avtLCSIC::LessThan(const avtIntegralCurve *ic) const
 {
   if (ic != NULL && (ic->id == id))
   {
-    return numSteps < ((avtFTLEIC *)ic)->numSteps;
+    return numSteps < ((avtLCSIC *)ic)->numSteps;
   }
 
   return avtIntegralCurve::LessThan(ic);
@@ -152,7 +152,7 @@ bool avtFTLEIC::LessThan(const avtIntegralCurve *ic) const
 
 
 // ****************************************************************************
-//  Method: avtFTLEIC::MergeIntegralCurveSequence
+//  Method: avtLCSIC::MergeIntegralCurveSequence
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 14, 2013
@@ -161,11 +161,11 @@ bool avtFTLEIC::LessThan(const avtIntegralCurve *ic) const
 //
 // ****************************************************************************
 avtIntegralCurve*
-avtFTLEIC::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v)
+avtLCSIC::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v)
 {
     for (int i = 0 ; i < v.size() ; i++)
     {
-        avtFTLEIC *ic = (avtFTLEIC *) v[i];
+        avtLCSIC *ic = (avtLCSIC *) v[i];
 
         if (ic->numSteps > numSteps)
         {
@@ -178,7 +178,7 @@ avtFTLEIC::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v)
 
 
 // ****************************************************************************
-//  Method: avtFTLEIC::AnalyzeStep
+//  Method: avtLCSIC::AnalyzeStep
 //
 //  Purpose:
 //      Analyzes the current step.
@@ -189,7 +189,7 @@ avtFTLEIC::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v)
 //  Modifications:
 //
 // ****************************************************************************
-void avtFTLEIC::AnalyzeStep( avtIVPStep &step,
+void avtLCSIC::AnalyzeStep( avtIVPStep &step,
                              avtIVPField *field)
 {
     if (CheckForTermination(step, field))
@@ -205,10 +205,10 @@ void avtFTLEIC::AnalyzeStep( avtIVPStep &step,
 }
 
 // ****************************************************************************
-//  Method: avtFTLEIC::CheckForTermination
+//  Method: avtLCSIC::CheckForTermination
 //
 //  Purpose:
-//      Checks to see if we should terminate the FTLE.
+//      Checks to see if we should terminate the LCS.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 14, 2013
@@ -218,7 +218,7 @@ void avtFTLEIC::AnalyzeStep( avtIVPStep &step,
 // ****************************************************************************
 
 bool
-avtFTLEIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
+avtLCSIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 {
     bool shouldTerminate = false;
 
@@ -273,10 +273,10 @@ avtFTLEIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 
 
 // ****************************************************************************
-//  Method: avtFTLEIC::Serialize
+//  Method: avtLCSIC::Serialize
 //
 //  Purpose:
-//      Serializes a FTLE so it can be sent to another processor.
+//      Serializes a LCS so it can be sent to another processor.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 14, 2013
@@ -284,7 +284,7 @@ avtFTLEIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 //  Modifications:
 //
 // ****************************************************************************
-void avtFTLEIC::Serialize(MemStream::Mode mode, MemStream &buff,
+void avtLCSIC::Serialize(MemStream::Mode mode, MemStream &buff,
                           avtIVPSolver *solver, SerializeFlags serializeFlags)
 {
     avtIntegralCurve::Serialize(mode,buff,solver,serializeFlags);

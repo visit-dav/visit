@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+  <Plugin name="LCS" type="operator" label="LCS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="vector" exprOutType="scalar">
+    <Attribute name="LCSAttributes" purpose="Attributes for LCS" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LCSAttributes.code">
+      <Enum name="SourceType">
+        NativeMesh
+        RegularGrid
+      </Enum>
+      <Enum name="Extents">
+        Full
+        Subset
+      </Enum>
+      <Enum name="IntegrationDirection">
+        Forward
+        Backward
+        Both
+      </Enum>
+      <Enum name="FieldType">
+        Default
+        FlashField
+        M3DC12DField
+        M3DC13DField
+        Nek5000Field
+        NIMRODField
+      </Enum>
+      <Enum name="IntegrationType">
+        Euler
+        Leapfrog
+        DormandPrince
+        AdamsBashforth
+        RK4
+        M3DC12DIntegrator
+      </Enum>
+      <Enum name="SizeType">
+        Absolute
+        FractionOfBBox
+      </Enum>
+      <Enum name="ParallelizationAlgorithmType">
+        LoadOnDemand
+        ParallelStaticDomains
+        MasterSlave
+        VisItSelects
+      </Enum>
+      <Enum name="TerminationType">
+        Time
+        Distance
+        Size
+      </Enum>
+      <Enum name="PathlinesCMFE">
+        CONN_CMFE
+        POS_CMFE
+      </Enum>
+      <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
+        NativeMesh
+      </Field>
+      <Field name="Resolution" label="Resolution" type="intArray" length="3" enabler="sourceType:RegularGrid">
+        10
+        10
+        10
+      </Field>
+      <Field name="UseDataSetStart" label="Start at DataSet Extent" type="enum" subtype="Extents" enabler="sourceType:RegularGrid">
+        Full
+      </Field>
+      <Field name="StartPosition" label="Subset Start" type="doubleArray" length="3" enabler="UseDataSetStart:Subset">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="UseDataSetEnd" label="End at DataSet Extent" type="enum" subtype="Extents" enabler="sourceType:RegularGrid">
+        Full
+      </Field>
+      <Field name="EndPosition" label="Subset End" type="doubleArray" length="3" enabler="UseDataSetEnd:Subset">
+        1.000000
+        1.000000
+        1.000000
+      </Field>
+      <Field name="integrationDirection" label="integrationDirection" type="enum" subtype="IntegrationDirection">
+        Forward
+      </Field>
+      <Field name="maxSteps" label="Maximum number of steps" type="int">
+        1000
+      </Field>
+      <Field name="terminationType" label="Termination" type="enum" subtype="TerminationType">
+        Time
+      </Field>
+      <Field name="terminateBySize" label="Use the size criteria for termination" type="bool">
+        false
+      </Field>
+      <Field name="termSize" label="Size for Termination" type="double" enabler="terminateBySize:true">
+        10.000000
+      </Field>
+      <Field name="terminateByDistance" label="Use the distance criteria for termination" type="bool">
+        false
+      </Field>
+      <Field name="termDistance" label="Distance for Termination" type="double" enabler="terminateByDistance:true">
+        10.000000
+      </Field>
+      <Field name="terminateByTime" label="Use the time criteria for termination" type="bool">
+        false
+      </Field>
+      <Field name="termTime" label="Time Elapsed for Particle Before Termination" type="double" enabler="terminateByTime:true">
+        10.000000
+      </Field>
+      <Field name="maxStepLength" label="maximum step length" type="double">
+        0.100000
+      </Field>
+      <Field name="limitMaximumTimestep" label="Limit Maximum Timestep (DoPri only)?" type="bool">
+        false
+      </Field>
+      <Field name="maxTimeStep" label="maximum time step length" type="double">
+        0.100000
+      </Field>
+      <Field name="relTol" label="rel. tolerance" type="double">
+        0.000100
+      </Field>
+      <Field name="absTolSizeType" label="AbsoluteToleranceSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="absTolAbsolute" label="abs. tolerance" type="double" enabler="absTolSizeType:Absolute">
+        0.000001
+      </Field>
+      <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
+        0.000001
+      </Field>
+      <Field name="fieldType" label="Field" type="enum" subtype="FieldType">
+        Default
+      </Field>
+      <Field name="fieldConstant" label="Constant" type="double" enabler="fieldType:FlashField">
+        1.000000
+      </Field>
+      <Field name="velocitySource" label="Starting velocity" type="doubleArray" length="3" enabler="fieldType:FlashField">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
+        DormandPrince
+      </Field>
+      <Field name="parallelizationAlgorithmType" label="Parallelization algorithm type" type="enum" subtype="ParallelizationAlgorithmType">
+        VisItSelects
+      </Field>
+      <Field name="maxProcessCount" label="maxProcessCount" type="int">
+        10
+      </Field>
+      <Field name="maxDomainCacheSize" label="Max domain cache" type="int">
+        3
+      </Field>
+      <Field name="workGroupSize" label="Work group size" type="int">
+        32
+      </Field>
+      <Field name="pathlines" label="Do pathlines" type="bool">
+        false
+      </Field>
+      <Field name="pathlinesOverrideStartingTimeFlag" label="Override Starting Time" type="bool" enabler="pathlines:true">
+        false
+      </Field>
+      <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
+        0.000000
+      </Field>
+      <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
+        POS_CMFE
+      </Field>
+
+      <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
+        false
+      </Field>
+      <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
+        true
+      </Field>
+      <Field name="issueStiffnessWarnings" label="Issue warnings when stiffness is encountered" type="bool">
+        true
+      </Field>
+      <Field name="issueCriticalPointsWarnings" label="Issue warnings when critical points are reached" type="bool">
+        true
+      </Field>
+      <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
+        0.001000
+      </Field>
+
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="LCSViewerPluginInfo::GetOperatorVarDescription" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>
