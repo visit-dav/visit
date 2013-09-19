@@ -27,7 +27,6 @@ foreach my $line (@flist) {
         $line =~ s/^A *(.*)/$1/;
         my $bname = basename($line);
         my $dname = dirname($line);
-print "adding \"$dname\"\n";
         push @{ $udirs{$dname} }, $bname;
     }
 }
@@ -87,7 +86,6 @@ foreach my $key (sort(keys %udirs)) {
 }
 # back up on more directory
 $minkey = dirname($minkey);
-print $minkey, "\n";
 
 #
 # If we made it this far, nothing *within* this commit has a clash conflict with
