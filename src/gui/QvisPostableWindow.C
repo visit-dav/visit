@@ -46,6 +46,7 @@
 #include <QvisPostableWindow.h>
 #include <QvisNotepadArea.h>
 #include <DataNode.h>
+#include <QvisHelpWindow.h>
 
 //
 // Static members.
@@ -109,26 +110,6 @@ QvisPostableWindow::QvisPostableWindow(const QString &captionString,
     notepad = n;
     addLayoutStretch = true;
 
-    helpWindow = new QDockWidget();
-    helpWindow->setBaseSize(400,400);
-
-    QWidget* centralwidget = new QWidget(helpWindow);
-    QVBoxLayout* verticalLayout = new QVBoxLayout(centralwidget);
-
-    helpText = new QTextEdit(centralwidget);
-    helpText->setBaseSize(400,800);
-    verticalLayout->addWidget(helpText);
-
-    helpWindow->setWidget(centralwidget);
-
-    addDockWidget(Qt::RightDockWidgetArea, helpWindow);
-    helpWindow->hide();
-}
-
-void
-QvisPostableWindow::hideEvent(QHideEvent *)
-{
-    helpWindow->hide();
 }
 
 // ****************************************************************************
@@ -613,47 +594,16 @@ QvisPostableWindow::unpost()
 // Modifications:
 //
 // ****************************************************************************
-#include <QNetworkRequest>
-#include <QNetworkReply>
 
 void
 QvisPostableWindow::help()
 {
-    if(helpWindow->isVisible())
-        return;
-
-    if(helpText->document()->toPlainText().length() > 0){
-        helpWindow->show();
-        helpWindow->setFloating(true);
-        helpWindow->resize(600,600);
-        return;
-    }
-
-    helpWindow->setWindowTitle(windowTitle() + " Help");
-    helpText->clear();
+    if(!GetHelpWindow()) return;
 
     QString window = windowTitle();
-    window.replace(" ", "_");
+    window = window.remove("attributes");
 
-    QString prefix = QString("http://visitusers.org/index.php?title=%1").arg(window);
-
-    QUrl url(prefix);
-    QNetworkRequest request(url);
-    QNetworkAccessManager* manager = new QNetworkAccessManager();
-    connect(manager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(downloadHelp(QNetworkReply*)));
-    manager->get(request);
-
-    helpWindow->show();
-    helpWindow->setFloating(true);
-    helpWindow->resize(600,600);
-}
-
-void
-QvisPostableWindow::downloadHelp(QNetworkReply *reply){
-    QString out(reply->readAll());
-
-    helpText->append(out);
+    GetHelpWindow()->openHelp(window.trimmed());
 }
 
 // ****************************************************************************
@@ -698,7 +648,6 @@ QvisPostableWindow::hide()
     else
         QvisWindowBase::hide();
 
-    helpWindow->hide();
     isPosted = false;
 }
 
@@ -843,14 +792,14 @@ QvisPostableWindow::CreateEntireWindow()
     QHBoxLayout *buttonLayout = new QHBoxLayout(0);
     vLayout->addLayout(buttonLayout);
     buttonLayout->addStretch();
+    helpButton = new QPushButton(this);
+    helpButton->setText(tr("?"));
+    connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
+    buttonLayout->addWidget(helpButton);
     postButton = new QPushButton(tr("Post"));
     buttonLayout->addWidget(postButton);
     dismissButton = new QPushButton(tr("Dismiss"));
     buttonLayout->addWidget(dismissButton);
-    helpButton = new QToolButton(this);
-    helpButton->setText(tr("?"));
-    connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
-    buttonLayout->addWidget(helpButton);
 
     if(notepad != 0 && addLayoutStretch)
         vLayout->addStretch(0);

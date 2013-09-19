@@ -1076,6 +1076,57 @@ QvisHelpWindow::openHelp(QTreeWidgetItem *item)
 }
 
 // ****************************************************************************
+// Method: QvisHelpWindow::openHelp
+//
+// Purpose:
+//   This is a Qt slot function that is called when an item in the contents
+//   listview is clicked. We display the page associated with the item.
+//
+// Arguments:
+//   item : The item that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 12 13:03:00 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Thu Jun 19 16:27:10 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+void
+QvisHelpWindow::openHelp(const QString& entry)
+{
+    if(!isCreated) {
+        CreateEntireWindow();
+    }
+
+    show();
+
+    helpContents->clearSelection();
+
+    /// find closest match in help index..
+
+    QModelIndexList list = helpContents->model()->match(helpContents->model()->index(0,0), Qt::DisplayRole,
+                                 entry, -1, Qt::MatchStartsWith | Qt::MatchRecursive);
+
+    if(list.size() == 0)
+        displayTitle(entry + " help not found...");
+    else {
+        helpContents->expand(list.back());
+        helpContents->scrollTo(list.back());
+        helpContents->setCurrentIndex(list.back());
+
+        QString document(list.back().data(Qt::UserRole).toString());
+
+        if(!document.isEmpty())
+            displayPage(document);
+        else
+            displayTitle(entry + " help not found...");
+    }
+}
+
+// ****************************************************************************
 // Method: QvisHelpWindow::topicExpanded
 //
 // Purpose: 

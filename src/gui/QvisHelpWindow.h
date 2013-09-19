@@ -108,6 +108,7 @@ public slots:
     void displayReleaseNotes();
     void displayReleaseNotesIfAvailable();
     void displayContributors();
+    void openHelp(const QString& entry);
     virtual void show();
 private slots:
     void activeTabChanged(int);
