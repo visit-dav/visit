@@ -277,7 +277,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     {
         QPushButton *resetButton = new QPushButton(tr("Reset"), topCentral);
         connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
-        buttonLayout->addWidget(resetButton, 0, 4, 1, 2);
+        buttonLayout->addWidget(resetButton, 0, 4);
     }
 
     if(buttonCombination & LoadButton)
@@ -306,6 +306,10 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         // grid layout.
         buttonLayout->setColumnStretch(1, 50);
     }
+    QPushButton *helpButton = new QPushButton(topCentral);
+    helpButton->setText(tr("?"));
+    connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
+    buttonLayout->addWidget(helpButton, 1, 2);
 
     postButton = new QPushButton(tr("Post"), topCentral);
     // Make the window post itself when the post button is clicked.
@@ -321,10 +325,6 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
     buttonLayout->addWidget(dismissButton, 1, 4);
 
-    QToolButton *helpButton = new QToolButton(topCentral);
-    helpButton->setText(tr("?"));
-    connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
-    buttonLayout->addWidget(helpButton, 1, 5);
 
     if(notepad != 0 && stretchWindow)
         vLayout->addStretch(0);

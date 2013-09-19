@@ -1809,6 +1809,9 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
         moreInit = false;
         emit VisItIsReady();
+
+        ///initialize the help window since every widget will now have access to it.
+        RegisterHelpWindow(dynamic_cast<QvisHelpWindow*>(GetInitializedWindowPointer(WINDOW_HELP)));
     }
 
     //

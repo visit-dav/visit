@@ -69,6 +69,7 @@ bool GUIBase::writeToConsole = true;
 bool GUIBase::autoUpdate = false;
 bool GUIBase::makeDefaultConfirm = true;
 FileServerList *GUIBase::fileServer = 0;
+QvisHelpWindow* GUIBase::helpWindow = NULL;
 
 // ****************************************************************************
 // Method: GUIBase::GUIBase
@@ -1645,4 +1646,32 @@ GUIBase::GetPlotDescription(const QString &plotName) const
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: QvisWindowBase::RegisterHelpWindow & GetHelpWindow
+//
+// Purpose:
+//   Helper function to allow widgets to interface with the Existing Help Window
+//
+// Arguments:
+//
+//
+// Programmer:
+// Creation:   Sept 19, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+GUIBase::RegisterHelpWindow(QvisHelpWindow* help)
+{
+    helpWindow = help;
+}
+
+QvisHelpWindow*
+GUIBase::GetHelpWindow()
+{
+    return helpWindow;
 }
