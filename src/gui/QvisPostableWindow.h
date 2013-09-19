@@ -48,7 +48,7 @@ class QPushButton;
 class QToolButton;
 class QVBoxLayout;
 class QTextEdit;
-class QNetworkReply;
+class QvisHelpWindow;
 
 // ****************************************************************************
 // Class: QvisPostableWindow
@@ -117,7 +117,6 @@ public:
     void         SetAddStretch(bool);
 protected:
     virtual void UpdateWindow(bool doAll);
-    virtual void hideEvent(QHideEvent *);
 public slots:
     virtual void raise();
     virtual void show();
@@ -125,7 +124,6 @@ public slots:
     virtual void post(bool avoid_scroll=false);
     virtual void unpost();
     virtual void help();
-    void downloadHelp(QNetworkReply*reply);
 protected:
     bool               isCreated;
     bool               isPosted;
@@ -135,10 +133,8 @@ protected:
     QVBoxLayout        *topLayout;
     QPushButton        *postButton;
     QPushButton        *dismissButton;
-    QToolButton        *helpButton;
+    QPushButton        *helpButton;
     QvisNotepadArea    *notepad;
-    QTextEdit          *helpText;
-    QDockWidget        *helpWindow;
 
     static bool         postWhenShown;
     static bool         postEnabled;
