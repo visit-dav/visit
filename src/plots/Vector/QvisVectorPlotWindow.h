@@ -123,9 +123,18 @@ public slots:
     virtual void makeDefault();
     virtual void reset();
 protected:
+
+    void CreateVectorTab(QWidget *);
+    void CreateDataTab(QWidget *);
+    void CreateGlyphTab(QWidget *);
+    void CreateExtrasTab(QWidget *);
+
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
+
+    void UpdateLineStem();
+
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
@@ -145,6 +154,7 @@ private slots:
     void invertColorTableToggled(bool val);
     void originTypeChanged(int);
     void glyphTypeChanged(int newType);
+    void lineStemChanged(int newType);
 
     void minToggled(bool on);
     void maxToggled(bool on);
@@ -152,12 +162,11 @@ private slots:
     void processMinLimitText();
     void limitsSelectChanged(int);
 
-    void lineStemMethodChanged(int);
     void processStemWidthText();
 
     void limitToOrigToggled(bool);
 
-    void geometeryQualityChanged(int index);
+    void geometryQualityChanged(int index);
 
 private:
     int                  plotType;
@@ -181,15 +190,17 @@ private:
     QCheckBox            *legendToggle;
 
 
-    QButtonGroup         *lineStemButtonGroup; 
     QvisLineStyleWidget  *lineStyle;
     QvisLineWidthWidget  *lineWidth;
     QLabel               *glyphTypeLabel;
     QComboBox            *glyphType;
+    QLabel               *lineStemLabel;
+    QComboBox            *lineStem;
     QLabel               *lineStyleLabel;
     QLabel               *lineWidthLabel;
     QLineEdit            *stemWidthEdit;
     QLabel               *stemWidthLabel;
+    QLabel               *headSizeLabel;
     QLineEdit            *headSizeLineEdit;
     QCheckBox            *drawHeadToggle;
 

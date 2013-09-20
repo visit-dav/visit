@@ -82,6 +82,11 @@ public:
         Arrow,
         Ellipsoid
     };
+    enum LineStem
+    {
+        Line,
+        Cylinder
+    };
     enum GlyphLocation
     {
         AdaptsToMeshResolution,
@@ -139,7 +144,7 @@ public:
     void SetLimitsMode(LimitsMode limitsMode_);
     void SetMin(double min_);
     void SetMax(double max_);
-    void SetLineStem(bool lineStem_);
+    void SetLineStem(LineStem lineStem_);
     void SetGeometryQuality(Quality geometryQuality_);
     void SetStemWidth(double stemWidth_);
     void SetOrigOnly(bool origOnly_);
@@ -170,7 +175,7 @@ public:
     LimitsMode           GetLimitsMode() const;
     double               GetMin() const;
     double               GetMax() const;
-    bool                 GetLineStem() const;
+    LineStem             GetLineStem() const;
     Quality              GetGeometryQuality() const;
     double               GetStemWidth() const;
     bool                 GetOrigOnly() const;
@@ -200,6 +205,11 @@ public:
     static bool GlyphType_FromString(const std::string &, GlyphType &);
 protected:
     static std::string GlyphType_ToString(int);
+public:
+    static std::string LineStem_ToString(LineStem);
+    static bool LineStem_FromString(const std::string &, LineStem &);
+protected:
+    static std::string LineStem_ToString(int);
 public:
     static std::string GlyphLocation_ToString(GlyphLocation);
     static bool GlyphLocation_FromString(const std::string &, GlyphLocation &);
@@ -271,7 +281,7 @@ private:
     int            limitsMode;
     double         min;
     double         max;
-    bool           lineStem;
+    int            lineStem;
     int            geometryQuality;
     double         stemWidth;
     bool           origOnly;
@@ -281,6 +291,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasbibbiddbidbi"
+#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasbibbiddiidbi"
 
 #endif

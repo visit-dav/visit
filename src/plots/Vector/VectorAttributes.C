@@ -189,6 +189,43 @@ VectorAttributes::GlyphType_FromString(const std::string &s, VectorAttributes::G
 }
 
 //
+// Enum conversion methods for VectorAttributes::LineStem
+//
+
+static const char *LineStem_strings[] = {
+"Line", "Cylinder"};
+
+std::string
+VectorAttributes::LineStem_ToString(VectorAttributes::LineStem t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return LineStem_strings[index];
+}
+
+std::string
+VectorAttributes::LineStem_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return LineStem_strings[index];
+}
+
+bool
+VectorAttributes::LineStem_FromString(const std::string &s, VectorAttributes::LineStem &val)
+{
+    val = VectorAttributes::Line;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == LineStem_strings[i])
+        {
+            val = (LineStem)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for VectorAttributes::GlyphLocation
 //
 
@@ -262,7 +299,7 @@ void VectorAttributes::Init()
     limitsMode = OriginalData;
     min = 0;
     max = 1;
-    lineStem = true;
+    lineStem = Line;
     geometryQuality = Fast;
     stemWidth = 0.08;
     origOnly = true;
@@ -840,7 +877,7 @@ VectorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     if(completeSave || !FieldsEqual(ID_lineStem, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("lineStem", lineStem));
+        node->AddNode(new DataNode("lineStem", LineStem_ToString(lineStem)));
     }
 
     if(completeSave || !FieldsEqual(ID_geometryQuality, &defaultObject))
@@ -990,7 +1027,21 @@ VectorAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("max")) != 0)
         SetMax(node->AsDouble());
     if((node = searchNode->GetNode("lineStem")) != 0)
-        SetLineStem(node->AsBool());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetLineStem(LineStem(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            LineStem value;
+            if(LineStem_FromString(node->AsString(), value))
+                SetLineStem(value);
+        }
+    }
     if((node = searchNode->GetNode("geometryQuality")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1188,7 +1239,7 @@ VectorAttributes::SetMax(double max_)
 }
 
 void
-VectorAttributes::SetLineStem(bool lineStem_)
+VectorAttributes::SetLineStem(VectorAttributes::LineStem lineStem_)
 {
     lineStem = lineStem_;
     Select(ID_lineStem, (void *)&lineStem);
@@ -1370,10 +1421,10 @@ VectorAttributes::GetMax() const
     return max;
 }
 
-bool
+VectorAttributes::LineStem
 VectorAttributes::GetLineStem() const
 {
-    return lineStem;
+    return LineStem(lineStem);
 }
 
 VectorAttributes::Quality
@@ -1513,7 +1564,7 @@ VectorAttributes::GetFieldType(int index) const
     case ID_limitsMode:       return FieldType_enum;
     case ID_min:              return FieldType_double;
     case ID_max:              return FieldType_double;
-    case ID_lineStem:         return FieldType_bool;
+    case ID_lineStem:         return FieldType_enum;
     case ID_geometryQuality:  return FieldType_enum;
     case ID_stemWidth:        return FieldType_double;
     case ID_origOnly:         return FieldType_bool;
@@ -1564,7 +1615,7 @@ VectorAttributes::GetFieldTypeName(int index) const
     case ID_limitsMode:       return "enum";
     case ID_min:              return "double";
     case ID_max:              return "double";
-    case ID_lineStem:         return "bool";
+    case ID_lineStem:         return "enum";
     case ID_geometryQuality:  return "enum";
     case ID_stemWidth:        return "double";
     case ID_origOnly:         return "bool";

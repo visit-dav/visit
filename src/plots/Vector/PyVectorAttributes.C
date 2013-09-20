@@ -193,11 +193,21 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
-    if(atts->GetLineStem())
-        SNPRINTF(tmpStr, 1000, "%slineStem = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%slineStem = 0\n", prefix);
-    str += tmpStr;
+    const char *lineStem_names = "Line, Cylinder";
+    switch (atts->GetLineStem())
+    {
+      case VectorAttributes::Line:
+          SNPRINTF(tmpStr, 1000, "%slineStem = %sLine  # %s\n", prefix, prefix, lineStem_names);
+          str += tmpStr;
+          break;
+      case VectorAttributes::Cylinder:
+          SNPRINTF(tmpStr, 1000, "%slineStem = %sCylinder  # %s\n", prefix, prefix, lineStem_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *geometryQuality_names = "Fast, High";
     switch (atts->GetGeometryQuality())
     {
@@ -874,7 +884,16 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the lineStem in the object.
-    obj->data->SetLineStem(ival != 0);
+    if(ival >= 0 && ival < 2)
+        obj->data->SetLineStem(VectorAttributes::LineStem(ival));
+    else
+    {
+        fprintf(stderr, "An invalid lineStem value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Line, Cylinder.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -884,7 +903,7 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
 VectorAttributes_GetLineStem(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetLineStem()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStem()));
     return retval;
 }
 
@@ -1160,6 +1179,11 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
         return VectorAttributes_GetMax(self, NULL);
     if(strcmp(name, "lineStem") == 0)
         return VectorAttributes_GetLineStem(self, NULL);
+    if(strcmp(name, "Line") == 0)
+        return PyInt_FromLong(long(VectorAttributes::Line));
+    if(strcmp(name, "Cylinder") == 0)
+        return PyInt_FromLong(long(VectorAttributes::Cylinder));
+
     if(strcmp(name, "geometryQuality") == 0)
         return VectorAttributes_GetGeometryQuality(self, NULL);
     if(strcmp(name, "Fast") == 0)
