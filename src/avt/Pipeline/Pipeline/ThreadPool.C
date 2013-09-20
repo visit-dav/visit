@@ -343,6 +343,12 @@ int ThreadPool::JoinNoExit()
     return( 0 );
 }
 
+#if defined(__APPLE__)
+
+#define TURN_OFF_THREAD_SET_AFFINITY 1
+
+#endif
+
 /***********************************************************************
   The ThreadPool will create threads that will use this function to
 process the work queue.

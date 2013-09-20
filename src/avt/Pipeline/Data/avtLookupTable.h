@@ -44,11 +44,9 @@
 #define AVT_LOOKUP_TABLE_H
 #include <pipeline_exports.h>
 
-
 class vtkLookupTable;
 class vtkLogLookupTable;
 class vtkSkewLookupTable;
-
 
 // ****************************************************************************
 //  Class: avtLookupTable
@@ -77,9 +75,11 @@ class PIPELINE_API avtLookupTable
     virtual                      ~avtLookupTable();
 
     void                          SetSkewFactor(const double);
+    void                          SetRampOpacity(const double);
     bool                          SetColorTable(const char *ctName, bool,
                                                 bool useOpacities = false,
-                                                bool invert = false);
+                                                bool invert = false,
+                                                double rampOpacity = -1);
     void                          SetLUTColors(const unsigned char *, int);
     void                          SetLUTColorsWithOpacity(
                                       const unsigned char *, int);
@@ -101,9 +101,7 @@ class PIPELINE_API avtLookupTable
     vtkLookupTable               *stdLUT;
     vtkLogLookupTable            *logLUT;
     vtkSkewLookupTable           *skewLUT;
+    
+    double                        rampOpacity;
 };
-
-
 #endif
-
-
