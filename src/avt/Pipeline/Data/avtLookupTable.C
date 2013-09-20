@@ -320,60 +320,65 @@ avtLookupTable::GetNumberOfColors()
 
 bool
 avtLookupTable::SetColorTable(const char *ctName, bool validName,
-                              bool useOpacities, bool invert)
+                              bool useOpacities,
+                              bool invert,
+                              double rampOpacity)
 {
-    bool retval = false;
-    bool useDefault = false;
     avtColorTables *ct = avtColorTables::Instance();
+    const unsigned char *c = NULL;
 
     // Figure out the circumstances in which we should use the default
     // color table.
-    if(ctName == NULL)
-        useDefault = true;
-    else if(std::string(ctName) == "Default")
-        useDefault = true;
-    else if(!ct->ColorTableExists(ctName))
+    if(ctName == NULL || std::string(ctName) == "Default")
     {
+      // Use the default continuous color table.
+      const char *dct = ct->GetDefaultContinuousColorTable().c_str();
+
+      // No continuous table so use the default discrete color table.
+      if(dct == 0)
+        dct = ct->GetDefaultDiscreteColorTable().c_str();
+
+      c = ct->GetColors(dct, invert);
+    }
+    else if (validName)
+    {
+      if(!ct->ColorTableExists(ctName))
+      {
         EXCEPTION1(InvalidColortableException, ctName);
+      }
+
+      // Use the specified color table. It was a valid color table.
+      c = ct->GetColors(ctName, invert);
     }
 
-    if(useDefault)
+    if(c != NULL)
     {
-        // Use the default color table.
-        const char *dct = ct->GetDefaultContinuousColorTable().c_str();
-        if(dct == 0)
-            dct = ct->GetDefaultDiscreteColorTable().c_str();
-        const unsigned char *c = ct->GetColors(dct, invert);
-        const unsigned char *a = NULL;
-        if (useOpacities)
-            a = ct->GetAlphas(dct);
-        if(c != NULL)
-        {
-            // Set the colors into the lookup table.
-            retval = true;
-            if (a)
-                SetLUTColorsAndOpacity(c, a, ct->GetNumColors());
-            else
-                SetLUTColors(c, ct->GetNumColors());
-        }
-    }
-    else if (validName) 
-    {
-        // Use the specified color table. It was a valid color table.
-        const unsigned char *c = ct->GetColors(ctName, invert);
-        const unsigned char *a = NULL;
-        if (useOpacities)
-            a = ct->GetAlphas(ctName);
-        if(c != NULL)
-        {
-            // Set the colors into the lookup table.
-            retval = true;
-            if (a)
-                SetLUTColorsAndOpacity(c, a, ct->GetNumColors());
-            else
-                SetLUTColors(c, ct->GetNumColors());
-        }
-    }
+      // Set the colors into the lookup table.
+      if (0 <= rampOpacity && rampOpacity <= 1.0)
+      {
+        // Change from 0->1.0 to 0->256
+        rampOpacity *= 256.0;
+        
+        unsigned char *a = (unsigned char *) malloc( ct->GetNumColors() );
+        
+        for( unsigned int i=0; i<ct->GetNumColors(); ++i )
+          a[i] = (unsigned char)
+            (rampOpacity * (double) i / (double) ct->GetNumColors() );
+        
+        SetLUTColorsAndOpacity(c, a, ct->GetNumColors());
+      }
+      else if (useOpacities)
+      {
+        const unsigned char *a = ct->GetAlphas(ctName);
+        SetLUTColorsAndOpacity(c, a, ct->GetNumColors());
+      }
+      else
+      {
+        SetLUTColors(c, ct->GetNumColors());
+      }
 
-    return retval;
+      return true;
+    }
+    else
+      return false;
 }
