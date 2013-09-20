@@ -46,6 +46,7 @@
 #include <QCheckBox>
 #include <QComboBox> 
 #include <QLineEdit>
+#include <QSpinBox>
 
 #include <QvisPseudocolorPlotWindow.h>
 #include <PseudocolorAttributes.h>
@@ -55,6 +56,7 @@
 #include <QvisPointControl.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow
@@ -188,6 +190,53 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 void
 QvisPseudocolorPlotWindow::CreateWindowContents()
 { 
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
+
+    // ----------------------------------------------------------------------
+    // Data tab
+    // ----------------------------------------------------------------------
+    QWidget *dataTab = new QWidget(central);
+    propertyTabs->addTab(dataTab, tr("Data"));
+    CreateDataTab(dataTab);
+
+    // ----------------------------------------------------------------------
+    // Geometry tab
+    // ----------------------------------------------------------------------
+    QWidget *geometryTab = new QWidget(central);
+    propertyTabs->addTab(geometryTab, tr("Geometry"));
+    CreateGeometryTab(geometryTab);
+
+    // ----------------------------------------------------------------------
+    // Extras tab
+    // ----------------------------------------------------------------------
+    // QWidget *extrasTab = new QWidget(central);
+    // propertyTabs->addTab(extrasTab, tr("Extras"));
+    // CreateExtrasTab(extrasTab);
+}
+
+
+
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::CreateDataTab
+//
+// Purpose: 
+//   Populates the data tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
+{
+    QGridLayout *topLayout = new QGridLayout(pageData);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
     //
     // Create the scale group
     //
@@ -320,115 +369,94 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 
     gRow++;
 
-    // Create the use-color-table-opacity checkbox
+    // Create the opacity widgets.
+    opacityType = new QComboBox(central);
+    opacityType->addItem(tr("From color table"),1);
+    opacityType->addItem(tr("Fully opaque"),0);
+    opacityType->addItem(tr("Constant"),2);
+    opacityType->addItem(tr("Ramp"),3);
+    opacityType->addItem(tr("Variable range"),4);
+    connect(opacityType, SIGNAL(activated(int)),
+            this, SLOT(opacityTypeChanged(int)));
+    colorLayout->addWidget(new QLabel(tr("Opacity"), central), gRow,0);
+    colorLayout->addWidget(opacityType, gRow, 1);
 
-    // Create the radio buttons
-    colorLayout->addWidget(new QLabel(tr("Opacity"), central), 1, 0);
-
-    opacityButtons = new QButtonGroup(central);
-
-    rb = new QRadioButton(tr("Set explicitly"), central);
-    rb->setChecked(true);
-    opacityButtons->addButton(rb, 0);
-    colorLayout->addWidget(rb, gRow, 1);
-    rb = new QRadioButton(tr("From color table"), central);
-    opacityButtons->addButton(rb, 1);
-    colorLayout->addWidget(rb, gRow, 2);
-
-    // Each time a radio button is clicked, call the scale clicked slot.
-    connect(opacityButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(setOpaacityClicked(int)));
+    opacityVarLabel = new QLabel(tr("Variable"), central);
+    opacityVar = new QvisVariableButton(false, true, true,
+                                        QvisVariableButton::Scalars, central);
+    colorLayout->addWidget(opacityVarLabel,gRow,2, Qt::AlignRight);
+    colorLayout->addWidget(opacityVar,gRow,3);
+    connect(opacityVar, SIGNAL(activated(const QString &)),
+            this, SLOT(opacityVariableChanged(const QString&)));
 
     gRow++;
-
-    //
-    // Create the opacity slider
-    //
-    opacitySliderLabel = new QLabel(tr("Opacity"), central);
-    colorLayout->addWidget(opacitySliderLabel, gRow, 0);
-
     opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
     opacitySlider->setTickInterval(64);
     opacitySlider->setGradientColor(QColor(0, 0, 0));
     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(changedOpacity(int, const void*)));
-    colorLayout->addWidget(opacitySlider, gRow, 1, 1, 3);
+            this, SLOT(opacityChanged(int, const void*)));
+    colorLayout->addWidget(opacitySlider, gRow, 1, 1,3);
+    gRow++;
 
-    
-    //
-    // Create the style stuff
-    //
+    opacityMinToggle = new QCheckBox(tr("Opacity Min"), central);
+    opacityMaxToggle = new QCheckBox(tr("Opacity Max"), central);
+    connect(opacityMinToggle, SIGNAL(toggled(bool)), this, SLOT(opacityMinToggled(bool)));
+    connect(opacityMaxToggle, SIGNAL(toggled(bool)), this, SLOT(opacityMaxToggled(bool)));
 
-    QGroupBox * styleGroup = new QGroupBox(central);
-    styleGroup->setTitle(tr("Point / Line Style"));
-    topLayout->addWidget(styleGroup);
+    opacityVarMin = new QLineEdit(central);
+    opacityVarMax = new QLineEdit(central);
 
-    QGridLayout *styleLayout = new QGridLayout(styleGroup);
-    styleLayout->setMargin(5);
-    styleLayout->setSpacing(10);
- 
-    // Create the point control
-    pointControl = new QvisPointControl(central);
-    connect(pointControl, SIGNAL(pointSizeChanged(double)),
-            this, SLOT(pointSizeChanged(double)));
-    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
-            this, SLOT(pointSizePixelsChanged(int)));
-    connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
-            this, SLOT(pointSizeVarChanged(const QString &)));
-    connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
-            this, SLOT(pointSizeVarToggled(bool)));
-    connect(pointControl, SIGNAL(pointTypeChanged(int)),
-            this, SLOT(pointTypeChanged(int)));
-    styleLayout->addWidget(pointControl, 0, 0, 1, 4);
+    connect(opacityVarMin, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMin()));
+    connect(opacityVarMax, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMax()));
 
 
-    //
-    // Create the line style/width buttons
-    //
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
 
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    styleLayout->addWidget(lineStyle, 1, 1);
+    opacityMinMaxGroup = new QGroupBox(central);
+    colorLayout->addWidget(opacityMinMaxGroup, gRow, 1, 1, 3);
 
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
-
-    lineWidth = new QvisLineWidthWidget(0, central);
-    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineWidthChanged(int)));
-    styleLayout->addWidget(lineWidth, 1, 3);
+    QGridLayout *opacityMinMaxLayout = new QGridLayout(opacityMinMaxGroup);
+    opacityMinMaxLayout->setMargin(5);
+    opacityMinMaxLayout->setSpacing(10);
 
 
-    //
-    // Create the geometry group
-    //
-    QGroupBox * smoothingGroup = new QGroupBox(central);
-    smoothingGroup->setTitle(tr("Geometry"));
-    topLayout->addWidget(smoothingGroup);
+    opacityMinMaxLayout->addWidget(opacityMinToggle, 0, 1);
+    opacityMinMaxLayout->addWidget(opacityVarMin,    0, 2);
+    opacityMinMaxLayout->addWidget(opacityMaxToggle, 0, 3);
+    opacityMinMaxLayout->addWidget(opacityVarMax,    0, 4);
+    gRow++;
 
-    QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
-    smoothingLayout->setMargin(5);
-    smoothingLayout->setSpacing(10);
 
-    smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
+    // // Create the radio buttons
+    // colorLayout->addWidget(new QLabel(tr("Opacity"), central), 1, 0);
 
-    // Create the smoothing level buttons
-    smoothingLevelButtons = new QButtonGroup(central);
-    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(smoothingLevelChanged(int)));
+    // opacityButtons = new QButtonGroup(central);
 
-    rb = new QRadioButton(tr("None"), central);
-    smoothingLevelButtons->addButton(rb, 0);
-    smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Fast"), central);
-    smoothingLevelButtons->addButton(rb, 1);
-    smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton(tr("High"), central);
-    smoothingLevelButtons->addButton(rb, 2);
-    smoothingLayout->addWidget(rb, 0, 3);
+    // rb = new QRadioButton(tr("Set explicitly"), central);
+    // rb->setChecked(true);
+    // opacityButtons->addButton(rb, 0);
+    // colorLayout->addWidget(rb, gRow, 1);
+    // rb = new QRadioButton(tr("From color table"), central);
+    // opacityButtons->addButton(rb, 1);
+    // colorLayout->addWidget(rb, gRow, 2);
+
+    // // Each time a radio button is clicked, call the scale clicked slot.
+    // connect(opacityButtons, SIGNAL(buttonClicked(int)),
+    //         this, SLOT(setOpaacityClicked(int)));
+
+    // gRow++;
+
+    // //
+    // // Create the opacity slider
+    // //
+    // opacitySliderLabel = new QLabel(tr("Opacity"), central);
+    // colorLayout->addWidget(opacitySliderLabel, gRow, 0);
+
+    // opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
+    // opacitySlider->setTickInterval(64);
+    // opacitySlider->setGradientColor(QColor(0, 0, 0));
+    // connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
+    //         this, SLOT(changedOpacity(int, const void*)));
+    // colorLayout->addWidget(opacitySlider, gRow, 1, 1, 3);
 
     //
     // Create the misc stuff
@@ -451,9 +479,307 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     lightingToggle = new QCheckBox(tr("Lighting"), central);
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    miscLayout->addWidget(lightingToggle, 0, 1);
-
+    miscLayout->addWidget(lightingToggle, 0, 1); 
 }
+
+
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::CreateGeometryTab
+//
+// Purpose: 
+//   Populates the geometry tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
+{
+    QGridLayout *topLayout = new QGridLayout(pageGeometry);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create line related controls.
+    //
+    QGroupBox * lineGroup = new QGroupBox(central);
+    lineGroup->setTitle(tr("Line "));
+    topLayout->addWidget(lineGroup);
+
+    QGridLayout *lineLayout = new QGridLayout(lineGroup);
+    lineLayout->setMargin(5);
+    lineLayout->setSpacing(10);
+
+    //
+    // Create the line style/width buttons
+    //
+    // Create the lineSyle widget.
+
+    // Line
+    lineLayout->addWidget(new QLabel(tr("Line type"), central), 0, 0, Qt::AlignRight);
+
+    lineType = new QComboBox(central);
+    lineType->addItem(tr("Lines"), 0);
+    lineType->addItem(tr("Tubes"), 1);
+    lineType->addItem(tr("Ribbons"), 2);
+    connect(lineType, SIGNAL(activated(int)), this, SLOT(lineTypeChanged(int)));
+    lineLayout->addWidget(lineType, 0, 1);
+
+
+    // Line style / width
+    lineStyleLabel = new QLabel(tr("Line style"), central);
+    lineLayout->addWidget(lineStyleLabel, 1, 0, Qt::AlignRight);
+
+    lineStyle = new QvisLineStyleWidget(0, central);
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+    lineLayout->addWidget(lineStyle, 1, 1);
+
+    // Create the lineSyle widget.
+    lineWidthLabel = new QLabel(tr("Line width"), central);
+    lineLayout->addWidget(lineWidthLabel, 1, 2, Qt::AlignRight);
+
+    lineWidth = new QvisLineWidthWidget(0, central);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    lineLayout->addWidget(lineWidth, 1, 3);
+
+
+    //--tube/ribbon
+    tubeDisplayDensityLabel = new QLabel(tr("Display density"), central);
+    lineLayout->addWidget(tubeDisplayDensityLabel, 1, 3, Qt::AlignRight);
+
+    tubeDisplayDensity = new QSpinBox(central);
+    tubeDisplayDensity->setMinimum(2);
+    tubeDisplayDensity->setMaximum(100);
+    lineLayout->addWidget(tubeDisplayDensity, 1, 4);
+    connect(tubeDisplayDensity, SIGNAL(valueChanged(int)), this, SLOT(tubeDisplayDensityChanged(int)));
+
+    tubeRadiusLabel = new QLabel(tr("Radius"), central);
+    tubeRadiusLabel->setToolTip(tr("Radius used for tubes and ribbons."));
+    lineLayout->addWidget(tubeRadiusLabel, 1, 0, Qt::AlignRight);
+
+    tubeRadius = new QLineEdit(central);
+    lineLayout->addWidget(tubeRadius, 1, 1);
+    connect(tubeRadius, SIGNAL(returnPressed()),
+            this, SLOT(tubeRadiusProcessText()));
+
+    tubeRadiusSizeType = new QComboBox(central);
+    tubeRadiusSizeType->addItem(tr("Absolute"), 0);
+    tubeRadiusSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(tubeRadiusSizeType, SIGNAL(activated(int)), this, SLOT(tubeRadiusSizeTypeChanged(int)));
+    lineLayout->addWidget(tubeRadiusSizeType, 1, 2);
+
+    //Tube vary radius.
+    tubeRadiusVary = new QCheckBox(tr("Vary radius"), central);
+    connect(tubeRadiusVary, SIGNAL(toggled(bool)), this, SLOT(tubeRadiusVaryChanged(bool)));
+    lineLayout->addWidget(tubeRadiusVary, 2, 0);
+    
+    tubeRadiusVaryVariableLabel = new QLabel(tr("Variable"), central);
+    lineLayout->addWidget(tubeRadiusVaryVariableLabel, 2, 1, Qt::AlignRight);
+    tubeRadiusVaryVariable = new QvisVariableButton(false, true, true,
+                                                    QvisVariableButton::Scalars, central);
+    connect(tubeRadiusVaryVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(tubeRadiusVaryVariableChanged(const QString&)));
+    lineLayout->addWidget(tubeRadiusVaryVariable, 2, 2);
+
+    tubeRadiusVaryFactorLabel = new QLabel(tr("Factor"), central);
+    lineLayout->addWidget(tubeRadiusVaryFactorLabel, 2, 3, Qt::AlignRight);
+    tubeRadiusVaryFactorEdit = new QLineEdit(central);
+    connect(tubeRadiusVaryFactorEdit, SIGNAL(returnPressed()),
+            this, SLOT(tubeRadiusVaryFactorProcessText()));
+    lineLayout->addWidget(tubeRadiusVaryFactorEdit, 2, 4);
+
+
+    // ribbonWidth = new QLineEdit(displayGrp);
+    // lineLayout->addWidget(ribbonWidth, 1, 1);
+    // connect(ribbonWidth, SIGNAL(returnPressed()),
+    //         this, SLOT(ribbonWidthProcessText()));
+
+
+
+    // ribbonSizeType = new QComboBox(displayGrp);
+    // ribbonSizeType->addItem(tr("Absolute"), 0);
+    // ribbonSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    // connect(ribbonSizeType, SIGNAL(activated(int)), this, SLOT(ribbonSizeTypeChanged(int)));
+    // lineLayout->addWidget(ribbonSizeType, 1, 2);
+
+
+    // Splitter
+    QFrame *splitter = new QFrame(central);
+    splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
+    lineLayout->addWidget(splitter, 3, 0, 1, 5);
+
+
+
+    lineLayout->addWidget(new QLabel(tr("Show end points"), central), 4, 0);
+
+    endPointType = new QComboBox(central);
+    endPointType->addItem(tr("None"), 0);
+    endPointType->addItem(tr("Tails"), 1);
+    endPointType->addItem(tr("Heads"), 2);
+    endPointType->addItem(tr("Both"), 3);
+    connect(endPointType, SIGNAL(activated(int)), this, SLOT(endPointTypeChanged(int)));
+    lineLayout->addWidget(endPointType, 4, 1);
+
+
+    endPointStyleLabel = new QLabel(tr("Style"), central);
+    lineLayout->addWidget(endPointStyleLabel, 5, 0, Qt::AlignRight);
+
+    endPointStyle = new QComboBox(central);
+    endPointStyle->addItem(tr("Spheres"), 0);
+    endPointStyle->addItem(tr("Cones"), 1);
+    connect(endPointStyle, SIGNAL(activated(int)), this, SLOT(endPointStyleChanged(int)));
+    lineLayout->addWidget(endPointStyle, 5, 1);
+
+
+    endPointRadiusLabel = new QLabel(tr("Radius"), central);
+    lineLayout->addWidget(endPointRadiusLabel, 6, 0, Qt::AlignRight);
+
+    endPointRadius = new QLineEdit(central);
+    lineLayout->addWidget(endPointRadius, 6, 1);
+    connect(endPointRadius, SIGNAL(returnPressed()), this, SLOT(endPointRadiusProcessText()));
+
+    endPointRadiusSizeType = new QComboBox(central);
+    endPointRadiusSizeType->addItem(tr("Absolute"), 0);
+    endPointRadiusSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(endPointRadiusSizeType, SIGNAL(activated(int)), this, SLOT(endPointRadiusSizeTypeChanged(int)));
+    lineLayout->addWidget(endPointRadiusSizeType, 6, 2);
+
+
+    endPointRatioLabel = new QLabel(tr("Height:Radius Ratio"), central);
+    lineLayout->addWidget(endPointRatioLabel, 7, 0, 1, 2, Qt::AlignRight);
+
+    endPointRatio = new QLineEdit(central);
+    lineLayout->addWidget(endPointRatio, 7, 2);
+    connect(endPointRatio, SIGNAL(returnPressed()), this, SLOT(endPointRatioProcessText()));
+
+    //
+    // Create point related controls.
+    //
+    QGroupBox * pointGroup = new QGroupBox(central);
+    pointGroup->setTitle(tr("Point "));
+    topLayout->addWidget(pointGroup);
+
+    QGridLayout *pointLayout = new QGridLayout(pointGroup);
+    pointLayout->setMargin(5);
+    pointLayout->setSpacing(10);
+ 
+    // Create the point control
+    pointControl = new QvisPointControl(central);
+    connect(pointControl, SIGNAL(pointSizeChanged(double)),
+            this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
+            this, SLOT(pointSizePixelsChanged(int)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
+            this, SLOT(pointSizeVarChanged(const QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
+            this, SLOT(pointSizeVarToggled(bool)));
+    connect(pointControl, SIGNAL(pointTypeChanged(int)),
+            this, SLOT(pointTypeChanged(int)));
+    pointLayout->addWidget(pointControl, 0, 0, 1, 4);
+
+    //
+    // Create the rendering group
+    //
+    QGroupBox * renderingGroup = new QGroupBox(central);
+    renderingGroup->setTitle(tr("Rendering"));
+    topLayout->addWidget(renderingGroup);
+
+    QGridLayout *renderingLayout = new QGridLayout(renderingGroup);
+    renderingLayout->setMargin(5);
+    renderingLayout->setSpacing(10);
+
+
+    // Create the rendering style options
+    renderingLayout->addWidget(new QLabel(tr("Draw objects as"), central), 0,0);
+
+    // Create the rendering buttons
+    renderSurfaces = new QCheckBox(tr("Surfaces"), central);
+    renderingLayout->addWidget( renderSurfaces, 0,1);
+    connect(renderSurfaces, SIGNAL(toggled(bool)),
+            this, SLOT(renderSurfacesChanged(bool)));
+
+    renderWireframe = new QCheckBox(tr("Wireframe"), central);
+    renderingLayout->addWidget( renderWireframe, 0,2);
+    connect(renderWireframe, SIGNAL(toggled(bool)),
+            this, SLOT(renderWireframeChanged(bool)));
+
+    renderPoints = new QCheckBox(tr("Points"), central);
+    renderingLayout->addWidget( renderPoints, 0,3);
+    connect(renderPoints, SIGNAL(toggled(bool)),
+            this, SLOT(renderPointsChanged(bool)));
+
+    // Create the smoothing options
+    renderingLayout->addWidget(new QLabel(tr("Smoothing"), central), 1,0);
+
+    // Create the smoothing level buttons
+    smoothingLevelButtons = new QButtonGroup(central);
+    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+
+    QRadioButton* rb = new QRadioButton(tr("None"), central);
+    smoothingLevelButtons->addButton(rb, 0);
+    renderingLayout->addWidget(rb, 1, 1);
+    rb = new QRadioButton(tr("Fast"), central);
+    smoothingLevelButtons->addButton(rb, 1);
+    renderingLayout->addWidget(rb, 1, 2);
+    rb = new QRadioButton(tr("High"), central);
+    smoothingLevelButtons->addButton(rb, 2);
+    renderingLayout->addWidget(rb, 1, 3);
+}
+
+
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::CreateExtrasTab
+//
+// Purpose: 
+//   Populates the extras tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
+{
+    QGridLayout *topLayout = new QGridLayout(pageExtras);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the blank stuff to fill in gaps.
+    //
+    QGroupBox * blankGroup = new QGroupBox(central);
+//    blankGroup->setTitle(tr("Blank"));
+    topLayout->addWidget(blankGroup);
+
+    QGridLayout *blankLayout = new QGridLayout(blankGroup);
+    blankLayout->setMargin(5);
+    blankLayout->setSpacing(10);
+ 
+    blankLayout->addWidget(new QLabel(tr(""), central), 0,0);
+    blankLayout->addWidget(new QLabel(tr(""), central), 1,0);
+    blankLayout->addWidget(new QLabel(tr(""), central), 2,0);
+    blankLayout->addWidget(new QLabel(tr(""), central), 3,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 4,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 5,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 6,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 7,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 8,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 9,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 10,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 11,0);
+    // blankLayout->addWidget(new QLabel(tr(""), central), 12,0);
+}
+
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::UpdateWindow
@@ -550,23 +876,40 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case PseudocolorAttributes::ID_legendFlag:
-            // Disconnect the slot before setting the toggle and
-            // reconnect it after. This prevents multiple updates.
-            disconnect(legendToggle, SIGNAL(toggled(bool)),
-                       this, SLOT(legendToggled(bool)));
-            legendToggle->setChecked(pcAtts->GetLegendFlag());
-            connect(legendToggle, SIGNAL(toggled(bool)),
-                    this, SLOT(legendToggled(bool)));
+          // scale
+        case PseudocolorAttributes::ID_scaling:
+            scalingButtons->blockSignals(true);
+            scalingButtons->button(pcAtts->GetScaling())->setChecked(true);
+            scalingButtons->blockSignals(false);
+
+            if( pcAtts->GetScaling() == PseudocolorAttributes::Skew )
+            {
+              skewLineEdit->setEnabled(true);
+            }
+            else
+            {
+              skewLineEdit->setEnabled(false);
+            }
+
             break;
-        case PseudocolorAttributes::ID_lightingFlag:
-            // Disconnect the slot before setting the toggle and
-            // reconnect it after. This prevents multiple updates.
-            disconnect(lightingToggle, SIGNAL(toggled(bool)),
-                       this, SLOT(lightingToggled(bool)));
-            lightingToggle->setChecked(pcAtts->GetLightingFlag());
-            connect(lightingToggle, SIGNAL(toggled(bool)),
-                    this, SLOT(lightingToggled(bool)));
+        case PseudocolorAttributes::ID_skewFactor:
+            temp.setNum(pcAtts->GetSkewFactor());
+            skewLineEdit->setText(temp);
+            break;
+
+            // limits
+        case PseudocolorAttributes::ID_limitsMode:
+            limitsSelect->blockSignals(true);
+            limitsSelect->setCurrentIndex(pcAtts->GetLimitsMode());
+            limitsSelect->blockSignals(false);
+            break;
+        case PseudocolorAttributes::ID_min:
+            temp.setNum(pcAtts->GetMin());
+            minLineEdit->setText(temp);
+            break;
+        case PseudocolorAttributes::ID_max:
+            temp.setNum(pcAtts->GetMax());
+            maxLineEdit->setText(temp);
             break;
         case PseudocolorAttributes::ID_minFlag:
             // Disconnect the slot before setting the toggle and
@@ -588,39 +931,103 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             connect(maxToggle, SIGNAL(toggled(bool)),
                     this, SLOT(maxToggled(bool)));
             break;
+
+            // centering
         case PseudocolorAttributes::ID_centering:
             centeringButtons->blockSignals(true);
             centeringButtons->button(pcAtts->GetCentering())->setChecked(true);
             centeringButtons->blockSignals(false);
             break;
-        case PseudocolorAttributes::ID_scaling:
-            scalingButtons->blockSignals(true);
-            scalingButtons->button(pcAtts->GetScaling())->setChecked(true);
-            scalingButtons->blockSignals(false);
 
-            if( pcAtts->GetScaling() == PseudocolorAttributes::Skew )
-            {
-              skewLineEdit->setEnabled(true);
-            }
-            else
-            {
-              skewLineEdit->setEnabled(false);
-            }
+            // color table
+        case PseudocolorAttributes::ID_colorTableName:
+            colorTableWidget->setColorTable(pcAtts->GetColorTableName().c_str());
+            break;
+        case PseudocolorAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(pcAtts->GetInvertColorTable());
+            break;
 
+            // opacity
+        case PseudocolorAttributes::ID_opacityVariable:
+          temp = pcAtts->GetOpacityVariable().c_str();
+          opacityVar->setText(temp);
+          break;
+            
+        case PseudocolorAttributes::ID_opacity:
+            opacitySlider->blockSignals(true);
+            opacitySlider->setValue(int((float)pcAtts->GetOpacity() * 255.f));
+            opacitySlider->blockSignals(false);
             break;
-        case PseudocolorAttributes::ID_limitsMode:
-            limitsSelect->blockSignals(true);
-            limitsSelect->setCurrentIndex(pcAtts->GetLimitsMode());
-            limitsSelect->blockSignals(false);
-            break;
-        case PseudocolorAttributes::ID_min:
-            temp.setNum(pcAtts->GetMin());
-            minLineEdit->setText(temp);
-            break;
-        case PseudocolorAttributes::ID_max:
-            temp.setNum(pcAtts->GetMax());
-            maxLineEdit->setText(temp);
-            break;
+
+        case PseudocolorAttributes::ID_opacityVarMin:
+          temp.setNum(pcAtts->GetOpacityVarMin());
+          opacityVarMin->setText(temp);
+          break;
+
+        case PseudocolorAttributes::ID_opacityVarMax:
+          temp.setNum(pcAtts->GetOpacityVarMax());
+          opacityVarMax->setText(temp);
+          break;
+            
+        case PseudocolorAttributes::ID_opacityType:
+          if (pcAtts->GetOpacityType() == PseudocolorAttributes::FullyOpaque ||
+              pcAtts->GetOpacityType() == PseudocolorAttributes::ColorTable)
+          {
+            opacitySlider->hide();
+            opacityVar->hide();
+            opacityVarLabel->hide();
+            // opacityMinToggle->hide();
+            // opacityMaxToggle->hide();
+            // opacityVarMin->hide();
+            // opacityVarMax->hide();
+            opacityMinMaxGroup->hide();
+          }
+          else if (pcAtts->GetOpacityType() == PseudocolorAttributes::Constant ||
+                   pcAtts->GetOpacityType() == PseudocolorAttributes::Ramp)
+          {
+            opacitySlider->show();
+            opacityVar->hide();
+            opacityVarLabel->hide();
+            // opacityMinToggle->hide();
+            // opacityMaxToggle->hide();
+            // opacityVarMin->hide();
+            // opacityVarMax->hide();
+            opacityMinMaxGroup->hide();
+          }
+          else if (pcAtts->GetOpacityType() == PseudocolorAttributes::VariableRange)
+          {
+            opacitySlider->show();
+            opacityVar->show();
+            opacityVarLabel->show();
+            // opacityMinToggle->show();
+            // opacityMaxToggle->show();
+            // opacityVarMin->show();
+            // opacityVarMax->show();
+            opacityMinMaxGroup->show();
+          }
+            
+          opacityType->blockSignals(true);
+          opacityType->setCurrentIndex(int(pcAtts->GetOpacityType()));
+          opacityType->blockSignals(false);
+          break;
+            
+        case PseudocolorAttributes::ID_opacityVarMinFlag:
+          opacityMinToggle->blockSignals(true);
+          opacityMinToggle->setChecked(pcAtts->GetOpacityVarMinFlag());
+              
+          opacityVarMin->setEnabled(pcAtts->GetOpacityVarMinFlag());
+          opacityMinToggle->blockSignals(false);
+          break;
+
+        case PseudocolorAttributes::ID_opacityVarMaxFlag:
+          opacityMaxToggle->blockSignals(true);
+          opacityMaxToggle->setChecked(pcAtts->GetOpacityVarMaxFlag());
+              
+          opacityVarMax->setEnabled(pcAtts->GetOpacityVarMaxFlag());
+          opacityMaxToggle->blockSignals(false);
+          break;
+
+          // point
         case PseudocolorAttributes::ID_pointSize:
             pointControl->blockSignals(true);
             pointControl->SetPointSize(pcAtts->GetPointSize());
@@ -630,26 +1037,6 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             pointControl->blockSignals(true);
             pointControl->SetPointType(pcAtts->GetPointType());
             pointControl->blockSignals(false);
-            break;
-        case PseudocolorAttributes::ID_skewFactor:
-            temp.setNum(pcAtts->GetSkewFactor());
-            skewLineEdit->setText(temp);
-            break;
-        case PseudocolorAttributes::ID_opacity:
-            opacitySlider->blockSignals(true);
-            opacitySlider->setValue(int((float)pcAtts->GetOpacity() * 255.f));
-            opacitySlider->blockSignals(false);
-            break;
-        case PseudocolorAttributes::ID_colorTableName:
-            colorTableWidget->setColorTable(pcAtts->GetColorTableName().c_str());
-            break;
-        case PseudocolorAttributes::ID_invertColorTable:
-            colorTableWidget->setInvertColorTable(pcAtts->GetInvertColorTable());
-            break;
-        case PseudocolorAttributes::ID_smoothingLevel:
-            smoothingLevelButtons->blockSignals(true);
-            smoothingLevelButtons->button(pcAtts->GetSmoothingLevel())->setChecked(true);
-            smoothingLevelButtons->blockSignals(false);
             break;
         case PseudocolorAttributes::ID_pointSizeVarEnabled:
             pointControl->blockSignals(true);
@@ -667,22 +1054,268 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             pointControl->SetPointSizePixels(pcAtts->GetPointSizePixels());
             pointControl->blockSignals(false);
             break;
+
+            // line
+        case PseudocolorAttributes::ID_lineType:
+            lineType->blockSignals(true);
+            lineType->setCurrentIndex(int(pcAtts->GetLineType()));
+            lineType->blockSignals(false);
+
+            if( pcAtts->GetLineType() == PseudocolorAttributes::Line )
+            {
+              lineStyleLabel->show();
+              lineStyle->show();
+              lineWidthLabel->show();
+              lineWidth->show();
+            }
+            else
+            {
+              lineStyleLabel->hide();
+              lineStyle->hide();
+              lineWidthLabel->hide();
+              lineWidth->hide();
+            }
+
+            if( pcAtts->GetLineType() == PseudocolorAttributes::Tube )
+            {
+              tubeDisplayDensityLabel->show();
+              tubeDisplayDensity->show();
+              tubeRadiusLabel->show();
+              tubeRadius->show();
+              tubeRadiusSizeType->show();
+              
+              tubeRadiusVary->show();
+              tubeRadiusVaryVariableLabel->show();
+              tubeRadiusVaryVariable->show();
+              tubeRadiusVaryFactorLabel->show();
+              tubeRadiusVaryFactorEdit->show();
+            }
+            else
+            {
+              tubeDisplayDensityLabel->hide();
+              tubeDisplayDensity->hide();
+              tubeRadiusLabel->hide();
+              tubeRadius->hide();
+              tubeRadiusSizeType->hide();
+              
+              tubeRadiusVary->hide();
+              tubeRadiusVaryVariableLabel->hide();
+              tubeRadiusVaryVariable->hide();
+              tubeRadiusVaryFactorLabel->hide();
+              tubeRadiusVaryFactorEdit->hide();
+            }
+
+            break;
+
         case PseudocolorAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(pcAtts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
+
         case PseudocolorAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(pcAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case PseudocolorAttributes::ID_opacityType:
-            opacityButtons->blockSignals(true);
-            opacityButtons->button(pcAtts->GetOpacityType())->setChecked(true);
-            opacitySlider->setEnabled(!pcAtts->GetOpacityType());
-            opacitySliderLabel->setEnabled(!pcAtts->GetOpacityType());
-            opacityButtons->blockSignals(false);
+
+            // tube
+          case PseudocolorAttributes::ID_tubeDisplayDensity:
+            tubeDisplayDensity->blockSignals(true);
+            tubeDisplayDensity->setValue(pcAtts->GetTubeDisplayDensity());
+            tubeDisplayDensity->blockSignals(false);
+            break;
+
+        case PseudocolorAttributes::ID_tubeRadiusSizeType:
+            tubeRadiusSizeType->blockSignals(true);
+            tubeRadiusSizeType->setCurrentIndex((int) pcAtts->GetTubeRadiusSizeType());
+            tubeRadiusSizeType->blockSignals(false);
+            if (pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute)
+            {
+                temp.setNum(pcAtts->GetTubeRadiusAbsolute());
+                tubeRadius->setText(temp);
+            }
+            else
+            {
+                temp.setNum(pcAtts->GetTubeRadiusBBox());
+                tubeRadius->setText(temp);
+            }
+            break;
+        case PseudocolorAttributes::ID_tubeRadiusAbsolute:
+            if (pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute)
+            {
+                temp.setNum(pcAtts->GetTubeRadiusAbsolute());
+                tubeRadius->setText(temp);
+            }
+            break;
+        case PseudocolorAttributes::ID_tubeRadiusBBox:
+            if (pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::FractionOfBBox)
+            {
+                temp.setNum(pcAtts->GetTubeRadiusBBox());
+                tubeRadius->setText(temp);
+            }
+            break;
+
+        case PseudocolorAttributes::ID_varyTubeRadius:
+            tubeRadiusVary->blockSignals(true);
+
+            tubeRadiusVary->setChecked( pcAtts->GetVaryTubeRadius() );
+            tubeRadiusVaryVariableLabel->setEnabled( pcAtts->GetVaryTubeRadius() );
+            tubeRadiusVaryVariable->setEnabled( pcAtts->GetVaryTubeRadius() );
+            tubeRadiusVaryFactorLabel->setEnabled( pcAtts->GetVaryTubeRadius() );
+            tubeRadiusVaryFactorEdit->setEnabled( pcAtts->GetVaryTubeRadius() );              
+            tubeRadiusVary->blockSignals(false);
+
+        case PseudocolorAttributes::ID_varyTubeRadiusVariable:
+            tubeRadiusVaryVariable->blockSignals(true);
+            temp = pcAtts->GetVaryTubeRadiusVariable().c_str();
+            tubeRadiusVaryVariable->setText(temp);
+            tubeRadiusVaryVariable->blockSignals(false);
+            break;
+
+        case PseudocolorAttributes::ID_varyTubeRadiusFactor:
+            tubeRadiusVaryFactorEdit->blockSignals(true);
+            temp.setNum(pcAtts->GetVaryTubeRadiusFactor());
+            tubeRadiusVaryFactorEdit->setText(temp);
+            tubeRadiusVaryFactorEdit->blockSignals(false);
+            break;
+
+            // endpoints
+        case PseudocolorAttributes::ID_endPointType:
+            endPointType->blockSignals(true);
+            endPointType->setCurrentIndex(int(pcAtts->GetEndPointType()));
+            endPointType->blockSignals(false);
+            
+            if( bool(pcAtts->GetEndPointType()) )
+            {
+              endPointStyleLabel->show();
+              endPointStyle->show();
+              endPointRadiusSizeType->show();
+              endPointRadiusLabel->show();
+              endPointRadius->show();
+              
+              endPointRatioLabel->show();
+              endPointRatio->show();
+            }
+            else
+            {
+              endPointStyleLabel->hide();
+              endPointStyle->hide();
+              endPointRadiusSizeType->hide();
+              endPointRadiusLabel->hide();
+              endPointRadius->hide();         
+              endPointRatioLabel->hide();
+              endPointRatio->hide();
+            }
+
+            endPointStyleLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
+            endPointStyle->setEnabled( bool(pcAtts->GetEndPointType()) );
+            endPointRadiusSizeType->setEnabled( bool(pcAtts->GetEndPointType()) );
+            endPointRadiusLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
+            endPointRadius->setEnabled( bool(pcAtts->GetEndPointType()) );
+
+            endPointRatioLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
+            endPointRatio->setEnabled( bool(pcAtts->GetEndPointType()) );
+
+            break;
+
+        case PseudocolorAttributes::ID_endPointStyle:
+            endPointStyle->blockSignals(true);
+            endPointStyle->setCurrentIndex(int(pcAtts->GetEndPointStyle()));
+            endPointStyle->blockSignals(false);
+
+            if( pcAtts->GetEndPointStyle() == PseudocolorAttributes::Cones )
+            {
+              endPointRatioLabel->show();
+              endPointRatio->show();
+            }
+            else
+            {
+              endPointRatioLabel->hide();
+              endPointRatio->hide();
+            }
+            break;
+
+        case PseudocolorAttributes::ID_endPointRadiusSizeType:
+            endPointRadiusSizeType->blockSignals(true);
+            endPointRadiusSizeType->setCurrentIndex((int) pcAtts->GetEndPointRadiusSizeType());
+            endPointRadiusSizeType->blockSignals(false);
+            if (pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute)
+            {
+                temp.setNum(pcAtts->GetEndPointRadiusAbsolute());
+                endPointRadius->setText(temp);
+            }
+            else
+            {
+                temp.setNum(pcAtts->GetEndPointRadiusBBox());
+                endPointRadius->setText(temp);
+            }
+            break;
+        case PseudocolorAttributes::ID_endPointRadiusAbsolute:
+            if (pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute)
+            {
+                temp.setNum(pcAtts->GetEndPointRadiusAbsolute());
+                endPointRadius->setText(temp);
+            }
+            break;
+        case PseudocolorAttributes::ID_endPointRadiusBBox:
+            if (pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::FractionOfBBox)
+            {
+                temp.setNum(pcAtts->GetEndPointRadiusBBox());
+                endPointRadius->setText(temp);
+            }
+            break;
+        case PseudocolorAttributes::ID_endPointRatio:
+            temp.setNum(pcAtts->GetEndPointRatio());
+            endPointRatio->setText(temp);
+            break;
+
+            // smoothing
+        case PseudocolorAttributes::ID_smoothingLevel:
+            smoothingLevelButtons->blockSignals(true);
+            smoothingLevelButtons->button(pcAtts->GetSmoothingLevel())->setChecked(true);
+            smoothingLevelButtons->blockSignals(false);
+            break;
+
+            // render surface
+        case PseudocolorAttributes::ID_renderSurfaces:
+            renderSurfaces->blockSignals(true);
+            renderSurfaces->setChecked( pcAtts->GetRenderSurfaces() );
+            renderSurfaces->blockSignals(false);
+            break;
+            // render surface
+        case PseudocolorAttributes::ID_renderWireframe:
+            renderWireframe->blockSignals(true);
+            renderWireframe->setChecked( pcAtts->GetRenderWireframe() );
+            renderWireframe->blockSignals(false);
+            break;
+            // render surface
+        case PseudocolorAttributes::ID_renderPoints:
+            renderPoints->blockSignals(true);
+            renderPoints->setChecked( pcAtts->GetRenderPoints() );
+            renderPoints->blockSignals(false);
+            break;
+
+            // legend
+        case PseudocolorAttributes::ID_legendFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(legendToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(legendToggled(bool)));
+            legendToggle->setChecked(pcAtts->GetLegendFlag());
+            connect(legendToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(legendToggled(bool)));
+            break;
+
+            // lighting
+        case PseudocolorAttributes::ID_lightingFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(lightingToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(lightingToggled(bool)));
+            lightingToggle->setChecked(pcAtts->GetLightingFlag());
+            connect(lightingToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(lightingToggled(bool)));
             break;
         }
     } // end for
@@ -725,6 +1358,19 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     bool doAll = (which_widget == -1);
     QString msg, temp;
 
+    // Do the skew factor value
+    if(which_widget == PseudocolorAttributes::ID_skewFactor || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(skewLineEdit, val))
+            pcAtts->SetSkewFactor(val);
+        else
+        {
+            ResettingError(tr("maximum value"), DoubleToQString(pcAtts->GetSkewFactor()));
+            pcAtts->SetSkewFactor(pcAtts->GetSkewFactor());
+        }
+    }
+    
     // Do the minimum value.
     if(which_widget == PseudocolorAttributes::ID_min || doAll)
     {
@@ -751,19 +1397,135 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do the skew factor value
-    if(which_widget == PseudocolorAttributes::ID_skewFactor || doAll)
+    // opacityMin
+    if(which_widget == PseudocolorAttributes::ID_opacityVarMin || doAll)
     {
         double val;
-        if(LineEditGetDouble(skewLineEdit, val))
-            pcAtts->SetSkewFactor(val);
+        if(LineEditGetDouble(opacityVarMin, val))
+            pcAtts->SetOpacityVarMin(val);
         else
         {
-            ResettingError(tr("maximum value"), DoubleToQString(pcAtts->GetSkewFactor()));
-            pcAtts->SetSkewFactor(pcAtts->GetSkewFactor());
+            ResettingError(tr("Opacity Min"),
+                DoubleToQString(pcAtts->GetOpacityVarMin()));
+            pcAtts->SetOpacityVarMin(pcAtts->GetOpacityVarMin());
         }
     }
 
+    // opacityMax
+    if(which_widget == PseudocolorAttributes::ID_opacityVarMax || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(opacityVarMax, val))
+            pcAtts->SetOpacityVarMax(val);
+        else
+        {
+            ResettingError(tr("Opacity Max"),
+                DoubleToQString(pcAtts->GetOpacityVarMax()));
+            pcAtts->SetOpacityVarMax(pcAtts->GetOpacityVarMax());
+        }
+    }
+
+    // tube density
+    if (which_widget == PseudocolorAttributes::ID_tubeDisplayDensity|| doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = tubeDisplayDensity->value();
+        pcAtts->SetTubeDisplayDensity(val);
+    }
+
+    // tube radius
+    if ((which_widget == PseudocolorAttributes::ID_tubeRadiusAbsolute || doAll)
+        && pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute)
+    {
+        double val;
+        if(LineEditGetDouble(tubeRadius, val))
+            pcAtts->SetTubeRadiusAbsolute(val);
+        else
+        {
+            ResettingError(tr("tube radius"),
+                DoubleToQString(pcAtts->GetTubeRadiusAbsolute()));
+            pcAtts->SetTubeRadiusAbsolute(pcAtts->GetTubeRadiusAbsolute());
+        }
+    }
+    if ((which_widget == PseudocolorAttributes::ID_tubeRadiusBBox || doAll)
+        && pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::FractionOfBBox)
+    {
+        double val;
+        if(LineEditGetDouble(tubeRadius, val))
+            pcAtts->SetTubeRadiusBBox(val);
+        else
+        {
+            ResettingError(tr("tube radius"),
+                DoubleToQString(pcAtts->GetTubeRadiusBBox()));
+            pcAtts->SetTubeRadiusBBox(pcAtts->GetTubeRadiusBBox());
+        }
+    }
+
+    // tube radius vary factor
+    if (which_widget == PseudocolorAttributes::ID_varyTubeRadiusFactor || doAll)
+    {
+        double val;
+        bool res = LineEditGetDouble(tubeRadiusVaryFactorEdit, val);
+        if (res)
+        {
+            if (val >= 1.0)
+                pcAtts->SetVaryTubeRadiusFactor(val);
+            else
+            {
+                ResettingError(tr("Tube vary radius factor must be >= 1.0"),
+                               DoubleToQString(pcAtts->GetVaryTubeRadiusFactor()));
+                pcAtts->SetVaryTubeRadiusFactor(pcAtts->GetVaryTubeRadiusFactor());
+            }
+        }
+        else
+        {
+            ResettingError(tr("Tube vary radius factor"),
+                DoubleToQString(pcAtts->GetVaryTubeRadiusFactor()));
+            pcAtts->SetVaryTubeRadiusFactor(pcAtts->GetVaryTubeRadiusFactor());
+        }
+    }
+
+    // endPoint radius
+    if ((which_widget == PseudocolorAttributes::ID_endPointRadiusAbsolute || doAll)
+        && pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute)
+    {
+        double val;
+        if(LineEditGetDouble(endPointRadius, val))
+            pcAtts->SetEndPointRadiusAbsolute(val);
+        else
+        {
+            ResettingError(tr("endPoint radius"),
+                DoubleToQString(pcAtts->GetEndPointRadiusAbsolute()));
+            pcAtts->SetEndPointRadiusAbsolute(pcAtts->GetEndPointRadiusAbsolute());
+        }
+    }
+
+    if ((which_widget == PseudocolorAttributes::ID_endPointRadiusBBox || doAll)
+        && pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::FractionOfBBox)
+    {
+        double val;
+        if(LineEditGetDouble(endPointRadius, val))
+            pcAtts->SetEndPointRadiusBBox(val);
+        else
+        {
+            ResettingError(tr("endPoint radius"),
+                DoubleToQString(pcAtts->GetEndPointRadiusBBox()));
+            pcAtts->SetEndPointRadiusBBox(pcAtts->GetEndPointRadiusBBox());
+        }
+    }
+
+    if (which_widget == PseudocolorAttributes::ID_endPointRatio || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(endPointRatio, val))
+            pcAtts->SetEndPointRatio(val);
+        else
+        {
+            ResettingError(tr("endPoint ratio"),
+                DoubleToQString(pcAtts->GetEndPointRatio()));
+            pcAtts->SetEndPointRatio(pcAtts->GetEndPointRatio());
+        }
+    }
     // Do the point size value and point size var value.
     if(doAll)
     {
@@ -841,17 +1603,6 @@ QvisPseudocolorPlotWindow::reset()
 }
 
 void
-QvisPseudocolorPlotWindow::centeringClicked(int button)
-{
-    // Only do it if it changed.
-    if(button != pcAtts->GetCentering())
-    {
-        pcAtts->SetCentering(PseudocolorAttributes::Centering(button));
-        Apply();
-    }
-}
-
-void
 QvisPseudocolorPlotWindow::scaleClicked(int scale)
 {
     // Only do it if it changed.
@@ -860,6 +1611,13 @@ QvisPseudocolorPlotWindow::scaleClicked(int scale)
         pcAtts->SetScaling(PseudocolorAttributes::Scaling(scale));
         Apply();
     }
+}
+
+void
+QvisPseudocolorPlotWindow::processSkewText()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_skewFactor);
+    Apply();
 }
 
 void
@@ -872,7 +1630,6 @@ QvisPseudocolorPlotWindow::limitsSelectChanged(int mode)
         Apply();
     }
 }
-
 
 void
 QvisPseudocolorPlotWindow::processMinLimitText()
@@ -903,31 +1660,14 @@ QvisPseudocolorPlotWindow::maxToggled(bool val)
 }
 
 void
-QvisPseudocolorPlotWindow::legendToggled(bool val)
+QvisPseudocolorPlotWindow::centeringClicked(int button)
 {
-    pcAtts->SetLegendFlag(val);
-    Apply();
-}
-
-void
-QvisPseudocolorPlotWindow::lightingToggled(bool val)
-{
-    pcAtts->SetLightingFlag(val);
-    Apply();
-}
-
-void
-QvisPseudocolorPlotWindow::processSkewText()
-{
-    GetCurrentValues(PseudocolorAttributes::ID_skewFactor);
-    Apply();
-}
-
-void
-QvisPseudocolorPlotWindow::changedOpacity(int opacity, const void*)
-{
-    pcAtts->SetOpacity((float)opacity/255.);
-    Apply();
+    // Only do it if it changed.
+    if(button != pcAtts->GetCentering())
+    {
+        pcAtts->SetCentering(PseudocolorAttributes::Centering(button));
+        Apply();
+    }
 }
 
 // ****************************************************************************
@@ -980,28 +1720,53 @@ QvisPseudocolorPlotWindow::invertColorTableToggled(bool val)
     Apply();
 }
 
-// ****************************************************************************
-//  Method:  QvisPseudocolorPlotWindow::smoothingLevelChanged
-//
-//  Purpose:
-//    Qt slot function that is called when one of the smoothing buttons
-//    is clicked.
-//
-//  Arguments:
-//    level  :   The new level.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    December  9, 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
+void
+QvisPseudocolorPlotWindow::opacityTypeChanged(int val)
+{
+    pcAtts->SetOpacityType((PseudocolorAttributes::OpacityType)val);
+    Apply();
+}
 
 void
-QvisPseudocolorPlotWindow::smoothingLevelChanged(int level)
+QvisPseudocolorPlotWindow::opacityVariableChanged(const QString &var)
 {
-    pcAtts->SetSmoothingLevel(level);
-    SetUpdate(false);
+    pcAtts->SetOpacityVariable(var.toStdString());
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::opacityChanged(int opacity, const void*)
+{
+    pcAtts->SetOpacity((double)opacity/255.);
+    Apply();
+}
+
+
+void
+QvisPseudocolorPlotWindow::opacityMinToggled(bool val)
+{
+    pcAtts->SetOpacityVarMinFlag(val);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::opacityMaxToggled(bool val)
+{
+    pcAtts->SetOpacityVarMaxFlag(val);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::processOpacityVarMin()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_opacityVarMin);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::processOpacityVarMax()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_opacityVarMax);
     Apply();
 }
 
@@ -1118,6 +1883,30 @@ QvisPseudocolorPlotWindow::pointSizeVarChanged(const QString &var)
 
 
 // ****************************************************************************
+// Method: QvisContourPlotWindow::lineTypeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the window's
+//   line type is changed.
+//
+// Arguments:
+//   newType : The new line type.
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 26, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::lineTypeChanged(int newType)
+{
+    pcAtts->SetLineType((PseudocolorAttributes::LineType)newType);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisContourPlotWindow::lineStyleChanged
 //
 // Purpose: 
@@ -1166,32 +1955,148 @@ QvisPseudocolorPlotWindow::lineWidthChanged(int newWidth)
 }
 
 
-// ****************************************************************************
-// Method: QvisPseudocolorPlotWindow::setOpaacityClicked
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 
-//   setOpacityExplicitly button is toggled.
-//
-// Arguments:
-//   val : The new state of the setOpacityExplicitly toggle.
-//
-// Programmer: Jeremy Meredith
-// Creation:   February 20, 2009
-//   
-// ****************************************************************************
-
 void
-QvisPseudocolorPlotWindow::setOpaacityClicked(int opacity)
+QvisPseudocolorPlotWindow::tubeDisplayDensityChanged(int val)
 {
-    // Only do it if it changed.
-    if(opacity != pcAtts->GetOpacityType())
-    {
-        pcAtts->SetOpacityType(PseudocolorAttributes::Opacity(opacity));
-        opacitySliderLabel->setEnabled(!opacity);
-        opacitySlider->setEnabled(!opacity);
-        Apply();
-    }
+    pcAtts->SetTubeDisplayDensity(val);
+    Apply();
 }
 
 
+void
+QvisPseudocolorPlotWindow::tubeRadiusProcessText()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_tubeRadiusAbsolute);
+    GetCurrentValues(PseudocolorAttributes::ID_tubeRadiusBBox);
+    Apply();
+}
+
+void 
+QvisPseudocolorPlotWindow::tubeRadiusSizeTypeChanged(int v)
+{
+    pcAtts->SetTubeRadiusSizeType((PseudocolorAttributes::SizeType) v);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::tubeRadiusVaryChanged(bool val)
+{
+    pcAtts->SetVaryTubeRadius( val );
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::tubeRadiusVaryVariableChanged(const QString &var)
+{
+    pcAtts->SetVaryTubeRadiusVariable(var.toStdString());
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::tubeRadiusVaryFactorProcessText()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_varyTubeRadiusFactor);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::endPointTypeChanged(int newType)
+{
+    pcAtts->SetEndPointType((PseudocolorAttributes::EndPointType)newType);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::endPointStyleChanged(int newStyle)
+{
+    pcAtts->SetEndPointStyle((PseudocolorAttributes::EndPointStyle)newStyle);
+    Apply();
+}
+
+
+void
+QvisPseudocolorPlotWindow::endPointRadiusProcessText()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_endPointRadiusAbsolute);
+    GetCurrentValues(PseudocolorAttributes::ID_endPointRadiusBBox);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::endPointRatioProcessText()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_endPointRatio);
+    Apply();
+}
+
+void 
+QvisPseudocolorPlotWindow::endPointRadiusSizeTypeChanged(int v)
+{
+    pcAtts->SetEndPointRadiusSizeType((PseudocolorAttributes::SizeType) v);
+    Apply();
+}
+
+
+
+// ****************************************************************************
+//  Method:  QvisPseudocolorPlotWindow::smoothingLevelChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the smoothing buttons
+//    is clicked.
+//
+//  Arguments:
+//    level  :   The new level.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December  9, 2002
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::smoothingLevelChanged(int level)
+{
+    pcAtts->SetSmoothingLevel(level);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::renderSurfacesChanged(bool val)
+{
+    pcAtts->SetRenderSurfaces(val);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::renderWireframeChanged(bool val)
+{
+    pcAtts->SetRenderWireframe(val);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::renderPointsChanged(bool val)
+{
+    pcAtts->SetRenderPoints(val);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::legendToggled(bool val)
+{
+    pcAtts->SetLegendFlag(val);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::lightingToggled(bool val)
+{
+    pcAtts->SetLightingFlag(val);
+    Apply();
+}

@@ -40,6 +40,7 @@
 #define QVIS_PSEUDOCOLOR_WINDOW_H
 #include <QvisPostableWindowObserver.h>
 
+class QGroupBox;
 class QComboBox;
 class QLineEdit;
 class QCheckBox;
@@ -50,6 +51,8 @@ class QvisColorTableWidget;
 class QvisPointControl;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
+class QSpinBox;
 
 class Subject;
 class PseudocolorAttributes;
@@ -127,58 +130,142 @@ public slots:
     virtual void makeDefault();
     virtual void reset();
 protected:
+
+    void CreateGeometryTab(QWidget *);
+    void CreateDataTab(QWidget *);
+    void CreateExtrasTab(QWidget *);
+
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
 private slots:
-    void centeringClicked(int button);
-    void legendToggled(bool on);
-    void lightingToggled(bool on);
+
+    void scaleClicked(int scale);
+    void processSkewText();
+
+    void limitsSelectChanged(int);
     void minToggled(bool on);
     void maxToggled(bool on);
-    void setOpaacityClicked(int on);
     void processMaxLimitText();
     void processMinLimitText();
-    void processSkewText();
-    void scaleClicked(int scale);
-    void changedOpacity(int opacity, const void *);
+
+    void centeringClicked(int button);
+
     void colorTableClicked(bool useDefault, const QString &ctName);
     void invertColorTableToggled(bool val);
-    void limitsSelectChanged(int);
-    void smoothingLevelChanged(int index);
 
+    void opacityTypeChanged(int val);
+    void opacityVariableChanged(const QString &var);
+    void opacityChanged(int opacity, const void*);
+
+    void opacityMinToggled(bool);
+    void opacityMaxToggled(bool);
+    void processOpacityVarMin();
+    void processOpacityVarMax();
+
+    void pointTypeChanged(int index);
     void pointSizeChanged(double d);
     void pointSizePixelsChanged(int size);
-    void pointTypeChanged(int index);
     void pointSizeVarToggled(bool on);
     void pointSizeVarChanged(const QString &);
 
+    void lineTypeChanged(int newType);
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
+
+    void tubeDisplayDensityChanged(int val);
+    void tubeRadiusSizeTypeChanged(int v);
+    void tubeRadiusProcessText();
+    void tubeRadiusVaryChanged(bool val);
+    void tubeRadiusVaryVariableChanged(const QString &var);
+    void tubeRadiusVaryFactorProcessText();
+
+    void endPointTypeChanged(int newType);
+    void endPointStyleChanged(int newStyle);
+    void endPointRadiusSizeTypeChanged(int v);
+    void endPointRadiusProcessText();
+    void endPointRatioProcessText();
+
+    void smoothingLevelChanged(int index);
+    void renderSurfacesChanged(bool);
+    void renderWireframeChanged(bool);
+    void renderPointsChanged(bool);
+
+    void legendToggled(bool on);
+    void lightingToggled(bool on);
 
 private:
     int                   plotType;
     PseudocolorAttributes *pcAtts;
-    QButtonGroup          *centeringButtons;
-    QButtonGroup          *opacityButtons;
-    QCheckBox             *legendToggle;
-    QCheckBox             *lightingToggle;
-    QCheckBox             *minToggle;
-    QCheckBox             *maxToggle;
-    QComboBox             *limitsSelect;
-    QLineEdit             *maxLineEdit;
-    QLineEdit             *minLineEdit;
+
     QButtonGroup          *scalingButtons;
     QLineEdit             *skewLineEdit;
-    QLabel                *opacitySliderLabel;
-    QvisOpacitySlider     *opacitySlider;
+
+    QComboBox             *limitsSelect;
+    QCheckBox             *minToggle;
+    QCheckBox             *maxToggle;
+    QLineEdit             *maxLineEdit;
+    QLineEdit             *minLineEdit;
+
+    QButtonGroup          *centeringButtons;
+
     QvisColorTableWidget  *colorTableWidget;
-    QButtonGroup          *smoothingLevelButtons;
+
+    QComboBox *opacityType;
+    QLabel    *opacityVarLabel;
+    QvisVariableButton *opacityVar;
+    QvisOpacitySlider *opacitySlider;
+    QGroupBox *opacityMinMaxGroup;
+    QCheckBox *opacityMinToggle;
+    QCheckBox *opacityMaxToggle;
+    QLineEdit *opacityVarMin;
+    QLineEdit *opacityVarMax;
+
+    // QButtonGroup          *opacityButtons;
+    // QLabel                *opacitySliderLabel;
+    // QvisOpacitySlider     *opacitySlider;
+
     QvisPointControl      *pointControl;
+
+    QComboBox             *lineType;
+
     QLabel                *lineStyleLabel;
     QvisLineStyleWidget   *lineStyle;
     QLabel                *lineWidthLabel;
     QvisLineWidthWidget   *lineWidth;
+
+
+    QLabel             *tubeDisplayDensityLabel;
+    QSpinBox           *tubeDisplayDensity;
+    QLabel             *tubeRadiusLabel;
+    QLineEdit          *tubeRadius;
+    QComboBox          *tubeRadiusSizeType;
+
+    QCheckBox          *tubeRadiusVary;
+    QLabel             *tubeRadiusVaryVariableLabel;
+    QvisVariableButton *tubeRadiusVaryVariable;
+    QLabel             *tubeRadiusVaryFactorLabel;
+    QLineEdit          *tubeRadiusVaryFactorEdit;
+  
+    // QLineEdit *ribbonWidth;
+    // QComboBox *ribbonSizeType;
+
+    QComboBox *endPointType;
+    QLabel    *endPointStyleLabel;
+    QComboBox *endPointStyle;
+    QLabel    *endPointRadiusLabel;
+    QLineEdit *endPointRadius;
+    QComboBox *endPointRadiusSizeType;
+    QLabel    *endPointRatioLabel;
+    QLineEdit *endPointRatio;
+
+    QButtonGroup          *smoothingLevelButtons;
+    QCheckBox             *renderSurfaces;
+    QCheckBox             *renderWireframe;
+    QCheckBox             *renderPoints;
+
+    QCheckBox             *legendToggle;
+    QCheckBox             *lightingToggle;
 };
 
 #endif

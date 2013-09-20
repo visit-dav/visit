@@ -61,12 +61,6 @@
 class PseudocolorAttributes : public AttributeSubject
 {
 public:
-    enum Centering
-    {
-        Natural,
-        Nodal,
-        Zonal
-    };
     enum Scaling
     {
         Linear,
@@ -77,6 +71,20 @@ public:
     {
         OriginalData,
         CurrentPlot
+    };
+    enum Centering
+    {
+        Natural,
+        Nodal,
+        Zonal
+    };
+    enum OpacityType
+    {
+        ColorTable,
+        FullyOpaque,
+        Constant,
+        Ramp,
+        VariableRange
     };
     enum PointType
     {
@@ -89,10 +97,28 @@ public:
         Point,
         Sphere
     };
-    enum Opacity
+    enum LineType
     {
-        Explicit,
-        ColorTable
+        Line,
+        Tube,
+        Ribbon
+    };
+    enum EndPointType
+    {
+        None,
+        Tails,
+        Heads,
+        Both
+    };
+    enum EndPointStyle
+    {
+        Spheres,
+        Cones
+    };
+    enum SizeType
+    {
+        Absolute,
+        FractionOfBBox
     };
 
     // These constructors are for objects of this class
@@ -121,68 +147,111 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectColorTableName();
+    void SelectOpacityVariable();
     void SelectPointSizeVar();
+    void SelectVaryTubeRadiusVariable();
 
     // Property setting methods
-    void SetLegendFlag(bool legendFlag_);
-    void SetLightingFlag(bool lightingFlag_);
-    void SetMinFlag(bool minFlag_);
-    void SetMaxFlag(bool maxFlag_);
-    void SetCentering(Centering centering_);
     void SetScaling(Scaling scaling_);
-    void SetLimitsMode(LimitsMode limitsMode_);
-    void SetMin(double min_);
-    void SetMax(double max_);
-    void SetPointSize(double pointSize_);
-    void SetPointType(PointType pointType_);
     void SetSkewFactor(double skewFactor_);
-    void SetOpacity(double opacity_);
+    void SetLimitsMode(LimitsMode limitsMode_);
+    void SetMinFlag(bool minFlag_);
+    void SetMin(double min_);
+    void SetMaxFlag(bool maxFlag_);
+    void SetMax(double max_);
+    void SetCentering(Centering centering_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetInvertColorTable(bool invertColorTable_);
-    void SetSmoothingLevel(int smoothingLevel_);
+    void SetOpacityType(OpacityType opacityType_);
+    void SetOpacityVariable(const std::string &opacityVariable_);
+    void SetOpacity(double opacity_);
+    void SetOpacityVarMin(double opacityVarMin_);
+    void SetOpacityVarMax(double opacityVarMax_);
+    void SetOpacityVarMinFlag(bool opacityVarMinFlag_);
+    void SetOpacityVarMaxFlag(bool opacityVarMaxFlag_);
+    void SetPointSize(double pointSize_);
+    void SetPointType(PointType pointType_);
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
     void SetPointSizePixels(int pointSizePixels_);
+    void SetLineType(LineType lineType_);
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
-    void SetOpacityType(Opacity opacityType_);
+    void SetTubeDisplayDensity(int tubeDisplayDensity_);
+    void SetTubeRadiusSizeType(SizeType tubeRadiusSizeType_);
+    void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_);
+    void SetTubeRadiusBBox(double tubeRadiusBBox_);
+    void SetVaryTubeRadius(bool varyTubeRadius_);
+    void SetVaryTubeRadiusVariable(const std::string &varyTubeRadiusVariable_);
+    void SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_);
+    void SetEndPointType(EndPointType endPointType_);
+    void SetEndPointStyle(EndPointStyle endPointStyle_);
+    void SetEndPointRadiusSizeType(SizeType endPointRadiusSizeType_);
+    void SetEndPointRadiusAbsolute(double endPointRadiusAbsolute_);
+    void SetEndPointRadiusBBox(double endPointRadiusBBox_);
+    void SetEndPointRatio(double endPointRatio_);
+    void SetRenderSurfaces(int renderSurfaces_);
+    void SetRenderWireframe(int renderWireframe_);
+    void SetRenderPoints(int renderPoints_);
+    void SetSmoothingLevel(int smoothingLevel_);
+    void SetLegendFlag(bool legendFlag_);
+    void SetLightingFlag(bool lightingFlag_);
 
     // Property getting methods
-    bool              GetLegendFlag() const;
-    bool              GetLightingFlag() const;
-    bool              GetMinFlag() const;
-    bool              GetMaxFlag() const;
-    Centering         GetCentering() const;
     Scaling           GetScaling() const;
-    LimitsMode        GetLimitsMode() const;
-    double            GetMin() const;
-    double            GetMax() const;
-    double            GetPointSize() const;
-    PointType         GetPointType() const;
     double            GetSkewFactor() const;
-    double            GetOpacity() const;
+    LimitsMode        GetLimitsMode() const;
+    bool              GetMinFlag() const;
+    double            GetMin() const;
+    bool              GetMaxFlag() const;
+    double            GetMax() const;
+    Centering         GetCentering() const;
     const std::string &GetColorTableName() const;
           std::string &GetColorTableName();
     bool              GetInvertColorTable() const;
-    int               GetSmoothingLevel() const;
+    OpacityType       GetOpacityType() const;
+    const std::string &GetOpacityVariable() const;
+          std::string &GetOpacityVariable();
+    double            GetOpacity() const;
+    double            GetOpacityVarMin() const;
+    double            GetOpacityVarMax() const;
+    bool              GetOpacityVarMinFlag() const;
+    bool              GetOpacityVarMaxFlag() const;
+    double            GetPointSize() const;
+    PointType         GetPointType() const;
     bool              GetPointSizeVarEnabled() const;
     const std::string &GetPointSizeVar() const;
           std::string &GetPointSizeVar();
     int               GetPointSizePixels() const;
+    LineType          GetLineType() const;
     int               GetLineStyle() const;
     int               GetLineWidth() const;
-    Opacity           GetOpacityType() const;
+    int               GetTubeDisplayDensity() const;
+    SizeType          GetTubeRadiusSizeType() const;
+    double            GetTubeRadiusAbsolute() const;
+    double            GetTubeRadiusBBox() const;
+    bool              GetVaryTubeRadius() const;
+    const std::string &GetVaryTubeRadiusVariable() const;
+          std::string &GetVaryTubeRadiusVariable();
+    double            GetVaryTubeRadiusFactor() const;
+    EndPointType      GetEndPointType() const;
+    EndPointStyle     GetEndPointStyle() const;
+    SizeType          GetEndPointRadiusSizeType() const;
+    double            GetEndPointRadiusAbsolute() const;
+    double            GetEndPointRadiusBBox() const;
+    double            GetEndPointRatio() const;
+    int               GetRenderSurfaces() const;
+    int               GetRenderWireframe() const;
+    int               GetRenderPoints() const;
+    int               GetSmoothingLevel() const;
+    bool              GetLegendFlag() const;
+    bool              GetLightingFlag() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string Centering_ToString(Centering);
-    static bool Centering_FromString(const std::string &, Centering &);
-protected:
-    static std::string Centering_ToString(int);
-public:
     static std::string Scaling_ToString(Scaling);
     static bool Scaling_FromString(const std::string &, Scaling &);
 protected:
@@ -193,15 +262,40 @@ public:
 protected:
     static std::string LimitsMode_ToString(int);
 public:
+    static std::string Centering_ToString(Centering);
+    static bool Centering_FromString(const std::string &, Centering &);
+protected:
+    static std::string Centering_ToString(int);
+public:
+    static std::string OpacityType_ToString(OpacityType);
+    static bool OpacityType_FromString(const std::string &, OpacityType &);
+protected:
+    static std::string OpacityType_ToString(int);
+public:
     static std::string PointType_ToString(PointType);
     static bool PointType_FromString(const std::string &, PointType &);
 protected:
     static std::string PointType_ToString(int);
 public:
-    static std::string Opacity_ToString(Opacity);
-    static bool Opacity_FromString(const std::string &, Opacity &);
+    static std::string LineType_ToString(LineType);
+    static bool LineType_FromString(const std::string &, LineType &);
 protected:
-    static std::string Opacity_ToString(int);
+    static std::string LineType_ToString(int);
+public:
+    static std::string EndPointType_ToString(EndPointType);
+    static bool EndPointType_FromString(const std::string &, EndPointType &);
+protected:
+    static std::string EndPointType_ToString(int);
+public:
+    static std::string EndPointStyle_ToString(EndPointStyle);
+    static bool EndPointStyle_FromString(const std::string &, EndPointStyle &);
+protected:
+    static std::string EndPointStyle_ToString(int);
+public:
+    static std::string SizeType_ToString(SizeType);
+    static bool SizeType_FromString(const std::string &, SizeType &);
+protected:
+    static std::string SizeType_ToString(int);
 public:
 
     // Keyframing methods
@@ -217,59 +311,103 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_legendFlag = 0,
-        ID_lightingFlag,
-        ID_minFlag,
-        ID_maxFlag,
-        ID_centering,
-        ID_scaling,
-        ID_limitsMode,
-        ID_min,
-        ID_max,
-        ID_pointSize,
-        ID_pointType,
+        ID_scaling = 0,
         ID_skewFactor,
-        ID_opacity,
+        ID_limitsMode,
+        ID_minFlag,
+        ID_min,
+        ID_maxFlag,
+        ID_max,
+        ID_centering,
         ID_colorTableName,
         ID_invertColorTable,
-        ID_smoothingLevel,
+        ID_opacityType,
+        ID_opacityVariable,
+        ID_opacity,
+        ID_opacityVarMin,
+        ID_opacityVarMax,
+        ID_opacityVarMinFlag,
+        ID_opacityVarMaxFlag,
+        ID_pointSize,
+        ID_pointType,
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
         ID_pointSizePixels,
+        ID_lineType,
         ID_lineStyle,
         ID_lineWidth,
-        ID_opacityType,
+        ID_tubeDisplayDensity,
+        ID_tubeRadiusSizeType,
+        ID_tubeRadiusAbsolute,
+        ID_tubeRadiusBBox,
+        ID_varyTubeRadius,
+        ID_varyTubeRadiusVariable,
+        ID_varyTubeRadiusFactor,
+        ID_endPointType,
+        ID_endPointStyle,
+        ID_endPointRadiusSizeType,
+        ID_endPointRadiusAbsolute,
+        ID_endPointRadiusBBox,
+        ID_endPointRatio,
+        ID_renderSurfaces,
+        ID_renderWireframe,
+        ID_renderPoints,
+        ID_smoothingLevel,
+        ID_legendFlag,
+        ID_lightingFlag,
         ID__LAST
     };
 
 private:
-    bool        legendFlag;
-    bool        lightingFlag;
-    bool        minFlag;
-    bool        maxFlag;
-    int         centering;
     int         scaling;
-    int         limitsMode;
-    double      min;
-    double      max;
-    double      pointSize;
-    int         pointType;
     double      skewFactor;
-    double      opacity;
+    int         limitsMode;
+    bool        minFlag;
+    double      min;
+    bool        maxFlag;
+    double      max;
+    int         centering;
     std::string colorTableName;
     bool        invertColorTable;
-    int         smoothingLevel;
+    int         opacityType;
+    std::string opacityVariable;
+    double      opacity;
+    double      opacityVarMin;
+    double      opacityVarMax;
+    bool        opacityVarMinFlag;
+    bool        opacityVarMaxFlag;
+    double      pointSize;
+    int         pointType;
     bool        pointSizeVarEnabled;
     std::string pointSizeVar;
     int         pointSizePixels;
+    int         lineType;
     int         lineStyle;
     int         lineWidth;
-    int         opacityType;
+    int         tubeDisplayDensity;
+    int         tubeRadiusSizeType;
+    double      tubeRadiusAbsolute;
+    double      tubeRadiusBBox;
+    bool        varyTubeRadius;
+    std::string varyTubeRadiusVariable;
+    double      varyTubeRadiusFactor;
+    int         endPointType;
+    int         endPointStyle;
+    int         endPointRadiusSizeType;
+    double      endPointRadiusAbsolute;
+    double      endPointRadiusBBox;
+    double      endPointRatio;
+    int         renderSurfaces;
+    int         renderWireframe;
+    int         renderPoints;
+    int         smoothingLevel;
+    bool        legendFlag;
+    bool        lightingFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PSEUDOCOLORATTRIBUTES_TMFS "bbbbiiidddiddsbibsiiii"
+#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiiddbsdiiidddiiiibb"
 
 #endif
