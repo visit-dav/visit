@@ -110,8 +110,9 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     virtual void makeDefault();
     virtual void reset();
   protected:
-    void CreateAppearanceTab(QWidget *);
-    void CreateRenderingTab(QWidget *);
+    void CreateDataTab(QWidget *);
+    void CreateGeometryTab(QWidget *);
+    void CreateExtrasTab(QWidget *);
 
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
@@ -208,9 +209,6 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     QLabel              *timeCueBallSizeLabel;
     QLabel              *lineTimeCueWidthLabel;
     QLabel              *timeForTimeCueLabel;
-
-    QWidget             *renderingOptions;
-    QWidget             *cueOptions;
 
     QCheckBox           *polarToggle;
     QComboBox           *polarOrder;
