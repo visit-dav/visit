@@ -26,7 +26,7 @@ Postfix:
                 return -1;
             }
             if(ival == 0)
-                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Explicit);
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
             else
                 PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
     
@@ -77,7 +77,11 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
 
     return (centering != obj.centering ||
             needSecondaryVar ||
-            smoothingLevel != obj.smoothingLevel); 
+            smoothingLevel != obj.smoothingLevel ||
+            renderSurfaces != obj.renderSurfaces ||
+            renderWireframe != obj.renderWireframe ||
+            renderPoints != obj.renderPoints ||
+            0);
 
 }
 
@@ -124,7 +128,7 @@ PseudocolorAttributes::Print(ostream &out, bool selected_only) const
           case  8: out << "max=" << GetMax();                  break;
           case  9: out << "pointSize=" << GetPointSize();      break;
           case 10: out << "skewFactor=" << GetSkewFactor();    break;
-          case 11: out << "opacity=" << GetOpacity();          break;
+          case 11: out << "opacityType=" << GetOpacityType();  break;
           case 12: out << "colorTableName=" << GetColorTableName().c_str(); break;
         }
         out << ",";
@@ -165,9 +169,26 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
         DataNode *k = 0;
         if((k = searchNode->GetNode("useColorTableOpacity")) != 0)
         {
-            PseudocolorAttributes::Opacity val = k->AsBool() ? ColorTable : Explicit;
+            double opacity = 1.0;
+
+            PseudocolorAttributes::OpacityType val =
+                k->AsBool() ? ColorTable : Constant;        
+
+            if( val == Constant )
+            {
+                DataNode *op = 0;
+                if((op = searchNode->GetNode("opacity")) != 0)
+                {
+                    opacity = op->AsDouble();
+                }
+
+               if( opacity == 1.0 )
+                   val = FullyOpaque;
+            }
+
             searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("opacityType", Opacity_ToString(val)));
+            searchNode->AddNode(new DataNode("opacityType",
+                                              OpacityType_ToString(val)));
         }
     }
 }

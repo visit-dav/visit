@@ -7,11 +7,6 @@
       avtPseudocolorFilter.C
     </Files>
     <Attribute name="PseudocolorAttributes" purpose="Attributes for the pseudocolor plot" persistent="true" codefile="Pseudocolor.code">
-      <Enum name="Centering">
-        Natural
-        Nodal
-        Zonal
-      </Enum>
       <Enum name="Scaling">
         Linear
         Log
@@ -20,6 +15,18 @@
       <Enum name="LimitsMode">
         OriginalData
         CurrentPlot
+      </Enum>
+      <Enum name="Centering">
+        Natural
+        Nodal
+        Zonal
+      </Enum>
+      <Enum name="OpacityType">
+        ColorTable
+        FullyOpaque
+        Constant
+        Ramp
+        VariableRange
       </Enum>
       <Enum name="PointType">
         Box
@@ -31,57 +38,86 @@
         Point
         Sphere
       </Enum>
-      <Enum name="Opacity">
-        Explicit
-        ColorTable
+      <Enum name="LineType">
+        Line
+        Tube
+        Ribbon
       </Enum>
-       <Field name="legendFlag" label="Legend" type="bool">
-        true
+      <Enum name="EndPointType">
+        None
+        Tails
+        Heads
+        Both
+      </Enum>
+      <Enum name="EndPointStyle">
+        Spheres
+        Cones
+      </Enum>
+      <Enum name="SizeType">
+        Absolute
+        FractionOfBBox
+      </Enum>
+
+      <Field name="scaling" label="Scale" type="enum" subtype="Scaling">
+        Linear
       </Field>
-      <Field name="lightingFlag" label="Lighting" type="bool">
-        true
+
+      <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
+        1.000000
+      </Field>
+
+      <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
+        OriginalData
       </Field>
       <Field name="minFlag" label="Use min" type="bool">
         false
       </Field>
-      <Field name="maxFlag" label="Use max" type="bool">
-        false
-      </Field>
-      <Field name="centering" label="Centering" type="enum" subtype="Centering">
-        Natural
-      </Field>
-      <Field name="scaling" label="Scale" type="enum" subtype="Scaling">
-        Linear
-      </Field>
-      <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
-        OriginalData
-      </Field>
       <Field name="min" label="Minimum" type="double" enabler="minFlag:true">
         0.000000
+      </Field>
+      <Field name="maxFlag" label="Use max" type="bool">
+        false
       </Field>
       <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
-      <Field name="pointSize" label="Point size" type="double">
-        0.050000
+
+      <Field name="centering" label="Centering" type="enum" subtype="Centering">
+        Natural
       </Field>
-      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
-        Point
-      </Field>
-      <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
-        1.000000
-      </Field>
-      <Field name="opacity" label="Opacity" type="opacity">
-        1.000000
-      </Field>
+
       <Field name="colorTableName" label="Color table" type="colortable">
         hot
       </Field>
       <Field name="invertColorTable" label="Invert Color table" type="bool">
         false
       </Field>
-      <Field name="smoothingLevel" label="Smoothing" type="int">
-        0
+      <Field name="opacityType" label="opacityType" type="enum" subtype="OpacityType">
+        FullyOpaque
+      </Field>
+      <Field name="opacityVariable" label="opacityVariable" type="string">
+      </Field>
+      <Field name="opacity" label="opacity" type="double">
+        1.000000
+      </Field>
+      <Field name="opacityVarMin" label="opacityVarMin" type="double">
+        0.000000
+      </Field>
+      <Field name="opacityVarMax" label="opacityVarMax" type="double">
+        1.000000
+      </Field>
+      <Field name="opacityVarMinFlag" label="opacityVarMinFlag" type="bool">
+        false
+      </Field>
+      <Field name="opacityVarMaxFlag" label="opactityVarMaxFlag" type="bool">
+        false
+      </Field>
+
+      <Field name="pointSize" label="Point size" type="double">
+        0.050000
+      </Field>
+      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
+        Point
       </Field>
       <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
         false
@@ -92,15 +128,79 @@
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         2
       </Field>
+
+      <Field name="lineType" label="Line Type" type="enum" subtype="LineType">
+        Line
+      </Field>
       <Field name="lineStyle" label="lineStyle" type="linestyle">
         0
       </Field>
       <Field name="lineWidth" label="lineWidth" type="linewidth">
         0
       </Field>
-      <Field name="opacityType" label="Opacity" type="enum" subtype="Opacity">
-        Explicit
+
+      <Field name="tubeDisplayDensity" label="tubeDisplayDensity" type="int">
+        10
       </Field>
+      <Field name="tubeRadiusSizeType" label="tubeRadiusSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="tubeRadiusAbsolute" label="Radius (Absolute)" type="double" enabler="tubeRadiusSizeType:Absolute">
+        0.125000
+      </Field>
+      <Field name="tubeRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="tubeRadiusSizeType:FractionOfBBox">
+        0.005000
+      </Field>
+
+      <Field name="varyTubeRadius" label="varyTubeRadius" type="bool">
+        false
+      </Field>
+      <Field name="varyTubeRadiusVariable" label="varyTubeRadiusVariable" type="string">
+      </Field>
+      <Field name="varyTubeRadiusFactor" label="varyTubeRadiusFactor" type="double">
+        10.000000
+      </Field>
+
+      <Field name="endPointType" label="End point type" type="enum" subtype="EndPointType">
+        None
+      </Field>
+      <Field name="endPointStyle" label="End point style" type="enum" subtype="EndPointStyle">
+        Spheres
+      </Field>
+
+      <Field name="endPointRadiusSizeType" label="endPointRadiusSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="endPointRadiusAbsolute" label="endPointRadiusAbsolute" type="double" enabler="endPointRadiusSizeType:Absolute">
+        1.000000
+      </Field>
+      <Field name="endPointRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="endPointRadiusSizeType:FractionOfBBox">
+        0.005000
+      </Field>
+      <Field name="endPointRatio" label="endPointRatio" type="double">
+        2.000000
+      </Field>
+
+      <Field name="renderSurfaces" label="Render surfaces" type="int">
+        1
+      </Field>
+      <Field name="renderWireframe" label="Render wireframe" type="int">
+        0
+      </Field>
+      <Field name="renderPoints" label="Render points" type="int">
+        0
+      </Field>
+      <Field name="smoothingLevel" label="Smoothing" type="int">
+        0
+      </Field>
+
+       <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="Lighting" type="bool">
+        true
+      </Field>
+
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="Print" user="true" member="true">
