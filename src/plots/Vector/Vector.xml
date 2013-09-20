@@ -18,6 +18,10 @@
         Arrow
         Ellipsoid
       </Enum>
+      <Enum name="LineStem">
+        Line
+        Cylinder
+      </Enum>
       <Enum name="GlyphLocation">
         AdaptsToMeshResolution
         UniformInSpace
@@ -91,8 +95,8 @@
       <Field name="max" label="Max" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
-      <Field name="lineStem" label="Draw stem as line" type="bool">
-        true
+      <Field name="lineStem" label="Draw stem as line" type="enum" subtype="LineStem">
+        Line
       </Field>
       <Field name="geometryQuality" label="Geometry quality" type="enum" subtype="Quality">
         Fast

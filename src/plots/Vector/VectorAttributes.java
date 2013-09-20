@@ -76,6 +76,9 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public final static int GLYPHTYPE_ARROW = 0;
     public final static int GLYPHTYPE_ELLIPSOID = 1;
 
+    public final static int LINESTEM_LINE = 0;
+    public final static int LINESTEM_CYLINDER = 1;
+
     public final static int GLYPHLOCATION_ADAPTSTOMESHRESOLUTION = 0;
     public final static int GLYPHLOCATION_UNIFORMINSPACE = 1;
 
@@ -106,7 +109,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         limitsMode = LIMITSMODE_ORIGINALDATA;
         min = 0;
         max = 1;
-        lineStem = true;
+        lineStem = LINESTEM_LINE;
         geometryQuality = QUALITY_FAST;
         stemWidth = 0.08;
         origOnly = true;
@@ -139,7 +142,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         limitsMode = LIMITSMODE_ORIGINALDATA;
         min = 0;
         max = 1;
-        lineStem = true;
+        lineStem = LINESTEM_LINE;
         geometryQuality = QUALITY_FAST;
         stemWidth = 0.08;
         origOnly = true;
@@ -359,7 +362,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         Select(21);
     }
 
-    public void SetLineStem(boolean lineStem_)
+    public void SetLineStem(int lineStem_)
     {
         lineStem = lineStem_;
         Select(22);
@@ -412,7 +415,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public int            GetLimitsMode() { return limitsMode; }
     public double         GetMin() { return min; }
     public double         GetMax() { return max; }
-    public boolean        GetLineStem() { return lineStem; }
+    public int            GetLineStem() { return lineStem; }
     public int            GetGeometryQuality() { return geometryQuality; }
     public double         GetStemWidth() { return stemWidth; }
     public boolean        GetOrigOnly() { return origOnly; }
@@ -466,7 +469,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(21, buf))
             buf.WriteDouble(max);
         if(WriteSelect(22, buf))
-            buf.WriteBool(lineStem);
+            buf.WriteInt(lineStem);
         if(WriteSelect(23, buf))
             buf.WriteInt(geometryQuality);
         if(WriteSelect(24, buf))
@@ -549,7 +552,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             SetMax(buf.ReadDouble());
             break;
         case 22:
-            SetLineStem(buf.ReadBool());
+            SetLineStem(buf.ReadInt());
             break;
         case 23:
             SetGeometryQuality(buf.ReadInt());
@@ -608,7 +611,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + doubleToString("min", min, indent) + "\n";
         str = str + doubleToString("max", max, indent) + "\n";
-        str = str + boolToString("lineStem", lineStem, indent) + "\n";
+        str = str + indent + "lineStem = ";
+        if(lineStem == LINESTEM_LINE)
+            str = str + "LINESTEM_LINE";
+        if(lineStem == LINESTEM_CYLINDER)
+            str = str + "LINESTEM_CYLINDER";
+        str = str + "\n";
         str = str + indent + "geometryQuality = ";
         if(geometryQuality == QUALITY_FAST)
             str = str + "QUALITY_FAST";
@@ -650,7 +658,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private int            limitsMode;
     private double         min;
     private double         max;
-    private boolean        lineStem;
+    private int            lineStem;
     private int            geometryQuality;
     private double         stemWidth;
     private boolean        origOnly;
