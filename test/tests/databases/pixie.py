@@ -85,6 +85,7 @@ DeleteAllPlots()
 DefineScalarExpression("one", "point_constant(curvemesh_33x33x65, 1.)")
 AddPlot("Pseudocolor", "one")
 pc = PseudocolorAttributes()
+pc.SetOpacityType(pc.Constant)
 pc.opacity = 0.31
 SetPlotOptions(pc)
 AddOperator("Transform")

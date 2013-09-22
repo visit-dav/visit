@@ -114,6 +114,7 @@ def TestBOVDivide(prefix, db, doSubset):
     # Test that ghost zones are right.
     AddPlot("Pseudocolor", "myvar")
     p = PseudocolorAttributes()
+    p.SetOpacityType(p.Constant)
     p.opacity = 0.25
     SetPlotOptions(p)
     DrawPlots()
@@ -137,7 +138,7 @@ def TestBOVDivide(prefix, db, doSubset):
     # Zoom in on a contour plot to make sure that there are no tears.
     # This means that the ghost zones were created properly.
     ClearWindow()
-    p.opacity = 1.
+    p.SetOpacityType(p.FullyOpaque)
     SetPlotOptions(p)
     AddOperator("Isosurface")
     iso = IsosurfaceAttributes()

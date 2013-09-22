@@ -203,6 +203,7 @@ def TestLineout3D(time, suffix):
         SetActiveWindow(1)
         pc = PseudocolorAttributes()
         pc.colorTableName = "xray"
+        pc.SetOpacityType(pc.Constant)
         pc.opacity = 0.5
         SetPlotOptions(pc)
         Test("Lineout3d")

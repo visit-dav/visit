@@ -31,6 +31,7 @@ def AddPseudocolorPlot():
     AddPlot("Pseudocolor", "one")
     p = PseudocolorAttributes()
     p.colorTableName = "rainbow"
+    p.SetOpacityType(p.Constant)
     p.opacity = 0.2
     SetPlotOptions(p)
     TurnMaterialsOff("default")
