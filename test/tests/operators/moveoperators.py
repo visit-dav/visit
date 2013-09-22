@@ -149,6 +149,7 @@ def runTest3():
 
     AddPlot("Pseudocolor", "u")
     pc = PseudocolorAttributes()
+    pc.SetOpacityType(pc.Constant)
     pc.opacity = 0.2
     SetPlotOptions(pc)
     AddPlot("Subset", "mat1")
@@ -182,7 +183,7 @@ def runTest3():
     DemoteOperator(1)
     # Make the pc plot opaque again
     SetActivePlots(0)
-    pc.opacity = 1
+    pc.SetOpacityType(pc.FullyOpaque)
     SetPlotOptions(pc)
     DrawPlots()
     Test("moveoperator_10")

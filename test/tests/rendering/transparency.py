@@ -82,6 +82,7 @@ DrawPlots()
 Test("transparency_03")
 
 pcAtts = PseudocolorAttributes()
+pcAtts.SetOpacityType(pcAtts.Constant)
 pcAtts.opacity = 0.75
 SetPlotOptions(pcAtts)
 
@@ -113,6 +114,7 @@ OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Pseudocolor", "u")
 pcAtts = PseudocolorAttributes()
+pcAtts.SetOpacityType(pcAtts.Constant)
 pcAtts.opacity = 0.75
 SetPlotOptions(pcAtts)
 DrawPlots()
@@ -124,6 +126,7 @@ DeleteAllPlots()
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 Test("transparency_08")
+pcAtts.SetOpacityType(pcAtts.Constant)
 pcAtts.opacity = 0.75
 SetPlotOptions(pcAtts)
 DrawPlots()
@@ -135,6 +138,7 @@ DrawPlots()
 Test("transparency_10")
 DeleteAllPlots()
 AddPlot("Pseudocolor", "u")
+pcAtts.SetOpacityType(pcAtts.Constant)
 pcAtts.opacity = 0.75
 SetPlotOptions(pcAtts)
 DrawPlots()
@@ -147,6 +151,7 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 ResetView()
 Test("transparency_12")
+pcAtts.SetOpacityType(pcAtts.Constant)
 pcAtts.opacity = 0.25
 SetPlotOptions(pcAtts)
 Test("transparency_13")

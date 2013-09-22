@@ -38,6 +38,7 @@ OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 pc=PseudocolorAttributes()
+pc.SetOpacityType(pc.Constant)
 pc.opacity=0.2
 SetPlotOptions(pc)
 

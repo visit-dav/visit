@@ -160,6 +160,7 @@ OpenDatabase(silo_data_path("noise.silo"))
 
 AddPlot("Pseudocolor", "hardyglobal")
 pc = PseudocolorAttributes()
+pc.SetOpacityType(pc.Constant)
 pc.opacity = 0.3
 SetPlotOptions(pc)
 
