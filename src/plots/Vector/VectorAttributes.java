@@ -76,8 +76,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public final static int GLYPHTYPE_ARROW = 0;
     public final static int GLYPHTYPE_ELLIPSOID = 1;
 
-    public final static int LINESTEM_LINE = 0;
-    public final static int LINESTEM_CYLINDER = 1;
+    public final static int LINESTEM_CYLINDER = 0;
+    public final static int LINESTEM_LINE = 1;
 
     public final static int GLYPHLOCATION_ADAPTSTOMESHRESOLUTION = 0;
     public final static int GLYPHLOCATION_UNIFORMINSPACE = 1;
@@ -612,10 +612,10 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("min", min, indent) + "\n";
         str = str + doubleToString("max", max, indent) + "\n";
         str = str + indent + "lineStem = ";
-        if(lineStem == LINESTEM_LINE)
-            str = str + "LINESTEM_LINE";
         if(lineStem == LINESTEM_CYLINDER)
             str = str + "LINESTEM_CYLINDER";
+        if(lineStem == LINESTEM_LINE)
+            str = str + "LINESTEM_LINE";
         str = str + "\n";
         str = str + indent + "geometryQuality = ";
         if(geometryQuality == QUALITY_FAST)

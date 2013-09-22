@@ -524,8 +524,8 @@ QvisVectorPlotWindow::CreateGlyphTab(QWidget *pageGlyphs)
     lineStemLabel = new QLabel(tr("Arrow body"), styleGroupBox);
     styleLayout->addWidget(lineStemLabel, row, 0, Qt::AlignRight);
     lineStem = new QComboBox(styleGroupBox);
-    lineStem->addItem(tr("Line"));
     lineStem->addItem(tr("Cylinder"));
+    lineStem->addItem(tr("Line"));
     connect(lineStem, SIGNAL(activated(int)), this, SLOT(lineStemChanged(int)));
     styleLayout->addWidget(lineStem, row, 1);
 

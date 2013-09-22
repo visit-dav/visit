@@ -84,8 +84,8 @@ public:
     };
     enum LineStem
     {
-        Line,
-        Cylinder
+        Cylinder,
+        Line
     };
     enum GlyphLocation
     {

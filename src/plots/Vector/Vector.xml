@@ -19,8 +19,8 @@
         Ellipsoid
       </Enum>
       <Enum name="LineStem">
-        Line
         Cylinder
+        Line
       </Enum>
       <Enum name="GlyphLocation">
         AdaptsToMeshResolution
