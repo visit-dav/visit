@@ -2669,27 +2669,83 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
         DataNode *k = 0;
         if((k = searchNode->GetNode("useColorTableOpacity")) != 0)
         {
-            double opacity = 1.0;
+          // Previously a bool for "Explicit" or "ColorTable" 
+          // Now ColorTable, FullyOpaque, or Constant 
+          // Explicit has been split into FullyOpaque or Constant and
+          // does not rely on the opacity value.
 
-            PseudocolorAttributes::OpacityType val =
-                k->AsBool() ? ColorTable : Constant;        
+          // Assume false (prevously Explicit) is really Fully Opaque for now
+          PseudocolorAttributes::OpacityType val =
+            k->AsBool() ? ColorTable : FullyOpaque;
 
-            if( val == Constant )
+            if( val == FullyOpaque )
             {
-                DataNode *op = 0;
-                if((op = searchNode->GetNode("opacity")) != 0)
-                {
-                    opacity = op->AsDouble();
-                }
-
-               if( opacity == 1.0 )
-                   val = FullyOpaque;
+              // If the opacity value is set and valid change to constant
+              DataNode *op = 0;
+              if((op = searchNode->GetNode("opacity")) != 0)
+              {
+                double opacity = op->AsDouble();
+                if( 0.0 <= opacity && opacity < 1.0 )
+                  val = Constant;
+              }
             }
-
+            
+            // Update the opacityType to the new value.
             searchNode->RemoveNode(k, true);
             searchNode->AddNode(new DataNode("opacityType",
-                                              OpacityType_ToString(val)));
+                                             OpacityType_ToString(val)));
         }
     }
-}
 
+    if(VersionLessThan(configVersion, "2.7.0"))
+    {
+      DataNode *k = 0;
+      if((k = searchNode->GetNode("opacityType")) != 0)
+      {
+        // Previously "Explicit" or "ColorTable" 
+        // Now ColorTable, FullyOpaque, or Constant 
+        // Explicit has been split into FullyOpaque or Constant and
+        // does not rely on the opacity value.
+
+        // Assume Explicit is really Fully Opaque for now
+        PseudocolorAttributes::OpacityType val =
+          k->AsInt() ? FullyOpaque : ColorTable;        
+        
+        if( val == FullyOpaque )
+        {
+          // If the opacity value is set and valid change to constant
+          DataNode *op = 0;
+          if((op = searchNode->GetNode("opacity")) != 0)
+          {
+            double opacity = op->AsDouble();
+            if( 0.0 <= opacity && opacity < 1.0 )
+              val = Constant;
+          }
+        }
+      
+        // Update the opacityType to the new value.
+        searchNode->RemoveNode(k, true);
+        searchNode->AddNode(new DataNode("opacityType",
+                                         OpacityType_ToString(val)));
+      }
+
+      // The opacityType may not be set as previously the default
+      // was "Explicit" but the opacity value may be set and valid.
+      else if((k = searchNode->GetNode("opacity")) != 0)
+      {
+        double opacity = k->AsDouble();
+        
+        PseudocolorAttributes::OpacityType val;
+        
+        // If the opacity value is set and valid set the opacityType
+        // to constant and a new node for it.
+        if( 0.0 <= opacity && opacity < 1.0 )
+        {
+          PseudocolorAttributes::OpacityType val = Constant;
+          
+          searchNode->AddNode(new DataNode("opacityType",
+                                           OpacityType_ToString(val)));
+        }
+      }
+    }
+}
