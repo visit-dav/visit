@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="VisIt">
-    <Field name="Version" type="string">1.11.1</Field>
+    <Field name="Version" type="string">2.7.0</Field>
     <Object name="VIEWER">
         <Object name="DEFAULT_VALUES">
             <Object name="GlobalAttributes">
@@ -2556,6 +2556,7 @@
                                                     <Field name="pointSize" type="double">0.05</Field>
                                                     <Field name="pointType" type="string">Point</Field>
                                                     <Field name="skewFactor" type="double">1</Field>
+                                                    <Field name="opacityType" type="string">Constant</Field>
                                                     <Field name="opacity" type="double">1</Field>
                                                     <Field name="colorTableName" type="string">hot</Field>
                                                     <Field name="smoothingLevel" type="int">0</Field>
@@ -2576,6 +2577,7 @@
                                                     <Field name="pointSize" type="double">0.05</Field>
                                                     <Field name="pointType" type="string">Point</Field>
                                                     <Field name="skewFactor" type="double">100</Field>
+                                                    <Field name="opacityType" type="string">Constant</Field>
                                                     <Field name="opacity" type="double">0.509804</Field>
                                                     <Field name="colorTableName" type="string">hot</Field>
                                                     <Field name="smoothingLevel" type="int">0</Field>
