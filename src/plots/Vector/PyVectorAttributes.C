@@ -193,15 +193,15 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
-    const char *lineStem_names = "Line, Cylinder";
+    const char *lineStem_names = "Cylinder, Line";
     switch (atts->GetLineStem())
     {
-      case VectorAttributes::Line:
-          SNPRINTF(tmpStr, 1000, "%slineStem = %sLine  # %s\n", prefix, prefix, lineStem_names);
-          str += tmpStr;
-          break;
       case VectorAttributes::Cylinder:
           SNPRINTF(tmpStr, 1000, "%slineStem = %sCylinder  # %s\n", prefix, prefix, lineStem_names);
+          str += tmpStr;
+          break;
+      case VectorAttributes::Line:
+          SNPRINTF(tmpStr, 1000, "%slineStem = %sLine  # %s\n", prefix, prefix, lineStem_names);
           str += tmpStr;
           break;
       default:
@@ -891,7 +891,7 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid lineStem value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "Line, Cylinder.");
+                        "Cylinder, Line.");
         return NULL;
     }
 
@@ -1179,10 +1179,10 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
         return VectorAttributes_GetMax(self, NULL);
     if(strcmp(name, "lineStem") == 0)
         return VectorAttributes_GetLineStem(self, NULL);
-    if(strcmp(name, "Line") == 0)
-        return PyInt_FromLong(long(VectorAttributes::Line));
     if(strcmp(name, "Cylinder") == 0)
         return PyInt_FromLong(long(VectorAttributes::Cylinder));
+    if(strcmp(name, "Line") == 0)
+        return PyInt_FromLong(long(VectorAttributes::Line));
 
     if(strcmp(name, "geometryQuality") == 0)
         return VectorAttributes_GetGeometryQuality(self, NULL);

@@ -193,7 +193,7 @@ VectorAttributes::GlyphType_FromString(const std::string &s, VectorAttributes::G
 //
 
 static const char *LineStem_strings[] = {
-"Line", "Cylinder"};
+"Cylinder", "Line"};
 
 std::string
 VectorAttributes::LineStem_ToString(VectorAttributes::LineStem t)
@@ -213,7 +213,7 @@ VectorAttributes::LineStem_ToString(int t)
 bool
 VectorAttributes::LineStem_FromString(const std::string &s, VectorAttributes::LineStem &val)
 {
-    val = VectorAttributes::Line;
+    val = VectorAttributes::Cylinder;
     for(int i = 0; i < 2; ++i)
     {
         if(s == LineStem_strings[i])
