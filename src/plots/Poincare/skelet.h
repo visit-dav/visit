@@ -51,6 +51,7 @@
 #include <deque>
 #include <list>
 #include <queue>
+#include <functional>
 
 namespace Skeleton {
 
