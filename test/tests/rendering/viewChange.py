@@ -93,13 +93,13 @@ def TestViewChangeFullFrame():
 
     # Does a transparent actor maintain the full frame mode? 
     p = PseudocolorAttributes()
-    pc.SetOpacityType(pc.Constant)
+    p.SetOpacityType(p.Constant)
     p.opacity = 0.5;
     SetPlotOptions(p);
     Test("ViewChangeFullFrame_02")
 
 
-    pc.SetOpacityType(pc.FullyOpaque)
+    p.SetOpacityType(p.FullyOpaque)
     SetPlotOptions(p)
     # Turn full frame mode OFF
     ToggleFullFrameMode()
