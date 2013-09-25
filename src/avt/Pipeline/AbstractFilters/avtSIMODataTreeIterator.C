@@ -227,15 +227,13 @@ avtSIMODataTreeIterator::ExecuteDataTreeOnThread(void *cbdata)
 
     work->This->UpdateExtents(work->outDT);
 
-/* This looks to confilict with the main thread. Not sure how as the main thread should be waiting.
     VisitMutexLock("currentNode");
         work->This->currentNode++;
         work->This->UpdateProgress(work->This->currentNode, work->This->totalNodes);
     VisitMutexUnlock("currentNode");
-*/
 
-  // delete the work item pointer.
-  delete work;
+    // Delete the work item pointer.
+    delete work;
 }
 
 // ****************************************************************************

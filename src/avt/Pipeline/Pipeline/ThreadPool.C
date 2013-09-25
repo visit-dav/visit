@@ -450,7 +450,8 @@ void *ThreadPoolThread( void *arg )
         // Do this work item.
         my_workp->routine( my_workp->arg );
 
-        delete my_workp->arg;
+        // The "routine" function above will delete the arg.
+        //delete my_workp->arg;
         free( my_workp );
     }
 
