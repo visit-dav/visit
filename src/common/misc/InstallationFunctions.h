@@ -74,7 +74,8 @@ typedef enum {
     VISIT_RESOURCES_HELP,
     VISIT_RESOURCES_HOSTS,
     VISIT_RESOURCES_TRANSLATIONS,
-    VISIT_RESOURCES_MOVIETEMPLATES
+    VISIT_RESOURCES_MOVIETEMPLATES,
+    VISIT_RESOURCES_IMAGES
 } VisItResourceDirectoryType;
 
 std::string MISC_API GetVisItResourcesDirectory(VisItResourceDirectoryType t);
