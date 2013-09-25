@@ -11437,6 +11437,8 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
 //    Brad Whitlock, Fri Aug  7 11:11:29 PDT 2009
 //    I added some exception handling.
 //
+//    Mark C. Miller, Wed Sep 25 10:30:05 PDT 2013
+//    Added logic to handle 3D, co-linear, cylindrical meshes from Silo
 // ****************************************************************************
 
 vtkDataSet *
@@ -11474,7 +11476,12 @@ avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn, int domain)
     TRY
     {
         if (qm->coordtype == DB_COLLINEAR)
-            ds = CreateRectilinearMesh(qm);
+        {
+            if (qm->ndims == 3 && qm->coord_sys == DB_CYLINDRICAL)
+                ds = CreateCurvilinearMesh(qm);
+            else
+                ds = CreateRectilinearMesh(qm);
+        }
         else
             ds = CreateCurvilinearMesh(qm);
     }
@@ -12013,6 +12020,8 @@ avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
 //    I modified the row major case so it just uses increment for index
 //    calculations. Use unsigned int.
 //
+//    Mark C. Miller, Wed Sep 25 10:30:43 PDT 2013
+//    Added logic to handle 3d, co-linear, cylindrical meshes from Silo
 // ****************************************************************************
 
 template <class T>
@@ -12043,6 +12052,27 @@ static void CopyQuadCoordinates(T *dest, int nx, int ny, int nz, int morder,
                     *dest++ = c1 ? c1[idx] : 0.;
                     *dest++ = c2 ? c2[idx] : 0.;
                 }
+            }
+        }
+    }
+}
+
+template <class T>
+static void ConvertQuadCylindricalCoordinates(T *dest, int nx, int ny, int nz,
+    const T *const c0, const T *const c1, const T *const c2)
+{
+    for (int k = 0; k < nz; k++)
+    {
+        for (int j = 0; j < ny; j++)
+        {
+            for (int i = 0; i < nx; i++)
+            {
+                T x = c0[i] * cos(M_PI/180.0*c1[j]);
+                T y = c0[i] * sin(M_PI/180.0*c1[j]);
+                T z = c2[k];
+                *dest++ = x;
+                *dest++ = y;
+                *dest++ = z;
             }
         }
     }
@@ -12090,15 +12120,23 @@ avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
     void *pts = points->GetVoidPointer(0);
     if (qm->datatype == DB_DOUBLE)
     {
-        CopyQuadCoordinates((double *) pts, nx, ny, nz, qm->major_order,
-            (double *) qm->coords[0], (double *) qm->coords[1],
-            qm->ndims <= 2 ? 0 : (double *) qm->coords[2]);
+        if (qm->ndims == 3 && qm->coord_sys == DB_CYLINDRICAL)
+            ConvertQuadCylindricalCoordinates((double *) pts, nx, ny, nz,
+               (double *) qm->coords[0], (double *) qm->coords[1], (double *) qm->coords[2]);
+        else
+            CopyQuadCoordinates((double *) pts, nx, ny, nz, qm->major_order,
+                (double *) qm->coords[0], (double *) qm->coords[1],
+                qm->ndims <= 2 ? 0 : (double *) qm->coords[2]);
     }
     else
     {
-        CopyQuadCoordinates((float *) pts, nx, ny, nz, qm->major_order,
-            (float *) qm->coords[0], (float *) qm->coords[1],
-            qm->ndims <= 2 ? 0 : (float *) qm->coords[2]);
+        if (qm->ndims == 3 && qm->coord_sys == DB_CYLINDRICAL)
+            ConvertQuadCylindricalCoordinates((float *) pts, nx, ny, nz,
+               (float *) qm->coords[0], (float *) qm->coords[1], (float *) qm->coords[2]);
+        else
+            CopyQuadCoordinates((float *) pts, nx, ny, nz, qm->major_order,
+                (float *) qm->coords[0], (float *) qm->coords[1],
+                qm->ndims <= 2 ? 0 : (float *) qm->coords[2]);
     }
 
     return sgrid;
