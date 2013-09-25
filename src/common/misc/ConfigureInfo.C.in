@@ -65,6 +65,17 @@ SVNVersion()
 }
 
 std::string
+VersionControlVersionString()
+{
+#cmakedefine VISIT_VERSION_STRING "@VISIT_VERSION_STRING@"
+#ifdef VISIT_VERSION_STRING
+    return std::string(VISIT_VERSION_STRING);
+#else
+    return std::string("svn version ") + SVNVersion();
+#endif
+}
+
+std::string
 SlashString()
 {
 #ifdef WIN32

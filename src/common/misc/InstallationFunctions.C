@@ -467,6 +467,8 @@ GetVisItResourcesDirectory(VisItResourceDirectoryType t)
             retval += "translations";
         else if(t == VISIT_RESOURCES_MOVIETEMPLATES)
             retval += "movietemplates";
+        else if(t == VISIT_RESOURCES_IMAGES)
+            retval += "images";
     }
 
     return retval;

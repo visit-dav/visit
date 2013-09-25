@@ -46,6 +46,8 @@ std::string MISC_API Version();
 
 std::string MISC_API SVNVersion();
 
+std::string MISC_API VersionControlVersionString();
+
 std::string MISC_API SlashString();
 
 char MISC_API SlashChar();
