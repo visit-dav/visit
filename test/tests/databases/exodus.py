@@ -68,6 +68,7 @@ Test("exodus_05")
 
 TestSection("Testing SHELL4 support")
 DeleteAllPlots()
+CloseDatabase(data_path("exodus_test_data/balls.exodus"))
 OpenDatabase(data_path("exodus_test_data/aircraft.exoII"))
 
 AddPlot("Mesh", "Mesh")
@@ -91,13 +92,27 @@ Test("exodus_06")
 
 TestSection("Testing support element block names")
 DeleteAllPlots()
-
+CloseDatabase(data_path("exodus_test_data/aircraft.exoII"))
 OpenDatabase(data_path("exodus_test_data/test.exo"))
 
 AddPlot("FilledBoundary", "ElementBlock")
 AddPlot("Label", "ElementBlock")
 DrawPlots()
 Test("exodus_07")
+
+TestSection("Testing 2D \"NSIDED\" element type")
+DeleteAllPlots()
+CloseDatabase(data_path("exodus_test_data/test.exo"))
+OpenDatabase(data_path("exodus_test_data/porflow5_2_1_r1.exo"))
+
+AddPlot("Mesh","Mesh")
+DrawPlots()
+v = View2DAttributes()
+v.windowCoords = (-115, 70, -80, 100)
+SetView2D(v)
+Test("exodus_08")
+
+CloseDatabase(data_path("exodus_test_data/porflow5_2_1_r1.exo"))
 
 Exit()
 
