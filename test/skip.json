@@ -12,8 +12,6 @@
                     {"category":"hybrid","file":"locus.py"},
                     {"category":"hybrid","file":"matsel.py","cases":["hybrid_matsel_02"]},
                     {"category":"databases","file":"diff.py"},
-                    {"category":"databases","file": "silo.py","cases":["silo_05","silo_06"]},
-                    {"category":"databases","file": "silo_altdriver.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file":"zipwrapper.py"},
                     {"category":"queries","file": "pick.py","cases":"PickAfterEngineCrash"},
                     {"category":"queries","file":"conncomp.py"},
