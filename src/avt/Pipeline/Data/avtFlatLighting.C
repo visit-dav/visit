@@ -67,3 +67,9 @@ avtFlatLighting::AddLighting(int, const avtRay *, unsigned char *) const
 }
 
 
+
+void
+avtFlatLighting::AddLightingHeadlight(int, const avtRay *, unsigned char *, double alpha, double matProperties[4]) const
+{
+    ; // No-op; leave color as it is.
+}

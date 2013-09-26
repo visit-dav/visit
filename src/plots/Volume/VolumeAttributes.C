@@ -48,21 +48,21 @@
 
 static const char *Renderer_strings[] = {
 "Splatting", "Texture3D", "RayCasting", 
-"RayCastingIntegration", "SLIVR", "Tuvok"
-};
+"RayCastingIntegration", "SLIVR", "RayCastingSLIVR", 
+"Tuvok"};
 
 std::string
 VolumeAttributes::Renderer_ToString(VolumeAttributes::Renderer t)
 {
     int index = int(t);
-    if(index < 0 || index >= 6) index = 0;
+    if(index < 0 || index >= 7) index = 0;
     return Renderer_strings[index];
 }
 
 std::string
 VolumeAttributes::Renderer_ToString(int t)
 {
-    int index = (t < 0 || t >= 6) ? 0 : t;
+    int index = (t < 0 || t >= 7) ? 0 : t;
     return Renderer_strings[index];
 }
 
@@ -70,7 +70,7 @@ bool
 VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Renderer &val)
 {
     val = VolumeAttributes::Splatting;
-    for(int i = 0; i < 6; ++i)
+    for(int i = 0; i < 7; ++i)
     {
         if(s == Renderer_strings[i])
         {
@@ -198,20 +198,21 @@ VolumeAttributes::LimitsMode_FromString(const std::string &s, VolumeAttributes::
 //
 
 static const char *SamplingType_strings[] = {
-"KernelBased", "Rasterization"};
+"KernelBased", "Rasterization", "Trilinear"
+};
 
 std::string
 VolumeAttributes::SamplingType_ToString(VolumeAttributes::SamplingType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return SamplingType_strings[index];
 }
 
 std::string
 VolumeAttributes::SamplingType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return SamplingType_strings[index];
 }
 
@@ -219,7 +220,7 @@ bool
 VolumeAttributes::SamplingType_FromString(const std::string &s, VolumeAttributes::SamplingType &val)
 {
     val = VolumeAttributes::KernelBased;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == SamplingType_strings[i])
         {
@@ -344,17 +345,21 @@ void VolumeAttributes::Init()
     smoothData = false;
     samplesPerRay = 500;
     rendererType = Splatting;
-    gradientType = SobelOperator;
+    gradientType = CenteredDifferences;
     num3DSlices = 200;
     scaling = Linear;
     skewFactor = 1;
     limitsMode = OriginalData;
     sampling = Rasterization;
-    rendererSamples = 3;
+    rendererSamples = 2;
     transferFunctionDim = 1;
-    lowGradientLightingReduction = Lower;
+    lowGradientLightingReduction = Off;
     lowGradientLightingClampFlag = false;
     lowGradientLightingClampValue = 1;
+    materialProperties[0] = 0.4;
+    materialProperties[1] = 0.75;
+    materialProperties[2] = 0;
+    materialProperties[3] = 15;
 
     VolumeAttributes::SelectAll();
 }
@@ -428,6 +433,9 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     lowGradientLightingReduction = obj.lowGradientLightingReduction;
     lowGradientLightingClampFlag = obj.lowGradientLightingClampFlag;
     lowGradientLightingClampValue = obj.lowGradientLightingClampValue;
+    for(int i = 0; i < 4; ++i)
+        materialProperties[i] = obj.materialProperties[i];
+
 
     VolumeAttributes::SelectAll();
 }
@@ -604,6 +612,11 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
         transferFunction2DWidgets_equal = (transferFunction2DWidgets1 == transferFunction2DWidgets2);
     }
 
+    // Compare the materialProperties arrays.
+    bool materialProperties_equal = true;
+    for(int i = 0; i < 4 && materialProperties_equal; ++i)
+        materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
+
     // Create the return value
     return ((legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
@@ -638,7 +651,8 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (transferFunctionDim == obj.transferFunctionDim) &&
             (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
             (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
-            (lowGradientLightingClampValue == obj.lowGradientLightingClampValue));
+            (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
+            materialProperties_equal);
 }
 
 // ****************************************************************************
@@ -816,6 +830,7 @@ VolumeAttributes::SelectAll()
     Select(ID_lowGradientLightingReduction,  (void *)&lowGradientLightingReduction);
     Select(ID_lowGradientLightingClampFlag,  (void *)&lowGradientLightingClampFlag);
     Select(ID_lowGradientLightingClampValue, (void *)&lowGradientLightingClampValue);
+    Select(ID_materialProperties,            (void *)materialProperties, 4);
 }
 
 // ****************************************************************************
@@ -1086,6 +1101,12 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("lowGradientLightingClampValue", lowGradientLightingClampValue));
     }
 
+    if(completeSave || !FieldsEqual(ID_materialProperties, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("materialProperties", materialProperties, 4));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1185,7 +1206,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 6)
+            if(ival >= 0 && ival < 7)
                 SetRendererType(Renderer(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1253,7 +1274,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetSampling(SamplingType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1311,6 +1332,8 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         SetLowGradientLightingClampFlag(node->AsBool());
     if((node = searchNode->GetNode("lowGradientLightingClampValue")) != 0)
         SetLowGradientLightingClampValue(node->AsDouble());
+    if((node = searchNode->GetNode("materialProperties")) != 0)
+        SetMaterialProperties(node->AsDoubleArray());
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
@@ -1557,6 +1580,16 @@ VolumeAttributes::SetLowGradientLightingClampValue(double lowGradientLightingCla
     Select(ID_lowGradientLightingClampValue, (void *)&lowGradientLightingClampValue);
 }
 
+void
+VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
+{
+    materialProperties[0] = materialProperties_[0];
+    materialProperties[1] = materialProperties_[1];
+    materialProperties[2] = materialProperties_[2];
+    materialProperties[3] = materialProperties_[3];
+    Select(ID_materialProperties, (void *)materialProperties, 4);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1801,6 +1834,18 @@ VolumeAttributes::GetLowGradientLightingClampValue() const
     return lowGradientLightingClampValue;
 }
 
+const double *
+VolumeAttributes::GetMaterialProperties() const
+{
+    return materialProperties;
+}
+
+double *
+VolumeAttributes::GetMaterialProperties()
+{
+    return materialProperties;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1839,6 +1884,12 @@ void
 VolumeAttributes::SelectTransferFunction2DWidgets()
 {
     Select(ID_transferFunction2DWidgets, (void *)&transferFunction2DWidgets);
+}
+
+void
+VolumeAttributes::SelectMaterialProperties()
+{
+    Select(ID_materialProperties, (void *)materialProperties, 4);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2096,6 +2147,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_lowGradientLightingReduction:  return "lowGradientLightingReduction";
     case ID_lowGradientLightingClampFlag:  return "lowGradientLightingClampFlag";
     case ID_lowGradientLightingClampValue: return "lowGradientLightingClampValue";
+    case ID_materialProperties:            return "materialProperties";
     default:  return "invalid index";
     }
 }
@@ -2154,6 +2206,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_lowGradientLightingReduction:  return FieldType_enum;
     case ID_lowGradientLightingClampFlag:  return FieldType_bool;
     case ID_lowGradientLightingClampValue: return FieldType_double;
+    case ID_materialProperties:            return FieldType_doubleArray;
     default:  return FieldType_unknown;
     }
 }
@@ -2212,6 +2265,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_lowGradientLightingReduction:  return "enum";
     case ID_lowGradientLightingClampFlag:  return "bool";
     case ID_lowGradientLightingClampValue: return "double";
+    case ID_materialProperties:            return "doubleArray";
     default:  return "invalid index";
     }
 }
@@ -2422,6 +2476,16 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (lowGradientLightingClampValue == obj.lowGradientLightingClampValue);
         }
         break;
+    case ID_materialProperties:
+        {  // new scope
+        // Compare the materialProperties arrays.
+        bool materialProperties_equal = true;
+        for(int i = 0; i < 4 && materialProperties_equal; ++i)
+            materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
+
+        retval = materialProperties_equal;
+        }
+        break;
     default: retval = false;
     }
 
@@ -2481,6 +2545,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         return true;
 
     if (rendererType == VolumeAttributes::RayCasting ||
+        rendererType == VolumeAttributes::RayCastingSLIVR || 
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // We're in software mode. Any change to the renderer type requires
@@ -2501,6 +2566,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // then we need to reexecute. Transferring between any of the hardware
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
+           obj.rendererType == VolumeAttributes::RayCastingSLIVR || 
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;
@@ -2828,9 +2894,7 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
            i == ID_opacityAttenuation || 
            i == ID_opacityMode || 
            i == ID_opacityControlPoints ||
-           i == ID_freeformOpacity ||
-           i == ID_transferFunction2DWidgets ||
-           i == ID_transferFunctionDim)
+           i == ID_freeformOpacity)
         {
             continue;
         }

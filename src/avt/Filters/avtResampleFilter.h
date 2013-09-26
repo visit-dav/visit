@@ -101,11 +101,17 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
     void                  MakeOutputCellCentered(bool doIt)
                                 { cellCenteredOutput = doIt; };
 
+    void                  SetRayCasting(bool _rayCasting)
+                                { rayCasting = _rayCasting; }
+
+
   protected:
     InternalResampleAttributes atts;
     char                 *primaryVariable;
     int                   selID;
     bool                  cellCenteredOutput;
+
+    bool                  rayCasting;
 
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);
@@ -113,9 +119,7 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
     void                  GetDimensions(int &, int &, int &, const double *,
                                         bool);
     bool                  GetBounds(double[6]);
-    bool                  InputNeedsNoResampling(void);
     void                  ResampleInput(void);
-    void                  BypassResample(void);
 
     virtual int           AdditionalPipelineFilters(void) { return 2; };
 

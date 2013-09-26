@@ -148,6 +148,7 @@ avtOpenGLSLIVRVolumeRenderer::FreeContext()
         delete context;
     }
     context = 0;
+    videoCardMemorySize = video_card_memory_size();
 }
 
 #ifdef DEBUG_PRINT
@@ -411,6 +412,9 @@ avtOpenGLSLIVRVolumeRenderer::Render(
     // create a range from -1 to 1 instead of from 0 - 1
     context->renderer->set_slice_alpha(props.atts.GetOpacityAttenuation()*2.0 - 1.0);
 
+    const double *matProp = props.atts.GetMaterialProperties();
+    context->renderer->set_material(matProp[0], matProp[1], matProp[2], matProp[3]);
+
     // Render the context.
     debug5 << mName << "Rendering..." << endl;
     if(props.reducedDetail)
@@ -492,7 +496,7 @@ avtOpenGLSLIVRVolumeRenderer::SlivrContext::~SlivrContext()
     if(renderer != 0)
         delete renderer;
     for(int i=0;i<planes.size();i++)
-      delete planes[i];
+        delete planes[i];
 }
 
 // ****************************************************************************
@@ -587,7 +591,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
     if (vcm==0)
     {
       std::stringstream sstr;
-      sstr << "Insufficient video card memory to run SLIVR.";
+      sstr << "Insufficient video card memory to run SLIVR (only "<<vcm<<" mb available).";
       avtCallback::IssueWarning(sstr.str().c_str());
       return;
     }
@@ -636,7 +640,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
                   else
                     if (val < vmin)
                       val = vmin;
-            
+
                   float t = (val - vmin) * inv_d;
                   ccdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
                 }

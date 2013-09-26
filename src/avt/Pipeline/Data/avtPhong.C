@@ -263,4 +263,100 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
         rgb[2] = (unsigned char) b;
 }
 
+void normalizeVec3(double v[3]){
+    double mag = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    v[0] = v[0]/mag;
+    v[1] = v[1]/mag;
+    v[2] = v[2]/mag;
+}
 
+
+double dot(double v1[3], double v2[3]){
+    double dotProduct = 0;
+    
+    for (int i=0; i<3; i++)
+        dotProduct += v1[i]*v2[i];
+    
+    return dotProduct;
+}
+
+
+void avtPhong::AddLightingHeadlight(int index, const avtRay *ray, unsigned char *rgb, double alpha, double matProperties[4]) const
+{
+    const LightAttributes &l = lights.GetLight(0);
+    if (l.GetEnabledFlag()){
+        double col[3];
+        for (int i=0; i<3; i++)
+            col[i] = rgb[i]/255.0;
+            
+        double dir[3];      // The view "right" vector.
+        double view_right[3];   // view_direction cross view_up
+                                
+        view_right[0] = view_direction[1]*view_up[2] - view_direction[2]*view_up[1];
+        view_right[1] = view_direction[2]*view_up[0] - view_direction[0]*view_up[2];
+        view_right[2] = view_direction[0]*view_up[1] - view_direction[1]*view_up[0];
+
+        // A camera light's components are scaling factors of
+        // view_right, view_up, and view_direction.  Scale the
+        // components and set to the dir vector.
+        double comp1[3];
+        comp1[0] = view_right[0] * l.GetDirection()[0];
+        comp1[1] = view_right[1] * l.GetDirection()[0];
+        comp1[2] = view_right[2] * l.GetDirection()[0];
+
+        double comp2[3];
+        comp2[0] = view_up[0] * l.GetDirection()[1];
+        comp2[1] = view_up[1] * l.GetDirection()[1];
+        comp2[2] = view_up[2] * l.GetDirection()[1];
+
+        double comp3[3];
+        comp3[0] = -view_direction[0] * l.GetDirection()[2];
+        comp3[1] = -view_direction[1] * l.GetDirection()[2];
+        comp3[2] = -view_direction[2] * l.GetDirection()[2];
+
+        dir[0] = comp1[0] + comp2[0] + comp3[0];
+        dir[1] = comp1[1] + comp2[1] + comp3[1];
+        dir[2] = comp1[2] + comp2[2] + comp3[2];
+        normalizeVec3(dir);
+        
+        // using those of SLIVR
+        //double matProperties[4];
+        //matProperties[0] = 0.4; // ka
+        //matProperties[1] = 0.7; // kd
+        //if (doSpecular == false)
+        //    matProperties[2] = 0.0;
+        //else
+        //    matProperties[2] = specularCoeff; // ks
+        //matProperties[3] = specularPower;     // ns
+        
+        double normal[3];
+        normal[0] = ray->sample[gradientVariableIndex][index];
+        normal[1] = ray->sample[gradientVariableIndex+1][index];
+        normal[2] = ray->sample[gradientVariableIndex+2][index];
+        normalizeVec3(normal);
+        
+        double nl = dot(normal,dir);
+        if (nl < 0.0)
+            nl = -nl;
+
+        for (int i=0; i<3; i++) 
+              col[i] = ( ((matProperties[0] + (matProperties[1] * nl)) * col[i])   + ((matProperties[2] * pow(nl,matProperties[3])) * alpha) ) * lightingPower;
+            //                amb              +          diff                   +                    spec
+
+       // convert to unsignedChar
+        if ((col[0] * 255) > 255.0)
+            rgb[0] = 255;
+        else
+            rgb[0] = (unsigned char) (col[0]  * 255);
+            
+        if ((col[1] * 255) > 255.0)
+            rgb[1] = 255;
+        else
+            rgb[1] = (unsigned char) (col[1] * 255);
+            
+        if ((col[2] * 255) > 255.0)
+            rgb[2] = 255;
+        else
+            rgb[2] = (unsigned char) (col[2] * 255);
+    }
+}
