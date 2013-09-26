@@ -102,25 +102,7 @@ while read fline; do
         */tools/qtssh/*|*/tools/qtssh/windows/*)
             continue
             ;;
-        *windowsbuild/projects*/*/*)
-            continue
-            ;;
-        *windowsbuild/projects*/*)
-            continue
-            ;;
-        *windowsbuild/include/VTK/*)
-            continue
-            ;;
-        *windowsbuild/include/*)
-            continue
-            ;;
-        *windowsbuild/installation/*)
-            continue
-            ;;
-        *windowsbuild/script/*)
-            continue
-            ;;
-        *windowsbuild/ThirdParty/*)
+        *windowsbuild/*)
             continue
             ;;
         *.bat)
