@@ -1815,6 +1815,8 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //    are handled correctly.  Change 'verts' size to 20 to handle quadratic
 //    hexes. 
 //
+//    Mark C. Miller, Thu Sep 26 12:01:01 PDT 2013
+//    Fixed assumption that length of connect variable was always dimension 0.
 // ****************************************************************************
 
 vtkDataSet *
@@ -1933,8 +1935,8 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         if (VisItNCErr != NC_NOERR) continue;
         int connect_vardimids[NC_MAX_VAR_DIMS];
         nc_inq_var(ncExIIId, connect_varid, 0, 0, 0, connect_vardimids, 0);
-        size_t connect_varlen;
-        VisItNCErr = nc_inq_dimlen(ncExIIId, connect_vardimids[0], &connect_varlen);
+        size_t connect_dim0varlen;
+        VisItNCErr = nc_inq_dimlen(ncExIIId, connect_vardimids[0], &connect_dim0varlen);
         CheckNCError(nc_inq_dimlen);
         nc_type connect_vartype;
         VisItNCErr = nc_inq_vartype(ncExIIId, connect_varid, &connect_vartype);
@@ -1969,6 +1971,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         delete [] connect_elem_type_attval;
 
         int *ebepecnt_buf = 0;
+        int connect_varlen = num_elems_in_blk * num_nodes_per_elem;
         if (vtk_celltype == VTK_POLYGON)
         {
             int ebepecnt_varid;
@@ -1991,6 +1994,8 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
                 SNPRINTF(msg, sizeof(msg), "Unable to read ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
                 EXCEPTION1(InvalidFilesException, msg);
             }
+
+            connect_varlen = connect_dim0varlen;
         }
 
         blockIdToMatMap[i+1] = num_elems_in_blk;
