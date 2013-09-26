@@ -261,7 +261,7 @@ TextureRenderer::clear_tex_pool()
   for(unsigned int i = 0; i < tex_pool_.size(); i++)
   {
     size_t size = (tex_pool_[i].nx * tex_pool_[i].ny * 
-		   tex_pool_[i].nz * tex_pool_[i].nb);
+       tex_pool_[i].nz * tex_pool_[i].nb);
     // delete tex object.
     glDeleteTextures(1, (GLuint*)&tex_pool_[i].id);
     tex_pool_[i].id = 0;
@@ -441,6 +441,7 @@ TextureRenderer::load_brick(vector<TextureBrick*> &bricks, int bindex,
       // download texture data
       glPixelStorei(GL_UNPACK_ROW_LENGTH, brick->sx());
       glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, brick->sy());
+      glPixelStorei(GL_UNPACK_LSB_FIRST, GL_TRUE);    // needed on osx mtn lion
       glPixelStorei(GL_UNPACK_ALIGNMENT, (nb == 1)?1:4);
 #if defined( GL_TEXTURE_COLOR_TABLE_SGI ) && defined(__sgi)
       if (reuse)
@@ -503,11 +504,12 @@ TextureRenderer::load_brick(vector<TextureBrick*> &bricks, int bindex,
             glTexImage3D(GL_TEXTURE_3D, 0, GL_LUMINANCE,
                          nx, ny, nz, 0, GL_LUMINANCE,
                          brick->tex_type(c), brick->tex_data(c));
-	  }
-	}
+    }
+  }
       }
 #  endif
 #endif // !__sgi
+      glPixelStorei(GL_UNPACK_LSB_FIRST, GL_FALSE);
       glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
       glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -610,7 +612,7 @@ TextureRenderer::draw_polygons_wireframe(vector<float>& vertex,
                 v & 2 ? 1.0 : 0.0, 
                 v & 4 ? 1.0 : 0.0, 1.0);
     }
-		  
+      
     glBegin(GL_LINE_LOOP);
     {
       for(int j=0; j<poly[i]; j++)
@@ -642,9 +644,9 @@ TextureRenderer::build_colormap1(vector<float> cmap_array,
     case MODE_SLICE: {
       for(int j=0; j < 1024; j+=4) {
         // interpolate from colormap
-	double t = (j/4)*dv;
-	float r,g,b,alpha;
-	cmap1_->get_color(t, r, g, b, alpha);
+  double t = (j/4)*dv;
+  float r,g,b,alpha;
+  cmap1_->get_color(t, r, g, b, alpha);
         // pre-multiply and quantize
         cmap_array[j+0] = r*alpha;
         cmap_array[j+1] = g*alpha;
@@ -655,9 +657,9 @@ TextureRenderer::build_colormap1(vector<float> cmap_array,
     case MODE_MIP: {
       for(int j=0; j < 1024; j+=4) {
         // interpolate from colormap
-	double t = (j/4)*dv;
-	float r,g,b,alpha;
-	cmap1_->get_color(t, r, g, b, alpha);
+  double t = (j/4)*dv;
+  float r,g,b,alpha;
+  cmap1_->get_color(t, r, g, b, alpha);
         // pre-multiply and quantize
         cmap_array[j+0] = r*alpha;
         cmap_array[j+1] = g*alpha;
@@ -669,9 +671,9 @@ TextureRenderer::build_colormap1(vector<float> cmap_array,
       double bp = tan(1.570796327 * (0.5 - slice_alpha_*0.49999));
       for(int j=0; j < 1024; j+=4) {
         // interpolate from colormap
-	double t = (j/4)*dv;
-	float r,g,b,alpha;
-	cmap1_->get_color(t, r, g, b, alpha);
+        double t = (j/4)*dv;
+        float r,g,b,alpha;
+        cmap1_->get_color(t, r, g, b, alpha);
         // scale slice opacity
         alpha = pow(alpha, (float)bp);
         // opacity correction
@@ -772,7 +774,7 @@ TextureRenderer::colormap2_hardware_rasterize()
         glGenFramebuffersEXT(1, &cmap2_widget_framebuffer_);
       }
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, cmap2_widget_framebuffer_);
-	  
+    
       // Set up the widget texture.
       if (cmap2_widget_tex_id_ == 0)
       {
@@ -850,8 +852,8 @@ TextureRenderer::colormap2_hardware_rasterize()
                    GL_RGBA, GL_INT, NULL);
 
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-				GL_COLOR_ATTACHMENT0_EXT,
-				GL_TEXTURE_2D, cmap2_tex_id_, 0);
+        GL_COLOR_ATTACHMENT0_EXT,
+        GL_TEXTURE_2D, cmap2_tex_id_, 0);
 
       CHECK_FRAMEBUFFER_STATUS();
     }
@@ -897,7 +899,7 @@ TextureRenderer::colormap2_hardware_rasterize()
 
     glPopAttrib();
     glClearColor(clear_color[0], clear_color[1], 
-		 clear_color[2], clear_color[3]);
+     clear_color[2], clear_color[3]);
 
     // Restore buffer state.
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -951,7 +953,7 @@ TextureRenderer::colormap2_hardware_rasterize_setup()
     shader_factory_ = new CM2ShaderFactory();
     CHECK_OPENGL_ERROR();
     if (cmap2_shader_glsl_->create()) /* true shader->create() means it
-					 failed (backwards) */
+           failed (backwards) */
     {
       cmap2_shader_glsl_->destroy();
       delete shader_factory_;

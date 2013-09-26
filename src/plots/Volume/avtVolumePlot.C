@@ -47,6 +47,7 @@
 
 #include <avtCallback.h>
 #include <avtCompactTreeFilter.h>
+#include <avtDatabaseMetaData.h>
 #include <avtGradientExpression.h>
 #include <avtVolumeRenderer.h>
 #include <avtLookupTable.h>
@@ -231,6 +232,7 @@ bool
 avtVolumePlot::PlotIsImageBased(void)
 {
     return (atts.GetRendererType() == VolumeAttributes::RayCasting ||
+            atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
             atts.GetRendererType() == VolumeAttributes::RayCastingIntegration);
 }
 
@@ -521,6 +523,70 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
     return dob;
 }
 
+
+// ****************************************************************************
+//  Method: GetLogicalBounds
+//
+//  Purpose:
+//      Added for no resampling for VTK_RECTILINEAR_GRID data of more than 1 leaf
+//
+// ****************************************************************************
+
+bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
+{
+    const avtDataAttributes &datts = input->GetInfo().GetAttributes();
+    std::string db = input->GetInfo().GetAttributes().GetFullDBName();
+
+    debug5<<"datts->GetTime(): "<<datts.GetTime()<<endl;
+    debug5<<"datts->GetTimeIndex(): "<<datts.GetTimeIndex()<<endl;
+    debug5<<"datts->GetCycle(): "<<datts.GetCycle()<<endl;
+
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), NULL);
+    avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
+    std::string mesh = md->MeshForVar(datts.GetVariableName());
+    const avtMeshMetaData *mmd = md->GetMesh(mesh);
+
+    if (mmd->hasLogicalBounds == true)
+    {
+        width=mmd->logicalBounds[0];
+        height=mmd->logicalBounds[1];
+        depth=mmd->logicalBounds[2];
+
+        return true;
+    }
+
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVolumePlot::DataMustBeResampled
+//
+//  Purpose:
+//      Some types of data MUST be resampled or they cannot be rendered.
+//
+//  Notes:
+//
+//  Arguments:
+//      input   The input data object.
+//
+//  Returns:    bool
+//
+//  Programmer: Cameron Christensen
+//  Creation:   Thursday, September 05, 2013
+//
+//  Modifications:
+//
+
+bool DataMustBeResampled(avtDataObject_p input)
+{
+    //NOTE: We currently rely on the existence of logical bounds to
+    //      determine if data must be resampled or not. There are
+    //      likely other cases.
+
+    int width,height,depth;
+    return GetLogicalBounds(input,width,height,depth);
+}
+
 // ****************************************************************************
 //  Method: avtVolumePlot::ApplyRenderingTransformation
 //
@@ -606,7 +672,8 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     avtDataObject_p dob = input;
 
     if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
+        atts.GetRendererType() == VolumeAttributes::RayCastingIntegration ||
+        atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR)
     {
 #ifdef ENGINE
         // gradient calc for raycasting integration not needed, but
@@ -648,23 +715,36 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         volumeImageFilter->SetInput(dob);
         dob = volumeImageFilter->GetOutput();
     }
-    else
+    else // not ray casting pipeline
     {
-        // For now, only let splatting skip resampling.
-        bool doResample = true;
-        if (atts.GetRendererType() == VolumeAttributes::Splatting)
-            doResample = atts.GetResampleFlag();
+        //User can force resampling
+        bool forceResample = atts.GetResampleFlag();
 
-        if (doResample)
+        if (DataMustBeResampled(input) || forceResample)
         {
             // Resample the data
             InternalResampleAttributes resampleAtts;
             resampleAtts.SetDistributedResample(false);
             resampleAtts.SetTargetVal(atts.GetResampleTarget());
-            resampleAtts.SetUseTargetVal(true);
             resampleAtts.SetPrefersPowersOfTwo(atts.GetRendererType() == VolumeAttributes::Texture3D);
+            resampleAtts.SetUseTargetVal(true);
+
+            // Unless user forced resampling use actual logical bounds if they exist.
+            if (!forceResample)
+            {
+                int width,height,depth;
+                if (GetLogicalBounds(input,width,height,depth))
+                {
+                    resampleAtts.SetWidth(width);
+                    resampleAtts.SetHeight(height);
+                    resampleAtts.SetDepth(depth);
+                    resampleAtts.SetUseTargetVal(false);
+                }
+            }
+
             resampleFilter = new avtResampleFilter(&resampleAtts);
             resampleFilter->SetInput(input);
+
             dob = resampleFilter->GetOutput();
         }
         else
@@ -675,12 +755,6 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             compactTree->SetParallelMerge(true);
             compactTree->SetCompactDomainsMode(avtCompactTreeFilter::Always);
             dob = compactTree->GetOutput();
-
-            // SLIVR would need an additional filter here to turn the likely
-            // vtkUnstructuredGrid output of compactTree into vtkRectilinearGrid
-            // in the event that the input to the filter is not already rectilinear.
-            // That is, we need a last minute resampling step but only if there
-            // are multiple inputs or if the meshes are not rectilinear.
         }
 
         // Apply a filter that will work on the combined data to make histograms.

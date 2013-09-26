@@ -50,6 +50,9 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 
+#include <avtCallback.h>
+#include <avtDatabase.h>
+#include <avtDatabaseMetaData.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtImagePartition.h>
@@ -105,6 +108,7 @@ avtResampleFilter::avtResampleFilter(const AttributeGroup *a)
     primaryVariable = NULL;
     selID = -1;
     cellCenteredOutput = false;
+    rayCasting = false;
 }
 
 
@@ -165,106 +169,8 @@ avtResampleFilter::Create(const AttributeGroup *atts)
 void
 avtResampleFilter::Execute(void)
 {
-    if (InputNeedsNoResampling())
-    {
-        debug5 << "Bypassing resample" << endl;
-        BypassResample();
-    }
-    else
-    {
-        debug5 << "Resampling input" << endl;
-        ResampleInput();
-    }
+    ResampleInput();
 }
-
-
-// ****************************************************************************
-//  Method: avtResampleFilter::InputNeedsNoResampling
-//
-//  Purpose:
-//      Determines if it is worthwhile to resample the input.  It is only
-//      worthwhile if, (1) the input is truly a rectilinear grid, (2) its
-//      coordinates are evenly spaced in all dimensions, and (3) the number
-//      of nodes it has are somewhat near the desired number of nodes.
-//
-//  Programmer: Hank Childs
-//  Creation:   April 6, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001
-//    Reflect changes in avtDataSet, that data is stored as single 
-//    avtDataTree, instead of multiple avtDomainTrees.  Treat 'domains'
-//    as first level children in input tree.  avtDomain now called 
-//    avtDataRepresentation.
-//
-//    Hank Childs, Mon Nov 19 14:47:10 PST 2001
-//    Hooked back up resample bypass.
-//
-//    Kathleen Bonnell, Tue Nov 20 08:09:45 PST 2001 
-//    Use vtkDataArray in place of vtkScalars for rgrid coordinates,
-//    to match VTK 4.0 API. 
-//
-//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
-//    Permitted poly data to pass through
-//
-//    Hank Childs, Thu Oct  6 10:53:17 PDT 2005
-//    Do not allow rectilinear grids to bypass resampling.  Only for poly
-//    data now. ['6676]
-//
-// ****************************************************************************
-
-bool
-avtResampleFilter::InputNeedsNoResampling(void)
-{
-    avtDataTree_p inDT = GetInputDataTree();
-
-    //
-    // permit VTK_POLY_DATA to pass through unchanged
-    //
-#if 0
-    int n = 0;
-    vtkDataSet **in_dss = inDT->GetAllLeaves(n);
-    if (n && in_dss && in_dss[0] && in_dss[0]->GetDataObjectType() == VTK_POLY_DATA)
-    {
-        // Free the memory from the GetAllLeaves function call.
-        delete [] in_dss;
-
-        return true;
-    }
-
-    // Free the memory from the GetAllLeaves function call.
-    delete [] in_dss;
-#endif
-
-    return false;
-}
-
-
-// ****************************************************************************
-//  Method: avtResampleFilter::BypassResample
-//
-//  Purpose:
-//      Bypasses the resampling.  This will assign the output to be the same
-//      as the input.
-//
-//  Programmer: Hank Childs
-//  Creation:   April 6, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001
-//    Reflect that input and output stored as single avtDataTree instead
-//    of multiple avtDomainTrees.
-//
-// ****************************************************************************
-
-void
-avtResampleFilter::BypassResample(void)
-{
-    SetOutputDataTree(GetInputDataTree());
-}
-
 
 // ****************************************************************************
 //  Method: avtResampleFilter::ResampleInput
@@ -741,7 +647,6 @@ avtResampleFilter::ResampleInput(void)
     delete [] vars;
 }
 
-
 // ****************************************************************************
 //  Method: avtResampleFilter::GetDimensions
 //
@@ -871,10 +776,11 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
     }
     else
     {
-        width  = atts.GetWidth();
-        height = atts.GetHeight();
-        depth  = atts.GetDepth();
+      width  = atts.GetWidth();
+      height = atts.GetHeight();
+      depth  = atts.GetDepth();
     }
+
     if (width <= 0 || height <= 0 || depth < 0)
     {
         EXCEPTION1(VisItException, "The grid to resample on is degenerate."

@@ -478,6 +478,58 @@ QvisScribbleOpacityBar::makeTotallyOne()
     emit opacitiesChanged();
 }
 
+
+// ****************************************************************************
+// Method: QvisScribbleOpacityBar::makeTent
+//
+// Purpose: 
+//   This is a Qt slot function that sets a series of tents
+//
+// Programmer: Pascal Grosset
+// Creation:   Mon Feb 12 15:33:35 MST 2001
+//
+// Modifications:
+//   Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//   I changed how the image gets invalidated.
+//   
+// ****************************************************************************
+
+void
+QvisScribbleOpacityBar::makeTent()
+{
+    int numSplits = 12;
+    float sizeOfOne = nvalues/(numSplits*2);
+    float opacityValue = 0.85;
+    float up = opacityValue/sizeOfOne;
+
+    for(int i = 0; i < nvalues; ++i)
+        values[i] = 0.;
+
+    for(int i = 1; i < nvalues; i++){
+        float sumUp = 0;
+        for (int j=0; j<sizeOfOne-1; j++){
+            if (i >= nvalues)
+                break;
+            sumUp = sumUp + up;
+            values[i] = sumUp;
+            i++;
+        }
+        for (int j=0; j<sizeOfOne-1; j++){
+            if (i >= nvalues)
+                break;
+            sumUp = sumUp - up;
+            values[i] = (sumUp>=0)?sumUp:0.0;
+            i++;
+        }
+    }
+
+    imageDirty();
+    update();
+
+    // Emit a signal indicating that the values changed.
+    emit opacitiesChanged();
+}
+
 // ****************************************************************************
 // Method: QvisScribbleOpacityBar::smoothCurve
 //

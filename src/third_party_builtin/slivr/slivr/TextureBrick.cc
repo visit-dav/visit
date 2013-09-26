@@ -35,16 +35,17 @@
 #include <slivr/Utils.h>
 #include <utility>
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
 namespace SLIVR {
 
 TextureBrick::TextureBrick (Nrrd* n0, Nrrd* n1,
-			    int nx, int ny, int nz, int nc, int* nb,
-			    int ox, int oy, int oz,
-			    int mx, int my, int mz,
-			    const BBox& bbox, const BBox& tbox)
+          int nx, int ny, int nz, int nc, int* nb,
+          int ox, int oy, int oz,
+          int mx, int my, int mz,
+          const BBox& bbox, const BBox& tbox)
   : nx_(nx), ny_(ny), nz_(nz), nc_(nc), ox_(ox), oy_(oy), oz_(oz),
     mx_(mx), my_(my), mz_(mz), bbox_(bbox), tbox_(tbox), dirty_(true)
 {
@@ -135,8 +136,8 @@ TextureBrick::compute_edge_rays(BBox &bbox, vector<Ray> &edges) const {
 // compute polygon of edge plane intersections
 void
 TextureBrick::compute_polygon(const Ray& view, double t,
-			      vector<float>& vertex, vector<float>& texcoord,
-			      vector<int>& size)
+            vector<float>& vertex, vector<float>& texcoord,
+            vector<int>& size)
 {
   compute_polygons(view, t, t, 1.0, vertex, texcoord, size);
 }
@@ -144,8 +145,8 @@ TextureBrick::compute_polygon(const Ray& view, double t,
 
 void
 TextureBrick::compute_polygons(const Ray& view, double dt,
-			       vector<float>& vertex, vector<float>& texcoord,
-			       vector<int>& size)
+             vector<float>& vertex, vector<float>& texcoord,
+             vector<int>& size)
 {
   const Point &pmin(bbox_.min());
   const Point &pmax(bbox_.max());
@@ -158,8 +159,15 @@ TextureBrick::compute_polygons(const Ray& view, double dt,
   corner[5] = Point(pmax.x(), pmin.y(), pmax.z());
   corner[6] = Point(pmax.x(), pmax.y(), pmin.z());
   corner[7] = pmax;
+ 
+  int volDims[3];
+  volDims[0] = nx();  volDims[1] = ny();  volDims[2] = nz();
+  // dt is now initially storing the rate
+  int numSlices = (volDims[0]*fabs(view.direction().x()) + volDims[1]*fabs(view.direction().y()) + volDims[2]*fabs(view.direction().z())) * dt;
+  //std::cout << "dimensions: " << volDims[0] << " ,  " << volDims[1] << " ,  " << volDims[2] << std::endl;
+  //std::cout << "numSlices: " << numSlices << std::endl;
 
-  double tmin = Dot(corner[0] - view.origin(), view.direction());;
+  double tmin = Dot(corner[0] - view.origin(), view.direction());
   double tmax = tmin;
   int maxi = 0;
   for (int i=1; i<8; i++)
@@ -168,6 +176,7 @@ TextureBrick::compute_polygons(const Ray& view, double dt,
     tmin = Min(t, tmin);
     if (t > tmax) { maxi = i; tmax = t; }
   }
+  dt = (tmax - tmin)/numSlices;
 
   // Make all of the slices consistent by offsetting them to a fixed
   // position in space (the origin).  This way they are consistent
@@ -189,9 +198,9 @@ TextureBrick::compute_polygons(const Ray& view, double dt,
 // typical rendering only contains about 1k triangles.
 void
 TextureBrick::compute_polygons(const Ray& view,
-			       double tmin, double tmax, double dt,
-			       vector<float>& vertex, vector<float>& texcoord,
-			       vector<int>& size)
+             double tmin, double tmax, double dt,
+             vector<float>& vertex, vector<float>& texcoord,
+             vector<int>& size)
 {
 
   Vector vv[6], tt[6]; // temp storage for vertices and texcoords
@@ -204,8 +213,8 @@ TextureBrick::compute_polygons(const Ray& view,
   Vector up;
   Vector right;
   switch(MinIndex(fabs(vdir.x()),
-		  fabs(vdir.y()),
-		  fabs(vdir.z())))
+      fabs(vdir.y()),
+      fabs(vdir.z())))
     {
     case 0:
       up.x(0.0); up.y(-vdir.z()); up.z(vdir.y());
@@ -231,12 +240,12 @@ TextureBrick::compute_polygons(const Ray& view,
     {
       double u;
       const bool intersects = edges[j].planeIntersectParameter
-	(-view.direction(), view.parameter(t), u);
+  (-view.direction(), view.parameter(t), u);
       if (intersects && u >= 0.0 && u <= 1.0)
       {
-	vv[degree] = (Vector)(edges[j].parameter(u));
-	tt[degree] = (Vector)(tedges[j].parameter(u));
-	degree++;
+  vv[degree] = (Vector)(edges[j].parameter(u));
+  tt[degree] = (Vector)(tedges[j].parameter(u));
+  degree++;
       }
     }
     
@@ -244,11 +253,11 @@ TextureBrick::compute_polygons(const Ray& view,
     
     if (degree > 3)
     {
-	// compute centroids
+  // compute centroids
       Vector vc(0.0, 0.0, 0.0), tc(0.0, 0.0, 0.0);
       for (int j=0; j<degree; j++)
       {
-	vc += vv[j]; tc += tt[j];
+  vc += vv[j]; tc += tt[j];
       }
       vc /= (double)degree; tc /= (double)degree;
       
@@ -257,27 +266,27 @@ TextureBrick::compute_polygons(const Ray& view,
       double pa[6];
       for (int i=0; i<degree; i++)
       {
-	double vx = Dot(vv[i] - vc, right);
-	double vy = Dot(vv[i] - vc, up);
-	
-	// compute pseudo-angle
-	pa[i] = vy / (fabs(vx) + fabs(vy));
-	if (vx < 0.0) pa[i] = 2.0 - pa[i];
-	else if (vy < 0.0) pa[i] = 4.0 + pa[i];
-	// init idx
-	idx[i] = i;
+  double vx = Dot(vv[i] - vc, right);
+  double vy = Dot(vv[i] - vc, up);
+  
+  // compute pseudo-angle
+  pa[i] = vy / (fabs(vx) + fabs(vy));
+  if (vx < 0.0) pa[i] = 2.0 - pa[i];
+  else if (vy < 0.0) pa[i] = 4.0 + pa[i];
+  // init idx
+  idx[i] = i;
       }
       Sort(pa, idx, degree);
       
       // output polygon
       for (int j=0; j<degree; j++)
       {
-	vertex.push_back(vv[idx[j]].x());
-	vertex.push_back(vv[idx[j]].y());
-	vertex.push_back(vv[idx[j]].z());
-	texcoord.push_back(tt[idx[j]].x());
-	texcoord.push_back(tt[idx[j]].y());
-	texcoord.push_back(tt[idx[j]].z());
+  vertex.push_back(vv[idx[j]].x());
+  vertex.push_back(vv[idx[j]].y());
+  vertex.push_back(vv[idx[j]].z());
+  texcoord.push_back(tt[idx[j]].x());
+  texcoord.push_back(tt[idx[j]].y());
+  texcoord.push_back(tt[idx[j]].z());
       }
     }
     else if (degree == 3)
@@ -285,12 +294,12 @@ TextureBrick::compute_polygons(const Ray& view,
       // output a single triangle
       for (int j=0; j<degree; j++)
       {
-	vertex.push_back(vv[j].x());
-	vertex.push_back(vv[j].y());
-	vertex.push_back(vv[j].z());
-	texcoord.push_back(tt[j].x());
-	texcoord.push_back(tt[j].y());
-	texcoord.push_back(tt[j].z());
+  vertex.push_back(vv[j].x());
+  vertex.push_back(vv[j].y());
+  vertex.push_back(vv[j].z());
+  texcoord.push_back(tt[j].x());
+  texcoord.push_back(tt[j].y());
+  texcoord.push_back(tt[j].z());
       }
     }
     k += degree;
@@ -301,10 +310,10 @@ TextureBrick::compute_polygons(const Ray& view,
 
 bool
 TextureBrick::mask_polygons(vector<int> & size, 
-			    vector<float> &vertex,
-			    vector<float> &texcoord,
-			    vector<int> &mask,
-			    vector<Plane *> &planes)
+          vector<float> &vertex,
+          vector<float> &texcoord,
+          vector<int> &mask,
+          vector<Plane *> &planes)
 {
 
   mask = vector<int>(size.size(), 0);
@@ -342,61 +351,61 @@ TextureBrick::mask_polygons(vector<int> & size,
       // starts at the last point and connects to the first point
       for (int i = 0; i < size[s]; ++i) {
 
-	// p1 starts at the last point in the poly
-	int p1_index = idx+i;
-	Point p1(vertex[p1_index*3],vertex[p1_index*3+1],vertex[p1_index*3+2]);
-	double p1_dist = clipplane.eval_point(p1);
-	// last point is clipped if distance to plane is negative
-	bool p1_clipped = p1_dist < 0.0;
+  // p1 starts at the last point in the poly
+  int p1_index = idx+i;
+  Point p1(vertex[p1_index*3],vertex[p1_index*3+1],vertex[p1_index*3+2]);
+  double p1_dist = clipplane.eval_point(p1);
+  // last point is clipped if distance to plane is negative
+  bool p1_clipped = p1_dist < 0.0;
 
-	if (p1_clipped)
-	  isclipped_index.push_back(p1_index);
-	else 
-	  unclipped_index.push_back(p1_index);
-	
-	int p2_index = idx+(i+1)%size[s];
-	Point p2(vertex[p2_index*3],vertex[p2_index*3+1],vertex[p2_index*3+2]);
-	double p2_dist = clipplane.eval_point(p2);
-	// determine if p2 is clipped or not
-	bool p2_clipped = p2_dist < 0.0;
+  if (p1_clipped)
+    isclipped_index.push_back(p1_index);
+  else 
+    unclipped_index.push_back(p1_index);
+  
+  int p2_index = idx+(i+1)%size[s];
+  Point p2(vertex[p2_index*3],vertex[p2_index*3+1],vertex[p2_index*3+2]);
+  double p2_dist = clipplane.eval_point(p2);
+  // determine if p2 is clipped or not
+  bool p2_clipped = p2_dist < 0.0;
 
-	// If p1 is clipped and p2 isnt, or vice versa, then this edge
-	// crosses the clipping plane
-	if (p1_clipped != p2_clipped) { 
-	  // find the intersection parameter along the edge where it crossed
-	  // the clipping plane
-	  double t = 42.0;
-	  //	  const bool intersects = 
-	  clipplane.Intersect(p1, p2-p1, t);
+  // If p1 is clipped and p2 isnt, or vice versa, then this edge
+  // crosses the clipping plane
+  if (p1_clipped != p2_clipped) { 
+    // find the intersection parameter along the edge where it crossed
+    // the clipping plane
+    double t = 42.0;
+    //    const bool intersects = 
+    clipplane.Intersect(p1, p2-p1, t);
 
-	  // store the edge origin index and parameter for later
-	  // reconstruction of the clipped and unclipped polygons
-	  intersections.push_back(make_pair(t, make_pair(p1_index,p2_index)));
+    // store the edge origin index and parameter for later
+    // reconstruction of the clipped and unclipped polygons
+    intersections.push_back(make_pair(t, make_pair(p1_index,p2_index)));
 
-	  // Now push this intersection point onto both unclipped and clipped
-	  // polygon arrays since the point is shared between the two.
-	  // Use a negative index to indicate the point is a newly created
-	  // intersection parameter and needs to be computed for texture
-	  // coordinates as well
-	  isclipped_index.push_back(-intersections.size());
-	  unclipped_index.push_back(-intersections.size());
-	}
+    // Now push this intersection point onto both unclipped and clipped
+    // polygon arrays since the point is shared between the two.
+    // Use a negative index to indicate the point is a newly created
+    // intersection parameter and needs to be computed for texture
+    // coordinates as well
+    isclipped_index.push_back(-intersections.size());
+    unclipped_index.push_back(-intersections.size());
+  }
       }
 
       // Step 2, reconstruct polygon into clipped and unclippd polygons
       // Make two passes to reconstruct the data arrays, unclipped then clipped
       for (int clipped = 0; clipped < 2; ++clipped) {
-	// Point to unclipped on first pass, then unclipped on second pass
-	vector<int> &index = clipped ? isclipped_index : unclipped_index;
+  // Point to unclipped on first pass, then unclipped on second pass
+  vector<int> &index = clipped ? isclipped_index : unclipped_index;
 
-	// If this pass produced no polygons, then do nothing
-	if (index.size() < 3) continue;
-	
-	// Number of points in this new polygon
-	newsize.push_back(index.size());
+  // If this pass produced no polygons, then do nothing
+  if (index.size() < 3) continue;
+  
+  // Number of points in this new polygon
+  newsize.push_back(index.size());
 
-	// mask[s] is the clipped state of the current polygon
-	// Only turn on clipping plane mask bits if poly was not clipped
+  // mask[s] is the clipped state of the current polygon
+  // Only turn on clipping plane mask bits if poly was not clipped
         if (1) {
           newmask.push_back(mask[s] | (clipped ? 0 : clipmask));
         } else {
@@ -407,44 +416,44 @@ TextureBrick::mask_polygons(vector<int> & size,
             newmask.push_back(0);
           }
         }
-        //	newmask.push_back(mask[s] | (clipped ? 0 : clipmask));
-	  
-	// Iterate through the indicies and create the new polygon
-	for (unsigned int i = 0; i < index.size(); ++i) {
-	  int index1 = index[i];
+        //  newmask.push_back(mask[s] | (clipped ? 0 : clipmask));
+    
+  // Iterate through the indicies and create the new polygon
+  for (unsigned int i = 0; i < index.size(); ++i) {
+    int index1 = index[i];
 
-	  // If positive, then it was an original index
-	  if (index1 >= 0) {
-	    assert(index1 >= idx && index1 <= idx+size[s]);
-	    // Just copy the original x,y,z vertex and texture coordinates
-	    for (int j = index1*3; j < index1*3 + 3; ++j) {
-	      newvertex.push_back(vertex[j]);
-	      newtexcoord.push_back(texcoord[j]);
-	    }
-	  } else {
-	    // If index is negative, then it was an intersection point and 
-	    // a new vertex and texture coordinate needs to be created
+    // If positive, then it was an original index
+    if (index1 >= 0) {
+      assert(index1 >= idx && index1 <= idx+size[s]);
+      // Just copy the original x,y,z vertex and texture coordinates
+      for (int j = index1*3; j < index1*3 + 3; ++j) {
+        newvertex.push_back(vertex[j]);
+        newtexcoord.push_back(texcoord[j]);
+      }
+    } else {
+      // If index is negative, then it was an intersection point and 
+      // a new vertex and texture coordinate needs to be created
 
-	    // Get the parameter along the edge where the intersection was 
-	    double t = intersections[-index1-1].first;
-	    // Get the index of the edge origin
-	    int index2 = intersections[-index1-1].second.second;
-	    index1 = intersections[-index1-1].second.first;
-	    // Get the index of the edge terminaiton
+      // Get the parameter along the edge where the intersection was 
+      double t = intersections[-index1-1].first;
+      // Get the index of the edge origin
+      int index2 = intersections[-index1-1].second.second;
+      index1 = intersections[-index1-1].second.first;
+      // Get the index of the edge terminaiton
 
-	    assert(index1 >= idx && index1 <= idx+size[s]);
-	    assert(index2 >= idx && index2 <= idx+size[s]);
-	    index1 *= 3; index2 *=3;
-	    for (int j = 0; j < 3; ++j) {
-	      // calculate new vertex coordinate along edge using t parameter
-	      newvertex.push_back(vertex[index1+j]+
-				  t*(vertex[index2+j]-vertex[index1+j]));
-	      // calculate new texture coordinate along edge using t parameter
-	      newtexcoord.push_back(texcoord[index1+j]+
-				    t*(texcoord[index2+j]-texcoord[index1+j]));
-	    }
-	  }
-	}
+      assert(index1 >= idx && index1 <= idx+size[s]);
+      assert(index2 >= idx && index2 <= idx+size[s]);
+      index1 *= 3; index2 *=3;
+      for (int j = 0; j < 3; ++j) {
+        // calculate new vertex coordinate along edge using t parameter
+        newvertex.push_back(vertex[index1+j]+
+          t*(vertex[index2+j]-vertex[index1+j]));
+        // calculate new texture coordinate along edge using t parameter
+        newtexcoord.push_back(texcoord[index1+j]+
+            t*(texcoord[index2+j]-texcoord[index1+j]));
+      }
+    }
+  }
       }
       // continue to next polygon to test it for intersections
       idx += size[s];

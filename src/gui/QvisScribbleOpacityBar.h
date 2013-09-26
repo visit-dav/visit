@@ -85,6 +85,7 @@ public slots:
     void makeInverseLinearRamp();
     void makeTotallyOne();
     void smoothCurve();
+    void makeTent();
 
 protected:
     virtual void mouseMoveEvent(QMouseEvent*);

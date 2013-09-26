@@ -82,6 +82,7 @@ avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
     colorVariableIndex   = 0;
     opacityVariableIndex = 0;
     weightVariableIndex  = -1;
+    trilinearSampling = false;
 
     int entries = secondaryMap->GetNumberOfTableEntries();
     double *opacities = new double[entries];
@@ -92,6 +93,12 @@ avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
     }
     rangeMaxTable.SetTable(entries, opacities);
     // No need to free "opacities", since the rangeMaxTable now owns it.
+
+    // set some reasonable defaults for the material parameters
+    matProperties[0] = 0.4;     // ambient
+    matProperties[1] = 0.75;    // diffuse
+    matProperties[2] = 0.0;     // specular
+    matProperties[3] = 15;      // shininess
 }
 
 
@@ -207,14 +214,33 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     {
         if (validSample[z])
         {
+            float opacityValue, value, diffRGB, diffAlpha;
+            RGBA colorLow, colorHigh, opacLow, opacHigh;
+
+            if (trilinearSampling == true){
+                value = map->QuantizeValF(sample[z]);
+                diffRGB = value - ((int)value);
+                colorLow = table[(int)value];
+                colorHigh = table[(int)value+1];
+
+                value = secondaryMap->QuantizeValF(sample2[z]);
+                diffAlpha = value - ((int)value);
+                opacLow = secondaryTable[(int)value];
+                opacHigh = secondaryTable[(int)value+1];
+            }
+
             const RGBA &color = table[map->Quantize(sample[z])];
-            const RGBA &opac  
-                          = secondaryTable[secondaryMap->Quantize(sample2[z])];
+            const RGBA &opac = secondaryTable[secondaryMap->Quantize(sample2[z])];
+
+            if (trilinearSampling == false)
+                opacityValue = opac.A;
+            else
+                opacityValue = (1.0-diffAlpha)*opacLow.A + diffAlpha*opacHigh.A;
 
             //
             // Only calculate further when we get non-zero opacity.
             //
-            if (opac.A > 0)
+            if (opacityValue > 0)
             {
                 double tableOpac = opac.A;
                 if (weight != NULL)
@@ -222,18 +248,29 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                     if (weight[z] < min_weight)
                         tableOpac *= weight[z]*min_weight_denom;
                 }
-                double samplesOpacity = tableOpac * oneSamplesContribution;
-                samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
-
+                double samplesOpacity = tableOpac;
+                if (trilinearSampling == false){
+                    samplesOpacity = tableOpac * oneSamplesContribution;
+                    samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
+                }
                 unsigned char rgb[3] = { color.R, color.G, color.B };
-                lighting->AddLighting(z, ray, rgb);
+                if (trilinearSampling == false)
+                    lighting->AddLighting(z, ray, rgb);
+                else {
+                    unsigned char rgbLow[3] = { colorLow.R, colorLow.G, colorLow.B };
+                    unsigned char rgbHigh[3] = { colorHigh.R, colorHigh.G, colorHigh.B };
+                    rgb[0] = (1.0-diffRGB)*rgbLow[0] + diffRGB*rgbHigh[0];
+                    rgb[1] = (1.0-diffRGB)*rgbLow[1] + diffRGB*rgbHigh[1];
+                    rgb[2] = (1.0-diffRGB)*rgbLow[2] + diffRGB*rgbHigh[2];
+                    lighting->AddLightingHeadlight(z, ray, rgb, 1.0, matProperties);
+                }
 
                 double ff = (1-opacity)*samplesOpacity;
                 trgb[0] = trgb[0] + ff*rgb[0];
                 trgb[1] = trgb[1] + ff*rgb[1];
                 trgb[2] = trgb[2] + ff*rgb[2];
 
-                opacity = opacity + (1-opacity)*samplesOpacity;
+                opacity = opacity + ff;
             }
             if (opacity > threshold)
             {

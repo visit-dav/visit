@@ -164,7 +164,7 @@ VolumeRenderer::set_planes(const vector<Plane*> &p)
 
 void
 VolumeRenderer::draw(bool draw_wireframe_p, bool interactive_mode_p,
-		     bool orthographic_p)
+         bool orthographic_p)
 {
   if(draw_wireframe_p) {
     draw_wireframe(orthographic_p);
@@ -192,7 +192,7 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
   for (int i = 0; i < levels; i++)
   {
     tex_->get_sorted_bricks(bricks[i], view_ray, 
-			    levels - i - 1, orthographic_p);
+          levels - i - 1, orthographic_p);
     total_brick_size += bricks[i].size();
     if (firstlevel < 0 && bricks[i].size()) { firstlevel = i; }
   }
@@ -216,8 +216,8 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
   const Vector cell_diag(diag.x() / (tex_->nx() * pow(2.0, levels-1)),
                          diag.y() / (tex_->ny() * pow(2.0, levels-1)),
                          diag.z() / (tex_->nz() * pow(2.0, levels-1)));
-  const double dt = cell_diag.length()/rate;
-  const int num_slices = (int)(diag.length()/dt);
+  const int num_slices = sqrt(tex_->nx()*tex_->nx() + tex_->ny()*tex_->ny() + tex_->nz()*tex_->nz()) + 1;
+  const double dt = 1.0/num_slices;
 
   vector<float> vertex;
   vector<float> texcoord;
@@ -262,7 +262,7 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
     if(GLEW_ARB_imaging)
 #else
     if(gluCheckExtension((GLubyte*)"GL_ARB_imaging",
-			 glGetString(GL_EXTENSIONS)))
+       glGetString(GL_EXTENSIONS)))
 #endif
 #else
       if (glBlendEquation)
@@ -278,7 +278,7 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
     if(GLEW_ARB_imaging)
 #else
     if(gluCheckExtension((GLubyte*)"GL_ARB_imaging",
-			 glGetString(GL_EXTENSIONS)))
+       glGetString(GL_EXTENSIONS)))
 #endif
 #else
       if (glBlendEquation)
@@ -329,21 +329,21 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
       // rendering to it is currently unusably slow. May, 2007
       // To test it just switch GL_RGBA16F_ARB to GL_RGBA32F_ARB.
       glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16F_ARB, w, h, 0,
-		     GL_RGBA, GL_FLOAT, NULL);
+         GL_RGBA, GL_FLOAT, NULL);
 
       CHECK_OPENGL_ERROR();
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-				GL_COLOR_ATTACHMENT0_EXT,
-				GL_TEXTURE_RECTANGLE_ARB, blend_tex_id_, 0);
+        GL_COLOR_ATTACHMENT0_EXT,
+        GL_TEXTURE_RECTANGLE_ARB, blend_tex_id_, 0);
       CHECK_OPENGL_ERROR();
 
       // Initialize depth renderbuffer
       glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_rb_);
       glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
-			       GL_DEPTH_COMPONENT24, w, h);
+             GL_DEPTH_COMPONENT24, w, h);
       glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-				   GL_DEPTH_ATTACHMENT_EXT,
-				   GL_RENDERBUFFER_EXT, depth_rb_);
+           GL_DEPTH_ATTACHMENT_EXT,
+           GL_RENDERBUFFER_EXT, depth_rb_);
     }
 
     CHECK_OPENGL_ERROR();
@@ -525,7 +525,7 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
       texcoord.clear();
       mask.clear();
       size.clear();
-      b->compute_polygons(view_ray, dt, vertex, texcoord, size);
+      b->compute_polygons(view_ray, (double)rate, vertex, texcoord, size);
       b->mask_polygons(size, vertex, texcoord, mask, planes_);
       if (vertex.size() == 0) { continue; }
       load_brick(bs, i, use_cmap2);

@@ -74,6 +74,8 @@ class PIPELINE_API avtLightingModel
 
     virtual void      AddLighting(int, const avtRay *, unsigned char *) 
                              const = 0;
+    virtual void      AddLightingHeadlight(int, const avtRay *, unsigned char *, double alpha, double matProperties[4]) 
+                             const = 0;
 
     void              SetGradientVariableIndex(int gvi)
                              { gradientVariableIndex = gvi; };

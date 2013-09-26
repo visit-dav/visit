@@ -59,8 +59,8 @@ Texture::~Texture()
 
 void
 Texture::get_sorted_bricks(vector<TextureBrick*> &bricks, 
-			   const Ray& view,
-			   int idx, bool is_orthographic)
+         const Ray& view,
+         int idx, bool is_orthographic)
 {
   bricks.clear();
   vector<TextureBrick*> &brick_ = bricks_[idx];
@@ -85,11 +85,11 @@ Texture::get_sorted_bricks(vector<TextureBrick*> &bricks,
     for (unsigned int c = 0; c < 8; c++) {
       double dd;
       if (is_orthographic) {
-	// orthographic: sort bricks based on distance to the view plane
-	dd = Dot(corner[c], view.direction());
+  // orthographic: sort bricks based on distance to the view plane
+  dd = Dot(corner[c], view.direction());
       } else {
-	// perspective: sort bricks based on distance to the eye point
-	dd = (corner[c] - view.origin()).length();
+  // perspective: sort bricks based on distance to the eye point
+  dd = (corner[c] - view.origin()).length();
       }
       if (c == 0 || dd < d) d = dd;
     }
@@ -119,8 +119,8 @@ Texture::clear()
 
 void 
 Texture::build(Nrrd* nv_nrrd, Nrrd* gm_nrrd,  
-	       double vmn, double vmx,
-	       double gmn, double gmx, int crd_mem)
+         double vmn, double vmx,
+         double gmn, double gmx, int crd_mem)
 {
   size_t axis_size[4];
   nrrdAxisInfoGet_nva(nv_nrrd, nrrdAxisInfoSize, axis_size);
@@ -226,7 +226,7 @@ Texture::build(Nrrd* nv_nrrd, Nrrd* gm_nrrd,
           space_dir[p][q] = nv_nrrd->axis[p + offset].spaceDirection[q]; 
         } else {
           space_dir[p][q] = 0.0;
-	}
+  }
     }
   
     if (dim == 1) 
@@ -239,7 +239,7 @@ Texture::build(Nrrd* nv_nrrd, Nrrd* gm_nrrd,
     }
 
     tform.load_basis(Point(origin), space_dir[0] * size[0],
-		     space_dir[1] * size[1], space_dir[2] * size[2]);
+         space_dir[1] * size[1], space_dir[2] * size[2]);
   }
   else
   {
@@ -288,7 +288,7 @@ Texture::build(Nrrd* nv_nrrd, Nrrd* gm_nrrd,
   if (reverseparity)
   {
     tform.load_basis(-Point(origin), -space_dir[0], 
-		     -space_dir[1], -space_dir[2]);
+         -space_dir[1], -space_dir[2]);
   }
 
 
@@ -346,8 +346,8 @@ Texture::build(Nrrd* nv_nrrd, Nrrd* gm_nrrd,
 
 void 
 Texture::build_bricks(vector<TextureBrick*> &bricks, 
-		      int sz_x, int sz_y, int sz_z,
-		      int numc, int* numb, int card_mem)
+          int sz_x, int sz_y, int sz_z,
+          int numc, int* numb, int card_mem)
 {
   const bool force_pow2 = !ShaderProgramARB::texture_non_power_of_two();
   const int brick_mem = card_mem * 1024 * 1024 / 2;
@@ -398,17 +398,17 @@ Texture::build_bricks(vector<TextureBrick*> &bricks,
 
   bricks.clear();
 
-  int overlapLayers = 3;
-  double overlapLayers_div2 = overlapLayers*0.5;
+  int ghostCellLayers = 3;
+  double ghostCellLayers_div2 = ghostCellLayers*0.5;
   for (int k = 0; k < sz_z; k += bsize[2])
   {
-    if (k) k=std::max(0,k-overlapLayers);
+    if (k) k=std::max(0,k-ghostCellLayers);
     for (int j = 0; j < sz_y; j += bsize[1])
     {
-      if (j) j=std::max(0,j-overlapLayers);
+      if (j) j=std::max(0,j-ghostCellLayers);
       for (int i = 0; i < sz_x; i += bsize[0])
       {
-        if (i) i=std::max(0,i-overlapLayers);
+        if (i) i=std::max(0,i-ghostCellLayers);
         const int mx = Min(bsize[0], sz_x - i);
         const int my = Min(bsize[1], sz_y - j);
         const int mz = Min(bsize[2], sz_z - k);
@@ -424,42 +424,42 @@ Texture::build_bricks(vector<TextureBrick*> &bricks,
         }
 
         // Compute Texture Box.
-        const double tx0 = i?((mx2 - mx + overlapLayers_div2) / mx2): 0.0;
-        const double ty0 = j?((my2 - my + overlapLayers_div2) / my2): 0.0;
-        const double tz0 = k?((mz2 - mz + overlapLayers_div2) / mz2): 0.0;
+        const double tx0 = i?((mx2 - mx + ghostCellLayers_div2) / mx2): 0.0;
+        const double ty0 = j?((my2 - my + ghostCellLayers_div2) / my2): 0.0;
+        const double tz0 = k?((mz2 - mz + ghostCellLayers_div2) / mz2): 0.0;
         
-        double tx1 = 1.0 - overlapLayers_div2 / mx2;
+        double tx1 = 1.0 - ghostCellLayers_div2 / mx2;
         if (mx < bsize[0]) tx1 = 1.0;
         if (sz_x - i == bsize[0]) tx1 = 1.0;
 
-        double ty1 = 1.0 - overlapLayers_div2 / my2;
+        double ty1 = 1.0 - ghostCellLayers_div2 / my2;
         if (my < bsize[1]) ty1 = 1.0;
         if (sz_y - j == bsize[1]) ty1 = 1.0;
 
-        double tz1 = 1.0 - overlapLayers_div2 / mz2;
+        double tz1 = 1.0 - ghostCellLayers_div2 / mz2;
         if (mz < bsize[2]) tz1 = 1.0;
         if (sz_z - k == bsize[2]) tz1 = 1.0;
 
         BBox tbox(Point(tx0, ty0, tz0), Point(tx1, ty1, tz1));
 
         // Compute BBox.
-        double bx1 = Min((i + bsize[0] - overlapLayers_div2) / (double)sz_x, 1.0);
+        double bx1 = Min((i + bsize[0] - ghostCellLayers_div2) / (double)sz_x, 1.0);
         if (sz_x - i == bsize[0]) bx1 = 1.0;
 
-        double by1 = Min((j + bsize[1] - overlapLayers_div2) / (double)sz_y, 1.0);
+        double by1 = Min((j + bsize[1] - ghostCellLayers_div2) / (double)sz_y, 1.0);
         if (sz_y - j == bsize[1]) by1 = 1.0;
 
-        double bz1 = Min((k + bsize[2] - overlapLayers_div2) / (double)sz_z, 1.0);
+        double bz1 = Min((k + bsize[2] - ghostCellLayers_div2) / (double)sz_z, 1.0);
         if (sz_z - k == bsize[2]) bz1 = 1.0;
 
-        BBox bbox(Point(i==0?0:(i+overlapLayers_div2) / (double)sz_x,
-                        j==0?0:(j+overlapLayers_div2) / (double)sz_y,
-                        k==0?0:(k+overlapLayers_div2) / (double)sz_z),
+        BBox bbox(Point(i==0?0:(i+ghostCellLayers_div2) / (double)sz_x,
+                        j==0?0:(j+ghostCellLayers_div2) / (double)sz_y,
+                        k==0?0:(k+ghostCellLayers_div2) / (double)sz_z),
                   Point(bx1, by1, bz1));
 
         TextureBrick *b = new TextureBrick(0, 0, mx2, my2, mz2, numc, numb, 
-					   i-(mx2-mx), j-(my2-my), k-(mz2-mz),
-					   mx2, my2, mz2, bbox, tbox);
+             i-(mx2-mx), j-(my2-my), k-(mz2-mz),
+             mx2, my2, mz2, bbox, tbox);
         bricks.push_back(b);
       }
     }

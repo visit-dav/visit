@@ -177,14 +177,7 @@ ShaderProgramARB::init_shaders_supported(std::string& error)
     }
 #endif // !sgi
 
-    // Check for non-power-of-two texture support.
-    // Apple seems to get this wrong, claims support and then crashes.
-#if defined(__APPLE__)
-    non_2_textures_ = false;
-#else
     non_2_textures_ = GLEW_ARB_texture_non_power_of_two;
-#endif
-
     init_ = true;
   }
   return (true);
@@ -344,7 +337,7 @@ ShaderProgramARB::bind ()
     for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
       int location = glGetUniformLocation(id_, tex_strings[i]);
       if (location != -1) { // able to get that link
-	glUniform1i(location, i);
+  glUniform1i(location, i);
       }
     }
   }

@@ -75,6 +75,9 @@ class PIPELINE_API avtFlatLighting : public avtLightingModel
 
     virtual void            AddLighting(int, const avtRay *, unsigned char *)
                                  const;
+
+    virtual void            AddLightingHeadlight(int, const avtRay *, unsigned char *, double alpha, double matProperties[4]) 
+                  const;
 };
 
 

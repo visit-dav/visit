@@ -44,6 +44,7 @@
 #define AVT_OPACITY_MAP_H
 
 #include <pipeline_exports.h>
+#include <iostream>
 
 struct RGBA
 {
@@ -53,6 +54,13 @@ struct RGBA
     float         A;
 };
 
+struct _RGBA
+{
+    float R;
+    float G;
+    float B;
+    float A;
+};
 
 // ****************************************************************************
 //  Class: avtOpacityMap
@@ -89,6 +97,8 @@ class PIPELINE_API avtOpacityMap
 
     const RGBA                  *GetTable(void) { return table; };
     void                         SetTable(unsigned char *, int, double = 1.);
+    void                         SetTable(unsigned char *arr, int te, double attenuation, float over);
+    void                         SetTableFloat(unsigned char *arr, int te, double attenuation, float over);
     void                         SetTable(RGBA *, int, double = 1.);
     const RGBA                  &GetOpacity(double);
 
@@ -103,8 +113,12 @@ class PIPELINE_API avtOpacityMap
     int                          GetNumberOfTableEntries(void)
                                                       { return tableEntries; };
 
+    float                        QuantizeValF(const double &val);
+    int                         QueryTF(double scalarValue, double color[4]);
+
   protected:
     RGBA                        *table;
+    _RGBA                       *transferFn1D;
     int                          tableEntries;
 
     double                       max, min;
@@ -171,6 +185,100 @@ avtOpacityMap::Quantize(const double &val)
     return (index < 0 ? 0 : tableEntries-1);
 }
 
+inline float 
+avtOpacityMap::QuantizeValF(const double &val){
+    float testVal = ((val-min)*multiplier); 
+
+    if (val < min)
+        return 0;
+    if (val > max)
+        return (float)(tableEntries-1);
+
+    //
+    // The normal case -- what we calculated was in the range.
+    //
+    if (testVal >= 0 && testVal < tableEntries)
+    {
+        return testVal;
+    }
+
+    return (testVal < 0 ? 0 : tableEntries-1); 
+}
+
+
+// ****************************************************************************
+//  Method: avtOpacityMap::QueryTF
+//
+//  Purpose:
+//      Queries a Transfer function for the color based on the scalr value passed in 
+//
+//  Arguments:
+//      scalarValue     scalar value
+//      color           the color queried from the transfer function based on the scalar value
+//
+//  Returns: 
+//
+//  Programmer: Pascal Grosset 
+//  Creation:   June 3, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+inline int
+avtOpacityMap::QueryTF(double scalarValue, double color[4]){
+    if (scalarValue <= min){
+        int index = 0;
+
+        _RGBA colorRGBA = transferFn1D[index];
+        color[0] = colorRGBA.R;
+        color[1] = colorRGBA.G;
+        color[2] = colorRGBA.B;
+        color[3] = colorRGBA.A;
+
+        return 0;
+    }
+
+    if (scalarValue >= max){
+        int index = tableEntries-1;
+        _RGBA colorRGBA = transferFn1D[index];
+        color[0] = colorRGBA.R;
+        color[1] = colorRGBA.G;
+        color[2] = colorRGBA.B;
+        color[3] = colorRGBA.A;
+
+        return 0;
+    }
+
+    int indexLow, indexHigh;
+    _RGBA colorRGBALow, colorRGBAHigh;
+    double colorLow[4], colorHigh[4];
+    float indexPos, indexDiff;
+
+    indexPos  = (scalarValue-min)/(max-min) *tableEntries;    // multiplier = 1.0/(max-min) * tableEntries
+    indexLow  = (int)indexPos;
+    indexHigh = (int)(indexPos+1.0);
+
+    indexDiff = indexPos - indexLow;
+    
+    colorRGBALow = transferFn1D[indexLow];
+    colorLow[0] = colorRGBALow.R;
+    colorLow[1] = colorRGBALow.G;
+    colorLow[2] = colorRGBALow.B;
+    colorLow[3] = colorRGBALow.A;
+
+    colorRGBAHigh = transferFn1D[indexHigh];
+    colorHigh[0] = colorRGBAHigh.R;
+    colorHigh[1] = colorRGBAHigh.G;
+    colorHigh[2] = colorRGBAHigh.B;
+    colorHigh[3] = colorRGBAHigh.A;
+
+    color[0] = (1.0-indexDiff)*colorLow[0] + indexDiff*colorHigh[0];
+    color[1] = (1.0-indexDiff)*colorLow[1] + indexDiff*colorHigh[1];
+    color[2] = (1.0-indexDiff)*colorLow[2] + indexDiff*colorHigh[2];
+    color[3] = (1.0-indexDiff)*colorLow[3] + indexDiff*colorHigh[3];
+
+    return 1;
+}
 
 #endif
 
