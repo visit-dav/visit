@@ -71,6 +71,12 @@ public:
 
 #include <math.h>
 #include <stdio.h>
+#ifdef _WIN32
+// Windows #defines its own min/max, since we are using
+// std::min, std::max, undefine the windows versions here.
+#undef min
+#undef max
+#endif
 
 #include <QvisOpacitySlider.h>
 #include <QvisSpectrumBar.h>
