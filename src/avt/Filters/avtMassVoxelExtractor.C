@@ -2090,9 +2090,7 @@ avtMassVoxelExtractor::computePixelColor(double source_rgb[4], double dest_rgb[4
 
         // cos(angle) = a.b;  angle between normal and light
         float normal_dot_light = dot(gradient,dir);   // angle between light and normal;
-        normal_dot_light = std::max((double)0.0f,
-                                    std::min(fabs(normal_dot_light),
-                                             (double)1.0f) );
+        normal_dot_light = std::max(0.0, std::min((double)fabs(normal_dot_light),1.0) );
 
         // opacity correction
         float opacityCorrectiong = 0.7;
