@@ -282,7 +282,7 @@ avtOpacityMap::SetTable(unsigned char *arr, int te, double attenuation, float ov
     for (int i = 0 ; i < tableEntries ; i++)
     {
         double bp = tan(1.570796327 * (0.5 - attenuation*0.49999));
-        double alpha = pow((float) arr[i*4+3] / 255., (float)bp);
+        double alpha = pow((float) arr[i*4+3] / 255.f, (float)bp);
         alpha = 1.0 - pow((1.0 - alpha), 1.0/over);
 
         table[i].R = arr[i*4];
@@ -335,7 +335,7 @@ avtOpacityMap::SetTableFloat(unsigned char *arr, int te, double attenuation, flo
     for (int i = 0 ; i < tableEntries ; i++)
     {
         double bp = tan(1.570796327 * (0.5 - attenuation*0.49999));
-        double alpha = pow((float) arr[i*4+3] / 255., (float)bp);
+        double alpha = pow((float) arr[i*4+3] / 255.f, (float)bp);
         alpha = 1.0 - pow((1.0 - alpha), 1.0/over);
 
         transferFn1D[i].R = (float)arr[i*4]/255.  *alpha;

@@ -216,7 +216,7 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
   const Vector cell_diag(diag.x() / (tex_->nx() * pow(2.0, levels-1)),
                          diag.y() / (tex_->ny() * pow(2.0, levels-1)),
                          diag.z() / (tex_->nz() * pow(2.0, levels-1)));
-  const int num_slices = sqrt(tex_->nx()*tex_->nx() + tex_->ny()*tex_->ny() + tex_->nz()*tex_->nz()) + 1;
+  const int num_slices = sqrt((double)(tex_->nx()*tex_->nx() + tex_->ny()*tex_->ny() + tex_->nz()*tex_->nz())) + 1;
   const double dt = 1.0/num_slices;
 
   vector<float> vertex;
