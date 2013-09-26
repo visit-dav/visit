@@ -2090,11 +2090,11 @@ avtMassVoxelExtractor::computePixelColor(double source_rgb[4], double dest_rgb[4
 
         // cos(angle) = a.b;  angle between normal and light
         float normal_dot_light = dot(gradient,dir);   // angle between light and normal;
-        normal_dot_light = std::max(0.0, std::min(fabs(normal_dot_light),1.0) );
+        normal_dot_light = std::max(0.0f, std::min(fabs(normal_dot_light),1.0f) );
 
         // opacity correction
         float opacityCorrectiong = 0.7;
-        float alpha = 1.0 - pow((1.0-source_rgb[3]),opacityCorrectiong);
+        float alpha = 1.0 - pow((1.0-source_rgb[3]),(double)opacityCorrectiong);
         source_rgb[3] = alpha;
 
         // Calculate color using phong shading
@@ -2107,7 +2107,7 @@ avtMassVoxelExtractor::computePixelColor(double source_rgb[4], double dest_rgb[4
             source_rgb[i] += source_rgb[i] * materialProperties[1] * normal_dot_light;      // I  * kd*abs(cos(angle))
 
         for (int i=0; i<3; i++)
-            source_rgb[i] += materialProperties[2] * pow(normal_dot_light,materialProperties[3]) * source_rgb[3];   // I  * kd*abs(cos(angle))
+            source_rgb[i] += materialProperties[2] * pow((double)normal_dot_light,materialProperties[3]) * source_rgb[3];   // I  * kd*abs(cos(angle))
     }
 
     // front to back compositing
