@@ -48,9 +48,15 @@
 #include <avtExtractor.h>
 #include <avtViewInfo.h>
 
+#include <avtOpacityMap.h>
+
 class     vtkRectilinearGrid;
 class     vtkMatrix4x4;
 
+#include <vtkMatrix3x3.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <algorithm>    // std::max
 
 // ****************************************************************************
 //  Class: avtMassVoxelExtractor
@@ -106,6 +112,21 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
                                              const double *);
     void             SetVariableInformation(std::vector<std::string> &names,
                                             std::vector<int> varsize);
+    void             SetRayCastingSLIVR(bool s) {rayCastingSLIVR = s; };
+    void             SetTrilinear(bool t) {trilinearInterpolation = t;   };
+    void             SetLighting(bool l) {lighting = l; };
+    void             SetLightDirection(double _lightDir[3]) { for (int i=0;i<3;i++) lightDirection[i]=_lightDir[i]; }
+    void             SetLightPosition(double _lightPos[4]) { for (int i=0;i<4;i++) lightPosition[i]=_lightPos[i]; }
+    void             SetMatProperties(double _matProp[4]) { for (int i=0;i<4;i++) materialProperties[i]=_matProp[i]; }
+    void             SetTransferFn(avtOpacityMap *_transferFn1D) { transferFn1D = _transferFn1D; };
+    void             SetModelViewMatrix(double _modelViewMatrix[16]) { for (int i=0;i<16;i++) modelViewMatrix[i]=_modelViewMatrix[i]; }
+    void             SetViewDirection(double *vd){ for (int i=0; i<3; i++) view_direction[i] = vd[i]; }
+    void             SetViewUp(double *vu){ for (int i=0; i<3; i++) view_up[i] = vu[i]; }
+
+    // Getting the image
+    void             getImageDimensions(int &inUse, int dims[2], int screen_ll[2], int screen_ur[2], float &avg_z);
+    void             getComputedImage(float *image);
+    void             setProcIdPatchID(int _proc, int _patch){ proc = _proc; patch = _patch; }
 
   protected:
     bool             gridsAreInWorldSpace;
@@ -114,6 +135,8 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     double           aspect;
     double           cur_clip_range[2];
     vtkMatrix4x4    *view_to_world_transform;
+    vtkMatrix4x4    *world_to_view_transform;
+    double           modelViewMatrix[16];
 
     double           *X;
     double           *Y;
@@ -134,6 +157,8 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     double          *prop_buffer;
     int             *ind_buffer;
     bool            *valid_sample;
+    bool            trilinearInterpolation;
+    bool            rayCastingSLIVR;
 
     // We repeatedly divide by the term (X[i+1]-X[i]).  In the interest of
     // performance, cache the term 1./(X[i+1]-X[i]) and use that for faster
@@ -142,10 +167,44 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     double           *divisors_Y;
     double           *divisors_Z;
 
+    bool             lighting;
+    double           lightPosition[4];
+    float            lightDirection[3];
+    double           materialProperties[4];
+    avtOpacityMap    *transferFn1D;
+    float            gradient[3];
+
+    double           view_direction[3];
+    double           view_up[3];
+
+    int debugOn;
+    int countt;
+
+
+    // Patch details for one image
+    int              patchDrawn;            // whether the patch is drawn or not
+
+    int              imgWidth, imgHeight;   
+    int              imgDims[2];            // size of the patch
+
+    int              imgLowerLeft[2];       // coordinates in the whole image
+    int              imgUpperRight[2];      //
+    float            imgDepth;              // from the depth buffer
+    float            *imgArray;             // the image data
+
+    int              proc;                  // id of the processor
+    int              patch;                 // id of the patch
+
+    
+    int              fullImgWidth, fullImgHeight;
+    int              xMin, xMax, yMin, yMax;
     void             ExtractImageSpaceGrid(vtkRectilinearGrid *,
                              std::vector<std::string> &varnames,
                              std::vector<int> &varsize);
     void             ExtractWorldSpaceGrid(vtkRectilinearGrid *,
+                             std::vector<std::string> &varnames,
+                             std::vector<int> &varsize);
+    void             simpleExtractWorldSpaceGrid(vtkRectilinearGrid *,  // added for raycasting slivr
                              std::vector<std::string> &varnames,
                              std::vector<int> &varsize);
 
@@ -154,15 +213,20 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     void             SampleAlongSegment(const double *, const double*, int, int);
     void             SampleVariable(int, int, int, int);
     bool             FrustumIntersectsGrid(int, int, int, int) const;
+    bool             FrustumIntersectsGridSLIVR(int, int, int, int) const;
     void             GetSegment(int, int, double *, double *) const;
     static void      FindPlaneNormal(const double *, const double *, 
                                      const double *, double *);
     bool             GridOnPlusSideOfPlane(const double *, const double *) const;
     bool             FindSegmentIntersections(const double *, const double *, 
                                               int &, int &);
+
+    void             computePixelColor(double source_rgb[4], double dest_rgb[4]);
+    double           trilinearInterpolate(double vals[8], float distRight, float distTop, float distBack);
+    void             computeIndices(int dims[3], int indices[6], int returnIndices[8]);
+    void             computeIndicesVert(int dims[3], int indices[6], int returnIndices[8]);
+    void             getIndexandDistFromCenter(float dist, int index,    int &index_before, int &index_after,    float &dist_before, float &dist_after);
+
 };
 
-
 #endif
-
-

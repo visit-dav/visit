@@ -88,6 +88,7 @@
         RayCasting
         RayCastingIntegration
         SLIVR
+    RayCastingSLIVR
         Tuvok
       </Enum>
       <Enum name="GradientType">
@@ -106,6 +107,7 @@
       <Enum name="SamplingType">
         KernelBased
         Rasterization
+        Trilinear
       </Enum>
       <Enum name="OpacityModes">
         FreeformMode
@@ -186,7 +188,7 @@
         Splatting
       </Field>
       <Field name="gradientType" label="Gradient Type" type="enum" subtype="GradientType">
-        SobelOperator
+        CenteredDifferences
       </Field>
       <Field name="num3DSlices" label="num3DSlices" type="int">
         200
@@ -204,7 +206,7 @@
         Rasterization
       </Field>
       <Field name="rendererSamples" label="Render samples" type="float" enabler="rendererType:SLIVR">
-        3.000000
+        2.000000
       </Field>
       <Field name="transferFunction2DWidgets" label="Transfer function widget list" type="attVector" subtype="TransferFunctionWidget">
       </Field>
@@ -212,13 +214,19 @@
         1
       </Field>
       <Field name="lowGradientLightingReduction" label="lowGradientLightingReduction" type="enum" subtype="LowGradientLightingReduction">
-        Lower
+        Off
       </Field>
       <Field name="lowGradientLightingClampFlag" label="lowGradientLightingClampFlag" type="bool">
         false
       </Field>
       <Field name="lowGradientLightingClampValue" label="lowGradientLightingClampFlag" type="double">
         1.000000
+      </Field>
+    <Field name="materialProperties" label="materialProperties" type="doubleArray" length="4">
+        0.4
+        0.75
+        0.0
+        15
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

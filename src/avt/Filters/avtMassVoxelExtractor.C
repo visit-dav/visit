@@ -59,6 +59,32 @@
 
 #include <DebugStream.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <algorithm> 
+
+
+void normalize(float vec[3]){
+    float inverse_sqrt_sum_squared = sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+    if (inverse_sqrt_sum_squared != 0)
+        inverse_sqrt_sum_squared = 1.0/inverse_sqrt_sum_squared;
+
+    for (int i=0;i<3; i++)
+        vec[i] = vec[i]*inverse_sqrt_sum_squared;
+}
+
+
+float dot(float vecA[3], float vecB[3]){
+    return ((vecA[0]*vecB[0]) + (vecA[1]*vecB[1]) + (vecA[2]*vecB[2]));
+}
+
+
 
 // ****************************************************************************
 //  Method: avtMassVoxelExtractor constructor
@@ -97,10 +123,15 @@ avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
                                              avtVolume *vol, avtCellList *cl)
     : avtExtractor(w, h, d, vol, cl)
 {
+    fullImgWidth = w;
+    fullImgHeight = h;
     gridsAreInWorldSpace = false;
     pretendGridsAreInWorldSpace = false;
+    trilinearInterpolation = false;
+    rayCastingSLIVR = false;
     aspect = 1;
     view_to_world_transform = vtkMatrix4x4::New();
+    world_to_view_transform = vtkMatrix4x4::New();
     X = NULL;
     Y = NULL;
     Z = NULL;
@@ -111,6 +142,19 @@ avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
     prop_buffer   = new double[3*depth];
     ind_buffer    = new int[3*depth];
     valid_sample  = new bool[depth];
+    lighting = false;
+    lightPosition[0] = lightPosition[1] = lightPosition[2] = 0.0;   lightPosition[3] = 1.0;
+    materialProperties[0] = 0.4; materialProperties[1] = 0.75; materialProperties[3] = 0.0; materialProperties[3] = 15.0;
+    gradient[0] = gradient[1] = gradient[2] = 0;
+
+    proc = patch = 0;
+    patchDrawn = 0;
+    imgDims[0] = imgDims[1] = 0;                // size of the patch
+    imgLowerLeft[0] = imgLowerLeft[1] = 0;      // coordinates in the whole image
+    imgUpperRight[0] = imgUpperRight[1] = 0;    //
+    imgDepth = -1;                              // from the depth buffer
+    imgArray = NULL;                            // the image data
+    countt = 0;
 }
 
 
@@ -140,8 +184,12 @@ avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
 avtMassVoxelExtractor::~avtMassVoxelExtractor()
 {
     view_to_world_transform->Delete();
+    world_to_view_transform->Delete();
+    if (prop_buffer != NULL)
     delete [] prop_buffer;
+    if (ind_buffer != NULL)
     delete [] ind_buffer;
+    if (valid_sample != NULL)
     delete [] valid_sample;
     if (X != NULL)
         delete [] X;
@@ -155,6 +203,10 @@ avtMassVoxelExtractor::~avtMassVoxelExtractor()
         delete [] divisors_Y;
     if (divisors_Z != NULL)
         delete [] divisors_Z;
+    if (imgArray != NULL)
+        delete []imgArray;
+
+    imgArray = NULL;
 }
 
 
@@ -288,7 +340,10 @@ avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid,
                 std::vector<std::string> &varnames, std::vector<int> &varsizes)
 {
     if (gridsAreInWorldSpace || pretendGridsAreInWorldSpace)
-        ExtractWorldSpaceGrid(rgrid, varnames, varsizes);
+        if (rayCastingSLIVR)
+            simpleExtractWorldSpaceGrid(rgrid, varnames, varsizes);
+        else
+          ExtractWorldSpaceGrid(rgrid, varnames, varsizes);
     else
         ExtractImageSpaceGrid(rgrid, varnames, varsizes);
 }
@@ -375,12 +430,15 @@ avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
         vtkMatrix4x4 *rectTrans = vtkMatrix4x4::New();
         rectTrans->DeepCopy(xform);
         vtkMatrix4x4::Multiply4x4(mat, rectTrans, view_to_world_transform);
+        world_to_view_transform->DeepCopy(view_to_world_transform);
         view_to_world_transform->Invert();
         rectTrans->Delete();
     }
     else
     {
+        // being executed for now for raycasting slivr
         vtkMatrix4x4::Invert(mat, view_to_world_transform);
+        world_to_view_transform->DeepCopy(mat);
     }
     cam->Delete();
 }
@@ -494,6 +552,226 @@ avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid,
     }
 }
 
+// ****************************************************************************
+//  Method: avtMassVoxelExtractor::simpleExtractWorldSpaceGrid
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtMassVoxelExtractor::simpleExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid,
+                 std::vector<std::string> &varnames, std::vector<int> &varsize)
+{
+    //std::cout << " avtMassVoxelExtractor::simpleExtractWorldSpaceGrid "  << std::endl;
+    patchDrawn = 0;
+
+    //
+    // Some of our sampling routines need a chance to pre-process the data.
+    // Register the grid here so we can do that.
+    //
+    RegisterGrid(rgrid, varnames, varsize);   // stores the values in a structure so that it can be used
+
+    //
+    // Determine what range we are dealing with on this iteration.
+    //
+    int w_min = restrictedMinWidth;
+    int w_max = restrictedMaxWidth+1;
+    int h_min = restrictedMinHeight;
+    int h_max = restrictedMaxHeight+1;
+
+    imgWidth = imgHeight = 0;
+
+    //
+    // Let's find out if this range can even intersect the dataset.
+    // If not, just skip it.
+    //
+    //if (!FrustumIntersectsGridSLIVR(w_min, w_max, h_min, h_max))
+    if (!FrustumIntersectsGrid(w_min, w_max, h_min, h_max))
+       return;
+    
+    //
+    // Determine the screen size of the patch being processed
+    //
+    xMin = yMin = 1000000;
+    xMax = yMax = -1000000;
+
+    float coordinates[8][3];
+    coordinates[0][0] = X[0];           coordinates[0][1] = Y[0];           coordinates[0][2] = Z[0];
+    coordinates[1][0] = X[dims[0]-1];   coordinates[1][1] = Y[0];           coordinates[1][2] = Z[0];
+    coordinates[2][0] = X[dims[0]-1];   coordinates[2][1] = Y[dims[1]-1];   coordinates[2][2] = Z[0];
+    coordinates[3][0] = X[0];           coordinates[3][1] = Y[dims[1]-1];   coordinates[3][2] = Z[0];
+
+    coordinates[4][0] = X[0];           coordinates[4][1] = Y[0];           coordinates[4][2] = Z[dims[2]-1];
+    coordinates[5][0] = X[dims[0]-1];   coordinates[5][1] = Y[0];           coordinates[5][2] = Z[dims[2]-1];
+    coordinates[6][0] = X[dims[0]-1];   coordinates[6][1] = Y[dims[1]-1];   coordinates[6][2] = Z[dims[2]-1];
+    coordinates[7][0] = X[0];           coordinates[7][1] = Y[dims[1]-1];   coordinates[7][2] = Z[dims[2]-1];
+
+    double _world[4], _view[4];
+    _world[3] = 1.0;
+    imgDepth = 0;
+
+    for (int i=0; i<8; i++){
+        _world[0] = coordinates[i][0];
+        _world[1] = coordinates[i][1];
+        _world[2] = coordinates[i][2];
+
+        world_to_view_transform->MultiplyPoint(_world, _view);
+
+        if (_view[3] != 0.){
+            _view[0] /= _view[3];
+            _view[1] /= _view[3];
+            _view[2] /= _view[3];
+        }
+
+        _view[0] = _view[0]*(fullImgWidth/2.) + (fullImgWidth/2.);
+        _view[1] = _view[1]*(fullImgHeight/2.) + (fullImgHeight/2.);
+
+        if (xMin > _view[0]+0.5)
+            xMin = _view[0]+0.5;
+
+        if (xMax < _view[0]+0.5)
+            xMax = _view[0]+0.5;
+
+        if (yMin > _view[1]+0.5)
+            yMin = _view[1]+0.5;
+
+        if (yMax < _view[1]+0.5)
+            yMax = _view[1]+0.5;
+
+        if (i == 0)
+            imgDepth = _view[2];
+        else
+            if (imgDepth > _view[2])
+                imgDepth = _view[2];
+    }
+
+    float error_correction = 0.0f;
+    xMin = xMin - error_correction;
+    yMin = yMin - error_correction;
+    xMax = xMax + error_correction;
+    yMax = yMax + error_correction;
+
+    float offset = 0.0;
+    xMin = xMin - offset;
+    yMin = yMin - offset;
+    xMax = xMax + offset;
+    yMax = yMax + offset;
+
+    if (xMin < 0)
+        xMin = 0;
+
+    if (yMin < 0)
+        yMin = 0;
+
+    if (xMax < 0)
+        xMax = 0;
+
+    if (yMax < 0)
+        yMax = 0;
+
+
+    if (xMin >= w_max)
+        xMin = w_max-1;
+
+    if (yMin >= h_max)
+        yMin = h_max-1;
+
+    if (xMax >= w_max)
+        xMax = w_max-1;
+
+    if (yMax >= h_max)
+        yMax = h_max-1;
+
+    xMin = xMin - 1;    xMax = xMax + 1;
+    yMin = yMin - 1;    yMax = yMax + 1;
+
+    imgWidth = xMax - xMin +1;
+    imgHeight = yMax - yMin +1;
+
+
+    imgArray = new float[((imgWidth)*4) * imgHeight];
+
+    for (int i=0; i<imgHeight * imgWidth * 4; i++)
+            imgArray[i] = 0.0;
+
+    imgDims[0] = imgWidth;       imgDims[1] = imgHeight;
+    imgLowerLeft[0] = xMin;      imgLowerLeft[1] = yMin;
+    imgUpperRight[0] = xMax;     imgUpperRight[1] = yMax;
+
+    for (int i = xMin ; i < xMax ; i++)
+        for (int j = yMin ; j < yMax ; j++)
+        {
+            //std::cout << "i: " << i << "   j: " << j << std::endl;
+            double origin[4];       // starting point where we start sampling
+            double terminus[4];     // ending point where we stop sampling
+            GetSegment(i, j, origin, terminus);             // find the starting point & ending point of the ray
+            SampleAlongSegment(origin, terminus, i, j);     // Go get the segments along this ray and store them in 
+        }
+
+    if (patchDrawn == 0){
+        if (imgArray != NULL)
+            delete []imgArray;
+
+        imgArray = NULL;
+    }
+}
+
+
+
+// ****************************************************************************
+//  Method: avtMassVoxelExtractor::getImageDimensions
+//
+//  Purpose:
+//      transfers the metadata of the patch
+//
+//  Programmer: 
+//  Creation:   
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtMassVoxelExtractor::getImageDimensions(int &inUse, int dims[2], int screen_ll[2], int screen_ur[2], float &avg_z)
+{
+    inUse = patchDrawn;
+
+    dims[0] = imgDims[0];    dims[1] = imgDims[1];
+
+    screen_ll[0] = imgLowerLeft[0];     screen_ll[1] = imgLowerLeft[1];
+    screen_ur[0] = imgUpperRight[0];    screen_ur[1] = imgUpperRight[1];
+
+    avg_z = imgDepth;
+}
+
+
+// ****************************************************************************
+//  Method: avtMassVoxelExtractor::getComputedImage
+//
+//  Purpose:
+//      allocates space to the pointer address and copy the image generated to it
+//
+//  Programmer: 
+//  Creation:   
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMassVoxelExtractor::getComputedImage(float *image)
+{
+    memcpy(image,imgArray, imgDims[0]*4*imgDims[1]*sizeof(float));
+   
+    if (imgArray != NULL)
+        delete []imgArray;
+    imgArray = NULL;
+}
+
 
 // ****************************************************************************
 //  Method: avtMassVoxelExtractor::RegisterGrid
@@ -536,6 +814,9 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
         delete [] Y;
     if (Z != NULL)
         delete [] Z;
+
+    // dims is the size of each of the small 3D patches e.g. 52x16x16 (or grid)
+    // X, Y & Z store the "real" coordinates each point in the grid (the above grid) e.g. 0.61075, 0.19536, 0.01936 for 0,0,0
     X = new double[dims[0]];
     for (i = 0 ; i < dims[0] ; i++)
         X[i] = rgrid->GetXCoordinates()->GetTuple1(i);
@@ -630,6 +911,12 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
 //  Purpose:
 //      Gets a line segment based on a pixel location.
 //
+//  Arguments:
+//      w           x; of the width of the render window 
+//      h           y; of the height of the render window
+//      origin      
+//      terminus
+//
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2004
 //
@@ -688,6 +975,7 @@ avtMassVoxelExtractor::GetSegment(int w, int h, double *origin, double *terminus
         terminus[1] /= terminus[3];
         terminus[2] /= terminus[3];
     }
+
 
     if (jitter)
     {
@@ -1076,6 +1364,117 @@ avtMassVoxelExtractor::FindSegmentIntersections(const double *origin,
 
 
 // ****************************************************************************
+//  Method: avtImgCommunicator::getIndexandDistFromCenter
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtMassVoxelExtractor::getIndexandDistFromCenter(float dist, int index,    int &index_before, int &index_after,    float &dist_before, float &dist_after){
+    float center = 0.5;
+    if (dist < center){
+        index_before = index-1;
+        index_after = index;
+        dist_before = dist + center;
+        dist_after = 1.0 - dist_before;
+    }else{
+        index_before = index;
+        index_after = index+1;
+        dist_before = dist - center;
+        dist_after = 1.0 - dist_before;
+    }
+}
+
+
+
+
+// ****************************************************************************
+//  Method: avtImgCommunicator::computeIndices
+//
+//  Purpose:
+//              back: 5, front: 4,  top:3, bottom:2,  ;right: 1, left:0
+//
+//  Programmer: 
+//  Creation:   
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtMassVoxelExtractor::computeIndices(int dims[3], int indices[6], int returnIndices[8]){
+    returnIndices[0] = (indices[4])*((dims[0]-1)*(dims[1]-1)) + (indices[2])*(dims[0]-1) + (indices[0]);
+    returnIndices[1] = (indices[4])*((dims[0]-1)*(dims[1]-1)) + (indices[2])*(dims[0]-1) + (indices[1]);
+
+    returnIndices[2] = (indices[4])*((dims[0]-1)*(dims[1]-1)) + (indices[3])*(dims[0]-1) + (indices[0]);
+    returnIndices[3] = (indices[4])*((dims[0]-1)*(dims[1]-1)) + (indices[3])*(dims[0]-1) + (indices[1]);
+
+    returnIndices[4] = (indices[5])*((dims[0]-1)*(dims[1]-1)) + (indices[2])*(dims[0]-1) + (indices[0]);
+    returnIndices[5] = (indices[5])*((dims[0]-1)*(dims[1]-1)) + (indices[2])*(dims[0]-1) + (indices[1]);
+
+    returnIndices[6] = (indices[5])*((dims[0]-1)*(dims[1]-1)) + (indices[3])*(dims[0]-1) + (indices[0]);
+    returnIndices[7] = (indices[5])*((dims[0]-1)*(dims[1]-1)) + (indices[3])*(dims[0]-1) + (indices[1]);
+}
+
+void 
+avtMassVoxelExtractor::computeIndicesVert(int dims[3], int indices[6], int returnIndices[8]){
+    returnIndices[0] = (indices[4])*((dims[0])*(dims[1])) + (indices[2])*(dims[0]) + (indices[0]);
+    returnIndices[1] = (indices[4])*((dims[0])*(dims[1])) + (indices[2])*(dims[0]) + (indices[1]);
+
+    returnIndices[2] = (indices[4])*((dims[0])*(dims[1])) + (indices[3])*(dims[0]) + (indices[0]);
+    returnIndices[3] = (indices[4])*((dims[0])*(dims[1])) + (indices[3])*(dims[0]) + (indices[1]);
+
+    returnIndices[4] = (indices[5])*((dims[0])*(dims[1])) + (indices[2])*(dims[0]) + (indices[0]);
+    returnIndices[5] = (indices[5])*((dims[0])*(dims[1])) + (indices[2])*(dims[0]) + (indices[1]);
+
+    returnIndices[6] = (indices[5])*((dims[0])*(dims[1])) + (indices[3])*(dims[0]) + (indices[0]);
+    returnIndices[7] = (indices[5])*((dims[0])*(dims[1])) + (indices[3])*(dims[0]) + (indices[1]);
+}
+
+
+// ****************************************************************************
+//  Method: avtImgCommunicator::trilinearInterpolate
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+double 
+avtMassVoxelExtractor::trilinearInterpolate(double vals[8], float distRight, float distTop, float distBack){
+    float dist_from_right = 1.0 - distRight;
+    float dist_from_left = distRight;
+
+    float dist_from_top = 1.0 - distTop;
+    float dist_from_bottom = distTop;
+
+    float dist_from_back = 1.0 - distBack;
+    float dist_from_front = distBack;
+    
+    
+    double val =   dist_from_right     * dist_from_top         * dist_from_back * vals[0] + 
+                    dist_from_left      * dist_from_top         * dist_from_back * vals[1] +
+                    dist_from_right     * dist_from_bottom      * dist_from_back * vals[2] +
+                    dist_from_left      * dist_from_bottom      * dist_from_back * vals[3] +
+
+                    dist_from_right     * dist_from_top         * dist_from_front * vals[4] +
+                    dist_from_left      * dist_from_top         * dist_from_front * vals[5] +
+                    dist_from_right     * dist_from_bottom      * dist_from_front * vals[6] +
+                    dist_from_left      * dist_from_bottom      * dist_from_front * vals[7];
+    return val;
+}
+
+// ****************************************************************************
 //  Method: avtMassVoxelExtractor::SampleVariable
 //
 //  Purpose:
@@ -1093,14 +1492,17 @@ avtMassVoxelExtractor::FindSegmentIntersections(const double *origin,
 //    Use double instead of float.
 //
 // ****************************************************************************
-
 void
 avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
 {
     bool inrun = false;
     int  count = 0;
+
     avtRay *ray = volume->GetRay(w, h);
+    int myInd[3];
     bool calc_cell_index = ((ncell_arrays > 0) || (ghosts != NULL));
+
+    double dest_rgb[4] = {0.0,0.0,0.0, 0.0};     // to store the computed color
     for (int i = first ; i < last ; i++)
     {
         const int *ind = ind_buffer + 3*i;
@@ -1110,86 +1512,616 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
         if (calc_cell_index)
             index = ind[2]*((dims[0]-1)*(dims[1]-1)) + ind[1]*(dims[0]-1) +
                     ind[0];
-  
+
         if (ghosts != NULL)
         {
             if (ghosts[index] != 0)
-                valid_sample[i] = false;
+               valid_sample[i] = false;
         }
 
         if (!valid_sample[i] && inrun)
         {
-            ray->SetSamples(i-count, i-1, tmpSampleList);
-            inrun = false;
-            count = 0;
+            if (rayCastingSLIVR == false){
+                ray->SetSamples(i-count, i-1, tmpSampleList);
+                inrun = false;
+                count = 0;
+            }
         }
-        if (!valid_sample[i])
+
+        int index_left, index_right,            index_top, index_bottom,         index_front, index_back;
+        float dist_from_left, dist_from_right,  dist_from_top,dist_from_bottom,  dist_from_front, dist_from_back;
+
+        int newInd[3];
+        newInd[0] = ind[0];
+        newInd[1] = ind[1];
+        newInd[2] = ind[2];
+
+        float x_right = prop[0];       float x_left = 1. - x_right;    
+        float y_top = prop[1];         float y_bottom = 1. - y_top;   
+        float z_back = prop[2];        float z_front = 1. - z_back;   
+
+        // get the index and distance from the center of the neighbouring cells
+        getIndexandDistFromCenter(x_right, newInd[0], index_left, index_right,   dist_from_left, dist_from_right);
+        getIndexandDistFromCenter(y_top,   newInd[1], index_bottom,index_top,    dist_from_bottom,dist_from_top);
+        getIndexandDistFromCenter(z_back,  newInd[2], index_front, index_back,   dist_from_front, dist_from_back);
+
+        int indices[6];
+        indices[4] = index_front;       indices[5] = index_back;
+        indices[2] = index_bottom;      indices[3] = index_top;
+        indices[0] = index_left;        indices[1] = index_right;
+
+        if (trilinearInterpolation){
+            if (indices[0] < 0 || indices[0]>dims[0]-2)
+                valid_sample[i] = false;
+
+            if (indices[1] < 0 || indices[1]>dims[0]-2)
+                valid_sample[i] = false;
+
+
+            if (indices[2] < 0 || indices[2]>dims[1]-2)
+                valid_sample[i] = false;
+
+            if (indices[3] < 0 || indices[3]>dims[1]-2)
+                valid_sample[i] = false;
+
+
+            if (indices[4] < 0 || indices[4]>dims[2]-2)
+                valid_sample[i] = false;
+
+            if (indices[5] < 0 || indices[5]>dims[2]-2)
+                valid_sample[i] = false;
+        }
+
+        if (rayCastingSLIVR){
+            if (indices[0] < 1 || indices[0]>dims[0]-2)
+                valid_sample[i] = false;
+
+            if (indices[1] < 1 || indices[1]>dims[0]-2)
+                valid_sample[i] = false;
+
+
+            if (indices[2] < 1 || indices[2]>dims[1]-2)
+                valid_sample[i] = false;
+
+            if (indices[3] < 1 || indices[3]>dims[1]-2)
+                valid_sample[i] = false;
+
+
+            if (indices[4] < 1 || indices[4]>dims[2]-2)
+                valid_sample[i] = false;
+
+            if (indices[5] < 1 || indices[5]>dims[2]-2)
+                valid_sample[i] = false;
+        }
+
+        if (!valid_sample[i]){
             continue;
-
-        int  l;
-
-        for (l = 0 ; l < ncell_arrays ; l++)
-        {
-            for (int m = 0 ; m < cell_size[l] ; m++)
-                tmpSampleList[count][cell_index[l]+m] = 
-                                 ConvertToDouble(cell_vartypes[l], index,
-                                              cell_size[l], m, cell_arrays[l]);
         }
-        if (npt_arrays > 0)
-        {
-            int index[8];
-            index[0] = (ind[2])*dims[0]*dims[1] +(ind[1])*dims[0] + (ind[0]);
-            index[1] = (ind[2])*dims[0]*dims[1] + 
-                                                 (ind[1])*dims[0] + (ind[0]+1);
-            index[2] = (ind[2])*dims[0]*dims[1] + 
-                                                 (ind[1]+1)*dims[0] + (ind[0]);
-            index[3] = (ind[2])*dims[0]*dims[1] + 
-                                                (ind[1]+1)*dims[0]+ (ind[0]+1);
-            index[4] = (ind[2]+1)*dims[0]*dims[1] + 
-                                                   (ind[1])*dims[0] + (ind[0]);
-            index[5] = (ind[2]+1)*dims[0]*dims[1] + 
-                                                  (ind[1])*dims[0]+ (ind[0]+1);
-            index[6] = (ind[2]+1)*dims[0]*dims[1] + 
-                                                  (ind[1]+1)*dims[0]+ (ind[0]);
-            index[7] = (ind[2]+1)*dims[0]*dims[1] +
-                                               (ind[1]+1)*dims[0] + (ind[0]+1);
-            double x_right = prop[0];
-            double x_left = 1. - prop[0];
-            double y_top = prop[1];
-            double y_bottom = 1. - prop[1];
-            double z_back = prop[2];
-            double z_front = 1. - prop[2];
-            for (l = 0 ; l < npt_arrays ; l++)
-            {
-                void  *pt_array = pt_arrays[l];
-                int    s = pt_size[l];
-                for (int m = 0 ; m < s ; m++)
+
+        if (trilinearInterpolation || rayCastingSLIVR){
+            //
+            // Cell centered data
+            //
+            if (ncell_arrays > 0){
+                int indexT[8];
+                computeIndices(dims, indices, indexT);
+                
+                for (int l = 0 ; l < ncell_arrays ; l++)            // ncell_arrays: usually 1
                 {
-                    double vals[8];
-                    AssignEight(pt_vartypes[l], vals, index, s, m, pt_array);
-                    double val = 
-                      x_left*y_bottom*z_front*vals[0] +
-                      x_right*y_bottom*z_front*vals[1] +
-                      x_left*y_top*z_front*vals[2] +
-                      x_right*y_top*z_front*vals[3] +
-                      x_left*y_bottom*z_back*vals[4] +
-                      x_right*y_bottom*z_back*vals[5] +
-                      x_left*y_top*z_back*vals[6] +
-                      x_right*y_top*z_back*vals[7];
-                    tmpSampleList[count][pt_index[l]+m] = val;
+
+                    void  *cell_array = cell_arrays[l];
+                    double values[8];
+                    for (int m = 0 ; m < cell_size[l] ; m++){       // cell_size[l] usually 1
+                        AssignEight(cell_vartypes[l], values, indexT, cell_size[l], m, cell_array);         
+                        double scalarValue = trilinearInterpolate(values, dist_from_left, dist_from_bottom, dist_from_front);
+
+                        if (rayCastingSLIVR){
+                            double source_rgb[4];
+                            int retVal = transferFn1D->QueryTF(scalarValue,source_rgb);
+
+                            if ( ((retVal == 0)||(source_rgb[3]==0)) || (source_rgb[0]==0 && source_rgb[1]==0 && source_rgb[2]==0) ){
+                                // no need to do anything more if there will be no color
+                            }
+                            else{
+                                //
+                                // Compute Lighting (if needed)
+                                //
+                                if (lighting == true){
+                                    double vals[6];
+
+                                    // h = offset = 1/2 the distance between grids
+                                    // grad = 1/2*h * ( f(x+h,y,z)-f(x-h,y,z)    f(x,y+h,z)-f(x,y-h,z)   f(x,y,z-h)-f(x,y,z-h)  )
+                                    
+                                    float distFromRight, distFromLeft, distFromTop, distFromBottom, distFromFront, distFromBack;
+                                    int indexLeft, indexRight, indexTop, indexBottom, indexFront, indexBack;
+                                    float gradientOffset = 0.5;
+
+                                    double gradVals[8];
+                                    int indexGrad[8], gradInd[3], gradIndices[6];
+                                    float xRight, yTop, zBack;
+
+                                    void  *cell_array = cell_arrays[0];
+
+                                    //
+                                    // X
+                                    //
+                                    for (int i=0; i<6; i++)
+                                        gradIndices[i] = indices[i];
+
+                                    //
+                                    // find x-h
+                                    //
+                                    if (x_right - gradientOffset < 0.0){
+                                        xRight = (x_right - gradientOffset)+1.0;
+                                        gradInd[0] = ind[0]-1;
+                                    }
+                                    else{
+                                        xRight = x_right - gradientOffset;
+                                        gradInd[0] = ind[0];
+                                    }
+                                    
+                                    getIndexandDistFromCenter(xRight, gradInd[0],  indexLeft, indexRight,  distFromLeft, distFromRight);
+                                    gradIndices[0] = indexLeft;    gradIndices[1] = indexRight;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(cell_vartypes[0], gradVals, indexGrad, 1, 0, cell_array);
+                                    vals[0] = trilinearInterpolate(gradVals, distFromLeft, dist_from_bottom, dist_from_front);
+
+                                    //
+                                    // find x+h
+                                    //
+                                    if (x_right + gradientOffset > 1.0){
+                                        xRight = (x_right + gradientOffset)-1.0;
+                                        gradInd[0] = ind[0]+1;
+                                    }else{
+                                        xRight = x_right + gradientOffset;
+                                        gradInd[0] = ind[0];
+                                    }
+
+                                    getIndexandDistFromCenter(xRight, gradInd[0],  indexLeft, indexRight,  distFromLeft, distFromRight);
+                                    gradIndices[0] = indexLeft;    gradIndices[1] = indexRight;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(cell_vartypes[0], gradVals, indexGrad, 1, 0, cell_array);
+                                    vals[1] = trilinearInterpolate(gradVals, distFromLeft, dist_from_bottom, dist_from_front);
+
+                                    
+
+                                    //
+                                    // Y
+                                    //
+                                    for (int i=0; i<6; i++)
+                                        gradIndices[i] = indices[i];
+
+                                    //
+                                    // find y-h
+                                    //
+                                    if (y_top - gradientOffset < 0.0){
+                                        yTop = (y_top - gradientOffset)+1.0;
+                                        gradInd[1] = ind[1]-1;
+                                    }
+                                    else{
+                                        yTop = y_top - gradientOffset;
+                                        gradInd[1] = ind[1];
+                                    }
+                                    
+                                    getIndexandDistFromCenter(yTop, gradInd[1],  indexBottom, indexTop,  distFromBottom, distFromTop);
+                                    gradIndices[2] = indexBottom ;    gradIndices[3] = indexTop;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(cell_vartypes[0], gradVals, indexGrad, 1, 0, cell_array);
+                                    vals[2] = trilinearInterpolate(gradVals, dist_from_left, distFromBottom, dist_from_front);
+
+                                    //
+                                    // find y+h
+                                    //
+                                    yTop = y_top;
+                                    if (y_top + gradientOffset > 1.0){
+                                        yTop = (y_top + gradientOffset)-1.0;
+                                        gradInd[1] = ind[1]+1;
+                                    }else{
+                                        yTop = y_top + gradientOffset;
+                                        gradInd[1] = ind[1];
+                                    }
+
+                                    getIndexandDistFromCenter(yTop, gradInd[1],  indexBottom, indexTop,  distFromBottom, distFromTop);
+                                    gradIndices[2] = indexBottom;    gradIndices[3] = indexTop;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(cell_vartypes[0], gradVals, indexGrad, 1, 0, cell_array);
+                                    vals[3] = trilinearInterpolate(gradVals, dist_from_left, distFromBottom, dist_from_front);
+
+                                    
+                                    //
+                                    // Z
+                                    //
+                                    for (int i=0; i<6; i++)
+                                        gradIndices[i] = indices[i];
+
+                                    //
+                                    // z-h
+                                    //
+                                    if (z_back - gradientOffset < 0.0){
+                                        zBack = (z_back - gradientOffset)+1.0;
+                                        gradInd[2] = ind[2]-1;
+                                    }
+                                    else{
+                                        zBack = z_back - gradientOffset;
+                                        gradInd[2] = ind[2];
+                                    }
+                                    
+                                    getIndexandDistFromCenter(zBack, gradInd[2],  indexFront, indexBack,  distFromFront, distFromBack);
+                                    gradIndices[4] = indexFront;    gradIndices[5] = indexBack;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(cell_vartypes[0], gradVals, indexGrad, 1, 0, cell_array);
+                                    vals[4] = trilinearInterpolate(gradVals, dist_from_left, dist_from_bottom, distFromFront);
+
+                                    //
+                                    // z+h
+                                    //
+                                    if (z_back + gradientOffset > 1.0){
+                                        zBack = (z_back + gradientOffset)-1.0;
+                                        gradInd[2] = ind[2]+1;
+                                    }else{
+                                        zBack = z_back + gradientOffset;
+                                        gradInd[2] = ind[2];
+                                    }
+
+                                    getIndexandDistFromCenter(zBack, gradInd[2],  indexFront, indexBack,  distFromFront, distFromBack);
+                                    gradIndices[4] = indexFront;    gradIndices[5] = indexBack;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(cell_vartypes[0], gradVals, indexGrad, 1, 0, cell_array);
+                                    vals[5] = trilinearInterpolate(gradVals, dist_from_left, dist_from_bottom, distFromFront);
+
+
+                                    gradient[0] = (1.0/(2.0*gradientOffset)) * (vals[1] - vals[0]);
+                                    gradient[1] = (1.0/(2.0*gradientOffset)) * (vals[3] - vals[2]);
+                                    gradient[2] = (1.0/(2.0*gradientOffset)) * (vals[5] - vals[4]);
+
+                                    normalize(gradient);
+                                }
+
+                                //
+                                // Compute the color
+                                //
+                                computePixelColor(source_rgb, dest_rgb);
+                            }
+                        }
+                        else
+                            tmpSampleList[count][cell_index[l]+m] = scalarValue; 
+                    }
                 }
-            }    
+            }
+
+            //
+            // Node centered data
+            //
+            if (npt_arrays > 0)
+            {
+                int indexT[8];
+                computeIndicesVert(dims, indices, indexT);
+
+                for (int l = 0 ; l < npt_arrays ; l++)
+                {
+                    void  *pt_array = pt_arrays[l];
+                    double values[8];
+                    for (int m = 0 ; m < pt_size[l] ; m++)
+                    {
+                        AssignEight(pt_vartypes[l], values, indexT, pt_size[l], m, pt_array);
+                        double scalarValue = trilinearInterpolate(values, x_left, y_bottom, z_front);
+
+                        if (rayCastingSLIVR){
+                            double source_rgb[4];
+                            int retVal = transferFn1D->QueryTF(scalarValue,source_rgb);
+                            if ( ((retVal == 0)||(source_rgb[3]==0)) || (source_rgb[0]==0 && source_rgb[1]==0 && source_rgb[2]==0) ){
+                                // no need to do anything more if there will be no color
+                            }else{
+                                //
+                                // Compute Lighting (if needed)
+                                //
+                                if (lighting == true){
+                                    double vals[6];
+
+                                    // h = offset = 1/2 the distance between grids
+                                    // grad = 1/2*h * ( f(x+h,y,z)-f(x-h,y,z)    f(x,y+h,z)-f(x,y-h,z)   f(x,y,z-h)-f(x,y,z-h)  )
+                                    
+                                    float distFromRight, distFromLeft, distFromTop, distFromBottom, distFromFront, distFromBack;
+                                    int indexLeft, indexRight, indexTop, indexBottom, indexFront, indexBack;
+                                    float gradientOffset = 0.5;
+
+                                    double gradVals[8];
+                                    int indexGrad[8], gradInd[3], gradIndices[6];
+                                    float xRight, yTop, zBack;
+
+                                
+
+                                    //
+                                    // X
+                                    //
+                                    for (int i=0; i<6; i++)
+                                        gradIndices[i] = indices[i];
+
+                                    //
+                                    // find x-h
+                                    //
+                                    if (x_right - gradientOffset < 0.0){
+                                        xRight = (x_right - gradientOffset)+1.0;
+                                        gradInd[0] = ind[0]-1;
+                                    }
+                                    else{
+                                        xRight = x_right - gradientOffset;
+                                        gradInd[0] = ind[0];
+                                    }
+                                    
+                                    getIndexandDistFromCenter(xRight, gradInd[0],  indexLeft, indexRight,  distFromLeft, distFromRight);
+                                    gradIndices[0] = indexLeft;    gradIndices[1] = indexRight;
+                                    computeIndicesVert(dims, gradIndices, indexGrad);
+                                    AssignEight(pt_vartypes[0], gradVals, indexGrad, 1, 0, pt_array);
+                                    vals[0] = trilinearInterpolate(gradVals, x_left-gradientOffset, y_bottom, z_front);
+
+                                    //
+                                    // find x+h
+                                    //
+                                    if (x_right + gradientOffset > 1.0){
+                                        xRight = (x_right + gradientOffset)-1.0;
+                                        gradInd[0] = ind[0]+1;
+                                    }else{
+                                        xRight = x_right + gradientOffset;
+                                        gradInd[0] = ind[0];
+                                    }
+
+                                    getIndexandDistFromCenter(xRight, gradInd[0],  indexLeft, indexRight,  distFromLeft, distFromRight);
+                                    gradIndices[0] = indexLeft;    gradIndices[1] = indexRight;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(pt_vartypes[0], gradVals, indexGrad, 1, 0, pt_array);
+                                    vals[1] = trilinearInterpolate(gradVals, x_left+gradientOffset, y_bottom, z_front);
+
+                                    
+
+                                    //
+                                    // Y
+                                    //
+                                    for (int i=0; i<6; i++)
+                                        gradIndices[i] = indices[i];
+
+                                    //
+                                    // find y-h
+                                    //
+                                    if (y_top - gradientOffset < 0.0){
+                                        yTop = (y_top - gradientOffset)+1.0;
+                                        gradInd[1] = ind[1]-1;
+                                    }
+                                    else{
+                                        yTop = y_top - gradientOffset;
+                                        gradInd[1] = ind[1];
+                                    }
+                                    
+                                    getIndexandDistFromCenter(yTop, gradInd[1],  indexBottom, indexTop,  distFromBottom, distFromTop);
+                                    gradIndices[2] = indexBottom ;    gradIndices[3] = indexTop;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(pt_vartypes[0], gradVals, indexGrad, 1, 0, pt_array);
+                                    vals[2] = trilinearInterpolate(gradVals, x_left, y_bottom-gradientOffset, z_front);
+
+                                    //
+                                    // find y+h
+                                    //
+                                    yTop = y_top;
+                                    if (y_top + gradientOffset > 1.0){
+                                        yTop = (y_top + gradientOffset)-1.0;
+                                        gradInd[1] = ind[1]+1;
+                                    }else{
+                                        yTop = y_top + gradientOffset;
+                                        gradInd[1] = ind[1];
+                                    }
+
+                                    getIndexandDistFromCenter(yTop, gradInd[1],  indexBottom, indexTop,  distFromBottom, distFromTop);
+                                    gradIndices[2] = indexBottom;    gradIndices[3] = indexTop;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(pt_vartypes[0], gradVals, indexGrad, 1, 0, pt_array);
+                                    vals[3] = trilinearInterpolate(gradVals, x_left, y_bottom+gradientOffset, z_front);
+
+                                    
+                                    //
+                                    // Z
+                                    //
+                                    for (int i=0; i<6; i++)
+                                        gradIndices[i] = indices[i];
+
+                                    //
+                                    // z-h
+
+                                    gradInd[2] = ind[2]-1;
+    
+                                    
+                                    getIndexandDistFromCenter(zBack, gradInd[2],  indexFront, indexBack,  distFromFront, distFromBack);
+                                    gradIndices[4] = indexFront;    gradIndices[5] = indexBack;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(pt_vartypes[0], gradVals, indexGrad, 1, 0, pt_array);
+                                    vals[4] = trilinearInterpolate(gradVals, x_left, y_bottom, z_front-gradientOffset);
+
+                                    //
+                                    // z+h
+                                    //
+                                    if (z_back + gradientOffset > 1.0){
+                                        zBack = (z_back + gradientOffset)-1.0;
+                                        gradInd[2] = ind[2]+1;
+                                    }else{
+                                        zBack = z_back + gradientOffset;
+                                        gradInd[2] = ind[2];
+                                    }
+
+                                    getIndexandDistFromCenter(zBack, gradInd[2],  indexFront, indexBack,  distFromFront, distFromBack);
+                                    gradIndices[4] = indexFront;    gradIndices[5] = indexBack;
+                                    computeIndices(dims, gradIndices, indexGrad);
+                                    AssignEight(pt_vartypes[0], gradVals, indexGrad, 1, 0, pt_array);
+                                    vals[5] = trilinearInterpolate(gradVals, x_left, y_bottom, z_front+gradientOffset);
+
+
+                                    gradient[0] = (1.0/(2.0*gradientOffset)) * (vals[1] - vals[0]);
+                                    gradient[1] = (1.0/(2.0*gradientOffset)) * (vals[3] - vals[2]);
+                                    gradient[2] = (1.0/(2.0*gradientOffset)) * (vals[5] - vals[4]);
+
+                                    normalize(gradient);
+                                }
+
+                                //
+                                // Compute the color
+                                //
+                                computePixelColor(source_rgb, dest_rgb);
+                            }
+                        }
+                        else
+                            tmpSampleList[count][pt_index[l]+m] = scalarValue;
+                    }
+                }
+            }
+        }
+        else{
+            if (ncell_arrays > 0){
+                for (int l = 0 ; l < ncell_arrays ; l++)
+                {
+                    for (int m = 0 ; m < cell_size[l] ; m++)
+                        tmpSampleList[count][cell_index[l]+m] = 
+                                         ConvertToDouble(cell_vartypes[l], index,
+                                                      cell_size[l], m, cell_arrays[l]);
+                }
+            }
+        
+
+            if (npt_arrays > 0)
+            {
+                int index[8];
+                index[0] = (ind[2])*dims[0]*dims[1] +(ind[1])*dims[0] + (ind[0]);
+                index[1] = (ind[2])*dims[0]*dims[1] + 
+                                                     (ind[1])*dims[0] + (ind[0]+1);
+                index[2] = (ind[2])*dims[0]*dims[1] + 
+                                                     (ind[1]+1)*dims[0] + (ind[0]);
+                index[3] = (ind[2])*dims[0]*dims[1] + 
+                                                    (ind[1]+1)*dims[0]+ (ind[0]+1);
+                index[4] = (ind[2]+1)*dims[0]*dims[1] + 
+                                                       (ind[1])*dims[0] + (ind[0]);
+                index[5] = (ind[2]+1)*dims[0]*dims[1] + 
+                                                      (ind[1])*dims[0]+ (ind[0]+1);
+                index[6] = (ind[2]+1)*dims[0]*dims[1] + 
+                                                      (ind[1]+1)*dims[0]+ (ind[0]);
+                index[7] = (ind[2]+1)*dims[0]*dims[1] +
+                                                   (ind[1]+1)*dims[0] + (ind[0]+1);
+                double x_right = prop[0];
+                double x_left = 1. - prop[0];
+                double y_top = prop[1];
+                double y_bottom = 1. - prop[1];
+                double z_back = prop[2];
+                double z_front = 1. - prop[2];
+                for (int l = 0 ; l < npt_arrays ; l++)
+                {
+                    void  *pt_array = pt_arrays[l];
+                    int    s = pt_size[l];
+                    for (int m = 0 ; m < s ; m++)
+                    {
+                        double vals[8];
+                        AssignEight(pt_vartypes[l], vals, index, s, m, pt_array);
+                        double val = 
+                          x_left*y_bottom*z_front*vals[0] +
+                          x_right*y_bottom*z_front*vals[1] +
+                          x_left*y_top*z_front*vals[2] +
+                          x_right*y_top*z_front*vals[3] +
+                          x_left*y_bottom*z_back*vals[4] +
+                          x_right*y_bottom*z_back*vals[5] +
+                          x_left*y_top*z_back*vals[6] +
+                          x_right*y_top*z_back*vals[7];
+                        tmpSampleList[count][pt_index[l]+m] = val;
+                    }
+                }    
+            }
         }
 
         inrun = true;
         count++;
     }
-        
+
     //
     // Make sure we get runs at the end.
     //
-    if (inrun)
-        ray->SetSamples(last-count, last-1, tmpSampleList);
+    if (rayCastingSLIVR){
+        imgArray[(h-yMin)*(imgWidth*4) + (w-xMin)*4 + 0] = std::min(std::max(dest_rgb[0],0.0),1.0);
+        imgArray[(h-yMin)*(imgWidth*4) + (w-xMin)*4 + 1] = std::min(std::max(dest_rgb[1],0.0),1.0);
+        imgArray[(h-yMin)*(imgWidth*4) + (w-xMin)*4 + 2] = std::min(std::max(dest_rgb[2],0.0),1.0);
+        imgArray[(h-yMin)*(imgWidth*4) + (w-xMin)*4 + 3] = std::min(std::max(dest_rgb[3],0.0),1.0);
+    }
+    else
+        if (inrun)
+            ray->SetSamples(last-count, last-1, tmpSampleList);
+}
+
+
+
+
+
+// ****************************************************************************
+//  Method: avtMassVoxelExtractor::computePixelColor
+//
+//  Purpose:
+//      Computes color
+//
+//  Programmer: Pascal Grosset
+//  Creation:   June 10, 2013
+//
+//  Modifications:
+//      Need to take into account lighting
+//      Need to take into accoujnt multiple light sources
+//
+// ****************************************************************************
+
+void
+avtMassVoxelExtractor::computePixelColor(double source_rgb[4], double dest_rgb[4]){
+    // might need to add opacity correction later
+    //float opacityCorrectiong = 0.8;  // need to be properly set according to number of slices; 0.8 is too arbitrary
+    //float alpha = 1.0 - pow((1.0-source_rgb[3]),opacityCorrectiong);
+    //source_rgb[3] = alpha;
+
+    // Phong Shading
+    if (lighting == true){
+        float dir[3];           // The view "right" vector.
+        double view_right[3];   // view_direction cross view_up
+                                
+        dir[0] = -view_direction[0];
+        dir[1] = -view_direction[1];
+        dir[2] = -view_direction[2];
+        
+        double gradientDouble[3], transformedGradient[3];
+        for (int i=0; i<3; i++)
+            transformedGradient[i] = gradientDouble[i] = gradient[i];
+
+        // cos(angle) = a.b;  angle between normal and light
+        float normal_dot_light = dot(gradient,dir);   // angle between light and normal;
+        normal_dot_light = std::max(0.0, std::min(fabs(normal_dot_light),1.0) );
+
+        // opacity correction
+        float opacityCorrectiong = 0.7;
+        float alpha = 1.0 - pow((1.0-source_rgb[3]),opacityCorrectiong);
+        source_rgb[3] = alpha;
+
+        // Calculate color using phong shading
+        // I = (I  * ka) + [ (I_i  * kd * (L.N)) + (Ia_i * ks * (R.V)^ns) ]_for each light source i
+        // I = (I  * ka) +   (I  * kd*abs(cos(angle))) + (Ia * ks*abs(cos(angle))^ns)
+        for (int i=0; i<3; i++)
+            source_rgb[i] = source_rgb[i] * materialProperties[0];                          // I  * ka
+
+        for (int i=0; i<3; i++)
+            source_rgb[i] += source_rgb[i] * materialProperties[1] * normal_dot_light;      // I  * kd*abs(cos(angle))
+
+        for (int i=0; i<3; i++)
+            source_rgb[i] += materialProperties[2] * pow(normal_dot_light,materialProperties[3]) * source_rgb[3];   // I  * kd*abs(cos(angle))
+    }
+
+    // front to back compositing
+    for (int i=0; i<4; i++){
+        if (source_rgb[i] > 1.0)
+            source_rgb[i] = 1.0;
+        
+        dest_rgb[i] = source_rgb[i] * (1.0 - dest_rgb[3]) + dest_rgb[i];
+    }
+
+    // back to front
+    //    dest_rgb[i] = dest_rgb[i] * (1.0 - source_rgb[3]) + source_rgb[i];
+
+    patchDrawn = 1;
 }
 
 

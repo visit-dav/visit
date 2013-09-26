@@ -61,6 +61,7 @@ class QRadioButton;
 class QSpinBox;
 class QDoubleSpinBox;
 class QVBoxLayout;
+class QGridLayout;
 class QvisColorSelectionWidget;
 class QvisGaussianOpacityBar;
 class QvisOpacitySlider;
@@ -187,6 +188,7 @@ protected:
     QWidget *Create1DTransferFunctionGroup(int);
     QWidget *Create2DTransferFunctionGroup();
     QWidget *CreateRendererOptionsGroup(int);
+    void CreateMatLightGroup(QWidget *parent, QLayout *pLayout, int maxWidth);
     void CreateColorGroup(QWidget *, QVBoxLayout *, int);
     void CreateOpacityGroup(QWidget *, QVBoxLayout *, int);
 private slots:
@@ -233,11 +235,19 @@ private slots:
     void transferDimChanged(int);
     void updateTransferFunc2D();
     void updateTransferFunc2D(WidgetID id);
+    void setMaterialKa(double val);
+    void setMaterialKd(double val);
+    void setMaterialKs(double val);
+    void setMaterialN(double val);
 private:
     int                      plotType;
     VolumeAttributes         *volumeAtts;
     int                      colorCycle;
     bool                     showColorsInAlphaWidget;
+
+    QVBoxLayout              *rendererOptionsLayout;
+
+    QTabWidget               *tfTabs;
 
     // 1D transfer function widgets
     QWidget                  *tfParent1D;
@@ -253,7 +263,7 @@ private:
     QLineEdit                *colorMax;
     QButtonGroup             *scalingButtons;
     QLineEdit                *skewLineEdit;
-    QvisVariableButton       *compactVariable;
+    //QvisVariableButton       *compactVariable;
     QvisVariableButton       *opacityVariable;
     QCheckBox                *opacityMinToggle;
     QLineEdit                *opacityMin;
@@ -271,6 +281,7 @@ private:
     QPushButton              *zeroButton;
     QPushButton              *rampButton;
     QPushButton              *inverseRampButton;
+    QPushButton              *tentButton;
     QPushButton              *oneButton;
     QPushButton              *smoothButton;
     QvisOpacitySlider        *attenuationSlider;
@@ -286,6 +297,7 @@ private:
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
     QCheckBox                *resampleToggle;
+    QGroupBox                *lowGradientGroup;
     QLabel                   *lowGradientLightingReductionLabel;
     QComboBox                *lowGradientLightingReductionCombo;
     QCheckBox                *lowGradientClampToggle;
@@ -295,21 +307,68 @@ private:
     QComboBox                *rendererTypesComboBox;
     QButtonGroup             *gradientButtonGroup;
     QButtonGroup             *samplingButtonGroup;
+    QWidget                  *samplingMethodWidget;
     QButtonGroup             *transferFunctionGroup;
+    QWidget                  *tfWidget;
     QRadioButton             *oneDimButton;
     QRadioButton             *twoDimButton;
+    QLabel                   *samplingMethodLabel;
     QRadioButton             *rasterizationButton;
     QRadioButton             *kernelButton;
+    QRadioButton             *trilinearButton;
     QRadioButton             *centeredDiffButton;
     QRadioButton             *sobelButton;
+    QWidget                  *resampleTargetWidget;
+    //QHBoxLayout              *resampleTargetLayout;
     QLabel                   *resampleTargetLabel;
-    QLabel                   *compactVarLabel;
+    // QLabel                   *compactVarLabel;
     QSpinBox                 *resampleTarget;
-    QLabel                   *num3DSlicesLabel;
+    // QLabel                   *num3DSlicesLabel;
     QSpinBox                 *num3DSlices;
+    QWidget                  *samplesPerRayWidget;
     QLabel                   *samplesPerRayLabel;
     QSpinBox                 *samplesPerRay;
+    QWidget                  *rendererSamplesWidget;
     QLabel                   *rendererSamplesLabel;
     QDoubleSpinBox           *rendererSamples;
+    QLabel                   *rendererSamplesSLIVRLabel;
+    QDoubleSpinBox           *rendererSamplesSLIVR;
+    QWidget                  *materialProperties;
+    QGroupBox                *lightMaterialPropGroup;
+    QDoubleSpinBox           *matKa; // ambient
+    QDoubleSpinBox           *matKd; // diffuse
+    QDoubleSpinBox           *matKs; // specular
+    QDoubleSpinBox           *matN;  // specularPower
+    QLabel                   *Ka;
+    QLabel                   *Kd;
+    QLabel                   *Ks;
+    QLabel                   *specPow;
+
+    //Sampling group
+    //QGroupBox               *samplingGroup;
+    //QGridLayout             *samplingLayout;
+    QGroupBox               *resampleGroup;
+    QWidget                 *splattingOptions;
+    QVBoxLayout             *splattingGroupLayout;
+    QGroupBox               *splattingGroup;
+    QWidget                 *texture3dOptions;
+    QVBoxLayout             *texture3dGroupLayout;
+    QGroupBox               *texture3dGroup;
+    QGroupBox               *raycastingGroup;
+    QWidget                 *slivrOptions;
+    QVBoxLayout             *slivrGroupLayout;
+    QGroupBox               *slivrGroup;
+    QWidget                 *tuvokOptions;
+    QVBoxLayout             *tuvokGroupLayout;
+    QGroupBox               *tuvokGroup;
+    void                    CreateSamplingGroups(QWidget *parent, QLayout *pLayout);
+    void                    UpdateSamplingGroup();
+    void                    EnableSamplingMethods(bool enable);
+    void                    EnableSplattingGroup();
+    void                    EnableTexture3dGroup();
+    void                    EnableTuvokGroup();
+    void                    EnableSLIVRGroup();
+    void                    UpdateLowGradientGroup(bool enable);
+
 };
 #endif

@@ -178,6 +178,32 @@ static const char * inverse_ramp_xpm[] = {
 "++++++++++++++++++++++++++++++++++++....",
 "++++++++++++++++++++++++++++++++++++++.."};
 
+
+static const char * tents_xpm[] = {
+"40 20 2 1",
+"+    c #000000",
+".    c #FFFFFF",
+"........................................",
+"........................................",
+".......++..............++..............+",
+".......++..............++..............+",
+"......++++............++++............++",
+"......++++............++++............++",
+".....++++++..........++++++..........+++",
+".....++++++..........++++++..........+++",
+"....++++++++........++++++++........++++",
+"....++++++++........++++++++........++++",
+"...++++++++++......++++++++++......+++++",
+"...++++++++++......++++++++++......+++++",
+"..++++++++++++....++++++++++++....++++++",
+"..++++++++++++....++++++++++++....++++++",
+".++++++++++++++..++++++++++++++..+++++++",
+".++++++++++++++..++++++++++++++..+++++++",
+".++++++++++++++..++++++++++++++..+++++++",
+"++++++++++++++++++++++++++++++++++++++++",
+"++++++++++++++++++++++++++++++++++++++++",
+"++++++++++++++++++++++++++++++++++++++++"};
+
 static const char * white_xpm[] = {
 "40 20 1 1",
 "+    c #FFFFFF",
@@ -302,7 +328,7 @@ QvisVolumePlotWindow::CreateWindowContents()
 
     // Create a tab widget so we can put the transfer functions on their
     // own tabs.
-    QTabWidget *tfTabs = new QTabWidget(central);
+    tfTabs = new QTabWidget(central);
     topLayout->addWidget(tfTabs, 100);
 
     tfRendererOptions = CreateRendererOptionsGroup(maxWidth);
@@ -321,6 +347,100 @@ QvisVolumePlotWindow::CreateWindowContents()
     colorSelect = new QvisColorSelectionWidget(0);
     connect(colorSelect, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(selectedColor(const QColor &)));
+
+    UpdateSamplingGroup();
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlot::CreateMatLightGroup
+//
+// Purpose: 
+//   Creates the different Light Shading options for SLIVR
+//
+// Programmer: Pascal Grosset
+// Creation:   Tue Apr 10
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::CreateMatLightGroup(QWidget *parent, QLayout *pLayout, int maxWidth)
+{
+    // Add the group box that will contain the options.
+    lightMaterialPropGroup = new QGroupBox(parent);
+    lightMaterialPropGroup->setTitle(tr("Lighting and Material Properties"));
+    pLayout->addWidget(lightMaterialPropGroup);
+
+    QVBoxLayout *lightMaterialPropLayout = new QVBoxLayout(lightMaterialPropGroup);
+
+    // Create the lighting toggle
+    lightingToggle = new QCheckBox(tr("Lighting"), lightMaterialPropGroup);
+    connect(lightingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(lightingToggled(bool)));
+
+    // Material properties
+    materialProperties=new QWidget(lightMaterialPropGroup);
+    QGridLayout *materialPropertiesLayout = new QGridLayout(materialProperties);
+
+    matKa = new QDoubleSpinBox(materialProperties);
+    matKa->setMinimum(0.0);
+    matKa->setMaximum(1.0);
+    matKa->setDecimals(2);
+    matKa->setSingleStep(0.05);
+    matKa->setValue(0.4);
+    
+    matKd = new QDoubleSpinBox(materialProperties);
+    matKd->setMinimum(0.0);
+    matKd->setMaximum(1.0);
+    matKd->setDecimals(2);
+    matKd->setSingleStep(0.05);
+    matKd->setValue(0.75);
+    
+    matKs = new QDoubleSpinBox(materialProperties);
+    matKs->setMinimum(0.0);
+    matKs->setMaximum(1.0);
+    matKs->setDecimals(2);
+    matKs->setSingleStep(0.05);
+    matKs->setValue(0.0);
+    
+    matN = new QDoubleSpinBox(materialProperties);
+    matN->setMinimum(0.0);
+    matN->setMaximum(100.0);
+    matN->setDecimals(1);
+    matN->setSingleStep(1);
+    matN->setValue(15);
+    
+   
+    Ka = new QLabel(tr("Ambient:"), materialProperties);
+    Kd = new QLabel(tr("Diffuse:"), materialProperties);
+    Ks = new QLabel(tr("Specular:"), materialProperties);
+    specPow = new QLabel(tr("Shininess:"), materialProperties);
+    Ka->setBuddy(matKa);
+    Kd->setBuddy(matKd);
+    Ks->setBuddy(matKs);
+    specPow->setBuddy(matN);
+
+    
+    materialPropertiesLayout->addWidget(Ka,     0,  0,  1,1, Qt::AlignRight);
+    materialPropertiesLayout->addWidget(matKa,  0,  1,  1,1, Qt::AlignLeft);
+
+    materialPropertiesLayout->addWidget(Kd,     0,  3,  1,1, Qt::AlignRight);
+    materialPropertiesLayout->addWidget(matKd,  0,  4,  1,1, Qt::AlignLeft);
+
+    materialPropertiesLayout->addWidget(Ks,     0,  6,  1,1, Qt::AlignRight);
+    materialPropertiesLayout->addWidget(matKs,  0,  7,  1,1, Qt::AlignLeft);
+
+    materialPropertiesLayout->addWidget(specPow,0,  10, 1,1, Qt::AlignRight);
+    materialPropertiesLayout->addWidget(matN,   0,  11, 1,1, Qt::AlignLeft);
+    
+    lightMaterialPropLayout->addWidget(lightingToggle);
+    lightMaterialPropLayout->addWidget(materialProperties);
+
+    connect(matKa, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKa(double))); 
+    connect(matKd, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKd(double))); 
+    connect(matKs, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKs(double))); 
+    connect(matN , SIGNAL(valueChanged(double)), this, SLOT(setMaterialN(double) ));
 }
 
 // ****************************************************************************
@@ -632,6 +752,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     QPixmap blackIcon(black_xpm);
     QPixmap rampIcon(ramp_xpm);
     QPixmap inverseRampIcon(inverse_ramp_xpm);
+    QPixmap tentIcon(tents_xpm); 
     QPixmap whiteIcon(white_xpm);
 
     QHBoxLayout *abLayout = new QHBoxLayout(0);
@@ -653,6 +774,11 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     inverseRampButton->setIcon(QIcon(inverseRampIcon));
     connect(inverseRampButton, SIGNAL(clicked()), scribbleAlphaWidget, SLOT(makeInverseLinearRamp()));
     abLayout->addWidget(inverseRampButton);
+
+    tentButton = new QPushButton(opacityWidgetGroup);
+    tentButton->setIcon(QIcon(tentIcon));
+    connect(tentButton, SIGNAL(clicked()), scribbleAlphaWidget, SLOT(makeTent()));
+    abLayout->addWidget(tentButton);
 
     oneButton = new QPushButton(opacityWidgetGroup);
     oneButton->setIcon(QIcon(whiteIcon));
@@ -797,28 +923,374 @@ QvisVolumePlotWindow::Create2DTransferFunctionGroup()
 //
 // ****************************************************************************
 
+void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayout)
+{
+    //resample group (shared by splatting, texture3d, tuvok, and slivr)
+    {
+        resampleGroup = new QGroupBox(parent);
+        resampleGroup->setFlat(true);
+        resampleGroup->setContentsMargins(0,0,0,0);
+        QHBoxLayout *resampleLayout     = new QHBoxLayout(                                  resampleGroup);
+        resampleTargetWidget            = new QWidget();
+        QHBoxLayout *resampleTargetLayout= new QHBoxLayout(                                 resampleTargetWidget);
+        resampleTargetLayout->setMargin(0);
+        resampleTargetLabel             = new QLabel(tr("Number of samples"),               resampleGroup);
+        resampleToggle                  = new QCheckBox(tr("Sample data onto regular grid"),resampleGroup);
+        resampleTarget                  = new QSpinBox(                                     resampleGroup);
+        resampleTarget->setMinimum(1000);
+        resampleTarget->setMaximum(100000000);
+        resampleTarget->setSingleStep(10000);
+        resampleTargetLabel->setBuddy(resampleTarget);
+        connect(resampleToggle, SIGNAL(toggled(bool)),      this, SLOT(resampleToggled(bool)));
+        connect(resampleTarget, SIGNAL(valueChanged(int)),  this, SLOT(resampleTargetChanged(int)));
+        resampleLayout->addWidget(resampleToggle);
+        resampleLayout->addStretch(QSizePolicy::Maximum);
+        resampleLayout->addWidget(resampleTargetWidget);
+        resampleTargetLayout->addWidget(resampleTargetLabel,Qt::AlignRight);
+        resampleTargetLayout->addWidget(resampleTarget,Qt::AlignLeft);
+        resampleGroup->setVisible(false);
+    }
+
+    //splatting group
+    {
+        splattingGroup = new QGroupBox(parent);
+        splattingGroup->setTitle(tr("Splatting Options"));
+        splattingGroupLayout                = new QVBoxLayout(                                                      splattingGroup);
+        splattingOptions                    = new QWidget(                                                          splattingGroup);
+        QHBoxLayout        *splattingLayout = new QHBoxLayout(                                                      splattingOptions);
+        QLabel             *compactVarLabel = new QLabel(tr("Compact support variable"),                            splattingOptions);
+        QvisVariableButton *compactVariable = new QvisVariableButton(true, true, true, QvisVariableButton::Scalars, splattingOptions);
+        compactVarLabel->setBuddy(compactVariable);
+        connect(compactVariable, SIGNAL(activated(const QString &)), this, SLOT(compactVariableChanged(const QString &)));
+        splattingLayout->addWidget(compactVarLabel);
+        splattingLayout->addWidget(compactVariable);
+        splattingLayout->addStretch(QSizePolicy::Maximum);
+        splattingGroupLayout->addWidget(splattingOptions);
+        pLayout->addWidget(splattingGroup);
+    }
+
+    //texture3d group
+    {
+        texture3dGroup = new QGroupBox(parent);
+        texture3dGroup->setTitle(tr("3D Texturing Options"));
+        texture3dGroupLayout            = new QVBoxLayout(                  texture3dGroup);
+        texture3dOptions                = new QWidget(                      texture3dGroup);
+        QHBoxLayout *texture3dLayout    = new QHBoxLayout(                  texture3dOptions);
+        QLabel      *num3DSlicesLabel   = new QLabel(tr("Number of slices"),texture3dOptions);
+        num3DSlices                     = new QSpinBox(                     texture3dOptions);
+        num3DSlices->setMinimum(1);
+        num3DSlices->setMaximum(1000);
+        num3DSlices->setSingleStep(10);
+        num3DSlicesLabel->setBuddy(num3DSlices);
+        connect(num3DSlices, SIGNAL(valueChanged(int)), this, SLOT(num3DSlicesChanged(int)));
+        texture3dLayout->addWidget(num3DSlicesLabel);
+        texture3dLayout->addWidget(num3DSlices);
+        texture3dLayout->addStretch(QSizePolicy::Maximum);
+        texture3dGroupLayout->addWidget(texture3dOptions);
+        pLayout->addWidget(texture3dGroup);
+    }
+
+    //raycasting group
+    {
+        raycastingGroup = new QGroupBox(parent);
+        raycastingGroup->setTitle(tr("Ray Casting Options"));
+        QGridLayout *raycastingLayout = new QGridLayout(raycastingGroup);
+        // raycastingLayoutV->setSpacing(0);
+        // raycastingLayoutV->setMargin(0);
+        //6 x 2 layout: 
+        // (0,0) Sampling method  (0,1) Rasterization   (0,2) Kernel Based       (0,4) Trilinear
+        //                        (0,1) Samples per ray (0,2) sprSpinBox         (0,4) Sampling rate  (0,5) srSpinBox
+        samplesPerRayWidget         = new QWidget(                          raycastingGroup);
+        QHBoxLayout *sprLayout      = new QHBoxLayout(                      samplesPerRayWidget);
+        samplesPerRayLabel          = new QLabel(tr("Samples per ray"),     samplesPerRayWidget);
+        samplesPerRay               = new QSpinBox(                         samplesPerRayWidget);
+        rendererSamplesWidget       = new QWidget(                          raycastingGroup);
+        QHBoxLayout *rsLayout       = new QHBoxLayout(                      rendererSamplesWidget);
+        rendererSamplesLabel        = new QLabel(tr("Sampling rate"),       rendererSamplesWidget);
+        rendererSamples             = new QDoubleSpinBox(                   rendererSamplesWidget);
+        samplingMethodWidget        = new QWidget(                          raycastingGroup);
+        samplingMethodLabel         = new QLabel(tr("Sampling method"),     samplingMethodWidget);
+        //QHBoxLayout *smLayout       = new QHBoxLayout(                      samplingMethodWidget);
+        //QGridLayout *smLayout       = new QGridLayout(                      samplingMethodWidget);
+        samplingButtonGroup         = new QButtonGroup(                     samplingMethodWidget);
+        rasterizationButton         = new QRadioButton(tr("Rasterization"), samplingMethodWidget);
+        kernelButton                = new QRadioButton(tr("Kernel Based"),  samplingMethodWidget);
+        trilinearButton             = new QRadioButton(tr("Trilinear"),     samplingMethodWidget);
+        samplingButtonGroup->addButton(rasterizationButton, 0);
+        samplingButtonGroup->addButton(kernelButton, 1);
+        samplingButtonGroup->addButton(trilinearButton, 2);
+        samplesPerRay->setMinimum(1);
+        samplesPerRay->setMaximum(25000);
+        samplesPerRay->setSingleStep(50);
+        samplesPerRayLabel->setBuddy(samplesPerRay);
+        rendererSamples->setMinimum(1);
+        rendererSamples->setMaximum(20);
+        rendererSamples->setSingleStep(.1);
+        rendererSamplesLabel->setBuddy(rendererSamples);
+        connect(rendererSamples,     SIGNAL(valueChanged(double)),  this, SLOT(rendererSamplesChanged(double)));
+        connect(samplesPerRay,       SIGNAL(valueChanged(int)),     this, SLOT(samplesPerRayChanged(int)));
+        connect(samplingButtonGroup, SIGNAL(buttonClicked(int)),    this, SLOT(samplingTypeChanged(int)));
+        rsLayout->addWidget(rendererSamplesLabel);
+        rsLayout->addWidget(rendererSamples,Qt::AlignLeft);
+        rsLayout->addStretch(QSizePolicy::Maximum);
+        sprLayout->addWidget(samplesPerRayLabel);
+        sprLayout->addWidget(samplesPerRay,Qt::AlignLeft);
+        sprLayout->addStretch(QSizePolicy::Maximum);
+        // smLayout->addWidget(samplingMethodLabel,0,0);
+        // smLayout->addWidget(rasterizationButton,0,1);
+        // smLayout->addWidget(kernelButton,0,2);
+        // smLayout->addWidget(trilinearButton,0,4);
+        //smLayout->addStretch(QSizePolicy::Maximum);
+        // raycastingLayout0->addWidget(samplesPerRayWidget);
+        // raycastingLayout0->addWidget(rendererSamplesWidget);
+        // raycastingLayoutV->addWidget(samplingMethodWidget);
+        //raycastingLayout->addWidget(samplingMethodWidget,0,0,1,6);
+        raycastingLayout->addWidget(samplingMethodLabel,0,0);
+        raycastingLayout->addWidget(rasterizationButton,0,1);
+        raycastingLayout->addWidget(kernelButton,0,2,1,2);
+        raycastingLayout->addWidget(trilinearButton,0,4);
+        raycastingLayout->addWidget(samplesPerRayWidget,1,1,1,2);
+        raycastingLayout->addWidget(rendererSamplesWidget,1,4,1,2);
+        pLayout->addWidget(raycastingGroup);
+    }
+    
+    //slivr group
+    {
+        slivrGroup = new QGroupBox(parent);
+        slivrGroup->setTitle(tr("SLIVR Options"));
+        slivrGroupLayout             = new QVBoxLayout(                  slivrGroup);
+        slivrOptions                 = new QWidget(                      slivrGroup);
+        QHBoxLayout *slivrLayout     = new QHBoxLayout(                  slivrOptions);
+        rendererSamplesSLIVRLabel    = new QLabel(tr("Sampling rate"),   slivrOptions);
+        rendererSamplesSLIVR         = new QDoubleSpinBox(               slivrOptions);
+        rendererSamplesSLIVR->setMinimum(1);
+        rendererSamplesSLIVR->setMaximum(20);
+        rendererSamplesSLIVR->setSingleStep(.1);
+        rendererSamplesSLIVRLabel->setBuddy(rendererSamplesSLIVR);
+        connect(rendererSamplesSLIVR, SIGNAL(valueChanged(double)), this, SLOT(rendererSamplesChanged(double)));
+        slivrLayout->addWidget(rendererSamplesSLIVRLabel);
+        slivrLayout->addWidget(rendererSamplesSLIVR);
+        slivrLayout->addStretch(QSizePolicy::Maximum);
+        slivrGroupLayout->addWidget(slivrOptions);
+        pLayout->addWidget(slivrGroup);
+    }
+
+    //tuvok group
+    {
+        tuvokGroup = new QGroupBox(parent);
+        tuvokGroup->setTitle(tr("Tuvok Options"));
+        tuvokGroupLayout                = new QVBoxLayout(                  tuvokGroup);
+        tuvokOptions                    = new QWidget(                      tuvokGroup);
+        QHBoxLayout *tuvokLayout        = new QHBoxLayout(                  tuvokOptions);
+        QLabel      *num3DSlicesLabel   = new QLabel(tr("Number of slices"),tuvokOptions);
+        QSpinBox    *num3DSlices        = new QSpinBox(                     tuvokOptions);
+        num3DSlices->setMinimum(1);
+        num3DSlices->setMaximum(1000);
+        num3DSlices->setSingleStep(10);
+        num3DSlicesLabel->setBuddy(num3DSlices);
+        connect(num3DSlices, SIGNAL(valueChanged(int)), this, SLOT(num3DSlicesChanged(int)));
+        tuvokLayout->addWidget(num3DSlicesLabel);
+        tuvokLayout->addWidget(num3DSlices);
+        tuvokLayout->addStretch(QSizePolicy::Maximum);
+        tuvokGroupLayout->addWidget(tuvokOptions);
+        pLayout->addWidget(tuvokGroup);
+    }
+}
+
+void QvisVolumePlotWindow::EnableSamplingMethods(bool enable)
+{
+    samplingMethodLabel->setEnabled(enable);
+    rasterizationButton->setEnabled(enable);
+    kernelButton->setEnabled(enable);
+    trilinearButton->setEnabled(enable);
+}
+
+void QvisVolumePlotWindow::UpdateLowGradientGroup(bool enable)
+{
+    lowGradientGroup->setEnabled(enable);
+    if (!enable) return;
+    lowGradientLightingReductionLabel->setEnabled(enable);
+    lowGradientLightingReductionCombo->setEnabled(enable);
+    enable &= (volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off);
+    lowGradientClampToggle->setEnabled(enable);
+    enable &= volumeAtts->GetLowGradientLightingClampFlag();
+    lowGradientClamp->setEnabled(enable);
+}
+
+void QvisVolumePlotWindow::EnableSplattingGroup()
+{
+    //resampleGroup is shared between several renderers' options
+    splattingGroupLayout->addWidget(resampleGroup);
+    resampleGroup->setVisible(true);
+    resampleGroup->setEnabled(true);
+    splattingGroup->setVisible(true);
+    splattingOptions->setEnabled(!volumeAtts->GetResampleFlag());
+}
+
+void QvisVolumePlotWindow::EnableTexture3dGroup()
+{
+    //resampleGroup is shared between several renderers' options
+    texture3dGroupLayout->addWidget(resampleGroup);
+    resampleGroup->setVisible(true);
+    resampleGroup->setEnabled(true);
+    texture3dGroup->setVisible(true);
+    texture3dOptions->setEnabled(true);
+}
+
+void QvisVolumePlotWindow::EnableTuvokGroup()
+{
+    //resampleGroup is shared between several renderers' options
+    tuvokGroupLayout->addWidget(resampleGroup);
+    resampleGroup->setVisible(true);
+    resampleGroup->setEnabled(true);
+    tuvokGroup->setVisible(true);
+    tuvokOptions->setEnabled(true);
+}
+
+void QvisVolumePlotWindow::EnableSLIVRGroup()
+{
+    //resampleGroup is shared between several renderers' options
+    slivrGroupLayout->addWidget(resampleGroup);
+    resampleGroup->setVisible(true);
+    resampleGroup->setEnabled(true);
+    slivrGroup->setVisible(true);
+    slivrOptions->setEnabled(!volumeAtts->GetResampleFlag());
+}
+
+void QvisVolumePlotWindow::UpdateSamplingGroup()
+{
+    //hide all groups
+    resampleGroup->setVisible(false);
+    splattingGroup->setVisible(false);
+    texture3dGroup->setVisible(false);
+    tuvokGroup->setVisible(false);
+    raycastingGroup->setVisible(false);
+    slivrGroup->setVisible(false);
+
+    //disable 2d transfer function tab (only enabled for SLIVR)
+    tfTabs->setTabEnabled(1, true);
+    tfTabs->setTabEnabled(2, false);
+
+    //lighting and material properties group, enabled for all but RayCastingIntegration
+    lightMaterialPropGroup->setEnabled(true);
+    lightingToggle->setEnabled(true);
+
+    //disable material properties (only enabled with lighting for SLIVR, RayCasting w/ Trilinear Sampling)
+    materialProperties->setEnabled(false);
+
+    //enable/disable resampleTarget
+    resampleTargetWidget->setEnabled(volumeAtts->GetResampleFlag());
+
+    //smooth data
+    smoothDataToggle->setEnabled(true);
+
+    //color widget and opacity groups
+    colorWidgetGroup->setEnabled(true);
+    opacityWidgetGroup->setEnabled(true);
+
+    //gradient methods
+    centeredDiffButton->setEnabled(true);
+    sobelButton->setEnabled(true);
+ 
+    //add sampling options to layout based on current settings
+    VolumeAttributes::Renderer renderer_type=volumeAtts->GetRendererType();
+    switch (renderer_type)
+    {
+    case VolumeAttributes::Splatting:
+        EnableSplattingGroup();
+        UpdateLowGradientGroup(true);
+        break;
+
+    case VolumeAttributes::Texture3D:
+        EnableTexture3dGroup();
+        UpdateLowGradientGroup(true);
+        break;
+
+    case VolumeAttributes::Tuvok:
+        EnableTuvokGroup();
+        UpdateLowGradientGroup(false);
+        break;
+
+    case VolumeAttributes::RayCasting:
+        resampleGroup->setEnabled(false);
+        raycastingGroup->setVisible(true);
+        UpdateLowGradientGroup(true);
+        materialProperties->setEnabled(volumeAtts->GetSampling()==VolumeAttributes::Trilinear && volumeAtts->GetLightingFlag());
+        EnableSamplingMethods(true);
+        samplesPerRayWidget->setEnabled(volumeAtts->GetSampling()!=VolumeAttributes::Trilinear);
+        rendererSamplesWidget->setEnabled(volumeAtts->GetSampling()==VolumeAttributes::Trilinear);
+        break;
+
+    case VolumeAttributes::RayCastingIntegration:
+        resampleGroup->setEnabled(false);
+        raycastingGroup->setVisible(true);
+        UpdateLowGradientGroup(false);
+        lightMaterialPropGroup->setEnabled(false);
+        colorWidgetGroup->setEnabled(false);
+        opacityWidgetGroup->setEnabled(false);
+        centeredDiffButton->setEnabled(false);
+        sobelButton->setEnabled(false);
+        EnableSamplingMethods(false);
+        samplesPerRayWidget->setEnabled(true);
+        rendererSamplesWidget->setEnabled(false);
+        rendererSamples->setEnabled(true);
+        rendererSamplesLabel->setEnabled(true);
+        break;
+
+    case VolumeAttributes::SLIVR:
+        EnableSLIVRGroup();
+        UpdateLowGradientGroup(false);
+        materialProperties->setEnabled(volumeAtts->GetLightingFlag());
+        // Enable selected transfer function widget.
+        tfTabs->setTabEnabled(1, volumeAtts->GetTransferFunctionDim()==1);
+        tfTabs->setTabEnabled(2, volumeAtts->GetTransferFunctionDim()==2);
+        break;
+
+    case VolumeAttributes::RayCastingSLIVR:
+        EnableSLIVRGroup();
+        resampleGroup->setEnabled(false);
+        raycastingGroup->setVisible(false);
+        UpdateLowGradientGroup(false);
+        materialProperties->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR && volumeAtts->GetLightingFlag());
+        EnableSamplingMethods(true);
+        samplesPerRayWidget->setEnabled(volumeAtts->GetRendererType()!=VolumeAttributes::RayCastingSLIVR);
+        rendererSamplesWidget->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR);
+        break;
+
+    default:
+        EXCEPTION1(ImproperUseException, "No such renderer type.");
+    }        
+}
+
 QWidget *
 QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 {
-
     QWidget *parent = new QWidget(central);
+    parent->setStyleSheet(QString::fromUtf8("QSpinBox:disabled, QDoubleSpinBox:disabled, QLineEdit:disabled, QLabel:disabled"
+                                            "{ color: gray }"
+                                            "QGroupBox"
+                                            "{ font-size: 10px; color: black; }"
+                                            "QGroupBox:disabled"
+                                            "{ font-size: 10px; color: gray; }"
+                                            "QGroupBox::title"
+                                            "{ subcontrol-origin: padding; subcontrol-position: top left; padding: 2 5px; }"
+                                            ));
+
     // Create the rendering method radio buttons.
-    QGridLayout *rendererOptionsLayout = new QGridLayout(parent);
+    this->rendererOptionsLayout = new QVBoxLayout(parent);
+    //<ctc> more of this!
     rendererOptionsLayout->setMargin(5);
     rendererOptionsLayout->setSpacing(5);
 
     //
     // Create the render stuff
     //
-    QGroupBox *renderGroup = new QGroupBox(central);
+    QGroupBox *renderGroup = new QGroupBox(parent);
     renderGroup->setTitle(tr("Rendering Method"));
-    rendererOptionsLayout->addWidget(renderGroup, 0, 0, 1, 1 );
+    rendererOptionsLayout->addWidget(renderGroup);
 
-    QGridLayout *renderLayout = new QGridLayout(renderGroup);
-    renderLayout->setMargin(5);
-    renderLayout->setSpacing(10);
-
-    rendererTypesComboBox = new QComboBox(central);
+    QHBoxLayout *renderLayout = new QHBoxLayout(renderGroup);
+    rendererTypesComboBox = new QComboBox(renderGroup);
     rendererTypesComboBox->addItem(tr("Splatting"));
     rendererTypesComboBox->addItem(tr("3D Texturing"));
     rendererTypesComboBox->addItem(tr("Ray casting: compositing"));
@@ -828,22 +1300,26 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 #endif
 #ifdef HAVE_LIBSLIVR
     rendererTypesComboBox->addItem(tr("SLIVR"));
+    rendererTypesComboBox->addItem(tr("Ray casting: SLIVR"));
 #endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
 
-    renderLayout->addWidget(rendererTypesComboBox, 0, 0);
+    renderLayout->addWidget(rendererTypesComboBox);
+    renderLayout->addStretch(QSizePolicy::Maximum);
 
 #ifdef HAVE_LIBSLIVR
     // Create the transfer function dimension button
-    QWidget *tfWidget = new QWidget(central);
-    renderLayout->addWidget(tfWidget, 0, 1);
+    tfWidget = new QWidget(renderGroup);
+    renderLayout->addWidget(tfWidget);
 
     QHBoxLayout *tfLayout = new QHBoxLayout(tfWidget);
     tfLayout->setMargin(0);
 
-    tfLayout->addWidget(new QLabel(tr("Transfer function"), tfWidget));
-    transferFunctionGroup = new QButtonGroup(central);
+    QLabel *tfLabel=new QLabel(tr("Transfer function"), tfWidget);
+    tfLabel->setBuddy(tfWidget);
+    tfLayout->addWidget(tfLabel);
+    transferFunctionGroup = new QButtonGroup(tfWidget);
     connect(transferFunctionGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(transferDimChanged(int)));
     oneDimButton = new QRadioButton(tr("1D"), tfWidget);
@@ -852,163 +1328,53 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     twoDimButton = new QRadioButton(tr("2D"), tfWidget);
     transferFunctionGroup->addButton(twoDimButton, 1);
     tfLayout->addWidget(twoDimButton);
-    tfLayout->addStretch(10);
 #endif
 
     //
-    // Create the sampling stuff
+    //Create sampling groups
     //
-    int row = 0;
-    QGroupBox *samplingGroup = new QGroupBox(central);
-    samplingGroup->setTitle(tr("Sampling"));
-    rendererOptionsLayout->addWidget(samplingGroup, 1, 0, 2, 1);
-
-    QGridLayout *samplingLayout = new QGridLayout(samplingGroup);
-    samplingLayout->setMargin(5);
-    samplingLayout->setSpacing(10);
-
-    // Create the resample toggle
-    resampleToggle = new QCheckBox(tr("Sample data onto regular grid"), central);
-    connect(resampleToggle, SIGNAL(toggled(bool)),
-            this, SLOT(resampleToggled(bool)));
-    samplingLayout->addWidget(resampleToggle, row, 0, 1, 2);
-    row++;
-
-    // Create the resample target value
-    resampleTarget = new QSpinBox(central);
-    resampleTarget->setMinimum(1000);
-    resampleTarget->setMaximum(100000000);
-    resampleTarget->setSingleStep(10000);
-    connect(resampleTarget, SIGNAL(valueChanged(int)),
-            this, SLOT(resampleTargetChanged(int)));
-    resampleTargetLabel = new QLabel(tr("Number of samples"), central);
-    resampleTargetLabel->setBuddy(resampleTarget);
-    samplingLayout->addWidget(resampleTargetLabel, row, 0);
-    samplingLayout->addWidget(resampleTarget, row, 1);
-
-    // Create the number of 3D slices.
-    num3DSlices = new QSpinBox(central);
-    num3DSlices->setMinimum(1);
-    num3DSlices->setMaximum(1000);
-    num3DSlices->setSingleStep(10);
-    num3DSlicesLabel = new QLabel(tr("Number of slices"), central);
-    num3DSlicesLabel->setBuddy(num3DSlices);
-    connect(num3DSlices, SIGNAL(valueChanged(int)), this,
-            SLOT(num3DSlicesChanged(int)));
-    samplingLayout->addWidget(num3DSlicesLabel, row, 2);
-    samplingLayout->addWidget(num3DSlices, row, 3);
-    row++;
-
-    // Create the number of samples per ray.
-    samplesPerRay = new QSpinBox(central);
-    samplesPerRay->setMinimum(1);
-    samplesPerRay->setMaximum(25000);
-    samplesPerRay->setSingleStep(50);
-    samplesPerRayLabel = new QLabel(tr("Samples per ray"), central);
-    samplesPerRayLabel->setBuddy(samplesPerRay);
-    connect(samplesPerRay, SIGNAL(valueChanged(int)), this,
-            SLOT(samplesPerRayChanged(int)));
-    samplingLayout->addWidget(samplesPerRayLabel, row, 0);
-    samplingLayout->addWidget(samplesPerRay, row, 1);
-
-#ifdef HAVE_LIBSLIVR
-    rendererSamples = new QDoubleSpinBox(central);
-    rendererSamples->setMinimum(1);
-    rendererSamples->setMaximum(20);
-    rendererSamples->setSingleStep(.1);
-    connect(rendererSamples, SIGNAL(valueChanged(double)),
-            this, SLOT(rendererSamplesChanged(double)));
-    rendererSamplesLabel = new QLabel(tr("Sampling rate"), central);
-    rendererSamplesLabel->setBuddy(rendererSamples);
-    samplingLayout->addWidget(rendererSamplesLabel, row, 2);
-    samplingLayout->addWidget(rendererSamples, row, 3);
-#else
-    rendererSamples = 0;
-    rendererSamplesLabel = 0;
-#endif
-    row++;
-
-    // Create the compact support variable
-    compactVariable = new QvisVariableButton(true, true, true,
-        QvisVariableButton::Scalars, samplingGroup);
-    connect(compactVariable, SIGNAL(activated(const QString &)),
-            this, SLOT(compactVariableChanged(const QString &)));
-    compactVarLabel = new QLabel(tr("Compact support variable"), samplingGroup);
-    compactVarLabel->setBuddy(compactVariable);
-    samplingLayout->addWidget(compactVarLabel, row, 0, 1, 2);
-    samplingLayout->addWidget(compactVariable, row, 2, 1, 2);
-    row++;
+    CreateSamplingGroups(parent,rendererOptionsLayout);
 
     //
     // Create the methods stuff
     //
-    row = 0;
-    QGroupBox *methodsGroup = new QGroupBox(central);
+    QGroupBox *methodsGroup = new QGroupBox(parent);
     methodsGroup->setTitle(tr("Methods"));
-    rendererOptionsLayout->addWidget(methodsGroup, 3, 0, 2, 1 );
-
-    QGridLayout *methodsLayout = new QGridLayout(methodsGroup);
-    methodsLayout->setMargin(5);
-    methodsLayout->setSpacing(10);
+    rendererOptionsLayout->addWidget(methodsGroup);
 
     // Create the gradient method radio buttons.
-    methodsLayout->addWidget(new QLabel(tr("Gradient method")),0,0);
-    gradientButtonGroup = new QButtonGroup(central);
+    QHBoxLayout *methodsLayout = new QHBoxLayout(methodsGroup);
+    methodsLayout->addWidget(new QLabel(tr("Gradient method")));
+    gradientButtonGroup = new QButtonGroup(methodsGroup);
     connect(gradientButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(gradientTypeChanged(int)));
-    centeredDiffButton = new QRadioButton(tr("Centered differences"),central);
+    centeredDiffButton = new QRadioButton(tr("Centered differences"),methodsGroup);
     gradientButtonGroup->addButton(centeredDiffButton, 0);
-    methodsLayout->addWidget(centeredDiffButton,0,1);
-    sobelButton = new QRadioButton(tr("Sobel"),central);
+    methodsLayout->addWidget(centeredDiffButton);
+    sobelButton = new QRadioButton(tr("Sobel"),methodsGroup);
     gradientButtonGroup->addButton(sobelButton, 1);
-    methodsLayout->addWidget(sobelButton,0,2);
-
-    // Create the sampling method buttons.
-    methodsLayout->addWidget(new QLabel(tr("Sampling method")),1,0);
-    samplingButtonGroup = new QButtonGroup(central);
-    connect(samplingButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(samplingTypeChanged(int)));
-    rasterizationButton = new QRadioButton(tr("Rasterization"),central);
-    samplingButtonGroup->addButton(rasterizationButton, 0);
-    methodsLayout->addWidget(rasterizationButton,1,1);
-    kernelButton = new QRadioButton(tr("Kernel Based"),central);
-    samplingButtonGroup->addButton(kernelButton, 1);
-    methodsLayout->addWidget(kernelButton,1,2);
+    methodsLayout->addWidget(sobelButton);
 
     //
-    // Create the smoothing stuff
+    // Create Material Properties group
     //
-    QGroupBox *smoothingGroup = new QGroupBox(central);
-    smoothingGroup->setTitle(tr("Smoothing"));
-    rendererOptionsLayout->addWidget(smoothingGroup, 5, 0, 1, 1 );
-
-    QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
-    smoothingLayout->setMargin(5);
-    smoothingLayout->setSpacing(10);
-
-    // Create the smooth data toggle.
-    smoothDataToggle = new QCheckBox(tr("Smooth Data"), central);
-    connect(smoothDataToggle, SIGNAL(toggled(bool)),
-            this, SLOT(smoothDataToggled(bool)));
-    smoothingLayout->addWidget(smoothDataToggle,0,0);
+    CreateMatLightGroup(parent, rendererOptionsLayout, maxWidth);
 
     //
     // Create the low gradient lighting reduction.
     //
-    QGroupBox *lowGradientGroup = new QGroupBox(central);
+    lowGradientGroup = new QGroupBox(parent);
     lowGradientGroup->setTitle(tr("Low gradient lighting"));
-    rendererOptionsLayout->addWidget(lowGradientGroup, 6, 0, 1, 1 );
+    rendererOptionsLayout->addWidget(lowGradientGroup);
 
-    QGridLayout *lowGradientLayout = new QGridLayout(lowGradientGroup);
-    lowGradientLayout->setMargin(5);
-    lowGradientLayout->setSpacing(10);
+    QHBoxLayout *lowGradientLayout = new QHBoxLayout(lowGradientGroup);
  
     // Create the low gradient lighting reduction combo.
     lowGradientLightingReductionLabel =
-        new QLabel(tr("Reduction factor"),central);
-    lowGradientLayout->addWidget(lowGradientLightingReductionLabel, 0, 0);
+        new QLabel(tr("Reduction factor"),lowGradientGroup);
+    lowGradientLayout->addWidget(lowGradientLightingReductionLabel);
 
-    lowGradientLightingReductionCombo = new QComboBox(central);
+    lowGradientLightingReductionCombo = new QComboBox(lowGradientGroup);
     lowGradientLightingReductionCombo->addItem("Off");
     lowGradientLightingReductionCombo->addItem("Lowest");
     lowGradientLightingReductionCombo->addItem("Lower");
@@ -1019,43 +1385,44 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     lowGradientLightingReductionCombo->addItem("Highest");
     connect(lowGradientLightingReductionCombo, SIGNAL(activated(int)),
             this, SLOT(lowGradientLightingReductionChanged(int)));
-    lowGradientLayout->addWidget(lowGradientLightingReductionCombo, 0, 1);
+    lowGradientLayout->addWidget(lowGradientLightingReductionCombo);
+    lowGradientLayout->addStretch(QSizePolicy::Maximum);
 
     lowGradientClampToggle =
-        new QCheckBox(tr("Reduction maximum value"),central);
+        new QCheckBox(tr("Reduction maximum value"),lowGradientGroup);
     connect(lowGradientClampToggle, SIGNAL(toggled(bool)),
             this, SLOT(lowGradientClampToggled(bool)));
-    lowGradientLayout->addWidget(lowGradientClampToggle, 0, 2);
+    lowGradientLayout->addWidget(lowGradientClampToggle);
 
-    lowGradientClamp = new QLineEdit(central);
-    lowGradientClamp->setMaximumWidth(maxWidth);
+    lowGradientClamp = new QLineEdit(lowGradientGroup);
     lowGradientClamp->setEnabled(volumeAtts->GetUseColorVarMax());
     connect(lowGradientClamp, SIGNAL(returnPressed()),
             this, SLOT(lowGradientClampProcessText()));
-    lowGradientLayout->addWidget(lowGradientClamp, 0, 3);
+    lowGradientLayout->addWidget(lowGradientClamp,Qt::AlignLeft);
+    lowGradientLayout->addStretch(QSizePolicy::Maximum);
 
     //
     // Create the misc stuff
     //
-    QGroupBox * miscGroup = new QGroupBox(central);
+    QGroupBox * miscGroup = new QGroupBox(parent);
     miscGroup->setTitle(tr("Misc"));
-    rendererOptionsLayout->addWidget(miscGroup, 8, 0, 1, 1);
+    rendererOptionsLayout->addWidget(miscGroup);
 
-    QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
-    miscLayout->setSpacing(10);
- 
+    QHBoxLayout *miscLayout = new QHBoxLayout(miscGroup);
+    //miscLayout->setMargin(5);
+    //miscLayout->setSpacing(10);
+
+    // Create the smooth data toggle.
+    smoothDataToggle = new QCheckBox(tr("Smooth Data"), miscGroup);
+    connect(smoothDataToggle, SIGNAL(toggled(bool)),
+            this, SLOT(smoothDataToggled(bool)));
+    miscLayout->addWidget(smoothDataToggle);
+
     // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central);
+    legendToggle = new QCheckBox(tr("Show Legend"), miscGroup);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    miscLayout->addWidget(legendToggle, 0, 0);
-
-    // Create the lighting toggle
-    lightingToggle = new QCheckBox(tr("Lighting"), central);
-    connect(lightingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(lightingToggled(bool)));
-    miscLayout->addWidget(lightingToggle, 0, 1);
+    miscLayout->addWidget(legendToggle);
 
     return parent;
 }
@@ -1239,6 +1606,9 @@ void
 QvisVolumePlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
+    double *mat;
+    bool matEnabled = false;
+
     // If the plot info atts changed then update the histogram.
     if(doAll || SelectedSubject() == GetViewerState()->GetPlotInformation(plotType))
     {
@@ -1274,18 +1644,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             resampleToggle->blockSignals(false);
             resampleTarget->setEnabled(volumeAtts->GetResampleFlag());
             resampleTargetLabel->setEnabled(volumeAtts->GetResampleFlag());
-            compactVarLabel->setEnabled(!volumeAtts->GetResampleFlag());
-            compactVariable->setEnabled(!volumeAtts->GetResampleFlag());
-            num3DSlices->setEnabled(volumeAtts->GetResampleFlag());
-            num3DSlicesLabel->setEnabled(volumeAtts->GetResampleFlag());
-            samplesPerRay->setEnabled(volumeAtts->GetResampleFlag());
-            samplesPerRayLabel->setEnabled(volumeAtts->GetResampleFlag());
-#ifdef HAVE_LIBSLIVR
-            rendererSamples->setEnabled(volumeAtts->GetResampleFlag());
-            rendererSamplesLabel->setEnabled(volumeAtts->GetResampleFlag());
-#endif
-        break;
-    case VolumeAttributes::ID_lightingFlag:
+            break;
+        case VolumeAttributes::ID_lightingFlag:
             lightingToggle->blockSignals(true);
             lightingToggle->setChecked(volumeAtts->GetLightingFlag());
             lightingToggle->blockSignals(false);
@@ -1295,29 +1655,12 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             lowGradientLightingReductionCombo->setCurrentIndex(
                            (int)volumeAtts->GetLowGradientLightingReduction());
             lowGradientLightingReductionCombo->blockSignals(false);
-            lowGradientClampToggle->setEnabled(
-                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
-            lowGradientClamp->setEnabled(
-                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                volumeAtts->GetLowGradientLightingClampFlag() &&
-                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
             break;
         case VolumeAttributes::ID_lowGradientLightingClampFlag:
             lowGradientClampToggle->blockSignals(true);
             lowGradientClampToggle->setChecked(
                            volumeAtts->GetLowGradientLightingClampFlag());
             lowGradientClampToggle->blockSignals(false);
-            lowGradientClamp->setEnabled(
-                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                volumeAtts->GetLowGradientLightingClampFlag() &&
-                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
             break;
         case VolumeAttributes::ID_lowGradientLightingClampValue:
             lowGradientClamp->blockSignals(true);
@@ -1430,216 +1773,47 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             rendererTypesComboBox->blockSignals(true);
             if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
             {
-                colorWidgetGroup->show();
-                opacityWidgetGroup->show();
-                colorWidgetGroup->setEnabled(true);
-                opacityWidgetGroup->setEnabled(true);
-                lightingToggle->setEnabled(true);
-                centeredDiffButton->setEnabled(true);
-                sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentIndex(0);
-                num3DSlicesLabel->setEnabled(false);
-                num3DSlices->setEnabled(false);
-                samplesPerRayLabel->setEnabled(false);
-                samplesPerRay->setEnabled(false);
-                resampleTargetLabel->setEnabled(true);
-                resampleTarget->setEnabled(true);
-                resampleToggle->setEnabled(true);
-                compactVariable->setEnabled(!volumeAtts->GetResampleFlag());
-                compactVarLabel->setEnabled(!volumeAtts->GetResampleFlag());
-                resampleTargetLabel->setEnabled(volumeAtts->GetResampleFlag());
-                resampleTarget->setEnabled(volumeAtts->GetResampleFlag());
-        
-                rasterizationButton->setEnabled(false);
-                kernelButton->setEnabled(false);
-                lowGradientLightingReductionLabel->setEnabled(true);
-                lowGradientLightingReductionCombo->setEnabled(true);
-                lowGradientClampToggle->setEnabled(
-                            volumeAtts->GetLowGradientLightingReduction() !=
-                                                        VolumeAttributes::Off);
-                lowGradientClamp->setEnabled(
-                            volumeAtts->GetLowGradientLightingReduction() !=
-                                                      VolumeAttributes::Off &&
-                            volumeAtts->GetLowGradientLightingClampFlag());
-#ifdef HAVE_LIBSLIVR
-                rendererSamplesLabel->setEnabled(false);
-                rendererSamples->setEnabled(false);
-#endif
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::Texture3D)
             {
-                colorWidgetGroup->show();
-                opacityWidgetGroup->show();
-                colorWidgetGroup->setEnabled(true);
-                opacityWidgetGroup->setEnabled(true);
-                lightingToggle->setEnabled(true);
-                centeredDiffButton->setEnabled(true);
-                sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentIndex(1);
-                num3DSlicesLabel->setEnabled(true);
-                num3DSlices->setEnabled(true);
-                resampleTargetLabel->setEnabled(true);
-                resampleTarget->setEnabled(true);
-                resampleToggle->setEnabled(false);
-                compactVariable->setEnabled(false);
-                compactVarLabel->setEnabled(false);
-                samplesPerRayLabel->setEnabled(false);
-                samplesPerRay->setEnabled(false);
-                rasterizationButton->setEnabled(false);
-                kernelButton->setEnabled(false);
-                lowGradientLightingReductionLabel->setEnabled(true);
-                lowGradientLightingReductionCombo->setEnabled(true);
-                lowGradientClampToggle->setEnabled(
-                            volumeAtts->GetLowGradientLightingReduction() !=
-                                                        VolumeAttributes::Off);
-                lowGradientClamp->setEnabled(
-                            volumeAtts->GetLowGradientLightingReduction() !=
-                                                      VolumeAttributes::Off &&
-                            volumeAtts->GetLowGradientLightingClampFlag());
-#ifdef HAVE_LIBSLIVR
-                rendererSamplesLabel->setEnabled(false);
-                rendererSamples->setEnabled(false);
-#endif
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting)
             {
-                colorWidgetGroup->show();
-                opacityWidgetGroup->show();
-                colorWidgetGroup->setEnabled(true);
-                opacityWidgetGroup->setEnabled(true);
-                lightingToggle->setEnabled(true);
-                centeredDiffButton->setEnabled(true);
-                sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentIndex(2);
-                num3DSlicesLabel->setEnabled(false);
-                num3DSlices->setEnabled(false);
-                resampleTargetLabel->setEnabled(false);
-                resampleTarget->setEnabled(false);
-                resampleToggle->setEnabled(false);
-                compactVariable->setEnabled(false);
-                compactVarLabel->setEnabled(false);
-                samplesPerRayLabel->setEnabled(true);
-                samplesPerRay->setEnabled(true);
-                rasterizationButton->setEnabled(true);
-                kernelButton->setEnabled(true);
-                lowGradientLightingReductionLabel->setEnabled(true);
-                lowGradientLightingReductionCombo->setEnabled(true);
-                lowGradientClampToggle->setEnabled(
-                            volumeAtts->GetLowGradientLightingReduction() !=
-                                                        VolumeAttributes::Off);
-                lowGradientClamp->setEnabled(
-                            volumeAtts->GetLowGradientLightingReduction() !=
-                                                      VolumeAttributes::Off &&
-                            volumeAtts->GetLowGradientLightingClampFlag());
-#ifdef HAVE_LIBSLIVR
-                rendererSamplesLabel->setEnabled(false);
-                rendererSamples->setEnabled(false);
-#endif
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingIntegration)
             {
-                colorWidgetGroup->show();
-                opacityWidgetGroup->show();
-                colorWidgetGroup->setEnabled(false);
-                opacityWidgetGroup->setEnabled(false);
-                lightingToggle->setEnabled(false);
-                centeredDiffButton->setEnabled(false);
-                sobelButton->setEnabled(false);
                 rendererTypesComboBox->setCurrentIndex(3);
-                num3DSlicesLabel->setEnabled(false);
-                num3DSlices->setEnabled(false);
-                resampleTargetLabel->setEnabled(false);
-                resampleTarget->setEnabled(false);
-                resampleToggle->setEnabled(false);
-                compactVariable->setEnabled(false);
-                compactVarLabel->setEnabled(false);
-                samplesPerRayLabel->setEnabled(true);
-                samplesPerRay->setEnabled(true);
-                rasterizationButton->setEnabled(true);
-                kernelButton->setEnabled(true);
-                lowGradientLightingReductionLabel->setEnabled(false);
-                lowGradientLightingReductionCombo->setEnabled(false);
-                lowGradientClampToggle->setEnabled(false);
-                lowGradientClamp->setEnabled(false);
-#ifdef HAVE_LIBSLIVR
-                rendererSamplesLabel->setEnabled(false);
-                rendererSamples->setEnabled(false);
-#endif
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::Tuvok)
             {
-                colorWidgetGroup->show();
-                opacityWidgetGroup->show();
-                colorWidgetGroup->setEnabled(true);
-                opacityWidgetGroup->setEnabled(true);
-                lightingToggle->setEnabled(true);
-                centeredDiffButton->setEnabled(true);
-                sobelButton->setEnabled(true);
-                rendererTypesComboBox->setCurrentIndex(4);
-                num3DSlicesLabel->setEnabled(true);
-                num3DSlices->setEnabled(true);
-                resampleTargetLabel->setEnabled(true);
-                resampleTarget->setEnabled(true);
-                resampleToggle->setEnabled(false);
-                compactVariable->setEnabled(false);
-                compactVarLabel->setEnabled(false);
-                samplesPerRayLabel->setEnabled(false);
-                samplesPerRay->setEnabled(false);
-                rasterizationButton->setEnabled(false);
-                kernelButton->setEnabled(false);
-                lowGradientLightingReductionLabel->setEnabled(false);
-                lowGradientLightingReductionCombo->setEnabled(false);
-                lowGradientClampToggle->setEnabled(false);
-                lowGradientClamp->setEnabled(false);
-#ifdef HAVE_LIBSLIVR
-                rendererSamplesLabel->setEnabled(false);
-                rendererSamples->setEnabled(false);
-#endif
+                int idx=std::max(1,rendererTypesComboBox->findText("Tuvok"));
+                rendererTypesComboBox->setCurrentIndex(idx);
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::SLIVR)
             {
-                lightingToggle->setEnabled(true);
-                centeredDiffButton->setEnabled(true);
-                sobelButton->setEnabled(true);
-#ifdef HAVE_LIBSLIVR
-#ifdef USE_TUVOK
-                rendererTypesComboBox->setCurrentIndex(5);
-#else
-                // There's no Tuvok so we use slot 4.
-                rendererTypesComboBox->setCurrentIndex(4);
-#endif
-                num3DSlicesLabel->setEnabled(false);
-                num3DSlices->setEnabled(false);
-                rendererSamplesLabel->setEnabled(true);
-                rendererSamples->setEnabled(true);
-#else
-                // Revert to 3D texturing
-                rendererTypesComboBox->setCurrentIndex(1);
-                num3DSlicesLabel->setEnabled(true);
-                num3DSlices->setEnabled(true);
-#endif
-                resampleTargetLabel->setEnabled(true);
-                resampleTarget->setEnabled(true);
-                resampleToggle->setEnabled(false);
-                compactVariable->setEnabled(false);
-                compactVarLabel->setEnabled(false);
-                samplesPerRayLabel->setEnabled(false);
-                samplesPerRay->setEnabled(false);
-                rasterizationButton->setEnabled(false);
-                kernelButton->setEnabled(false);
-                lowGradientLightingReductionLabel->setEnabled(false);
-                lowGradientLightingReductionCombo->setEnabled(false);
-                lowGradientClampToggle->setEnabled(false);
-                lowGradientClamp->setEnabled(false);
+                int idx=std::max(1,rendererTypesComboBox->findText("SLIVR"));
+                rendererTypesComboBox->setCurrentIndex(idx);
             }
-#ifdef HAVE_LIBSLIVR
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingSLIVR)
+            {
+                int idx=std::max(1,rendererTypesComboBox->findText("Ray casting: SLIVR"));
+                rendererTypesComboBox->setCurrentIndex(idx);
+            }
+
+
             // Just for now, disable the opacity variable if we are using the
             // SLIVR renderer -- until I figure out how to do color and opacity
             // using separate variables.
             opacityVariable->setEnabled(volumeAtts->GetRendererType() != VolumeAttributes::SLIVR);
+
+#ifdef HAVE_LIBSLIVR
             // Disable the 1D/2D transfer function buttons if the renderer is not SLIVR.
-            oneDimButton->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
-            twoDimButton->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
+            tfWidget->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
+            // oneDimButton->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
+            // twoDimButton->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
 #endif
             rendererTypesComboBox->blockSignals(false);
             break;
@@ -1672,16 +1846,19 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             samplingButtonGroup->blockSignals(true);
             if (volumeAtts->GetSampling() == VolumeAttributes::Rasterization)
                 samplingButtonGroup->button(0)->setChecked(true);
-            else
+            else if (volumeAtts->GetSampling() == VolumeAttributes::KernelBased)
                 samplingButtonGroup->button(1)->setChecked(true);
+            else
+                samplingButtonGroup->button(2)->setChecked(true);
             samplingButtonGroup->blockSignals(false);
             break;
         case VolumeAttributes::ID_rendererSamples:
-#ifdef HAVE_LIBSLIVR
             rendererSamples->blockSignals(true);
             rendererSamples->setValue(volumeAtts->GetRendererSamples());
             rendererSamples->blockSignals(false);
-#endif
+            rendererSamplesSLIVR->blockSignals(true);
+            rendererSamplesSLIVR->setValue(volumeAtts->GetRendererSamples());
+            rendererSamplesSLIVR->blockSignals(false);
             break;
         case VolumeAttributes::ID_transferFunction2DWidgets:
 #ifdef HAVE_LIBSLIVR
@@ -1695,12 +1872,25 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                volumeAtts->GetTransferFunctionDim() == 2)
                 transferFunctionGroup->button(volumeAtts->GetTransferFunctionDim()-1)->setChecked(true);
             transferFunctionGroup->blockSignals(false);
-
-            // Enable transfer function widgets based on the dimensionality of
-            // the transfer function.
-            tfParent1D->setEnabled(volumeAtts->GetTransferFunctionDim()==1);
-            tfParent2D->setEnabled(volumeAtts->GetTransferFunctionDim()==2);
 #endif
+            break;
+
+        case VolumeAttributes::ID_materialProperties:
+            matKa->blockSignals(true);
+            matKd->blockSignals(true);
+            matKs->blockSignals(true);
+            matN->blockSignals(true);
+
+            mat = volumeAtts->GetMaterialProperties();
+            matKa->setValue(mat[0]);
+            matKd->setValue(mat[1]);
+            matKs->setValue(mat[2]);
+            matN->setValue(mat[3]);
+
+            matKa->blockSignals(false);
+            matKd->blockSignals(false);
+            matKs->blockSignals(false);
+            matN->blockSignals(false);
             break;
         }
     }
@@ -1709,6 +1899,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
     bool notDefaultVar = (volumeAtts->GetOpacityVariable() != "default");
     opacityMinToggle->setEnabled(notDefaultVar);
     opacityMaxToggle->setEnabled(notDefaultVar);
+
+    //Update the sampling group
+    UpdateSamplingGroup();
 }
 
 // ****************************************************************************
@@ -2230,20 +2423,6 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Get the value of the resample target
-    if(which_widget == VolumeAttributes::ID_resampleTarget || doAll)
-    {
-        volumeAtts->SetResampleTarget(resampleTarget->value());
-    }
-    
-    // Get the value of the compact support target
-    if(which_widget == VolumeAttributes::ID_compactVariable || doAll)
-    {
-        volumeAtts->SetCompactVariable(compactVariable->text().toStdString());
-    }
-    
-    
-
     // Get the value of the minimum for the color variable.
     if(which_widget == VolumeAttributes::ID_colorVarMin || doAll)
     {
@@ -2304,18 +2483,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Get the number of samples per ray.
-    if(which_widget == VolumeAttributes::ID_samplesPerRay || doAll)
-    {
-        volumeAtts->SetSamplesPerRay(samplesPerRay->value());
-    }
-
-    // Get the number of slices for 3D texturing.
-    if(which_widget == VolumeAttributes::ID_num3DSlices || doAll)
-    {
-        volumeAtts->SetNum3DSlices(num3DSlices->value());
-    }
-        // Do the skew factor value
+    // Do the skew factor value
     if(which_widget == VolumeAttributes::ID_skewFactor || doAll)
     {
         double val;
@@ -2331,13 +2499,6 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Get the value of the renderer samples
-#ifdef HAVE_LIBSLIVR
-    if(which_widget == VolumeAttributes::ID_rendererSamples || doAll)
-    {
-        volumeAtts->SetRendererSamples(rendererSamples->value());
-    }
-#endif
     if(which_widget == VolumeAttributes::ID_lowGradientLightingClampValue
        || doAll)
     {
@@ -2352,7 +2513,6 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             Message(msg);
         }
     }
-
 }
 
 // ****************************************************************************
@@ -2909,7 +3069,6 @@ void
 QvisVolumePlotWindow::lightingToggled(bool)
 {
     volumeAtts->SetLightingFlag(!volumeAtts->GetLightingFlag());
-    SetUpdate(false);
     Apply();
 }
 
@@ -2940,18 +3099,6 @@ QvisVolumePlotWindow::lowGradientLightingReductionChanged(int val)
 {
     volumeAtts->SetLowGradientLightingReduction(
         (VolumeAttributes::LowGradientLightingReduction)val);
-    lowGradientClampToggle->setEnabled(
-                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
-    lowGradientClamp->setEnabled(
-                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                volumeAtts->GetLowGradientLightingClampFlag() &&
-                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
-    SetUpdate(false);
     Apply();
 }
 
@@ -2977,13 +3124,6 @@ void
 QvisVolumePlotWindow::lowGradientClampToggled(bool val)
 {
     volumeAtts->SetLowGradientLightingClampFlag(val);
-    lowGradientClamp->setEnabled(
-                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                volumeAtts->GetLowGradientLightingClampFlag() &&
-                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
-                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
-    SetUpdate(false);
     Apply();
 }
 
@@ -3438,6 +3578,9 @@ QvisVolumePlotWindow::samplingTypeChanged(int val)
       case 1:
         volumeAtts->SetSampling(VolumeAttributes::KernelBased);
         break;
+      case 2:
+        volumeAtts->SetSampling(VolumeAttributes::Trilinear);
+        break;
       default:
         EXCEPTION1(ImproperUseException,
                    "The Volume plot received a signal for a sampling method "
@@ -3490,7 +3633,6 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         break;
       case 1:
         volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
-        volumeAtts->SetResampleFlag(true);
         break;
       case 2:
         volumeAtts->SetRendererType(VolumeAttributes::RayCasting);
@@ -3499,35 +3641,24 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         volumeAtts->SetRendererType(VolumeAttributes::RayCastingIntegration);
         break;
       case 4:
-        // Ugh.  Our combo box changes based on VRer availability.  If we have
-        // tuvok it's at slot 4.  If we don't have Tuvok AND we have SLIVR,
-        // though, SLIVR will be at slot 4.
-#ifdef USE_TUVOK
-        volumeAtts->SetRendererType(VolumeAttributes::Tuvok);
-#elif HAVE_LIBSLIVR
-        volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
-#else
-        Warning("Renderer is not available. VisIt will revert to 3D texturing.");
-        volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
-#endif
-        volumeAtts->SetResampleFlag(true);
-        break;
       case 5:
-        // If we've got both Tuvok AND SLIVR, SLIVR will end up in slot 5.
-#ifdef HAVE_LIBSLIVR
-        volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
-#else
-        Warning("SLIVR is not available. VisIt will revert to 3D texturing.");
-        volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
-#endif
-        volumeAtts->SetResampleFlag(true);
-        break;
+      case 6:
+      {
+          if (rendererTypesComboBox->findText("Tuvok") == val)
+              volumeAtts->SetRendererType(VolumeAttributes::Tuvok);
+          else if (rendererTypesComboBox->findText("SLIVR") == val)
+              volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
+          else if (rendererTypesComboBox->findText("Ray casting: SLIVR") == val)
+              volumeAtts->SetRendererType(VolumeAttributes::RayCastingSLIVR);
+          break;
+      }
       default:
         EXCEPTION1(ImproperUseException,
                    "The Volume plot received a signal for a renderer "
                    "that it didn't understand");
         break;
     }
+
     Apply();
 }
 
@@ -3783,4 +3914,72 @@ QvisVolumePlotWindow::updateTransferFunc2D(WidgetID id)
 #ifdef HAVE_LIBSLIVR
     updateTransferFunc2D();
 #endif /* HAVE_LIBSLIVR */
+}
+
+
+// ****************************************************************************
+// Method:  QvisVolumePlotWindow::setLight...
+//
+// Purpose:
+//   
+//
+//  Arguments:
+//    val        
+//
+// Programmer:  Pascal Grosset
+// Creation:    Tue Apr 10 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::setMaterialKa(double val){
+    double *mat = new double[4];
+
+    mat = volumeAtts->GetMaterialProperties();
+    mat[0]=val;
+    volumeAtts->SetMaterialProperties(mat);
+    SetUpdate(false);
+
+    Apply();
+}
+
+
+void
+QvisVolumePlotWindow::setMaterialKd(double val){
+    double *mat = new double[4];
+
+    mat = volumeAtts->GetMaterialProperties();
+    mat[1]=val;
+    volumeAtts->SetMaterialProperties(mat);
+    SetUpdate(false);
+
+    Apply();
+}
+
+
+void
+QvisVolumePlotWindow::setMaterialKs(double val){
+    double *mat = new double[4];
+    
+    mat = volumeAtts->GetMaterialProperties();
+    mat[2]=val;
+    volumeAtts->SetMaterialProperties(mat);
+    SetUpdate(false);
+
+    Apply();
+}
+
+
+void
+QvisVolumePlotWindow::setMaterialN(double val){
+    double *mat = new double[4];
+
+    mat = volumeAtts->GetMaterialProperties();
+    mat[3]=val;
+    volumeAtts->SetMaterialProperties(mat);
+    SetUpdate(false);
+
+    Apply();
 }

@@ -70,6 +70,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         return true;
 
     if (rendererType == VolumeAttributes::RayCasting ||
+        rendererType == VolumeAttributes::RayCastingSLIVR || 
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // We're in software mode. Any change to the renderer type requires
@@ -90,6 +91,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // then we need to reexecute. Transferring between any of the hardware
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
+           obj.rendererType == VolumeAttributes::RayCastingSLIVR || 
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;
@@ -444,9 +446,7 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
            i == ID_opacityAttenuation || 
            i == ID_opacityMode || 
            i == ID_opacityControlPoints ||
-           i == ID_freeformOpacity ||
-           i == ID_transferFunction2DWidgets ||
-           i == ID_transferFunctionDim)
+           i == ID_freeformOpacity)
         {
             continue;
         }

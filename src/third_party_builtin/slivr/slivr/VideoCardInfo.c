@@ -50,96 +50,96 @@
  * stored directly in the Display structure.
  */
 typedef struct _XExtDisplayInfo {
-    struct _XExtDisplayInfo *next;	/* keep a linked list */
-    Display *display;			/* which display this is */
-    XExtCodes *codes;			/* the extension protocol codes */
-    XPointer data;			/* extra data for extension to use */
+    struct _XExtDisplayInfo *next;  /* keep a linked list */
+    Display *display;     /* which display this is */
+    XExtCodes *codes;     /* the extension protocol codes */
+    XPointer data;      /* extra data for extension to use */
 } XExtDisplayInfo;
 
 typedef struct _XExtensionInfo {
-    XExtDisplayInfo *head;		/* start of list */
-    XExtDisplayInfo *cur;		/* most recently used */
-    int ndisplays;			/* number of displays */
+    XExtDisplayInfo *head;    /* start of list */
+    XExtDisplayInfo *cur;   /* most recently used */
+    int ndisplays;      /* number of displays */
 } XExtensionInfo;
 
 typedef struct _XExtensionHooks {
     int (*create_gc)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-	      GC			/* gc */,
-	      XExtCodes*		/* codes */
+        Display*      /* display */,
+        GC      /* gc */,
+        XExtCodes*    /* codes */
 #endif
 );
     int (*copy_gc)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              GC			/* gc */,
-              XExtCodes*		/* codes */
+        Display*      /* display */,
+              GC      /* gc */,
+              XExtCodes*    /* codes */
 #endif
 );
     int (*flush_gc)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              GC			/* gc */,
-              XExtCodes*		/* codes */
+        Display*      /* display */,
+              GC      /* gc */,
+              XExtCodes*    /* codes */
 #endif
 );
     int (*free_gc)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              GC			/* gc */,
-              XExtCodes*		/* codes */
+        Display*      /* display */,
+              GC      /* gc */,
+              XExtCodes*    /* codes */
 #endif
 );
     int (*create_font)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              XFontStruct*		/* fs */,
-              XExtCodes*		/* codes */
+        Display*      /* display */,
+              XFontStruct*    /* fs */,
+              XExtCodes*    /* codes */
 #endif
 );
     int (*free_font)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              XFontStruct*		/* fs */,
-              XExtCodes*		/* codes */
+        Display*      /* display */,
+              XFontStruct*    /* fs */,
+              XExtCodes*    /* codes */
 #endif
 );
     int (*close_display)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              XExtCodes*		/* codes */
+        Display*      /* display */,
+              XExtCodes*    /* codes */
 #endif
 );
     Bool (*wire_to_event)(
 #if NeedNestedPrototypes
-	       Display*			/* display */,
-               XEvent*			/* re */,
-               xEvent*			/* event */
+         Display*     /* display */,
+               XEvent*      /* re */,
+               xEvent*      /* event */
 #endif
 );
     Status (*event_to_wire)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              XEvent*			/* re */,
-              xEvent*			/* event */
+        Display*      /* display */,
+              XEvent*     /* re */,
+              xEvent*     /* event */
 #endif
 );
     int (*error)(
 #if NeedNestedPrototypes
-	      Display*			/* display */,
-              xError*			/* err */,
-              XExtCodes*		/* codes */,
-              int*			/* ret_code */
+        Display*      /* display */,
+              xError*     /* err */,
+              XExtCodes*    /* codes */,
+              int*      /* ret_code */
 #endif
 );
     char *(*error_string)(
 #if NeedNestedPrototypes
-	        Display*		/* display */,
-                int			/* code */,
-                XExtCodes*		/* codes */,
-                char*			/* buffer */,
-                int			/* nbytes */
+          Display*    /* display */,
+                int     /* code */,
+                XExtCodes*    /* codes */,
+                char*     /* buffer */,
+                int     /* nbytes */
 #endif
 );
 } XExtensionHooks;
@@ -151,29 +151,29 @@ extern XExtensionInfo *XextCreateExtension(
 );
 extern void XextDestroyExtension(
 #if NeedFunctionPrototypes
-    XExtensionInfo*	/* info */
+    XExtensionInfo* /* info */
 #endif
 );
 extern XExtDisplayInfo *XextAddDisplay(
 #if NeedFunctionPrototypes
-    XExtensionInfo*	/* extinfo */,
-    Display*		/* dpy */,
-    char*		/* ext_name */,
-    XExtensionHooks*	/* hooks */,
-    int			/* nevents */,
-    XPointer		/* data */
+    XExtensionInfo* /* extinfo */,
+    Display*    /* dpy */,
+    char*   /* ext_name */,
+    XExtensionHooks*  /* hooks */,
+    int     /* nevents */,
+    XPointer    /* data */
 #endif
 );
 extern int XextRemoveDisplay(
 #if NeedFunctionPrototypes
-    XExtensionInfo*	/* extinfo */,
-    Display*		/* dpy */
+    XExtensionInfo* /* extinfo */,
+    Display*    /* dpy */
 #endif
 );
 extern XExtDisplayInfo *XextFindDisplay(
 #if NeedFunctionPrototypes
-    XExtensionInfo*	/* extinfo */,
-    Display*		/* dpy */
+    XExtensionInfo* /* extinfo */,
+    Display*    /* dpy */
 #endif
 );
 
@@ -428,10 +428,14 @@ int video_card_memory_size_NV()
 
 int video_card_memory_size()
 {
-  int size;
-  size = video_card_memory_size_ATI();
-  if(size) return size;
-  return video_card_memory_size_NV();
+  static int size = -1;
+  if (size == -1)
+  {
+    size = video_card_memory_size_ATI();
+    if(!size)
+      size = video_card_memory_size_NV();
+  }
+  return size;
 }
 
 #elif __APPLE__
