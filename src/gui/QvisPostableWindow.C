@@ -793,6 +793,7 @@ QvisPostableWindow::CreateEntireWindow()
     vLayout->addLayout(buttonLayout);
     buttonLayout->addStretch();
     helpButton = new QPushButton(this);
+    helpButton->setVisible(false);
     helpButton->setText(tr("?"));
     connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
     buttonLayout->addWidget(helpButton);

@@ -307,6 +307,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         buttonLayout->setColumnStretch(1, 50);
     }
     QPushButton *helpButton = new QPushButton(topCentral);
+    helpButton->setVisible(false);
     helpButton->setText(tr("?"));
     connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
     buttonLayout->addWidget(helpButton, 1, 2);
