@@ -1154,6 +1154,8 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
 //    Brad Whitlock, Thu May 10 16:30:33 PST 2007
 //    I corrected a bug that caused node 1 to be messed up.
 //
+//    Mark C. Miller, Mon Sep 30 10:45:46 PDT 2013
+//    Fixed bug handling tets as degenerate hexes.
 // ****************************************************************************
 
 void
@@ -1344,8 +1346,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                             conn[5] == conn[6] && conn[6] == conn[7])
                         {
                             vtkIdType tet[4];
-                            tet[0] = verts[2]; tet[1] = verts[2];
-                            tet[2] = verts[2]; tet[3] = verts[2];
+                            tet[0] = verts[0]; tet[1] = verts[1];
+                            tet[2] = verts[2]; tet[3] = verts[4];
                             connectivity[dom][mesh_id]->InsertNextCell(
                                                      VTK_TETRA,
                                                      4, tet);
