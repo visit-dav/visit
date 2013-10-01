@@ -48,6 +48,9 @@
 #   IF this file finds zlib, set HAVE_ZLIB_H. CHECK_INCLUDE_FILES might not 
 #   find it, especially on windows.
 #
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed VISIT_MSVC_VERSION from windows handling.
+#
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file 
@@ -55,7 +58,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-    SET_UP_THIRD_PARTY(ZLIB lib/${VISIT_MSVC_VERSION} include zlib1)
+    SET_UP_THIRD_PARTY(ZLIB lib include zlib1)
     IF (ZLIB_FOUND)
         # use full path here, instead of just lib file.
         SET(ZLIB_LIB "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)

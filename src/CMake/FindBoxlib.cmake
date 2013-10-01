@@ -48,6 +48,9 @@
 #   Kathleen Bonnell, Mon Jan 17 17:24:44 MST 2011
 #   Don't set BOXLIB_2D/3D_LIB unless BOXLIB_FOUND.
 #
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed VISIT_MSVC_VER from Windows handling.
+#
 #****************************************************************************/
 
 # Use the BOXLIB_DIR hint from the config-site .cmake file 
@@ -55,7 +58,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB lib/${VISIT_MSVC_VERSION} include BoxLib2D BoxLib3D)
+  SET_UP_THIRD_PARTY(BOXLIB lib include BoxLib2D BoxLib3D)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(BOXLIB lib include box2D box3D)
 ENDIF (WIN32)

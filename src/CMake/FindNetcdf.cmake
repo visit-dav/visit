@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed logic handling windows differently than other platforms.
 #
 #****************************************************************************/
 
@@ -42,17 +44,9 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(NETCDF lib/${VISIT_MSVC_VERSION} include netcdf)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(NETCDF lib include netcdf)
-ENDIF (WIN32)
+SET_UP_THIRD_PARTY(NETCDF lib include netcdf)
 
 SET (NETCDF_CXX_DIR ${NETCDF_DIR})
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(NETCDF_CXX lib/${VISIT_MSVC_VERSION} include netcdf_c++)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(NETCDF_CXX lib include netcdf_c++)
-ENDIF (WIN32)
+SET_UP_THIRD_PARTY(NETCDF_CXX lib include netcdf_c++)
 

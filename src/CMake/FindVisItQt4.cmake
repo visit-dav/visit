@@ -56,7 +56,10 @@
 #   Brad Whitlock, Wed Apr 10 18:04:33 PDT 2013
 #   Fix Qt dependent libraries to include some extra frameworks. These were
 #   needed on a 10.8 machine.
-# 
+#
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed VISIT_MSVC_VERSION from windows handling.
+#
 #****************************************************************************/
 
 #
@@ -66,7 +69,7 @@
 
 IF(NOT "${QT_BIN}" MATCHES "OFF")
   IF(WIN32)
-    IF(VISIT_MSVC_VERSION AND EXISTS ${QT_DIR}/lib/${VISIT_MSVC_VERSION})
+    IF(VISIT_MSVC_VERSION AND EXISTS ${QT_DIR}/lib)
       # using VisIt's windowsbuild Qt
       SET(USE_CMAKE_FIND OFF)
     ELSE()
@@ -103,9 +106,9 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
   ELSE (USE_CMAKE_FIND)
     # MESSAGE("QT_DIR = ${QT_DIR}")
     SET(QT_INCLUDE_DIR ${QT_DIR}/include)
-    SET(QT_LIBRARY_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
+    SET(QT_LIBRARY_DIR ${QT_DIR}/lib
         CACHE PATH "Qt library dir" FORCE )
-    SET(QT_BINARY_DIR  ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
+    SET(QT_BINARY_DIR  ${QT_DIR}/lib
         CACHE INTERNAL "" FORCE )
 
     SET(QT_MOC_EXECUTABLE  ${QT_BINARY_DIR}/moc.exe)
