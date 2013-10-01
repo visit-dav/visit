@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed VISIT_MSVC_VERSION from windows handling.
 #
 #****************************************************************************/
 
@@ -43,7 +45,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-    SET_UP_THIRD_PARTY(MDSPLUS lib/${VISIT_MSVC_VERSION} include MdsLib)
+    SET_UP_THIRD_PARTY(MDSPLUS lib include MdsLib)
 ELSE (WIN32)
     IF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
         # Linux requires librt to resolve "clock_gettime"

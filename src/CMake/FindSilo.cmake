@@ -62,6 +62,10 @@
 #    Removed logic to detect version of Silo and determine if PDB Lite has
 #    long long support. VisIt no requires Silo 4.9 or newer and all newer
 #    versions have long long support in PDB Lite.
+#
+#    Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#    Removed VISIT_MSVC_VERSION from windows handling.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -70,12 +74,12 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(SILO lib/${VISIT_MSVC_VERSION} include silohdf5)
-  IF(EXISTS ${SILO_DIR}/lib/${VISIT_MSVC_VERSION}/silex.exe)
+  SET_UP_THIRD_PARTY(SILO lib include silohdf5)
+  IF(EXISTS ${SILO_DIR}/lib/silex.exe)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-         ${SILO_DIR}/lib/${VISIT_MSVC_VERSION}/silex.exe
+         ${SILO_DIR}/lib/silex.exe
          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    INSTALL(FILES ${SILO_DIR}/lib/${VISIT_MSVC_VERSION}/silex.exe
+    INSTALL(FILES ${SILO_DIR}/lib/silex.exe
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel

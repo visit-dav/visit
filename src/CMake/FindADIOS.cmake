@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed logic handling windows differently than other platforms.
 #
 #****************************************************************************/
 
@@ -42,10 +44,6 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(ADIOS lib/${VISIT_MSVC_VERSION} include adiosread)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(ADIOS lib include adiosread)
-ENDIF (WIN32)
+SET_UP_THIRD_PARTY(ADIOS lib include adiosread)
 
 

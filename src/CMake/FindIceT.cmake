@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed logic handling windows differently than other platforms.
 #
 #****************************************************************************/
 
@@ -50,8 +52,5 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(ICET lib/${VISIT_MSVC_VERSION} include icet icet_strategies icet_mpi)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(ICET lib include icet icet_strategies icet_mpi)
-ENDIF (WIN32)
+SET_UP_THIRD_PARTY(ICET lib include icet icet_strategies icet_mpi)
+

@@ -356,6 +356,9 @@
 #    Kathleen Biagas, Tue Sep  3 11:06:51 PDT 2013
 #    Turn off SLIVR if we aren't using GLEW.
 #
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Handle reorganization of windowsbuild directory.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1728,12 +1731,12 @@ ENDIF(EXISTS SVN_REVISION)
 # Set up resource files for Windows applications.
 #-----------------------------------------------------------------------------
 IF (WIN32)
-    IF(EXISTS ${VISIT_WINDOWS_DIR}/resources/visit.rc)
-        SET(RESOURCEDIR resources)
+    IF(EXISTS ${VISIT_WINDOWS_DIR}/distribution/resources/visit.rc)
+        SET(RESOURCEDIR distribution/resources)
     ELSEIF(EXISTS ${VISIT_WINDOWS_DIR}/visitresources/visit.rc)
         SET(RESOURCEDIR visitresources)
     ELSE()
-        MESSAGE(FATAL_ERROR "Cannot find visit.rc in either ${VISIT_WINDOWS_DIR}/resources or ${VISIT_WINDOWS_DIR}/visitresources")
+        MESSAGE(FATAL_ERROR "Cannot find visit.rc in either ${VISIT_WINDOWS_DIR}/distribution/resources or ${VISIT_WINDOWS_DIR}/visitresources")
     ENDIF()
 
     SET(VISIT_VISIT_RESOURCE_FILE      ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/visit.rc)
@@ -1753,7 +1756,7 @@ IF (WIN32)
     STRING(REPLACE "." "," filteredver2 "${filteredver1}")
     SET(VER_FILEVERSION "${filteredver2},0")
     SET(VER_PRODUCTVERSION "${filteredver2},0")
-    CONFIGURE_FILE(${VISIT_WINDOWS_DIR}/resources/versionvars.rc.in
+    CONFIGURE_FILE(${VISIT_WINDOWS_DIR}/distribution/resources/versionvars.rc.in
                    ${VISIT_BINARY_DIR}/include/versionvars.rc @ONLY IMMEDIATE)
 ENDIF (WIN32)
 
@@ -2421,16 +2424,16 @@ ELSE (NOT WIN32)
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
-                    ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
+                    ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DCL_64=${CMAKE_CL_64}
-                    ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
-            DEPENDS ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
-                    ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
+                    ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
+            DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
+                    ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
         ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
@@ -2448,8 +2451,8 @@ ELSE (NOT WIN32)
                     /DVisItVersion=${VISIT_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALLER_LOCATION=${VISIT_BINARY_DIR}
-                     ${VISIT_WINDOWS_DIR}/installation/sourceinstallation.nsi
-            DEPENDS ${VISIT_WINDOWS_DIR}/installation/sourceinstallation.nsi
+                     ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
+            DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
         SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)

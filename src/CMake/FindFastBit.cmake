@@ -35,7 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
-#
+#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
+#   Removed VISIT_MSVC_VERSION from windows handling.
+##
 #****************************************************************************/
 
 # Use the FASTBIT_DIR hint from the config-site .cmake file 
@@ -43,7 +45,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-    SET_UP_THIRD_PARTY(FASTBIT lib/${VISIT_MSVC_VERSION} include fastbit)
+    SET_UP_THIRD_PARTY(FASTBIT lib include fastbit)
 ELSE (WIN32)
     IF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
         # Linux requires librt to resolve "clock_gettime"
