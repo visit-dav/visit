@@ -102,6 +102,7 @@ protected:
 private:
     // Utility functions.
     void UpdateFileFormatComboBox();
+    bool eventFilter(QObject *o, QEvent *e);
 private slots:
     void okClicked();
     void cancelClicked();
