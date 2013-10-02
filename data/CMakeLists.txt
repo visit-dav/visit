@@ -345,6 +345,11 @@ ENDIF(SILO_FOUND)
 # Unfortunately it is very slow so we only use it as a fallback. It also
 # fails on Windows for many of our .tar.gz data files.
 #
+#  Kathleen Biagas, Wed Oct  2 14:19:36 PDT 2013
+#  Added PROGRAM6432 env var to search as I discovered that 32-bit cmake
+#  running on 64-bit Windows 8 reports 'Program Files (x86)' for 
+#  'ENV${PROGRAMFILES}'.
+#
 #-----------------------------------------------------------------------------
 IF(NOT WIN32)
     FIND_PROGRAM(TAR_EXE tar)
@@ -361,7 +366,8 @@ ELSE(NOT WIN32)
    # 
    FIND_PROGRAM(SEVEN_ZIP_EXE 7z "${VISIT_SEVEN_ZIP_DIR}" 
                                  "$ENV{PROGRAMFILES}/7-Zip" 
-                                 "$ENV{PROGRAMFILES(X86)}/7-Zip")
+                                 "$ENV{PROGRAMFILES(X86)}/7-Zip"
+                                 "$ENV{PROGRAM6432}/7-Zip")
 
    IF ("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
        MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
