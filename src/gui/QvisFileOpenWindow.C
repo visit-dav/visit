@@ -50,6 +50,7 @@
 #include <QPushButton>
 #include <QSplitter>
 #include <QWidget>
+#include <QKeyEvent>
 
 #include <QvisFileOpenWindow.h>
 #include <QvisRecentPathRemovalWindow.h>
@@ -228,11 +229,11 @@ QvisFileOpenWindow::CreateWindowContents()
     fileList->setMinimumWidth(minColumnWidth * 20);
     connect(fileList, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(selectFileDblClick(QListWidgetItem *)));
-    connect(fileList, SIGNAL(itemActivated(QListWidgetItem *)),
-            this, SLOT(selectFileReturnPressed(QListWidgetItem *)));
+    //connect(fileList, SIGNAL(itemActivated(QListWidgetItem *)),
+    //        this, SLOT(selectFileReturnPressed(QListWidgetItem *)));
     connect(fileList, SIGNAL(itemSelectionChanged()),
             this, SLOT(selectFileChanged()));
-
+    fileList->installEventFilter(this);
     listSplitter->addWidget(fileWidget);
     // Create the file format combo box
     QHBoxLayout *fileFormatLayout = new QHBoxLayout();
@@ -736,7 +737,8 @@ QvisFileOpenWindow::selectFile()
 void
 QvisFileOpenWindow::selectFileReturnPressed(QListWidgetItem *)
 {
-    selectFile();
+    //selectFile();
+    okClicked();
 }
 
 // ****************************************************************************
@@ -862,4 +864,19 @@ QvisFileOpenWindow::fileFormatChanged(const QString &format)
         }
     }
     setDefaultOptionsForFormatButton->setEnabled(enabled);
+}
+
+bool
+QvisFileOpenWindow::eventFilter(QObject *o, QEvent *e)
+{
+    if(e->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* event = dynamic_cast<QKeyEvent*>(e);
+        if(event->key() == Qt::Key_Return)
+        {
+            okClicked();
+            return true;
+        }
+    }
+    return false;
 }
