@@ -1320,6 +1320,7 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
     int t2 = visitTimer->StartTimer();
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     vtkPoints *pts = vtkPoints::New();
+
     int pts_per_element = iBlockSize[0]*iBlockSize[1];
     if (iDim == 3)
         pts_per_element *= iBlockSize[2];
@@ -1403,6 +1404,7 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
     cellLocations->Delete();
     cells->Delete();
 
+    // Save the block size for use in the avtIVPNek5000Field.
     vtkIntArray *sem = vtkIntArray::New();
     sem->SetNumberOfComponents( 1 );
     sem->SetNumberOfTuples(3);
