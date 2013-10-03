@@ -1471,12 +1471,16 @@ FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
     # if there truly are current definitions, and more than 1 in the list, then
     # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.
     # Grab the first item in the list for comparison instead.
-    LIST(GET currentDefs 0 firstItem )
-    IF(${firstItem} MATCHES NOTFOUND)
+    if (currentDefs)
+        LIST(GET currentDefs 0 firstItem )
+        IF(${firstItem} MATCHES NOTFOUND)
+            SET(allDefs ${newDefs})
+        ELSE(${firstItem} MATCHES NOTFOUND)
+            SET(allDefs ${currentDefs} ${newDefs})
+        ENDIF(${firstItem} MATCHES NOTFOUND)
+    else()
         SET(allDefs ${newDefs})
-    ELSE(${firstItem} MATCHES NOTFOUND)
-        SET(allDefs ${currentDefs} ${newDefs})
-    ENDIF(${firstItem} MATCHES NOTFOUND)
+    endif()
     SET_TARGET_PROPERTIES(${target} PROPERTIES
             COMPILE_DEFINITIONS "${allDefs}"
         )
@@ -2011,15 +2015,20 @@ IF(NOT WIN32)
 ELSE(NOT WIN32)
     SET(CMAKE_C_COMPILER_VERSION_MESSAGE " ${CMAKE_GENERATOR}")
     IF(MSVC)
-        INCLUDE(CMakeDetermineVSServicePack)
-        DetermineVSServicePack(my_service_pack)
-        IF(my_service_pack)
-            SET(CMAKE_C_COMPILER_VERSION_MESSAGE "${CMAKE_C_COMPILER_VERSION_MESSAGE} (${my_service_pack})")
-        ENDIF(my_service_pack)
-        SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${MSVC_VERSION}")
+        IF(CMAKE_VERSION VERSION_LESS "2.8.10")
+            INCLUDE(CMakeDetermineVSServicePack)
+            DetermineVSServicePack(my_service_pack)
+            IF(my_service_pack)
+                SET(CMAKE_C_COMPILER_VERSION_MESSAGE "${CMAKE_C_COMPILER_VERSION_MESSAGE} (${my_service_pack})")
+            ENDIF(my_service_pack)
+        ENDIF()
+        IF(CMAKE_CXX_COMPILER_VERSION)
+            SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${CMAKE_CXX_COMPILER_VERSION}")
+        ELSE()
+            SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${MSVC_VERSION}")
+        ENDIF()
         FILE(WRITE ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
-            "SET(CMAKE_GENERATOR \"${CMAKE_GENERATOR}\" CACHE INTERNAL \"\" FORCE)"
-        )
+            "SET(CMAKE_GENERATOR \"${CMAKE_GENERATOR}\" CACHE INTERNAL \"\" FORCE)")
         INSTALL(FILES ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
                 PERMISSIONS OWNER_READ OWNER_WRITE
