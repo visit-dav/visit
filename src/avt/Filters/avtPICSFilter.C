@@ -1995,6 +1995,8 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
     
     if (doPathlines)
     {
+      if( fieldType == PICS_FIELD_DEFAULT )
+      {
         if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             return new avtIVPVTKTimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice-1][1],
@@ -2003,6 +2005,11 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
             return new avtIVPVTKTimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice][0], 
                                        domainTimeIntervals[curTimeSlice][1]);
+      }
+      else
+      {
+        EXCEPTION1(ImproperUseException, "Can not do pathlines with higher order elements at this time - use the default field type for linear interpolation.");
+      }
     }
     else
     {
@@ -3116,12 +3123,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     {
         // Add in the other fields that the NEK 5000 Interpolation needs
 
-        // Assume the user has selected B as the primary variable.
-        // Which is ignored.
-
-        // Fourier series grid and data stored on the original mesh
-//        out_dr->AddSecondaryVariable("hidden/grid_fourier_series");  // grid
-//        out_dr->AddSecondaryVariable("hidden/data_fourier_series");  // data
+        // Assume the user has selected velocity as the primary variable.
     }
     else if ( fieldType == PICS_FIELD_NIMROD )
     {
