@@ -282,6 +282,9 @@ avtPLYWriter::SendPolyDataToRank0()
 //   Dave Pugmire, Fri Apr 26 12:33:39 EDT 2013
 //   Add color table options.
 //
+//   Dave Pugmire, Fri Oct  4 13:06:07 EDT 2013
+//   Fixed bug for mutiple polydatas.
+//
 // ****************************************************************************
 
 void
@@ -298,24 +301,6 @@ avtPLYWriter::CloseFile(void)
         return;
     }
 
-    vtkPolyData *allPD = NULL;
-    if (polydatas.size() == 1)
-    {
-        allPD = polydatas[0];
-        allPD->Register(NULL);
-    }
-
-    else if (polydatas.size() > 1)
-    {
-        vtkAppendPolyData *f = vtkAppendPolyData::New();
-        for(size_t i = 0; i < polydatas.size(); ++i)
-            f->AddInputData(polydatas[i]);
-
-        allPD = f->GetOutput();
-        allPD->Register(NULL);
-        f->Delete();
-    }
-
     std::string filename(stem + ".ply");
     vtkPLYWriter *writer = vtkPLYWriter::New();
     
@@ -325,17 +310,29 @@ avtPLYWriter::CloseFile(void)
     else
         writer->SetFileTypeToASCII();
 
-    if (doColor && allPD->GetPointData()->GetScalars())
+    if (polydatas.size() == 1)
+    {
+        writer->SetInputData(polydatas[0]);
+    }
+    else if (polydatas.size() > 1)
+    {
+        vtkAppendPolyData *f = vtkAppendPolyData::New();
+        for(size_t i = 0; i < polydatas.size(); ++i)
+            f->AddInputData(polydatas[i]);
+        writer->SetInputConnection(f->GetOutputPort());
+        f->Delete();
+    }
+
+    if (doColor && polydatas[0]->GetPointData()->GetScalars())
     {
         vtkScalarsToColors *lut = GetColorTable();
         if (lut)
         {
-            writer->SetArrayName(allPD->GetPointData()->GetScalars()->GetName());
+            writer->SetArrayName(polydatas[0]->GetPointData()->GetScalars()->GetName());
             writer->SetLookupTable(lut);
         }
     }
     
-    writer->SetInputData(allPD);
     writer->Update();
     writer->Write();
     writer->Delete();
@@ -344,7 +341,6 @@ avtPLYWriter::CloseFile(void)
         polydatas[i]->Delete();
     
     polydatas.clear();
-    allPD->Delete();
 }
 
 //****************************************************************************
