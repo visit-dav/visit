@@ -806,7 +806,7 @@ avtSamplePointExtractor::delImgPatches(){
         if ((*it).second.imagePatch != NULL)
             delete [](*it).second.imagePatch;
 
-        (*it).second.imagePatch == NULL;
+        (*it).second.imagePatch = NULL;
     }
     imgDataHashMap.clear();
 }
