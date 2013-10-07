@@ -183,7 +183,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     SNPRINTF(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
     const char *rendererType_names = "Splatting, Texture3D, RayCasting, RayCastingIntegration, SLIVR, "
-        "Tuvok";
+        "RayCastingSLIVR, Tuvok";
     switch (atts->GetRendererType())
     {
       case VolumeAttributes::Splatting:
@@ -204,6 +204,10 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
       case VolumeAttributes::SLIVR:
           SNPRINTF(tmpStr, 1000, "%srendererType = %sSLIVR  # %s\n", prefix, prefix, rendererType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::RayCastingSLIVR:
+          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingSLIVR  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Tuvok:
@@ -267,7 +271,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *sampling_names = "KernelBased, Rasterization";
+    const char *sampling_names = "KernelBased, Rasterization, Trilinear";
     switch (atts->GetSampling())
     {
       case VolumeAttributes::KernelBased:
@@ -276,6 +280,10 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
       case VolumeAttributes::Rasterization:
           SNPRINTF(tmpStr, 1000, "%ssampling = %sRasterization  # %s\n", prefix, prefix, sampling_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::Trilinear:
+          SNPRINTF(tmpStr, 1000, "%ssampling = %sTrilinear  # %s\n", prefix, prefix, sampling_names);
           str += tmpStr;
           break;
       default:
@@ -346,6 +354,22 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slowGradientLightingClampValue = %g\n", prefix, atts->GetLowGradientLightingClampValue());
     str += tmpStr;
+    {   const double *materialProperties = atts->GetMaterialProperties();
+        SNPRINTF(tmpStr, 1000, "%smaterialProperties = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 4; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", materialProperties[i]);
+            str += tmpStr;
+            if(i < 3)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -964,15 +988,15 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the rendererType in the object.
-    if(ival >= 0 && ival < 6)
+    if(ival >= 0 && ival < 7)
         obj->data->SetRendererType(VolumeAttributes::Renderer(ival));
     else
     {
         fprintf(stderr, "An invalid rendererType value was given. "
-                        "Valid values are in the range of [0,5]. "
+                        "Valid values are in the range of [0,6]. "
                         "You can also use the following names: "
                         "Splatting, Texture3D, RayCasting, RayCastingIntegration, SLIVR, "
-                        "Tuvok.");
+                        "RayCastingSLIVR, Tuvok.");
         return NULL;
     }
 
@@ -1145,14 +1169,14 @@ VolumeAttributes_SetSampling(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the sampling in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetSampling(VolumeAttributes::SamplingType(ival));
     else
     {
         fprintf(stderr, "An invalid sampling value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "KernelBased, Rasterization.");
+                        "KernelBased, Rasterization, Trilinear.");
         return NULL;
     }
 
@@ -1413,6 +1437,60 @@ VolumeAttributes_GetLowGradientLightingClampValue(PyObject *self, PyObject *args
     return retval;
 }
 
+/*static*/ PyObject *
+VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    double *dvals = obj->data->GetMaterialProperties();
+    if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 4)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the materialProperties in the object as modified.
+    obj->data->SelectMaterialProperties();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the materialProperties.
+    PyObject *retval = PyTuple_New(4);
+    const double *materialProperties = obj->data->GetMaterialProperties();
+    for(int i = 0; i < 4; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(materialProperties[i]));
+    return retval;
+}
+
 
 
 PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
@@ -1488,6 +1566,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetLowGradientLightingClampFlag", VolumeAttributes_GetLowGradientLightingClampFlag, METH_VARARGS},
     {"SetLowGradientLightingClampValue", VolumeAttributes_SetLowGradientLightingClampValue, METH_VARARGS},
     {"GetLowGradientLightingClampValue", VolumeAttributes_GetLowGradientLightingClampValue, METH_VARARGS},
+    {"SetMaterialProperties", VolumeAttributes_SetMaterialProperties, METH_VARARGS},
+    {"GetMaterialProperties", VolumeAttributes_GetMaterialProperties, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1577,6 +1657,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(VolumeAttributes::RayCastingIntegration));
     if(strcmp(name, "SLIVR") == 0)
         return PyInt_FromLong(long(VolumeAttributes::SLIVR));
+    if(strcmp(name, "RayCastingSLIVR") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::RayCastingSLIVR));
     if(strcmp(name, "Tuvok") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Tuvok));
 
@@ -1613,6 +1695,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(VolumeAttributes::KernelBased));
     if(strcmp(name, "Rasterization") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Rasterization));
+    if(strcmp(name, "Trilinear") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Trilinear));
 
     if(strcmp(name, "rendererSamples") == 0)
         return VolumeAttributes_GetRendererSamples(self, NULL);
@@ -1643,6 +1727,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetLowGradientLightingClampFlag(self, NULL);
     if(strcmp(name, "lowGradientLightingClampValue") == 0)
         return VolumeAttributes_GetLowGradientLightingClampValue(self, NULL);
+    if(strcmp(name, "materialProperties") == 0)
+        return VolumeAttributes_GetMaterialProperties(self, NULL);
 
     return Py_FindMethod(PyVolumeAttributes_methods, self, name);
 }
@@ -1723,6 +1809,8 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetLowGradientLightingClampFlag(self, tuple);
     else if(strcmp(name, "lowGradientLightingClampValue") == 0)
         obj = VolumeAttributes_SetLowGradientLightingClampValue(self, tuple);
+    else if(strcmp(name, "materialProperties") == 0)
+        obj = VolumeAttributes_SetMaterialProperties(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
