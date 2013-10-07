@@ -7,11 +7,13 @@
       avtCurveFilter.C
       avtCurveRenderer.C
       avtOpenGLCurveRenderer.C
+      avtPolarToCartesianFilter.C
     </Files>
     <Files components="E">
       avtCurveFilter.C
       avtCurveRenderer.C
       avtOpenGLCurveRenderer.C
+      avtPolarToCartesianFilter.C
     </Files>
     <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="CurveAttributes.code">
       <Enum name="CurveColor">
