@@ -8,17 +8,16 @@
       avtOpenGLMoleculeRenderer.C
       avtOpenGLAtomTexturer2D.C
       avtOpenGLAtomTexturer3D.C
-      avtMantaMoleculeRenderer.C
       avtMoleculeFilter.C
     </Files>
     <LIBS components="V">
       ${GLEW_LIB}
       ${OPENGL_gl_LIBRARY}
+      avtplotter_ser
     </LIBS>
     <Files components="E">
       avtMoleculeRenderer.C
       avtOpenGLMoleculeRenderer.C
-      avtMantaMoleculeRenderer.C
       avtOpenGLAtomTexturer2D.C
       avtOpenGLAtomTexturer3D.C
       avtMoleculeFilter.C
