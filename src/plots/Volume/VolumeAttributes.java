@@ -63,7 +63,7 @@ import llnl.visit.TransferFunctionWidget;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int VolumeAttributes_numAdditionalAtts = 34;
+    private static int VolumeAttributes_numAdditionalAtts = 35;
 
     // Enum values
     public final static int RENDERER_SPLATTING = 0;
@@ -71,7 +71,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_RAYCASTING = 2;
     public final static int RENDERER_RAYCASTINGINTEGRATION = 3;
     public final static int RENDERER_SLIVR = 4;
-    public final static int RENDERER_TUVOK = 5;
+    public final static int RENDERER_RAYCASTINGSLIVR = 5;
+    public final static int RENDERER_TUVOK = 6;
 
     public final static int GRADIENTTYPE_CENTEREDDIFFERENCES = 0;
     public final static int GRADIENTTYPE_SOBELOPERATOR = 1;
@@ -85,6 +86,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
     public final static int SAMPLINGTYPE_KERNELBASED = 0;
     public final static int SAMPLINGTYPE_RASTERIZATION = 1;
+    public final static int SAMPLINGTYPE_TRILINEAR = 2;
 
     public final static int OPACITYMODES_FREEFORMMODE = 0;
     public final static int OPACITYMODES_GAUSSIANMODE = 1;
@@ -128,18 +130,23 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         smoothData = false;
         samplesPerRay = 500;
         rendererType = RENDERER_SPLATTING;
-        gradientType = GRADIENTTYPE_SOBELOPERATOR;
+        gradientType = GRADIENTTYPE_CENTEREDDIFFERENCES;
         num3DSlices = 200;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         sampling = SAMPLINGTYPE_RASTERIZATION;
-        rendererSamples = 3f;
+        rendererSamples = 2f;
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
-        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_LOWER;
+        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
         lowGradientLightingClampFlag = false;
         lowGradientLightingClampValue = 1;
+        materialProperties = new double[4];
+        materialProperties[0] = 0.4;
+        materialProperties[1] = 0.75;
+        materialProperties[2] = 0;
+        materialProperties[3] = 15;
     }
 
     public VolumeAttributes(int nMoreFields)
@@ -170,18 +177,23 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         smoothData = false;
         samplesPerRay = 500;
         rendererType = RENDERER_SPLATTING;
-        gradientType = GRADIENTTYPE_SOBELOPERATOR;
+        gradientType = GRADIENTTYPE_CENTEREDDIFFERENCES;
         num3DSlices = 200;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         sampling = SAMPLINGTYPE_RASTERIZATION;
-        rendererSamples = 3f;
+        rendererSamples = 2f;
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
-        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_LOWER;
+        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
         lowGradientLightingClampFlag = false;
         lowGradientLightingClampValue = 1;
+        materialProperties = new double[4];
+        materialProperties[0] = 0.4;
+        materialProperties[1] = 0.75;
+        materialProperties[2] = 0;
+        materialProperties[3] = 15;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -234,6 +246,10 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         lowGradientLightingReduction = obj.lowGradientLightingReduction;
         lowGradientLightingClampFlag = obj.lowGradientLightingClampFlag;
         lowGradientLightingClampValue = obj.lowGradientLightingClampValue;
+        materialProperties = new double[4];
+        for(i = 0; i < obj.materialProperties.length; ++i)
+            materialProperties[i] = obj.materialProperties[i];
+
 
         SelectAll();
     }
@@ -266,6 +282,11 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             TransferFunctionWidget transferFunction2DWidgets2 = (TransferFunctionWidget)obj.transferFunction2DWidgets.elementAt(i);
             transferFunction2DWidgets_equal = transferFunction2DWidgets1.equals(transferFunction2DWidgets2);
         }
+        // Compare the materialProperties arrays.
+        boolean materialProperties_equal = true;
+        for(i = 0; i < 4 && materialProperties_equal; ++i)
+            materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
+
         // Create the return value
         return ((legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
@@ -300,7 +321,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (transferFunctionDim == obj.transferFunctionDim) &&
                 (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
                 (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
-                (lowGradientLightingClampValue == obj.lowGradientLightingClampValue));
+                (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
+                materialProperties_equal);
     }
 
     public String GetName() { return "Volume"; }
@@ -506,6 +528,24 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(33);
     }
 
+    public void SetMaterialProperties(double[] materialProperties_)
+    {
+        materialProperties[0] = materialProperties_[0];
+        materialProperties[1] = materialProperties_[1];
+        materialProperties[2] = materialProperties_[2];
+        materialProperties[3] = materialProperties_[3];
+        Select(34);
+    }
+
+    public void SetMaterialProperties(double e0, double e1, double e2, double e3)
+    {
+        materialProperties[0] = e0;
+        materialProperties[1] = e1;
+        materialProperties[2] = e2;
+        materialProperties[3] = e3;
+        Select(34);
+    }
+
     // Property getting methods
     public boolean                  GetLegendFlag() { return legendFlag; }
     public boolean                  GetLightingFlag() { return lightingFlag; }
@@ -541,6 +581,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public int                      GetLowGradientLightingReduction() { return lowGradientLightingReduction; }
     public boolean                  GetLowGradientLightingClampFlag() { return lowGradientLightingClampFlag; }
     public double                   GetLowGradientLightingClampValue() { return lowGradientLightingClampValue; }
+    public double[]                 GetMaterialProperties() { return materialProperties; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -620,6 +661,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(lowGradientLightingClampFlag);
         if(WriteSelect(33, buf))
             buf.WriteDouble(lowGradientLightingClampValue);
+        if(WriteSelect(34, buf))
+            buf.WriteDoubleArray(materialProperties);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -740,6 +783,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         case 33:
             SetLowGradientLightingClampValue(buf.ReadDouble());
             break;
+        case 34:
+            SetMaterialProperties(buf.ReadDoubleArray());
+            break;
         }
     }
 
@@ -785,6 +831,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RENDERER_RAYCASTINGINTEGRATION";
         if(rendererType == RENDERER_SLIVR)
             str = str + "RENDERER_SLIVR";
+        if(rendererType == RENDERER_RAYCASTINGSLIVR)
+            str = str + "RENDERER_RAYCASTINGSLIVR";
         if(rendererType == RENDERER_TUVOK)
             str = str + "RENDERER_TUVOK";
         str = str + "\n";
@@ -815,6 +863,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "SAMPLINGTYPE_KERNELBASED";
         if(sampling == SAMPLINGTYPE_RASTERIZATION)
             str = str + "SAMPLINGTYPE_RASTERIZATION";
+        if(sampling == SAMPLINGTYPE_TRILINEAR)
+            str = str + "SAMPLINGTYPE_TRILINEAR";
         str = str + "\n";
         str = str + floatToString("rendererSamples", rendererSamples, indent) + "\n";
         str = str + indent + "transferFunction2DWidgets = {\n";
@@ -848,6 +898,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + boolToString("lowGradientLightingClampFlag", lowGradientLightingClampFlag, indent) + "\n";
         str = str + doubleToString("lowGradientLightingClampValue", lowGradientLightingClampValue, indent) + "\n";
+        str = str + doubleArrayToString("materialProperties", materialProperties, indent) + "\n";
         return str;
     }
 
@@ -920,5 +971,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private int                      lowGradientLightingReduction;
     private boolean                  lowGradientLightingClampFlag;
     private double                   lowGradientLightingClampValue;
+    private double[]                 materialProperties;
 }
 
