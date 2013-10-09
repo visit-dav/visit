@@ -227,7 +227,7 @@ class vtkAppendPolyData;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
+class IVP_API avtStreamlineFilter : virtual public avtPICSFilter
 {
   public:
                               avtStreamlineFilter();

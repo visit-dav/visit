@@ -9,6 +9,7 @@
       avtGLSLProgram.C
     </Files>
     <LIBS components="V">
+      avtivp_ser
       ${GLEW_LIB}
     </LIBS>
     <Files components="E">
@@ -17,10 +18,12 @@
       avtGLSLProgram.C
     </Files>
     <LIBS components="ESer">
+      avtivp_ser
       ${GLEW_LIB}
       vtkFiltersModeling
     </LIBS>
     <LIBS components="EPar">
+      avtivp_par
       ${GLEW_LIB}
       vtkFiltersModeling
     </LIBS>

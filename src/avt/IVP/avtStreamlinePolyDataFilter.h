@@ -91,7 +91,7 @@ class avtStateRecorderIntegralCurve;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
+class IVP_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
 {
   public:
                               avtStreamlinePolyDataFilter();

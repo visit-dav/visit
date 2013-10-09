@@ -157,7 +157,6 @@ ${viewer_exe_VPlot}
 avtdatabase_ser 
 avtdbatts
 avtfilters_ser 
-avtivp
 avtmath
 avtmir_ser 
 avtpipeline_ser

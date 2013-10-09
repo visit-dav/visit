@@ -69,21 +69,54 @@ avtPoincareIC.C
 avtStateRecorderIntegralCurve.C
 avtStreamlineIC.C
 MemStream.C
+avtCommDSOnDemandICAlgorithm.C
+avtICAlgorithm.C
+avtMasterSlaveICAlgorithm.C
+avtParDomICAlgorithm.C
+avtParICAlgorithm.C
+avtPICSFilter.C
+avtPODICAlgorithm.C
+avtPOSBalanceICAlgorithm.C
+avtSerialICAlgorithm.C
+avtStreamlineFilter.C
+avtStreamlinePolyDataFilter.C
 )
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
+${VISIT_SOURCE_DIR}/avt/Database/Database
+${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
+${VISIT_SOURCE_DIR}/avt/Filters
 ${VISIT_SOURCE_DIR}/avt/Math
+${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
+${VISIT_SOURCE_DIR}/avt/Pipeline/Data
+${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
+${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
+${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
+${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR})
 
-ADD_LIBRARY(avtivp ${AVTIVP_SOURCES})
-TARGET_LINK_LIBRARIES(avtivp avtmath visitcommon visit_vtk vtkCommonCore vtkFiltersCore)
+#ADD_LIBRARY(avtivp ${AVTIVP_SOURCES})
+#TARGET_LINK_LIBRARIES(avtivp avtfilters avtmath visitcommon visit_vtk vtkCommonCore vtkFiltersCore)
+#VISIT_INSTALL_TARGETS(avtivp)
 
-VISIT_INSTALL_TARGETS(avtivp)
+
+#********************************* SERIAL ************************************
+ADD_LIBRARY(avtivp_ser ${AVTIVP_SOURCES})
+TARGET_LINK_LIBRARIES(avtivp_ser avtfilters_ser lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore)
+VISIT_INSTALL_TARGETS(avtivp_ser)
+
+#********************************* PARALLEL **********************************
+IF(VISIT_PARALLEL)
+    ADD_PARALLEL_LIBRARY(avtivp_par ${AVTIVP_SOURCES})
+    TARGET_LINK_LIBRARIES(avtivp_par avtfilters_par lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore)
+    VISIT_INSTALL_TARGETS(avtivp_par)
+ENDIF(VISIT_PARALLEL)
