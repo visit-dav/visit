@@ -18,6 +18,7 @@ ${COMMON_SOURCES}
 avtNETCDFFileFormat.C
 avtBasicNETCDFFileFormat.C
 avtADAPTFileFormat.C
+avtBOUTFileFormat.C
 avtLODIFileFormat.C
 avtLODIParticleFileFormat.C
 avtFVCOM_STSDFileFormat.C
@@ -38,6 +39,7 @@ ${COMMON_SOURCES}
 avtNETCDFFileFormat.C
 avtBasicNETCDFFileFormat.C
 avtADAPTFileFormat.C
+avtBOUTFileFormat.C
 avtLODIFileFormat.C
 avtLODIParticleFileFormat.C
 avtFVCOM_STSDFileFormat.C

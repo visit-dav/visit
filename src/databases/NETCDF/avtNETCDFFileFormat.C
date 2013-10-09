@@ -43,6 +43,7 @@
 #include <NETCDFFileObject.h>
 
 #include <avtADAPTFileFormat.h>
+#include <avtBOUTFileFormat.h>
 #include <avtBasicNETCDFFileFormat.h>
 #include <avtLODIFileFormat.h>
 #include <avtLODIParticleFileFormat.h>
@@ -129,6 +130,9 @@ static bool DetectAWENETCDF(NETCDFFileObject *f)
 //   Satheesh Maheswaran, Thu Oct 25 10:31:04 PDT 2012
 //   Add DetectAWENETCDF function call.
 //
+//   Eric Brugger, Thu Aug  1 13:15:07 PDT 2013
+//   Add BOUT file format.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -197,9 +201,15 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 debug4 << "Database is avtCCSM_STSD_FileFormat" << endl;
             }
 
-            if(flavor == -1 && avtBasic_MTSD_NETCDFFileFormat::Identify(f))
+            if(flavor == -1 && avtBOUTFileFormat::Identify(f))
             {
                 flavor = 9;
+                debug4 << "Database is avtBOUTFileFormat" << endl;
+            }
+
+            if(flavor == -1 && avtBasic_MTSD_NETCDFFileFormat::Identify(f))
+            {
+                flavor = 10;
                 debug4 << "Database is avtBasic_MTSD_NETCDFFileFormat" << endl;
             }
 
@@ -251,6 +261,9 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             ffi = avtCCSM_STSD_FileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         case 9:
+            ffi = avtBOUTFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+        case 10:
             ffi = avtBasic_MTSD_NETCDFFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         default:
