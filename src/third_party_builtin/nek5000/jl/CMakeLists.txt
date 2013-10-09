@@ -35,31 +35,59 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Bonnell, Wed Jan 05 10:22:08 PST 2010
-#   Add folder property.
-#
-#   Brad Whitlock, Thu Apr 18 14:40:01 PDT 2013
-#   Provide a macro name for zlib.
 #
 #****************************************************************************/
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
-SET(BOW_SOURCES
-bow.C
-fwav.C
-gzlib.C
+set(FUN_PREFIX "nek_" CACHE STRING "prefix for exported symbols")
+
+option(LOCAL_LONG "use long for local index type (instead of int)" ON)
+option(LOCAL_LONG_LONG "use long long for local index type (instead of int)" OFF)
+
+ADD_DEFINITIONS(-DPREFIX=${FUN_PREFIX} -DUSE_NAIVE_BLAS -DNO_NEK_EXITT -DUNDERSCORE)
+
+if(LOCAL_LONG)
+  add_definitions(-DUSE_LONG)
+  set(NEK_UINT "unsigned long")
+elseif(LOCAL_LONG_LONG)
+  add_definitions(-DUSE_LONG_LONG)
+  set(NEK_UINT "unsigned long long")
+else()
+  set(NEK_UINT "unsigned")
+endif()
+
+configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/ext/nek_config.h.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/nek_config.h"
+  )
+
+
+SET(NEK5000_INTERP_SOURCES
+sort.c
+sarray_sort.c
+obbox.c
+tensor.c
+poly.c
+lob_bnd.c
+findpts_el_3.c
+findpts_el_2.c
+fail.c
+comm.c
+gs_local.c
+findpts_local.c
+ext/findpts_local_ext.c
 )
 
 INCLUDE_DIRECTORIES(
+${VISIT_SOURCE_DIR}/third_party_builtin/nek5000
+${VISIT_SOURCE_DIR}/visit_vtk/full
 ${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VTK_INCLUDE_DIRS}
 )
 
-# Add link directories needed to VTK.
-LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
+#Add link directories needed.
+LINK_DIRECTORIES()
 
-ADD_LIBRARY(bow ${BOW_SOURCES})
-TARGET_LINK_LIBRARIES(bow ${VTKZLIB_LIB})
+ADD_LIBRARY(nek5000_interp ${NEK5000_INTERP_SOURCES})
+TARGET_LINK_LIBRARIES(nek5000_interp)
 
-VISIT_INSTALL_TARGETS(bow)
-SET_TARGET_PROPERTIES(bow PROPERTIES FOLDER third_party_builtin/bow)
+VISIT_INSTALL_TARGETS(nek5000_interp)
