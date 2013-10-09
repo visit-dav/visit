@@ -73,6 +73,9 @@
 //    Cyrus Harrison, Mon Nov 24 09:10:42 PST 2008
 //    Fixed problem where last char of a function could be truncated.
 //
+//    Kathleen Biagas, Wed Oct  9 09:59:59 PDT 2013
+//    Added 'Condition' keyword, for conditional xml2cmake code.
+//
 // ****************************************************************************
 class CodeFile
 {
@@ -88,6 +91,7 @@ class CodeFile
     QStringPairMap    var;
     QStringPairMap    constant;
     QStringQStringMap init;
+    QStringPairMap    condition;
   public:
     CodeFile(const QString &f) : filename(f)
     {
@@ -145,6 +149,10 @@ class CodeFile
                 else if (keyword == "Initialization:")
                 {
                     ParseInitialization(buff, name, in);
+                }
+                else if (keyword == "Condition:")
+                {
+                    ParseCondition(buff, name, in);
                 }
             }
             else
@@ -227,6 +235,22 @@ class CodeFile
     {
         GetAllItems(init, targets, names, def);
     }
+
+    bool HasCondition(const QString &name) const
+    { 
+        return HasItem(condition, name); 
+    }
+    bool GetCondition(const QString &name, QStringList &targets, QStringList &first, 
+                 QStringList &second) const
+    {
+        return GetItem(condition, name, targets, first, second);
+    }
+    void GetAllConditions(QStringList &targets, QStringList &names, QStringList &first, 
+                 QStringList &second) const
+    {
+        GetAllItems(condition, targets, names, first, second);
+    }
+
 private:
     QString GetKeyword(const QString &buff)
     {
@@ -255,6 +279,10 @@ private:
         else if (buff.left(15) == "Initialization:")
         {
             keyword = buff.left(15);
+        }
+        else if (buff.left(10) == "Condition:")
+        {
+            keyword = buff.left(10);
         }
 
         return keyword;
@@ -324,6 +352,7 @@ private:
 
         constant[Key(name)] = std::pair<QString,QString>(decl,def);
     }
+
     void ParseCode(QString &buff, const QString &name, QTextStream &in)
     {
         QString prefix,postfix;
@@ -360,6 +389,7 @@ private:
 
         code[Key(name)] = std::pair<QString,QString>(prefix,postfix);
     }
+
     void ParseInitialization(QString &buff, const QString &name, QTextStream &in)
     {
         QString initcode;
@@ -378,6 +408,35 @@ private:
         }
 
         init[Key(name)] = initcode;
+    }
+
+    void ParseCondition(QString &buff, const QString &name, QTextStream &in)
+    {
+        const char *keys[15] = {"Includes:", "Definitions:", "LinkDirectories:", \
+                        "ILinkLibraries:", "GLinkLibraries:", "VLinkLibraries:", \
+                        "SLinkLibraries:",  "MLinkLibraries:", "ELinkLibraries:", \
+                        "ISources:", "GSources:", "VSources:", "SSources:", "MSources:", \
+                        "ESources:"};
+        buff = in.readLine();
+        while (!in.atEnd() && GetKeyword(buff).isNull())
+        {
+            for (int i = 0; i < 15; ++i)
+            {
+                QString key(keys[i]);
+                if (buff.left(key.size()) == key)
+                {
+                    QString value(buff.mid(key.size()).trimmed());
+                    while (value.right(1) == "\n")
+                        value = value.left(value.length() - 1);
+                    if (!value.isEmpty())
+                    {
+                        condition[Key(key)] = std::pair<QString,QString>(name,value);
+                    }
+                    break;
+                }
+            }
+            buff = in.readLine();
+        }
     }
 
     QString Key(const QString &key) const

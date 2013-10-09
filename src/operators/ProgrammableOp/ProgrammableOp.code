@@ -817,14 +817,16 @@ ProgrammableOpAttributes::LoadPythonKernel(const std::string& name, const JSONNo
     std::ostringstream pwrapper;
 
     pwrapper << "from visit_internal_funcs import *\n"
-             << "exec(\"\"\"" << "\n"
+             //<< "exec('''" << "\n"
+             //<< code << "''',globals())\n"
              << code << "\n"
-             << "\"\"\",globals())\n"
              << "setout(" << name << "(" << arglist << "))\n";
 
     std::string escapedCode = pwrapper.str();
     //std::cout << escapedCode << std::endl;
-    replace(escapedCode, "\n", "\\n");
+    //replace(escapedCode, "'", "\"");
+    //replace(escapedCode, "\"", "\\\"");
+    //replace(escapedCode, "\n", "\\n");
 
     node["source"] = escapedCode;
 

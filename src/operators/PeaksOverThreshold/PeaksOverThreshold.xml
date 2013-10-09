@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="PeaksOverThreshold" type="operator" label="PeaksOverThreshold" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="scalar" exprOutType="scalar">
-    <Attribute name="PeaksOverThresholdAttributes" purpose="Attributes for PeaksOverThreshold operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Files components="E">
+        avtPeaksOverThresholdFilter.C
+        avtRPOTFilter.C
+        FileWriter.C
+    </Files>
+    <Attribute name="PeaksOverThresholdAttributes" purpose="Attributes for PeaksOverThreshold operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="PeaksOverThreshold.code">
       <Enum name="AggregationType">
         ANNUAL
         SEASONAL

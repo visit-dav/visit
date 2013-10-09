@@ -91,6 +91,7 @@ ExodusCommonPluginInfo::GetDatabaseType()
 //    as domains so multiblock files work again.
 //
 // ****************************************************************************
+#include <string>
 
 avtDatabase *
 ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
