@@ -22,5 +22,4 @@ Condition: VISIT_MANTA
 VSources: avtMantaMoleculeRenderer.C
 ESources: avtMantaMoleculeRenderer.C
 Includes: ${VISIT_INCLUDE_DIR}/avt/Plotter/Manta
-VLinkLibraries: avtplotter_ser
 
