@@ -2415,7 +2415,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 break;
             }
 
-            std::cerr <<  data_value << std::endl;
+//            std::cerr <<  data_value << std::endl;
 
             scalars->InsertTuple1(pIdx, data_value);
 

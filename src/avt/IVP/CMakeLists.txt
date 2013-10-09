@@ -43,7 +43,6 @@
 #   Delete avtStreamline.C and add its replacement, avtIntegralCurve.C.
 #
 #****************************************************************************/
-
 SET(AVTIVP_SOURCES
 avtCellLocator.C
 avtCellLocatorClassic.C
@@ -98,6 +97,7 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/visit_vtk/full
+${VISIT_SOURCE_DIR}/third_party_builtin/nek5000/jl
 ${VTK_INCLUDE_DIRS}
 )
 
@@ -111,12 +111,12 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtivp_ser ${AVTIVP_SOURCES})
-TARGET_LINK_LIBRARIES(avtivp_ser avtfilters_ser lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore)
+TARGET_LINK_LIBRARIES(avtivp_ser avtfilters_ser lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore nek5000_interp)
 VISIT_INSTALL_TARGETS(avtivp_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtivp_par ${AVTIVP_SOURCES})
-    TARGET_LINK_LIBRARIES(avtivp_par avtfilters_par lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore)
+    TARGET_LINK_LIBRARIES(avtivp_par avtfilters_par lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore nek5000_interp)
     VISIT_INSTALL_TARGETS(avtivp_par)
 ENDIF(VISIT_PARALLEL)
