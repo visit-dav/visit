@@ -1,0 +1,12 @@
+Target: xml2cmake
+Condition: HAVE_LIBNETCDF
+Includes: ${NETCDF_INCLUDE_DIR}
+Definitions: -DHAVE_NETCDF
+LinkDirectories: ${NETCDF_LIBRARY_DIR}
+ELinkLibraries: ${NETCDF_LIB}
+
+Code: AddSubDir
+Prefix:
+Postfix:
+ADD_SUBDIRECTORY(r_src)
+

@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="ExtremeValueAnalysis" type="operator" label="ExtremeValueAnalysis" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="scalar" exprOutType="scalar">
+    <Files components="E">
+        avtExtremeValueAnalysisFilter.C
+        avtRExtremesFilter.C
+        FileWriter.C
+    </Files>
     <Attribute name="ExtremeValueAnalysisAttributes" purpose="Attributes for ExtremeValueAnalysis operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ExtremeValueAnalysis.code">
       <Enum name="AggregationType">
         ANNUAL

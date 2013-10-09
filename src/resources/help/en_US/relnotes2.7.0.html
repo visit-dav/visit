@@ -151,8 +151,27 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Third party library locations normally set in a config-site file can be overriden by modifying the CMakeCache.txt file and re-running cmake.  Any changes to the config-site file after first cmake run will still take precedence.</li>
   <li>Added "-apitrace <component> " debugging option.  Default arguments are "--api gl".  On Windows, the location of apitrace is found through an APITRACE_EXE environment variable.</li>
-  <li></li>
-  <li></li>
+  <li>xml2cmake now supports conditional logic when specified in a plugin's code file. The code file would look like this:
+  <pre>
+       Target: xml2cmake
+       Condition: HAVE_LIBNETCDF
+       Includes: ${NETCDF_INCLUDE_DIR}
+       Definitions: -DHAVE_NETCDF
+       LinkDirectories: ${NETCDF_LIBRARY_DIR}
+       ELinkLibraries: ${NETCDF_LIB}
+       VLinkLibraries: ${NETCDF_LIB}
+       ESources: avtSpecialNetcdfFilter.C
+       VSources: avtSpecialNetcdfFilter.C</pre>
+    "Condition:" is required, and is what you would put in CMake's IF macro. The rest are the options dependent upon the Condition. Not all options are represented in the example, nor are all options required to be listed.
+</li>
+  <li>xml2cmake was enhanced to suport 'Code' keywords if it is the target.
+  <pre>
+       Target: xml2cmake
+       Code: AddSubdir
+       Prefix:
+       Postfix: ADD_SUBDIRECORTY(./extra_code_dir) </pre>
+   The name is not used, only what is placed in Prefix and/or Postfix.
+  </li>
   <li></li>
 </ul>
 
