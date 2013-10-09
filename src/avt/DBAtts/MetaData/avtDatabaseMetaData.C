@@ -6136,8 +6136,10 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     if (hasTemporalExtents)
     {
-        out << "Temporal extents are from " << minTemporalExtents << " to "
-            << maxTemporalExtents << "." << endl;
+        out << "Temporal extents are from "
+            << minTemporalExtents << " to " << maxTemporalExtents
+            << ",  dt = " << (maxTemporalExtents-minTemporalExtents) << "."
+            << endl;
     }
     else
     {
@@ -6858,4 +6860,3 @@ avtDatabaseMetaData::AddGhostZoneTypePresent(std::string name,
         }
     }
 }
-
