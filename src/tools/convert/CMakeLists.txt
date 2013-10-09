@@ -147,7 +147,6 @@ ELSE(VISIT_DBIO_ONLY)
         avtdbin_ser 
         avtexpressions_ser
         avtfilters_ser 
-        avtivp
         avtmath
         avtmir_ser
         avtpipeline_ser
@@ -209,7 +208,6 @@ IF(VISIT_PARALLEL)
             avtdbin_par 
             avtexpressions_par
             avtfilters_par 
-            avtivp
             avtmath
             avtmir_par
             avtpipeline_par

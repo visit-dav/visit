@@ -121,12 +121,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EIntegralCurveOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EIntegralCurveOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EIntegralCurveOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser avtivp_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EIntegralCurveOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EIntegralCurveOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EIntegralCurveOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EIntegralCurveOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par avtivp_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EIntegralCurveOperator_par)
 ENDIF(VISIT_PARALLEL)
 

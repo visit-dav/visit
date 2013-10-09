@@ -68,7 +68,6 @@
 
 SET(AVTFILTERS_SOURCES
 avtActualExtentsFilter.C
-avtCommDSOnDemandICAlgorithm.C
 avtCondenseDatasetFilter.C
 avtContourFilter.C
 avtCoordSystemConvert.C
@@ -80,7 +79,6 @@ avtFacelistFilter.C
 avtFeatureEdgesFilter.C
 avtGhostZoneAndFacelistFilter.C
 avtGhostZoneFilter.C
-avtICAlgorithm.C
 avtImageCommunicator.C
 avtImageCompositer.C
 avtImgCommunicator.C
@@ -89,16 +87,10 @@ avtLineoutFilter.C
 avtLineScanFilter.C
 avtLineToPolylineFilter.C
 avtMassVoxelExtractor.C
-avtMasterSlaveICAlgorithm.C
 avtMeshLogFilter.C
 avtMissingDataFilter.C
 avtMultiresFilter.C
 avtNamedSelectionFilter.C
-avtParDomICAlgorithm.C
-avtParICAlgorithm.C
-avtPICSFilter.C
-avtPODICAlgorithm.C
-avtPOSBalanceICAlgorithm.C
 avtPointToGlyphFilter.C
 avtRayCompositer.C
 avtRayTracer.C
@@ -106,13 +98,10 @@ avtResampleFilter.C
 avtSamplePointCommunicator.C
 avtSamplePointExtractor.C
 avtSamplePointToSurfaceFilter.C
-avtSerialICAlgorithm.C
 avtShiftCenteringFilter.C
 avtSimilarityTransformFilter.C
 avtSmoothPolyDataFilter.C
 avtStaggeringFilter.C
-avtStreamlineFilter.C
-avtStreamlinePolyDataFilter.C
 avtSummationFilter.C
 avtSurfaceFilter.C
 avtThresholdFilter.C
@@ -158,12 +147,12 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtivp avtpipeline_ser avtdatabase_ser avtdbatts)
+TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts)
 VISIT_INSTALL_TARGETS(avtfilters_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtivp avtpipeline_par avtdatabase_par avtdbatts)
+    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts)
     VISIT_INSTALL_TARGETS(avtfilters_par)
 ENDIF(VISIT_PARALLEL)

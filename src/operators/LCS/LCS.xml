@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
   <Plugin name="LCS" type="operator" label="LCS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="vector" exprOutType="scalar">
     <Attribute name="LCSAttributes" purpose="Attributes for LCS" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LCSAttributes.code">
+    <LIBS components="ESer">
+      avtivp_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtivp_par
+    </LIBS>
       <Enum name="SourceType">
         NativeMesh
         RegularGrid
