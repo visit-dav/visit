@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="Lagrangian" type="operator" label="Lagrangian" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="vector" exprOutType="curve">
+    <LIBS components="ESer">
+      avtivp_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtivp_par
+    </LIBS>
     <Attribute name="LagrangianAttributes" purpose="Attributes for Lagrangian operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="sampleType">
         Step

@@ -151,7 +151,7 @@ class avtICAlgorithm;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtPICSFilter : 
+class IVP_API avtPICSFilter : 
     virtual public avtDatasetOnDemandFilter,
     virtual public avtDatasetToDatasetFilter
 {

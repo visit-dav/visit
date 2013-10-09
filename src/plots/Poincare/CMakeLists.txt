@@ -116,13 +116,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EPoincarePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EPoincarePlot_ser visitcommon avtplotter_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EPoincarePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtivp_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EPoincarePlot_ser)
 ADD_TARGET_DEFINITIONS(EPoincarePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EPoincarePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EPoincarePlot_par visitcommon avtplotter_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EPoincarePlot_par visitcommon avtplotter_par avtpipeline_par avtivp_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EPoincarePlot_par)
     ADD_TARGET_DEFINITIONS(EPoincarePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

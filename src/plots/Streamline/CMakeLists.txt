@@ -102,7 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GStreamlinePlot visitcommon gui )
 
     ADD_LIBRARY(VStreamlinePlot ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VStreamlinePlot visitcommon viewer ${GLEW_LIB} )
+    TARGET_LINK_LIBRARIES(VStreamlinePlot visitcommon viewer avtivp_ser ${GLEW_LIB} )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GStreamlinePlot VStreamlinePlot)
 
@@ -124,13 +124,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EStreamlinePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EStreamlinePlot_ser visitcommon avtplotter_ser avtpipeline_ser ${GLEW_LIB} vtkFiltersModeling )
+TARGET_LINK_LIBRARIES(EStreamlinePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtivp_ser ${GLEW_LIB} vtkFiltersModeling )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EStreamlinePlot_ser)
 ADD_TARGET_DEFINITIONS(EStreamlinePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EStreamlinePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EStreamlinePlot_par visitcommon avtplotter_par avtpipeline_par ${GLEW_LIB} vtkFiltersModeling )
+    TARGET_LINK_LIBRARIES(EStreamlinePlot_par visitcommon avtplotter_par avtpipeline_par avtivp_par ${GLEW_LIB} vtkFiltersModeling )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EStreamlinePlot_par)
     ADD_TARGET_DEFINITIONS(EStreamlinePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)
