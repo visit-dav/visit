@@ -43,6 +43,8 @@
 #ifndef AVT_IVP_NEK5000_FIELD_H
 #define AVT_IVP_NEK5000_FIELD_H
 
+#include "visit-config.h"
+
 #include "avtIVPVTKField.h"
 
 #include <vtkDataSet.h>
@@ -52,6 +54,8 @@
 
 #include <map>
 #include <vector> 
+
+struct findpts_local_data;
 
 // ****************************************************************************
 //  Class:  avtIVPNek5000Field
@@ -80,28 +84,12 @@ class IVP_API avtIVPNek5000Field: public avtIVPVTKField
   avtVector ConvertToCylindrical(const avtVector& pt) const;
 
  protected:
-  template< class type >
-    type* SetDataPointer( vtkDataSet *ds,
-                          const type var,
-                          const char* varname,
-                          const int component_size,
-                          double factor = 1.0 );
-  
-  // Variables calculated in findElementNeighbors (trigtable,
-  // neighbors) or read as part of the mesh (elements).
-  // float *elements;
-  // int tElements;       /* Number elements in a plane */
 
-  // int element_dimension;
-  // int nplanes;
-  // int element_size;
-  // int scalar_size;
+  // Storage for the Nek5000 mesh and the vector.
+  double *nek_pts[3], *nek_vec[3];
 
-  unsigned int sem[3];
-
- public:
-
-  // float *f, *psi, *I;                /* Perturbed field */
+  // Variables needed for Nek5000 find points
+  mutable struct findpts_local_data *nek_fld;
 };
 
 #endif
