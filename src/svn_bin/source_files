@@ -116,6 +116,7 @@ if ($ARGV[0] eq "-dbio-only")
     push @files, get_svn_norecursive  "./src/third_party_builtin";
     push @files, get_svn_recursive    "./src/third_party_builtin/bilib";
     push @files, get_svn_recursive    "./src/third_party_builtin/bow";
+    push @files, get_svn_recursive    "./src/osxfixup";
 }
 else
 {
@@ -151,6 +152,7 @@ else
     push @files, get_svn_recursive    "./src/third_party_builtin";
     push @files, get_svn_recursive    "./src/resources";
     push @files, get_norecursive      "./src/SVN_REVISION";
+    push @files, get_svn_recursive    "./src/osxfixup";
 
     if  (-d "data")
     {
