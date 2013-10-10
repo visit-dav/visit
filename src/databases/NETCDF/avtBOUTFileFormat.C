@@ -58,7 +58,9 @@
 
 #include <string.h>
 
-#define BAD_FILE 0
+#if 0
+#define ALLOW_BAD_FILE 1
+#endif
 
 static int mz = 65;
 
@@ -87,7 +89,7 @@ avtBOUTFileFormat::Identify(NETCDFFileObject *fileObject)
 {
     bool     isBOUT = false;
 
-#ifdef BAD_FILE
+#ifdef ALLOW_BAD_FILE
     isBOUT = true;
 #else
     TypeEnum t = NO_TYPE;
@@ -365,7 +367,7 @@ avtBOUTFileFormat::ReadTimes()
         }
         else
         {
-#ifdef BAD_FILE
+#ifdef ALLOW_BAD_FILE
             for (int i = 0; i < 264; ++i)
                 times.push_back(float(i));
 #endif
@@ -486,7 +488,7 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     else
     {
-#ifdef BAD_FILE
+#ifdef ALLOW_BAD_FILE
         zperiod = 8;
 #endif
         debug4 << mName << "error reading zperiod" << endl;
@@ -782,7 +784,7 @@ avtBOUTFileFormat::ReadMesh()
     }
     else
     {
-#ifdef BAD_FILE
+#ifdef ALLOW_BAD_FILE
         char *gridname = new char[strlen("D3D_144382.02510_x516y64_psi080to120mer.nc")+1];
         strcpy(gridname, "D3D_144382.02510_x516y64_psi080to120mer.nc");
         meshFile = new NETCDFFileObject((char*)gridname);
