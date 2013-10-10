@@ -40,7 +40,7 @@
 #define NEK5000_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(nek5000_interp_EXPORTS))
+#if defined(nek5000_interp_EXPORTS)
 #define NEK5000_API __declspec(dllexport)
 #else
 #define NEK5000_API __declspec(dllimport)
