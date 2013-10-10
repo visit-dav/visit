@@ -40,6 +40,8 @@
 #include <NETCDFFileObject.h>
 #include <netcdf.h>
 
+#include <algorithm>
+
 #include <avtDatabaseMetaData.h>
 #include <avtMTMDFileFormatInterface.h>
 #include <avtGhostData.h>
@@ -667,9 +669,9 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
             double theta  = zShift[ipt1];
             double theta2 = zShift[ipt2];
             double delta  = fabs(theta2 - theta);
-            maxDeltaAngle = fmax(maxDeltaAngle, delta);
+            maxDeltaAngle = std::max(maxDeltaAngle, delta);
         }
-        jnrep[j] = fmax(fmin(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.),6.);
+        jnrep[j] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.),6.);
     }
 
     for (int i = istart; i < iend - 1; ++i)
@@ -682,9 +684,9 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
             double theta  = zShift[ipt1];
             double theta2 = zShift[ipt2];
             double delta  = fabs(theta2 - theta);
-            maxDeltaAngle = fmax(maxDeltaAngle, delta);
+            maxDeltaAngle = std::max(maxDeltaAngle, delta);
         }
-        inrep[i-istart] = fmin(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.);
+        inrep[i-istart] = std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.);
     }
 
 #if 0
@@ -911,9 +913,9 @@ avtBOUTFileFormat::ReadMesh()
         // Adjust the replication factors of the different grids where
         // they meet at the center so that they all match.
         //
-        int nxMax = int(fmax(subgrid[1].jnrep[jyseps1_1],
+        int nxMax = int(std::max(subgrid[1].jnrep[jyseps1_1],
                              subgrid[1].jnrep[jyseps2_2]));
-        int nyMax = int(fmax(subgrid[0].jnrep[jyseps1_1],
+        int nyMax = int(std::max(subgrid[0].jnrep[jyseps1_1],
                              subgrid[2].jnrep[subgrid[2].nyIn-2]));
 
         subgrid[1].nyOut += (nxMax - subgrid[1].jnrep[jyseps1_1]) +
