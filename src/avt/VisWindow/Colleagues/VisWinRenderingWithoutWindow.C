@@ -112,8 +112,8 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     //
     renWin = vtkRenderWindow::New();
 #ifdef EXTERNAL_VTK_BUILD
-    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow")
-    if(std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow")
+    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow" || 
+       std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow")
         renWin->OffScreenRenderingOn();
 #else
         renWin->OffScreenRenderingOn();
