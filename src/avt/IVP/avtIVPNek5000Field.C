@@ -44,6 +44,8 @@
 
 #include "avtIVPNek5000Field.h"
 
+#include <limits>
+
 #include <DebugStream.h>
 
 #include <vtkCellData.h>
