@@ -22,10 +22,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
-  <li><a href="#Expression_changes">Changes to expressions</a></li>
-  <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
-  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
@@ -33,30 +30,21 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.7</font></b></p>
 <ul>
   <li>VisIt's movie scripting has been updated to use the movie encoder logic present in the visit_utiles module. This brings support for additional movie formats.</li>
-  <li>An option was added allowing specification of floating point precision to be used by the execution pipeline. Accessible in GUI via <i>Controls->Preferences</i>.  From the cli, <i>SetPrecisionType(arg)</i> where 'arg' is one of: 0 or "float", 1 or "native", 2 or "double".  The default is 'native', meaning VisIt will attempt to use the same precision that the reader serves up.</li>
-  <li>An option was added to save the current session at exit and restore that session on start up. This needs to be enabled in the GUI via <i>Controls->Preferences</i> and checking the "Restore session on startup" option under the "Session files" section. The default is not to restore the last session.</li>
-  <li></li>
-  <li></li>
+  <li>An option was added to allow the user to specificy the floating point precision to be used by VisIt. It is accessible in the graphical user interface via <i>Controls->Preferences</i>.  From the command line interface, the <i>SetPrecisionType(arg)</i> function is used to specify the precision. The argument is one of the following values: 0 or "float", 1 or "native", 2 or "double".  The default is 'native', meaning VisIt will attempt to use the same precision that the reader serves up.</li>
+  <li>An option was added to allow the user to save the current session at exit and restore that session on start up. This can be enabled in the graphical user interface via <i>Controls->Preferences</i> and checking the "Restore session on startup" option under the "Session files" section. The default is not to restore the last session.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.7</font></b></p>
 <ul>
   <li>The DataBinning operator now automatically discards bins that have no data when creating curves.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="GUI_Changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 2.7</font></b></p>
 <ul>
   <li>Active operators shown in expanded plot list entries are now highlighted only when their plot is selected or when the <i>Apply operators to all plots</i> check box is checked. This cuts down on visual clutter for plots that are not selected.</li>
-  <li>If a user has edited the plot description in the plot list that description will be used in the plot's legend instead of the basic plot name.</li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>When a user has edited the plot description in the plot list that description will be used in the plot's legend instead of the basic plot name.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -64,9 +52,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The PFLOTRAN reader now supports unstructured PFLOTRAN grid files.</li>
   <li>Exporting of WavefrontOBJ files is now supported in both serial, and parallel.</li>
-  <li>Reading and exporting of PLY files is now supported in both serial, and parallel. Additionaly, PLY files may be exported using a colormap to export out colors.</li>
+  <li>Reading and exporting of PLY files is now supported in both serial, and parallel. Additionaly, PLY files may be exported using a colormap to export colors.</li>
   <li>Reading GMV files that encoded polygons in a general cell now works.</li>
-  <li>Added a GHOST (Geophysical High Order Suite for Turbulence) file format reader.</li>
+  <li>Added a reader for GHOST (Geophysical High Order Suite for Turbulence) files.</li>
   <li>The OpenFOAM reader has been updated to support newer OpenFOAM conventions, including Lagrangian clouds and multi-region data. Sub-meshes are now presented separately, instead of as selectable subsets together with internalMesh, to reduce duplication of plotted data. The are three File Open options:
   <ul>
        <li>Case Type: <i>Reconstructed (default) or Decomposed</i></li>
@@ -77,6 +65,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <p><b>NOTE:</b>  Boundary Field names specified by regular expressions is currently not supported.</p>
   </li>
   <li>The ExodusII reader now handles quadratic cell types, and correctly handles 2-component vectors defined on 3D meshes.</li>
+  <li>Added a reader for BOUT++ files.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -84,9 +73,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Several plots have been enhanced with additional glyph types: <i>Octahedron, Tetrahedron, Sphere Geometry</i>. The <i>Sphere Geometry</i> glyph provides a geometry-based sphere that can be scaled by a variable, whereas the original <i>Sphere</i> glyph is pixel-based.</li>
   <li>The MultiCurve plot was enhanced to allow the user to specify the marker scale and marker line width.</li>
-  <li>The Curve plot has been enhanced so under the curve can optionally be filled with color or a gradient.</li>
+  <li>The Curve plot has been enhanced so that the area under the curve can optionally be filled with color or a gradient.</li>
   <li>The Curve plot has been enhanced to support curves specified in polar coordinates. There is now an option to have the curve converted from polar to cartesian, and options to specify the units (Radians or Degrees) and coordinate ordering (R-theta or Theta-R).</li>
-  <li></li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -94,61 +82,30 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The Project operator's window was modified to make it's mapping notation more explicit.</li>
   <li>The Box and Cylinder selection operators have an option to do an Inverse selection. </li>
-  <li></li>
-  <li></li>
-</ul>
-
-<a name="Expression_changes"></a>
-<p><b><font size="4">Changes to VisIt's expression language in version 2.7</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-</ul>
-
-<a name="Query_changes"></a>
-<p><b><font size="4">Changes to VisIt's picks and queries in version 2.7</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.7</font></b></p>
 <ul>
-  <li>Connections to libsim-enabled simulations on remote systems cannot be made via ssh tunneling.</li>
-  <li>Lineout does not work on operator-created variables such as those created via the DataBinning operator.</li>
-  <li>Windows installer doesn't always show the host-profiles selections.</li>
+  <li>Connections to libsim-enabled simulations on remote systems can now be made via ssh tunneling.</li>
+  <li>Lineout now works on operator-created variables such as those created via the DataBinning operator.</li>
+  <li>The Windows installer will now always show the host-profiles selections.</li>
   <li>A bug in the exporting of STL files in parallel was fixed.</li>
-  <li>CMFE expressions involving virtual database specifications, and saved in VisIt settings would not load properly.</li>
-  <li>CMFE expressions created via the Data-Level Comparisons window would crashe the engine on Windows.</li>
-  <li>VisIt could not plot an expression when switching active sources.</li>
-  <li>CMFE containing expressions from a donor database could not be plotted.</li>
+  <li>CMFE expressions involving virtual database specifications, and saved in VisIt settings now load properly.</li>
+  <li>CMFE expressions created via the Data-Level Comparisons window no longer crash the engine on Windows.</li>
+  <li>VisIt can now plot an expression when switching active sources.</li>
+  <li>CMFE containing expressions from a donor database can now be plotted.</li>
   <li>Multiple CMFE expressions can now be used simultaneously.  This functionality was previously available, but it would occasionally lead to internal errors were one of the CMFE expressions was used in the place of others (due to name collision).</li>
-  <li>Time-derivative expressions containing compound variables (eg <i>mesh/ireg</i>) could not be plotted.</li>
+  <li>Time-derivative expressions containing compound variables (eg <i>mesh/ireg</i>) can now be plotted.</li>
   <li>A bug that caused the clipping of double precision structured grids to return zero cells was corrected.</li>
-  <li>Windows version can now handle compressed images sent from a remote engine.</li>
-  <li>Fixed double-precision data issues in Silo writer.</li>
-</ul>
-  
-<a name="Config_changes"></a>
-<p><b><font size="4">Changes to configuration files in version 2.7</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>The Windows version can now handle compressed images sent from a remote engine.</li>
+  <li>Several double-precision data issues were corrected in the Silo writer.</li>
 </ul>
   
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.7</font></b></p>
 <ul>
+  <li>VisIt was modified to work with the publicly released version of VTK-6.0 instead of the patched version of VTK-5.8 we had been using.</li>
   <li>Third party library locations normally set in a config-site file can be overriden by modifying the CMakeCache.txt file and re-running cmake.  Any changes to the config-site file after first cmake run will still take precedence.</li>
   <li>Added "-apitrace <component> " debugging option.  Default arguments are "--api gl".  On Windows, the location of apitrace is found through an APITRACE_EXE environment variable.</li>
   <li>xml2cmake now supports conditional logic when specified in a plugin's code file. The code file would look like this:
@@ -162,7 +119,7 @@ enhancements and bug-fixes that were added to this release.</p>
        VLinkLibraries: ${NETCDF_LIB}
        ESources: avtSpecialNetcdfFilter.C
        VSources: avtSpecialNetcdfFilter.C</pre>
-    "Condition:" is required, and is what you would put in CMake's IF macro. The rest are the options dependent upon the Condition. Not all options are represented in the example, nor are all options required to be listed.
+   <p>"Condition:" is required, and is what you would put in CMake's IF macro. The rest of the options depend upon the Condition. Not all of the options are represented in the example, nor are all of the options required to be listed.</p>
 </li>
   <li>xml2cmake was enhanced to suport 'Code' keywords if it is the target.
   <pre>
@@ -170,12 +127,11 @@ enhancements and bug-fixes that were added to this release.</p>
        Code: AddSubdir
        Prefix:
        Postfix: ADD_SUBDIRECORTY(./extra_code_dir) </pre>
-   The name is not used, only what is placed in Prefix and/or Postfix.
+  <p>The name is not used, only what is placed in Prefix and/or Postfix.</p>
   </li>
-  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href="relnotes2.6.2.html">VisIt 2.6.2 Release Notes</a>.</p>
+of VisIt: <a href="relnotes2.6.3.html">VisIt 2.6.3 Release Notes</a>.</p>
 </body>
 </html>
