@@ -360,7 +360,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
 
     QComboBox *displayMethod;
     QCheckBox *tubeRadiusVary;
-    QComboBox *tubeRadiusVaryMethod;
     QLabel    *tubeRadiusVaryVariableLabel, *tubeRadiusVaryFactorLabel;
     QvisVariableButton *tubeRadiusVaryVariable;
     QLineEdit *tubeRadiusVaryFactorEdit;
