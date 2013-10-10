@@ -3025,6 +3025,8 @@ QvisIntegralCurveWindow::deletePoints()
 void
 QvisIntegralCurveWindow::readPoints()
 {
+    QListWidgetItem *item = NULL;
+
     QString res = QFileDialog::getOpenFileName(NULL, tr("Open text file"), ".");
     std::string filename = res.toLatin1().data();
 
@@ -3052,13 +3054,15 @@ QvisIntegralCurveWindow::readPoints()
         {
             char vals[256];
             sprintf(vals, "%f %f %f", x,y,z);
-            QListWidgetItem *item = new QListWidgetItem(vals, pointList);
+            item = new QListWidgetItem(vals, pointList);
             item->setFlags(item->flags() | Qt::ItemIsEditable);
-            pointList->setCurrentItem(item);
         }
     }
 
     f.close();
+
+    if( item )
+      pointList->setCurrentItem(item);
 }
 
 void

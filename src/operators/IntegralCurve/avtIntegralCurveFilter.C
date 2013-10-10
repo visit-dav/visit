@@ -2317,7 +2317,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
         float theta = 0.0, prevT = 0.0;
 
-        //cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
+        // std::cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
 
         avtStateRecorderIntegralCurve::Sample s = ic->GetSample(0);
 
@@ -2415,7 +2415,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 break;
             }
 
-            std::cerr <<  data_value << std::endl;
+            // std::cerr <<  data_value << std::endl;
 
             scalars->InsertTuple1(pIdx, data_value);
 
