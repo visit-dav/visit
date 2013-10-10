@@ -170,6 +170,9 @@
 //    Brad Whitlock, Wed Sep 25 13:22:27 PDT 2013
 //    Get splashscreen from resources.
 //
+//    Eric Brugger, Wed Oct  9 14:25:58 PDT 2013
+//    Changed the date on the splash screen to October 2013.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -290,7 +293,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 12;
+    int currentMonth = 10;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2013", this));
 
