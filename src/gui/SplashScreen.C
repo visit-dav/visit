@@ -52,8 +52,21 @@
 #include <InstallationFunctions.h>
 #include <ConfigureInfo.h>
 
+#define MULTIPLE_IMAGES
 #define TIMER_DURATION 2*1000     // 2 seconds
+
+//
+// Include splashscreen images
+//
+#include <icons/VisIt1.xpm>
+#ifdef MULTIPLE_IMAGES
+#include <icons/VisIt2.xpm>
+#include <icons/VisIt3.xpm>
+#include <icons/VisIt4.xpm>
 #define NUM_PIX 4
+#else
+#define NUM_PIX 1
+#endif
 
 // ****************************************************************************
 //  Method: SplashScreen::SplashScreen
@@ -167,15 +180,13 @@
 //    Eric Brugger, Wed Jul 10 10:56:47 PDT 2013
 //    Changed the date on the splash screen to July 2013.
 //
-//    Brad Whitlock, Wed Sep 25 13:22:27 PDT 2013
-//    Get splashscreen from resources.
-//
 //    Eric Brugger, Wed Oct  9 14:25:58 PDT 2013
 //    Changed the date on the splash screen to October 2013.
 //
 // ****************************************************************************
 
-SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
+SplashScreen::SplashScreen(bool cyclePictures) 
+: QFrame(0, Qt::SplashScreen)
 {
 #ifdef Q_WS_MACX
     setWindowModality(Qt::WindowModal);
@@ -210,14 +221,15 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
     int firstPicture = seconds % NUM_PIX;
     curPicture = cyclePictures ? firstPicture : 0;
     if(firstPicture == 0 || cyclePictures)
-         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt1.png").c_str()));
+         pictures.push_back(QPixmap(VisIt1_xpm));
+#ifdef MULTIPLE_IMAGES
     if(firstPicture == 1 || cyclePictures)
-         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt2.png").c_str()));
+         pictures.push_back(QPixmap(VisIt2_xpm));
     if(firstPicture == 2 || cyclePictures)
-         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt3.png").c_str()));
+         pictures.push_back(QPixmap(VisIt3_xpm));
     if(firstPicture == 3 || cyclePictures)
-         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt4.png").c_str()));
-
+         pictures.push_back(QPixmap(VisIt4_xpm));
+#endif
     // If we have more stuff than just a version number in the version
     // string then draw that information onto the splashscreen.
     QString ver;
@@ -276,7 +288,9 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 
     QString versionText;
     versionText.sprintf("VisIt %s, ", visitcommon::Version().c_str());
-    versionText += QString(visitcommon::VersionControlVersionString().c_str());
+    versionText += tr("svn revision");
+    versionText += " ";
+    versionText += QString(visitcommon::SVNVersion().c_str());
 
     // Create a lookup of month names so the internationalization
     // files don't have to change.
