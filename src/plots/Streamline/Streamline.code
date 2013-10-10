@@ -499,4 +499,3 @@ StreamlineAttributes::ProcessOldVersions(DataNode *parentNode,
         parentNode->AddNode(newNode2);
     }
 }
-

@@ -681,7 +681,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
     terminationLayout->addWidget(maxDistance, 2,1);
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // Appearance tab
     // ----------------------------------------------------------------------
     QWidget *appearanceTab = new QWidget(central);
@@ -1552,7 +1552,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             break;
         case StreamlineAttributes::ID_pointList:
             {
+                pointList->blockSignals(true);
+
                 std::vector<double> points = streamAtts->GetPointList();
+
+                QListWidgetItem *item = NULL;
 
                 pointList->clear();
                 for (int i = 0; i < points.size(); i+= 3)
@@ -1562,8 +1566,12 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                     QString str = tmp;
                     QListWidgetItem *item = new QListWidgetItem(str, pointList);
                     item->setFlags(item->flags() | Qt::ItemIsEditable);
-                    pointList->setCurrentItem(item);
                 }
+
+                if( item )
+                  pointList->setCurrentItem(item);
+
+                pointList->blockSignals(false);
 
                 break;
             }
@@ -1673,11 +1681,13 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 tubeSizeType->hide();
                 ribbonSizeType->hide();
                 geomRadiusLabel->hide();
+
                 tubeDisplayDensityLabel->hide();
                 tubeDisplayDensity->hide();
                 tubeRadiusVary->hide();
                 tubeRadiusVaryVariable->hide();
                 tubeRadiusVaryVariableLabel->hide();
+
                 tubeRadiusVaryFactorLabel->hide();
                 tubeRadiusVaryFactorEdit->hide();
             }
@@ -4418,6 +4428,10 @@ QvisStreamlinePlotWindow::deletePoints()
 void
 QvisStreamlinePlotWindow::readPoints()
 {
+    pointList->blockSignals(true);
+
+    QListWidgetItem *item = NULL;
+
     QString res = QFileDialog::getOpenFileName(NULL, tr("Open text file"), ".");
     std::string filename = res.toLatin1().data();
 
@@ -4445,13 +4459,17 @@ QvisStreamlinePlotWindow::readPoints()
         {
             char vals[256];
             sprintf(vals, "%f %f %f", x,y,z);
-            QListWidgetItem *item = new QListWidgetItem(vals, pointList);
+            item = new QListWidgetItem(vals, pointList);
             item->setFlags(item->flags() | Qt::ItemIsEditable);
-            pointList->setCurrentItem(item);
         }
     }
 
     f.close();
+
+    if( item )
+      pointList->setCurrentItem(item);
+
+    pointList->blockSignals(false);
 }
 
 void
