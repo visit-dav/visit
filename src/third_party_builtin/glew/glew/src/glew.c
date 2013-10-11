@@ -108,10 +108,6 @@ void* dlGetProcAddressVisIt (const GLubyte* name)
         return NULL;
 
     gpa = dlsym(h, "glXGetProcAddress");
-    if(gpa != NULL)
-    {
-        printf("glXGetProcAddress\n");
-    }
 
     if(gpa == NULL)
     {
@@ -119,7 +115,6 @@ void* dlGetProcAddressVisIt (const GLubyte* name)
         if(gpa != NULL)
         {
             using_osmesa = 1;
-            printf("OSMesaGetProcAddress\n");
         }
     }
   }
