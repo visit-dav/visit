@@ -1,186 +1,182 @@
+##############################################################################
+#
+# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+# Produced at the Lawrence Livermore National Laboratory
+# LLNL-CODE-442911
+# All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or other materials provided with the distribution.
+#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+#    be used to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#
+#############################################################################
+
 import os
 import sys
+import stat
 import subprocess
+import fnmatch
 
-if len(sys.argv) < 2:
-    print "arguments are osxfixup.py <dir-name> [rpath] [verbose]"
-    pass
+from os.path import join as pjoin
 
-verbose = int(sys.argv[3]) if len(sys.argv) > 3 else 0
+def find_matches(sdir,pattern):
+    """
+    Walk sdir and find all files and dirs the match given pattern.
+    """
+    matches = []
+    for root, dirs, files in os.walk(sdir):
+        all = []
+        all.extend(dirs)
+        all.extend(files)
+        for item in fnmatch.filter(all, pattern):
+            matches.append(os.path.join(root, item))
+    return matches
 
-#if new path is blank it will apply to full path..
-
-# new_path is the prefix to the new path. For example: @executable_path/../
-new_path = sys.argv[2] if len(sys.argv) > 2 else ""
-
-print verbose, new_path
-prefix_path = sys.argv[1] #should normally be the darwin-x86_64 directory, but not necessary
-
-if not os.path.exists(sys.argv[1]):
-    print sys.argv[1],"does not exist"
-    pass
-
-prefix_path = os.path.abspath(prefix_path) 
-prefix_bin_path = os.path.join(prefix_path, "bin") 
+def real_lib(lib):
+    """
+    Returns the proper dylib name, needed to handle frameworks.
+    """
+    if lib.endswith(".framework"):
+        lbase = os.path.split(lib)[1]
+        lbase = lbase[:lbase.find(".framework")]
+        lib = pjoin(lib,lbase)
+    return lib    
 
 
-def log(verbosity, message):
-    if verbosity <= verbose: print message
+def find_libs(sdir):
+    """
+    Find all libs we need to modify.
+    """
+    lib_names = []
+    lib_maps  = {}
+    libs = []
+    libs.extend(find_matches(sdir,"*.framework"))
+    libs.extend(find_matches(sdir,"*.dylib"))
+    libs.extend(find_matches(sdir,"*.so"))
+    for lib in libs:
+        full_lib = real_lib(lib)
+        lib_basename = os.path.basename(full_lib)
+        lib_names.append(full_lib)
+        #if lib_basename in lib_maps:
+        #    print "warning: ", lib_basename,"has multiple mappings old:",
+        #    print lib_maps[lib_basename],"new:", lib
+        lib_maps[lib_basename] = full_lib.replace(sdir,"")   
+    return lib_names,lib_maps
 
-#####################################################
+def find_exes(sdir):
+    """
+    Walk sdir and find all exes.
+    """
+    exes = []
+    exe_flags = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+    for root, dirs, files in os.walk(sdir):
+        for fname in  files:
+          fname = pjoin(root,fname)
+          st = os.stat(fname)
+          mode = st.st_mode
+          if mode & exe_flags:
+              # check with otool that this is an exe and not a script
+              chk_cmd = "file {0}"
+              chk = subprocess.check_output(chk_cmd.format(fname), shell=True)
+              if chk.count("executable") >= 1:
+                  exes.append(fname)
+    return exes
 
-# Generate library map and convert ids of libraries
-
-#####################################################
-
-def generate_libs(libnames, libmaps):
-    global new_path
-
-    #add frameworks..
-    frameworks = subprocess.check_output("find {} -name \"*.framework\"".format(prefix_path), shell=True)
-    frameworks = frameworks.split("\n")
-
-    #map dylib and so ..
-    #assume framework library is right after the path..
-    for i,fwork in enumerate(frameworks):
-        if len(fwork) == 0: continue
-        fwork_basename = os.path.splitext(os.path.basename(fwork))[0]
-
-        fwork = os.path.join(fwork, fwork_basename)
-        frameworks[i] = fwork
-
-        if len(new_path) == 0:
-            libmaps[fwork_basename] = frameworks[i]
-            continue
-
-        fwork = fwork.replace(prefix_path,"")
-
-        if fwork_basename in libmaps:
-            print "warning: ", fwork_basename,"has multiple old:",libmaps[fwork_basename],"new:", fwork
-
-        libmaps[fwork_basename] = fwork
-        
-
-    libs = subprocess.check_output("find {} -name \"*.dylib*\" -or -name \"*.so*\"".format(prefix_path), shell=True)
-    libs = libs.split("\n")
-
-    for i,lib in enumerate(libs) :
-        if len(lib) == 0: continue
-
-        bname = os.path.basename(lib)
-        if len(new_path) == 0:
-            libmaps[bname] = libs[i]
-            continue
-
-        lib = lib.replace(prefix_path,"")
-
-        #create map...
-        if bname in libmaps:
-            print "warning: ", bname,"has multiple old:",libmaps[bname],"new:",lib
-
-        libmaps[bname] = lib
-
-    libnames.extend(frameworks)
-    libnames.extend(libs)
-
-####################################
-
-# fixup libraries to new location
-
-####################################
-
-def fixup(libnames, libmaps):
-    global new_path
-
-    for lib in libnames :
-        if len(lib) == 0: continue
-
-        bname = os.path.basename(lib)
-        log(1,bname)
-
-        #only change ids if it is not a symlinked file..
-        idcmd = ""
-        idcmd2 = ""
-
+def fixup_items(items,lib_maps,prefix_path):
+    """
+    fixup libs / exes with the proper paths.
+    """
+    exe_rpaths = ["@executable_path/..", # standard exe
+                  "@executable_path/../../../.." # bundle
+                  ]
+    for item in items:
+        item_base = os.path.basename(item)
+       
         #evaluating symlinks causes add_rpath errors for duplication
         #not evaluating it skips frameworks..
         #for now I am okay with duplication error
-        #if not os.path.islink(lib):
-        if len(new_path) == 0:
-            idcmd  = "install_name_tool -id {0} {1}".format(lib, lib)
-        elif bname in libmaps:
-            idcmd  = "install_name_tool -id @rpath/{0} {1}".format(libmaps[bname], lib)
-            idcmd2  = "install_name_tool -add_rpath {0} {1} 2>&1".format(new_path, lib)
+        #if os.path.islink(lib):             continue
+        
+        id_cmd = "install_name_tool -id @rpath{0} {1}"
+        if item_base in lib_maps.keys():
+            id_cmd  = id_cmd.format(lib_maps[item_base], item)
         else:
-            idcmd = "install_name_tool -id @rpath/{0} {1}".format(lib.replace(prefix_path,""), lib)    
-            idcmd2  = "install_name_tool -add_rpath {0} {1} 2>&1".format(new_path, lib)
+            id_cmd  =  id_cmd.format(item.replace(prefix_path,""), item) 
+        subprocess.call(id_cmd,shell=True)
 
-        log(2,idcmd)
-        os.system(idcmd)
-
-        if len(idcmd2) > 0:
-            log(2,idcmd2)
-            os.system(idcmd2)
-
-        dependencies = subprocess.check_output("otool -L {0}".format(lib), shell=True)
-        dependencies = dependencies.split("\n")
-    
-        for dep in dependencies[1:]:
-            if len(dep) == 0: continue
-
-            dep = dep.strip()
+        deps_cmd = "otool -L {0}"
+        dependencies = subprocess.check_output(deps_cmd.format(item), shell=True)
+        dependencies = [ d for d in dependencies.split("\n")[1:] if d.strip() != ""]
+        
+        rpath_base_cmd =  "install_name_tool -add_rpath {0} {1} 2>&1"
+        
+        # if we have an exe exe_rpaths[0]
+        # if we have a bundle exe_rpaths[1]
+        # it doens't hurt to add both for now
+        rpath_cmds = [rpath_base_cmd.format(rp, item) for rp in exe_rpaths]
+        for rp_cmd in rpath_cmds:
+            subprocess.call(rp_cmd,shell=True)
+        
+        for dep in dependencies:
             index = dep.find(" ")
             if index >= 0: dep = dep[0:index].strip()
-
-            depname = os.path.basename(dep)
+            dep_base = os.path.basename(dep)
 
             #sometimes dependencies can have extensions, find the appropriate one..
-            if depname not in libmaps:
-                tdep = os.path.splitext(depname)
+            if dep_base not in lib_maps:
+                tdep = os.path.splitext(dep_base)
                 while tdep[1] != '':
-                    if tdep[0] in libmaps:
-                        depname = tdep[0]
+                    if tdep[0] in lib_maps:
+                        dep_base = tdep[0]
                         break
                     tdep = os.path.splitext(tdep[0])
-            if depname in libmaps:
-                log(1, "\t" + depname)
-                depcmd = "install_name_tool "
-                if len(new_path) == 0:
-                    depcmd += "-change {0} {1} {2}".format(dep,libmaps[depname],lib)
-                else:
-                    depcmd += "-change {0} @rpath/{1} {2}".format(dep,libmaps[depname],lib)
-                log(2, "\t" + depcmd)
-                os.system(depcmd)
-    
-##########################################################
+            if dep_base in lib_maps:
+                dep_cmd = "install_name_tool -change {0} @rpath{1} {2}"
+                dep_cmd = dep_cmd.format(dep,lib_maps[dep_base],item)
+                subprocess.call(dep_cmd,shell=True)
 
-# convert executable (for now convert the bin directory)
+def main():
+    prefix_path = "darwin-x86_64"
+    if len(sys.argv) > 1:
+        prefix_path = sys.argv[1]
+    prefix_path = os.path.abspath(prefix_path) 
+    print "[Finding libraries @ %s]" % prefix_path
+    lib_names,lib_maps = find_libs(prefix_path)
+    print "[Found %d libraries]" % len(lib_names)
+    print "[Finding executables @ %s]" % prefix_path
+    exe_names = find_exes(prefix_path)
+    print "[Found %d executables]" % len(exe_names)
+    print "[Fixing Libraries...]"
+    fixup_items(lib_names,lib_maps,prefix_path)
+    print "[Fixing Executables...]"
+    fixup_items(exe_names,lib_maps,prefix_path)
 
-##########################################################
 
-def generate_exelist(exelist):
-    if not os.path.exists(prefix_bin_path):
-        return
+if __name__ == "__main__":
+    main()
 
-    execnames = subprocess.check_output("find {} -perm -u+x ! -type d -exec file {{}} \; | grep executable | grep -v text".format(prefix_bin_path), shell=True)
-    execnames = execnames.split("\n")
-
-    for exe in execnames:
-        exe = exe[0:exe.find(":")]
-        exelist.append(exe)
-
-libnames = []
-libmaps = {}
-exelist = []
-
-print "Generating Library Names..."
-generate_libs(libnames, libmaps)
-
-print "Collecting executable list..."
-generate_exelist(exelist)
-
-print "Fixing Libraries..."
-fixup(libnames, libmaps)
-
-print "Fixing Executables..."
-fixup(exelist, libmaps)
