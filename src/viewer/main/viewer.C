@@ -45,6 +45,7 @@
 #include <cstdlib>
 
 #include <qapplication.h>
+#include <QStringList.h>
 
 #include <VisItViewer.h>
 #include <AppearanceAttributes.h>
@@ -128,6 +129,10 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 //    Add two new Qt arguments, to tell Qt the application name.  Patch from
 //    Andreas Kloeckner, I modified it to use strdup().
 //
+//    Cyrus Harrison, Fri Oct 11 15:40:29 PDT 2013
+//    Clear any static lib paths (QCoreApplication::libraryPaths) to avoid conflicts with
+//    loading qt after a make install or make package
+//
 // ****************************************************************************
 
 int
@@ -143,6 +148,10 @@ ViewerMain(int argc, char *argv[])
 
     TRY
     {
+        // clear any static lib paths to avoid conflicts with
+        // loading qt after a make install or make package
+        QStringList empty;
+        QCoreApplication::setLibraryPaths(empty); 
         //
         // Create the viewer.
         //

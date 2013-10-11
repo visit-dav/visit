@@ -41,6 +41,8 @@
 #include <QvisGUIApplication.h>
 #include <VisItInit.h>
 #include <visit-config.h>
+#include <QDebug>
+#include <QApplication>
 
 // ****************************************************************************
 //  Function: GUIMain
@@ -86,6 +88,10 @@
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
 //
+//    Cyrus Harrison, Fri Oct 11 15:40:29 PDT 2013
+//    Clear any static lib paths (QCoreApplication::libraryPaths) to avoid conflicts with
+//    loading qt after a make install or make package
+//
 // ****************************************************************************
 
 int
@@ -101,9 +107,13 @@ GUIMain(int argc, char **argv)
 
         TRY
         {
+            // clear any static lib paths to avoid conflicts with
+            // loading qt after a make install or make package
+            QStringList empty;
+            QCoreApplication::setLibraryPaths(empty); 
+
             // Create the application instance.
             QvisGUIApplication VisitGUI(argc, argv);
-
             // Execute the GUI and return its return code.
             retval = VisitGUI.Exec();
         }
