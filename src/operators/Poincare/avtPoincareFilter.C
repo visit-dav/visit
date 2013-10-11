@@ -2406,7 +2406,8 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         // because it was terminated rather having a normal finish. So
         // regardless of the analysis terminate the fieldline analysis
         // because additional integration steps are not possible.
-        if( poincare_ic->status.Terminated())
+        if( poincare_ic->status.Terminated() &&
+            !poincare_ic->TerminatedBecauseOfMaxIntersections() )
         {
           poincare_ic->properties.nPuncturesNeeded = 0;
           poincare_ic->properties.analysisState =
@@ -2421,6 +2422,8 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         else if( poincare_ic->properties.analysisState ==
                  FieldlineProperties::ADDING_POINTS )
         {
+          poincare_ic->status.ClearTerminationMet();
+      
           // Do not add more points than the user specified.
           if( poincare_ic->properties.nPuncturesNeeded > maxPunctures )
             poincare_ic->properties.nPuncturesNeeded = maxPunctures;
@@ -2453,6 +2456,8 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         else if( poincare_ic->properties.analysisState ==
                  FieldlineProperties::ADD_O_POINTS )
         {
+          poincare_ic->status.ClearTerminationMet();
+
           // Make sure more analysis is done in the poincare filter
           // once O point seeds are added to the queue.
           analysisComplete = false;
@@ -2465,6 +2470,8 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
                  properties.searchState ==
                  FieldlineProperties::ISLAND_BOUNDARY_SEARCH )
         {
+          poincare_ic->status.ClearTerminationMet();
+
           // Make sure more analysis is done in the poincare filter
           // once boundary seed points are added to the queue.
           analysisComplete = false;

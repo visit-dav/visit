@@ -559,47 +559,11 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(OLineAxisFileNameProcessText()));
     OLineAnalysisLayout->addWidget(OLineAxisFileName, 2, 1, 1, 3);
 
-    // Create the overlaps group box.
-    QGroupBox *overlapsGroup = new QGroupBox(secondTab);
-    overlapsGroup->setTitle(tr("Overlaps"));
-    mainLayout->addWidget(overlapsGroup, 8, 0, 1, 3, Qt::AlignTop);
-
-    QGridLayout *overlapsLayout = new QGridLayout(overlapsGroup);
-    overlapsLayout->setMargin(5);
-    overlapsLayout->setSpacing(10);
-
-    overlapsLabel = new QLabel(tr("Overlaping curve sections"), secondTab);
-    overlapsLayout->addWidget(overlapsLabel, 0, 0, Qt::AlignTop);
-    overlaps = new QWidget(secondTab);
-    overlapsButtonGroup= new QButtonGroup(overlaps);
-    QHBoxLayout *overlapTypeLayout = new QHBoxLayout(overlaps);
-    overlapTypeLayout->setMargin(0);
-    overlapTypeLayout->setSpacing(10);
-    QRadioButton *overlapTypeRaw =
-      new QRadioButton(tr("Raw"), overlaps);
-    overlapsButtonGroup->addButton(overlapTypeRaw,0);
-    overlapTypeLayout->addWidget(overlapTypeRaw);
-    QRadioButton *overlapTypeRemove =
-      new QRadioButton(tr("Remove"), overlaps);
-    overlapsButtonGroup->addButton(overlapTypeRemove,1);
-    overlapTypeLayout->addWidget(overlapTypeRemove);
-    QRadioButton *overlapTypeMerge =
-      new QRadioButton(tr("Merge"), overlaps);
-    overlapsButtonGroup->addButton(overlapTypeMerge,2);
-    overlapTypeLayout->addWidget(overlapTypeMerge);
-    QRadioButton *overlapTypeSmooth =
-      new QRadioButton(tr("Smooth"), overlaps);
-    overlapsButtonGroup->addButton(overlapTypeSmooth,3);
-    overlapTypeLayout->addWidget(overlapTypeSmooth);
-    connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(overlapsChanged(int)));
-    overlapsLayout->addWidget(overlaps, 0, 1, Qt::AlignTop);
-
 
     // Create the options group box.
     QGroupBox *analysisOptionsGroup = new QGroupBox(secondTab);
     analysisOptionsGroup->setTitle(tr("Options"));
-    mainLayout->addWidget(analysisOptionsGroup, 9, 0, 1, 3, Qt::AlignTop);
+    mainLayout->addWidget(analysisOptionsGroup, 8, 0, 2, 3, Qt::AlignTop);
 
     QGridLayout *analysisOptionsLayout = new QGridLayout(analysisOptionsGroup);
     analysisOptionsLayout->setMargin(5);
@@ -811,10 +775,47 @@ QvisPoincarePlotWindow::CreateWindowContents()
     displayLayout->addWidget(adjustPlane, 1, 3);
 
 
-   // Create the options group box.
+    // Create the overlaps group box.
+    QGroupBox *overlapsGroup = new QGroupBox(thirdTab);
+    overlapsGroup->setTitle(tr("Overlaps"));
+    mainLayout->addWidget(overlapsGroup, 3, 0);
+
+    QGridLayout *overlapsLayout = new QGridLayout(overlapsGroup);
+    overlapsLayout->setMargin(5);
+    overlapsLayout->setSpacing(10);
+
+    overlapsLabel = new QLabel(tr("Overlaping curve sections"), thirdTab);
+    overlapsLayout->addWidget(overlapsLabel, 0, 0, Qt::AlignTop);
+    overlaps = new QWidget(secondTab);
+    overlapsButtonGroup= new QButtonGroup(overlaps);
+    QHBoxLayout *overlapTypeLayout = new QHBoxLayout(overlaps);
+    overlapTypeLayout->setMargin(0);
+    overlapTypeLayout->setSpacing(10);
+    QRadioButton *overlapTypeRaw =
+      new QRadioButton(tr("Raw"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeRaw,0);
+    overlapTypeLayout->addWidget(overlapTypeRaw);
+    QRadioButton *overlapTypeRemove =
+      new QRadioButton(tr("Remove"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeRemove,1);
+    overlapTypeLayout->addWidget(overlapTypeRemove);
+    QRadioButton *overlapTypeMerge =
+      new QRadioButton(tr("Merge"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeMerge,2);
+    overlapTypeLayout->addWidget(overlapTypeMerge);
+    QRadioButton *overlapTypeSmooth =
+      new QRadioButton(tr("Smooth"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeSmooth,3);
+    overlapTypeLayout->addWidget(overlapTypeSmooth);
+    connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(overlapsChanged(int)));
+    overlapsLayout->addWidget(overlaps, 0, 1, Qt::AlignTop);
+
+
+    // Create the options group box.
     QGroupBox *optionsGroup = new QGroupBox(thirdTab);
     optionsGroup->setTitle(tr("Options"));
-    mainLayout->addWidget(optionsGroup, 3, 0);
+    mainLayout->addWidget(optionsGroup, 4, 0);
 
     QGridLayout *optionsLayout = new QGridLayout(optionsGroup);
     optionsLayout->setMargin(5);
@@ -851,7 +852,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     //
     QGroupBox * miscGroup = new QGroupBox(thirdTab);
     miscGroup->setTitle(tr("Misc"));
-    mainLayout->addWidget(miscGroup, 4, 0);
+    mainLayout->addWidget(miscGroup, 5, 0);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
     miscLayout->setMargin(5);
@@ -2319,15 +2320,11 @@ QvisPoincarePlotWindow::fieldConstantProccessText()
 void
 QvisPoincarePlotWindow::integrationTypeChanged(int val)
 {
-    if(val == 4) // Unused 
-        Apply();
-    
-    else if(val != atts->GetIntegrationType())
+    if(val != atts->GetIntegrationType())
     {
         atts->SetIntegrationType(PoincareAttributes::IntegrationType(val));
         Apply();
     }
-
 }
 
 
