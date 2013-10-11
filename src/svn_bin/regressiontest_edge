@@ -36,6 +36,10 @@
 #   Cyrus Harrison, Wed Aug 15 12:31:00 PDT 2012
 #   Update to use python test suite
 #
+#   Eric Brugger, Fri Oct 11 14:10:51 PDT 2013
+#   Change the path to the cmake used to build visit to the latest 2.8.10.2
+#   version.
+#
 
 
 #
@@ -224,7 +228,7 @@ export PATH=\$PATH:/usr/bin/X11
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/edge83.cmake
 fi
-/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake \
+/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake \
     -DVISIT_CONFIG_SITE=config-site/edge83.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DVISIT_BUILD_ALL_PLUGINS=1 \
