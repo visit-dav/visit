@@ -2423,12 +2423,6 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         volumeAtts->SetResampleTarget(resampleTarget->value());
     }
     
-    // Get the value of the compact support target
-    if(which_widget == VolumeAttributes::ID_compactVariable || doAll)
-    {
-        volumeAtts->SetCompactVariable(compactVariable->text().toStdString());
-    }
-    
     // Get the value of the minimum for the color variable.
     if(which_widget == VolumeAttributes::ID_colorVarMin || doAll)
     {
