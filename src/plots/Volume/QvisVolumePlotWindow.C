@@ -1016,8 +1016,6 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         rendererSamples             = new QDoubleSpinBox(                   rendererSamplesWidget);
         samplingMethodWidget        = new QWidget(                          raycastingGroup);
         samplingMethodLabel         = new QLabel(tr("Sampling method"),     samplingMethodWidget);
-        //QHBoxLayout *smLayout       = new QHBoxLayout(                      samplingMethodWidget);
-        //QGridLayout *smLayout       = new QGridLayout(                      samplingMethodWidget);
         samplingButtonGroup         = new QButtonGroup(                     samplingMethodWidget);
         rasterizationButton         = new QRadioButton(tr("Rasterization"), samplingMethodWidget);
         kernelButton                = new QRadioButton(tr("Kernel Based"),  samplingMethodWidget);
@@ -1042,15 +1040,6 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         sprLayout->addWidget(samplesPerRayLabel);
         sprLayout->addWidget(samplesPerRay,Qt::AlignLeft);
         sprLayout->addStretch(QSizePolicy::Maximum);
-        // smLayout->addWidget(samplingMethodLabel,0,0);
-        // smLayout->addWidget(rasterizationButton,0,1);
-        // smLayout->addWidget(kernelButton,0,2);
-        // smLayout->addWidget(trilinearButton,0,4);
-        //smLayout->addStretch(QSizePolicy::Maximum);
-        // raycastingLayout0->addWidget(samplesPerRayWidget);
-        // raycastingLayout0->addWidget(rendererSamplesWidget);
-        // raycastingLayoutV->addWidget(samplingMethodWidget);
-        //raycastingLayout->addWidget(samplingMethodWidget,0,0,1,6);
         raycastingLayout->addWidget(samplingMethodLabel,0,0);
         raycastingLayout->addWidget(rasterizationButton,0,1);
         raycastingLayout->addWidget(kernelButton,0,2,1,2);
@@ -1284,7 +1273,6 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 
     // Create the rendering method radio buttons.
     this->rendererOptionsLayout = new QVBoxLayout(parent);
-    //<ctc> more of this!
     rendererOptionsLayout->setMargin(5);
     rendererOptionsLayout->setSpacing(5);
 
@@ -2429,6 +2417,18 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Get the value of the resample target
+    if(which_widget == VolumeAttributes::ID_resampleTarget || doAll)
+    {
+        volumeAtts->SetResampleTarget(resampleTarget->value());
+    }
+    
+    // Get the value of the compact support target
+    if(which_widget == VolumeAttributes::ID_compactVariable || doAll)
+    {
+        volumeAtts->SetCompactVariable(compactVariable->text().toStdString());
+    }
+    
     // Get the value of the minimum for the color variable.
     if(which_widget == VolumeAttributes::ID_colorVarMin || doAll)
     {
@@ -2489,6 +2489,18 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Get the number of samples per ray.
+    if(which_widget == VolumeAttributes::ID_samplesPerRay || doAll)
+    {
+        volumeAtts->SetSamplesPerRay(samplesPerRay->value());
+    }
+
+    // Get the number of slices for 3D texturing.
+    if(which_widget == VolumeAttributes::ID_num3DSlices || doAll)
+    {
+        volumeAtts->SetNum3DSlices(num3DSlices->value());
+    }
+
     // Do the skew factor value
     if(which_widget == VolumeAttributes::ID_skewFactor || doAll)
     {
@@ -2503,6 +2515,12 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             Message(msg);
             volumeAtts->SetSkewFactor(volumeAtts->GetSkewFactor());
         }
+    }
+
+    // Get the value of the renderer samples
+    if(which_widget == VolumeAttributes::ID_rendererSamples || doAll)
+    {
+        volumeAtts->SetRendererSamples(rendererSamples->value());
     }
 
     if(which_widget == VolumeAttributes::ID_lowGradientLightingClampValue

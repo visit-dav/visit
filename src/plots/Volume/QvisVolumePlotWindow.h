@@ -263,7 +263,7 @@ private:
     QLineEdit                *colorMax;
     QButtonGroup             *scalingButtons;
     QLineEdit                *skewLineEdit;
-    //QvisVariableButton       *compactVariable;
+    QvisVariableButton       *compactVariable;
     QvisVariableButton       *opacityVariable;
     QCheckBox                *opacityMinToggle;
     QLineEdit                *opacityMin;
@@ -319,11 +319,8 @@ private:
     QRadioButton             *centeredDiffButton;
     QRadioButton             *sobelButton;
     QWidget                  *resampleTargetWidget;
-    //QHBoxLayout              *resampleTargetLayout;
     QLabel                   *resampleTargetLabel;
-    // QLabel                   *compactVarLabel;
     QSpinBox                 *resampleTarget;
-    // QLabel                   *num3DSlicesLabel;
     QSpinBox                 *num3DSlices;
     QWidget                  *samplesPerRayWidget;
     QLabel                   *samplesPerRayLabel;
@@ -345,8 +342,6 @@ private:
     QLabel                   *specPow;
 
     //Sampling group
-    //QGroupBox               *samplingGroup;
-    //QGridLayout             *samplingLayout;
     QGroupBox               *resampleGroup;
     QWidget                 *splattingOptions;
     QVBoxLayout             *splattingGroupLayout;

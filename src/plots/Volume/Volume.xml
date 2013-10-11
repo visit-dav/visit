@@ -188,7 +188,7 @@
         Splatting
       </Field>
       <Field name="gradientType" label="Gradient Type" type="enum" subtype="GradientType">
-        CenteredDifferences
+        SobelOperator
       </Field>
       <Field name="num3DSlices" label="num3DSlices" type="int">
         200
@@ -206,7 +206,7 @@
         Rasterization
       </Field>
       <Field name="rendererSamples" label="Render samples" type="float" enabler="rendererType:SLIVR">
-        2.000000
+        3.000000
       </Field>
       <Field name="transferFunction2DWidgets" label="Transfer function widget list" type="attVector" subtype="TransferFunctionWidget">
       </Field>
@@ -214,7 +214,7 @@
         1
       </Field>
       <Field name="lowGradientLightingReduction" label="lowGradientLightingReduction" type="enum" subtype="LowGradientLightingReduction">
-        Off
+        Lower
       </Field>
       <Field name="lowGradientLightingClampFlag" label="lowGradientLightingClampFlag" type="bool">
         false
