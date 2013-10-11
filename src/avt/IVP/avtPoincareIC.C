@@ -131,7 +131,10 @@ avtPoincareIC::CheckForTermination(avtIVPStep& step, avtIVPField *)
     {
         numIntersections++;
         if (numIntersections >= maxIntersections)
+        {
+            terminatedBecauseOfMaxIntersections = true;
             return true;
+        }
     }
     
     return false;

@@ -225,7 +225,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel    *absTolLabel;
     QCheckBox *forceNodal;
 
-
     QButtonGroup *coordinateButtonGroup;
     QWidget      *analysis;
     QButtonGroup *analysisButtonGroup;

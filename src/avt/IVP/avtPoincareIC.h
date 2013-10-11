@@ -321,16 +321,20 @@ public:
     avtPoincareIC( const avtPoincareIC& );
     avtPoincareIC& operator=( const avtPoincareIC& );
     
-    bool      IntersectPlane(const avtVector &p0, const avtVector &p1);
+    bool         IntersectPlane(const avtVector &p0, const avtVector &p1);
 
   public:
     virtual bool CheckForTermination(avtIVPStep& step, avtIVPField *);
+
+    bool         TerminatedBecauseOfMaxIntersections(void) 
+                            { return terminatedBecauseOfMaxIntersections; };
 
     // Intersection points.
     bool   intersectionsSet;
     int    maxIntersections;
     int    numIntersections;
     double intersectPlaneEq[4]; // Typically the Y=0 plane i.e. 0, 1, 0
+    bool   terminatedBecauseOfMaxIntersections;
 
     // These are the fieldline points as stripped out of the IC
     // proper.  They are stored here for convience so the analysis can
