@@ -603,7 +603,7 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
 
   unsigned int max_groups = stats.size() / max_samples;
   unsigned int mult = 0;
-  double minPercent = 0.5;
+  double minPercent = 0.6;
 
   std::map< int, int > GCDCount;  
   std::map<int, int>::iterator ic;
@@ -648,7 +648,6 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
           ++cc;
       }
 
-      // Set a 0.75 threshold for now.
       if( minPercent < (double) cc / (double) num_entries)
       {
         // If no previous resonance match take it and quit.
@@ -692,7 +691,6 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
           ++cc;
       }
 
-      // Set a 0.75 threshold for now.
       if( minPercent < (double) cc / (double) num_entries)
       {
         minPercent = (double) cc / (double) num_entries;
@@ -2697,6 +2695,32 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                                    unsigned int OLineToroidalWinding,
                                    std::string OLineAxisFilename )
 {
+  if( ptList.empty() )
+  {
+    fi.type = FieldlineProperties::UNKNOWN_TYPE;
+
+    fi.analysisState = FieldlineProperties::TERMINATED;
+
+    fi.safetyFactor = 0;
+    fi.toroidalWinding = 0;
+    fi.poloidalWinding = 0;
+    fi.poloidalWindingP = 0;
+    fi.toroidalResonance = 0;
+    fi.poloidalResonance = 0;
+    fi.windingPairs.clear();
+    fi.topWindingPairs.clear();
+    fi.windingGroupOffset = 0;
+    fi.islands = 0;
+    fi.islandGroups = 0;
+    fi.nnodes  = 0;
+
+    fi.nPuncturesNeeded  = 0;
+
+    fi.seedPoints.clear();
+
+    return;
+  }
+
   std::vector< Point > poloidal_puncture_pts;
   std::vector< Point > poloidal_puncture_pts2;
   std::vector< Point > ridgeline_points;
@@ -3703,7 +3727,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     }
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
-
 
     // Surface or island so check for the secondary axis case. To date
     // we have seen secondary axis in 1,1 surfaces and islands and in
