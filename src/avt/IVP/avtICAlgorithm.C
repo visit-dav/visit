@@ -349,6 +349,9 @@ avtICAlgorithm::PostExecute()
 //   Rename this method to reflect the new emphasis in particle advection, as
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Mon Oct 14 09:26:24 EDT 2013
+//   Check for empty domain list.
+//
 // ****************************************************************************
 
 void
@@ -360,13 +363,15 @@ avtICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ic)
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=ic.begin(); s != ic.end(); ++s)
     {
-        long long d = (*s)->blockList.front().domain, t = (*s)->blockList.front().timeStep;
-        long long key = (d<<32) + t;
-        key = (*s)->blockList.front().domain;
-        if (DomainLoaded((*s)->blockList.front()))
-            (*s)->sortKey = -key;
+        if (!(*s)->blockList.empty())
+        {
+            if (DomainLoaded((*s)->blockList.front()))
+                (*s)->sortKey = -(*s)->blockList.front().domain;
+            else
+                (*s)->sortKey = (*s)->blockList.front().domain;
+        }
         else
-            (*s)->sortKey = key;
+            (*s)->sortKey = -1;
     }
 
     ic.sort(icDomainCompare);
@@ -396,6 +401,9 @@ avtICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ic)
 //   Rename this method to reflect the new emphasis in particle advection, as
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Mon Oct 14 09:26:24 EDT 2013
+//   Check for empty domain list.
+//
 // ****************************************************************************
 
 void
@@ -407,10 +415,16 @@ avtICAlgorithm::SortIntegralCurves(vector<avtIntegralCurve *> &ic)
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=ic.begin(); s != ic.end(); ++s)
     {
-        if (DomainLoaded((*s)->blockList.front()))
-            (*s)->sortKey = -(*s)->blockList.front().domain;
+        if (!(*s)->blockList.empty())
+        {
+            if (DomainLoaded((*s)->blockList.front()))
+                (*s)->sortKey = -(*s)->blockList.front().domain;
+            else
+                (*s)->sortKey = (*s)->blockList.front().domain;
+        }
         else
-            (*s)->sortKey = (*s)->blockList.front().domain;
+            (*s)->sortKey = -1;
+            
     }
 
     sort(ic.begin(), ic.end(), icDomainCompare);
