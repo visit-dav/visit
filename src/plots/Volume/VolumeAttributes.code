@@ -567,3 +567,50 @@ VolumeViewerPluginInfo::Permits2DViewScaling() const
     return false;
 }
 
+
+Target: xml2python
+Function: VolumeAttributes_SetMaterialProperties
+Declaration: VolumeAttributes_SetMaterialProperties
+Definition:
+
+/*static*/ PyObject *
+VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    double *dvals = obj->data->GetMaterialProperties();
+    if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 4)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the materialProperties in the object as modified.
+    obj->data->SelectMaterialProperties();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
