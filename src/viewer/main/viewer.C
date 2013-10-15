@@ -45,7 +45,7 @@
 #include <cstdlib>
 
 #include <qapplication.h>
-#include <QStringList.h>
+#include <QStringList>
 
 #include <VisItViewer.h>
 #include <AppearanceAttributes.h>
