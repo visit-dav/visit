@@ -81,6 +81,8 @@
 #include <Utility.h>
 #include <DebugStream.h>
 
+#include <stack>
+
 // ****************************************************************************
 //  Method: avtSamplePointExtractor constructor
 //
@@ -169,7 +171,6 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     arbitrator               = NULL;
 
     patchCount = 0;
-    totalAssignedPatches = 0;
 
     rayCastingSLIVR = false;
     lighting = false;
@@ -684,106 +685,85 @@ avtSamplePointExtractor::PostExecute(void)
 void
 avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
 {
-    if (*dt == NULL)
-    {
-        return;
-    }
-    if (dt->GetNChildren() <= 0 && (!(dt->HasData())))
-    {
-        return;
-    }
+    debug5<<"got here!"<<endl;
 
+    //check memory
     unsigned long m_size, m_rss;
     GetMemorySize(m_size, m_rss);
-
     debug5 << PAR_Rank() << " ~ avtSamplePointExtractor::ExecuteTree  .. .  " 
            << "    Memory use before: " << m_size << "  rss (MB): " << m_rss/(1024*1024) << endl;
 
+    //initialize rayCastingSLIVR sampling state
     totalAssignedPatches = dt->GetNChildren();
-
     patchCount = 0;
     imageMetaPatchVector.clear();
     imgDataHashMap.clear();
-    
-    if (rayCastingSLIVR == true)
-        if ((totalAssignedPatches != 0) && (dt->ChildIsPresent(0) && !( *(dt->GetChild(0)) == NULL))){
-        }else
-            totalAssignedPatches = 0;
 
-    for (int i = 0; i < totalAssignedPatches; i++) {
-        if (dt->ChildIsPresent(i) && !( *(dt->GetChild(i)) == NULL))
+    //need to pass the datatree as well as its index in its parent to RasterBasedSample.
+    struct datatree_childindex { 
+        avtDataTree_p dt; int idx; bool visited;
+        datatree_childindex(avtDataTree_p dt_, int idx_) : dt(dt_),idx(idx_),visited(false) {}
+    };
+
+    std::stack<datatree_childindex*> nodes;
+    if (*dt == NULL || (dt->GetNChildren() <= 0 && (!(dt->HasData()))))
+        return;
+
+    //iterative depth-first sampling
+    nodes.push(new datatree_childindex(dt,0));
+    while (!nodes.empty())
+    {
+        datatree_childindex *ci=nodes.top();
+        avtDataTree_p ch=ci->dt;
+
+        if (ch->GetNChildren() != 0)
         {
-            avtDataTree_p child = dt->GetChild(i);
+            nodes.pop();  // if it has children, it never gets processed below
+            for (int i = 0; i < ch->GetNChildren(); i++)
+            {
+                if (ch->ChildIsPresent(i))
+                {
+                    if (*ch == NULL || (ch->GetNChildren() <= 0 && (!(ch->HasData()))))
+                        continue;
+                    nodes.push(new datatree_childindex(ch->GetChild(i),i));
+                }
+            }
 
-            //
-            // Get the dataset for this leaf in the tree.
-            //
-            vtkDataSet *ds = child->GetDataRepresentation().GetDataVTK();
-
-            //
-            // Iterate over all cells in the mesh and call the appropriate 
-            // extractor for each cell to get the sample points.
-            //
-            if (kernelBasedSampling)
-                KernelBasedSample(ds);
-            else
-                RasterBasedSample(ds, i);
-
-            UpdateProgress(10*currentNode+9, 10*totalNodes);
-            currentNode++;
+            continue;
         }
+
+        //do the work
+        nodes.pop();
+
+        if (*ch == NULL || (ch->GetNChildren() <= 0 && (!(ch->HasData()))))
+            continue;
+
+        //
+        // Get the dataset for this leaf in the tree.
+        //
+        vtkDataSet *ds = ch->GetDataRepresentation().GetDataVTK();
+
+        //
+        // Iterate over all cells in the mesh and call the appropriate 
+        // extractor for each cell to get the sample points.
+        //
+        if (kernelBasedSampling)
+            KernelBasedSample(ds);
+        else
+            RasterBasedSample(ds,ci->idx);
+
+        UpdateProgress(10*currentNode+9, 10*totalNodes);
+        currentNode++;
     }
 
+
+    //check memory after
     GetMemorySize(m_size, m_rss);
     debug5 << PAR_Rank() << " ~ Memory use after: " << m_size << "  rss (MB): " << m_rss/(1024*1024)
            <<  "   ... avtSamplePointExtractor::ExecuteTree done@!!!" << endl;
-    
+
+
 }
-
-//
-// Previous recursive equivalent
-//
-// void
-// avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
-// {
-//     if (*dt == NULL)
-//     {
-//         return;
-//     }
-//     if (dt->GetNChildren() <= 0 && (!(dt->HasData())))
-//     {
-//         return;
-//     }
-
-//     if (dt->GetNChildren() != 0)
-//     {
-//         for (int i = 0; i < dt->GetNChildren(); i++)
-//         {
-//             if (dt->ChildIsPresent(i))
-//                 ExecuteTree(dt->GetChild(i));
-//         }
-
-//         return;
-//     }
-
-//     //
-//     // Get the dataset for this leaf in the tree.
-//     //
-//     vtkDataSet *ds = dt->GetDataRepresentation().GetDataVTK();
-
-//     //
-//     // Iterate over all cells in the mesh and call the appropriate 
-//     // extractor for each cell to get the sample points.
-//     //
-//     if (kernelBasedSampling)
-//         KernelBasedSample(ds);
-//     else
-//         RasterBasedSample(ds);
-
-//     UpdateProgress(10*currentNode+9, 10*totalNodes);
-//     currentNode++;
-// }
-
 
 
 // ****************************************************************************
