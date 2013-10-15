@@ -249,11 +249,106 @@ def TestVolumeGaussianControlPoints():
     Test("volumeGaussian_01")
     DeleteAllPlots()
 
+def TestVolumeSLIVR():
+    OpenDatabase(silo_data_path("noise.silo"))
+
+    AddPlot("Volume", "hardyglobal")
+
+    # Test SLIVR with Gaussian
+    v = VolumeAttributes()
+    v.rendererType = v.SLIVR
+    v.opacityAttenuation = 0.5  #default for SLIVR
+    v.rendererSamples = 3
+    v.opacityMode = v.GaussianMode
+    v.opacityControlPoints.ClearControlPoints()
+    tmp = GaussianControlPoint()
+
+    # Design gaussians
+    tmp.x = 0.858136
+    tmp.height = 0.431579
+    tmp.width = 0.184979
+    tmp.xBias = 0.0166898
+    tmp.yBias = 2
+    v.GetOpacityControlPoints().AddControlPoints(tmp)
+
+    tmp.x = 0.557719
+    tmp.height = 0.631579
+    tmp.width = 0.0445063
+    tmp.xBias = 0.00417244
+    tmp.yBias = 1.13333
+    v.GetOpacityControlPoints().AddControlPoints(tmp)
+
+    tmp.x = 0.215577
+    tmp.height = 0.631579
+    tmp.width = 0.0890125
+    tmp.xBias = -0.00556327
+    tmp.yBias = 0.944445
+    v.GetOpacityControlPoints().AddControlPoints(tmp)
+
+
+    # SLIVR with No Lighting 
+    v.lightingFlag = 0
+    v.resampleFlag = 0
+    SetPlotOptions(v)
+    DrawPlots()
+    Test("volumeSLIVR_01")
+
+
+    # SLIVR with Lighting 
+    v.lightingFlag = 1
+    v.SetMaterialProperties(0.2, 0.6, 0.7, 50)
+    SetPlotOptions(v)
+    DrawPlots()
+    Test("volumeSLIVR_02")
+
+
+    # SLIVR with Lighting and Transluscency
+    v.opacityAttenuation = 0.25
+    SetPlotOptions(v)
+    DrawPlots()
+    Test("volumeSLIVR_03")
+
+    """
+    # Test with a 2D transfer Fn
+    v.transferFunctionDim = 2
+    temp = TransferFunctionWidget()
+    #temp.Type = v.GetTransferFunction2DWidgets(0).Ellipsoid  # Rectangle, Triangle, Paraboloid, Ellipsoid
+    temp.Type = 3  # Rectangle, Triangle, Paraboloid, Ellipsoid
+    temp.Name = "ellipse0001"
+    temp.BaseColor = (0.2, 0.4, 1, 0.58)
+    temp.Position = (0.665608, 0.0550725, 0.1, 0.2, 1.47216, 0, 0, 0)
++
+    temp.Type = 0  # Rectangle, Triangle, Paraboloid, Ellipsoid
+    temp.Name = "rect0002"
+    temp.BaseColor = (1, 1, 0, 0.8)
+    temp.Position = (0.0761905, 0.157246, 0.370899, 0.487681, 0.5, 0, 0, 0)
++
+    SetPlotOptions(v)
+    DrawPlots()
+    ResetView()
+    Test("volumeSLIVR_04")
+    """
+
+    # Freeform opacity with VisIt resampling
+    v.transferFunctionDim = 1
+    v.opacityMode = v.FreeformMode
+    v.freeformOpacity = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 101, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254)
+    v.opacityAttenuation = 1    
+    v.rendererSamples = 2
+    v.resampleFlag = 0
+    SetPlotOptions(v)
+    DrawPlots()
+    ResetView()
+    Test("volumeSLIVR_05")
+
+    DeleteAllPlots()
+
 InitAnnotationsLegendOn()
 TestVolumeColorControlPoints()
 TestVolumeGaussianControlPoints()
 TestVolumeAspect()
 TestVolumeOpacity()
+TestVolumeSLIVR()
 InitAnnotations()
 TestVolumeScaling()
 Exit()

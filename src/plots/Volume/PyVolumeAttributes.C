@@ -1437,6 +1437,7 @@ VolumeAttributes_GetLowGradientLightingClampValue(PyObject *self, PyObject *args
     return retval;
 }
 
+
 /*static*/ PyObject *
 VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
 {

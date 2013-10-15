@@ -256,6 +256,8 @@
       </Function>
       <Function name="VolumeViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>
+      <Function name="VolumeAttributes_SetMaterialProperties" user="false" member="true">
+      </Function>
       <Include file="source" quoted="false">
         ColorControlPoint.h
       </Include>
