@@ -52,6 +52,32 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
+export VISIT_VERSION=${VISIT_VERSION:-"2.6.3"}
+
+####
+# Trunk:
+####
+export SVN_SOURCE_PATH=${SVN_SOURCE_PATH-"trunk/src"}
+export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
+
+###
+# Release:
+###
+#export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
+#export SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/src/third_party"
+
+export INITIAL_PWD=$PWD
+
+#First step download the support directory from svn repository..
+export bv_PATH=`dirname $0`
+export bv_PREFIX=$bv_PATH/bv_support/
+
+# Two new version to support older versions of VisIt
+# exec-version gets the older version of the script and runs it..
+export build_version=""
+export webroot="http://portal.nersc.gov/svn/visit/"
+export webaddr="${webroot}/trunk/src/svn_bin/bv_support/"
+
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
 declare -a reqlibs_state
@@ -61,14 +87,113 @@ declare -a grouplibs_name
 declare -a grouplibs_deps
 declare -a grouplibs_comment
 declare -a grouplibs_enabled
+declare -a defaultLicenses
+declare -a args
 
+function check_for_versioning
+{
+    local next_arg="no"
 
-INITIAL_PWD=$PWD
+    for arg in "$@";
+    do
+        if [[ "$next_arg" == "build-version" ]]; then
+            build_version="$arg"
+            next_arg="no"
+        elif [[ "$arg" == "--build-version" ]]; then
+            next_arg="build-version"
+        else
+            args[${#args[*]}]="$arg"
+        fi
+    done
 
-#First step download the support directory from svn repository..
-bv_PATH=`dirname $0`
+    if [[ "$build_version" != "" ]]; then
+      VISIT_VERSION="$build_version"
+      webaddr="${webroot}/tags/$VISIT_VERSION/src/svn_bin/build_visit"
+      echo "using $webaddr for source"
+    fi
+}
 
-bv_PREFIX=$bv_PATH/bv_support/
+# This function is not used, it is meant to be injected into older versions of VisIt..
+# This code is a duplicate of the one in helperfuncs.sh because build_visit needs to be 
+# stand alone..
+function download_file
+{
+# $1 is the file name to download
+# $2...$* [OPTIONAL] list of sites to obtain the file from
+#
+# Since we always pass optional download sites to this function for
+# some third party libs - we can't skip svn mode just b/c this info is given.
+#
+    typeset dfile=$1
+    info "Downloading $dfile . . ." 
+    shift
+    
+    SVN_ROOT_PREFIX="${SVN_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
+    SVN_ANON_ROOT_PREFIX="${SVN_ANON_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
+    # If SVN is requested, try that first before anything else
+    if [[ "$DO_SVN" == "yes" ]] ; then
+        svn cat $SVN_ROOT_PREFIX/$dfile > $dfile
+        if [[ $? == 0 && -e $dfile ]] ; then
+            info "SVN download succeeded: $SVN_ROOT_PREFIX/$dfile"
+            return 0
+        else
+            warn "Normal svn failed. Trying anonymous svn." 
+            svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
+            if [[ $? == 0 && -e $dfile ]] ; then
+                info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
+                return 0
+            fi
+        fi
+        warn "SVN download attempt failed: $SVN_ROOT_PATH/$SVN_THIRDPARTY_PATH/$dfile"
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
+        rm -f $dfile
+    elif [[ "$DO_SVN_ANON" == "yes" ]] ; then
+        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
+        if [[ $? == 0 && -e $dfile ]] ; then
+            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
+            return 0
+        fi
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
+        rm -f $dfile
+    fi
+
+    # If the visit source code is requested try that next.
+    if [[ "$dfile" == "$VISIT_FILE" ]] ; then
+        try_download_file $SVN_ANON_ROOT_PATH/trunk/releases/$VISIT_VERSION/$dfile $dfile
+        if [[ $? == 0 ]] ; then
+            return 0
+        fi
+    fi
+
+    # Now try the various places listed.
+    if [[ "$1" != "" ]] ; then
+        for site in $* ; do
+            try_download_file $site/$dfile $dfile
+            if [[ $? == 0 ]] ; then
+                return 0
+            fi
+        done
+    fi
+
+    # Now try anonymous svn unless we tried it above.
+    if [[ "$DO_SVN" != "yes" && "$DO_ANON_SVN" != "yes" ]] ; then
+        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
+        if [[ $? == 0 && -e $dfile ]] ; then
+            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
+            return 0
+        fi
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
+        rm -f $dfile
+    fi
+
+    # Now try the anonymous svn site with wget or curl.
+    try_download_file $SVN_ANON_ROOT_PREFIX/$dfile $dfile
+    if [[ $? == 0 ]] ; then
+        return 0
+    fi
+    info "Failed to download $dfile"
+    return 1
+}
 
 function configure_support_files
 {
@@ -82,16 +207,13 @@ function configure_support_files
             do
                 echo "Trying to fetch support files using: $choice"
 
-                #if choice successful then exit, else try next..
-                webaddr="http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support/"
                 tmp_choice=`which $choice`
 
                 if [ $? != 0 ]; then
                     continue
                 fi
                 if [[ $choice == "curl" ]]; then
-                    tmp_curl=`curl -s ${webaddr}/ | grep 'sh\|xml' | grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g;`
-
+                    tmp_curl=`curl -s ${webaddr}/ | grep 'sh\|xml' | grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g | sed -e s/\".*//g;`
                     if [ $? != 0 ]; then 
                         continue
                     fi
@@ -103,6 +225,7 @@ function configure_support_files
                     do 
                         curl -s ${webaddr}/${curl_files} -o bv_support_tmp/$curl_files 
                         if [ $? != 0 ]; then
+                            echo "failed to download ${curl_files}"
                             is_successful=0
                             break
                         fi
@@ -115,9 +238,9 @@ function configure_support_files
                         mv bv_support_tmp bv_support
                     fi
                 elif [[ $choice == "wget" ]]; then
-                    wget -r -nH --cut-dirs=5 --no-parent --reject="index.html" -q ${webaddr}
+                    wget -r -nH --cut-dirs=6 --no-parent --reject="index.html,robots.txt" -q ${webaddr}
                 else
-                    svn co ${webaddr} bv_support
+                    svn -q co ${webaddr} bv_support
                 fi
 
                 if [ ! -d $bv_PREFIX ]; then
@@ -133,6 +256,84 @@ function configure_support_files
             echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
             exit 2
         fi
+    fi
+}
+
+function call_build_visit
+{
+    if [[ "${build_version}" == "" ]]; then
+        return
+    fi
+
+    build_visit_ver="build_visit${build_version}"
+
+    #previous one exists..
+    if [[ -e "$build_visit_ver" ]] ; then
+        # execute build_visit (exec should terminate current
+        # script for new one)
+        echo "Found $build_visit_ver"
+        exec bash $build_visit_ver "${args[@]}"
+    fi
+
+    for choice in `echo "curl wget svn"`
+    do
+        echo "Trying to fetch $build_visit_ver using: $choice"
+
+        tmp_choice=`which $choice`
+
+        if [ $? != 0 ]; then
+            continue
+        fi
+
+        if [[ $choice == "curl" ]]; then
+            curl -s ${webaddr} -o $build_visit_ver
+
+            if [ $? != 0 ]; then
+                continue
+            fi
+        elif [[ $choice == "wget" ]]; then
+            wget -q ${webaddr} -O $build_visit_ver
+
+            if [ $? != 0 ]; then
+                continue
+            fi
+        else
+            svn -q export ${webaddr} $build_visit_ver
+        fi
+
+        if [[ -e "$build_visit_ver" ]] ; then
+            echo "Success using $choice"
+            break;
+        fi
+    done
+
+    if [[ -e "$build_visit_ver" ]] ; then
+
+        if [[ -d bv_support ]]; then
+            echo "Removing previous support directory..."
+            rm -fR bv_support
+        fi
+
+        SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
+        SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/third_party"
+        
+        # have to inject a hack for versions older than 2.6.3
+        bv_PREFIX=$PWD/bv_support
+        webaddr="$webroot/tags/$build_version/src/svn_bin/bv_support/"
+        echo "rerouting support from $webaddr"
+        configure_support_files
+        
+        echo "SVN_SOURCE_PATH=$SVN_SOURCE_PATH" >> bv_support/helper_funcs.sh
+        echo "SVN_THIRDPARTY_PATH=$SVN_THIRDPARTY_PATH" >> bv_support/helper_funcs.sh
+        declare -f download_file >> bv_support/helper_funcs.sh
+        
+        # execute build_visit (exec should terminate current
+        # script for new one)
+        echo "Executing $build_visit_ver"
+        exec bash $build_visit_ver "${args[@]}"
+    else
+        echo "Failed to execute another version of VisIt"
+        exit 2
     fi
 }
 
@@ -247,6 +448,24 @@ do
 
 done
 
+function check_default_args 
+{
+    #handle -h or --help arg early to avoid delays
+    for arg in "$@";
+    do
+        if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+            usage
+            exit 2
+        fi
+
+        if [[ "$arg" == "--write-unified-file" ]]; then
+            next_arg="write-unified-file"
+        elif [[ "$next_arg" == "write-unified-file" ]]; then
+            bv_write_unified_file "$arg"
+            exit 0
+        fi
+    done
+}
 function bv_write_unified_file
 {
     OUTPUT_bv_FILE=$@
@@ -262,12 +481,32 @@ function bv_write_unified_file
     cd $INITIAL_PWD
 
     echo "#!/bin/bash" > $OUTPUT_bv_FILE
+    echo "export VISIT_VERSION=\${VISIT_VERSION:-\"$VISIT_VERSION\"}" >> $OUTPUT_bv_FILE
+
+    echo "export SVN_SOURCE_PATH=\${SVN_SOURCE_PATH-\"$SVN_SOURCE_PATH\"}" >> $OUTPUT_bv_FILE
+    echo "export SVN_THIRDPARTY_PATH=\${SVN_THIRDPARTY_PATH-\"$SVN_THIRDPARTY_PATH\"}" >> $OUTPUT_bv_FILE
+
+    echo "export INITIAL_PWD=\$PWD" >> $OUTPUT_bv_FILE
+
+    echo "export bv_PATH=`dirname \$0`" >> $OUTPUT_bv_FILE
+    echo "export bv_PREFIX=\$bv_PATH/bv_support/" >> $OUTPUT_bv_FILE
+
+    echo "export build_version=\"\"" >> $OUTPUT_bv_FILE
+    echo "export webroot=\"http://portal.nersc.gov/svn/visit/\"" >> $OUTPUT_bv_FILE
+    echo "export webaddr=\"\${webroot}/trunk/src/svn_bin/bv_support/\"" >> $OUTPUT_bv_FILE
+
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_name" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_deps" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_comment" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_enabled" >> $OUTPUT_bv_FILE
+    echo "declare -a defaultLicenses" >> $OUTPUT_bv_FILE
+    echo "declare -a args" >> $OUTPUT_bv_FILE
+
+    declare -f check_for_versioning >> $OUTPUT_bv_FILE
+    declare -f call_build_visit >> $OUTPUT_bv_FILE
+    declare -f configure_support_files >> $OUTPUT_bv_FILE
 
     cat $bv_PREFIX/bv_main.sh >> $OUTPUT_bv_FILE
     cat $bv_PREFIX/helper_funcs.sh >> $OUTPUT_bv_FILE
@@ -319,11 +558,24 @@ function bv_write_unified_file
     echo "  done" >> $OUTPUT_bv_FILE
     echo "done" >> $OUTPUT_bv_FILE
 
+    declare -f check_default_args >> $OUTPUT_bv_FILE
     echo "function bv_write_unified_file" >> $OUTPUT_bv_FILE
     echo "{" >> $OUTPUT_bv_FILE
-    echo "cat \$0 > \$@" >> $OUTPUT_bv_FILE
-    echo "chmod 755 \$@" >> $OUTPUT_bv_FILE
+    echo "  echo \"Writing to File: \$@\"" >> $OUTPUT_bv_FILE
+    echo "  cat \$0 > \$@" >> $OUTPUT_bv_FILE
+    echo "  cat \$0 > \$@" >> $OUTPUT_bv_FILE
+    echo "  chmod 755 \$@" >> $OUTPUT_bv_FILE
     echo "}" >> $OUTPUT_bv_FILE
+
+    echo "check_for_versioning \"\$@\"" >> $OUTPUT_bv_FILE
+
+    echo "if [[ \"\$build_version\" != \"\" ]]; then" >> $OUTPUT_bv_FILE
+    echo "    call_build_visit" >> $OUTPUT_bv_FILE
+    echo "fi" >> $OUTPUT_bv_FILE
+
+    #echo "configure_support_files" >> $OUTPUT_bv_FILE
+
+    echo "check_default_args \"\$@\"" >> $OUTPUT_bv_FILE
 
     #write command to run and execute VisIt
     echo "initialize_build_visit" >> $OUTPUT_bv_FILE
@@ -331,6 +583,20 @@ function bv_write_unified_file
     chmod 755 $OUTPUT_bv_FILE
     cd $OLDPWD
 }
+
+# This code is meant to exercise support for building 
+# older VisIt versions.. 
+check_for_versioning "$@"
+
+#jump to older version of build_visit if needed
+if [[ "$build_version" != "" ]]; then
+    call_build_visit
+fi
+
+#download and configure the support files if needed..
+configure_support_files
+
+check_default_args "$@"
 
 #initialize all build visit variables
 initialize_build_visit
