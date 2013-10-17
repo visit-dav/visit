@@ -32,25 +32,7 @@ function bv_visit_depends_on
 #add information about how to get library..
 function bv_visit_info
 {
-
-    ############################################################################
-    # Path of VisIt src directory in svn.
-    # For trunk use "trunk/src"
-    # For versioned build_visit releases change this to point to the proper
-    # release tag.
-    ############################################################################
-
-    export VISIT_VERSION=${VISIT_VERSION:-"2.6.3"}
-    
-    ####
-    # Trunk:
-    ####
-    export SVN_SOURCE_PATH="trunk/src"
-
-    ###
-    # Release:
-    ###
-    #export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
+    echo "Setting VisIt info..."
 }
 
 #print variables used by this module

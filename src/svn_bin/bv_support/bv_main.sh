@@ -772,9 +772,19 @@ do
     bv_enable_group "$arg"
     #not part of a group, add to argument list..
     if [[ $? == 0 ]]; then
-        xmlp_licenseMatch "$arg"
+        local match=0
+
+        #suppress licenses from argument list
+        for license in `echo $defaultLicenses`
+        do
+            if [[ "${arg/--}" == "$license" ]]; then
+                match=1
+                break
+            fi
+        done
+
         #suppress licenses as well..
-        if [[ $? == 0 ]]; then
+        if [[ $match == 0 ]]; then
             arguments[${#arguments[*]}]="$arg"
         fi
     fi
