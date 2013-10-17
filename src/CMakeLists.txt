@@ -563,6 +563,11 @@ SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 # configure options
 #-----------------------------------------------------------------------------
+INCLUDE(CTest)
+SET(BUILDNAME "${HOSTNAME}-${VISITARCH}-${CMAKE_BUILD_TYPE}"
+  CACHE STRING "Site name for test submission"
+  )
+
 OPTION(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
 
 OPTION(VISIT_TUVOK    "Build VisIt with support for the Tuvok volume rendering library." OFF)
