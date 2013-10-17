@@ -681,6 +681,11 @@ avtSamplePointExtractor::PostExecute(void)
 //    Converted the recursive function to iteration
 //
 // ****************************************************************************
+    struct datatree_childindex {
+        avtDataTree_p dt; int idx; bool visited;
+        datatree_childindex(avtDataTree_p dt_, int idx_) : dt(dt_),idx(idx_),visited(false) {}
+    };
+
 
 void
 avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
@@ -700,10 +705,10 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     imgDataHashMap.clear();
 
     //need to pass the datatree as well as its index in its parent to RasterBasedSample.
-    struct datatree_childindex { 
+    /*struct datatree_childindex { 
         avtDataTree_p dt; int idx; bool visited;
         datatree_childindex(avtDataTree_p dt_, int idx_) : dt(dt_),idx(idx_),visited(false) {}
-    };
+    };*/
 
     std::stack<datatree_childindex*> nodes;
     if (*dt == NULL || (dt->GetNChildren() <= 0 && (!(dt->HasData()))))
