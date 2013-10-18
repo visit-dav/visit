@@ -80,6 +80,10 @@
 #   Eric Brugger, Fri Nov 18 14:52:52 PST 2011
 #   I added xdmf_binary.C.
 #
+#   Eric Brugger, Fri Oct 18 14:55:19 PDT 2013
+#   I changed the name of the test target to testdata, since test no longer
+#   works with cmake 2.8.10.2.
+#
 #****************************************************************************/
 
 cmake_minimum_required(VERSION 2.8)
@@ -418,11 +422,11 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
 ENDFOREACH(DATASET_TARGET_FILE IN ${ARCHIVED_DATASETS})
 
 #-----------------------------------------------------------------------------
-# Add custom targets: "data" & "test"
+# Add custom targets: "data" & "testdata"
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(data DEPENDS ${DATA_TARGET_DEPENDS})
-ADD_CUSTOM_TARGET(test)
-ADD_DEPENDENCIES(test data)
+ADD_CUSTOM_TARGET(testdata)
+ADD_DEPENDENCIES(testdata data)
 
 #-----------------------------------------------------------------------------
 # Add install command for contents of "data"
