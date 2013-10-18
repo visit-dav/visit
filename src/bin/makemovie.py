@@ -2496,18 +2496,35 @@ class MakeMovie(object):
     # Date:       Wed Apr  3 16:32:42 PDT 2013
     #
     # Modifications:
+    #   Cyrus Harrison, Sat Mar 27 11:51:10 PST 2004
+    #   Bring back our old fps / frame duplication heuristic for mpeg encoding.
     #
     ###########################################################################
 
     def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
-        if self.allow_ffmpeg:
+        if self.allow_ffmpeg:        
+            # keep old fps / frame duplication heuristic, feed dup rate into 
+            # visit_utils.encoding
+            #
+            # We can only drive the movie at 30 fps.  So if the user wants
+            # a movie at 10 fps, we have to pad frames.  Determine what that
+            # pad rate is.
+            pad_rate=-1
+            for i in range(1,31):
+               if (pad_rate < 0):
+                  if ((30./i) <= self.fps):
+                     pad_rate = i
+                     if ((30./i) != self.fps):
+                         print "Because of limitations in MPEG encoding, the "
+                         print "movie will be encoded at %f frames per second" %(30./i)
             frameExt = self.OutputExtension(self.formatInfo["mpeg"][self.FMT_INPUTFORMAT])
             framePattern = self.tmpDir + self.slash + imageFormatString + frameExt
             absMovieName = self.outputDir + self.slash + moviename
 
             success = 1
             msg = ""
-            if encoding.encode(framePattern, absMovieName) > 0:
+            # use fdup to set the duplication frame rate
+            if encoding.encode(framePattern, absMovieName,fdup=pad_rate) > 0:
                 success = 0
                 msg = "The movie encoder used in the visit_utils module did not complete successfully."
 
@@ -2747,19 +2764,36 @@ class MakeMovie(object):
     # Date:       Wed Apr  3 17:51:17 PDT 2013
     #
     # Modifications:
+    #   Cyrus Harrison, Sat Mar 27 11:51:10 PST 2004
+    #   Bring back our old fps / frame duplication heuristic for mpeg encoding.
     #
     ###########################################################################
 
     def EncodeMovie(self, fmt, moviename, imageFormatString, xres, yres, stereo):
         self.Debug(1, "EncodeMovie")
 
+        # keep old fps / frame duplication heuristic, feed dup rate into 
+        # visit_utils.encoding
+        #
+        # We can only drive the movie at 30 fps.  So if the user wants
+        # a movie at 10 fps, we have to pad frames.  Determine what that
+        # pad rate is.
+        pad_rate=-1
+        for i in range(1,31):
+           if (pad_rate < 0):
+              if ((30./i) <= self.fps):
+                 pad_rate = i
+                 if ((30./i) != self.fps):
+                     print "Because of limitations in MPEG encoding, the "
+                     print "movie will be encoded at %f frames per second" %(30./i)
         formatExt = "." + self.formatInfo[fmt][self.FMT_INPUTFORMAT]
         framePattern = self.tmpDir + self.slash + imageFormatString + formatExt
         absMovieName = self.outputDir + self.slash + moviename
 
         success = 1
         msg = ""
-        if encoding.encode(framePattern, absMovieName) > 0:
+        # use fdup to set the duplication frame rate
+        if encoding.encode(framePattern, absMovieName,fdup=pad_rate) > 0:
             success = 0
             msg = "The movie encoder used in the visit_utils module did not complete successfully."
 
