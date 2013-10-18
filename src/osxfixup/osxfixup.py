@@ -97,6 +97,9 @@ def find_exes(sdir):
     for root, dirs, files in os.walk(sdir):
         for fname in  files:
           fname = pjoin(root,fname)
+          if not os.path.exists(fname):
+              print 'WARNING: not found %s -- skipped.'%(fname)
+              continue
           st = os.stat(fname)
           mode = st.st_mode
           if mode & exe_flags:
@@ -164,7 +167,7 @@ def main():
     prefix_path = "darwin-x86_64"
     if len(sys.argv) > 1:
         prefix_path = sys.argv[1]
-    prefix_path = os.path.abspath(prefix_path) 
+    prefix_path = os.path.abspath(prefix_path)
     print "[Finding libraries @ %s]" % prefix_path
     lib_names,lib_maps = find_libs(prefix_path)
     print "[Found %d libraries]" % len(lib_names)
@@ -179,4 +182,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

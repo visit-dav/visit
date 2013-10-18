@@ -89,7 +89,7 @@ IF(PySide_FOUND)
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                         GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                         WORLD_READ WORLD_EXECUTE
-            CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
             )
 ENDIF(PySide_FOUND)
 
