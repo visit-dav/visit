@@ -156,11 +156,16 @@ avtICAlgorithm::~avtICAlgorithm()
 vtkDataSet *
 avtICAlgorithm::GetDomain(avtIntegralCurve *ic)
 {
+  if (!ic->blockList.empty())
+  {
     avtVector pt = ic->CurrentLocation();
     vtkDataSet *ds = GetDomain(ic->blockList.front(), pt);
     if (ds)
-        ic->status.ClearSpatialBoundary();
+      ic->status.ClearSpatialBoundary();
     return ds;
+  }
+  else
+    return NULL;
 }
 
 // ****************************************************************************
@@ -424,7 +429,6 @@ avtICAlgorithm::SortIntegralCurves(vector<avtIntegralCurve *> &ic)
         }
         else
             (*s)->sortKey = -1;
-            
     }
 
     sort(ic.begin(), ic.end(), icDomainCompare);
@@ -1126,9 +1130,12 @@ avtICAlgorithm::UpdateICsDomain( int curTimeSlice )
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
-        // Update the current time slice ICs. No need to update others ICs.
-        if( (*it)->blockList.front().timeStep == curTimeSlice )
+        if (!(*it)->blockList.empty())
+        {
+          // Update the current time slice ICs. No need to update others ICs.
+          if( (*it)->blockList.front().timeStep == curTimeSlice )
             SetDomain( (*it) );
+        }
     }
 }
 
