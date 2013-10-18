@@ -102,7 +102,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                             WORLD_READ WORLD_EXECUTE
-                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                 )
             # On Windows, we also need to copy the file to the 
             # binary dir so our out of source builds can run.
@@ -120,7 +120,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                                 WORLD_READ WORLD_EXECUTE
-                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                    CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                     )
                 # On Windows, we also need to copy the file to the 
                 # binary dir so our out of source builds can run.
@@ -137,7 +137,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                             WORLD_READ WORLD_EXECUTE
-                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                 )
         ENDIF(VISIT_INSTALL_THIRD_PARTY AND EXISTS ${libNAME})
 
@@ -204,13 +204,13 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                             )
                         ELSE(IS_DIRECTORY ${curNAMEWithExt})
                             INSTALL(FILES ${curNAMEWithExt}
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                             )
                         ENDIF(IS_DIRECTORY ${curNAMEWithExt})
                     ENDIF(EXISTS ${curNAMEWithExt})
@@ -227,7 +227,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                         DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                         PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
                     )
                 ELSE(IS_DIRECTORY ${tmpLIBFILE})
@@ -235,7 +235,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     INSTALL(FILES ${tmpLIBFILE}
                         DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                     )
                 ENDIF(IS_DIRECTORY ${tmpLIBFILE})
 #            MESSAGE("**We need to install lib ${tmpLIBFILE}")
@@ -248,7 +248,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             INSTALL(FILES ${tmpLIBFILE}
                 DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
             )
 
             # TODO: We could install windows import libraries here...
@@ -270,7 +270,7 @@ FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/${lcpkg}
                 DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                 FILES_MATCHING 
                 PATTERN "*.h"
                 PATTERN "*.H"

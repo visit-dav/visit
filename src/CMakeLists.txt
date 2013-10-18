@@ -833,7 +833,7 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                 WORLD_READ             WORLD_EXECUTE
-                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                    CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                 )
             ENDIF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
         ENDFOREACH(T)
@@ -846,7 +846,7 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                         GROUP_READ GROUP_WRITE GROUP_EXECUTE
                         WORLD_READ             WORLD_EXECUTE
-            CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF(VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_TARGETS_RELATIVE)
@@ -867,7 +867,7 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
         FILES_MATCHING PATTERN "*.h"
         PATTERN "*.hpp"
         PATTERN ".svn" EXCLUDE
@@ -2127,7 +2127,7 @@ IF(VISIT_MPICH_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
     )
     INSTALL(DIRECTORY ${VISIT_MPICH_DIR}/bin
         DESTINATION ${VISIT_INSTALLED_VERSION}
@@ -2137,7 +2137,7 @@ IF(VISIT_MPICH_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
     )
     INSTALL(DIRECTORY ${VISIT_MPICH_DIR}/lib
         DESTINATION ${VISIT_INSTALLED_VERSION}
@@ -2147,7 +2147,7 @@ IF(VISIT_MPICH_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
     )
 ENDIF(VISIT_MPICH_INSTALL)
 
@@ -2384,7 +2384,7 @@ INSTALL(FILES ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
         PERMISSIONS OWNER_READ OWNER_WRITE
                     GROUP_READ GROUP_WRITE
                     WORLD_READ
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
 )
 
 #-----------------------------------------------------------------------------

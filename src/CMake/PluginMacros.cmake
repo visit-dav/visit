@@ -60,7 +60,7 @@ MACRO(VISIT_INSTALL_PLUGINS type)
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                             WORLD_READ             WORLD_EXECUTE
-                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
             )
         ELSE(NOT WIN32)
             # ${BUILD_TYPE} refers to the configuration option chosen (Release,
@@ -76,7 +76,7 @@ MACRO(VISIT_INSTALL_PLUGINS type)
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                                 WORLD_READ             WORLD_EXECUTE
-                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                    CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                   )
                 ELSE()  # For no IDE, installed straight into exe
                   SET(filename "${VISIT_BINARY_DIR}/exe/${target}.dll")
