@@ -182,7 +182,7 @@ class QvisPoincareWindow : public QvisOperatorWindow
     void issueWarningForCriticalPointsChanged(bool);
     void criticalPointThresholdProcessText();
 
-    void forceNodalChanged(bool);
+    // void forceNodalChanged(bool);
 
   private:
     int plotType;
@@ -205,7 +205,7 @@ class QvisPoincareWindow : public QvisOperatorWindow
     QComboBox *fieldType;
     QLabel    *fieldConstantLabel;
     QLineEdit *fieldConstant;
-    QCheckBox *forceNodal;
+    // QCheckBox *forceNodal;
 
     QComboBox *integrationType;
     QLabel *integrationTypeLabel;
