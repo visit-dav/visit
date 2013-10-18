@@ -1,0 +1,14 @@
+# this is where we can add site/system/compiler
+# specific exceptions. and/or suppress warnings
+# and errors.
+set(CTEST_CUSTOM_WARNING_EXCEPTION
+    # assumed not to be VisIt code
+    "third_party_builtin"
+    "pyconfig"
+    # auto generated code
+    "Attributes"
+    )
+
+# until some of these get fixed this should
+# let us see most of the build
+set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS 2048)

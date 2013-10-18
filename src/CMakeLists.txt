@@ -563,11 +563,6 @@ SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 # configure options
 #-----------------------------------------------------------------------------
-INCLUDE(CTest)
-SET(BUILDNAME "${HOSTNAME}-${VISITARCH}-${CMAKE_BUILD_TYPE}"
-  CACHE STRING "Site name for test submission"
-  )
-
 OPTION(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
 
 OPTION(VISIT_TUVOK    "Build VisIt with support for the Tuvok volume rendering library." OFF)
@@ -818,6 +813,13 @@ VISIT_INSTALLED_VERSION_PLUGINS
 VISIT_INSTALLED_VERSION_ARCHIVES
 VISIT_INSTALLED_VERSION_INCLUDE
 )
+
+# Setup regression testing
+INCLUDE(CTest)
+CONFIGURE_FILE(
+    "${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake"
+    @ONLY)
 
 MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
     IF(VISIT_STATIC)
