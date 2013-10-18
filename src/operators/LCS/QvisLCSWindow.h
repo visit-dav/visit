@@ -110,7 +110,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     void fieldTypeChanged(int val);
     void fieldConstantProccessText();
     void velocitySourceProcessText();
-    void forceNodalChanged(bool);
+    // void forceNodalChanged(bool);
 
     void directionTypeChanged(int val);
     void integrationTypeChanged(int val);
@@ -160,7 +160,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     QLineEdit *fieldConstant;
     QLineEdit *velocitySource;
     QLabel    *velocitySourceLabel;
-    QCheckBox *forceNodal;
+    // QCheckBox *forceNodal;
 
     QComboBox *directionType;
     QComboBox *integrationType;

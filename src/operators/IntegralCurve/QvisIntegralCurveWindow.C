@@ -596,9 +596,9 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
 
     // Create the node centering
-    forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
-    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    fieldLayout->addWidget(forceNodal, 2, 0);
+    // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
+    // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    // fieldLayout->addWidget(forceNodal, 2, 0);
 
 
     // Create the integration group box.
@@ -1553,11 +1553,11 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
               numberOfRandomSamples->blockSignals(false);
               break;
 
-            case IntegralCurveAttributes::ID_forceNodeCenteredData:
-              forceNodal->blockSignals(true);
-              forceNodal->setChecked(atts->GetForceNodeCenteredData());
-              forceNodal->blockSignals(false);
-              break;
+            // case IntegralCurveAttributes::ID_forceNodeCenteredData:
+            //   forceNodal->blockSignals(true);
+            //   forceNodal->setChecked(atts->GetForceNodeCenteredData());
+            //   forceNodal->blockSignals(false);
+            //   break;
 
             case IntegralCurveAttributes::ID_issueTerminationWarnings:
               issueWarningForMaxSteps->blockSignals(true);
@@ -2942,12 +2942,12 @@ QvisIntegralCurveWindow::limitMaxTimeStepChanged(bool val)
     Apply();
 }
 
-void
-QvisIntegralCurveWindow::forceNodalChanged(bool val)
-{
-    atts->SetForceNodeCenteredData(val);
-    Apply();
-}
+// void
+// QvisIntegralCurveWindow::forceNodalChanged(bool val)
+// {
+//     atts->SetForceNodeCenteredData(val);
+//     Apply();
+// }
 
 void
 QvisIntegralCurveWindow::velocitySourceProcessText()
