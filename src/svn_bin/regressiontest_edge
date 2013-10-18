@@ -40,6 +40,10 @@
 #   Change the path to the cmake used to build visit to the latest 2.8.10.2
 #   version.
 #
+#   Eric Brugger, Fri Oct 18 15:01:56 PDT 2013
+#   I changed "make test" to "make testdata" in the data directory since the
+#   name of the target changed.
+#
 
 
 #
@@ -243,7 +247,7 @@ echo "Source build completed at: \`date\`"
 
 # Build the test data
 cd ../data
-make -j 8 test >> ../buildlog 2>&1
+make -j 8 testdata >> ../buildlog 2>&1
 if test "$debug" = "true" ; then
     echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
 fi
