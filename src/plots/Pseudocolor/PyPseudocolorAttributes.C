@@ -76,25 +76,55 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     std::string str; 
     char tmpStr[1000]; 
 
-    if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+    const char *scaling_names = "Linear, Log, Skew";
+    switch (atts->GetScaling())
+    {
+      case PseudocolorAttributes::Linear:
+          SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Log:
+          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Skew:
+          SNPRINTF(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
     str += tmpStr;
-    if(atts->GetLightingFlag())
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
-    str += tmpStr;
+    const char *limitsMode_names = "OriginalData, CurrentPlot";
+    switch (atts->GetLimitsMode())
+    {
+      case PseudocolorAttributes::OriginalData:
+          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::CurrentPlot:
+          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetMinFlag())
         SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    str += tmpStr;
     if(atts->GetMaxFlag())
         SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
     const char *centering_names = "Natural, Nodal, Zonal";
     switch (atts->GetCentering())
@@ -115,43 +145,57 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
           break;
     }
 
-    const char *scaling_names = "Linear, Log, Skew";
-    switch (atts->GetScaling())
-    {
-      case PseudocolorAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
-          str += tmpStr;
-          break;
-      case PseudocolorAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
-          str += tmpStr;
-          break;
-      case PseudocolorAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    const char *limitsMode_names = "OriginalData, CurrentPlot";
-    switch (atts->GetLimitsMode())
-    {
-      case PseudocolorAttributes::OriginalData:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
-          str += tmpStr;
-          break;
-      case PseudocolorAttributes::CurrentPlot:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    if(atts->GetInvertColorTable())
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    str += tmpStr;
+    const char *opacityType_names = "ColorTable, FullyOpaque, Constant, Ramp, VariableRange";
+    switch (atts->GetOpacityType())
+    {
+      case PseudocolorAttributes::ColorTable:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sColorTable  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::FullyOpaque:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sFullyOpaque  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Constant:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sConstant  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Ramp:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sRamp  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::VariableRange:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sVariableRange  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sopacityVarMin = %g\n", prefix, atts->GetOpacityVarMin());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sopacityVarMax = %g\n", prefix, atts->GetOpacityVarMax());
+    str += tmpStr;
+    if(atts->GetOpacityVarMinFlag())
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMinFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMinFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetOpacityVarMaxFlag())
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMaxFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMaxFlag = 0\n", prefix);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
     str += tmpStr;
@@ -195,19 +239,6 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
-    str += tmpStr;
-    if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
-    str += tmpStr;
     if(atts->GetPointSizeVarEnabled())
         SNPRINTF(tmpStr, 1000, "%spointSizeVarEnabled = 1\n", prefix);
     else
@@ -217,26 +248,137 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
-    str += tmpStr;
-    const char *opacityType_names = "Explicit, ColorTable";
-    switch (atts->GetOpacityType())
+    const char *lineType_names = "Line, Tube, Ribbon";
+    switch (atts->GetLineType())
     {
-      case PseudocolorAttributes::Explicit:
-          SNPRINTF(tmpStr, 1000, "%sopacityType = %sExplicit  # %s\n", prefix, prefix, opacityType_names);
+      case PseudocolorAttributes::Line:
+          SNPRINTF(tmpStr, 1000, "%slineType = %sLine  # %s\n", prefix, prefix, lineType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::ColorTable:
-          SNPRINTF(tmpStr, 1000, "%sopacityType = %sColorTable  # %s\n", prefix, prefix, opacityType_names);
+      case PseudocolorAttributes::Tube:
+          SNPRINTF(tmpStr, 1000, "%slineType = %sTube  # %s\n", prefix, prefix, lineType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Ribbon:
+          SNPRINTF(tmpStr, 1000, "%slineType = %sRibbon  # %s\n", prefix, prefix, lineType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
+    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
+    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stubeDisplayDensity = %d\n", prefix, atts->GetTubeDisplayDensity());
+    str += tmpStr;
+    const char *tubeRadiusSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetTubeRadiusSizeType())
+    {
+      case PseudocolorAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%stubeRadiusSizeType = %sAbsolute  # %s\n", prefix, prefix, tubeRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%stubeRadiusSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, tubeRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%stubeRadiusAbsolute = %g\n", prefix, atts->GetTubeRadiusAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stubeRadiusBBox = %g\n", prefix, atts->GetTubeRadiusBBox());
+    str += tmpStr;
+    if(atts->GetVaryTubeRadius())
+        SNPRINTF(tmpStr, 1000, "%svaryTubeRadius = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%svaryTubeRadius = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%svaryTubeRadiusVariable = \"%s\"\n", prefix, atts->GetVaryTubeRadiusVariable().c_str());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%svaryTubeRadiusFactor = %g\n", prefix, atts->GetVaryTubeRadiusFactor());
+    str += tmpStr;
+    const char *endPointType_names = "None, Tails, Heads, Both";
+    switch (atts->GetEndPointType())
+    {
+      case PseudocolorAttributes::None:
+          SNPRINTF(tmpStr, 1000, "%sendPointType = %sNone  # %s\n", prefix, prefix, endPointType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Tails:
+          SNPRINTF(tmpStr, 1000, "%sendPointType = %sTails  # %s\n", prefix, prefix, endPointType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Heads:
+          SNPRINTF(tmpStr, 1000, "%sendPointType = %sHeads  # %s\n", prefix, prefix, endPointType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Both:
+          SNPRINTF(tmpStr, 1000, "%sendPointType = %sBoth  # %s\n", prefix, prefix, endPointType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *endPointStyle_names = "Spheres, Cones";
+    switch (atts->GetEndPointStyle())
+    {
+      case PseudocolorAttributes::Spheres:
+          SNPRINTF(tmpStr, 1000, "%sendPointStyle = %sSpheres  # %s\n", prefix, prefix, endPointStyle_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::Cones:
+          SNPRINTF(tmpStr, 1000, "%sendPointStyle = %sCones  # %s\n", prefix, prefix, endPointStyle_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *endPointRadiusSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetEndPointRadiusSizeType())
+    {
+      case PseudocolorAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%sendPointRadiusSizeType = %sAbsolute  # %s\n", prefix, prefix, endPointRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      case PseudocolorAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%sendPointRadiusSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, endPointRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sendPointRadiusAbsolute = %g\n", prefix, atts->GetEndPointRadiusAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sendPointRadiusBBox = %g\n", prefix, atts->GetEndPointRadiusBBox());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sendPointRatio = %g\n", prefix, atts->GetEndPointRatio());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%srenderSurfaces = %d\n", prefix, atts->GetRenderSurfaces());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%srenderWireframe = %d\n", prefix, atts->GetRenderWireframe());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%srenderPoints = %d\n", prefix, atts->GetRenderPoints());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
+    str += tmpStr;
+    if(atts->GetLegendFlag())
+        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetLightingFlag())
+        SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -247,135 +389,6 @@ PseudocolorAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetLegendFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetLegendFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetLightingFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lightingFlag in the object.
-    obj->data->SetLightingFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetLightingFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetLightingFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetMinFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the minFlag in the object.
-    obj->data->SetMinFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetMinFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the maxFlag in the object.
-    obj->data->SetMaxFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetCentering(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the centering in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetCentering(PseudocolorAttributes::Centering(ival));
-    else
-    {
-        fprintf(stderr, "An invalid centering value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Natural, Nodal, Zonal.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetCentering(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetCentering()));
-    return retval;
 }
 
 /*static*/ PyObject *
@@ -408,6 +421,30 @@ PseudocolorAttributes_GetScaling(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaling()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetSkewFactor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the skewFactor in the object.
+    obj->data->SetSkewFactor(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetSkewFactor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSkewFactor());
     return retval;
 }
 
@@ -445,6 +482,30 @@ PseudocolorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PseudocolorAttributes_SetMinFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the minFlag in the object.
+    obj->data->SetMinFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetMinFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PseudocolorAttributes_SetMin(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
@@ -469,6 +530,30 @@ PseudocolorAttributes_GetMin(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PseudocolorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maxFlag in the object.
+    obj->data->SetMaxFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PseudocolorAttributes_SetMax(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
@@ -489,6 +574,265 @@ PseudocolorAttributes_GetMax(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetCentering(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the centering in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetCentering(PseudocolorAttributes::Centering(ival));
+    else
+    {
+        fprintf(stderr, "An invalid centering value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Natural, Nodal, Zonal.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetCentering(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCentering()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetColorTableName(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the colorTableName in the object.
+    obj->data->SetColorTableName(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetColorTableName(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the invertColorTable in the object.
+    obj->data->SetInvertColorTable(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetOpacityType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the opacityType in the object.
+    if(ival >= 0 && ival < 5)
+        obj->data->SetOpacityType(PseudocolorAttributes::OpacityType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid opacityType value was given. "
+                        "Valid values are in the range of [0,4]. "
+                        "You can also use the following names: "
+                        "ColorTable, FullyOpaque, Constant, Ramp, VariableRange"
+                        ".");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetOpacityType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOpacityType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetOpacityVariable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the opacityVariable in the object.
+    obj->data->SetOpacityVariable(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetOpacityVariable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetOpacityVariable().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetOpacity(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the opacity in the object.
+    obj->data->SetOpacity(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetOpacity(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetOpacityVarMin(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the opacityVarMin in the object.
+    obj->data->SetOpacityVarMin(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetOpacityVarMin(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacityVarMin());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetOpacityVarMax(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the opacityVarMax in the object.
+    obj->data->SetOpacityVarMax(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetOpacityVarMax(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacityVarMax());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetOpacityVarMinFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the opacityVarMinFlag in the object.
+    obj->data->SetOpacityVarMinFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetOpacityVarMinFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOpacityVarMinFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetOpacityVarMaxFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the opacityVarMaxFlag in the object.
+    obj->data->SetOpacityVarMaxFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetOpacityVarMaxFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOpacityVarMaxFlag()?1L:0L);
     return retval;
 }
 
@@ -547,126 +891,6 @@ PseudocolorAttributes_GetPointType(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetSkewFactor(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the skewFactor in the object.
-    obj->data->SetSkewFactor(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetSkewFactor(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetSkewFactor());
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetOpacity(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the opacity in the object.
-    obj->data->SetOpacity(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetOpacity(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetColorTableName(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetColorTableName(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the smoothingLevel in the object.
-    obj->data->SetSmoothingLevel((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothingLevel()));
     return retval;
 }
 
@@ -743,6 +967,39 @@ PseudocolorAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PseudocolorAttributes_SetLineType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lineType in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetLineType(PseudocolorAttributes::LineType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid lineType value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Line, Tube, Ribbon.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetLineType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineType()));
+    return retval;
+}
+
+/*static*/ PyObject *
 PseudocolorAttributes_SetLineStyle(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
@@ -800,7 +1057,7 @@ PseudocolorAttributes_GetLineWidth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_SetOpacityType(PyObject *self, PyObject *args)
+PseudocolorAttributes_SetTubeDisplayDensity(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
 
@@ -808,15 +1065,39 @@ PseudocolorAttributes_SetOpacityType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the opacityType in the object.
+    // Set the tubeDisplayDensity in the object.
+    obj->data->SetTubeDisplayDensity((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetTubeDisplayDensity(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTubeDisplayDensity()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetTubeRadiusSizeType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the tubeRadiusSizeType in the object.
     if(ival >= 0 && ival < 2)
-        obj->data->SetOpacityType(PseudocolorAttributes::Opacity(ival));
+        obj->data->SetTubeRadiusSizeType(PseudocolorAttributes::SizeType(ival));
     else
     {
-        fprintf(stderr, "An invalid opacityType value was given. "
+        fprintf(stderr, "An invalid tubeRadiusSizeType value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "Explicit, ColorTable.");
+                        "Absolute, FractionOfBBox.");
         return NULL;
     }
 
@@ -825,10 +1106,445 @@ PseudocolorAttributes_SetOpacityType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_GetOpacityType(PyObject *self, PyObject *args)
+PseudocolorAttributes_GetTubeRadiusSizeType(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOpacityType()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTubeRadiusSizeType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetTubeRadiusAbsolute(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the tubeRadiusAbsolute in the object.
+    obj->data->SetTubeRadiusAbsolute(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetTubeRadiusAbsolute(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTubeRadiusAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetTubeRadiusBBox(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the tubeRadiusBBox in the object.
+    obj->data->SetTubeRadiusBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetTubeRadiusBBox(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTubeRadiusBBox());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetVaryTubeRadius(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the varyTubeRadius in the object.
+    obj->data->SetVaryTubeRadius(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetVaryTubeRadius(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetVaryTubeRadius()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the varyTubeRadiusVariable in the object.
+    obj->data->SetVaryTubeRadiusVariable(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetVaryTubeRadiusVariable().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetVaryTubeRadiusFactor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the varyTubeRadiusFactor in the object.
+    obj->data->SetVaryTubeRadiusFactor(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetVaryTubeRadiusFactor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetVaryTubeRadiusFactor());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetEndPointType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the endPointType in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetEndPointType(PseudocolorAttributes::EndPointType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid endPointType value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "None, Tails, Heads, Both.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetEndPointType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetEndPointType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetEndPointStyle(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the endPointStyle in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetEndPointStyle(PseudocolorAttributes::EndPointStyle(ival));
+    else
+    {
+        fprintf(stderr, "An invalid endPointStyle value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Spheres, Cones.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetEndPointStyle(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetEndPointStyle()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetEndPointRadiusSizeType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the endPointRadiusSizeType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetEndPointRadiusSizeType(PseudocolorAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid endPointRadiusSizeType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetEndPointRadiusSizeType(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetEndPointRadiusSizeType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetEndPointRadiusAbsolute(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the endPointRadiusAbsolute in the object.
+    obj->data->SetEndPointRadiusAbsolute(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetEndPointRadiusAbsolute(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetEndPointRadiusAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetEndPointRadiusBBox(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the endPointRadiusBBox in the object.
+    obj->data->SetEndPointRadiusBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetEndPointRadiusBBox(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetEndPointRadiusBBox());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetEndPointRatio(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the endPointRatio in the object.
+    obj->data->SetEndPointRatio(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetEndPointRatio(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetEndPointRatio());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetRenderSurfaces(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the renderSurfaces in the object.
+    obj->data->SetRenderSurfaces((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetRenderSurfaces(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderSurfaces()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetRenderWireframe(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the renderWireframe in the object.
+    obj->data->SetRenderWireframe((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetRenderWireframe(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderWireframe()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetRenderPoints(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the renderPoints in the object.
+    obj->data->SetRenderPoints((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetRenderPoints(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderPoints()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the smoothingLevel in the object.
+    obj->data->SetSmoothingLevel((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothingLevel()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetLegendFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the legendFlag in the object.
+    obj->data->SetLegendFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetLegendFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetLightingFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lightingFlag in the object.
+    obj->data->SetLightingFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetLightingFlag(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetLightingFlag()?1L:0L);
     return retval;
 }
 
@@ -836,50 +1552,94 @@ PseudocolorAttributes_GetOpacityType(PyObject *self, PyObject *args)
 
 PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
     {"Notify", PseudocolorAttributes_Notify, METH_VARARGS},
-    {"SetLegendFlag", PseudocolorAttributes_SetLegendFlag, METH_VARARGS},
-    {"GetLegendFlag", PseudocolorAttributes_GetLegendFlag, METH_VARARGS},
-    {"SetLightingFlag", PseudocolorAttributes_SetLightingFlag, METH_VARARGS},
-    {"GetLightingFlag", PseudocolorAttributes_GetLightingFlag, METH_VARARGS},
-    {"SetMinFlag", PseudocolorAttributes_SetMinFlag, METH_VARARGS},
-    {"GetMinFlag", PseudocolorAttributes_GetMinFlag, METH_VARARGS},
-    {"SetMaxFlag", PseudocolorAttributes_SetMaxFlag, METH_VARARGS},
-    {"GetMaxFlag", PseudocolorAttributes_GetMaxFlag, METH_VARARGS},
-    {"SetCentering", PseudocolorAttributes_SetCentering, METH_VARARGS},
-    {"GetCentering", PseudocolorAttributes_GetCentering, METH_VARARGS},
     {"SetScaling", PseudocolorAttributes_SetScaling, METH_VARARGS},
     {"GetScaling", PseudocolorAttributes_GetScaling, METH_VARARGS},
-    {"SetLimitsMode", PseudocolorAttributes_SetLimitsMode, METH_VARARGS},
-    {"GetLimitsMode", PseudocolorAttributes_GetLimitsMode, METH_VARARGS},
-    {"SetMin", PseudocolorAttributes_SetMin, METH_VARARGS},
-    {"GetMin", PseudocolorAttributes_GetMin, METH_VARARGS},
-    {"SetMax", PseudocolorAttributes_SetMax, METH_VARARGS},
-    {"GetMax", PseudocolorAttributes_GetMax, METH_VARARGS},
-    {"SetPointSize", PseudocolorAttributes_SetPointSize, METH_VARARGS},
-    {"GetPointSize", PseudocolorAttributes_GetPointSize, METH_VARARGS},
-    {"SetPointType", PseudocolorAttributes_SetPointType, METH_VARARGS},
-    {"GetPointType", PseudocolorAttributes_GetPointType, METH_VARARGS},
     {"SetSkewFactor", PseudocolorAttributes_SetSkewFactor, METH_VARARGS},
     {"GetSkewFactor", PseudocolorAttributes_GetSkewFactor, METH_VARARGS},
-    {"SetOpacity", PseudocolorAttributes_SetOpacity, METH_VARARGS},
-    {"GetOpacity", PseudocolorAttributes_GetOpacity, METH_VARARGS},
+    {"SetLimitsMode", PseudocolorAttributes_SetLimitsMode, METH_VARARGS},
+    {"GetLimitsMode", PseudocolorAttributes_GetLimitsMode, METH_VARARGS},
+    {"SetMinFlag", PseudocolorAttributes_SetMinFlag, METH_VARARGS},
+    {"GetMinFlag", PseudocolorAttributes_GetMinFlag, METH_VARARGS},
+    {"SetMin", PseudocolorAttributes_SetMin, METH_VARARGS},
+    {"GetMin", PseudocolorAttributes_GetMin, METH_VARARGS},
+    {"SetMaxFlag", PseudocolorAttributes_SetMaxFlag, METH_VARARGS},
+    {"GetMaxFlag", PseudocolorAttributes_GetMaxFlag, METH_VARARGS},
+    {"SetMax", PseudocolorAttributes_SetMax, METH_VARARGS},
+    {"GetMax", PseudocolorAttributes_GetMax, METH_VARARGS},
+    {"SetCentering", PseudocolorAttributes_SetCentering, METH_VARARGS},
+    {"GetCentering", PseudocolorAttributes_GetCentering, METH_VARARGS},
     {"SetColorTableName", PseudocolorAttributes_SetColorTableName, METH_VARARGS},
     {"GetColorTableName", PseudocolorAttributes_GetColorTableName, METH_VARARGS},
     {"SetInvertColorTable", PseudocolorAttributes_SetInvertColorTable, METH_VARARGS},
     {"GetInvertColorTable", PseudocolorAttributes_GetInvertColorTable, METH_VARARGS},
-    {"SetSmoothingLevel", PseudocolorAttributes_SetSmoothingLevel, METH_VARARGS},
-    {"GetSmoothingLevel", PseudocolorAttributes_GetSmoothingLevel, METH_VARARGS},
+    {"SetOpacityType", PseudocolorAttributes_SetOpacityType, METH_VARARGS},
+    {"GetOpacityType", PseudocolorAttributes_GetOpacityType, METH_VARARGS},
+    {"SetOpacityVariable", PseudocolorAttributes_SetOpacityVariable, METH_VARARGS},
+    {"GetOpacityVariable", PseudocolorAttributes_GetOpacityVariable, METH_VARARGS},
+    {"SetOpacity", PseudocolorAttributes_SetOpacity, METH_VARARGS},
+    {"GetOpacity", PseudocolorAttributes_GetOpacity, METH_VARARGS},
+    {"SetOpacityVarMin", PseudocolorAttributes_SetOpacityVarMin, METH_VARARGS},
+    {"GetOpacityVarMin", PseudocolorAttributes_GetOpacityVarMin, METH_VARARGS},
+    {"SetOpacityVarMax", PseudocolorAttributes_SetOpacityVarMax, METH_VARARGS},
+    {"GetOpacityVarMax", PseudocolorAttributes_GetOpacityVarMax, METH_VARARGS},
+    {"SetOpacityVarMinFlag", PseudocolorAttributes_SetOpacityVarMinFlag, METH_VARARGS},
+    {"GetOpacityVarMinFlag", PseudocolorAttributes_GetOpacityVarMinFlag, METH_VARARGS},
+    {"SetOpacityVarMaxFlag", PseudocolorAttributes_SetOpacityVarMaxFlag, METH_VARARGS},
+    {"GetOpacityVarMaxFlag", PseudocolorAttributes_GetOpacityVarMaxFlag, METH_VARARGS},
+    {"SetPointSize", PseudocolorAttributes_SetPointSize, METH_VARARGS},
+    {"GetPointSize", PseudocolorAttributes_GetPointSize, METH_VARARGS},
+    {"SetPointType", PseudocolorAttributes_SetPointType, METH_VARARGS},
+    {"GetPointType", PseudocolorAttributes_GetPointType, METH_VARARGS},
     {"SetPointSizeVarEnabled", PseudocolorAttributes_SetPointSizeVarEnabled, METH_VARARGS},
     {"GetPointSizeVarEnabled", PseudocolorAttributes_GetPointSizeVarEnabled, METH_VARARGS},
     {"SetPointSizeVar", PseudocolorAttributes_SetPointSizeVar, METH_VARARGS},
     {"GetPointSizeVar", PseudocolorAttributes_GetPointSizeVar, METH_VARARGS},
     {"SetPointSizePixels", PseudocolorAttributes_SetPointSizePixels, METH_VARARGS},
     {"GetPointSizePixels", PseudocolorAttributes_GetPointSizePixels, METH_VARARGS},
+    {"SetLineType", PseudocolorAttributes_SetLineType, METH_VARARGS},
+    {"GetLineType", PseudocolorAttributes_GetLineType, METH_VARARGS},
     {"SetLineStyle", PseudocolorAttributes_SetLineStyle, METH_VARARGS},
     {"GetLineStyle", PseudocolorAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", PseudocolorAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", PseudocolorAttributes_GetLineWidth, METH_VARARGS},
-    {"SetOpacityType", PseudocolorAttributes_SetOpacityType, METH_VARARGS},
-    {"GetOpacityType", PseudocolorAttributes_GetOpacityType, METH_VARARGS},
+    {"SetTubeDisplayDensity", PseudocolorAttributes_SetTubeDisplayDensity, METH_VARARGS},
+    {"GetTubeDisplayDensity", PseudocolorAttributes_GetTubeDisplayDensity, METH_VARARGS},
+    {"SetTubeRadiusSizeType", PseudocolorAttributes_SetTubeRadiusSizeType, METH_VARARGS},
+    {"GetTubeRadiusSizeType", PseudocolorAttributes_GetTubeRadiusSizeType, METH_VARARGS},
+    {"SetTubeRadiusAbsolute", PseudocolorAttributes_SetTubeRadiusAbsolute, METH_VARARGS},
+    {"GetTubeRadiusAbsolute", PseudocolorAttributes_GetTubeRadiusAbsolute, METH_VARARGS},
+    {"SetTubeRadiusBBox", PseudocolorAttributes_SetTubeRadiusBBox, METH_VARARGS},
+    {"GetTubeRadiusBBox", PseudocolorAttributes_GetTubeRadiusBBox, METH_VARARGS},
+    {"SetVaryTubeRadius", PseudocolorAttributes_SetVaryTubeRadius, METH_VARARGS},
+    {"GetVaryTubeRadius", PseudocolorAttributes_GetVaryTubeRadius, METH_VARARGS},
+    {"SetVaryTubeRadiusVariable", PseudocolorAttributes_SetVaryTubeRadiusVariable, METH_VARARGS},
+    {"GetVaryTubeRadiusVariable", PseudocolorAttributes_GetVaryTubeRadiusVariable, METH_VARARGS},
+    {"SetVaryTubeRadiusFactor", PseudocolorAttributes_SetVaryTubeRadiusFactor, METH_VARARGS},
+    {"GetVaryTubeRadiusFactor", PseudocolorAttributes_GetVaryTubeRadiusFactor, METH_VARARGS},
+    {"SetEndPointType", PseudocolorAttributes_SetEndPointType, METH_VARARGS},
+    {"GetEndPointType", PseudocolorAttributes_GetEndPointType, METH_VARARGS},
+    {"SetEndPointStyle", PseudocolorAttributes_SetEndPointStyle, METH_VARARGS},
+    {"GetEndPointStyle", PseudocolorAttributes_GetEndPointStyle, METH_VARARGS},
+    {"SetEndPointRadiusSizeType", PseudocolorAttributes_SetEndPointRadiusSizeType, METH_VARARGS},
+    {"GetEndPointRadiusSizeType", PseudocolorAttributes_GetEndPointRadiusSizeType, METH_VARARGS},
+    {"SetEndPointRadiusAbsolute", PseudocolorAttributes_SetEndPointRadiusAbsolute, METH_VARARGS},
+    {"GetEndPointRadiusAbsolute", PseudocolorAttributes_GetEndPointRadiusAbsolute, METH_VARARGS},
+    {"SetEndPointRadiusBBox", PseudocolorAttributes_SetEndPointRadiusBBox, METH_VARARGS},
+    {"GetEndPointRadiusBBox", PseudocolorAttributes_GetEndPointRadiusBBox, METH_VARARGS},
+    {"SetEndPointRatio", PseudocolorAttributes_SetEndPointRatio, METH_VARARGS},
+    {"GetEndPointRatio", PseudocolorAttributes_GetEndPointRatio, METH_VARARGS},
+    {"SetRenderSurfaces", PseudocolorAttributes_SetRenderSurfaces, METH_VARARGS},
+    {"GetRenderSurfaces", PseudocolorAttributes_GetRenderSurfaces, METH_VARARGS},
+    {"SetRenderWireframe", PseudocolorAttributes_SetRenderWireframe, METH_VARARGS},
+    {"GetRenderWireframe", PseudocolorAttributes_GetRenderWireframe, METH_VARARGS},
+    {"SetRenderPoints", PseudocolorAttributes_SetRenderPoints, METH_VARARGS},
+    {"GetRenderPoints", PseudocolorAttributes_GetRenderPoints, METH_VARARGS},
+    {"SetSmoothingLevel", PseudocolorAttributes_SetSmoothingLevel, METH_VARARGS},
+    {"GetSmoothingLevel", PseudocolorAttributes_GetSmoothingLevel, METH_VARARGS},
+    {"SetLegendFlag", PseudocolorAttributes_SetLegendFlag, METH_VARARGS},
+    {"GetLegendFlag", PseudocolorAttributes_GetLegendFlag, METH_VARARGS},
+    {"SetLightingFlag", PseudocolorAttributes_SetLightingFlag, METH_VARARGS},
+    {"GetLightingFlag", PseudocolorAttributes_GetLightingFlag, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -908,23 +1668,6 @@ PseudocolorAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyPseudocolorAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "legendFlag") == 0)
-        return PseudocolorAttributes_GetLegendFlag(self, NULL);
-    if(strcmp(name, "lightingFlag") == 0)
-        return PseudocolorAttributes_GetLightingFlag(self, NULL);
-    if(strcmp(name, "minFlag") == 0)
-        return PseudocolorAttributes_GetMinFlag(self, NULL);
-    if(strcmp(name, "maxFlag") == 0)
-        return PseudocolorAttributes_GetMaxFlag(self, NULL);
-    if(strcmp(name, "centering") == 0)
-        return PseudocolorAttributes_GetCentering(self, NULL);
-    if(strcmp(name, "Natural") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Natural));
-    if(strcmp(name, "Nodal") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Nodal));
-    if(strcmp(name, "Zonal") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Zonal));
-
     if(strcmp(name, "scaling") == 0)
         return PseudocolorAttributes_GetScaling(self, NULL);
     if(strcmp(name, "Linear") == 0)
@@ -934,6 +1677,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Skew") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::Skew));
 
+    if(strcmp(name, "skewFactor") == 0)
+        return PseudocolorAttributes_GetSkewFactor(self, NULL);
     if(strcmp(name, "limitsMode") == 0)
         return PseudocolorAttributes_GetLimitsMode(self, NULL);
     if(strcmp(name, "OriginalData") == 0)
@@ -941,10 +1686,52 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "CurrentPlot") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::CurrentPlot));
 
+    if(strcmp(name, "minFlag") == 0)
+        return PseudocolorAttributes_GetMinFlag(self, NULL);
     if(strcmp(name, "min") == 0)
         return PseudocolorAttributes_GetMin(self, NULL);
+    if(strcmp(name, "maxFlag") == 0)
+        return PseudocolorAttributes_GetMaxFlag(self, NULL);
     if(strcmp(name, "max") == 0)
         return PseudocolorAttributes_GetMax(self, NULL);
+    if(strcmp(name, "centering") == 0)
+        return PseudocolorAttributes_GetCentering(self, NULL);
+    if(strcmp(name, "Natural") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Natural));
+    if(strcmp(name, "Nodal") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Nodal));
+    if(strcmp(name, "Zonal") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Zonal));
+
+    if(strcmp(name, "colorTableName") == 0)
+        return PseudocolorAttributes_GetColorTableName(self, NULL);
+    if(strcmp(name, "invertColorTable") == 0)
+        return PseudocolorAttributes_GetInvertColorTable(self, NULL);
+    if(strcmp(name, "opacityType") == 0)
+        return PseudocolorAttributes_GetOpacityType(self, NULL);
+    if(strcmp(name, "ColorTable") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::ColorTable));
+    if(strcmp(name, "FullyOpaque") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::FullyOpaque));
+    if(strcmp(name, "Constant") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Constant));
+    if(strcmp(name, "Ramp") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Ramp));
+    if(strcmp(name, "VariableRange") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::VariableRange));
+
+    if(strcmp(name, "opacityVariable") == 0)
+        return PseudocolorAttributes_GetOpacityVariable(self, NULL);
+    if(strcmp(name, "opacity") == 0)
+        return PseudocolorAttributes_GetOpacity(self, NULL);
+    if(strcmp(name, "opacityVarMin") == 0)
+        return PseudocolorAttributes_GetOpacityVarMin(self, NULL);
+    if(strcmp(name, "opacityVarMax") == 0)
+        return PseudocolorAttributes_GetOpacityVarMax(self, NULL);
+    if(strcmp(name, "opacityVarMinFlag") == 0)
+        return PseudocolorAttributes_GetOpacityVarMinFlag(self, NULL);
+    if(strcmp(name, "opacityVarMaxFlag") == 0)
+        return PseudocolorAttributes_GetOpacityVarMaxFlag(self, NULL);
     if(strcmp(name, "pointSize") == 0)
         return PseudocolorAttributes_GetPointSize(self, NULL);
     if(strcmp(name, "pointType") == 0)
@@ -966,22 +1753,21 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Sphere") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::Sphere));
 
-    if(strcmp(name, "skewFactor") == 0)
-        return PseudocolorAttributes_GetSkewFactor(self, NULL);
-    if(strcmp(name, "opacity") == 0)
-        return PseudocolorAttributes_GetOpacity(self, NULL);
-    if(strcmp(name, "colorTableName") == 0)
-        return PseudocolorAttributes_GetColorTableName(self, NULL);
-    if(strcmp(name, "invertColorTable") == 0)
-        return PseudocolorAttributes_GetInvertColorTable(self, NULL);
-    if(strcmp(name, "smoothingLevel") == 0)
-        return PseudocolorAttributes_GetSmoothingLevel(self, NULL);
     if(strcmp(name, "pointSizeVarEnabled") == 0)
         return PseudocolorAttributes_GetPointSizeVarEnabled(self, NULL);
     if(strcmp(name, "pointSizeVar") == 0)
         return PseudocolorAttributes_GetPointSizeVar(self, NULL);
     if(strcmp(name, "pointSizePixels") == 0)
         return PseudocolorAttributes_GetPointSizePixels(self, NULL);
+    if(strcmp(name, "lineType") == 0)
+        return PseudocolorAttributes_GetLineType(self, NULL);
+    if(strcmp(name, "Line") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Line));
+    if(strcmp(name, "Tube") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Tube));
+    if(strcmp(name, "Ribbon") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Ribbon));
+
     if(strcmp(name, "lineStyle") == 0)
         return PseudocolorAttributes_GetLineStyle(self, NULL);
     if(strcmp(name, "SOLID") == 0)
@@ -995,13 +1781,68 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "lineWidth") == 0)
         return PseudocolorAttributes_GetLineWidth(self, NULL);
-    if(strcmp(name, "opacityType") == 0)
-        return PseudocolorAttributes_GetOpacityType(self, NULL);
-    if(strcmp(name, "Explicit") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Explicit));
-    if(strcmp(name, "ColorTable") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::ColorTable));
+    if(strcmp(name, "tubeDisplayDensity") == 0)
+        return PseudocolorAttributes_GetTubeDisplayDensity(self, NULL);
+    if(strcmp(name, "tubeRadiusSizeType") == 0)
+        return PseudocolorAttributes_GetTubeRadiusSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::FractionOfBBox));
 
+    if(strcmp(name, "tubeRadiusAbsolute") == 0)
+        return PseudocolorAttributes_GetTubeRadiusAbsolute(self, NULL);
+    if(strcmp(name, "tubeRadiusBBox") == 0)
+        return PseudocolorAttributes_GetTubeRadiusBBox(self, NULL);
+    if(strcmp(name, "varyTubeRadius") == 0)
+        return PseudocolorAttributes_GetVaryTubeRadius(self, NULL);
+    if(strcmp(name, "varyTubeRadiusVariable") == 0)
+        return PseudocolorAttributes_GetVaryTubeRadiusVariable(self, NULL);
+    if(strcmp(name, "varyTubeRadiusFactor") == 0)
+        return PseudocolorAttributes_GetVaryTubeRadiusFactor(self, NULL);
+    if(strcmp(name, "endPointType") == 0)
+        return PseudocolorAttributes_GetEndPointType(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::None));
+    if(strcmp(name, "Tails") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Tails));
+    if(strcmp(name, "Heads") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Heads));
+    if(strcmp(name, "Both") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Both));
+
+    if(strcmp(name, "endPointStyle") == 0)
+        return PseudocolorAttributes_GetEndPointStyle(self, NULL);
+    if(strcmp(name, "Spheres") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Spheres));
+    if(strcmp(name, "Cones") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Cones));
+
+    if(strcmp(name, "endPointRadiusSizeType") == 0)
+        return PseudocolorAttributes_GetEndPointRadiusSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::FractionOfBBox));
+
+    if(strcmp(name, "endPointRadiusAbsolute") == 0)
+        return PseudocolorAttributes_GetEndPointRadiusAbsolute(self, NULL);
+    if(strcmp(name, "endPointRadiusBBox") == 0)
+        return PseudocolorAttributes_GetEndPointRadiusBBox(self, NULL);
+    if(strcmp(name, "endPointRatio") == 0)
+        return PseudocolorAttributes_GetEndPointRatio(self, NULL);
+    if(strcmp(name, "renderSurfaces") == 0)
+        return PseudocolorAttributes_GetRenderSurfaces(self, NULL);
+    if(strcmp(name, "renderWireframe") == 0)
+        return PseudocolorAttributes_GetRenderWireframe(self, NULL);
+    if(strcmp(name, "renderPoints") == 0)
+        return PseudocolorAttributes_GetRenderPoints(self, NULL);
+    if(strcmp(name, "smoothingLevel") == 0)
+        return PseudocolorAttributes_GetSmoothingLevel(self, NULL);
+    if(strcmp(name, "legendFlag") == 0)
+        return PseudocolorAttributes_GetLegendFlag(self, NULL);
+    if(strcmp(name, "lightingFlag") == 0)
+        return PseudocolorAttributes_GetLightingFlag(self, NULL);
 
     // Try and handle legacy fields in PseudocolorAttributes
     if(strcmp(name, "useColorTableOpacity") == 0)
@@ -1023,50 +1864,94 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "legendFlag") == 0)
-        obj = PseudocolorAttributes_SetLegendFlag(self, tuple);
-    else if(strcmp(name, "lightingFlag") == 0)
-        obj = PseudocolorAttributes_SetLightingFlag(self, tuple);
-    else if(strcmp(name, "minFlag") == 0)
-        obj = PseudocolorAttributes_SetMinFlag(self, tuple);
-    else if(strcmp(name, "maxFlag") == 0)
-        obj = PseudocolorAttributes_SetMaxFlag(self, tuple);
-    else if(strcmp(name, "centering") == 0)
-        obj = PseudocolorAttributes_SetCentering(self, tuple);
-    else if(strcmp(name, "scaling") == 0)
+    if(strcmp(name, "scaling") == 0)
         obj = PseudocolorAttributes_SetScaling(self, tuple);
-    else if(strcmp(name, "limitsMode") == 0)
-        obj = PseudocolorAttributes_SetLimitsMode(self, tuple);
-    else if(strcmp(name, "min") == 0)
-        obj = PseudocolorAttributes_SetMin(self, tuple);
-    else if(strcmp(name, "max") == 0)
-        obj = PseudocolorAttributes_SetMax(self, tuple);
-    else if(strcmp(name, "pointSize") == 0)
-        obj = PseudocolorAttributes_SetPointSize(self, tuple);
-    else if(strcmp(name, "pointType") == 0)
-        obj = PseudocolorAttributes_SetPointType(self, tuple);
     else if(strcmp(name, "skewFactor") == 0)
         obj = PseudocolorAttributes_SetSkewFactor(self, tuple);
-    else if(strcmp(name, "opacity") == 0)
-        obj = PseudocolorAttributes_SetOpacity(self, tuple);
+    else if(strcmp(name, "limitsMode") == 0)
+        obj = PseudocolorAttributes_SetLimitsMode(self, tuple);
+    else if(strcmp(name, "minFlag") == 0)
+        obj = PseudocolorAttributes_SetMinFlag(self, tuple);
+    else if(strcmp(name, "min") == 0)
+        obj = PseudocolorAttributes_SetMin(self, tuple);
+    else if(strcmp(name, "maxFlag") == 0)
+        obj = PseudocolorAttributes_SetMaxFlag(self, tuple);
+    else if(strcmp(name, "max") == 0)
+        obj = PseudocolorAttributes_SetMax(self, tuple);
+    else if(strcmp(name, "centering") == 0)
+        obj = PseudocolorAttributes_SetCentering(self, tuple);
     else if(strcmp(name, "colorTableName") == 0)
         obj = PseudocolorAttributes_SetColorTableName(self, tuple);
     else if(strcmp(name, "invertColorTable") == 0)
         obj = PseudocolorAttributes_SetInvertColorTable(self, tuple);
-    else if(strcmp(name, "smoothingLevel") == 0)
-        obj = PseudocolorAttributes_SetSmoothingLevel(self, tuple);
+    else if(strcmp(name, "opacityType") == 0)
+        obj = PseudocolorAttributes_SetOpacityType(self, tuple);
+    else if(strcmp(name, "opacityVariable") == 0)
+        obj = PseudocolorAttributes_SetOpacityVariable(self, tuple);
+    else if(strcmp(name, "opacity") == 0)
+        obj = PseudocolorAttributes_SetOpacity(self, tuple);
+    else if(strcmp(name, "opacityVarMin") == 0)
+        obj = PseudocolorAttributes_SetOpacityVarMin(self, tuple);
+    else if(strcmp(name, "opacityVarMax") == 0)
+        obj = PseudocolorAttributes_SetOpacityVarMax(self, tuple);
+    else if(strcmp(name, "opacityVarMinFlag") == 0)
+        obj = PseudocolorAttributes_SetOpacityVarMinFlag(self, tuple);
+    else if(strcmp(name, "opacityVarMaxFlag") == 0)
+        obj = PseudocolorAttributes_SetOpacityVarMaxFlag(self, tuple);
+    else if(strcmp(name, "pointSize") == 0)
+        obj = PseudocolorAttributes_SetPointSize(self, tuple);
+    else if(strcmp(name, "pointType") == 0)
+        obj = PseudocolorAttributes_SetPointType(self, tuple);
     else if(strcmp(name, "pointSizeVarEnabled") == 0)
         obj = PseudocolorAttributes_SetPointSizeVarEnabled(self, tuple);
     else if(strcmp(name, "pointSizeVar") == 0)
         obj = PseudocolorAttributes_SetPointSizeVar(self, tuple);
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = PseudocolorAttributes_SetPointSizePixels(self, tuple);
+    else if(strcmp(name, "lineType") == 0)
+        obj = PseudocolorAttributes_SetLineType(self, tuple);
     else if(strcmp(name, "lineStyle") == 0)
         obj = PseudocolorAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = PseudocolorAttributes_SetLineWidth(self, tuple);
-    else if(strcmp(name, "opacityType") == 0)
-        obj = PseudocolorAttributes_SetOpacityType(self, tuple);
+    else if(strcmp(name, "tubeDisplayDensity") == 0)
+        obj = PseudocolorAttributes_SetTubeDisplayDensity(self, tuple);
+    else if(strcmp(name, "tubeRadiusSizeType") == 0)
+        obj = PseudocolorAttributes_SetTubeRadiusSizeType(self, tuple);
+    else if(strcmp(name, "tubeRadiusAbsolute") == 0)
+        obj = PseudocolorAttributes_SetTubeRadiusAbsolute(self, tuple);
+    else if(strcmp(name, "tubeRadiusBBox") == 0)
+        obj = PseudocolorAttributes_SetTubeRadiusBBox(self, tuple);
+    else if(strcmp(name, "varyTubeRadius") == 0)
+        obj = PseudocolorAttributes_SetVaryTubeRadius(self, tuple);
+    else if(strcmp(name, "varyTubeRadiusVariable") == 0)
+        obj = PseudocolorAttributes_SetVaryTubeRadiusVariable(self, tuple);
+    else if(strcmp(name, "varyTubeRadiusFactor") == 0)
+        obj = PseudocolorAttributes_SetVaryTubeRadiusFactor(self, tuple);
+    else if(strcmp(name, "endPointType") == 0)
+        obj = PseudocolorAttributes_SetEndPointType(self, tuple);
+    else if(strcmp(name, "endPointStyle") == 0)
+        obj = PseudocolorAttributes_SetEndPointStyle(self, tuple);
+    else if(strcmp(name, "endPointRadiusSizeType") == 0)
+        obj = PseudocolorAttributes_SetEndPointRadiusSizeType(self, tuple);
+    else if(strcmp(name, "endPointRadiusAbsolute") == 0)
+        obj = PseudocolorAttributes_SetEndPointRadiusAbsolute(self, tuple);
+    else if(strcmp(name, "endPointRadiusBBox") == 0)
+        obj = PseudocolorAttributes_SetEndPointRadiusBBox(self, tuple);
+    else if(strcmp(name, "endPointRatio") == 0)
+        obj = PseudocolorAttributes_SetEndPointRatio(self, tuple);
+    else if(strcmp(name, "renderSurfaces") == 0)
+        obj = PseudocolorAttributes_SetRenderSurfaces(self, tuple);
+    else if(strcmp(name, "renderWireframe") == 0)
+        obj = PseudocolorAttributes_SetRenderWireframe(self, tuple);
+    else if(strcmp(name, "renderPoints") == 0)
+        obj = PseudocolorAttributes_SetRenderPoints(self, tuple);
+    else if(strcmp(name, "smoothingLevel") == 0)
+        obj = PseudocolorAttributes_SetSmoothingLevel(self, tuple);
+    else if(strcmp(name, "legendFlag") == 0)
+        obj = PseudocolorAttributes_SetLegendFlag(self, tuple);
+    else if(strcmp(name, "lightingFlag") == 0)
+        obj = PseudocolorAttributes_SetLightingFlag(self, tuple);
 
     // Try and handle legacy fields in PseudocolorAttributes
     if(obj == NULL)
@@ -1081,7 +1966,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
                 return -1;
             }
             if(ival == 0)
-                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Explicit);
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
             else
                 PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
     

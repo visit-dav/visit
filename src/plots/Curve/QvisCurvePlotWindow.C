@@ -169,23 +169,355 @@ QvisCurvePlotWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // Rendering tab
+    // Data tab
     // ----------------------------------------------------------------------
-    QWidget *renderingTab = new QWidget(central);
-    propertyTabs->addTab(renderingTab, tr("Rendering"));
-    CreateRenderingTab(renderingTab);
+    QWidget *dataTab = new QWidget(central);
+    propertyTabs->addTab(dataTab, tr("Data"));
+    CreateDataTab(dataTab);
 
     // ----------------------------------------------------------------------
-    // Appearance tab
+    // Geometry tab
     // ----------------------------------------------------------------------
-    QWidget *appearanceTab = new QWidget(central);
-    propertyTabs->addTab(appearanceTab, tr("Appearance"));
-    CreateAppearanceTab(appearanceTab);
+    QWidget *geometryTab = new QWidget(central);
+    propertyTabs->addTab(geometryTab, tr("Geometry"));
+    CreateGeometryTab(geometryTab);
+
+    // ----------------------------------------------------------------------
+    // Extras tab
+    // ----------------------------------------------------------------------
+    QWidget *extrasTab = new QWidget(central);
+    propertyTabs->addTab(extrasTab, tr("Extras"));
+    CreateExtrasTab(extrasTab);
 }
 
 
 // ****************************************************************************
-// Method: QvisCurvePlotWindow::CreateAppearanceTab
+// Method: QvisCurvePlotWindow::CreateDataTab
+//
+// Purpose: 
+//   Populates the data tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
+{
+    QGridLayout *topLayout = new QGridLayout(pageData);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the color
+    //
+    QGroupBox * colorGroup = new QGroupBox(central);
+    colorGroup->setTitle(tr("Color"));
+    topLayout->addWidget(colorGroup);
+
+    QGridLayout *colorLayout = new QGridLayout(colorGroup);
+    colorLayout->setMargin(5);
+    colorLayout->setSpacing(10);
+ 
+    // Create the radio buttons for curve color source
+    colorLayout->addWidget(new QLabel(tr("Curve color"), central), 0, 0);
+
+    curveColorButtons = new QButtonGroup(central);
+
+    QRadioButton *rb = new QRadioButton(tr("Cycle"), central);
+    rb->setChecked(true);
+    curveColorButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Custom"), central);
+    curveColorButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(curveColorButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(curveColorClicked(int)));
+
+    // Create the curve color button.
+    curveColor = new QvisColorButton(central);
+    connect(curveColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(curveColorChanged(const QColor &)));
+    colorLayout->addWidget(curveColor, 0, 3);
+
+    //
+    // Fill color widgets
+    //
+    QGroupBox *fillGroup = new QGroupBox(central);
+    fillGroup->setTitle(tr("Fill"));
+    colorLayout->addWidget(fillGroup, 1, 0, 1, 4);
+
+    QGridLayout *fillLayout = new QGridLayout(fillGroup);
+    fillLayout->setMargin(5);
+    fillLayout->setSpacing(10);
+
+    fillLayout->addWidget(new QLabel(tr("Fill mode"), central), 0, 0);
+
+    fillMode = new QComboBox(central);
+    fillMode->addItem(tr("No Fill"));
+    fillMode->addItem(tr("Solid"));
+    fillMode->addItem(tr("Horizontal Gradient"));
+    fillMode->addItem(tr("Vertical Gradient"));
+    connect(fillMode, SIGNAL(activated(int)),
+            this, SLOT(fillModeChanged(int))); 
+    fillLayout->addWidget(fillMode, 0, 1, 1, 2);
+
+    fillLabel1 = new QLabel(tr("Color 1"), central);
+    fillLayout->addWidget(fillLabel1, 1, 0);
+
+    fillColor1 = new QvisColorButton(central);
+    connect(fillColor1, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(fillColor1Changed(const QColor &)));
+    fillLayout->addWidget(fillColor1, 1, 1);
+
+    fillOpacity1 = new QvisOpacitySlider(0, 255, 25, 255, central);
+    fillOpacity1->setTickInterval(64);
+    fillOpacity1->setGradientColor(QColor(255, 0, 0));
+    connect(fillOpacity1, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(fillColor1OpacityChanged(int, const void*)));
+    fillLayout->addWidget(fillOpacity1, 1, 2);
+
+    fillLabel2 = new QLabel(tr("Color 2"), central);
+    fillLayout->addWidget(fillLabel2, 2, 0);
+
+    fillColor2 = new QvisColorButton(central);
+    connect(fillColor2, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(fillColor2Changed(const QColor &)));
+    fillLayout->addWidget(fillColor2, 2, 1);
+
+    fillOpacity2 = new QvisOpacitySlider(0, 255, 25, 255, central);
+    fillOpacity2->setTickInterval(64);
+    fillOpacity2->setGradientColor(QColor(255, 40, 40));
+    connect(fillOpacity2, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(fillColor2OpacityChanged(int, const void*)));
+    fillLayout->addWidget(fillOpacity2, 2, 2);
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
+
+    // Create the labels toggle
+    labelsToggle = new QCheckBox(tr("Labels"), central);
+    connect(labelsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(labelsToggled(bool)));
+    miscLayout->addWidget(labelsToggle, 0, 1);
+}
+
+
+// ****************************************************************************
+// Method: QvisCurvePlotWindow::CreateGeometryTab
+//
+// Purpose: 
+//   Creates the widgets for the geometry options tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   September 11, 2013
+//
+// ****************************************************************************
+
+void
+QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
+{
+    QGridLayout *topLayout = new QGridLayout(pageGeometry);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    int ROW = 0;
+
+    //
+    // Create line related controls.
+    //
+    QGroupBox * lineGroup = new QGroupBox(central);
+    lineGroup->setTitle(tr("Line"));
+    topLayout->addWidget(lineGroup);
+
+    QGridLayout *lineLayout = new QGridLayout(lineGroup);
+    lineLayout->setMargin(5);
+    lineLayout->setSpacing(10);
+
+    ROW = 0;
+
+
+    showLines = new QCheckBox(tr("Show lines"), central);
+    connect(showLines, SIGNAL(toggled(bool)),
+            this, SLOT(showLinesChanged(bool)));
+
+    lineLayout->addWidget(showLines, ROW, 0, 1, 2);
+
+    ++ROW;
+
+    lineLayout->addWidget(new QLabel("     ", central), ROW, 0, 1, 1);
+
+    lineStyle = new QvisLineStyleWidget(0, central);
+    lineStyleLabel = new QLabel(tr("Line style"), central);
+    lineStyleLabel->setBuddy(lineStyle);
+
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+
+    lineLayout->addWidget(lineStyleLabel, ROW, 1, 1, 1);
+    lineLayout->addWidget(lineStyle, ROW, 2, 1, 1);
+
+    lineWidth = new QvisLineWidthWidget(0, central);
+    lineWidthLabel = new QLabel(tr("Line width"), central);
+    lineWidthLabel->setBuddy(lineWidth);
+
+    lineLayout->addWidget(lineWidthLabel, ROW, 3, 1, 1);
+    lineLayout->addWidget(lineWidth, ROW, 4, 1, 1);
+
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+
+    ++ROW;
+
+
+    // 
+    // Create point related controls.
+    //
+
+    QGroupBox * pointGroup = new QGroupBox(central);
+    pointGroup->setTitle(tr("Point"));
+    topLayout->addWidget(pointGroup);
+
+    QGridLayout *pointLayout = new QGridLayout(pointGroup);
+    pointLayout->setMargin(5);
+    pointLayout->setSpacing(10);
+
+    ROW = 0;
+
+    showPoints = new QCheckBox(tr("Show points"), central);
+    connect(showPoints, SIGNAL(toggled(bool)),
+            this, SLOT(showPointsChanged(bool)));
+
+    pointLayout->addWidget(showPoints, ROW, 0, 1, 2);
+
+    ++ROW;
+
+
+    //
+    // Create symbol-related controls
+    //
+#define CREATE_PIXMAP(pixobj, name, xpm) \
+    QPixmap pixobj; \
+    if(!QPixmapCache::find(name, pixobj)) \
+    { \
+        char *augmentedData[35], augmentedForeground[15]; \
+        for(int i = 0; i < 35; ++i) \
+            augmentedData[i] = (char *)xpm[i]; \
+        QColor fg(palette().color(QPalette::Text));\
+        sprintf(augmentedForeground, ". c #%02x%02x%02x", \
+                fg.red(), fg.green(), fg.blue()); \
+        augmentedData[2] = augmentedForeground; \
+        QPixmap augmented((const char **)augmentedData); \
+        QPixmapCache::insert(name, augmented); \
+        pixobj = augmented; \
+    }
+    CREATE_PIXMAP(pix1, "visit_curvewindow_ci_triup", ci_triup_xpm)
+    CREATE_PIXMAP(pix2, "visit_curvewindow_ci_tridown", ci_tridown_xpm)
+    CREATE_PIXMAP(pix3, "visit_curvewindow_ci_square", ci_square_xpm)
+    CREATE_PIXMAP(pix4, "visit_curvewindow_ci_circle", ci_circle_xpm)
+    CREATE_PIXMAP(pix5, "visit_curvewindow_ci_plus", ci_plus_xpm)
+    CREATE_PIXMAP(pix6, "visit_curvewindow_ci_x", ci_x_xpm)
+
+    symbolType = new QComboBox(central);
+    symbolType->setMinimumHeight(20);
+    symbolType->addItem(tr("Point"));
+    symbolType->addItem(QIcon(pix1), tr("triangle up"));
+    symbolType->addItem(QIcon(pix2), tr("triangle down"));
+    symbolType->addItem(QIcon(pix3), tr("square"));
+    symbolType->addItem(QIcon(pix4), tr("circle"));
+    symbolType->addItem(QIcon(pix5), tr("plus"));
+    symbolType->addItem(QIcon(pix6), tr("X"));
+
+    connect(symbolType, SIGNAL(activated(int)),
+            this, SLOT(symbolTypeChanged(int)));
+
+    symbolTypeLabel = new QLabel(tr("Symbol"), central);
+    symbolTypeLabel->setBuddy(symbolType);
+
+    pointLayout->addWidget(new QLabel("    ", central), ROW, 0, 1 ,1);
+    pointLayout->addWidget(symbolTypeLabel, ROW, 1, 1, 1);
+    pointLayout->addWidget(symbolType, ROW, 2, 1, 1);
+
+
+    // Create the point size line edit
+    pointSize = new QNarrowLineEdit(central);
+    pointSizeLabel = new QLabel(tr("Point size"), central);
+    pointSizeLabel->setBuddy(pointSize);
+
+    connect(pointSize, SIGNAL(returnPressed()),
+            this, SLOT(processPointSizeText())); 
+
+    pointLayout->addWidget(pointSizeLabel, ROW, 3, 1, 1);
+    pointLayout->addWidget(pointSize, ROW, 4, 1, 1);
+
+    ++ROW;
+
+    fillModeGroup = new QButtonGroup(pointGroup);
+
+    connect(fillModeGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(symbolFillModeChanged(int)));
+
+    staticButton = new QRadioButton(tr("Static"), pointGroup);
+    staticButton->setChecked(true);
+    fillModeGroup->addButton(staticButton, 0);
+    pointLayout->addWidget(staticButton, ROW, 1, 1, 2);
+
+    // Create the point stride 
+    pointStride = new QSpinBox(central);
+    pointStride->setMinimum(1);
+    pointStride->setMaximum(5000);
+    pointStrideLabel = new QLabel(tr("Point stride"), central);
+    pointStrideLabel->setBuddy(pointStride);
+
+    connect(pointStride, SIGNAL(valueChanged(int)),
+            this, SLOT(pointStrideChanged(int))); 
+
+    pointLayout->addWidget(pointStrideLabel, ROW, 3, 1, 1);
+    pointLayout->addWidget(pointStride, ROW, 4, 1, 1);
+
+    ++ROW;
+
+    dynamicButton = new QRadioButton(tr("Dynamic"), pointGroup);
+    fillModeGroup->addButton(dynamicButton, 1);
+
+    pointLayout->addWidget(dynamicButton, ROW, 1, 1, 2);
+
+    // Create the point density spin box
+    symbolDensity = new QSpinBox(central);
+    symbolDensity->setMinimum(10);
+    symbolDensity->setMaximum(1000);
+    symbolDensityLabel = new QLabel(tr("Point density"), central);
+    symbolDensityLabel->setBuddy(symbolDensity);
+
+    connect(symbolDensity, SIGNAL(valueChanged(int)),
+            this, SLOT(symbolDensityChanged(int)));
+
+    pointLayout->addWidget(symbolDensityLabel, ROW, 3, 1, 1);
+    pointLayout->addWidget(symbolDensity, ROW, 4, 1, 1);
+}
+
+
+// ****************************************************************************
+// Method: QvisCurvePlotWindow::CreateExtrasTab
 //
 // Purpose: 
 //   Creates the widgets for the cue options tab.
@@ -196,9 +528,9 @@ QvisCurvePlotWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisCurvePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
+QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
 {
-    QGridLayout *topLayout = new QGridLayout(pageAppearance);
+    QGridLayout *topLayout = new QGridLayout(pageExtras);
     topLayout->setMargin(5);
     topLayout->setSpacing(10);
 
@@ -307,306 +639,20 @@ QvisCurvePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     coordSystemLayout->addWidget(angleUnits, 1, 3, 1, 1);
 
     //
-    // Create the misc stuff
+    // Create the blank stuff to fill in gaps.
     //
-    QGroupBox * miscGroup = new QGroupBox(central);
-    miscGroup->setTitle(tr("Misc"));
-    topLayout->addWidget(miscGroup);
+//     QGroupBox * blankGroup = new QGroupBox(central);
+// //    blankGroup->setTitle(tr("Blank"));
+//     topLayout->addWidget(blankGroup);
 
-    QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
-    miscLayout->setSpacing(10);
+//     QGridLayout *blankLayout = new QGridLayout(blankGroup);
+//     blankLayout->setMargin(5);
+//     blankLayout->setSpacing(10);
  
-    // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central);
-    connect(legendToggle, SIGNAL(toggled(bool)),
-            this, SLOT(legendToggled(bool)));
-    miscLayout->addWidget(legendToggle, 0, 0);
-
-    // Create the labels toggle
-    labelsToggle = new QCheckBox(tr("Labels"), central);
-    connect(labelsToggle, SIGNAL(toggled(bool)),
-            this, SLOT(labelsToggled(bool)));
-    miscLayout->addWidget(labelsToggle, 0, 1);
-}
-
-
-// ****************************************************************************
-// Method: QvisCurvePlotWindow::CreateRenderingTab
-//
-// Purpose: 
-//   Creates the widgets for the rendering options tab.
-//
-// Programmer: Kathleen Biagas 
-// Creation:   September 11, 2013
-//
-// ****************************************************************************
-
-void
-QvisCurvePlotWindow::CreateRenderingTab(QWidget *pageRendering)
-{
-    QGridLayout *topLayout = new QGridLayout(pageRendering);
-    topLayout->setMargin(5);
-    topLayout->setSpacing(10);
-
-    int ROW = 0;
-
-    //
-    // Create line related controls.
-    //
-    QGroupBox * lineGroup = new QGroupBox(central);
-    lineGroup->setTitle(tr("Line"));
-    topLayout->addWidget(lineGroup);
-
-    QGridLayout *lineLayout = new QGridLayout(lineGroup);
-    lineLayout->setMargin(5);
-    lineLayout->setSpacing(10);
-
-    ROW = 0;
-
-
-    showLines = new QCheckBox(tr("Show lines"), central);
-    connect(showLines, SIGNAL(toggled(bool)),
-            this, SLOT(showLinesChanged(bool)));
-
-    lineLayout->addWidget(showLines, ROW, 0, 1, 2);
-
-    ++ROW;
-
-    lineLayout->addWidget(new QLabel("     ", central), ROW, 0, 1, 1);
-
-    lineStyle = new QvisLineStyleWidget(0, central);
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    lineStyleLabel->setBuddy(lineStyle);
-
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-
-    lineLayout->addWidget(lineStyleLabel, ROW, 1, 1, 1);
-    lineLayout->addWidget(lineStyle, ROW, 2, 1, 1);
-
-    lineWidth = new QvisLineWidthWidget(0, central);
-    lineWidthLabel = new QLabel(tr("Line width"), central);
-    lineWidthLabel->setBuddy(lineWidth);
-
-    lineLayout->addWidget(lineWidthLabel, ROW, 3, 1, 1);
-    lineLayout->addWidget(lineWidth, ROW, 4, 1, 1);
-
-    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineWidthChanged(int)));
-
-    ++ROW;
-
-
-    // 
-    // Create point related controls.
-    //
-
-    QGroupBox * pointGroup = new QGroupBox(central);
-    pointGroup->setTitle(tr("Point"));
-    topLayout->addWidget(pointGroup);
-
-    QGridLayout *pointLayout = new QGridLayout(pointGroup);
-    pointLayout->setMargin(5);
-    pointLayout->setSpacing(10);
-
-    ROW = 0;
-
-    showPoints = new QCheckBox(tr("Show points"), central);
-    connect(showPoints, SIGNAL(toggled(bool)),
-            this, SLOT(showPointsChanged(bool)));
-
-    pointLayout->addWidget(showPoints, ROW, 0, 1, 2);
-
-    ++ROW;
-
-    //
-    // Create symbol-related controls
-    //
-#define CREATE_PIXMAP(pixobj, name, xpm) \
-    QPixmap pixobj; \
-    if(!QPixmapCache::find(name, pixobj)) \
-    { \
-        char *augmentedData[35], augmentedForeground[15]; \
-        for(int i = 0; i < 35; ++i) \
-            augmentedData[i] = (char *)xpm[i]; \
-        QColor fg(palette().color(QPalette::Text));\
-        sprintf(augmentedForeground, ". c #%02x%02x%02x", \
-                fg.red(), fg.green(), fg.blue()); \
-        augmentedData[2] = augmentedForeground; \
-        QPixmap augmented((const char **)augmentedData); \
-        QPixmapCache::insert(name, augmented); \
-        pixobj = augmented; \
-    }
-    CREATE_PIXMAP(pix1, "visit_curvewindow_ci_triup", ci_triup_xpm)
-    CREATE_PIXMAP(pix2, "visit_curvewindow_ci_tridown", ci_tridown_xpm)
-    CREATE_PIXMAP(pix3, "visit_curvewindow_ci_square", ci_square_xpm)
-    CREATE_PIXMAP(pix4, "visit_curvewindow_ci_circle", ci_circle_xpm)
-    CREATE_PIXMAP(pix5, "visit_curvewindow_ci_plus", ci_plus_xpm)
-    CREATE_PIXMAP(pix6, "visit_curvewindow_ci_x", ci_x_xpm)
-
-    symbolType = new QComboBox(central);
-    symbolType->setMinimumHeight(20);
-    symbolType->addItem(tr("Point"));
-    symbolType->addItem(QIcon(pix1), tr("triangle up"));
-    symbolType->addItem(QIcon(pix2), tr("triangle down"));
-    symbolType->addItem(QIcon(pix3), tr("square"));
-    symbolType->addItem(QIcon(pix4), tr("circle"));
-    symbolType->addItem(QIcon(pix5), tr("plus"));
-    symbolType->addItem(QIcon(pix6), tr("X"));
-
-    connect(symbolType, SIGNAL(activated(int)),
-            this, SLOT(symbolTypeChanged(int)));
-
-    symbolTypeLabel = new QLabel(tr("Symbol"), central);
-    symbolTypeLabel->setBuddy(symbolType);
-
-    pointLayout->addWidget(new QLabel("    ", central), ROW, 0, 1 ,1);
-    pointLayout->addWidget(symbolTypeLabel, ROW, 1, 1, 1);
-    pointLayout->addWidget(symbolType, ROW, 2, 1, 1);
-
-
-    // Create the point size line edit
-    pointSize = new QNarrowLineEdit(central);
-    pointSizeLabel = new QLabel(tr("Point size"), central);
-    pointSizeLabel->setBuddy(pointSize);
-
-    connect(pointSize, SIGNAL(returnPressed()),
-            this, SLOT(processPointSizeText())); 
-
-    pointLayout->addWidget(pointSizeLabel, ROW, 3, 1, 1);
-    pointLayout->addWidget(pointSize, ROW, 4, 1, 1);
-
-    ++ROW;
-
-    fillModeGroup = new QButtonGroup(pointGroup);
-
-    connect(fillModeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(symbolFillModeChanged(int)));
-
-    staticButton = new QRadioButton(tr("Static"), pointGroup);
-    staticButton->setChecked(true);
-    fillModeGroup->addButton(staticButton, 0);
-    pointLayout->addWidget(staticButton, ROW, 1, 1, 2);
-
-    // Create the point stride 
-    pointStride = new QSpinBox(central);
-    pointStride->setMinimum(1);
-    pointStride->setMaximum(5000);
-    pointStrideLabel = new QLabel(tr("Point stride"), central);
-    pointStrideLabel->setBuddy(pointStride);
-
-    connect(pointStride, SIGNAL(valueChanged(int)),
-            this, SLOT(pointStrideChanged(int))); 
-
-    pointLayout->addWidget(pointStrideLabel, ROW, 3, 1, 1);
-    pointLayout->addWidget(pointStride, ROW, 4, 1, 1);
-
-    ++ROW;
-
-    dynamicButton = new QRadioButton(tr("Dynamic"), pointGroup);
-    fillModeGroup->addButton(dynamicButton, 1);
-
-    pointLayout->addWidget(dynamicButton, ROW, 1, 1, 2);
-
-    // Create the point density spin box
-    symbolDensity = new QSpinBox(central);
-    symbolDensity->setMinimum(10);
-    symbolDensity->setMaximum(1000);
-    symbolDensityLabel = new QLabel(tr("Point density"), central);
-    symbolDensityLabel->setBuddy(symbolDensity);
-
-    connect(symbolDensity, SIGNAL(valueChanged(int)),
-            this, SLOT(symbolDensityChanged(int)));
-
-    pointLayout->addWidget(symbolDensityLabel, ROW, 3, 1, 1);
-    pointLayout->addWidget(symbolDensity, ROW, 4, 1, 1);
-
-    //
-    // Create the color
-    //
-    QGroupBox * colorGroup = new QGroupBox(central);
-    colorGroup->setTitle(tr("Color"));
-    topLayout->addWidget(colorGroup);
-
-    QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
-    colorLayout->setSpacing(10);
- 
-    // Create the radio buttons for curve color source
-    colorLayout->addWidget(new QLabel(tr("Curve color"), central), 0, 0);
-
-    curveColorButtons = new QButtonGroup(central);
-
-    QRadioButton *rb = new QRadioButton(tr("Cycle"), central);
-    rb->setChecked(true);
-    curveColorButtons->addButton(rb, 0);
-    colorLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Custom"), central);
-    curveColorButtons->addButton(rb, 1);
-    colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
-
-    // Each time a radio button is clicked, call the scale clicked slot.
-    connect(curveColorButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(curveColorClicked(int)));
-
-    // Create the curve color button.
-    curveColor = new QvisColorButton(central);
-    connect(curveColor, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(curveColorChanged(const QColor &)));
-    colorLayout->addWidget(curveColor, 0, 3);
-
-    //
-    // Fill color widgets
-    //
-    QGroupBox *fillGroup = new QGroupBox(central);
-    fillGroup->setTitle(tr("Fill"));
-    colorLayout->addWidget(fillGroup, 1, 0, 1, 4);
-
-    QGridLayout *fillLayout = new QGridLayout(fillGroup);
-    fillLayout->setMargin(5);
-    fillLayout->setSpacing(10);
-
-    fillLayout->addWidget(new QLabel(tr("Fill mode"), central), 0, 0);
-
-    fillMode = new QComboBox(central);
-    fillMode->addItem(tr("No Fill"));
-    fillMode->addItem(tr("Solid"));
-    fillMode->addItem(tr("Horizontal Gradient"));
-    fillMode->addItem(tr("Vertical Gradient"));
-    connect(fillMode, SIGNAL(activated(int)),
-            this, SLOT(fillModeChanged(int))); 
-    fillLayout->addWidget(fillMode, 0, 1, 1, 2);
-
-    fillLabel1 = new QLabel(tr("Color 1"), central);
-    fillLayout->addWidget(fillLabel1, 1, 0);
-
-    fillColor1 = new QvisColorButton(central);
-    connect(fillColor1, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(fillColor1Changed(const QColor &)));
-    fillLayout->addWidget(fillColor1, 1, 1);
-
-    fillOpacity1 = new QvisOpacitySlider(0, 255, 25, 255, central);
-    fillOpacity1->setTickInterval(64);
-    fillOpacity1->setGradientColor(QColor(255, 0, 0));
-    connect(fillOpacity1, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(fillColor1OpacityChanged(int, const void*)));
-    fillLayout->addWidget(fillOpacity1, 1, 2);
-
-    fillLabel2 = new QLabel(tr("Color 2"), central);
-    fillLayout->addWidget(fillLabel2, 2, 0);
-
-    fillColor2 = new QvisColorButton(central);
-    connect(fillColor2, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(fillColor2Changed(const QColor &)));
-    fillLayout->addWidget(fillColor2, 2, 1);
-
-    fillOpacity2 = new QvisOpacitySlider(0, 255, 25, 255, central);
-    fillOpacity2->setTickInterval(64);
-    fillOpacity2->setGradientColor(QColor(255, 40, 40));
-    connect(fillOpacity2, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(fillColor2OpacityChanged(int, const void*)));
-    fillLayout->addWidget(fillOpacity2, 2, 2);
+//     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);
+//     blankLayout->addWidget(new QLabel(tr(""), central), 1,0);
+//     blankLayout->addWidget(new QLabel(tr(""), central), 2,0);
+//     blankLayout->addWidget(new QLabel(tr(""), central), 3,0);
 }
 
 

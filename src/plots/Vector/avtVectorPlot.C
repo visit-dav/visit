@@ -536,12 +536,13 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     glyph->SetHeadSize(atts.GetHeadSize());
     glyph->SetLineStem(atts.GetLineStem());
     glyph->SetStemWidth(atts.GetStemWidth());
-    if (atts.GetGeometryQuality())
+
+    if (atts.GetGeometryQuality() == VectorAttributes::High)
     {
         glyph->HighQualityOn();
         glyph->CapEndsOn();
     }
-    else
+    else //if (atts.GetGeometryQuality() == VectorAttributes::Fast)
     {
         glyph->HighQualityOff();
         glyph->CapEndsOff();

@@ -159,7 +159,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
 
     void                        SetLimitsMode(int);
 
-    void                        SetOpacityFromAtts();
+    bool                        SetOpacityFromAtts();
     void                        SetScaling(int, double);
 
   protected:
