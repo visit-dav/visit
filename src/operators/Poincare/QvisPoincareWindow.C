@@ -287,9 +287,9 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
 
     // Create the node centering
-    forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
-    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    fieldLayout->addWidget(forceNodal, 2, 0);
+    // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
+    // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    // fieldLayout->addWidget(forceNodal, 2, 0);
 
 
     // Create the integration group box.
@@ -1129,11 +1129,11 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             integrationType->blockSignals(false);
 
             break;
-        case PoincareAttributes::ID_forceNodeCenteredData:
-            forceNodal->blockSignals(true);
-            forceNodal->setChecked(atts->GetForceNodeCenteredData());
-            forceNodal->blockSignals(false);
-            break;
+        // case PoincareAttributes::ID_forceNodeCenteredData:
+        //     forceNodal->blockSignals(true);
+        //     forceNodal->setChecked(atts->GetForceNodeCenteredData());
+        //     forceNodal->blockSignals(false);
+        //     break;
 
         case PoincareAttributes::ID_fieldConstant:
             fieldConstant->setText(DoubleToQString(atts->GetFieldConstant()));
@@ -2288,12 +2288,12 @@ QvisPoincareWindow::verboseFlagChanged(bool val)
 }
 
 
-void
-QvisPoincareWindow::forceNodalChanged(bool val)
-{
-    atts->SetForceNodeCenteredData(val);
-    Apply();
-}
+// void
+// QvisPoincareWindow::forceNodalChanged(bool val)
+// {
+//     atts->SetForceNodeCenteredData(val);
+//     Apply();
+// }
 
 
 void

@@ -302,9 +302,9 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldLayout->addWidget(velocitySource, 1, 3);
 
     // Create the node centering
-    forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
-    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    fieldLayout->addWidget(forceNodal, 2, 0);
+    // forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
+    // connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    // fieldLayout->addWidget(forceNodal, 2, 0);
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
@@ -938,11 +938,11 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             pathlineCMFEButtonGroup->blockSignals(false);
             break;
 
-        case LCSAttributes::ID_forceNodeCenteredData:
-            forceNodal->blockSignals(true);
-            forceNodal->setChecked(LCSAtts->GetForceNodeCenteredData());
-            forceNodal->blockSignals(false);
-            break;
+        // case LCSAttributes::ID_forceNodeCenteredData:
+        //     forceNodal->blockSignals(true);
+        //     forceNodal->setChecked(LCSAtts->GetForceNodeCenteredData());
+        //     forceNodal->blockSignals(false);
+        //     break;
 
         case LCSAttributes::ID_issueTerminationWarnings:
             issueWarningForMaxSteps->blockSignals(true);
@@ -1634,12 +1634,12 @@ QvisLCSWindow::limitMaxTimeStepChanged(bool val)
     Apply();
 }
 
-void
-QvisLCSWindow::forceNodalChanged(bool val)
-{
-    LCSAtts->SetForceNodeCenteredData(val);
-    Apply();
-}
+// void
+// QvisLCSWindow::forceNodalChanged(bool val)
+// {
+//     LCSAtts->SetForceNodeCenteredData(val);
+//     Apply();
+// }
 
 void
 QvisLCSWindow::velocitySourceProcessText()
