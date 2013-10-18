@@ -225,7 +225,7 @@ class VisItModuleState(object):
             vcmd = pjoin(vdir,vcmd)
         for arg in args:
             vcmd += " %s" % str(arg)
-        print vcmd
+        #print "[visit command: %s]" % vcmd
         return vcmd
     @classmethod
     def __visit_module_path(cls,libpath):
