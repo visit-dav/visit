@@ -1,14 +1,27 @@
+SET(CTEST_CUSTOM_WARNING_MATCH
+   ${CTEST_CUSTOM_WARNING_MATCH}
+   "{standard input}:[0-9][0-9]*: [wW]arning: "
+   )
+
 # this is where we can add site/system/compiler
 # specific exceptions. and/or suppress warnings
 # and errors.
 set(CTEST_CUSTOM_WARNING_EXCEPTION
+    ${CTEST_CUSTOM_WARNING_EXCEPTION}
     # assumed not to be VisIt code
     "third_party_builtin"
     "pyconfig"
+    "swig"
+    "install_lib:"
     # auto generated code
     "Attributes"
+    # OSX clang/gcc 4.2.1
+    "clang: warning: unknown warning option"
+    ":[0-9][0-9]*: note: "
+    "[0-9][0-9]* warnings? generated"
+    "Xcode\.app"
     )
 
-# until some of these get fixed this should
-# let us see most of the build
+# until some of the reported issues get fixed
+# this should let us see most of the build
 set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS 2048)
