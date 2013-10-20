@@ -27,7 +27,7 @@ ENDMACRO(CREATE_EXEC)
 #CREATE_EXEC(pprobe pprobe.c ten)
 #CREATE_EXEC(spots spots.c alan)
 
-IF(BUILD_TESTING)
-  ADD_TEST(nrrd.Sanity ${EXECUTABLE_OUTPUT_DIRECTORY}/nrrdSanity)
-ENDIF(BUILD_TESTING)
-
+#IF(BUILD_TESTING)
+#  ADD_EXECUTABLE(nrrdSanity MACOSX_BUNDLE nrrdSanity.c)
+#  ADD_TEST(nrrdSanity COMMAND nrrdSanity)
+#ENDIF(BUILD_TESTING)
