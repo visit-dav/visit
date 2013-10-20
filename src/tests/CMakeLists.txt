@@ -35,30 +35,32 @@
 # DAMAGE.
 #
 #*****************************************************************************
-SET(CTEST_CUSTOM_WARNING_MATCH
-   ${CTEST_CUSTOM_WARNING_MATCH}
-   "{standard input}:[0-9][0-9]*: [wW]arning: "
-   )
 
-# this is where we can add site/system/compiler
-# specific exceptions. and/or suppress warnings
-# and errors.
-set(CTEST_CUSTOM_WARNING_EXCEPTION
-    ${CTEST_CUSTOM_WARNING_EXCEPTION}
-    # assumed not to be VisIt code
-    "third_party_builtin"
-    "pyconfig"
-    "swig"
-    "install_lib:"
-    # auto generated code
-    "Attributes"
-    # OSX clang/gcc 4.2.1
-    "clang: warning: unknown warning option"
-    ":[0-9][0-9]*: note: "
-    "[0-9][0-9]* warnings? generated"
-    "Xcode\\.app"
+IF(VISIT_PARALLEL)
+    ADD_PARALLEL_EXECUTABLE(
+        TestSystemCaps
+        MACOSX_BUNDLE TestSystemCaps.C
+        )
+    SET_PROPERTY(
+        SOURCE TestSystemCaps.C APPEND
+        PROPERTY COMPILE_DEFINITIONS TEST_MPI_CAPS
+        )
+ELSE()
+    ADD_EXECUTABLE(
+        TestSystemCaps
+        MACOSX_BUNDLE TestSystemCaps.C
+        )
+ENDIF()
+INCLUDE_DIRECTORIES(${VTK_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(
+    TestSystemCaps LINK_PRIVATE
+    vtkRenderingOpenGL ${OPENGL_gl_LIBRARY}
     )
-
-# until some of the reported issues get fixed
-# this should let us see most of the build
-set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS 2048)
+ADD_TEST(NAME TestSystemCaps COMMAND TestSystemCaps)
+IF(VISIT_PYTHON_SCRIPTING)
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    SET_PROPERTY(
+        SOURCE TestSystemCaps.C APPEND
+        PROPERTY COMPILE_DEFINITIONS TEST_PY_CAPS
+        )
+ENDIF()
