@@ -118,8 +118,9 @@ StatisticalTrendsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaDa
     ExpressionList *el = new ExpressionList;
     int numScalars = md->GetNumScalars();
 
-    const char numTypes = 5;
-    const char *typeString[5] = { "Sum", "Mean", "Variance", "Slope", "Residuals" };
+    const char numTypes = 6;
+    const char *typeString[6] = { "Sum", "Mean", "Variance",
+                                  "Std. Dev.", "Slope", "Residuals" };
 
     for (t = 0 ; t < numTypes ; t++)
     {

@@ -68,8 +68,9 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
     public final static int STATISTICTYPEENUM_SUM = 0;
     public final static int STATISTICTYPEENUM_MEAN = 1;
     public final static int STATISTICTYPEENUM_VARIANCE = 2;
-    public final static int STATISTICTYPEENUM_SLOPE = 3;
-    public final static int STATISTICTYPEENUM_RESIDUALS = 4;
+    public final static int STATISTICTYPEENUM_STANDARDDEVIATION = 3;
+    public final static int STATISTICTYPEENUM_SLOPE = 4;
+    public final static int STATISTICTYPEENUM_RESIDUALS = 5;
 
     public final static int TRENDAXISENUM_STEP = 0;
     public final static int TRENDAXISENUM_TIME = 1;
@@ -285,6 +286,8 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
             str = str + "STATISTICTYPEENUM_MEAN";
         if(statisticType == STATISTICTYPEENUM_VARIANCE)
             str = str + "STATISTICTYPEENUM_VARIANCE";
+        if(statisticType == STATISTICTYPEENUM_STANDARDDEVIATION)
+            str = str + "STATISTICTYPEENUM_STANDARDDEVIATION";
         if(statisticType == STATISTICTYPEENUM_SLOPE)
             str = str + "STATISTICTYPEENUM_SLOPE";
         if(statisticType == STATISTICTYPEENUM_RESIDUALS)
