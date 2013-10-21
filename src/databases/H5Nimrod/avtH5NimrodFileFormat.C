@@ -500,6 +500,8 @@ avtH5NimrodFileFormat::GetMesh (int timestate, const char *meshname)
     free (Ycoord);
     free (Zcoord);
 
+    vtkpoints->Delete();
+
     H5Gclose (grid_id);
     H5Fclose (file);
 
