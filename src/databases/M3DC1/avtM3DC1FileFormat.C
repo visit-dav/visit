@@ -1051,7 +1051,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
 
     // Save the number of elements to create a field with a single tuple.
     int tmp_nelms = nelms;
-    nelms = 1;
+    nelms = 1;  // Used in GetHeaderVar
 
     vtkDataArray *eqsubtractVar = GetHeaderVar( timestate, "eqsubtract");
     fieldData->AddArray( eqsubtractVar );
