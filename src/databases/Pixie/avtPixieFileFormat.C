@@ -518,7 +518,15 @@ avtPixieFileFormat::Initialize()
         info.coordX = "";
         info.coordY = "";
         info.coordZ = "";
+
+        // ARS - Note as of 1.8.0 H5Giterate has been deprecated and
+        // H5Literate should be used. At the same time H5Literate will
+        // traverse not only groups but all links inlcuding external
+        // links. As such, code is in place to do this.
+
+        // Iterate over the items in this group.
         H5Giterate(fileId, "/", NULL, GetVariableList, (void*)&info);
+//      H5Literate(fileId, H5_INDEX_NAME, H5_ITER_INC, 0, VisitLinks, (void*)&info);
         H5Gclose(gid);
 
         // Determine the names of the meshes that we'll need.
@@ -1916,6 +1924,134 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
 }
 
 // ****************************************************************************
+// Method: avtPixieFileFormat::VisitLinks
+//
+// Purpose: 
+//   This is a callback function to H5Literate that allows us to iterate
+//   over all of the links in the group.
+//
+// Arguments:
+//   group : 
+//   name   : The name of the current object.
+//   linfo  : link info
+//   opdata : Pointer to a TraversalInfo object that I pass in that helps
+//            us create variable names without using global vars.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Allen Sanderson
+// Creation:   14 June 2012
+//
+herr_t
+avtPixieFileFormat::VisitLinks(hid_t locId, const char* name,
+                               const H5L_info_t *linfo, void* opdata) {
+  
+  switch (linfo->type) {
+    case H5L_TYPE_HARD: {
+
+      H5O_info_t objinfo;
+
+      /* Stat the object */
+      if(H5Oget_info_by_name(locId, name, &objinfo, H5P_DEFAULT) < 0) {
+        debug5 << "visitLinks() - unable to open object with name " <<name <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+
+      switch(objinfo.type)
+      {
+        case H5O_TYPE_GROUP:
+        return GetVariableList( locId, name, opdata );
+        break;
+        case H5O_TYPE_DATASET:
+        return GetVariableList( locId, name, opdata );
+        break;
+
+        default:
+        debug5 << "visitLinks: node '" << name <<
+        "' has an unknown type " << objinfo.type << std::endl;
+        break;
+      }
+    }
+    break;
+    //end of case H5L_TYPE_HARD
+    case H5L_TYPE_EXTERNAL: {
+
+      char *targbuf = (char*) malloc( linfo->u.val_size );
+
+      if (H5Lget_val(locId, name, targbuf, linfo->u.val_size, H5P_DEFAULT) < 0) {
+        debug5 << "visitLinks() - unable to open external link with name " <<targbuf <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+      
+      const char *filename;
+      const char *targname;
+
+      if (H5Lunpack_elink_val(targbuf, linfo->u.val_size, 0, &filename, &targname) < 0) {
+        debug5 << "visitLinks() - unable to open external file with name " <<filename <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+      
+      debug5 << "visitLinks(): node '" << name << "' is an external link." << std::endl;
+      debug5 << "visitLinks(): node '" << targname << "' is an external target group." << std::endl;
+
+      free(targbuf);
+      targbuf = NULL;
+      
+      // Get info of the linked object.
+      H5O_info_t objinfo;
+      hid_t obj_id = H5Oopen(locId, name, H5P_DEFAULT);
+      
+      if (obj_id < 0) {
+        debug5 << "visitLinks() - unable to get id for external object " <<name <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+
+      //Test-open the linked object
+      if (H5Oget_info (obj_id, &objinfo) < 0) {
+        debug5 << "visitLinks() - unable to open external object " <<name <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+      
+      //Close the linked object to release hdf5 id
+      H5Oclose( obj_id );
+
+      //Finally, decide what to do depending on what type of object this is
+      switch(objinfo.type)
+      {
+        case H5O_TYPE_GROUP:
+        return GetVariableList( locId, name, opdata );
+        break;
+        case H5O_TYPE_DATASET:
+        return GetVariableList( locId, name, opdata );
+        break;
+
+        default:
+          debug5 << "visitLinks: node '" << name <<
+        "' has an unknown type " << objinfo.type << std::endl;
+        break;
+      }
+    }
+    break;
+      //END OF CASE H5L_TYPE_EXTERNAL
+    
+    default:
+    debug5 << "visitLinks: node '" << name <<
+    "' has an unknown object type " << linfo->type << std::endl;
+    break;
+  }
+
+  return 0;
+}
+
+
+// ****************************************************************************
 // Method: avtPixieFileFormat::GetVariableList
 //
 // Purpose:
@@ -2252,9 +2388,16 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             }
 
 // ************************** End Pixie-specific coding ***********************
+            
+            // ARS - Note as of 1.8.0 H5Giterate has been deprecated
+            // and H5Literate should be used. At the same time
+            // H5Literate will traverse not only groups but all links
+            // inlcuding external links. As such, code is in place to
+            // do this.
 
             // Iterate over the items in this group.
             H5Giterate(obj, ".", NULL, GetVariableList, (void*)&info2);
+//          H5Literate(obj, H5_INDEX_NAME, H5_ITER_INC, 0, VisitLinks, (void*)&info);
             H5Gclose(obj);
         }
         else
@@ -2462,6 +2605,3 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
     arr->Delete();
 #endif
 }
-
-
-
