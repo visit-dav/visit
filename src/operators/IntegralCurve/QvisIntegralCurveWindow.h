@@ -222,7 +222,7 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void fieldTypeChanged(int val);
     void fieldConstantProccessText();
     void velocitySourceProcessText();
-    // void forceNodalChanged(bool);
+//    void forceNodalChanged(bool);
 
     void integrationTypeChanged(int val);
     void directionTypeChanged(int val);
@@ -321,7 +321,7 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     QLineEdit *fieldConstant;
     QLineEdit *velocitySource;
     QLabel    *velocitySourceLabel;
-    // QCheckBox *forceNodal;
+//    QCheckBox *forceNodal;
 
     QComboBox *directionType;
     QComboBox *integrationType;

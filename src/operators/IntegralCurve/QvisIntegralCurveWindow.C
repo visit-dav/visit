@@ -1227,10 +1227,6 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             break;
         case IntegralCurveAttributes::ID_pointList:
             {
-                pointList->blockSignals(true);
-
-                QListWidgetItem *item = NULL;
-
                 std::vector<double> points = atts->GetPointList();
 
                 pointList->clear();
@@ -1241,12 +1237,8 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
                     QString str = tmp;
                     QListWidgetItem *item = new QListWidgetItem(str, pointList);
                     item->setFlags(item->flags() | Qt::ItemIsEditable);
-                }
-
-                if( item )
                     pointList->setCurrentItem(item);
-
-                pointList->blockSignals(false);
+                }
 
                 break;
             }
@@ -3033,10 +3025,6 @@ QvisIntegralCurveWindow::deletePoints()
 void
 QvisIntegralCurveWindow::readPoints()
 {
-    pointList->blockSignals(true);
-
-    QListWidgetItem *item = NULL;
-
     QString res = QFileDialog::getOpenFileName(NULL, tr("Open text file"), ".");
     std::string filename = res.toLatin1().data();
 
@@ -3064,17 +3052,13 @@ QvisIntegralCurveWindow::readPoints()
         {
             char vals[256];
             sprintf(vals, "%f %f %f", x,y,z);
-            item = new QListWidgetItem(vals, pointList);
+            QListWidgetItem *item = new QListWidgetItem(vals, pointList);
             item->setFlags(item->flags() | Qt::ItemIsEditable);
+            pointList->setCurrentItem(item);
         }
     }
 
     f.close();
-
-    if( item )
-      pointList->setCurrentItem(item);
-
-    pointList->blockSignals(false);
 }
 
 void
