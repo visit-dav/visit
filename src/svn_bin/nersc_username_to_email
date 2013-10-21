@@ -70,6 +70,9 @@
 #    Brad Whitlock, Mon Aug 12 12:01:32 PDT 2013
 #    Changed me from LLNL to Intelligent Light.
 #
+#    Eric Brugger, Mon Oct 21 11:25:21 PDT 2013
+#    Added case for "camc" for Cameron Christensen.
+#
 # *****************************************************************************
 
 
@@ -185,6 +188,10 @@ case $1 in
     # Kevin Bensema, UC Davis
     "kbensema")
         emaddr=kbensema@ucdavis.edu
+        ;;
+    # Cameron Christensen
+    "camc")
+        emaddr=cam@sci.utah.edu
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
