@@ -82,20 +82,21 @@ StatisticalTrendsAttributes::TrendTypeEnum_FromString(const std::string &s, Stat
 
 static const char *StatisticTypeEnum_strings[] = {
 "Sum", "Mean", "Variance", 
-"Slope", "Residuals"};
+"StandardDeviation", "Slope", "Residuals"
+};
 
 std::string
 StatisticalTrendsAttributes::StatisticTypeEnum_ToString(StatisticalTrendsAttributes::StatisticTypeEnum t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return StatisticTypeEnum_strings[index];
 }
 
 std::string
 StatisticalTrendsAttributes::StatisticTypeEnum_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return StatisticTypeEnum_strings[index];
 }
 
@@ -103,7 +104,7 @@ bool
 StatisticalTrendsAttributes::StatisticTypeEnum_FromString(const std::string &s, StatisticalTrendsAttributes::StatisticTypeEnum &val)
 {
     val = StatisticalTrendsAttributes::Sum;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == StatisticTypeEnum_strings[i])
         {
@@ -719,7 +720,7 @@ StatisticalTrendsAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 6)
                 SetStatisticType(StatisticTypeEnum(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

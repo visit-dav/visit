@@ -112,7 +112,8 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
           break;
     }
 
-    const char *statisticType_names = "Sum, Mean, Variance, Slope, Residuals";
+    const char *statisticType_names = "Sum, Mean, Variance, StandardDeviation, Slope, "
+        "Residuals";
     switch (atts->GetStatisticType())
     {
       case StatisticalTrendsAttributes::Sum:
@@ -125,6 +126,10 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
           break;
       case StatisticalTrendsAttributes::Variance:
           SNPRINTF(tmpStr, 1000, "%sstatisticType = %sVariance  # %s\n", prefix, prefix, statisticType_names);
+          str += tmpStr;
+          break;
+      case StatisticalTrendsAttributes::StandardDeviation:
+          SNPRINTF(tmpStr, 1000, "%sstatisticType = %sStandardDeviation  # %s\n", prefix, prefix, statisticType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Slope:
@@ -333,15 +338,15 @@ StatisticalTrendsAttributes_SetStatisticType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the statisticType in the object.
-    if(ival >= 0 && ival < 5)
+    if(ival >= 0 && ival < 6)
         obj->data->SetStatisticType(StatisticalTrendsAttributes::StatisticTypeEnum(ival));
     else
     {
         fprintf(stderr, "An invalid statisticType value was given. "
-                        "Valid values are in the range of [0,4]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "Sum, Mean, Variance, Slope, Residuals"
-                        ".");
+                        "Sum, Mean, Variance, StandardDeviation, Slope, "
+                        "Residuals.");
         return NULL;
     }
 
@@ -499,6 +504,8 @@ PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StatisticalTrendsAttributes::Mean));
     if(strcmp(name, "Variance") == 0)
         return PyInt_FromLong(long(StatisticalTrendsAttributes::Variance));
+    if(strcmp(name, "StandardDeviation") == 0)
+        return PyInt_FromLong(long(StatisticalTrendsAttributes::StandardDeviation));
     if(strcmp(name, "Slope") == 0)
         return PyInt_FromLong(long(StatisticalTrendsAttributes::Slope));
     if(strcmp(name, "Residuals") == 0)

@@ -114,6 +114,6 @@ class avtStatisticalTrendsFilter : virtual public avtPluginFilter,
     bool haveData;
 
     int numTypes;
-    char typeString[5][12];
+    char typeString[6][12];
 };
 #endif

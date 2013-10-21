@@ -70,6 +70,7 @@ public:
         Sum,
         Mean,
         Variance,
+        StandardDeviation,
         Slope,
         Residuals
     };
