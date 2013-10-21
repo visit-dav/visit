@@ -53,7 +53,7 @@ ELSE()
 ENDIF()
 INCLUDE_DIRECTORIES(${VTK_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(
-    TestSystemCaps LINK_PRIVATE
+    TestSystemCaps
     vtkRenderingOpenGL ${OPENGL_gl_LIBRARY}
     )
 ADD_TEST(NAME TestSystemCaps COMMAND TestSystemCaps)
