@@ -328,11 +328,28 @@ size_t VsVariable::getNumComps() {
     res = 1;
     goto dimwarn;
   }
-  if ((dataDims.size() == 1)
-      || ((dataDims.size() == 2) && (dataDims[0] == 1))) {
+
+  // ARS - do we really want this check??? The mesh and data dim check
+  // above should match. This allows a mesh and data to be of
+  // different sizes. Which can mess up the index select.
+  if (dataDims.size() == 1) 
+  {
     res = 1;
     goto dimwarn;
   }
+    
+  // ARS - do we really want this check??? The mesh and data dim check
+  // above should match. Also this allows data which should be a
+  // component to slide through as a true scalar.
+  if(dataDims.size() == 2 &&
+     ((isCompMajor() && dataDims[0] == 1) ||
+      (!isCompMajor() && dataDims[1] == 1)) )
+  {
+    res = 1;
+    goto dimwarn;
+  }
+
+
   if (meshDims.size() != (dataDims.size() - 1) ) {
     VsLog::debugLog() << "VsVariable::getNumComps(): error - mesh '" << getMeshName() <<
     "' has dimensions of size, " << meshDims.size() << ", while dataset '" <<
@@ -343,10 +360,10 @@ size_t VsVariable::getNumComps() {
   }
   
   // check that each of mesh sizes are correct (for compMinor data here)
-  if (!isCompMajor()) {
-    res = dataDims.back();
-  } else {
+  if (isCompMajor()) {
     res = dataDims.front();
+  } else {
+    res = dataDims.back();
   }
   
 dimwarn:
