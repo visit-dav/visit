@@ -616,6 +616,10 @@ class MakeMovie(object):
     #   Brad Whitlock, Wed Apr  3 16:44:08 PDT 2013
     #   Change various lists to formatInfo dictionary.
     #
+    #   Eric Brugger, Tue Oct 22 13:22:35 PDT 2013
+    #   Change the movie formats to all use PNG as the input format when
+    #   ffmpeg is present and PPM otherwise (for use with mpeg2encode).
+    #
     ###########################################################################
 
     def __init__(self):
@@ -634,9 +638,9 @@ class MakeMovie(object):
             "bmp"  : [("bmp",),        "bmp",  None, 1, 0],\
             "rgb"  : [("rgb",),        "rgb",  None, 1, 0],\
             "png"  : [("png",),        "png",  None, 1, 0],\
-            "mpeg" : [("mpg", "mpeg"), "jpeg", "mpg", 1, 0],\
-            "qt"   : [("mov", "qt"),   "jpeg", "mov", 0, 0],\
-            "sm"   : [("sm",),         "png",  "sm",  0, 1]\
+            "mpeg" : [("mpg", "mpeg"), "png", "mpg", 1, 0],\
+            "qt"   : [("mov", "qt"),   "png", "mov", 0, 0],\
+            "sm"   : [("sm",),         "png",  "sm", 0, 1]\
         }
 
         # See if there are any other encoders that we can use.
@@ -664,6 +668,9 @@ class MakeMovie(object):
         self.allow_ffmpeg = 0
         if CommandInPath("ffmpeg"):
             self.allow_ffmpeg = 1
+
+        if(self.allow_ffmpeg == 0):
+            self.formatInfo["mpeg"][self.FMT_INPUTFORMAT] = "ppm"
 
         # Movie properties.
         self.stateFile = ""
@@ -1223,6 +1230,10 @@ class MakeMovie(object):
     #   Brad Whitlock, Fri Feb 10 14:20:32 PST 2012
     #   Add -source argument.
     #
+    #   Eric Brugger, Tue Oct 22 13:22:35 PDT 2013
+    #   Change the movie formats to all use PNG as the input format when
+    #   ffmpeg is present and PPM otherwise (for use with mpeg2encode).
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -1530,7 +1541,7 @@ class MakeMovie(object):
         # If we are using ffmpeg for the mpeg encoder then let's make sure that 
         # we make JPEG images to start with.
         if self.allow_ffmpeg:
-            self.formatInfo["mpeg"][self.FMT_INPUTFORMAT] = "jpeg"
+            self.formatInfo["mpeg"][self.FMT_INPUTFORMAT] = "png"
         else:
             self.formatInfo["mpeg"][self.FMT_INPUTFORMAT] = "ppm"
 
