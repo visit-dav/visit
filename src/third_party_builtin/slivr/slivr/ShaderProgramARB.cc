@@ -251,7 +251,7 @@ ShaderProgramARB::create(std::string& error)
     glCompileShader(shader);
     
     // check the compilation of the shader
-    GLint shader_status[1] = {GL_TRUE};
+    GLint shader_status[1];
     glGetShaderiv(shader, GL_COMPILE_STATUS, shader_status);
     if (shader_status[0] == GL_FALSE) 
     {
