@@ -62,6 +62,9 @@
 #   the kickit installation since it is now a linux-x86_64 system instead
 #   of a linux-intel system.
 #
+#   Eric Brugger, Tue Oct 22 11:11:01 PDT 2013
+#   I removed rzthriller.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -106,7 +109,6 @@ kickit=true
 sidious=false
 ubuntu1104_64=false
 aztec=true
-rzthriller=true
 rzzeus=true
 rzuseq=false
 carver=true
@@ -128,7 +130,6 @@ do
          sidious=false
          ubuntu1104_64=false
          aztec=false
-         rzthriller=false
          rzzeus=false
          carver=false
          glory=false
@@ -165,14 +166,6 @@ do
          ;;
       +aztec)
          aztec=true
-         shift
-         ;;
-      -rzthriller)
-         rzthriller=false
-         shift
-         ;;
-      +rzthriller)
-         rzthriller=true
          shift
          ;;
       -rzzeus)
@@ -383,43 +376,6 @@ then
 fi
 
 #
-# Install on rzthriller.
-#
-rm -f rzthriller
-cat <<EOF > rzthriller
-#!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-rzthriller /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-chaos4
-rm -f resultlog
-echo "        install of visit on rzthriller"         > resultlog 2>&1
-echo "       --------------------------------"        >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-df -k /usr/gapps/visit                                >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-chaos4/bin  >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-echo "The database plugins:"                          >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-chaos4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): rzthriller" $emailName < resultlog
-EOF
-
-if [ $rzthriller = true ]
-then
-   if [ $test = no ]
-   then
-      scp rzthriller:/usr/tmp/$user/rzthriller/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-rzthriller.tar.gz
-      scp visit$ver2.linux-rzthriller.tar.gz rzthriller:
-      scp visit-install rzthriller:
-      scp rzthriller rzthriller:rzthriller_install
-      ssh rzthriller "chmod 750 rzthriller_install;./rzthriller_install"
-   fi
-fi
-
-#
 # Install on rzzeus.
 #
 rm -f rzzeus
@@ -597,5 +553,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 aztec rzthriller rzzeus carver glory redsky
+   rm -f kickit sidious ubuntu1104_64 aztec rzzeus carver glory redsky
 fi

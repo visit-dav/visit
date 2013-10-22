@@ -120,6 +120,10 @@
 #   Brad Whitlock, Fri May 31 10:21:17 PDT 2013
 #   Replace "carver" with "carver". Add build for rzuseq.
 #
+#   Eric Brugger, Tue Oct 22 11:05:47 PDT 2013
+#   I removed rzthriller. I modified many of the builds to use cmake
+#   2.8.10.2.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -164,7 +168,6 @@ kickit=true
 sidious=false
 ubuntu1104_64=false
 aztec=true
-rzthriller=true
 rzzeus=true
 rzuseq=false
 carver=true
@@ -186,7 +189,6 @@ do
          sidious=false
          ubuntu1104_64=false
          aztec=false
-         rzthriller=false
          rzzeus=false
          carver=false
          glory=false
@@ -223,14 +225,6 @@ do
          ;;
       +aztec)
          aztec=true
-         shift
-         ;;
-      -rzthriller)
-         rzthriller=false
-         shift
-         ;;
-      +rzthriller)
-         rzthriller=true
          shift
          ;;
       -rzzeus)
@@ -291,7 +285,6 @@ then
    echo "    sidious(B-Div, Linux, x86_64),"
    echo "    Ubunut1104-64(B-Div, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
-   echo "    rzthriller (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
    echo "    carver (LBNL, Linux, x86_64),"
@@ -330,7 +323,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -384,7 +377,7 @@ mv sidious.llnl.gov.serial.cmake sidious.llnl.gov.cmake
 cd ..
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -431,7 +424,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/visit/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/home/visit/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -482,7 +475,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -514,61 +507,6 @@ then
 fi
 
 #
-# Build on rzthriller.
-#
-rm -f rzthriller
-cat <<EOF > rzthriller
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/rzthriller ; then
-   mkdir /usr/tmp/$user/rzthriller
-fi
-rm -rf /usr/tmp/$user/rzthriller/visitbuild
-mkdir /usr/tmp/$user/rzthriller/visitbuild
-mv rzthriller_$dist.tar.gz /usr/tmp/$user/rzthriller/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/rzthriller/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 >> ../../buildlog 2>&1
-#
-# cpack for cmake 2.8.8 crashes on rzthriller so I am using the 2.8.3 version.
-#
-/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cpack --config ./CPackConfig.cmake >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on rzthriller"   > resultlog 2>&1
-echo "       ------------------------------"  >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): rzthriller" $emailName < resultlog
-EOF
-
-if [ $rzthriller = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on rzthriller"
-      scp rzthriller rzthriller:rzthriller_buildit
-      scp $dist.tar.gz rzthriller:rzthriller_$dist.tar.gz
-      ssh rzthriller "chmod 750 rzthriller_buildit;./rzthriller_buildit" &
-   fi
-fi
-
-#
 # Build on rzzeus.
 #
 rm -f rzzeus
@@ -589,7 +527,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -765,7 +703,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/projects/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+/projects/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -820,7 +758,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/projects/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+/projects/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
 make >> ../../buildlog 2>&1
 make package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -856,5 +794,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 aztec rzthriller rzzeus rzuseq carver glory redsky
+   rm -f kickit sidious ubuntu1104_64 aztec rzzeus rzuseq carver glory redsky
 fi

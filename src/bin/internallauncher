@@ -1,4 +1,8 @@
-import os, math, socket, stat, time 
+import os
+import math
+import socket
+import stat
+import time
 
 ###############################################################################
 # Class: JobSubmitter
@@ -1196,6 +1200,10 @@ class DebugMallocDebugger(Debugger):
 #   I fixed the non -noloopback case for launching of parallel engines on
 #   linux clusters.
 #
+#   Cyrus Harrison, Tue Oct 22 11:35:37 PDT 2013
+#   Capture if -hw-accel is passed here so we can use it when we determine
+#   if we should enable mesa for the engine.
+#
 ###############################################################################
 
 class GeneralArguments(object):
@@ -1232,7 +1240,7 @@ class GeneralArguments(object):
         self.setupenv = 0
         self.nowin = 0
         self.threads = 0
-
+        self.hw_accel = False
     def ParseArguments(self, i, args):
         if i >= len(args):
             return 0
@@ -1311,6 +1319,9 @@ class GeneralArguments(object):
             n = 2
         else:
             self.arguments = self.arguments + [args[i]]
+        # snoop this without affecting any other parsing
+        if not self.hw_accel and "-hw-accel" in args:
+            self.hw_accel = True
         return n
 
     def ProduceArguments(self, parallel):
@@ -2185,6 +2196,9 @@ class MainLauncher(object):
     #   Kathleen Biagas, Mon Jul 15 11:31:27 PDT 2013
     #   Unset QT_PLUGIN_PATH.
     #
+    #   Cyrus Harrison, Tue Oct 22 11:35:37 PDT 2013
+    #   Don't use mesa if  hw-accel is requested for the engine.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2194,7 +2208,7 @@ class MainLauncher(object):
         for k in keys:
             if GETENV("%s_VISITORIG" % k) == "":
                 SETENV("%s_VISITORIG" % k, GETENV(k))
-    
+
         for k in keys:
             if GETENV("%s_VISITORIG" % k) == "":
                 SETENV(k, self.visitlibdir)
@@ -2290,7 +2304,7 @@ class MainLauncher(object):
             # and adjust the LD_LIBRARY_PATH so VTK can pick up OSMesa instead of standard GL
             #
             if ((self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
-                 self.generalArgs.exe_name.startswith("engine")):
+                 (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
                 SETENV("LD_LIBRARY_PATH", self.joinpaths([GETENV("LD_LIBRARY_PATH"),
                                                          osmesa_gl_dir]))
                 SETENV("VISIT_MESA_LIB",osmesa_gl_lib)
