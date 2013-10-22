@@ -1294,8 +1294,8 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 #endif
 #ifdef HAVE_LIBSLIVR
     rendererTypesComboBox->addItem(tr("SLIVR"));
-    rendererTypesComboBox->addItem(tr("Ray casting: SLIVR"));
 #endif
+    //rendererTypesComboBox->addItem(tr("Ray casting: SLIVR"));
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
 
