@@ -282,7 +282,11 @@ int video_card_memory_size_ATI()
   int size;
 
   dpy = XOpenDisplay(NULL); //glXGetCurrentDisplay();
+  if (dpy == NULL)
+    return 0;
   info = find_display_fglx(dpy);
+  if (info == NULL)
+    return 0;
   if (XextHasExtension(info))
   {
     xFGLGetDriverDataReq* req;
@@ -395,7 +399,11 @@ int video_card_memory_size_NV()
   int size;
 
   dpy = XOpenDisplay(NULL); //glXGetCurrentDisplay();
+  if (dpy == NULL)
+    return 0;
   info = find_display(dpy);
+  if (info == NULL)
+    return 0;
 
   if (XextHasExtension(info))
   {
@@ -434,6 +442,8 @@ int video_card_memory_size()
     size = video_card_memory_size_ATI();
     if(!size)
       size = video_card_memory_size_NV();
+    if(!size)
+      size = 32;
   }
   return size;
 }
