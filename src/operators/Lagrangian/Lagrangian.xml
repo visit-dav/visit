@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Lagrangian" type="operator" label="Lagrangian" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="vector" exprOutType="curve">
+  <Plugin name="Lagrangian" type="operator" label="Lagrangian" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="vector" exprOutType="curve">
     <LIBS components="ESer">
       avtivp_ser
     </LIBS>
