@@ -164,7 +164,7 @@ namespace StringHelpers
 
         const char *str = s;
         // get rid of leading 0's; they confuse strtoul.
-        if(str[0] == '0' && str[1] != 'x')
+        if(str[0] == '0' && str[1] != '\0' && str[1] != 'x')
         {
             while(*str == '0') { ++str; }
         }
