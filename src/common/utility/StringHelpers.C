@@ -466,6 +466,7 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
 {
     regex_t cre;
     regmatch_t pm;
+    int reerr;
 
     if (regcomp(&cre, re, REG_EXTENDED))
         return FindError;
@@ -867,7 +868,7 @@ StringHelpers::Normalize(const char *path, const char *pathSep)
     }
 
     // Remove any trailing slash if one exists
-    if (retval[retval.size()-1] == pathSep[0])
+    if (retval.size() && retval[retval.size()-1] == pathSep[0])
         retval.erase(retval.size()-1);
 
     if (retval == "" && !noCharsRemainingToBackup) retval = ".";
@@ -974,22 +975,22 @@ static void InitTypeNameToFmtREMap()
     if (typeNameToFmtREMap.size())
         return;
 
-    typeNameToFmtREMap["float"]                   = "[^%]*%#?0?-? ?+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?[eEfFgGaA]{1}";
-    typeNameToFmtREMap["double"]                  = "[^%]*%#?0?-? ?+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?[eEfFgGaA]{1}";
-    typeNameToFmtREMap["long double"]             = "[^%]*%#?0?-? ?+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?L[eEfFgGaA]{1}";
-    typeNameToFmtREMap["int"]                     = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?[di]{1}";
-    typeNameToFmtREMap["long int"]                = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?l[di]{1}";
-    typeNameToFmtREMap["long long int"]           = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?ll[di]{1}";
-    typeNameToFmtREMap["unsigned int"]            = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?[ouxX]{1}";
-    typeNameToFmtREMap["unsigned long int"]       = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?l[ouxX]{1}";
-    typeNameToFmtREMap["unsigned long long int"]  = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?ll[ouxX]{1}";
-    typeNameToFmtREMap["short int"]               = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?h[di]{1}";
-    typeNameToFmtREMap["unsigned short int"]      = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?h[ouxX]{1}";
+    typeNameToFmtREMap["float"]                   = "[^%]*%#?0?-? ?\\+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?[eEfFgGaA]{1}";
+    typeNameToFmtREMap["double"]                  = "[^%]*%#?0?-? ?\\+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?[eEfFgGaA]{1}";
+    typeNameToFmtREMap["long double"]             = "[^%]*%#?0?-? ?\\+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?L[eEfFgGaA]{1}";
+    typeNameToFmtREMap["int"]                     = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?[di]{1}";
+    typeNameToFmtREMap["long int"]                = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?l[di]{1}";
+    typeNameToFmtREMap["long long int"]           = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?ll[di]{1}";
+    typeNameToFmtREMap["unsigned int"]            = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?[ouxX]{1}";
+    typeNameToFmtREMap["unsigned long int"]       = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?l[ouxX]{1}";
+    typeNameToFmtREMap["unsigned long long int"]  = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?ll[ouxX]{1}";
+    typeNameToFmtREMap["short int"]               = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?h[di]{1}";
+    typeNameToFmtREMap["unsigned short int"]      = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?h[ouxX]{1}";
     typeNameToFmtREMap["char"]                    = "[^%]*%c{1}";
-    typeNameToFmtREMap["unsigned char"]           = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?hh[ouxX]{1}";
-    typeNameToFmtREMap["char*"]                   = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?s{1}";
+    typeNameToFmtREMap["unsigned char"]           = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?hh[ouxX]{1}";
+    typeNameToFmtREMap["char*"]                   = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?s{1}";
     typeNameToFmtREMap["void*"]                   = "[^%]*%p{1}";
-    typeNameToFmtREMap["size_t"]                  = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?z[ouxX]{1}";
+    typeNameToFmtREMap["size_t"]                  = "[^%]*%#?0?-? ?\\+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?z[ouxX]{1}";
 
     // aliases
     typeNameToFmtREMap["long"]                    = typeNameToFmtREMap["long int"];
@@ -1023,39 +1024,6 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
 {
     int n;
     int i;
-
-    // this block should be removed with regcomp on Mac works with REG_EXTENDED
-#if defined(__APPLE__)
-    // first char must be a conversion specifier ('%')
-    n = 0;
-    if (fmtStr[n] == '%')
-    {
-        n++;
-
-        // optional sign designation
-        if (strchr(" +-", fmtStr[n]) != 0)
-            n++;
-
-        // walk over field width digits
-        while (fmtStr[n] >= '0' && fmtStr[n] <= '9')
-            n++;
-
-        // optional dot
-        if (fmtStr[n] == '.')
-        {
-            n++;
-            // walk over precision digits
-            while (fmtStr[n] >= '0' && fmtStr[n] <= '9')
-                n++;
-        }
-
-        if (strchr("eEfFgGaAouxXdi", fmtStr[n]) != 0)
-        {
-            if (fmtStr[n+1] == '\0')
-                return true;
-        }
-    }
-#endif
 
     //
     // fall back to RE based validation
