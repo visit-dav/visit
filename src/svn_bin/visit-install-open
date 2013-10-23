@@ -553,5 +553,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 aztec rzzeus carver glory redsky
+   rm -f kickit sidious ubuntu1104_64 aztec rzuseq rzzeus carver glory redsky
 fi
