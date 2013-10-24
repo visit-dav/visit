@@ -45,6 +45,7 @@ int main()
     int i;
     int P[100], U[4];
     const char *N[3] = { "red", "green", "blue" };
+    const char *FileNumbers[] = {"1","2","3"};
 
     // Test a somewhat complex expression 
     Namescheme *ns = new Namescheme("@foo_%+03d@3-((n % 3)*(4+1)+1/2)+1");
@@ -105,7 +106,6 @@ int main()
         return 1;
     delete ns;
 
-
     // Test array-based references in a name scheme
     for (i = 0; i < 100; i++)
         P[i] = i*5;
@@ -124,10 +124,18 @@ int main()
         return 1;
     delete ns;
 
-    /* Test array-based references to char* valued array */
+    // Test array-based references to char* valued array
     ns = new Namescheme("Hfoo_%sH$N[n%3]", N);
     if (strcmp(ns->GetName(17), "foo_blue") != 0) return 1;
     if (strcmp(ns->GetName(6), "foo_red") != 0) return 1;
+    delete ns;
+
+    // Test McCandless' example
+    ns = new Namescheme("@%s%s@(n/4)?'myfilename.':'':@(n/4)?$/arr_dir/FileNumbers[n/4-1]:'':",FileNumbers);
+    if (strcmp(ns->GetName(0), "") != 0) return 1;
+    if (strcmp(ns->GetName(1), "") != 0) return 1;
+    if (strcmp(ns->GetName(4), "myfilename.1") != 0) return 1;
+    if (strcmp(ns->GetName(15), "myfilename.3") != 0) return 1;
     delete ns;
 
     return 0;
