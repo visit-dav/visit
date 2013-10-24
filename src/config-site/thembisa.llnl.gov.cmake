@@ -10,6 +10,7 @@
 ##
 SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.7.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
+VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
 
 ## Compiler flags.
 ##

@@ -10,6 +10,7 @@
 ##
 SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.7.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
+VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
 
 ## Compiler flags.
 ##
@@ -44,7 +45,7 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR {VISITHOME}/python/2.7.5/linux-x86_64_gcc-4.4)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.5/linux-x86_64_gcc-4.4)
 
 ##
 ## Qt
