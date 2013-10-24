@@ -292,7 +292,7 @@ QvisPluginManagerAttributesDataModel.h
 QvisPointControl.h
 QvisPlotManagerWidget.h
 QvisPluginWindow.h
-QvisPostableMainWindow.h
+#QvisPostableMainWindow.h #nothing to moc
 QvisPostableWindow.h
 QvisPostableWindowObserver.h
 QvisPostableWindowSimpleObserver.h
