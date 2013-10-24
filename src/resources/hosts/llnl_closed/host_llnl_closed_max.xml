@@ -57,7 +57,7 @@
     </Object>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">32</Field>
+        <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">true</Field>
@@ -93,7 +93,7 @@
     </Object>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">32</Field>
+        <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">true</Field>
@@ -121,7 +121,7 @@
         <Field name="machinefile" type="string"></Field>
         <Field name="visitSetsUpEnv" type="bool">false</Field>
         <Field name="canDoHWAccel" type="bool">true</Field>
-        <Field name="GPUsPerNode" type="int">8</Field>
+        <Field name="GPUsPerNode" type="int">2</Field>
         <Field name="XArguments" type="string"></Field>
         <Field name="launchXServers" type="bool">true</Field>
         <Field name="XDisplay" type="string">:%l</Field>

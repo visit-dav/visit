@@ -84,11 +84,14 @@ class UTILITY_API Namescheme
 
     static const int max_expstrs;
     static const int max_fmtlen;
+    static const int max_retstrs = 32;
+    static char *retstrbuf[max_retstrs];
 
     static void FreeTree(DBexprnode *tree);
     static DBexprnode *UpdateTree(DBexprnode *tree, const char t, int v, char *s);
     static DBexprnode *BuildExprTree(const char **porig);
-    static int SaveString(Namescheme *ns, const char *sval);
+    static int SaveInternalString(Namescheme *ns, char const * const sval);
+    static char *SaveReturnedString(char const * const sval);
     static int EvalExprTree(Namescheme *ns, DBexprnode *tree, int n);
 
     char *fmt;            // orig. format string
