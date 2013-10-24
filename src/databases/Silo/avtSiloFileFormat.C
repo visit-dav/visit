@@ -2036,8 +2036,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     haveAddedNodelistEnumerations[name_w_dir] = true;
                     AddNodelistEnumerations(dbfile, md, name_w_dir);
                 }
-                else if (searchForAnnotInt && strcmp(dirname, topDir.c_str()) == 0)
-
+                if (searchForAnnotInt && strcmp(dirname, topDir.c_str()) == 0)
                 {
                     AddAnnotIntNodelistEnumerations(dbfile, md, name_w_dir, mm_ent);
                 }
@@ -15975,7 +15974,10 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
     // If we didn't find anything, we're done.
     //
     if (!haveNodeLists && !haveFaceLists)
+    {
+        debug5 << "Althoug we were asked to search for ANNOTATION_INT nodelists, none were found." << endl;
         return;
+    }
 
     //
     // Populate the enumeration names. This is a two pass loop;
