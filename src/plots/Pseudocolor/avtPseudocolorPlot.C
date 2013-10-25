@@ -577,8 +577,9 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         colorsInitialized = true;
         SetColorTable(atts.GetColorTableName().c_str());
     }
+    else
+      SetOpacityFromAtts();
 
-    SetOpacityFromAtts();
     SetLighting(atts.GetLightingFlag());
     SetLegend(atts.GetLegendFlag());
 
@@ -1009,7 +1010,10 @@ avtPseudocolorPlot::SetOpacityFromAtts()
        behavior->SetRenderOrder(MUST_GO_LAST);
        behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
 
-       return true;
+       if (atts.GetOpacityType() == PseudocolorAttributes::ColorTable )
+         return true;
+       else
+         return false;
     }
     else
     {
