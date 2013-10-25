@@ -2174,6 +2174,7 @@ avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
                 mmd->groupPieceName = "block";
                 mmd->hideFromGUI = qm->guihide;
                 md->Add(mmd);
+
             }
             else
             {
@@ -15940,11 +15941,12 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
             continue;
 
         string realvar;
-        DBfile *correctFile;
+        DBfile *correctFile = 0;
         DetermineFileAndDirectory(mb_meshname.c_str(),"",
                                   correctFile, realvar);
+
         if (correctFile == 0)
-            continue;
+            correctFile = dbfile;
 
         DBcompoundarray *ai = DBGetCompoundarray(correctFile, "ANNOTATION_INT");
         if (ai)
@@ -15975,7 +15977,7 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
     //
     if (!haveNodeLists && !haveFaceLists)
     {
-        debug5 << "Althoug we were asked to search for ANNOTATION_INT nodelists, none were found." << endl;
+        debug5 << "Although we were asked to search for ANNOTATION_INT nodelists, none were found." << endl;
         return;
     }
 
