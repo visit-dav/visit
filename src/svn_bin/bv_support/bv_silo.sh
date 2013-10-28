@@ -85,9 +85,15 @@ function bv_silo_host_profile
                "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP ZLIB_LIBRARY_DIR z TYPE STRING)" \
                >> $HOSTCONF
             else
-               echo \
-               "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
-               >> $HOSTCONF
+               if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
+                    echo \
+                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib/x86_64-linux-gnu z TYPE STRING)" \
+                    >> $HOSTCONF
+               else
+                    echo \
+                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
+                    >> $HOSTCONF
+               fi
             fi
         fi
     fi
