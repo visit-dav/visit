@@ -88,6 +88,33 @@ def find_libs(sdir):
         lib_maps[lib_basename] = full_lib.replace(sdir,"")   
     return lib_names,lib_maps
 
+def find_bundles(sdir):
+    """
+    Walk sdir and find all OSX bundles.
+    """
+    bundles = find_matches(sdir,"*.app")
+    return bundles
+
+def fixup_bundles(bundles):
+    """
+    Apply OSX bundle specific fixes.
+    """ 
+    add_qt_conf(bundles)
+
+def add_qt_conf(bundles):
+    """
+    Adds a qt.conf config file to all bundles to avoid using any bad built-in plugin 
+    paths. 
+    """
+    for bundle in bundles:
+        resources_dir = pjoin(bundle,"Contents","Resources")
+        if not os.path.isdir(resources_dir):
+            os.mkdir(resources_dir)
+        qtconf_fname = pjoin(resources_dir,"qt.conf")
+        print "[creating: %s]" % qtconf_fname
+        qtconf = open(qtconf_fname,"w")
+        qtconf.write("[Paths]\nPlugins=\n")
+
 def find_exes(sdir):
     """
     Walk sdir and find all exes.
@@ -112,7 +139,7 @@ def find_exes(sdir):
 
 def fixup_items(items,lib_maps,prefix_path):
     """
-    fixup libs / exes with the proper paths.
+    Fixup libs / exes with the proper paths.
     """
     exe_rpaths = ["@executable_path/..", # standard exe
                   "@executable_path/../../../.." # bundle
@@ -174,10 +201,15 @@ def main():
     print "[Finding executables @ %s]" % prefix_path
     exe_names = find_exes(prefix_path)
     print "[Found %d executables]" % len(exe_names)
+    print "[Finding bundles @ %s]" % prefix_path
+    bundle_names = find_bundles(prefix_path)
+    print "[Found %d bundles]" % len(bundle_names)
     print "[Fixing Libraries...]"
     fixup_items(lib_names,lib_maps,prefix_path)
     print "[Fixing Executables...]"
     fixup_items(exe_names,lib_maps,prefix_path)
+    print "[Fixing Bundles...]"
+    fixup_bundles(bundle_names)
 
 
 if __name__ == "__main__":

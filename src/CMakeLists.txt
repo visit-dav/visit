@@ -359,6 +359,10 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Handle reorganization of windowsbuild directory.
 #
+#    Cyrus Harrison, on Oct 28 14:39:05 PDT 2013
+#    Fix exported VTK targets for VTK-6. Fix VTK-6 include dirs 
+#    for make install / package.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -2058,11 +2062,11 @@ ENDIF(NOT WIN32)
 IF(UNIX)
    SET(python_include_relative_path "/python/include/python@PYTHON_VERSION@")
    SET(exodusii_include_relative_path "/exodusii/inc")
-   SET(vtk_include_relative_path "/vtk/include")
+   SET(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 ELSE(UNIX)
    SET(python_include_relative_path "/python")
    SET(exodusii_include_relative_path "/exodusii/include")
-   SET(vtk_include_relative_path "/vtk/vtk-6.0")
+   SET(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 ENDIF(UNIX)
 
 # If we're installing MPICH as our MPI then filter the parallel flags so
@@ -2313,6 +2317,31 @@ ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
 #-----------------------------------------------------------------------------
 EXPORT_LIBRARY_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake.in)
 
+FOREACH(VTK_TARGET ${VTK_LIBRARIES})
+    IF(TARGET ${VTK_TARGET})
+        # this lets us know if this is a real VTK lib, not a depend lib (such as python)
+        GET_PROPERTY(VTK_TARGET_IMPORT_LOC_EXISTS TARGET ${VTK_TARGET} 
+                                                  PROPERTY IMPORT_LOCATION SET)
+        IF(${VTK_TARGET_IMPORT_LOC_EXISTS})
+            # We can follow the import loc property  to get the actual filename, but we 
+            # will want to link with -lvkt , not libvtk ...
+            #
+            # So for now, we create the suffix manually. Keeping this code in case
+            # we need it to create something more sophisticated in the future. 
+            # 
+            # GET_PROPERTY(VTK_LIB_TARGET_LOC TARGET ${VTK_TARGET} 
+            #                                 PROPERTY IMPORT_LOCATION)
+            # get_filename_component(VTK_TRUE_TARGET ${VTK_LIB_TARGET_LOC} NAME_WE)
+            #
+            SET(VTK_TRUE_TARGET "${VTK_TARGET}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}") 
+            MESSAGE(STATUS "${VTK_TARGET} vs ${VTK_TRUE_TARGET}")
+            LIST(APPEND VTK_VALID_TARGETS  ${VTK_TARGET})
+            LIST(APPEND VTK_TRUE_TARGETS  ${VTK_TRUE_TARGET})
+        ENDIF()
+    ENDIF()
+ENDFOREACH()
+
+
 IF(WIN32)
     get_filename_component(PD ${PYTHON_LIBRARIES} PATH)
 ENDIF(WIN32)
@@ -2321,6 +2350,13 @@ INSTALL(CODE "
 FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
     FILE(STRINGS \${filename}.in lines)
     FILE(WRITE \${filename} \"# Filtered version\\n\")
+    # we need to steal the lists from the parent scope so they can 
+    # be used in our install code
+    SET(FVTK_VALID_TARGETS ${VTK_VALID_TARGETS})
+    SET(FVTK_TRUE_TARGETS ${VTK_TRUE_TARGETS})
+    MESSAGE(STATUS \"VALID_TARGETS: \${FVTK_VALID_TARGETS}\")
+    MESSAGE(STATUS \"TRUE_TARGETS:  \${FVTK_TRUE_TARGETS}\")
+
     FOREACH(line \${lines})
         SET(outputLine TRUE)
         IF(\"\${line}\" MATCHES \".*Plot[_ser|_par]*_LIB_DEPENDS.*\")
@@ -2359,15 +2395,36 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                        filteredline4
                        \"\${filteredline3}\")
             ENDIF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
+            
+            #
+            # fix the names of any vtk dep targets
+            #
+            
+            LIST(LENGTH FVTK_TRUE_TARGETS  L_FVTK_TRUE_TARGETS)
+            MESSAGE(STATUS \"${L_FVTK_TRUE_TARGETS}\")
+            SET(filtered_line \"\${filteredline4}\")
+            LIST(LENGTH FVTK_TRUE_TARGETS  L_FVTK_TRUE_TARGETS)
+            MATH(EXPR t_max_index \"\${L_FVTK_TRUE_TARGETS}-1\")
+            message(STATUS \"\${t_max_index}\")
+            FOREACH(i RANGE \${t_max_index})
+                LIST(GET FVTK_VALID_TARGETS \${i} A)
+                LIST(GET FVTK_TRUE_TARGETS  \${i} B)
+                STRING(REPLACE \"\${A};\" 
+                               \"\${B};\"
+                               fl_temp 
+                               \"\${filtered_line}\")
+
+                SET(filtered_line \"\${fl_temp}\")
+            ENDFOREACH()
 
             IF(NOT WIN32)
-                FILE(APPEND \${filename} \"\${filteredline4}\\n\")
+                FILE(APPEND \${filename} \"\${filtered_line}\\n\")
             ELSE(NOT WIN32)
                 # extra replacements that need to be made on Windows.
                 STRING(REPLACE \"${PD}\"
                        \"\\\${VISIT_LIBRARY_DIR}\"
                        filteredline5
-                       \"\${filteredline4}\")
+                       \"\${filtered_line}\")
                 STRING(REPLACE \"${ZLIB_LIBRARY_DIR}\"
                        \"\\\${VISIT_LIBRARY_DIR}\"
                        filteredline6
@@ -2381,6 +2438,9 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                        filteredline8 \"\${filteredline7}\")
                 FILE(APPEND \${filename} \"\${filteredline8}\\n\")
             ENDIF(NOT WIN32)
+            
+
+            
         ENDIF(\${outputLine} STREQUAL \"TRUE\")
     ENDFOREACH(line)
 ENDFUNCTION(FILTER_LIBRARY_DEPENDENCIES)

@@ -51,6 +51,9 @@
 #   Kathleen Biagas, Tue May 28 17:02:54 MST 2013
 #   Move avtTimeLoopFilter and avtTimeLoopCollectorFilter to Filters directory.
 #
+#   Cyrus Harrison, on Oct 28 14:39:05 PDT 2013
+#   Link vtkCommonDataModel (it contains the vtkDataSet types)
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -246,12 +249,17 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
+    TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts 
+                                           lightweight_visit_vtk vtkCommonCore 
+                                           vtkCommonDataModel vtkFiltersGeometry 
+                                           vtkRenderingOpenGL vtkRenderingFreeType 
+                                           vtkRenderingFreeTypeOpenGL vtkInteractionStyle 
+                                           ${ZLIB_LIB})
 
 IF(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB} vtkFiltersStatisticsGnuR)
-ELSE(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+     TARGET_LINK_LIBRARIES(avtpipeline_ser vtkFiltersStatisticsGnuR)
 ENDIF(HAVE_LIB_R)
+
 # Add vtk defines
 ADD_TARGET_DEFINITIONS(avtpipeline_ser "${VTK_DEFINITIONS}")
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
@@ -259,10 +267,16 @@ VISIT_INSTALL_TARGETS(avtpipeline_ser)
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpipeline_par ${ALL_SOURCES})
+
+        TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts 
+                                              lightweight_visit_vtk vtkCommonCore 
+                                              vtkCommonDataModel vtkFiltersGeometry 
+                                              vtkRenderingOpenGL vtkRenderingFreeType 
+                                              vtkRenderingFreeTypeOpenGL 
+                                              vtkInteractionStyle ${ZLIB_LIB} 
+                                              )
     IF(HAVE_LIB_R)
-        TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB} vtkFiltersStatisticsGnuR)
-    ELSE(HAVE_LIB_R)
-        TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+        TARGET_LINK_LIBRARIES(avtpipeline_par vtkFiltersStatisticsGnuR)
     ENDIF(HAVE_LIB_R)
     # Add vtk defines
     ADD_TARGET_DEFINITIONS(avtpipeline_par "${VTK_DEFINITIONS}")
