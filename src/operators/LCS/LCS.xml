@@ -46,6 +46,12 @@
         MasterSlave
         VisItSelects
       </Enum>
+      <Enum name="OperationType">
+        Lyapunov
+        IntegrationTime
+        ArcLength
+        AverageDistanceFromSeed        
+      </Enum>
       <Enum name="TerminationType">
         Time
         Distance
@@ -85,7 +91,10 @@
       <Field name="maxSteps" label="Maximum number of steps" type="int">
         1000
       </Field>
-      <Field name="terminationType" label="Termination" type="enum" subtype="TerminationType">
+      <Field name="operationType" label="Operation type" type="enum" subtype="OperationType">
+        Lyapunov
+      </Field>
+      <Field name="terminationType" label="Termination type" type="enum" subtype="TerminationType">
         Time
       </Field>
       <Field name="terminateBySize" label="Use the size criteria for termination" type="bool">

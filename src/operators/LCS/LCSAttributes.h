@@ -106,6 +106,13 @@ public:
         MasterSlave,
         VisItSelects
     };
+    enum OperationType
+    {
+        Lyapunov,
+        IntegrationTime,
+        ArcLength,
+        AverageDistanceFromSeed
+    };
     enum TerminationType
     {
         Time,
@@ -157,6 +164,7 @@ public:
     void SetEndPosition(const double *EndPosition_);
     void SetIntegrationDirection(IntegrationDirection integrationDirection_);
     void SetMaxSteps(int maxSteps_);
+    void SetOperationType(OperationType operationType_);
     void SetTerminationType(TerminationType terminationType_);
     void SetTerminateBySize(bool terminateBySize_);
     void SetTermSize(double termSize_);
@@ -201,6 +209,7 @@ public:
           double *GetEndPosition();
     IntegrationDirection GetIntegrationDirection() const;
     int          GetMaxSteps() const;
+    OperationType GetOperationType() const;
     TerminationType GetTerminationType() const;
     bool         GetTerminateBySize() const;
     double       GetTermSize() const;
@@ -274,6 +283,11 @@ public:
 protected:
     static std::string ParallelizationAlgorithmType_ToString(int);
 public:
+    static std::string OperationType_ToString(OperationType);
+    static bool OperationType_FromString(const std::string &, OperationType &);
+protected:
+    static std::string OperationType_ToString(int);
+public:
     static std::string TerminationType_ToString(TerminationType);
     static bool TerminationType_FromString(const std::string &, TerminationType &);
 protected:
@@ -304,6 +318,7 @@ public:
         ID_EndPosition,
         ID_integrationDirection,
         ID_maxSteps,
+        ID_operationType,
         ID_terminationType,
         ID_terminateBySize,
         ID_termSize,
@@ -347,6 +362,7 @@ private:
     double EndPosition[3];
     int    integrationDirection;
     int    maxSteps;
+    int    operationType;
     int    terminationType;
     bool   terminateBySize;
     double termSize;
@@ -383,6 +399,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiiibdbdbddbddiddidDiiiiibbdibbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiiiibdbdbddbddiddidDiiiiibbdibbbbd"
 
 #endif

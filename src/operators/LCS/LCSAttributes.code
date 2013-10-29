@@ -225,12 +225,13 @@ Definition:
 
 std::string
 LCSViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
-                                                const ViewerPlot *plot)
+                                               const ViewerPlot *plot)
 {
     LCSAttributes *atts_in = (LCSAttributes *)atts;
 
     const char numTypes = 3;
-    const char *typeString[3] = { "FTLE", "FDLE", "FSLE" };
+    const char *typeString[2][3] = { { "FTLE", "FDLE", "FSLE" },
+                                     { "Time", "Arc length", "Ave. dist. from sedd" } };
 
     std::string var = plot->GetVariableName();
 
@@ -241,9 +242,21 @@ LCSViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 
       var = justTheVar;
     }
-    
-    var += std::string(" - ") +
-        std::string(typeString[atts_in->GetTerminationType()]);
+
+    int i, j;
+
+    if( atts_in->GetOperationType() == LCSAttributes::Lyapunov )
+    {
+        i = 0;
+        j = atts_in->GetTerminationType();
+    }
+    else
+    {
+        i = 1;
+        j = atts_in->GetOperationType() - 1;
+    }
+
+    var += std::string(" - ") + std::string(typeString[i][j]);
 
     return var;
 }

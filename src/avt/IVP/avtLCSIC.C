@@ -81,6 +81,8 @@ avtLCSIC::avtLCSIC(
     distance = 0.;
     doDistance = doDistance_;
     maxDistance = maxDistance_;
+
+    summation = 0.;
     
     doTime = doTime_;
     maxTime = maxTime_;
@@ -113,6 +115,8 @@ avtLCSIC::avtLCSIC() : avtIntegralCurve()
 
     time     = 0.;
     distance = 0.;
+
+    summation = 0.;
     
     terminatedBecauseOfMaxSteps = false;
 }
@@ -190,7 +194,7 @@ avtLCSIC::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v)
 //
 // ****************************************************************************
 void avtLCSIC::AnalyzeStep( avtIVPStep &step,
-                             avtIVPField *field)
+                            avtIVPField *field)
 {
     if (CheckForTermination(step, field))
         status.SetTerminationMet();
@@ -199,9 +203,11 @@ void avtLCSIC::AnalyzeStep( avtIVPStep &step,
     // CheckForTermination will modify the step if it goes beyond the
     // termination criteria.  (Example: streamlines will split a step if it
     // is terminating by distance.)
+    p_end = step.GetP1();
+
     time = step.GetT1();
     distance += step.GetLength();
-    p_end = step.GetP1();
+    summation += (p_start - p_end).length();
 }
 
 // ****************************************************************************

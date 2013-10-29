@@ -236,11 +236,12 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
-    const char numTypes = 9;
-    const char *typeString[9] =
-      { "None", "Speed", "Vorticity", "Arc Length",
-         "Absolute Time", "Relative Time", "Seed Point ID",
-        "Variable", "CorrelationDistance" };
+    const char numTypes = 11;
+    const char *typeString[11] =
+      { "None", "Seed Point ID", "Speed", "Vorticity", "Arc Length",
+         "Absolute Time", "Relative Time",
+         "Ave. dist. from seed", "Correlation Distance", "Difference",
+         "Variable" };
 
     std::string var = plot->GetVariableName();
 
@@ -301,4 +302,3 @@ IntegralCurveViewerPluginInfo::XPMIconData() const
 {
     return IntegralCurve_xpm;
 }
-

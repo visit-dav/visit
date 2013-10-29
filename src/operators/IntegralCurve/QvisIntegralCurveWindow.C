@@ -642,11 +642,11 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationLayout->addWidget(maxStepLengthLabel, 2,0);
     integrationLayout->addWidget(maxStepLength, 2,1);
 
+    // Create the step length text field.
     limitMaxTimeStep = new QCheckBox(tr("Limit maximum time step"), integrationGroup);
     connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
     integrationLayout->addWidget(limitMaxTimeStep, 3, 0);
     
-    // Create the step length text field.
     maxTimeStep = new QLineEdit(integrationGroup);
     connect(maxTimeStep, SIGNAL(returnPressed()),
             this, SLOT(maxTimeStepProcessText()));
@@ -762,15 +762,17 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->addWidget(new QLabel(tr("Data value"), dataGroup), 0, 0);
 
     dataValueComboBox = new QComboBox(dataGroup);
-    dataValueComboBox->addItem(tr("Solid"), 0);
-    dataValueComboBox->addItem(tr("Speed"), 1);
-    dataValueComboBox->addItem(tr("Vorticity magnitude"), 2);
-    dataValueComboBox->addItem(tr("Arc length"), 3);
-    dataValueComboBox->addItem(tr("Absolute time"), 4);
-    dataValueComboBox->addItem(tr("Relative time"), 5);
-    dataValueComboBox->addItem(tr("Seed point ID"), 6);
-    dataValueComboBox->addItem(tr("Variable"), 7);
-    dataValueComboBox->addItem(tr("Correlation distance"), 8);
+    dataValueComboBox->addItem(tr("Solid"), IntegralCurveAttributes::Solid);
+    dataValueComboBox->addItem(tr("Seed point ID"), IntegralCurveAttributes::SeedPointID);
+    dataValueComboBox->addItem(tr("Speed"), IntegralCurveAttributes::Speed);
+    dataValueComboBox->addItem(tr("Vorticity magnitude"), IntegralCurveAttributes::Vorticity);
+    dataValueComboBox->addItem(tr("Arc length"), IntegralCurveAttributes::ArcLength);
+    dataValueComboBox->addItem(tr("Absolute time"), IntegralCurveAttributes::TimeAbsolute);
+    dataValueComboBox->addItem(tr("Relative time"), IntegralCurveAttributes::TimeRelative);
+    dataValueComboBox->addItem(tr("Ave. dist. from seed"), IntegralCurveAttributes::AverageDistanceFromSeed);
+    dataValueComboBox->addItem(tr("Correlation distance"), IntegralCurveAttributes::CorrelationDistance);
+    dataValueComboBox->addItem(tr("Difference"), IntegralCurveAttributes::Difference);
+    dataValueComboBox->addItem(tr("Variable"), IntegralCurveAttributes::Variable);
     connect(dataValueComboBox, SIGNAL(activated(int)),
             this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueComboBox, 0, 1);
