@@ -1315,7 +1315,7 @@ class GeneralArguments(object):
         elif args[i] == "-threads":
             # Number of threads. Some launchers want to know this number, ie depth.
             self.threads = args[i+1]
-            self.arguments = self.arguments + [args[i]]
+            self.arguments = self.arguments + [args[i]] + [args[i+1]]
             n = 2
         else:
             self.arguments = self.arguments + [args[i]]
