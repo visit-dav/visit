@@ -136,57 +136,60 @@ protected:
     void GetInitialLocationsFromNativeMesh(avtDataTree_p);
     void GetInitialLocationsFromRectilinearGrid();
 
-    void ComputeRectilinearGridFTLE(std::vector<avtIntegralCurve*> &ics);
-    void ComputeNativeMeshFTLE( std::vector<avtIntegralCurve*> &ics);
+    // Single calculation methods for FTLE, FDLE, LIC, and similar methods
+    void RectilinearGridSingleCalc( std::vector<avtIntegralCurve*> &ics );
+    void NativeMeshSingleCalc( std::vector<avtIntegralCurve*> &ics );
 
-    avtDataTree_p MultiBlockComputeFTLE(avtDataTree_p,
+    avtDataTree_p MultiBlockSingleCalc( avtDataTree_p,
+                                        std::vector<avtIntegralCurve*> &,
+                                        int &, double &, double & );
+    vtkDataSet   *SingleBlockSingleCalc( vtkDataSet *, 
                                          std::vector<avtIntegralCurve*> &,
-                                         int &, double &, double &);
-    vtkDataSet   *SingleBlockComputeFTLE(vtkDataSet *, 
-                                          std::vector<avtIntegralCurve*> &,
-                                          int &, int, double &, double &);
+                                         int &, int, double &, double & );
 
-    void          ComputeFTLE(vtkDataArray* jacobian[3], 
-                              vtkDataArray* result);
+    void          ComputeFTLE( vtkDataArray* jacobian[3], 
+                               vtkDataArray* result );
 
-  
-    bool ComputeRectilinearGridFSLE(std::vector<avtIntegralCurve*> &ics);
-    bool ComputeNativeMeshFSLE(std::vector<avtIntegralCurve*> &ics);
+    // Iterative cacluation methods for FSLE, and similar methods
+    bool RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics );
+    bool NativeMeshIterativeCalc( std::vector<avtIntegralCurve*> &ics );
 
-    avtDataTree_p CreateFSLEDataTree(avtDataTree_p);
-    vtkDataSet*   CreateFSLEDataSet();
+    avtDataTree_p CreateIterativeCalcDataTree( avtDataTree_p );
+    vtkDataSet*   CreateIterativeCalcDataSet();
 
-    bool   MultiBlockComputeFSLE(avtDataTree_p,
-                                 std::vector<avtIntegralCurve*> &,
-                                 int &);
-    bool   SingleBlockComputeFSLE(vtkDataSet *_ds,
+    bool MultiBlockIterativeCalc( avtDataTree_p,
                                   std::vector<avtIntegralCurve*> &,
-                                  int &);
+                                  int & );
+    bool SingleBlockIterativeCalc( vtkDataSet *_ds,
+                                   std::vector<avtIntegralCurve*> &,
+                                   int & );
   
-    void   MultiBlockCreateFSLEOutput(avtDataTree_p, avtDataTree_p,
-                                      std::vector<avtIntegralCurve*> &,
-                                      int &, double &, double &, int &);
-    void   SingleBlockCreateFSLEOutput(vtkDataSet *, vtkDataSet *,
-                                       std::vector<avtIntegralCurve*> &,
-                                       int &, int, double &, double &, int &);
+    void CreateMultiBlockIterativeCalcOutput( avtDataTree_p, avtDataTree_p,
+                                              std::vector<avtIntegralCurve*> &,
+                                              int &, double &, double &, int & );
+    void CreateSingleBlockIterativeCalcOutput( vtkDataSet *, vtkDataSet *,
+                                               std::vector<avtIntegralCurve*> &,
+                                               int &, int, double &, double &,
+                                               int & );
 
-    void   ComputeFSLE(vtkDataArray* jacobian[3], 
-                       vtkDataArray* times,
-                       vtkDataArray* lengths,
-                       vtkDataArray* result,
-                       vtkDataArray* mask,
-                       int, int, int);
+    void ComputeFSLE( vtkDataArray* jacobian[3], 
+                      vtkDataArray* times,
+                      vtkDataArray* lengths,
+                      vtkDataArray* result,
+                      vtkDataArray* mask,
+                      int, int, int );
 
-    bool   Value( int x, int y, int z, vtkDataArray *array,
-                  int x_max, int y_max, int z_max );
-    void   Increment( int x, int y, int z, vtkDataArray *mask,
-                      int x_max, int y_max, int z_max );
-    int    InBounds( int x, int y, int z,
-                     int x_max, int y_max, int z_max );
+    bool Value( int x, int y, int z, vtkDataArray *array,
+                int x_max, int y_max, int z_max );
+    void Increment( int x, int y, int z, vtkDataArray *mask,
+                    int x_max, int y_max, int z_max );
+    int  InBounds( int x, int y, int z,
+                   int x_max, int y_max, int z_max );
 
-    void CreateNativeMeshFSLEOutput(std::vector<avtIntegralCurve*> &ics);
-    void CreateRectilinearGridFSLEOutput(std::vector<avtIntegralCurve*> &ics);
+    void CreateNativeMeshIterativeCalcOutput(std::vector<avtIntegralCurve*> &ics);
+    void CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCurve*> &ics);
 
+    // Additional methods
     std::string   CreateCacheString(void);
     avtDataTree_p GetCachedDataSet();
     avtDataTree_p GetCachedResampledDataSet();

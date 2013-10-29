@@ -44,10 +44,10 @@
 #include <avtLCSIC.h>
 
 // For now use the avtLCSIC as the state does not need to be recorded
-//for the FSLE. That is because currently the integration is being
-//done step by step rather than in chunks. However, the code is set up
-//to use avtStreamlineIC. Which if the integration is done in chucks
-//will probably be more efficient.
+// for the FSLE. That is because currently the integration is being
+// done step by step rather than in chunks. However, the code is set up
+// to use avtStreamlineIC. Which if the integration is done in chucks
+// will probably be more efficient.
 
 //#include <avtStreamlineIC.h>
 #define avtStreamlineIC avtLCSIC
@@ -197,7 +197,8 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
 
     if (atts.GetIntegrationType() == LCSAttributes::DormandPrince)
     {
-        if( atts.GetTerminateBySize() )
+      if( atts.GetOperationType() ==  LCSAttributes::Lyapunov &&
+            atts.GetTerminateBySize() )
         {
           EXCEPTION1(ImproperUseException,
                      "When performing FSLE the step size must be fixed. "
@@ -578,7 +579,8 @@ avtLCSFilter::PreExecute(void)
       minResolution = std::min( resZ, minResolution );
     }
 
-    if( doSize && maxSize <= minResolution )
+    if( atts.GetOperationType() ==  LCSAttributes::Lyapunov &&
+        doSize && maxSize <= minResolution )
     {
         char str[1028];
 
@@ -654,33 +656,34 @@ avtLCSFilter::ContinueExecute()
 {
     ++numSteps;
 
-    if( doTime || doDistance )
-        return false;
-
-    else //if( doSize )
+    if( atts.GetOperationType() == LCSAttributes::Lyapunov )
     {
+      if( doSize )
+      {
 //      std::cerr << "Continue execute " << numSteps << std::endl;
-    
-      std::vector<avtIntegralCurve *> ics;
-    
-      GetTerminatedIntegralCurves(ics);
-    
-      if (atts.GetSourceType() == LCSAttributes::NativeMesh)
-      {
-        if (ComputeNativeMeshFSLE(ics) == true )
-          return false;
-        else
-          return true;
-
-      }
-      else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
-      {
-        if (ComputeRectilinearGridFSLE(ics) == true )
-          return false;
-        else
-          return true;
+        
+        std::vector<avtIntegralCurve *> ics;
+        
+        GetTerminatedIntegralCurves(ics);
+        
+        if (atts.GetSourceType() == LCSAttributes::NativeMesh)
+        {
+          if (NativeMeshIterativeCalc(ics) == true )
+            return false;
+          else
+            return true;
+        }
+        else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+        {
+          if (RectilinearGridIterativeCalc(ics) == true )
+            return false;
+          else
+            return true;
+        }
       }
     }
+
+    return false;
 }
 
 // ****************************************************************************
@@ -698,20 +701,30 @@ avtLCSFilter::ContinueExecute()
 void 
 avtLCSFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
 {
-  if( doTime || doDistance )
+  if( atts.GetOperationType() == LCSAttributes::Lyapunov )
+  {
+    if( doTime || doDistance )
+    {
+      if (atts.GetSourceType() == LCSAttributes::NativeMesh)
+        NativeMeshSingleCalc(ics);
+      else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+        RectilinearGridSingleCalc(ics);
+    }
+    else if( doSize )
+    {
+      if (atts.GetSourceType() == LCSAttributes::NativeMesh)
+        CreateNativeMeshIterativeCalcOutput(ics);
+      else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+        CreateRectilinearGridIterativeCalcOutput(ics);
+    }
+  }
+  else
   {
     if (atts.GetSourceType() == LCSAttributes::NativeMesh)
-        ComputeNativeMeshFTLE(ics);
+      NativeMeshSingleCalc(ics);
     else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
-        ComputeRectilinearGridFTLE(ics);
-  }
-  else if( doSize )
-  {
-    if (atts.GetSourceType() == LCSAttributes::NativeMesh)
-      CreateNativeMeshFSLEOutput(ics);
-    else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
-      CreateRectilinearGridFSLEOutput(ics);
-  }
+      RectilinearGridSingleCalc(ics);
+    }
 }
 
 
@@ -873,7 +886,7 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeNativeMeshFTLE
+//  Method: avtLCSFilter::NativeMeshSingleCalc
 //
 //  Purpose:
 //      Computes the FTLE after the particles have been advected.
@@ -883,7 +896,7 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
 //
 // ****************************************************************************
 
-void avtLCSFilter::ComputeNativeMeshFTLE(std::vector<avtIntegralCurve*> &ics)
+void avtLCSFilter::NativeMeshSingleCalc(std::vector<avtIntegralCurve*> &ics)
 {
     //accumulate all of the points then do jacobian?
     //or do jacobian then accumulate?
@@ -894,7 +907,7 @@ void avtLCSFilter::ComputeNativeMeshFTLE(std::vector<avtIntegralCurve*> &ics)
     int    offset = 0;
 
     avtDataTree_p outTree =
-      MultiBlockComputeFTLE(GetInputDataTree(), ics, offset, minv, maxv);
+      MultiBlockSingleCalc(GetInputDataTree(), ics, offset, minv, maxv);
 
     if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
         if (PAR_Rank() != 0)
@@ -920,7 +933,7 @@ void avtLCSFilter::ComputeNativeMeshFTLE(std::vector<avtIntegralCurve*> &ics)
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::MultiBlockComputeFTLE
+//  Method: avtLCSFilter::MultiBlockSingleCalc
 //
 //  Purpose:
 //      Computes the FTLE for the whole data set, using the final
@@ -932,9 +945,9 @@ void avtLCSFilter::ComputeNativeMeshFTLE(std::vector<avtIntegralCurve*> &ics)
 // ****************************************************************************
 
 avtDataTree_p
-avtLCSFilter::MultiBlockComputeFTLE(avtDataTree_p inDT,
-                                     std::vector<avtIntegralCurve*> &ics,
-                                     int &offset, double &minv, double &maxv)
+avtLCSFilter::MultiBlockSingleCalc( avtDataTree_p inDT,
+                                    std::vector<avtIntegralCurve*> &ics,
+                                    int &offset, double &minv, double &maxv )
 {
     if (*inDT == NULL)
         return 0;
@@ -956,7 +969,7 @@ avtLCSFilter::MultiBlockComputeFTLE(avtDataTree_p inDT,
         std::string label = inDT->GetDataRepresentation().GetLabel();
 
         vtkDataSet *out_ds =
-          SingleBlockComputeFTLE(in_ds, ics, offset, dom, minv, maxv);
+          SingleBlockSingleCalc( in_ds, ics, offset, dom, minv, maxv );
         avtDataTree_p rv = new avtDataTree(out_ds, dom, label);
         out_ds->Delete();
         return rv;
@@ -971,8 +984,8 @@ avtLCSFilter::MultiBlockComputeFTLE(avtDataTree_p inDT,
       for (int j = 0; j < nc; j++)
       {
           if (inDT->ChildIsPresent(j))
-            outDT[j] = MultiBlockComputeFTLE(inDT->GetChild(j), ics, 
-                                             offset, minv, maxv);
+            outDT[j] = MultiBlockSingleCalc( inDT->GetChild(j), ics, 
+                                                    offset, minv, maxv );
           else
             outDT[j] = NULL;
       }
@@ -984,7 +997,7 @@ avtLCSFilter::MultiBlockComputeFTLE(avtDataTree_p inDT,
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::SingleBlockComputeFTLE
+//  Method: avtLCSFilter::SingleBlockSingleCalc
 //
 //  Purpose:
 //      Computes the FTLE for a single block of a data set, using the 
@@ -1012,10 +1025,10 @@ avtLCSFilter::MultiBlockComputeFTLE(avtDataTree_p inDT,
 // ****************************************************************************
 
 vtkDataSet *
-avtLCSFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
-                                      std::vector<avtIntegralCurve*> &ics,
-                                      int &offset, int domain,
-                                      double &minv, double &maxv)
+avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
+                                     std::vector<avtIntegralCurve*> &ics,
+                                     int &offset, int domain,
+                                     double &minv, double &maxv )
 {
     //variable name.
     std::string var = std::string("operators/LCS/") + outVarName;
@@ -1078,7 +1091,18 @@ avtLCSFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
           // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
           //                ((avtLCSIC*)ics[i])->GetStartPoint();
 
-          remapPoints.at(l) = ((avtLCSIC*)ics[i])->GetEndPoint();
+          if( atts.GetOperationType() == LCSAttributes::Lyapunov )
+          {
+            remapPoints.at(l) = ((avtLCSIC*)ics[i])->GetEndPoint();
+          }
+          else
+          {
+            remapPoints.at(l) =
+              avtVector( ((avtLCSIC*)ics[i])->GetTime(),
+                         ((avtLCSIC*)ics[i])->GetDistance(),
+                         ((avtLCSIC*)ics[i])->GetSummation() /
+                         (double) ((avtLCSIC*)ics[i])->GetNumSteps() );
+          }
         }
     }
 
@@ -1103,8 +1127,10 @@ avtLCSFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
     out_grid->GetPointData()->AddArray(component);
     out_grid->GetPointData()->SetActiveScalars(var.c_str());
 
-    for(int i = 0; i < 3; ++i)
+    if( atts.GetOperationType() == LCSAttributes::Lyapunov )
     {
+      for(int i = 0; i < 3; ++i)
+      {
         for(size_t j = 0; j < nTuples; ++j)
             component->SetTuple1(j, remapPoints[j][i]);
 
@@ -1120,13 +1146,25 @@ avtLCSFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
 
         jacobian[i] =
           avtGradientExpression::CalculateGradient(out_grid, var.c_str());
-    }
+      }
 
-    for (int i = 0; i < nTuples; i++)
+      for (int i = 0; i < nTuples; i++)
         component->SetTuple1(i, std::numeric_limits<float>::epsilon());
 
-    //now have the jacobian - 3 arrays with 3 components.
-    ComputeFTLE(jacobian, component);
+      //now have the jacobian - 3 arrays with 3 components.
+      ComputeFTLE(jacobian, component);
+
+      jacobian[0]->Delete();
+      jacobian[1]->Delete();
+      jacobian[2]->Delete();
+    }
+    else
+    {
+      int index = atts.GetOperationType() - 1;
+
+      for(size_t j = 0; j < nTuples; ++j)
+        component->SetTuple1(j, remapPoints[j][index]);
+    }
 
     for(int i = 0; i < nTuples; ++i)
     {
@@ -1135,10 +1173,6 @@ avtLCSFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
     }
 
     component->Delete();
-
-    jacobian[0]->Delete();
-    jacobian[1]->Delete();
-    jacobian[2]->Delete();
 #else
     // This code shows the distance a particle traveled ... very
     // useful for debugging.
@@ -1191,7 +1225,7 @@ avtLCSFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeRectilinearGridFTLE
+//  Method: avtLCSFilter::RectilinearGridSingleCalc
 //
 //  Purpose:
 //      Computes the FTLE on a rectilinear grid.
@@ -1205,7 +1239,7 @@ avtLCSFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
 // ****************************************************************************
 
 void
-avtLCSFilter::ComputeRectilinearGridFTLE(std::vector<avtIntegralCurve*> &ics)
+avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 {
     //variable name.
     std::string var = std::string("operators/LCS/") + outVarName;
@@ -1230,14 +1264,24 @@ avtLCSFilter::ComputeRectilinearGridFTLE(std::vector<avtIntegralCurve*> &ics)
         //    std::cout << "distance: " << indices[i]
         //           << " " << distance.length() << std::endl;
 
-        avtVector end_point = ((avtLCSIC*)ics[i])->GetEndPoint();
+        if( atts.GetOperationType() == LCSAttributes::Lyapunov )
+        {
+          avtVector end_point = ((avtLCSIC*)ics[i])->GetEndPoint();
+          
+          // std::cout << PAR_Rank() << " ics: " << indices[i] << " "
+          //             << end_point << std::endl;
 
-        // std::cout << PAR_Rank() << " ics: " << indices[i] << " "
-        //             << end_point << std::endl;
-
-        points[j+0] = end_point[0];
-        points[j+1] = end_point[1];
-        points[j+2] = end_point[2];
+          points[j+0] = end_point[0];
+          points[j+1] = end_point[1];
+          points[j+2] = end_point[2];
+        }
+        else
+        {
+          points[j+0] = ((avtLCSIC*)ics[i])->GetTime();
+          points[j+1] = ((avtLCSIC*)ics[i])->GetDistance();
+          points[j+2] = ((avtLCSIC*)ics[i])->GetSummation() /
+            (double) ((avtLCSIC*)ics[i])->GetNumSteps();
+        }
     }
 
     // std::cout << PAR_Rank() << " total integral pts: "
@@ -1379,19 +1423,34 @@ avtLCSFilter::ComputeRectilinearGridFTLE(std::vector<avtIntegralCurve*> &ics)
             //        << std::endl;
         }
 
-        for(int i = 0; i < 3; ++i)
+        if( atts.GetOperationType() == LCSAttributes::Lyapunov )
         {
+          for(int i = 0; i < 3; ++i)
+          {
             for(size_t j = 0; j < leafSize; ++j)
                 component->SetTuple1(j, remapPoints[j][i]);
 
             jacobian[i] =
               avtGradientExpression::CalculateGradient(rect_grid, var.c_str());
-        }
+          }
 
-        for (size_t l = 0; l < leafSize; l++)
+          for (size_t l = 0; l < leafSize; l++)
             component->SetTuple1(l, std::numeric_limits<float>::epsilon());
 
-        ComputeFTLE(jacobian, component);
+          ComputeFTLE(jacobian, component);
+
+          jacobian[0]->Delete();
+          jacobian[1]->Delete();
+          jacobian[2]->Delete();
+        }
+        else
+        {
+          int index = atts.GetOperationType() - 1;
+
+          for(size_t j = 0; j < leafSize; ++j)
+            component->SetTuple1(j, remapPoints[j][index]);
+        }
+
 
         //min and max values over all datasets of the tree.
         double minv = std::numeric_limits<double>::max();
@@ -1405,9 +1464,6 @@ avtLCSFilter::ComputeRectilinearGridFTLE(std::vector<avtIntegralCurve*> &ics)
 
         //cleanup.
         component->Delete();
-        jacobian[0]->Delete();
-        jacobian[1]->Delete();
-        jacobian[2]->Delete();
 
         if (all_indices)  delete [] all_indices;
         if (index_counts) delete [] index_counts;
@@ -1547,8 +1603,6 @@ void avtLCSFilter::ComputeFTLE(vtkDataArray *jacobian[3], vtkDataArray *result)
           lambda /= maxTime;
         else if( doDistance )
           lambda /= maxDistance;
-        else if( doSize )
-          lambda /= maxSize;
 
         // std::cout << "lambda :" << lambda << std::endl;
         result->SetTuple1(l, lambda);
@@ -1557,7 +1611,7 @@ void avtLCSFilter::ComputeFTLE(vtkDataArray *jacobian[3], vtkDataArray *result)
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::CreateFSLEDataTree
+//  Method: avtLCSFilter::CreateIterativeCalcDataTree
 //
 //  Purpose:
 //      Create the output tree for the whole data set, using the 
@@ -1571,7 +1625,7 @@ void avtLCSFilter::ComputeFTLE(vtkDataArray *jacobian[3], vtkDataArray *result)
 // ****************************************************************************
 
 avtDataTree_p
-avtLCSFilter::CreateFSLEDataTree(avtDataTree_p inDT)
+avtLCSFilter::CreateIterativeCalcDataTree(avtDataTree_p inDT)
 {
     if (*inDT == NULL)
       return 0;
@@ -1831,7 +1885,7 @@ avtLCSFilter::CreateFSLEDataTree(avtDataTree_p inDT)
       for (int j = 0; j < nc; j++)
       {
           if (inDT->ChildIsPresent(j))
-            outDT[j] = CreateFSLEDataTree(inDT->GetChild(j));
+            outDT[j] = CreateIterativeCalcDataTree(inDT->GetChild(j));
           else
             outDT[j] = NULL;
       }
@@ -1843,7 +1897,7 @@ avtLCSFilter::CreateFSLEDataTree(avtDataTree_p inDT)
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::CreateFSLEDataSet
+//  Method: avtLCSFilter::CreateIterativeCalcDataSet
 //
 //  Purpose:
 //      Create the output tree for the whole data set, using the 
@@ -1857,7 +1911,7 @@ avtLCSFilter::CreateFSLEDataTree(avtDataTree_p inDT)
 // ****************************************************************************
 
 vtkDataSet*
-avtLCSFilter::CreateFSLEDataSet()
+avtLCSFilter::CreateIterativeCalcDataSet()
 {
   //rank 0
   //variable name.
@@ -2019,7 +2073,7 @@ avtLCSFilter::CreateFSLEDataSet()
   
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeNativeMeshFSLE
+//  Method: avtLCSFilter::NativeMeshIterativeCalc
 //
 //  Purpose:
 //      Computes the FSLE on a native resolution grid.
@@ -2033,13 +2087,13 @@ avtLCSFilter::CreateFSLEDataSet()
 // ****************************************************************************
 
 bool
-avtLCSFilter::ComputeNativeMeshFSLE(std::vector<avtIntegralCurve*> &ics)
+avtLCSFilter::NativeMeshIterativeCalc(std::vector<avtIntegralCurve*> &ics)
 {
     int offset = 0;
 
     if( *fsle_dt == NULL )
     {
-      fsle_dt = CreateFSLEDataTree(GetInputDataTree());
+      fsle_dt = CreateIterativeCalcDataTree(GetInputDataTree());
       
       if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
         if (PAR_Rank() != 0)
@@ -2048,12 +2102,12 @@ avtLCSFilter::ComputeNativeMeshFSLE(std::vector<avtIntegralCurve*> &ics)
       SetOutputDataTree(fsle_dt);
     }
 
-    return MultiBlockComputeFSLE(fsle_dt, ics, offset);
+    return MultiBlockIterativeCalc(fsle_dt, ics, offset);
 }
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::MultiBlockComputeFSLE
+//  Method: avtLCSFilter::MultiBlockIterativeCalc
 //
 //  Purpose:
 //      Computes the FSLE for the whole data set, using the 
@@ -2065,7 +2119,7 @@ avtLCSFilter::ComputeNativeMeshFSLE(std::vector<avtIntegralCurve*> &ics)
 // ****************************************************************************
 
 bool
-avtLCSFilter::MultiBlockComputeFSLE(avtDataTree_p outDT,
+avtLCSFilter::MultiBlockIterativeCalc(avtDataTree_p outDT,
                                      std::vector<avtIntegralCurve*> &ics,
                                      int &offset)
 {
@@ -2084,7 +2138,7 @@ avtLCSFilter::MultiBlockComputeFSLE(avtDataTree_p outDT,
         //
         vtkDataSet *out_ds = outDT->GetDataRepresentation().GetDataVTK();
 
-        return SingleBlockComputeFSLE( out_ds, ics, offset );
+        return SingleBlockIterativeCalc( out_ds, ics, offset );
     }
     else
     {
@@ -2098,7 +2152,7 @@ avtLCSFilter::MultiBlockComputeFSLE(avtDataTree_p outDT,
       {
         if (outDT->ChildIsPresent(j) )
         {
-          if( MultiBlockComputeFSLE( outDT->GetChild(j), ics, offset ) == false )
+          if( MultiBlockIterativeCalc( outDT->GetChild(j), ics, offset ) == false )
             haveAllExponents = false;
         }
       }
@@ -2109,7 +2163,7 @@ avtLCSFilter::MultiBlockComputeFSLE(avtDataTree_p outDT,
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::SingleBlockComputeFSLE
+//  Method: avtLCSFilter::SingleBlockIterativeCalc
 //
 //  Purpose:
 //      Computes the FSLE for a single block of a data set, using the 
@@ -2134,9 +2188,9 @@ avtLCSFilter::MultiBlockComputeFSLE(avtDataTree_p outDT,
 // ****************************************************************************
 
 bool
-avtLCSFilter::SingleBlockComputeFSLE(vtkDataSet *out_ds,
-                                      std::vector<avtIntegralCurve*> &ics,
-                                      int &offset)
+avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
+                                        std::vector<avtIntegralCurve*> &ics,
+                                        int &offset )
 {
     //variable name.
     std::string var = std::string("operators/LCS/") + outVarName;
@@ -2160,7 +2214,7 @@ avtLCSFilter::SingleBlockComputeFSLE(vtkDataSet *out_ds,
     else
     {
       EXCEPTION1(VisItException,
-                 "Can only compute SingleBlockComputeFSLE on "
+                 "Can only compute SingleBlockIterativeCalc on "
                  "imagedata, rectilinear grids, or structured grids. ");
     }
 
@@ -2327,7 +2381,7 @@ avtLCSFilter::SingleBlockComputeFSLE(vtkDataSet *out_ds,
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeRectilinearGridFSLE
+//  Method: avtLCSFilter::RectilinearGridIterativeCalc
 //
 //  Purpose:
 //      Computes the FSLE on a rectilinear grid.
@@ -2341,7 +2395,7 @@ avtLCSFilter::SingleBlockComputeFSLE(vtkDataSet *out_ds,
 // ****************************************************************************
 
 bool
-avtLCSFilter::ComputeRectilinearGridFSLE(std::vector<avtIntegralCurve*> &ics)
+avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics )
 {
 //  std::cerr << "Computing ... " << std::endl;
 
@@ -2424,7 +2478,7 @@ avtLCSFilter::ComputeRectilinearGridFSLE(std::vector<avtIntegralCurve*> &ics)
 
         //now global grid has been created.
         if( fsle_ds == 0 )
-          fsle_ds = CreateFSLEDataSet();
+          fsle_ds = CreateIterativeCalcDataSet();
 
         // Get the stored data arrays
         vtkDataArray* jacobian[3];
@@ -2671,7 +2725,7 @@ void avtLCSFilter::ComputeFSLE(vtkDataArray *jacobian[3],
             minSizeValue = std::min(size, minSizeValue);
             maxSizeValue = std::max(size, maxSizeValue);
         
-            // Record the Lynapouv exponent if the max
+            // Record the Lyapunov exponent if the max
             // size has been reached.
             if( maxSize < size )
             {
@@ -2781,10 +2835,10 @@ bool avtLCSFilter::Value( int x, int y, int z, vtkDataArray *array,
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::CreateNativeMeshFSLEOutput
+//  Method: avtLCSFilter::CreateNativeMeshIterativeCalcOutput
 //
 //  Purpose:
-//      Computes the FSLE output (via sub-routines) after the PICS filter
+//      Computes the IterativeCalc output (via sub-routines) after the PICS filter
 //      has calculated the particle positions.
 //
 //  Programmer: Allen Sanderson
@@ -2793,7 +2847,7 @@ bool avtLCSFilter::Value( int x, int y, int z, vtkDataArray *array,
 // ****************************************************************************
 
 void 
-avtLCSFilter::CreateNativeMeshFSLEOutput(std::vector<avtIntegralCurve*> &ics)
+avtLCSFilter::CreateNativeMeshIterativeCalcOutput(std::vector<avtIntegralCurve*> &ics)
 {
     //accumulate all of the points then do jacobian?
     //or do jacobian then accumulate?
@@ -2804,8 +2858,8 @@ avtLCSFilter::CreateNativeMeshFSLEOutput(std::vector<avtIntegralCurve*> &ics)
     double maxv   = std::numeric_limits<double>::min();
     int    count  = 0;
 
-    MultiBlockCreateFSLEOutput(GetInputDataTree(), GetDataTree(),
-                               ics, offset, minv, maxv, count);
+    CreateMultiBlockIterativeCalcOutput(GetInputDataTree(), GetDataTree(),
+                                        ics, offset, minv, maxv, count);
 
     int nTuples = ics.size();
 
@@ -2854,7 +2908,7 @@ avtLCSFilter::CreateNativeMeshFSLEOutput(std::vector<avtIntegralCurve*> &ics)
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::MultiBlockCreateFSLEOutput
+//  Method: avtLCSFilter::CreateMultiBlockIterativeCalcOutput
 //
 //  Purpose:
 //      Computes the FSLE for the whole data set, using the 
@@ -2866,12 +2920,12 @@ avtLCSFilter::CreateNativeMeshFSLEOutput(std::vector<avtIntegralCurve*> &ics)
 // ****************************************************************************
 
 void
-avtLCSFilter::MultiBlockCreateFSLEOutput(avtDataTree_p inDT,
-                                          avtDataTree_p outDT,
-                                          std::vector<avtIntegralCurve*> &ics,
-                                          int &offset,
-                                          double &minv, double &maxv,
-                                          int &count)
+avtLCSFilter::CreateMultiBlockIterativeCalcOutput( avtDataTree_p inDT,
+                                                   avtDataTree_p outDT,
+                                                   std::vector<avtIntegralCurve*> &ics,
+                                                   int &offset,
+                                                   double &minv, double &maxv,
+                                                   int &count)
 {
     if (*inDT == NULL || *outDT == NULL)
         return;
@@ -2892,8 +2946,8 @@ avtLCSFilter::MultiBlockCreateFSLEOutput(avtDataTree_p inDT,
         int dom = inDT->GetDataRepresentation().GetDomain();
         std::string label = inDT->GetDataRepresentation().GetLabel();
 
-        SingleBlockCreateFSLEOutput(in_ds, out_ds, ics,
-                                    offset, dom, minv, maxv, count);
+        CreateSingleBlockIterativeCalcOutput(in_ds, out_ds, ics,
+                                             offset, dom, minv, maxv, count);
     }
     else
     {
@@ -2904,15 +2958,16 @@ avtLCSFilter::MultiBlockCreateFSLEOutput(avtDataTree_p inDT,
       for (int j = 0; j < nc; j++)
       {
           if (inDT->ChildIsPresent(j))
-            MultiBlockCreateFSLEOutput(inDT->GetChild(j), outDT->GetChild(j),
-                                       ics, offset, minv, maxv, count);
+            CreateMultiBlockIterativeCalcOutput(inDT->GetChild(j),
+                                                outDT->GetChild(j),
+                                                ics, offset, minv, maxv, count);
       }
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::SingleBlockCreateFSLEOutput
+//  Method: avtLCSFilter::CreateSingleBlockIterativeCalcOutput
 //
 //  Purpose:
 //      Computes the FSLE for a single block of a data set, using the 
@@ -2941,12 +2996,12 @@ avtLCSFilter::MultiBlockCreateFSLEOutput(avtDataTree_p inDT,
 // ****************************************************************************
 
 void
-avtLCSFilter::SingleBlockCreateFSLEOutput(vtkDataSet *in_ds,
-                                           vtkDataSet *out_ds,
-                                           std::vector<avtIntegralCurve*> &ics,
-                                           int &offset, int domain,
-                                           double &minv, double &maxv,
-                                           int &count)
+avtLCSFilter::CreateSingleBlockIterativeCalcOutput( vtkDataSet *in_ds,
+                                                    vtkDataSet *out_ds,
+                                                    std::vector<avtIntegralCurve*> &ics,
+                                                    int &offset, int domain,
+                                                    double &minv, double &maxv,
+                                                    int &count )
 {
   //variable name.
   std::string var = std::string("operators/LCS/") + outVarName;
@@ -2976,7 +3031,7 @@ avtLCSFilter::SingleBlockCreateFSLEOutput(vtkDataSet *in_ds,
   else
   {
     EXCEPTION1(VisItException,
-               "Can only compute SingleBlockCreateFSLEOutput on "
+               "Can only compute SingleBlockCreateIterativeCalcOutput on "
                "uniform, rectilinear, or structured grids. ");
   }
 
@@ -3048,7 +3103,7 @@ avtLCSFilter::SingleBlockCreateFSLEOutput(vtkDataSet *in_ds,
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::CreateRectilinearGridFSLEOutput
+//  Method: avtLCSFilter::CreateRectilinearGridIterativeCalcOutput
 //
 //  Purpose:
 //      Computes the FSLE output (via sub-routines) after the PICS filter
@@ -3060,7 +3115,7 @@ avtLCSFilter::SingleBlockCreateFSLEOutput(vtkDataSet *in_ds,
 // ****************************************************************************
 
 void 
-avtLCSFilter::CreateRectilinearGridFSLEOutput(std::vector<avtIntegralCurve*> &ics)
+avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCurve*> &ics)
 {
     //root should now have index into global structure and all
     //matching end positions.
@@ -3075,7 +3130,7 @@ avtLCSFilter::CreateRectilinearGridFSLEOutput(std::vector<avtIntegralCurve*> &ic
       if (fsle_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
       {
         EXCEPTION1(VisItException,
-                   "Can only compute CreateRectilinearGridFSLEOutput on "
+                   "Can only compute CreateRectilinearGridIterativeCalcOutput on "
                    "rectilinear grids. ");
       }
 
@@ -3382,7 +3437,11 @@ avtLCSFilter::CreateCacheString(void)
 
   std::ostringstream os;
 
-  os << seedTime0 << "  "
+  int   cycle = (int)   GetInput()->GetInfo().GetAttributes().GetCycle();
+  float time  = (float) GetInput()->GetInfo().GetAttributes().GetTime();
+
+  os << cycle << "  "
+     << time << "  "
      << atts.GetSourceType() << " "
      << resolution[0] << " "
      << resolution[1] << " "
@@ -3397,6 +3456,7 @@ avtLCSFilter::CreateCacheString(void)
      << endPosition[2] << " "
      << atts.GetIntegrationDirection() << " "
      << atts.GetMaxSteps() << " "
+     << atts.GetOperationType() << " "
      << atts.GetTerminationType() << " "
      << atts.GetTerminateBySize() << " "
      << atts.GetTermSize() << " "

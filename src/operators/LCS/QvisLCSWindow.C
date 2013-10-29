@@ -398,51 +398,69 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // respectively. While using the max steps as a back up. This is
     // opposite of streamlines/pathlines which optionally use the
     // termination.
-    limitButtonGroup = new QButtonGroup(terminationGroup);
-    rb = new QRadioButton(tr("Limit maximum time i.e. FTLE"), terminationGroup);
-    limitButtonGroup->addButton(rb, 0);
-    terminationLayout->addWidget(rb, 0,0);
+    terminationTypeButtonGroup = new QButtonGroup(terminationGroup);
+
+    // Create the operation of integration.
+    terminationLayout->addWidget(new QLabel(tr("Operation type"),
+                                            central), 0, 0);
+    operationType = new QComboBox(central);
+    operationType->addItem(tr("Lyapunov"));
+    operationType->addItem(tr("Integration time"));
+    operationType->addItem(tr("Arc length"));
+    operationType->addItem(tr("Average distance from seed"));
+    connect(operationType, SIGNAL(activated(int)),
+            this, SLOT(operationTypeChanged(int)));
+    terminationLayout->addWidget(operationType, 0, 1);
+
+
+    // Radio button termination type
+    rb = new QRadioButton(tr("Limit maximum advection time i.e. FTLE"), terminationGroup);
+    terminationTypeButtonGroup->addButton(rb, 0);
+    terminationLayout->addWidget(rb, 1,0);
 
     rb->setChecked(true);
 
-    rb = new QRadioButton(tr("Limit maximum distance i.e. FDLE"), terminationGroup);
-    limitButtonGroup->addButton(rb, 1);
-    terminationLayout->addWidget(rb, 1,0);
-
-    rb = new QRadioButton(tr("Limit maximum size i.e. FSLE"), terminationGroup);
-    limitButtonGroup->addButton(rb, 2);
+    rb = new QRadioButton(tr("Limit maximum advection distance i.e. FDLE"), terminationGroup);
+    terminationTypeButtonGroup->addButton(rb, 1);
     terminationLayout->addWidget(rb, 2,0);
 
+    rb = new QRadioButton(tr("Limit maximum size i.e. FSLE"), terminationGroup);
+    terminationTypeButtonGroup->addButton(rb, 2);
+    terminationLayout->addWidget(rb, 3,0);
 
-    connect(limitButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(limitButtonGroupChanged(int)));
+    connect(terminationTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(terminationTypeButtonGroupChanged(int)));
 
-    // limitMaxTime = new QCheckBox(tr("Limit maximum time elapsed for particles"), terminationGroup);
-    // connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
-    // terminationLayout->addWidget(limitMaxTime, 0,0);
+    // Check box termination type
+    limitMaxTime = new QCheckBox(tr("Limit maximum advection time"), terminationGroup);
+    connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
+    terminationLayout->addWidget(limitMaxTime, 1,0);
+    limitMaxTime->hide();
+
+    limitMaxDistance = new QCheckBox(tr("Limit maximum advection distance"), terminationGroup);
+    connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
+    terminationLayout->addWidget(limitMaxDistance, 2,0);
+    limitMaxDistance->hide();
+
+    // Termination values
     maxTime = new QLineEdit(central);
     connect(maxTime, SIGNAL(returnPressed()), this, SLOT(maxTimeProcessText()));
-    terminationLayout->addWidget(maxTime, 0,1);
-
-    // limitMaxDistance = new QCheckBox(tr("Limit maximum distance traveled by particles"), terminationGroup);
-    // connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
-    // terminationLayout->addWidget(limitMaxDistance, 1,0);
+    terminationLayout->addWidget(maxTime, 1,1);
 
     maxDistance = new QLineEdit(central);
     connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
-    terminationLayout->addWidget(maxDistance, 1,1);
-
+    terminationLayout->addWidget(maxDistance, 2,1);
 
     maxSize = new QLineEdit(central);
     connect(maxSize, SIGNAL(returnPressed()), this, SLOT(maxSizeProcessText()));
-    terminationLayout->addWidget(maxSize, 2,1);
+    terminationLayout->addWidget(maxSize, 3,1);
 
-
+    // Max steps override
     QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
-    terminationLayout->addWidget(maxStepsLabel, 3,0);
+    terminationLayout->addWidget(maxStepsLabel, 4,0);
     maxSteps = new QLineEdit(central);
     connect(maxSteps, SIGNAL(returnPressed()),
             this, SLOT(maxStepsProcessText()));
-    terminationLayout->addWidget(maxSteps, 3,1);
+    terminationLayout->addWidget(maxSteps, 4,1);
 }
 
 
@@ -768,10 +786,57 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             temp.setNum(LCSAtts->GetMaxSteps());
             maxSteps->setText(temp);
             break;
+
+        case LCSAttributes::ID_terminateByDistance:
+            limitMaxDistance->blockSignals(true);
+            limitMaxDistance->setChecked(LCSAtts->GetTerminateByDistance());
+            limitMaxDistance->blockSignals(false);
+            maxDistance->setEnabled(LCSAtts->GetTerminateByDistance());
+            break;
+
+        case LCSAttributes::ID_terminateByTime:
+            limitMaxTime->blockSignals(true);
+            limitMaxTime->setChecked(LCSAtts->GetTerminateByTime());
+            limitMaxTime->blockSignals(false);
+            maxTime->setEnabled(LCSAtts->GetTerminateByTime());
+            break;
+
+        case LCSAttributes::ID_operationType:
+            operationType->blockSignals(true);
+            operationType->setCurrentIndex(int(LCSAtts->GetOperationType()) );
+            operationType->blockSignals(false);
+
+            if( LCSAtts->GetOperationType() == LCSAttributes::Lyapunov)
+            {
+              terminationTypeButtonGroup->blockSignals(true);
+              terminationTypeButtonGroup->button(0)->show();
+              terminationTypeButtonGroup->button(1)->show();
+              terminationTypeButtonGroup->button(2)->show();
+              maxSize->show();
+              limitMaxDistance->hide();
+              limitMaxTime->hide();
+
+              LCSAtts->SetTerminateByTime( LCSAtts->GetTerminationType() == 0);
+              LCSAtts->SetTerminateByDistance( LCSAtts->GetTerminationType() == 1);
+              LCSAtts->SetTerminateBySize( LCSAtts->GetTerminationType() == 2);
+
+              terminationTypeButtonGroup->blockSignals(false);
+            }
+            else
+            {
+              terminationTypeButtonGroup->button(0)->hide();
+              terminationTypeButtonGroup->button(1)->hide();
+              terminationTypeButtonGroup->button(2)->hide();
+              maxSize->hide();
+              limitMaxDistance->show();
+              limitMaxTime->show();
+            }
+            break;
+
         case LCSAttributes::ID_terminationType:
-            limitButtonGroup->blockSignals(true);
-            limitButtonGroup->button(LCSAtts->GetTerminationType())->setChecked(true);
-            limitButtonGroup->blockSignals(false);
+            terminationTypeButtonGroup->blockSignals(true);
+            terminationTypeButtonGroup->button(LCSAtts->GetTerminationType())->setChecked(true);
+            terminationTypeButtonGroup->blockSignals(false);
 
             maxTime->setEnabled(LCSAtts->GetTerminationType()==0);
             maxDistance->setEnabled(LCSAtts->GetTerminationType()==1);
@@ -1518,7 +1583,37 @@ QvisLCSWindow::maxStepsProcessText()
 }
 
 void
-QvisLCSWindow::limitButtonGroupChanged(int index)
+QvisLCSWindow::limitMaxTimeChanged(bool val)
+{
+    if(val != LCSAtts->GetTerminateByTime())
+    {
+        LCSAtts->SetTerminateByTime(val);
+        Apply();
+    }
+}
+
+void
+QvisLCSWindow::limitMaxDistanceChanged(bool val)
+{
+    if(val != LCSAtts->GetTerminateByDistance())
+    {
+        LCSAtts->SetTerminateByDistance(val);
+        Apply();
+    }
+}
+
+void
+QvisLCSWindow::operationTypeChanged(int val)
+ {
+    if(val != LCSAtts->GetOperationType())
+    {
+        LCSAtts->SetOperationType(LCSAttributes::OperationType(val));
+        Apply();
+    }
+}   
+
+void
+QvisLCSWindow::terminationTypeButtonGroupChanged(int index)
 {
     LCSAtts->SetTerminationType( (LCSAttributes::TerminationType) index );
     LCSAtts->SetTerminateByTime( index == 0);

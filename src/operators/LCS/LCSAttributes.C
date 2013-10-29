@@ -305,6 +305,44 @@ LCSAttributes::ParallelizationAlgorithmType_FromString(const std::string &s, LCS
 }
 
 //
+// Enum conversion methods for LCSAttributes::OperationType
+//
+
+static const char *OperationType_strings[] = {
+"Lyapunov", "IntegrationTime", "ArcLength", 
+"AverageDistanceFromSeed"};
+
+std::string
+LCSAttributes::OperationType_ToString(LCSAttributes::OperationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return OperationType_strings[index];
+}
+
+std::string
+LCSAttributes::OperationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return OperationType_strings[index];
+}
+
+bool
+LCSAttributes::OperationType_FromString(const std::string &s, LCSAttributes::OperationType &val)
+{
+    val = LCSAttributes::Lyapunov;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == OperationType_strings[i])
+        {
+            val = (OperationType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LCSAttributes::TerminationType
 //
 
@@ -410,6 +448,7 @@ void LCSAttributes::Init()
     EndPosition[2] = 1;
     integrationDirection = Forward;
     maxSteps = 1000;
+    operationType = Lyapunov;
     terminationType = Time;
     terminateBySize = false;
     termSize = 10;
@@ -481,6 +520,7 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
 
     integrationDirection = obj.integrationDirection;
     maxSteps = obj.maxSteps;
+    operationType = obj.operationType;
     terminationType = obj.terminationType;
     terminateBySize = obj.terminateBySize;
     termSize = obj.termSize;
@@ -700,6 +740,7 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             EndPosition_equal &&
             (integrationDirection == obj.integrationDirection) &&
             (maxSteps == obj.maxSteps) &&
+            (operationType == obj.operationType) &&
             (terminationType == obj.terminationType) &&
             (terminateBySize == obj.terminateBySize) &&
             (termSize == obj.termSize) &&
@@ -896,6 +937,7 @@ LCSAttributes::SelectAll()
     Select(ID_EndPosition,                       (void *)EndPosition, 3);
     Select(ID_integrationDirection,              (void *)&integrationDirection);
     Select(ID_maxSteps,                          (void *)&maxSteps);
+    Select(ID_operationType,                     (void *)&operationType);
     Select(ID_terminationType,                   (void *)&terminationType);
     Select(ID_terminateBySize,                   (void *)&terminateBySize);
     Select(ID_termSize,                          (void *)&termSize);
@@ -1005,6 +1047,12 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("maxSteps", maxSteps));
+    }
+
+    if(completeSave || !FieldsEqual(ID_operationType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("operationType", OperationType_ToString(operationType)));
     }
 
     if(completeSave || !FieldsEqual(ID_terminationType, &defaultObject))
@@ -1301,6 +1349,22 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("maxSteps")) != 0)
         SetMaxSteps(node->AsInt());
+    if((node = searchNode->GetNode("operationType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetOperationType(OperationType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OperationType value;
+            if(OperationType_FromString(node->AsString(), value))
+                SetOperationType(value);
+        }
+    }
     if((node = searchNode->GetNode("terminationType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1513,6 +1577,13 @@ LCSAttributes::SetMaxSteps(int maxSteps_)
 {
     maxSteps = maxSteps_;
     Select(ID_maxSteps, (void *)&maxSteps);
+}
+
+void
+LCSAttributes::SetOperationType(LCSAttributes::OperationType operationType_)
+{
+    operationType = operationType_;
+    Select(ID_operationType, (void *)&operationType);
 }
 
 void
@@ -1804,6 +1875,12 @@ LCSAttributes::GetMaxSteps() const
     return maxSteps;
 }
 
+LCSAttributes::OperationType
+LCSAttributes::GetOperationType() const
+{
+    return OperationType(operationType);
+}
+
 LCSAttributes::TerminationType
 LCSAttributes::GetTerminationType() const
 {
@@ -2056,6 +2133,7 @@ LCSAttributes::GetFieldName(int index) const
     case ID_EndPosition:                       return "EndPosition";
     case ID_integrationDirection:              return "integrationDirection";
     case ID_maxSteps:                          return "maxSteps";
+    case ID_operationType:                     return "operationType";
     case ID_terminationType:                   return "terminationType";
     case ID_terminateBySize:                   return "terminateBySize";
     case ID_termSize:                          return "termSize";
@@ -2119,6 +2197,7 @@ LCSAttributes::GetFieldType(int index) const
     case ID_EndPosition:                       return FieldType_doubleArray;
     case ID_integrationDirection:              return FieldType_enum;
     case ID_maxSteps:                          return FieldType_int;
+    case ID_operationType:                     return FieldType_enum;
     case ID_terminationType:                   return FieldType_enum;
     case ID_terminateBySize:                   return FieldType_bool;
     case ID_termSize:                          return FieldType_double;
@@ -2182,6 +2261,7 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_EndPosition:                       return "doubleArray";
     case ID_integrationDirection:              return "enum";
     case ID_maxSteps:                          return "int";
+    case ID_operationType:                     return "enum";
     case ID_terminationType:                   return "enum";
     case ID_terminateBySize:                   return "bool";
     case ID_termSize:                          return "double";
@@ -2292,6 +2372,11 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_maxSteps:
         {  // new scope
         retval = (maxSteps == obj.maxSteps);
+        }
+        break;
+    case ID_operationType:
+        {  // new scope
+        retval = (operationType == obj.operationType);
         }
         break;
     case ID_terminationType:

@@ -74,14 +74,16 @@ public:
     enum DataValue
     {
         Solid,
+        SeedPointID,
         Speed,
         Vorticity,
         ArcLength,
         TimeAbsolute,
         TimeRelative,
-        SeedPointID,
-        Variable,
-        CorrelationDistance
+        AverageDistanceFromSeed,
+        CorrelationDistance,
+        Difference,
+        Variable
     };
     enum DisplayGeometry
     {

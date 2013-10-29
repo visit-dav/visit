@@ -90,23 +90,23 @@ IntegralCurveAttributes::SourceType_FromString(const std::string &s, IntegralCur
 //
 
 static const char *DataValue_strings[] = {
-"Solid", "Speed", "Vorticity", 
-"ArcLength", "TimeAbsolute", "TimeRelative", 
-"SeedPointID", "Variable", "CorrelationDistance"
-};
+"Solid", "SeedPointID", "Speed", 
+"Vorticity", "ArcLength", "TimeAbsolute", 
+"TimeRelative", "AverageDistanceFromSeed", "CorrelationDistance", 
+"Difference", "Variable"};
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(IntegralCurveAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 9) index = 0;
+    if(index < 0 || index >= 11) index = 0;
     return DataValue_strings[index];
 }
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 9) ? 0 : t;
+    int index = (t < 0 || t >= 11) ? 0 : t;
     return DataValue_strings[index];
 }
 
@@ -114,7 +114,7 @@ bool
 IntegralCurveAttributes::DataValue_FromString(const std::string &s, IntegralCurveAttributes::DataValue &val)
 {
     val = IntegralCurveAttributes::Solid;
-    for(int i = 0; i < 9; ++i)
+    for(int i = 0; i < 11; ++i)
     {
         if(s == DataValue_strings[i])
         {
@@ -1747,7 +1747,7 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 9)
+            if(ival >= 0 && ival < 11)
                 SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -3753,10 +3753,11 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         pathlinesCMFE != obj.pathlinesCMFE ||
         dataVariable != obj.dataVariable ||
         (dataValue != obj.dataValue && obj.dataValue != Solid) ||
-        ((dataValue == CorrelationDistance) && (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
-                                                     correlationDistanceMinDistAbsolute != obj.correlationDistanceMinDistAbsolute ||
-                                                     correlationDistanceMinDistBBox != obj.correlationDistanceMinDistBBox ||
-                                                     correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
+        ((dataValue == CorrelationDistance) &&
+         (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
+          correlationDistanceMinDistAbsolute != obj.correlationDistanceMinDistAbsolute ||
+          correlationDistanceMinDistBBox != obj.correlationDistanceMinDistBBox ||
+          correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
         0 )
     {
         return true;
@@ -3885,4 +3886,3 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
 
     return false;
 }
-
