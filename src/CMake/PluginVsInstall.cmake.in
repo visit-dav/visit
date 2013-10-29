@@ -73,6 +73,9 @@
 #   handled on windows. Fix glitch with ADD_TARGET_DEFINITIONS when target
 #   had more than one definition set already.
 #
+#   Kathleen Biagas, Tue Oct 29 12:24:32 MST 2013
+#   Fixed typos in Functions that prevented caused problems on Windows.
+#
 #****************************************************************************/
 
 ##
@@ -388,7 +391,7 @@ FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
     ENDIF(${firstItem} MATCHES NOTFOUND)
    
     SET_TARGET_PROPERTIES(${target} PROPERTIES
-        COMPILE_DEFINITIONS ${allDefs}
+        COMPILE_DEFINITIONS "${allDefs}"
     )
 ENDFUNCTION(ADD_TARGET_DEFINITIONS)
 
@@ -417,7 +420,7 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
       TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
     ELSE(UNIX)
       ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-      ADD_TARGET_DEFINTIONS(${target} ${VISIT_PARALLEL_DEFS})
+      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
       TARGET_LINK_LIBRARIES(${target} "${VISIT_PARALLEL_LIBS}")
     ENDIF(UNIX)
 ENDFUNCTION(ADD_PARALLEL_LIBRARY)
