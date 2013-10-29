@@ -146,6 +146,10 @@
 //    Added handling of 'Code' and 'Condition' keywords in codefile. 
 //    'Condition' allows for conditional includes, definitions and links.
 //
+//    Kathleen Biagas, Tue Oct 29 16:04:19 MST 2013
+//    For extraIncludes specified in CXXFLAGS, check for use of 
+//    ${VISIT_INCLUDE_DIR} and correct it if building against public VisIt.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -236,6 +240,19 @@ class CMakeGeneratorPlugin : public Plugin
     VisItIncludeDir() const
     {
         return using_dev ? "${VISIT_INCLUDE_DIR}" : "${VISIT_INCLUDE_DIR}/visit";
+    }
+
+    QString
+    ConvertToProperVisItIncludeDir(const QString &s) const
+    {
+        QString VID = VisItIncludeDir();
+        QString retval(s);
+        if (!s.startsWith(VID))
+        {
+            if (!using_dev && s.startsWith("${VISIT_INCLUDE_DIR}"))
+                retval = VID + s.right(s.length()-20);
+        }
+        return retval;
     }
 
 #ifdef _WIN32
@@ -382,9 +399,9 @@ class CMakeGeneratorPlugin : public Plugin
         for (size_t i=0; i<cxxflags.size(); i++)
         {
             if(cxxflags[i].startsWith("${"))
-                 extraIncludes.push_back(cxxflags[i]);
+                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i]));
             else if(cxxflags[i].startsWith("$("))
-                 extraIncludes.push_back(ConvertDollarParenthesis(cxxflags[i]));
+                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(cxxflags[i])));
         }
 
         out << endl
@@ -1035,11 +1052,11 @@ class CMakeGeneratorPlugin : public Plugin
         for (size_t i=0; i<cxxflags.size(); i++)
         {
             if(cxxflags[i].startsWith("${"))
-                 extraIncludes.push_back(cxxflags[i]);
+                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i]));
             else if(cxxflags[i].startsWith("$("))
-                 extraIncludes.push_back(ConvertDollarParenthesis(cxxflags[i]));
+                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(cxxflags[i])));
             else if(cxxflags[i].startsWith("-I"))
-                 extraIncludes.push_back(cxxflags[i].right(cxxflags[i].size()-2));
+                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
         }
         out << "INCLUDE_DIRECTORIES(" << endl;
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
