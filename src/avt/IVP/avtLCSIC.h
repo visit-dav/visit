@@ -90,8 +90,10 @@ public:
   public:
     virtual bool   CheckForTermination(avtIVPStep& step, avtIVPField *);
 
-    virtual double GetTime() { return time; }
-    virtual double GetDistance() { return distance; }
+    virtual int    GetNumSteps()  { return numSteps; }
+    virtual double GetTime()      { return time; }
+    virtual double GetDistance()  { return distance; }
+    virtual double GetSummation() { return summation; }
 
     virtual void     AnalyzeStep( avtIVPStep &step, avtIVPField *field);
   
@@ -114,6 +116,7 @@ public:
 
     double           time;
     double           distance;
+    double           summation;
 
     avtVector p_start, p_end;
 };

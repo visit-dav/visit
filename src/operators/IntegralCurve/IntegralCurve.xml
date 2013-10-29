@@ -24,14 +24,16 @@
       </Enum>
       <Enum name="DataValue">
         Solid
+        SeedPointID
         Speed
         Vorticity
         ArcLength
         TimeAbsolute
         TimeRelative
-        SeedPointID
-        Variable
+        AverageDistanceFromSeed
         CorrelationDistance
+        Difference
+        Variable
       </Enum>
       <Enum name="DisplayGeometry">
         Lines

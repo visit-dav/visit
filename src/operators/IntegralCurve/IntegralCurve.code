@@ -256,10 +256,11 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         pathlinesCMFE != obj.pathlinesCMFE ||
         dataVariable != obj.dataVariable ||
         (dataValue != obj.dataValue && obj.dataValue != Solid) ||
-        ((dataValue == CorrelationDistance) && (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
-                                                     correlationDistanceMinDistAbsolute != obj.correlationDistanceMinDistAbsolute ||
-                                                     correlationDistanceMinDistBBox != obj.correlationDistanceMinDistBBox ||
-                                                     correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
+        ((dataValue == CorrelationDistance) &&
+         (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
+          correlationDistanceMinDistAbsolute != obj.correlationDistanceMinDistAbsolute ||
+          correlationDistanceMinDistBBox != obj.correlationDistanceMinDistBBox ||
+          correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
         0 )
     {
         return true;
@@ -416,11 +417,12 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
-    const char numTypes = 9;
-    const char *typeString[9] =
-      { "None", "Speed", "Vorticity", "Arc Length",
-         "Absolute Time", "Relative Time", "Seed Point ID",
-        "Variable", "CorrelationDistance" };
+    const char numTypes = 11;
+    const char *typeString[11] =
+      { "None", "Seed Point ID", "Speed", "Vorticity", "Arc Length",
+         "Absolute Time", "Relative Time",
+         "Ave. dist. from seed", "Correlation Distance", "Difference",
+         "Variable" };
 
     std::string var = plot->GetVariableName();
 

@@ -273,12 +273,17 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleDensity2 = %d\n", prefix, atts->GetSampleDensity2());
     str += tmpStr;
-    const char *dataValue_names = "Solid, Speed, Vorticity, ArcLength, TimeAbsolute, "
-        "TimeRelative, SeedPointID, Variable, CorrelationDistance";
+    const char *dataValue_names = "Solid, SeedPointID, Speed, Vorticity, ArcLength, "
+        "TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, "
+        "Difference, Variable";
     switch (atts->GetDataValue())
     {
       case IntegralCurveAttributes::Solid:
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::SeedPointID:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSeedPointID  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::Speed:
@@ -301,16 +306,20 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sTimeRelative  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::SeedPointID:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSeedPointID  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case IntegralCurveAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sVariable  # %s\n", prefix, prefix, dataValue_names);
+      case IntegralCurveAttributes::AverageDistanceFromSeed:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sAverageDistanceFromSeed  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::CorrelationDistance:
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sCorrelationDistance  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::Difference:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sDifference  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::Variable:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sVariable  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
@@ -1313,16 +1322,16 @@ IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the dataValue in the object.
-    if(ival >= 0 && ival < 9)
+    if(ival >= 0 && ival < 11)
         obj->data->SetDataValue(IntegralCurveAttributes::DataValue(ival));
     else
     {
         fprintf(stderr, "An invalid dataValue value was given. "
-                        "Valid values are in the range of [0,8]. "
+                        "Valid values are in the range of [0,10]. "
                         "You can also use the following names: "
-                        "Solid, Speed, Vorticity, ArcLength, TimeAbsolute, "
-                        "TimeRelative, SeedPointID, Variable, CorrelationDistance"
-                        ".");
+                        "Solid, SeedPointID, Speed, Vorticity, ArcLength, "
+                        "TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, "
+                        "Difference, Variable.");
         return NULL;
     }
 
@@ -2840,6 +2849,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return IntegralCurveAttributes_GetDataValue(self, NULL);
     if(strcmp(name, "Solid") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Solid));
+    if(strcmp(name, "SeedPointID") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::SeedPointID));
     if(strcmp(name, "Speed") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Speed));
     if(strcmp(name, "Vorticity") == 0)
@@ -2850,12 +2861,14 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(IntegralCurveAttributes::TimeAbsolute));
     if(strcmp(name, "TimeRelative") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::TimeRelative));
-    if(strcmp(name, "SeedPointID") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::SeedPointID));
-    if(strcmp(name, "Variable") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::Variable));
+    if(strcmp(name, "AverageDistanceFromSeed") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::AverageDistanceFromSeed));
     if(strcmp(name, "CorrelationDistance") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::CorrelationDistance));
+    if(strcmp(name, "Difference") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Difference));
+    if(strcmp(name, "Variable") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Variable));
 
     if(strcmp(name, "dataVariable") == 0)
         return IntegralCurveAttributes_GetDataVariable(self, NULL);

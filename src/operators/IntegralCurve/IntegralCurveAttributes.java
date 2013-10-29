@@ -74,14 +74,16 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_SELECTION = 7;
 
     public final static int DATAVALUE_SOLID = 0;
-    public final static int DATAVALUE_SPEED = 1;
-    public final static int DATAVALUE_VORTICITY = 2;
-    public final static int DATAVALUE_ARCLENGTH = 3;
-    public final static int DATAVALUE_TIMEABSOLUTE = 4;
-    public final static int DATAVALUE_TIMERELATIVE = 5;
-    public final static int DATAVALUE_SEEDPOINTID = 6;
-    public final static int DATAVALUE_VARIABLE = 7;
+    public final static int DATAVALUE_SEEDPOINTID = 1;
+    public final static int DATAVALUE_SPEED = 2;
+    public final static int DATAVALUE_VORTICITY = 3;
+    public final static int DATAVALUE_ARCLENGTH = 4;
+    public final static int DATAVALUE_TIMEABSOLUTE = 5;
+    public final static int DATAVALUE_TIMERELATIVE = 6;
+    public final static int DATAVALUE_AVERAGEDISTANCEFROMSEED = 7;
     public final static int DATAVALUE_CORRELATIONDISTANCE = 8;
+    public final static int DATAVALUE_DIFFERENCE = 9;
+    public final static int DATAVALUE_VARIABLE = 10;
 
     public final static int DISPLAYGEOMETRY_LINES = 0;
     public final static int DISPLAYGEOMETRY_TUBES = 1;
@@ -1510,6 +1512,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         str = str + indent + "dataValue = ";
         if(dataValue == DATAVALUE_SOLID)
             str = str + "DATAVALUE_SOLID";
+        if(dataValue == DATAVALUE_SEEDPOINTID)
+            str = str + "DATAVALUE_SEEDPOINTID";
         if(dataValue == DATAVALUE_SPEED)
             str = str + "DATAVALUE_SPEED";
         if(dataValue == DATAVALUE_VORTICITY)
@@ -1520,12 +1524,14 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_TIMEABSOLUTE";
         if(dataValue == DATAVALUE_TIMERELATIVE)
             str = str + "DATAVALUE_TIMERELATIVE";
-        if(dataValue == DATAVALUE_SEEDPOINTID)
-            str = str + "DATAVALUE_SEEDPOINTID";
-        if(dataValue == DATAVALUE_VARIABLE)
-            str = str + "DATAVALUE_VARIABLE";
+        if(dataValue == DATAVALUE_AVERAGEDISTANCEFROMSEED)
+            str = str + "DATAVALUE_AVERAGEDISTANCEFROMSEED";
         if(dataValue == DATAVALUE_CORRELATIONDISTANCE)
             str = str + "DATAVALUE_CORRELATIONDISTANCE";
+        if(dataValue == DATAVALUE_DIFFERENCE)
+            str = str + "DATAVALUE_DIFFERENCE";
+        if(dataValue == DATAVALUE_VARIABLE)
+            str = str + "DATAVALUE_VARIABLE";
         str = str + "\n";
         str = str + stringToString("dataVariable", dataVariable, indent) + "\n";
         str = str + indent + "integrationDirection = ";

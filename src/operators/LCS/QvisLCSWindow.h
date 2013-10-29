@@ -114,18 +114,24 @@ class QvisLCSWindow : public QvisOperatorWindow
 
     void directionTypeChanged(int val);
     void integrationTypeChanged(int val);
-    void limitMaxTimeStepChanged(bool);
     void maxStepLengthProcessText();
+    void limitMaxTimeStepChanged(bool);
     void maxTimeStepProcessText();
-    void maxStepsProcessText();
+
     void relTolProcessText();
     void absTolProcessText();
     void absTolSizeTypeChanged(int);
 
-    void limitButtonGroupChanged(int);
+    void limitMaxTimeChanged(bool);
+    void limitMaxDistanceChanged(bool);
+
+    void operationTypeChanged(int);
+    void terminationTypeButtonGroupChanged(int);
+
     void maxTimeProcessText();
     void maxDistanceProcessText();
     void maxSizeProcessText();
+    void maxStepsProcessText();
 
     // Advanced
     void parallelAlgorithmChanged(int val);
@@ -175,7 +181,12 @@ class QvisLCSWindow : public QvisOperatorWindow
     QComboBox *absTolSizeType;
     QLabel    *absTolLabel;
 
-    QButtonGroup *limitButtonGroup;
+    QCheckBox *limitMaxTime;
+    QCheckBox *limitMaxDistance;
+
+    QComboBox *operationType;
+
+    QButtonGroup *terminationTypeButtonGroup;
     QLineEdit *maxTime;
     QLineEdit *maxDistance;
     QLineEdit *maxSize;

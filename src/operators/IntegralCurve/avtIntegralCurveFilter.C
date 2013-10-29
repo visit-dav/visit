@@ -665,12 +665,14 @@ avtIntegralCurveFilter::PostExecute(void)
 {
     avtPICSFilter::PostExecute();
 
-    if (dataValue == IntegralCurveAttributes::Vorticity ||
+    if (dataValue == IntegralCurveAttributes::SeedPointID ||
+        dataValue == IntegralCurveAttributes::Vorticity ||
         dataValue == IntegralCurveAttributes::Speed ||
         dataValue == IntegralCurveAttributes::ArcLength ||
         dataValue == IntegralCurveAttributes::TimeAbsolute ||
         dataValue == IntegralCurveAttributes::TimeRelative ||
-        dataValue == IntegralCurveAttributes::SeedPointID ||
+        dataValue == IntegralCurveAttributes::AverageDistanceFromSeed ||
+        dataValue == IntegralCurveAttributes::Difference ||
         dataValue == IntegralCurveAttributes::Variable)
     {
         double range[2];
@@ -2319,9 +2321,32 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
         // std::cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
 
-        avtStateRecorderIntegralCurve::Sample s = ic->GetSample(0);
+        avtStateRecorderIntegralCurve::Sample s, s0 = ic->GetSample(0);
 
-        double startTime = s.time;
+        double startTime = s0.time;
+        double distance = 0;
+
+        if( //dataValue == IntegralCurveAttributes::ArcLength ||
+            dataValue == IntegralCurveAttributes::AverageDistanceFromSeed ||
+            dataValue == IntegralCurveAttributes::Difference )
+        {
+          for (int j = 0; j < numSamps; j++)
+          {
+            s = ic->GetSample(j);
+
+//          if( dataValue == IntegralCurveAttributes::ArcLength )
+//            distance += s.arclength;
+
+            if( dataValue == IntegralCurveAttributes::AverageDistanceFromSeed )
+              distance += (s.position - s0.position).length();
+            else if( dataValue == IntegralCurveAttributes::Difference )
+//            distance += fabs(s.position.y - 100);
+              distance += s.arclength;
+          }
+
+          if( dataValue == IntegralCurveAttributes::AverageDistanceFromSeed )
+            distance /= numSamps;
+        }
 
         for (int j = 0; j < numSamps; j++)
         {
@@ -2386,6 +2411,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
               case IntegralCurveAttributes::Solid:
                 data_value = 0.0f;
                 break;
+              case IntegralCurveAttributes::SeedPointID:
+                data_value = ic->id;
+                break;
               case IntegralCurveAttributes::Speed:
                 data_value = speed;
                 break;
@@ -2394,6 +2422,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 break;
               case IntegralCurveAttributes::ArcLength:
                 data_value = s.arclength;
+//                data_value = distance;
                 break;
               case IntegralCurveAttributes::TimeAbsolute:
                 data_value = s.time;
@@ -2401,8 +2430,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
               case IntegralCurveAttributes::TimeRelative:
                 data_value = s.time - startTime;
                 break;
-              case IntegralCurveAttributes::SeedPointID:
-                data_value = ic->id;
+              case IntegralCurveAttributes::AverageDistanceFromSeed:
+//              data_value = (s.position - s0.position).length();
+                data_value = distance;
                 break;
               case IntegralCurveAttributes::Variable:
                 data_value = s.scalar0;
@@ -2412,6 +2442,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                   ComputeCorrelationDistance(j, ic,
                                              correlationDistAngTolToUse,
                                              correlationDistMinDistToUse);
+                break;
+              case IntegralCurveAttributes::Difference:
+                data_value = distance;
                 break;
             }
 
@@ -2530,10 +2563,10 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 // ****************************************************************************
 // Method:  avtIntegralCurveFilter::ComputeCorrelationDistance
 //
-// Purpose:
-//   Compute the correlation distance at this point. Defined as the arc length
-//   distance from the current point to the next point (greater than minDist away)
-//   along the streamilne where the velocity direction is the same (to angTol).
+// Purpose: Compute the correlation distance at this point. Defined as
+//   the arc length distance from the current point to the next point
+//   (greater than minDist away) along the streamilne where the
+//   velocity direction is the same (to angTol).
 //
 // Arguments:
 //   
@@ -2556,18 +2589,17 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
     if (idx == nSamps-1)
         return 0.0f;
     
-    float val = std::numeric_limits<float>::max();
+    float val = 0; //std::numeric_limits<float>::max();
     
     avtStateRecorderIntegralCurve::Sample s0 = ic->GetSample(idx);
     avtVector curVel = s0.velocity.normalized();
     double dist = 0.0;
 
-    avtVector p0 = s0.position;
     for (int i = idx+1; i < nSamps; i++)
     {
         avtStateRecorderIntegralCurve::Sample s = ic->GetSample(i);
-        dist += (p0-s.position).length();
-        p0 = s.position;
+        dist += (s0.position-s.position).length();
+        s0 = s;
         
         if (dist < minDist)
             continue;
@@ -2584,6 +2616,7 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
 
     return val;
 }
+
 
 static avtStateRecorderIntegralCurve *
 icFromID(int id, std::vector<avtIntegralCurve *> &ics)

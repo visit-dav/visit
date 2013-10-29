@@ -224,19 +224,22 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void velocitySourceProcessText();
 //    void forceNodalChanged(bool);
 
-    void integrationTypeChanged(int val);
     void directionTypeChanged(int val);
+    void integrationTypeChanged(int val);
     void maxStepLengthProcessText();
-    void maxTimeStepProcessText();
-    void maxStepsProcessText();
-    void limitMaxTimeChanged(bool);
-    void maxTimeProcessText();
-    void limitMaxDistanceChanged(bool);
     void limitMaxTimeStepChanged(bool);
-    void maxDistanceProcessText();
+    void maxTimeStepProcessText();
+
     void relTolProcessText();
     void absTolProcessText();
     void absTolSizeTypeChanged(int);
+
+    void limitMaxTimeChanged(bool);
+    void limitMaxDistanceChanged(bool);
+
+    void maxStepsProcessText();
+    void maxTimeProcessText();
+    void maxDistanceProcessText();
 
   // Appearance
     void dataValueChanged(int val);
