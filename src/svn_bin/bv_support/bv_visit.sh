@@ -40,17 +40,17 @@ function bv_visit_info
     # release tag.
     ############################################################################
 
-    export VISIT_VERSION=${VISIT_VERSION:-"2.6.3"}
+    export VISIT_VERSION=${VISIT_VERSION:-"2.7.0"}
     
     ####
     # Trunk:
     ####
-    export SVN_SOURCE_PATH="trunk/src"
+    #export SVN_SOURCE_PATH="trunk/src"
 
     ###
     # Release:
     ###
-    #export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
+    export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
 }
 
 #print variables used by this module
