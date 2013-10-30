@@ -17,7 +17,7 @@
 <meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
 <meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
 <meta http-equiv="Expires" content="never">
-<meta name="date" content="2013-10-29">
+<meta name="date" content="2013-10-30">
 <meta name="Author" content="Eric Brugger">
 
 <!-- InstanceEndEditable --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
@@ -473,6 +473,9 @@ function MM_initTimelines() { //v4.0
   <li>The MultiCurve plot was enhanced to allow the user to specify the marker scale and marker line width.</li>
   <li>The Curve plot has been enhanced so that the area under the curve can optionally be filled with color or a gradient.</li>
   <li>The Curve plot has been enhanced to support curves specified in polar coordinates. There is now an option to have the curve converted from polar to cartesian, and options to specify the units (Radians or Degrees) and coordinate ordering (R-theta or Theta-R).</li>
+  <li>The Poincare plot has been deprecated and is now an operator. To access the operator use the Pseudocolor plot operator menu option.</li>
+  <li>The Streamline plot has been deprecated and is now the Integral Curve operator. Though deprecated the Streamline Plot can still be accessed for backward compatibility. Going forward please use the Integral Curve operator which is accessed via the Pseudocolor plot operator menu option.</li>
+
 </ul>
 
 <a name="Operator_changes"></a>
@@ -480,6 +483,7 @@ function MM_initTimelines() { //v4.0
 <ul>
   <li>The Project operator's window was modified to make it's mapping notation more explicit.</li>
   <li>The Box and Cylinder selection operators have an option to do an Inverse selection. </li>
+  <li>The FTLE operator has been renamed to be the LCS operator and has options for doing FTLE, FDLE, and FSLE as well as other operations.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -539,7 +543,7 @@ function MM_initTimelines() { //v4.0
 
     <span class="body_text">Updated: 
 
-    <!-- #BeginDate format:Am1 -->October 29, 2013<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->October 30, 2013<!-- #EndDate -->
 
     </span></p>
 
