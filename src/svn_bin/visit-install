@@ -342,7 +342,9 @@
 #    to do so recursively. I modified a couple of loops that change the
 #    mode to executable for all the files in the directories of the form
 #    "archicture_name/bin" to exclude "usagelog".
-#
+#   
+#    Cyrus Harrison, Wed Oct 30 18:37:53 EDT 2013
+#    Added option for Clemson network. 
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -408,7 +410,7 @@ while [ "$option_found" = "true" ]; do
 done
 
 if [ "$#" != "3" ]; then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | sandia_closed | tacc | umich | nics | lsu | awe]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | sandia_closed | tacc | umich | nics | lsu | awe | clemson]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -538,6 +540,7 @@ while [ "$config" = "prompt" ]; do
    echo "   16) Lousiana State University network"
    echo "   17) ETH Zurich"
    echo "   18) AWE network"
+   echo "   19) Clemson University network"
    echo ""
    echo "Enter (1-18):"
 
@@ -597,6 +600,9 @@ while [ "$config" = "prompt" ]; do
       18)
          config=awe
          ;;
+      19)
+         config=clemson
+         ;;
       *)
          config=prompt
          ;;
@@ -640,10 +646,12 @@ case "$config" in
       ;;
    awe)
       ;;
+   clemson)
+      ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "llnl_open, llnl_open_cz, llnl_open_rz, llnl_closed, nersc, ornl, "
-      echo "princeton, sandia, sandia_closed, tacc, umich, nics, lsu, eth_zurich, awe."
+      echo "princeton, sandia, sandia_closed, tacc, umich, nics, lsu, eth_zurich, awe, clemson."
       exit 4
       ;;
 esac
@@ -813,6 +821,9 @@ elif [ "$config" = "lsu" ]; then
 elif [ "$config" = "eth_zurich" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "awe" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "clemson" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 fi

@@ -16,7 +16,7 @@ class ClemsonLauncher(MainLauncher):
 
     def Customize(self):
         if self.LaunchOnInsight():
-            print "[Setting up env to launch on insight.clemson.edu]"
+            # print "[Setting up env to launch on insight.clemson.edu]"
             SETENV("PATH", self.joinpaths([GETENV("PATH"), "/usr/mpi/gcc/openmpi-1.6.5/bin"]))
             SETENV("LD_LIBRARY_PATH", self.joinpaths([GETENV("LD_LIBRARY_PATH"), "/usr/mpi/gcc/openmpi-1.6.5/lib64"]))
 
@@ -24,7 +24,7 @@ class ClemsonLauncher(MainLauncher):
 
 # Launcher creation function
 def createlauncher():
-    print "[Using Clemson Launcher]"
+    # print "[Using Clemson Launcher]"
     return ClemsonLauncher()
 
 

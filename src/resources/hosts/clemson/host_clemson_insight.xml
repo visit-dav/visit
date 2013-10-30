@@ -53,7 +53,7 @@
         <Field name="XArguments" type="string"></Field>
         <Field name="launchXServers" type="bool">false</Field>
         <Field name="XDisplay" type="string">:%l</Field>
-        <Field name="profileName" type="string">Serial</Field>
+        <Field name="profileName" type="string">serial</Field>
     </Object>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
@@ -89,7 +89,7 @@
         <Field name="XArguments" type="string"></Field>
         <Field name="launchXServers" type="bool">false</Field>
         <Field name="XDisplay" type="string">:%l</Field>
-        <Field name="profileName" type="string">Parallel</Field>
+        <Field name="profileName" type="string">parallel</Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>
 </Object>
