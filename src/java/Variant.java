@@ -266,7 +266,7 @@ public class Variant extends java.lang.Object
         else if(dataType == VARIANT_STRING_TYPE)
             SetValue(buf.ReadString());
 
-        if(dataType == VARIANT_BOOL_VECTOR_TYPE)
+        else if(dataType == VARIANT_BOOL_VECTOR_TYPE)
             SetValue(buf.ReadByteVector(), VARIANT_BOOL_VECTOR_TYPE);
         else if(dataType == VARIANT_CHAR_VECTOR_TYPE)
             SetValue(buf.ReadByteVector(), VARIANT_CHAR_VECTOR_TYPE);
