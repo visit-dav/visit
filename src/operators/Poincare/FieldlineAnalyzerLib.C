@@ -2669,11 +2669,6 @@ GetPeriodWindingPairs( std::vector< WindingPairStat > &baseWindingPairStats,
 }
 
 
-inline bool operator<(const WindingPair& lhs, const WindingPair& rhs)
-{
-  return( lhs.toroidal < rhs.toroidal );
-}
-
 int
 compareSecondWindingPair( const std::pair< WindingPair, unsigned int > s0,
                           const std::pair< WindingPair, unsigned int > s1 )
