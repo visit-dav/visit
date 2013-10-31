@@ -198,7 +198,7 @@ avtPoincareFilter::avtPoincareFilter() :
     verboseFlag( false ),
     pointScale(1)
 {
-    dataValue == DATA_SafetyFactorQ;
+    dataValue = DATA_SafetyFactorQ;
 
     //
     // Initialize source values.
@@ -2048,10 +2048,10 @@ avtPoincareFilter::ContinueExecute()
                           newPoint = x2 + golden_R * (x3-x2);
                           newPoint[1] = Z_OFFSET;
                           
-                          if (newPoint[0] == x0[0] && newPoint[2] == x0[2] ||
-                              newPoint[0] == x1[0] && newPoint[2] == x1[2] ||
-                              newPoint[0] == x2[0] && newPoint[2] == x2[2] ||
-                              newPoint[0] == x3[0] && newPoint[2] == x3[2] )
+                          if( (newPoint[0] == x0[0] && newPoint[2] == x0[2]) ||
+                              (newPoint[0] == x1[0] && newPoint[2] == x1[2]) ||
+                              (newPoint[0] == x2[0] && newPoint[2] == x2[2]) ||
+                              (newPoint[0] == x3[0] && newPoint[2] == x3[2]) )
                             { //We should bail and pick the best
                               PickBestAndSetupToDraw(_x0,_x1,_x2,_x3,ids_to_delete);
                               cont = false;
@@ -2103,10 +2103,10 @@ avtPoincareFilter::ContinueExecute()
                           newPoint = x1 + golden_R * (x0-x1);
                           newPoint[1] = Z_OFFSET;
 
-                          if (newPoint[0] == x0[0] && newPoint[2] == x0[2] ||
-                              newPoint[0] == x1[0] && newPoint[2] == x1[2] ||
-                              newPoint[0] == x2[0] && newPoint[2] == x2[2] ||
-                              newPoint[0] == x3[0] && newPoint[2] == x3[2] )
+                          if( (newPoint[0] == x0[0] && newPoint[2] == x0[2]) ||
+                              (newPoint[0] == x1[0] && newPoint[2] == x1[2]) ||
+                              (newPoint[0] == x2[0] && newPoint[2] == x2[2]) ||
+                              (newPoint[0] == x3[0] && newPoint[2] == x3[2]) )
                             { //We should bail and pick the best
                               PickBestAndSetupToDraw(_x0,_x1,_x2,_x3,ids_to_delete);
                               cont = false;
