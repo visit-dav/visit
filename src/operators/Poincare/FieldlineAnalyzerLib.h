@@ -62,7 +62,7 @@ struct WindingPairStat {
   int ranking;
 
   bool operator < (const WindingPairStat &i) const {return stat < i.stat;}
-  bool operator > (const WindingPairStat &i) const {return stat < i.stat;}
+  bool operator > (const WindingPairStat &i) const {return stat > i.stat;}
 };
 
 
