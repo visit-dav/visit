@@ -1037,7 +1037,7 @@ void FieldlineLib::safetyFactorStats( std::vector< TYPE > &poloidalWindingCounts
 bool compareWindingPairStats( const WindingPairStat s0,
                               const WindingPairStat s1 )
 {
-  return (s0.stat > s1.stat);
+  return (s0 > s1);
 }
 
 
