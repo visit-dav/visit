@@ -1034,8 +1034,8 @@ void FieldlineLib::safetyFactorStats( std::vector< TYPE > &poloidalWindingCounts
 
 
 // Smallest value is first.
-int compareWindingPairStats( const WindingPairStat s0,
-                             const WindingPairStat s1 )
+bool compareWindingPairStats( const WindingPairStat s0,
+                              const WindingPairStat s1 )
 {
   return (s0.stat > s1.stat);
 }
