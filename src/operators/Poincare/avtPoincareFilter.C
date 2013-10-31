@@ -198,7 +198,7 @@ avtPoincareFilter::avtPoincareFilter() :
     verboseFlag( false ),
     pointScale(1)
 {
-    dataValue == DATA_SafetyFactorQ;
+    dataValue = DATA_SafetyFactorQ;
 
     //
     // Initialize source values.
