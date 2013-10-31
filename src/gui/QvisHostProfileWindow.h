@@ -193,6 +193,7 @@ private:
     void addRemoteProfile(const QString& inputUrl, const QString& results);
     void ListWidgetDropEvent(QDropEvent * event);
     void addChildren(const QModelIndex& list, QStringList& suffixList, QStringList& globalList);
+    void selectProfiles(const QModelIndex& index);
 private slots:
     void apply();
 
@@ -208,6 +209,7 @@ private slots:
     void delLaunchProfile();
     void copyLaunchProfile();
     void makeDefaultLaunchProfile();
+    void selectProfiles();
     void retriveLatestProfiles();
     void downloadHosts(QNetworkReply* reply);
 
