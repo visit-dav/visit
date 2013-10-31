@@ -63,7 +63,7 @@
 #include <QFileInfo>
 #include <QEvent>
 #include <QDragEnterEvent>
-
+#include <QMessageBox>
 
 #include <snprintf.h>
 
@@ -225,6 +225,103 @@ QvisHostProfileWindow::addChildren(const QModelIndex& list, QStringList& suffixL
 // ****************************************************************************
 
 void
+QvisHostProfileWindow::selectProfiles(const QModelIndex& index)
+{
+    /// create prefix..
+    QString prefix = index.data(Qt::DisplayRole).toString();
+
+    QModelIndex parent = index.parent();
+
+    while(parent.isValid())
+    {
+        prefix = parent.data(Qt::DisplayRole).toString() + "/" + prefix;
+        parent = parent.parent();
+    }
+
+    /// add children..
+    QStringList globalList;
+    if(remoteTree->model()->hasChildren())
+    {
+        QStringList suffixList;
+        suffixList.push_back(prefix);
+        addChildren(index,suffixList,globalList);
+    }
+    else
+    {
+        globalList.push_back(prefix);
+    }
+
+    for(int x = 0; x < globalList.size(); ++x)
+    {
+
+        QString machine = globalList[x];
+
+        if(!remoteData.contains(machine)) {
+            /// std::cout << "Remote data not found: " << machine.toStdString() << std::endl;
+            continue;
+        }
+
+        std::istringstream str(remoteData[machine].toStdString().c_str());
+
+        MachineProfile mp;
+        SingleAttributeConfigManager sac(&mp);
+        sac.Import(str);
+
+        bool skip = false;
+        for(int y = 0; y < hostList->count(); ++y) {
+            std::string inputName = hostList->item(y)->data(Qt::DisplayRole).toString().toStdString();
+
+            if(inputName.length() == 0) continue;
+            if(inputName == mp.GetHostNickname() || inputName == mp.GetHost())
+            {
+                int result = QMessageBox::question(this,
+                                      tr("Duplicate detected"),
+                                      tr("Entry already exists for %1. Allow Duplicate?").arg(inputName.c_str()),
+                                      QMessageBox::No, QMessageBox::Yes);
+
+                if(result == QMessageBox::No)
+                    skip = true;
+                break;
+            }
+        }
+
+        /// user chose to skip duplicate entry..
+        if(skip){
+            continue;
+        }
+
+        HostProfileList* profiles = (HostProfileList*)subject;
+        mp.SelectAll();
+        profiles->AddMachines(mp);
+        profiles->Notify();
+    }
+}
+
+
+void
+QvisHostProfileWindow::selectProfiles()
+{
+    QModelIndexList list = remoteTree->selectionModel()->selectedRows();
+
+    for(int i = 0; i < list.size(); ++i) {
+        selectProfiles(list[i]);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::ListWidgetDropEvent
+//
+// Purpose:
+//   DropEvent
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
 QvisHostProfileWindow::ListWidgetDropEvent(QDropEvent *event)
 {
     /// ensure event source is from remoteTree
@@ -245,48 +342,8 @@ QvisHostProfileWindow::ListWidgetDropEvent(QDropEvent *event)
                                                           Qt::MatchExactly |
                                                           Qt::MatchWrap |
                                                           Qt::MatchRecursive);
-        if(list.size() > 0) {
-            QModelIndex index = list.back();
-
-            /// create prefix..
-            QString prefix = index.data(Qt::DisplayRole).toString();
-
-            QModelIndex parent = index.parent();
-            while(parent.isValid())
-            {
-                prefix = parent.data(Qt::DisplayRole).toString() + "/" + prefix;
-                parent = parent.parent();
-            }
-
-            /// add children..
-            QStringList globalList;
-            if(remoteTree->model()->hasChildren()) {
-                QStringList suffixList;
-                suffixList.push_back(prefix);
-                addChildren(index,suffixList,globalList);
-            }
-            else {
-                globalList.push_back(prefix);
-            }
-
-            for(int x = 0; x < globalList.size(); ++x) {
-
-                QString machine = globalList[x];
-
-                if(!remoteData.contains(machine)) {
-                    /// std::cout << "Remote data not found: " << machine.toStdString() << std::endl;
-                    continue;
-                }
-                std::istringstream str(remoteData[machine].toStdString().c_str());
-
-                MachineProfile mp;
-                SingleAttributeConfigManager sac(&mp);
-                sac.Import(str);
-                HostProfileList* profiles = (HostProfileList*)subject;
-                mp.SelectAll();
-                profiles->AddMachines(mp);
-                profiles->Notify();
-            }
+        for(int i = 0; i < list.size(); ++i) {
+            selectProfiles(list[i]);
         }
     }
 
@@ -390,24 +447,31 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
 
     QGridLayout *gridLayout;
     QPushButton *pushButton;
+    QPushButton *importButton;
 
     gridLayout = new QGridLayout(currentGroup);
     pushButton = new QPushButton(currentGroup);
+    importButton = new QPushButton(currentGroup);
 
     QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(pushButton->sizePolicy().hasHeightForWidth());
 
+
+    remoteUrl = new QComboBox(currentGroup);
+    //remoteUrl->setEditable(true);
+    gridLayout->addWidget(remoteUrl, 0, 0, 1, 1);
+
     pushButton->setSizePolicy(sizePolicy);
     pushButton->setText(tr("Update"));
 
     gridLayout->addWidget(pushButton, 0, 1, 1, 1);
 
-    remoteUrl = new QComboBox(currentGroup);
-    //remoteUrl->setEditable(true);
+    importButton->setSizePolicy(sizePolicy);
+    importButton->setText(tr("Import"));
 
-    gridLayout->addWidget(remoteUrl, 0, 0, 1, 1);
+    gridLayout->addWidget(importButton, 0, 2, 1, 1);
 
     /// todo: use a configuration API to load remote url..
     remoteUrl->addItem("http://portal.nersc.gov/svn/visit/trunk/src/resources/hosts/");
@@ -421,9 +485,10 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
     remoteTree->setSortingEnabled(true);
     remoteTree->sortByColumn(0, Qt::AscendingOrder);
 
-    gridLayout->addWidget(remoteTree, 1, 0, 1, 2);
+    gridLayout->addWidget(remoteTree, 1, 0, 1, 3);
 
     connect(pushButton, SIGNAL(clicked()), this, SLOT(retriveLatestProfiles()));
+    connect(importButton, SIGNAL(clicked()), this, SLOT(selectProfiles()));
 
     return currentGroup;
 }
