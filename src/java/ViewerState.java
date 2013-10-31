@@ -185,6 +185,10 @@ public class ViewerState
             Register(attsSelectionProperties);
         attsSelectionList = new SelectionList();
             Register(attsSelectionList);
+        attsViewerClientAttributes = new ViewerClientAttributes();
+            Register(attsViewerClientAttributes);
+        attsViewerClientInformation = new ViewerClientInformation();
+            Register(attsViewerClientInformation);
     }
 
     //
@@ -242,6 +246,8 @@ public class ViewerState
     public FileOpenOptions           GetFileOpenOptions() { return attsFileOpenOptions; }
     public SelectionProperties       GetSelectionProperties() { return attsSelectionProperties; }
     public SelectionList             GetSelectionList() { return attsSelectionList; }
+    public ViewerClientAttributes    GetViewerClientAttributes() { return attsViewerClientAttributes; }
+    public ViewerClientInformation   GetViewerClientInformation() { return attsViewerClientInformation; }
 
     /**
      * Returns the i'th state object.
@@ -408,6 +414,8 @@ public class ViewerState
     private FileOpenOptions          attsFileOpenOptions;
     private SelectionProperties      attsSelectionProperties;
     private SelectionList            attsSelectionList;
+    private ViewerClientAttributes   attsViewerClientAttributes;
+    private ViewerClientInformation  attsViewerClientInformation;
 
     private Vector objVector;
     private int nPlots;
