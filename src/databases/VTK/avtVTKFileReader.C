@@ -1490,6 +1490,9 @@ GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, vtkUnsignedCharArray *uca)
 //    I modified the reading of pvti, pvtr and pvts files to handle the case
 //    where the piece extent was a subset of the whole extent.
 //
+//    Kathleen Biagas, Fri Nov  1 13:27:44 PDT 2013
+//    Changed pieceOrigin from int to double to prevent truncating.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1504,7 +1507,7 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
     inSP->GetOrigin(wholeOrigin);
 
     int pieceDims[3];
-    int pieceOrigin[3];
+    double pieceOrigin[3];
     if (extents == NULL)
     {
         pieceDims[0] = wholeDims[0];
