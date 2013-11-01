@@ -1034,10 +1034,10 @@ void FieldlineLib::safetyFactorStats( std::vector< TYPE > &poloidalWindingCounts
 
 
 // Smallest value is first.
-int compareWindingPairStats( const WindingPairStat s0,
-                             const WindingPairStat s1 )
+bool compareWindingPairStats( const WindingPairStat s0,
+                              const WindingPairStat s1 )
 {
-  return (s0.stat > s1.stat);
+  return (s0 > s1);
 }
 
 
@@ -2669,18 +2669,13 @@ GetPeriodWindingPairs( std::vector< WindingPairStat > &baseWindingPairStats,
 }
 
 
-inline bool operator<(const WindingPair& lhs, const WindingPair& rhs)
-{
-  return( lhs.toroidal < rhs.toroidal );
-}
-
-int
-compareSecondWindingPair( const std::pair< WindingPair, unsigned int > s0,
-                          const std::pair< WindingPair, unsigned int > s1 )
-{
-//  return ( s0.second < s1.second );
-  return ( s0.first.toroidal < s1.first.toroidal );
-}
+// int
+// compareSecondWindingPair( const std::pair< WindingPair, unsigned int > s0,
+//                           const std::pair< WindingPair, unsigned int > s1 )
+// {
+// //  return ( s0.second < s1.second );
+//   return ( s0.first.toroidal < s1.first.toroidal );
+// }
 
 
 void
@@ -3348,11 +3343,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   }
 
   // Sort the winding pairs to look for a bimodal set.
-  std::vector< std::pair< WindingPair, unsigned int > >
-    topWindingPairList( topWindingPairs.begin(), topWindingPairs.end() );
+  // std::vector< std::pair< WindingPair, unsigned int > >
+  //   topWindingPairList( topWindingPairs.begin(), topWindingPairs.end() );
         
-  std::sort( topWindingPairList.begin(), topWindingPairList.end(),
-             compareSecondWindingPair );
+  // std::sort( topWindingPairList.begin(), topWindingPairList.end(),
+  //            compareSecondWindingPair );
     
 //   for( unsigned int j=0; j<topWindingPairList.size(); ++j )
 //     std::cerr << "LINE " << __LINE__ << "  "

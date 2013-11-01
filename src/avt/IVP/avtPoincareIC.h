@@ -83,6 +83,9 @@ public:
     poloidal = p;
   };
 
+  bool operator < (const WindingPair &i) const {return toroidal < i.toroidal;}
+  bool operator > (const WindingPair &i) const {return toroidal > i.toroidal;}
+
   unsigned int toroidal;
   unsigned int poloidal;
 };
