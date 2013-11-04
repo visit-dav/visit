@@ -57,12 +57,11 @@
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+#include <NonCompliantFileException.h>
+
+#include <visit-config.h>
 
 #include <string.h>
-
-#if 0
-#define ALLOW_BAD_FILE 1
-#endif
 
 static int mz = 65;
 
@@ -91,9 +90,6 @@ avtBOUTFileFormat::Identify(NETCDFFileObject *fileObject)
 {
     bool     isBOUT = false;
 
-#ifdef ALLOW_BAD_FILE
-    isBOUT = true;
-#else
     TypeEnum t = NO_TYPE;
     int ndims = 0, *dims = 0;
     if (fileObject->InqVariable("gridname", &t, &ndims, &dims))
@@ -107,7 +103,6 @@ avtBOUTFileFormat::Identify(NETCDFFileObject *fileObject)
             isBOUT = true;
         }
     }
-#endif
 
     return isBOUT;
 }
@@ -176,6 +171,11 @@ avtBOUTFileFormat::CreateInterface(NETCDFFileObject *f,
 avtBOUTFileFormat::avtBOUTFileFormat(const char *filename) :
     avtMTMDFileFormat(filename)
 {
+    const char *lastSlash = strrchr(filename, VISIT_SLASH_CHAR);
+    filePath = new char[lastSlash - filename + 1];
+    memcpy (filePath, filename, lastSlash - filename);
+    filePath[lastSlash - filename] = '\0';
+
     fileObject = new NETCDFFileObject(filename);
     meshFile = 0;
     timesRead = false;
@@ -208,6 +208,11 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename) :
 avtBOUTFileFormat::avtBOUTFileFormat(const char *filename,
     NETCDFFileObject *f) : avtMTMDFileFormat(filename)
 {
+    const char *lastSlash = strrchr(filename, VISIT_SLASH_CHAR);
+    filePath = new char[lastSlash - filename + 1];
+    memcpy (filePath, filename, lastSlash - filename);
+    filePath[lastSlash - filename] = '\0';
+
     fileObject = f;
     meshFile = 0;
     timesRead = false;
@@ -253,6 +258,8 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename,
 avtBOUTFileFormat::~avtBOUTFileFormat()
 {
     FreeUpResources();
+
+    delete filePath;
 
     delete fileObject;
     if (meshFile != 0) delete meshFile;
@@ -369,10 +376,6 @@ avtBOUTFileFormat::ReadTimes()
         }
         else
         {
-#ifdef ALLOW_BAD_FILE
-            for (int i = 0; i < 264; ++i)
-                times.push_back(float(i));
-#endif
             debug4 << mName << "error reading timestep" << endl;
         }
         timesRead = true;
@@ -490,9 +493,6 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     else
     {
-#ifdef ALLOW_BAD_FILE
-        zperiod = 8;
-#endif
         debug4 << mName << "error reading zperiod" << endl;
     }
 
@@ -772,12 +772,20 @@ avtBOUTFileFormat::ReadMesh()
         if (t == CHARARRAY_TYPE && ndims == 1)
         {
             //
-            // gridname is not NULL terminated, so create a new string
-            // with a NULL at the end and use that to open the file.
+            // Prepend the path of the directory containing the file
+            // to the gridname file.
             //
-            char *gridname = new char[dims[0]+1];
-            memcpy(gridname, vals, dims[0]);
-            gridname[dims[0]] = '\0';
+            char *gridname = new char[strlen(filePath)+1+dims[0]+1];
+            memcpy(gridname, filePath, strlen(filePath));
+            gridname[strlen(filePath)] = VISIT_SLASH_CHAR; 
+            memcpy(&gridname[strlen(gridname)], vals, dims[0]);
+            gridname[strlen(filePath)+1+dims[0]] = '\0';
+
+            //
+            // The constructor just stores the filename. This means that
+            // any errors in opening the file will not happen until the
+            // first attempt to read a variable from it.
+            //
             meshFile = new NETCDFFileObject((char*)gridname);
             delete [] gridname;
         }
@@ -786,13 +794,8 @@ avtBOUTFileFormat::ReadMesh()
     }
     else
     {
-#ifdef ALLOW_BAD_FILE
-        char *gridname = new char[strlen("D3D_144382.02510_x516y64_psi080to120mer.nc")+1];
-        strcpy(gridname, "D3D_144382.02510_x516y64_psi080to120mer.nc");
-        meshFile = new NETCDFFileObject((char*)gridname);
-        delete [] gridname;
-#endif
-        debug4 << mName << "error reading gridname string" << endl;
+        std::string msg("The gridname could not be read");
+        EXCEPTION2(NonCompliantFileException, "BOUT", msg);
     }
 
     //
@@ -814,7 +817,9 @@ avtBOUTFileFormat::ReadMesh()
         }\
         else\
         {\
-            debug4 << mName << "error reading " << VARNAME << endl;\
+            std::string msg;\
+            msg = std::string("Error reading ") + std::string(VARNAME);\
+            EXCEPTION2(NonCompliantFileException, "BOUT", msg);\
         }\
     }
     READSCALARINTO("ixseps1", ixseps1, INTEGERARRAY_TYPE, int);
@@ -955,7 +960,7 @@ avtBOUTFileFormat::ReadMesh()
         if (zshiftdims != 0) delete [] zshiftdims;
         if (zshiftvals != 0) free_void_mem(zshiftvals, zshiftt);
 
-        std::string msg("\"The grid could not be read. Contact a VisIt developer.\"");
+        std::string msg("\"The grid could not be read.\"");
         EXCEPTION1(InvalidVariableException, msg);
     }
 

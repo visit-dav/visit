@@ -112,6 +112,8 @@ public:
     void                   CreateDiverterVar(Subgrid &, int, float *, float *);
     void                   CreateVar(Subgrid &, int, int, float *, float *);
 
+    char                  *filePath;
+
     NETCDFFileObject      *fileObject;
     NETCDFFileObject      *meshFile;
 
