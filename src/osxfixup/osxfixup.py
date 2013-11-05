@@ -80,12 +80,13 @@ def find_libs(sdir):
     libs.extend(find_matches(sdir,"*.so"))
     for lib in libs:
         full_lib = real_lib(lib)
-        lib_basename = os.path.basename(full_lib)
-        lib_names.append(full_lib)
-        #if lib_basename in lib_maps:
-        #    print "warning: ", lib_basename,"has multiple mappings old:",
-        #    print lib_maps[lib_basename],"new:", lib
-        lib_maps[lib_basename] = full_lib.replace(sdir,"")   
+        if os.path.isfile(os.path.realpath(full_lib)):
+            lib_basename = os.path.basename(full_lib)
+            lib_names.append(full_lib)
+            #if lib_basename in lib_maps:
+            #    print "warning: ", lib_basename,"has multiple mappings old:",
+            #    print lib_maps[lib_basename],"new:", lib
+            lib_maps[lib_basename] = full_lib.replace(sdir,"")   
     return lib_names,lib_maps
 
 def find_bundles(sdir):
@@ -132,9 +133,12 @@ def find_exes(sdir):
           if mode & exe_flags:
               # check with otool that this is an exe and not a script
               chk_cmd = "file {0}"
-              chk = subprocess.check_output(chk_cmd.format(fname), shell=True)
-              if chk.count("executable") >= 1:
-                  exes.append(fname)
+              try:
+                  chk = subprocess.check_output(chk_cmd.format(fname), shell=True)
+                  if chk.count("executable") >= 1:
+                      exes.append(fname)
+              except:
+                    print "[warning: failed to obtain file type for '%s']" % fname
     return exes
 
 def fixup_items(items,lib_maps,prefix_path):
@@ -160,8 +164,12 @@ def fixup_items(items,lib_maps,prefix_path):
         subprocess.call(id_cmd,shell=True)
 
         deps_cmd = "otool -L {0}"
-        dependencies = subprocess.check_output(deps_cmd.format(item), shell=True)
-        dependencies = [ d for d in dependencies.split("\n")[1:] if d.strip() != ""]
+        try:
+            dependencies = subprocess.check_output(deps_cmd.format(item), shell=True)
+            dependencies = [ d for d in dependencies.split("\n")[1:] if d.strip() != ""]
+        except:
+            print "[warning: failed to obtain dependencies for '%s']" % item
+            dependencies = []
         
         rpath_base_cmd =  "install_name_tool -add_rpath {0} {1} 2>&1"
         
