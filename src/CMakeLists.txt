@@ -829,7 +829,7 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                 WORLD_READ             WORLD_EXECUTE
-                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                    CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
                 )
             ENDIF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
         ENDFOREACH(T)
@@ -842,7 +842,7 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                         GROUP_READ GROUP_WRITE GROUP_EXECUTE
                         WORLD_READ             WORLD_EXECUTE
-            CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF(VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_TARGETS_RELATIVE)
@@ -863,7 +863,7 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
         FILES_MATCHING PATTERN "*.h"
         PATTERN "*.hpp"
         PATTERN ".svn" EXCLUDE
@@ -1472,12 +1472,16 @@ FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
     # if there truly are current definitions, and more than 1 in the list, then
     # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.
     # Grab the first item in the list for comparison instead.
-    LIST(GET currentDefs 0 firstItem )
-    IF(${firstItem} MATCHES NOTFOUND)
+    if (currentDefs)
+        LIST(GET currentDefs 0 firstItem )
+        IF(${firstItem} MATCHES NOTFOUND)
+            SET(allDefs ${newDefs})
+        ELSE(${firstItem} MATCHES NOTFOUND)
+            SET(allDefs ${currentDefs} ${newDefs})
+        ENDIF(${firstItem} MATCHES NOTFOUND)
+    else()
         SET(allDefs ${newDefs})
-    ELSE(${firstItem} MATCHES NOTFOUND)
-        SET(allDefs ${currentDefs} ${newDefs})
-    ENDIF(${firstItem} MATCHES NOTFOUND)
+    endif()
     SET_TARGET_PROPERTIES(${target} PROPERTIES
             COMPILE_DEFINITIONS "${allDefs}"
         )
@@ -2114,7 +2118,7 @@ IF(VISIT_MPICH_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
     )
     INSTALL(DIRECTORY ${VISIT_MPICH_DIR}/bin
         DESTINATION ${VISIT_INSTALLED_VERSION}
@@ -2124,7 +2128,7 @@ IF(VISIT_MPICH_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
     )
     INSTALL(DIRECTORY ${VISIT_MPICH_DIR}/lib
         DESTINATION ${VISIT_INSTALLED_VERSION}
@@ -2134,7 +2138,7 @@ IF(VISIT_MPICH_INSTALL)
         DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                               GROUP_READ GROUP_WRITE GROUP_EXECUTE
                               WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
     )
 ENDIF(VISIT_MPICH_INSTALL)
 
@@ -2427,7 +2431,7 @@ INSTALL(FILES ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
         PERMISSIONS OWNER_READ OWNER_WRITE
                     GROUP_READ GROUP_WRITE
                     WORLD_READ
-        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
 )
 
 #-----------------------------------------------------------------------------
