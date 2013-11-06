@@ -47,6 +47,7 @@
 #include <vtkFieldData.h>
 #include <vtkIntArray.h>
 #include <vtkOnionPeelFilter.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataOnionPeelFilter.h>
 #include <vtkUnstructuredGrid.h>
@@ -276,6 +277,11 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Thu Feb 21 11:04:44 MST 2013
 //    We no longer create outds here, so don't Delete it here.
 //
+//    Eric Brugger, Tue Nov  5 09:57:34 PST 2013
+//    I corrected a bug to properly handle the case where the seed cell was
+//    specified as a global cell number and material interface reconstruction
+//    was applied.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -369,15 +375,26 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         int seed = -1;
         if (atts.GetUseGlobalId()) 
         {
+            vtkDataArray *origIds = NULL;
             if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)
             {
                 seed = vtkVisItUtility::GetLocalElementForGlobal(
                          in_ds, id[0], true);
+                origIds = in_ds->GetCellData()->GetArray("avtOriginalCellNumbers");
             }
             else
             {
                 seed = vtkVisItUtility::GetLocalElementForGlobal(
                          in_ds, id[0], false);
+                origIds = in_ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
+            }
+            if (origIds)
+            {
+                int nc = origIds->GetNumberOfComponents();
+                double *oi = new double[nc];
+                origIds->GetTuple(seed, oi);
+                seed = oi[nc-1];
+                delete [] oi;
             }
             if (seed == -1)
             {
