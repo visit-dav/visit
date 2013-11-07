@@ -36,6 +36,10 @@
 #
 # Modifications:
 #
+#   Kathleen Biagas, Wed Nov  6 18:01:08 PST 2013
+#   Changed location of generated 'nek_config.h' so that it won't overwrite
+#   repo object on Windows.
+#
 #****************************************************************************/
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -58,7 +62,7 @@ endif()
 
 configure_file (
   "${CMAKE_CURRENT_SOURCE_DIR}/ext/nek_config.h.in"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nek_config.h"
+  "${VISIT_BINARY_DIR}/include/nek_config.h"
   )
 
 
@@ -82,6 +86,7 @@ INCLUDE_DIRECTORIES(
 ${VISIT_SOURCE_DIR}/third_party_builtin/nek5000
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_BINARY_DIR}
 )
 
 #Add link directories needed.
