@@ -123,6 +123,11 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Brad Whitlock, Thu Nov  7 14:00:28 PST 2013
+#    Pass width and height to test.
+#
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -198,6 +203,8 @@ def launch_visit_test(args):
     tparams["baseline_dir"]   = opts["baseline_dir"]
     tparams["tests_dir"]      = opts["tests_dir"]
     tparams["visit_bin"]      = opts["executable"]
+    tparams["width"]          = opts["width"]
+    tparams["height"]         = opts["height"]
     if not opts["no_skip"]:
         tparams["skip_file"]  = opts["skip_file"]
     skip  =  check_skip(opts["skip_list"],modes,test_cat,test_file)
