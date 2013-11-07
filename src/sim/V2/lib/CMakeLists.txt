@@ -45,6 +45,9 @@
 #   Kathleen Biagas, Mon Jan 7 18:04:23 PST 2012
 #   Don't build symV2dyn on Windows.
 #
+#   Kathleen Biagas, Thu Nov  7 07:57:14 PST 2013
+#   Add VisItControlInterface_V2_plotting.h to files being installed.
+#
 #****************************************************************************/
 
 # See ../CMakeLists.txt for LIBSIM_SOURCES
@@ -80,6 +83,7 @@ INSTALL(TARGETS simV2 simV2f ${LIBSIM_DYN}
 )
 INSTALL(FILES 
 VisItControlInterface_V2.h
+VisItControlInterface_V2_plotting.h
 VisItDataInterface_V2.h
 VisItInterfaceTypes_V2.h
 VisIt_CSGMesh.h
