@@ -54,6 +54,11 @@
 #   Kathleen Biagas, Mon Jul  8 12:11:38 PDT 2013
 #   Added ThresholdOpAttributes.java.
 #
+#   Kathleen Biagas, Wed Nov  6 17:30:46 PST 2013
+#   Reorganized so out-of-source builds will work.  Added creation of docs,
+#   'pack' target now will create examples and docs (if not already built), 
+#   as well as creating the jar file and the jvisit tarball for distribution.
+#
 #****************************************************************************/
 
 PROJECT(JavaClient Java)
@@ -174,7 +179,6 @@ WindowInformation.java
 )
 
 SET(PACKAGE_SOURCES
-Version.java 
 SimpleObserver.java 
 CouldNotConnectException.java 
 EventLoop.java
@@ -207,17 +211,25 @@ ADD_EXECUTABLE(VersionWriter VersionWriter.C)
 # it's not all that different than before and it's WAY easier than keeping the
 # per-file source dependencies.
 ADD_CUSTOM_COMMAND(TARGET VersionWriter POST_BUILD 
-    COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/VersionWriter ${VISIT_SOURCE_DIR}/VERSION ${VISIT_SOURCE_DIR}/java/Version.java
-    COMMAND ${CMAKE_Java_COMPILER} ${CMAKE_Java_FLAGS} -sourcepath ${VISIT_SOURCE_DIR}/java -d ${VISIT_BINARY_DIR}/java ${PACKAGE_SOURCES} ${PACKAGE_STATE_SOURCES} ${METADATA_SOURCES}
-    WORKING_DIRECTORY ${VISIT_BINARY_DIR}/java
+    COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/VersionWriter ${VISIT_SOURCE_DIR}/VERSION ${JavaClient_BINARY_DIR}/Version.java
 )
 
-# Make an empty target that depends on VersionWriter
-ADD_CUSTOM_TARGET(JavaClient)
-ADD_DEPENDENCIES(JavaClient VersionWriter)
+# custom command/target that ensures java class files are comiled
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/java_client_out.txt
+    COMMAND ${Java_JAVAC_EXECUTABLE} 
+        ${VISIT_Java_FLAGS} 
+        -sourcepath ${JavaClient_BINARY_DIR}
+        -d ${JavaClient_BINARY_DIR}
+        ${JavaClient_BINARY_DIR}/Version.java ${PACKAGE_SOURCES} ${PACKAGE_STATE_SOURCES} ${METADATA_SOURCES}
+    COMMAND ${CMAKE_COMMAND} -E  copy ${JavaClient_BINARY_DIR}/Version.java ${JavaClient_BINARY_DIR}/src
+    COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/java_client_out.txt
+    DEPENDS ${PACKAGE_SOURCES} ${PACKAGE_STATE_SOURCES} ${METADATA_SOURCES} ${JavaClient_BINARY_DIR}/Version.java
+    WORKING_DIRECTORY ${JavaClient_SOURCE_DIR}
+    COMMENT "Compiling Java sources"
+)
 
-# Add a target that does not get built by default but creates the jar file.
-ADD_CUSTOM_TARGET(pack ${CMAKE_Java_ARCHIVE} cvf visit.jar llnl WORKING_DIRECTORY ${VISIT_BINARY_DIR}/java)
+ADD_CUSTOM_TARGET(JavaClient ALL DEPENDS VersionWriter
+${CMAKE_CURRENT_BINARY_DIR}/java_client_out.txt ${JavaClient_BINARY_DIR}/Version.java)
 
 # Add a target that compiles all of the main programs.
 SET(MAIN_SOURCES
@@ -233,5 +245,57 @@ TryAnnotations.java
 TryLighting.java 
 TryQuery.java 
 )
-ADD_CUSTOM_TARGET(main ${CMAKE_Java_COMPILER} ${CMAKE_Java_FLAGS} -sourcepath ${VISIT_SOURCE_DIR}/java -d ${CMAKE_CURRENT_SOURCE_DIR} ${MAIN_SOURCES})
 
+# Some preliminary work to aid in creating the tarball
+FILE(MAKE_DIRECTORY 
+    ${JavaClient_BINARY_DIR}/src/plots 
+    ${JavaClient_BINARY_DIR}/src/operators
+    ${JavaClient_BINARY_DIR}/llnl/visit/plots
+    ${JavaClient_BINARY_DIR}/llnl/visit/operators
+    ${JavaClient_BINARY_DIR}/images
+)
+
+FILE(COPY ${PACKAGE_SOURCES} ${PACKAGE_STATE_SOURCES} ${METADATA_SOURCES} ${MAIN_SOURCES} 
+    DESTINATION ${JavaClient_BINARY_DIR}/src)
+FILE(COPY ${JavaClient_SOURCE_DIR}/images/noimage.jpeg
+    DESTINATION ${JavaClient_BINARY_DIR}/images)
+
+# Custom command/target pair for building the examples, but not as part of the
+# normal build.  'make main' will build the examples
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/java_examples_out.txt 
+    COMMAND ${Java_JAVAC_EXECUTABLE} 
+        ${VISIT_Java_FLAGS} 
+        -classpath  ${JavaClient_BINARY_DIR}
+        -sourcepath ${JavaClient_BINARY_DIR}
+        -d ${JavaClient_BINARY_DIR}
+        ${MAIN_SOURCES}
+    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/java_examples_out.txt
+    DEPENDS ${MAIN_SOURCES}
+    WORKING_DIRECTORY ${JavaClient_SOURCE_DIR}
+    COMMENT "Compiling Java examples"
+)
+
+ADD_CUSTOM_TARGET(main DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/java_examples_out.txt) 
+
+
+# Custom target for building the docs
+ADD_CUSTOM_TARGET(visit_java_docs 
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${JavaClient_BINARY_DIR}/docs
+    COMMAND ${Java_JAVADOC_EXECUTABLE} -d docs ${JavaClient_SOURCE_DIR}/*.java
+    COMMAND ${CMAKE_COMMAND} -E copy ${JavaClient_SOURCE_DIR}/stylesheet.css ${JavaClient_BINARY_DIR}/docs
+    WORKING_DIRECTORY ${JavaClient_BINARY_DIR}
+)
+
+# Custom target for creating the jar
+ADD_CUSTOM_TARGET(pack ${Java_JAR_EXECUTABLE} cvf visit.jar llnl 
+    DEPENDS JavaClient main visit_java_docs
+    WORKING_DIRECTORY ${JavaClient_BINARY_DIR}
+    COMMENT "Creating visit.jar"
+)
+
+# Add a command that will create the tarball after the jar file is finished.
+ADD_CUSTOM_COMMAND(TARGET pack POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E tar "zcf" jvisit${VISIT_VERSION}.tar.gz visit.jar src docs *.class images
+    WORKING_DIRECTORY ${JavaClient_BINARY_DIR}
+    COMMENT "Creating jvisit${VISIT_VERSION}.tar.gz"
+)

@@ -693,14 +693,16 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         // Java sources
         out << "    IF(VISIT_JAVA)" << endl;
-        out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${CMAKE_Java_COMPILER} ${CMAKE_Java_FLAGS} -d ${VISIT_BINARY_DIR}/java -classpath ${VISIT_BINARY_DIR}/java ";
+        out << "        FILE(COPY " << atts->name<<".java " << "DESTINATION ${JavaClient_BINARY_DIR}/src/plots)" << endl;
+        out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ";
         if(customjfiles)
         {
             for(size_t i = 0; i < jfiles.size(); ++i)
                 out << jfiles[i] << " ";
         }
-        out << atts->name<<".java)" << endl;
-        out << "        ADD_DEPENDENCIES(Java"<<name<<" JavaClient)" << endl;
+        out << atts->name<<".java" << endl;
+        out << "            DEPENDS JavaClient" << endl;
+        out << "            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})" << endl;
         out << "    ENDIF(VISIT_JAVA)" << endl;
 
         out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
@@ -913,14 +915,16 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         // Java sources
         out << "    IF(VISIT_JAVA)" << endl;
-        out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${CMAKE_Java_COMPILER} ${CMAKE_Java_FLAGS} -d ${VISIT_BINARY_DIR}/java -classpath ${VISIT_BINARY_DIR}/java ";
+        out << "        FILE(COPY " << atts->name<<".java DESTINATION ${JavaClient_BINARY_DIR}/src/operators)" << endl;
+        out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ";
         if(customjfiles)
         {
             for(size_t i = 0; i < jfiles.size(); ++i)
                 out << jfiles[i] << " ";
         }
-        out << atts->name<<".java)" << endl;
-        out << "        ADD_DEPENDENCIES(Java"<<name<<" JavaClient)" << endl;
+        out << atts->name<<".java" << endl;
+        out << "            DEPENDS JavaClient" << endl;
+        out << "            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})" << endl;
         out << "    ENDIF(VISIT_JAVA)" << endl;
 
         out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
