@@ -109,8 +109,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     ENDIF(VISIT_PYTHON_SCRIPTING)
 
     IF(VISIT_JAVA)
-        ADD_CUSTOM_TARGET(JavaHistogram ALL ${CMAKE_Java_COMPILER} ${CMAKE_Java_FLAGS} -d ${VISIT_BINARY_DIR}/java -classpath ${VISIT_BINARY_DIR}/java HistogramAttributes.java)
-        ADD_DEPENDENCIES(JavaHistogram JavaClient)
+        FILE(COPY HistogramAttributes.java DESTINATION ${JavaClient_BINARY_DIR}/src/plots)
+        ADD_CUSTOM_TARGET(JavaHistogram ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} HistogramAttributes.java
+            DEPENDS JavaClient
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     ENDIF(VISIT_JAVA)
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
