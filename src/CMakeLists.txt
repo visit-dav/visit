@@ -363,6 +363,10 @@
 #    Fix exported VTK targets for VTK-6. Fix VTK-6 include dirs 
 #    for make install / package.
 #
+#    Kathleen Biagas, Wed Nov  6 17:42:32 PST 2013
+#    Remove setting of CMAKE_Java_xxx, rely instead on the Java_xxx vars
+#    set by FindJava.cmake
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -948,11 +952,8 @@ ENDIF((VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
 
 IF(VISIT_JAVA)
     INCLUDE(${CMAKE_ROOT}/Modules/FindJava.cmake)
-
     ENABLE_LANGUAGE(Java)
-    SET(CMAKE_Java_COMPILER ${JAVA_COMPILE})
-    SET(CMAKE_Java_FLAGS -source 1.4)
-    SET(CMAKE_Java_ARCHIVE ${JAVA_ARCHIVE})
+    SET(VISIT_Java_FLAGS -source 1.4)
 ENDIF(VISIT_JAVA)
 
 CHECK_INCLUDE_FILES (fcntl.h     HAVE_FCNTL_H)
