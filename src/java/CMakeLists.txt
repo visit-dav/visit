@@ -211,7 +211,7 @@ ADD_EXECUTABLE(VersionWriter VersionWriter.C)
 # it's not all that different than before and it's WAY easier than keeping the
 # per-file source dependencies.
 ADD_CUSTOM_COMMAND(TARGET VersionWriter POST_BUILD 
-    COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/VersionWriter ${VISIT_SOURCE_DIR}/VERSION ${JavaClient_BINARY_DIR}/Version.java
+    COMMAND ${VISIT_EXECUTABLE_DIR}/VersionWriter ${VISIT_SOURCE_DIR}/VERSION ${JavaClient_BINARY_DIR}/Version.java
 )
 
 # custom command/target that ensures java class files are comiled
