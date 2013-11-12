@@ -222,6 +222,10 @@ avtHistogramFilter::PreExecute(void)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Kevin Bensema, Mon Nov 11 13:04 PST 2013
+//    Added code to change the y-axis units to "Probability" if the histogram
+//    has been normalized.
+//
 // ****************************************************************************
 
 void
@@ -492,6 +496,11 @@ avtHistogramFilter::PostExecute(void)
                 yunits = "# of Points";
             else
                 yunits = "# of Cells";
+
+            if(atts.GetNormalizeHistogram() == true)
+            {
+              yunits = "Probability";
+            }
         }
         else if (atts.GetHistogramType() == HistogramAttributes::Weighted)
         {
@@ -1190,14 +1199,17 @@ avtHistogramFilter::ComputeBinIndex( const float &value ) const
 //  Programmer: Dave Pugmire
 //  Creation:   November 01, 2007
 //
+//  Modifications
+//    Kevin Bensema Mon Nov 11, 2013. 12:43
+//    Added code to compute CDF if desired and to normalize histogram
+//    if specified by the attributes.
+//
 // ****************************************************************************
 
 void
 avtHistogramFilter::ScaleBins()
 {
-    if ( atts.GetBinScale() == HistogramAttributes::Linear )
-        return;
-    else if ( atts.GetBinScale() == HistogramAttributes::Log )
+    if ( atts.GetBinScale() == HistogramAttributes::Log )
     {
         for ( int i = 0; i < workingNumBins; i++ )
         {
@@ -1211,7 +1223,32 @@ avtHistogramFilter::ScaleBins()
     {
         for ( int i = 0; i < workingNumBins; i++ )
             bins[i] = sqrt( bins[i] );
-    }   
+    }
+
+  // Normalize the histogram if desired.
+  if( atts.GetNormalizeHistogram() == true)
+  {
+    double sum = 0.0;
+    for(int i = 0; i < workingNumBins; ++i)
+    {
+      sum += bins[i];
+    }
+    for(int i = 0; i < workingNumBins; ++i)
+    {
+      bins[i] /= sum;
+    }
+  }
+
+  // compute the cumulative distribution function if specified in the attributes
+  if( atts.GetComputeAsCDF() == true)
+  {
+    for(int i = 1; i < workingNumBins; ++i)
+    {
+      bins[i] += bins[i - 1];
+    }
+  }
+
+  return;
 }
 
 // ****************************************************************************
