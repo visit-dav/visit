@@ -77,6 +77,9 @@ class QvisVariableButton;
 //    Hank Childs, Tue Dec 11 19:58:39 PST 2007
 //    Add support for scaling by an arbitrary variable.
 //
+//    Kevin Bensema, Mon Nov 11 12:42 2013
+//    Added support for computing CDFs and normalizing histograms.
+//
 // ****************************************************************************
 
 class QvisHistogramPlotWindow : public QvisPostableWindowObserver
@@ -118,6 +121,8 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void colorChanged(const QColor &color);
+    void normalizeChanged(bool val);
+    void computeCdfChanged(bool val);
   private:
     int plotType;
     QButtonGroup        *basedOnGroup;
@@ -141,6 +146,9 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QvisLineStyleWidget *lineStyle;
     QvisLineWidthWidget *lineWidth;
     QvisColorButton     *color;
+    QCheckBox           *normalizeHistogram;
+    QCheckBox           *computeCDF;
+
     QLabel              *basedOnLabel;
     QLabel              *histogramTypeLabel;
     QLabel              *weightTypeLabel;

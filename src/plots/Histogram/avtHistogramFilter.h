@@ -80,6 +80,9 @@
 //    a problem where the raw data to be processed may be outside of the
 //    working range.
 //
+//    Kevin Bensema, Mon Nov 11 12:42 2013
+//    Modified ScaleBins to compute CDFs and normalization.
+//
 // ****************************************************************************
 
 class avtHistogramFilter : public avtDataTreeIterator

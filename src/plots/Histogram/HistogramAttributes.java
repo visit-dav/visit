@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class HistogramAttributes extends AttributeSubject implements Plugin
 {
-    private static int HistogramAttributes_numAdditionalAtts = 18;
+    private static int HistogramAttributes_numAdditionalAtts = 20;
 
     // Enum values
     public final static int OUTPUTTYPE_CURVE = 0;
@@ -103,6 +103,8 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         color = new ColorAttribute(200, 80, 40);
         dataScale = DATASCALE_LINEAR;
         binScale = DATASCALE_LINEAR;
+        normalizeHistogram = false;
+        computeAsCDF = false;
     }
 
     public HistogramAttributes(int nMoreFields)
@@ -127,6 +129,8 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         color = new ColorAttribute(200, 80, 40);
         dataScale = DATASCALE_LINEAR;
         binScale = DATASCALE_LINEAR;
+        normalizeHistogram = false;
+        computeAsCDF = false;
     }
 
     public HistogramAttributes(HistogramAttributes obj)
@@ -151,6 +155,8 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         color = new ColorAttribute(obj.color);
         dataScale = obj.dataScale;
         binScale = obj.binScale;
+        normalizeHistogram = obj.normalizeHistogram;
+        computeAsCDF = obj.computeAsCDF;
 
         SelectAll();
     }
@@ -185,7 +191,9 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
                 (lineWidth == obj.lineWidth) &&
                 (color == obj.color) &&
                 (dataScale == obj.dataScale) &&
-                (binScale == obj.binScale));
+                (binScale == obj.binScale) &&
+                (normalizeHistogram == obj.normalizeHistogram) &&
+                (computeAsCDF == obj.computeAsCDF));
     }
 
     public String GetName() { return "Histogram"; }
@@ -300,6 +308,18 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         Select(17);
     }
 
+    public void SetNormalizeHistogram(boolean normalizeHistogram_)
+    {
+        normalizeHistogram = normalizeHistogram_;
+        Select(18);
+    }
+
+    public void SetComputeAsCDF(boolean computeAsCDF_)
+    {
+        computeAsCDF = computeAsCDF_;
+        Select(19);
+    }
+
     // Property getting methods
     public int            GetBasedOn() { return basedOn; }
     public int            GetHistogramType() { return histogramType; }
@@ -319,6 +339,8 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
     public ColorAttribute GetColor() { return color; }
     public int            GetDataScale() { return dataScale; }
     public int            GetBinScale() { return binScale; }
+    public boolean        GetNormalizeHistogram() { return normalizeHistogram; }
+    public boolean        GetComputeAsCDF() { return computeAsCDF; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -359,6 +381,10 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(dataScale);
         if(WriteSelect(17, buf))
             buf.WriteInt(binScale);
+        if(WriteSelect(18, buf))
+            buf.WriteBool(normalizeHistogram);
+        if(WriteSelect(19, buf))
+            buf.WriteBool(computeAsCDF);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -420,6 +446,12 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         case 17:
             SetBinScale(buf.ReadInt());
             break;
+        case 18:
+            SetNormalizeHistogram(buf.ReadBool());
+            break;
+        case 19:
+            SetComputeAsCDF(buf.ReadBool());
+            break;
         }
     }
 
@@ -480,6 +512,8 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         if(binScale == DATASCALE_SQUAREROOT)
             str = str + "DATASCALE_SQUAREROOT";
         str = str + "\n";
+        str = str + boolToString("normalizeHistogram", normalizeHistogram, indent) + "\n";
+        str = str + boolToString("computeAsCDF", computeAsCDF, indent) + "\n";
         return str;
     }
 
@@ -503,5 +537,7 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
     private ColorAttribute color;
     private int            dataScale;
     private int            binScale;
+    private boolean        normalizeHistogram;
+    private boolean        computeAsCDF;
 }
 

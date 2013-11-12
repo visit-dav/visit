@@ -90,6 +90,12 @@
       <Field name="binScale" label="Bin Scale" type="enum" subtype="DataScale">
         Linear
       </Field>
+      <Field name="normalizeHistogram" label="Normalize the Histogram" type="bool">
+        false
+      </Field>
+      <Field name="computeAsCDF" label="Compute CDF" type="bool">
+        false
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">

@@ -214,6 +214,16 @@ PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *pref
           break;
     }
 
+    if(atts->GetNormalizeHistogram())
+        SNPRINTF(tmpStr, 1000, "%snormalizeHistogram = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%snormalizeHistogram = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetComputeAsCDF())
+        SNPRINTF(tmpStr, 1000, "%scomputeAsCDF = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scomputeAsCDF = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -774,6 +784,54 @@ HistogramAttributes_GetBinScale(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+HistogramAttributes_SetNormalizeHistogram(PyObject *self, PyObject *args)
+{
+    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the normalizeHistogram in the object.
+    obj->data->SetNormalizeHistogram(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+HistogramAttributes_GetNormalizeHistogram(PyObject *self, PyObject *args)
+{
+    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetNormalizeHistogram()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+HistogramAttributes_SetComputeAsCDF(PyObject *self, PyObject *args)
+{
+    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the computeAsCDF in the object.
+    obj->data->SetComputeAsCDF(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+HistogramAttributes_GetComputeAsCDF(PyObject *self, PyObject *args)
+{
+    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetComputeAsCDF()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyHistogramAttributes_methods[HISTOGRAMATTRIBUTES_NMETH] = {
@@ -814,6 +872,10 @@ PyMethodDef PyHistogramAttributes_methods[HISTOGRAMATTRIBUTES_NMETH] = {
     {"GetDataScale", HistogramAttributes_GetDataScale, METH_VARARGS},
     {"SetBinScale", HistogramAttributes_SetBinScale, METH_VARARGS},
     {"GetBinScale", HistogramAttributes_GetBinScale, METH_VARARGS},
+    {"SetNormalizeHistogram", HistogramAttributes_SetNormalizeHistogram, METH_VARARGS},
+    {"GetNormalizeHistogram", HistogramAttributes_GetNormalizeHistogram, METH_VARARGS},
+    {"SetComputeAsCDF", HistogramAttributes_SetComputeAsCDF, METH_VARARGS},
+    {"GetComputeAsCDF", HistogramAttributes_GetComputeAsCDF, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -923,6 +985,10 @@ PyHistogramAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "SquareRoot") == 0)
         return PyInt_FromLong(long(HistogramAttributes::SquareRoot));
 
+    if(strcmp(name, "normalizeHistogram") == 0)
+        return HistogramAttributes_GetNormalizeHistogram(self, NULL);
+    if(strcmp(name, "computeAsCDF") == 0)
+        return HistogramAttributes_GetComputeAsCDF(self, NULL);
 
     return Py_FindMethod(PyHistogramAttributes_methods, self, name);
 }
@@ -973,6 +1039,10 @@ PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = HistogramAttributes_SetDataScale(self, tuple);
     else if(strcmp(name, "binScale") == 0)
         obj = HistogramAttributes_SetBinScale(self, tuple);
+    else if(strcmp(name, "normalizeHistogram") == 0)
+        obj = HistogramAttributes_SetNormalizeHistogram(self, tuple);
+    else if(strcmp(name, "computeAsCDF") == 0)
+        obj = HistogramAttributes_SetComputeAsCDF(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

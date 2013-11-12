@@ -137,6 +137,8 @@ public:
     void SetColor(const ColorAttribute &color_);
     void SetDataScale(DataScale dataScale_);
     void SetBinScale(DataScale binScale_);
+    void SetNormalizeHistogram(bool normalizeHistogram_);
+    void SetComputeAsCDF(bool computeAsCDF_);
 
     // Property getting methods
     BasedOn              GetBasedOn() const;
@@ -159,6 +161,8 @@ public:
           ColorAttribute &GetColor();
     DataScale            GetDataScale() const;
     DataScale            GetBinScale() const;
+    bool                 GetNormalizeHistogram() const;
+    bool                 GetComputeAsCDF() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -221,6 +225,8 @@ public:
         ID_color,
         ID_dataScale,
         ID_binScale,
+        ID_normalizeHistogram,
+        ID_computeAsCDF,
         ID__LAST
     };
 
@@ -243,11 +249,13 @@ private:
     ColorAttribute color;
     int            dataScale;
     int            binScale;
+    bool           normalizeHistogram;
+    bool           computeAsCDF;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define HISTOGRAMATTRIBUTES_TMFS "iisibbddiiibiiiaii"
+#define HISTOGRAMATTRIBUTES_TMFS "iisibbddiiibiiiaiibb"
 
 #endif

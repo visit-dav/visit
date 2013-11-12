@@ -259,6 +259,8 @@ void HistogramAttributes::Init()
     lineWidth = 0;
     dataScale = Linear;
     binScale = Linear;
+    normalizeHistogram = false;
+    computeAsCDF = false;
 
     HistogramAttributes::SelectAll();
 }
@@ -298,6 +300,8 @@ void HistogramAttributes::Copy(const HistogramAttributes &obj)
     color = obj.color;
     dataScale = obj.dataScale;
     binScale = obj.binScale;
+    normalizeHistogram = obj.normalizeHistogram;
+    computeAsCDF = obj.computeAsCDF;
 
     HistogramAttributes::SelectAll();
 }
@@ -474,7 +478,9 @@ HistogramAttributes::operator == (const HistogramAttributes &obj) const
             (lineWidth == obj.lineWidth) &&
             (color == obj.color) &&
             (dataScale == obj.dataScale) &&
-            (binScale == obj.binScale));
+            (binScale == obj.binScale) &&
+            (normalizeHistogram == obj.normalizeHistogram) &&
+            (computeAsCDF == obj.computeAsCDF));
 }
 
 // ****************************************************************************
@@ -615,24 +621,26 @@ HistogramAttributes::NewInstance(bool copy) const
 void
 HistogramAttributes::SelectAll()
 {
-    Select(ID_basedOn,        (void *)&basedOn);
-    Select(ID_histogramType,  (void *)&histogramType);
-    Select(ID_weightVariable, (void *)&weightVariable);
-    Select(ID_limitsMode,     (void *)&limitsMode);
-    Select(ID_minFlag,        (void *)&minFlag);
-    Select(ID_maxFlag,        (void *)&maxFlag);
-    Select(ID_min,            (void *)&min);
-    Select(ID_max,            (void *)&max);
-    Select(ID_numBins,        (void *)&numBins);
-    Select(ID_domain,         (void *)&domain);
-    Select(ID_zone,           (void *)&zone);
-    Select(ID_useBinWidths,   (void *)&useBinWidths);
-    Select(ID_outputType,     (void *)&outputType);
-    Select(ID_lineStyle,      (void *)&lineStyle);
-    Select(ID_lineWidth,      (void *)&lineWidth);
-    Select(ID_color,          (void *)&color);
-    Select(ID_dataScale,      (void *)&dataScale);
-    Select(ID_binScale,       (void *)&binScale);
+    Select(ID_basedOn,            (void *)&basedOn);
+    Select(ID_histogramType,      (void *)&histogramType);
+    Select(ID_weightVariable,     (void *)&weightVariable);
+    Select(ID_limitsMode,         (void *)&limitsMode);
+    Select(ID_minFlag,            (void *)&minFlag);
+    Select(ID_maxFlag,            (void *)&maxFlag);
+    Select(ID_min,                (void *)&min);
+    Select(ID_max,                (void *)&max);
+    Select(ID_numBins,            (void *)&numBins);
+    Select(ID_domain,             (void *)&domain);
+    Select(ID_zone,               (void *)&zone);
+    Select(ID_useBinWidths,       (void *)&useBinWidths);
+    Select(ID_outputType,         (void *)&outputType);
+    Select(ID_lineStyle,          (void *)&lineStyle);
+    Select(ID_lineWidth,          (void *)&lineWidth);
+    Select(ID_color,              (void *)&color);
+    Select(ID_dataScale,          (void *)&dataScale);
+    Select(ID_binScale,           (void *)&binScale);
+    Select(ID_normalizeHistogram, (void *)&normalizeHistogram);
+    Select(ID_computeAsCDF,       (void *)&computeAsCDF);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -773,6 +781,18 @@ HistogramAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("binScale", DataScale_ToString(binScale)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_normalizeHistogram, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("normalizeHistogram", normalizeHistogram));
+    }
+
+    if(completeSave || !FieldsEqual(ID_computeAsCDF, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("computeAsCDF", computeAsCDF));
     }
 
 
@@ -931,6 +951,10 @@ HistogramAttributes::SetFromNode(DataNode *parentNode)
                 SetBinScale(value);
         }
     }
+    if((node = searchNode->GetNode("normalizeHistogram")) != 0)
+        SetNormalizeHistogram(node->AsBool());
+    if((node = searchNode->GetNode("computeAsCDF")) != 0)
+        SetComputeAsCDF(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1063,6 +1087,20 @@ HistogramAttributes::SetBinScale(HistogramAttributes::DataScale binScale_)
     Select(ID_binScale, (void *)&binScale);
 }
 
+void
+HistogramAttributes::SetNormalizeHistogram(bool normalizeHistogram_)
+{
+    normalizeHistogram = normalizeHistogram_;
+    Select(ID_normalizeHistogram, (void *)&normalizeHistogram);
+}
+
+void
+HistogramAttributes::SetComputeAsCDF(bool computeAsCDF_)
+{
+    computeAsCDF = computeAsCDF_;
+    Select(ID_computeAsCDF, (void *)&computeAsCDF);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1187,6 +1225,18 @@ HistogramAttributes::GetBinScale() const
     return DataScale(binScale);
 }
 
+bool
+HistogramAttributes::GetNormalizeHistogram() const
+{
+    return normalizeHistogram;
+}
+
+bool
+HistogramAttributes::GetComputeAsCDF() const
+{
+    return computeAsCDF;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1227,24 +1277,26 @@ HistogramAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_basedOn:        return "basedOn";
-    case ID_histogramType:  return "histogramType";
-    case ID_weightVariable: return "weightVariable";
-    case ID_limitsMode:     return "limitsMode";
-    case ID_minFlag:        return "minFlag";
-    case ID_maxFlag:        return "maxFlag";
-    case ID_min:            return "min";
-    case ID_max:            return "max";
-    case ID_numBins:        return "numBins";
-    case ID_domain:         return "domain";
-    case ID_zone:           return "zone";
-    case ID_useBinWidths:   return "useBinWidths";
-    case ID_outputType:     return "outputType";
-    case ID_lineStyle:      return "lineStyle";
-    case ID_lineWidth:      return "lineWidth";
-    case ID_color:          return "color";
-    case ID_dataScale:      return "dataScale";
-    case ID_binScale:       return "binScale";
+    case ID_basedOn:            return "basedOn";
+    case ID_histogramType:      return "histogramType";
+    case ID_weightVariable:     return "weightVariable";
+    case ID_limitsMode:         return "limitsMode";
+    case ID_minFlag:            return "minFlag";
+    case ID_maxFlag:            return "maxFlag";
+    case ID_min:                return "min";
+    case ID_max:                return "max";
+    case ID_numBins:            return "numBins";
+    case ID_domain:             return "domain";
+    case ID_zone:               return "zone";
+    case ID_useBinWidths:       return "useBinWidths";
+    case ID_outputType:         return "outputType";
+    case ID_lineStyle:          return "lineStyle";
+    case ID_lineWidth:          return "lineWidth";
+    case ID_color:              return "color";
+    case ID_dataScale:          return "dataScale";
+    case ID_binScale:           return "binScale";
+    case ID_normalizeHistogram: return "normalizeHistogram";
+    case ID_computeAsCDF:       return "computeAsCDF";
     default:  return "invalid index";
     }
 }
@@ -1269,24 +1321,26 @@ HistogramAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_basedOn:        return FieldType_enum;
-    case ID_histogramType:  return FieldType_enum;
-    case ID_weightVariable: return FieldType_variablename;
-    case ID_limitsMode:     return FieldType_enum;
-    case ID_minFlag:        return FieldType_bool;
-    case ID_maxFlag:        return FieldType_bool;
-    case ID_min:            return FieldType_double;
-    case ID_max:            return FieldType_double;
-    case ID_numBins:        return FieldType_int;
-    case ID_domain:         return FieldType_int;
-    case ID_zone:           return FieldType_int;
-    case ID_useBinWidths:   return FieldType_bool;
-    case ID_outputType:     return FieldType_enum;
-    case ID_lineStyle:      return FieldType_linestyle;
-    case ID_lineWidth:      return FieldType_linewidth;
-    case ID_color:          return FieldType_color;
-    case ID_dataScale:      return FieldType_enum;
-    case ID_binScale:       return FieldType_enum;
+    case ID_basedOn:            return FieldType_enum;
+    case ID_histogramType:      return FieldType_enum;
+    case ID_weightVariable:     return FieldType_variablename;
+    case ID_limitsMode:         return FieldType_enum;
+    case ID_minFlag:            return FieldType_bool;
+    case ID_maxFlag:            return FieldType_bool;
+    case ID_min:                return FieldType_double;
+    case ID_max:                return FieldType_double;
+    case ID_numBins:            return FieldType_int;
+    case ID_domain:             return FieldType_int;
+    case ID_zone:               return FieldType_int;
+    case ID_useBinWidths:       return FieldType_bool;
+    case ID_outputType:         return FieldType_enum;
+    case ID_lineStyle:          return FieldType_linestyle;
+    case ID_lineWidth:          return FieldType_linewidth;
+    case ID_color:              return FieldType_color;
+    case ID_dataScale:          return FieldType_enum;
+    case ID_binScale:           return FieldType_enum;
+    case ID_normalizeHistogram: return FieldType_bool;
+    case ID_computeAsCDF:       return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1311,24 +1365,26 @@ HistogramAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_basedOn:        return "enum";
-    case ID_histogramType:  return "enum";
-    case ID_weightVariable: return "variablename";
-    case ID_limitsMode:     return "enum";
-    case ID_minFlag:        return "bool";
-    case ID_maxFlag:        return "bool";
-    case ID_min:            return "double";
-    case ID_max:            return "double";
-    case ID_numBins:        return "int";
-    case ID_domain:         return "int";
-    case ID_zone:           return "int";
-    case ID_useBinWidths:   return "bool";
-    case ID_outputType:     return "enum";
-    case ID_lineStyle:      return "linestyle";
-    case ID_lineWidth:      return "linewidth";
-    case ID_color:          return "color";
-    case ID_dataScale:      return "enum";
-    case ID_binScale:       return "enum";
+    case ID_basedOn:            return "enum";
+    case ID_histogramType:      return "enum";
+    case ID_weightVariable:     return "variablename";
+    case ID_limitsMode:         return "enum";
+    case ID_minFlag:            return "bool";
+    case ID_maxFlag:            return "bool";
+    case ID_min:                return "double";
+    case ID_max:                return "double";
+    case ID_numBins:            return "int";
+    case ID_domain:             return "int";
+    case ID_zone:               return "int";
+    case ID_useBinWidths:       return "bool";
+    case ID_outputType:         return "enum";
+    case ID_lineStyle:          return "linestyle";
+    case ID_lineWidth:          return "linewidth";
+    case ID_color:              return "color";
+    case ID_dataScale:          return "enum";
+    case ID_binScale:           return "enum";
+    case ID_normalizeHistogram: return "bool";
+    case ID_computeAsCDF:       return "bool";
     default:  return "invalid index";
     }
 }
@@ -1443,6 +1499,16 @@ HistogramAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_binScale:
         {  // new scope
         retval = (binScale == obj.binScale);
+        }
+        break;
+    case ID_normalizeHistogram:
+        {  // new scope
+        retval = (normalizeHistogram == obj.normalizeHistogram);
+        }
+        break;
+    case ID_computeAsCDF:
+        {  // new scope
+        retval = (computeAsCDF == obj.computeAsCDF);
         }
         break;
     default: retval = false;
