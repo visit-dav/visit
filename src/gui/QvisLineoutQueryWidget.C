@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <QvisLineoutQueryWidget.h>
+#include <QCheckBox>
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -62,6 +63,8 @@
 // Creation:   June 9, 2011 
 //
 // Modifications:
+//    Kathleen Biagas, Fri Nov 15 17:14:13 PST 2013
+//    Add sampling options.
 //
 // ****************************************************************************
 
@@ -92,6 +95,19 @@ QvisLineoutQueryWidget::QvisLineoutQueryWidget(QWidget *parent,
     endPoint = new QLineEdit();
     endPoint->setText("1 0 0");
     cLayout->addWidget(endPoint, 1, 1);
+
+    // SamplingOn
+    samplingOn = new QCheckBox(tr("Use Sampling"));
+    samplingOn->setChecked(0);
+    cLayout->addWidget(samplingOn, 2, 1);
+
+    numSamplesLabel = new QLabel(tr("Sample Points "));
+    numSamplesLabel->setAlignment(Qt::AlignCenter);
+    cLayout->addWidget(numSamplesLabel, 3, 0);
+
+    numSamples = new QLineEdit();
+    numSamples->setText("50");
+    cLayout->addWidget(numSamples, 3, 1);
 
     topLayout->addLayout(cLayout);
 }
@@ -167,6 +183,8 @@ QvisLineoutQueryWidget::GetPoint(int whichWidget, double *pt)
 // Creation:   June 9, 2011
 //
 // Modifications:
+//    Kathleen Biagas, Fri Nov 15 17:14:13 PST 2013
+//    Add sampling options.
 //
 // ****************************************************************************
 
@@ -175,16 +193,32 @@ QvisLineoutQueryWidget::GetQueryParameters(MapNode &params)
 {
     doubleVector p1(3);
     doubleVector p2(3);
+    int ns;
 
     bool noerrors = true;
 
     noerrors &= GetPoint(0, &p1[0]); 
     noerrors &= GetPoint(1, &p2[0]); 
 
+    // numSamples
+    QString temp;
+
+    temp = numSamples->displayText().simplified();
+    bool okay = !temp.isEmpty();
+
+    if(okay)
+    {
+        int numScanned = sscanf(temp.toStdString().c_str(), "%d", &ns);
+        okay = (numScanned == 1 );
+    }
+    noerrors &= okay;
+
     if (noerrors)
     {
         params["start_point"] = p1;
         params["end_point"] = p2;
+        params["use_sampling"] = (int)samplingOn->isChecked();
+        params["num_samples"]  = ns;
     }
 
     return noerrors;
