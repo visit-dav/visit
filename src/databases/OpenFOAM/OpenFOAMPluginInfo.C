@@ -167,6 +167,7 @@ OpenFOAMGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("controlDict");
+    defaultPatterns.push_back("*.foam");
 
     return defaultPatterns;
 }
