@@ -59,6 +59,7 @@
 #include <InvalidVariableException.h>
 #include <BadIndexException.h>
 #include <maptypes.h>
+#include <StringHelpers.h>
 
 
 using     std::string;
@@ -79,6 +80,10 @@ using     std::map;
 //    Change how we read time information, to be more VTK compliant. Patch
 //    provided by Takuya Oshima.
 //
+//    Kathleen Biagas, Tue Nov 19 08:16:51 PST 2013
+//    Ensure we pass the 'controlDict' file to the vtk reader. Assumes it is
+//    in the same location as the .foam file.
+//
 // ****************************************************************************
 
 avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename, 
@@ -87,8 +92,15 @@ avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename,
     convertCellToPoint = false;
     readZones = false;
 
+    std::string controlDict(filename);
+    std::string base = StringHelpers::Basename(filename);
+    if (base != "controlDict")
+    {
+        std::string dir = StringHelpers::Dirname(filename);
+        controlDict = dir + VISIT_SLASH_STRING + "controlDict";
+    }
     reader = visit_vtkPOpenFOAMReader::New();
-    reader->SetFileName(filename);
+    reader->SetFileName(controlDict.c_str());
     reader->SetCreateCellToPoint(convertCellToPoint ? 1 : 0);
     reader->DecomposePolyhedraOn();
 
