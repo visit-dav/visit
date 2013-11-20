@@ -158,7 +158,7 @@ ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
     e->SetFromOperator(true);
     e->SetOperatorName("ModelFit");
     expressions->AddExpressions(*e);
-
+    delete e;
     return expressions;
 }
 

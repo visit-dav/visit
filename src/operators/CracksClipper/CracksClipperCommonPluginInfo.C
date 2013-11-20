@@ -112,6 +112,9 @@ CracksClipperCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //    Kathleen Biagas, Thu Aug  9 16:16:59 PDT 2012
 //    Match new API for this method.
 //
+//    Kathleen Biagas, Wed Nov 20 12:57:06 PST 2013
+//    Removed code that did nothing.
+//
 // ***************************************************************************
 
 ExpressionList *
@@ -135,11 +138,6 @@ CracksClipperCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *
             e2.SetDefinition(defn);
             el->AddExpressions(e2);
         }
-    }
-    const ExpressionList &oldEL = md->GetExprList();
-    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)
-    {
-        const Expression &e = oldEL.GetExpressions(i);
     }
     return el;
 }

@@ -132,11 +132,6 @@ SurfaceNormalCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *
             el->AddExpressions(e2);
         }
     }
-    const ExpressionList &oldEL = md->GetExprList();
-    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)
-    {
-        const Expression &e = oldEL.GetExpressions(i);
-    }
     return el;
 }
 
