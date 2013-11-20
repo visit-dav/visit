@@ -152,6 +152,9 @@
 #    Kathleen Biagas, Tue Jun 18 16:58:43 PDT 2013
 #    Skip paraDIS reader on Windows.
 #
+#    Eric Brugger, Wed Nov 20 11:16:52 PST 2013
+#    I added the AMRTest reader.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -367,6 +370,7 @@ IF (NOT WIN32)
         LIST(APPEND REQUIRED_DATABASE_PLUGINS VCellMTMD SimV1 SimV1Writer)
     ENDIF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
     SET(OPTIONAL_DATABASE_PLUGINS
+        AMRTest
         Hex
         Rect
         PICS_Tester

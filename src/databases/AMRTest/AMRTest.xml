@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Plugin name="AMRTest" label="AMRTest" type="database" dbtype="STMD" version="1.0">
+    <FilePatterns> *.amrtest </FilePatterns>
+  </Plugin>
