@@ -400,8 +400,8 @@ QvisClipWindow::CreateWindowContents()
     
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlaneNone);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane1);
-    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane3);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane2);
+    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane3);
     
     planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlaneNone,0);
     planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane1,1);
