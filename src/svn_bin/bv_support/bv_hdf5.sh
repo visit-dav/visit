@@ -137,6 +137,58 @@ function bv_hdf5_dry_run
   fi
 }
 
+function apply_hdf5_187_188_patch
+{
+    info "Patching hdf5"
+    patch -p0 << \EOF
+diff -c tools/lib/h5diff.c.orig tools/lib/h5diff.c
+*** tools/lib/h5diff.c.orig     2013-11-13 08:14:48.924716921 -0800
+--- tools/lib/h5diff.c  2013-11-13 08:15:28.066716686 -0800
+***************
+*** 635,641 ****
+      char         filenames[2][MAX_FILENAME];
+      hsize_t      nfound = 0;
+      int i;
+!     //int i1, i2;
+      int l_ret;
+      const char * obj1fullname = NULL;
+      const char * obj2fullname = NULL;
+--- 635,641 ----
+      char         filenames[2][MAX_FILENAME];
+      hsize_t      nfound = 0;
+      int i;
+!     /* int i1, i2; */
+      int l_ret;
+      const char * obj1fullname = NULL;
+      const char * obj2fullname = NULL;
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "HDF5 patch failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_hdf5_patch
+{
+    if [[ "${HDF5_VERSION}" == 1.8.7 ]] ; then
+        apply_hdf5_187_188_patch
+        if [[ $? != 0 ]]; then
+            return 1
+        fi
+    else
+        if [[ "${HDF5_VERSION}" == 1.8.8 ]] ; then
+            apply_hdf5_187_188_patch
+            if [[ $? != 0 ]]; then
+                return 1
+            fi
+        fi
+    fi
+
+    return 0
+}
+
 # *************************************************************************** #
 #                          Function 8.1, build_hdf5                           #
 # *************************************************************************** #
@@ -154,8 +206,12 @@ function build_hdf5
     fi
 
     #
-    info "Configuring HDF5 . . ."
     cd $HDF5_BUILD_DIR || error "Can't cd to HDF5 build dir."
+    apply_hdf5_patch
+    if [[ $? != 0 ]]; then
+        warn "Patch failed, but continuing."
+    fi
+    info "Configuring HDF5 . . ."
     cf_darwin=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH

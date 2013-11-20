@@ -1,8 +1,8 @@
-#/home/biagas2/visit/thirdparty_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake
+#/home/biagas2/visit/thirdparty/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit2_6_0 generated host.cmake
-## created: Mon Nov 12 15:49:44 PST 2012
-## system: Linux beetlehunter 2.6.32-279.2.1.el6.x86_64 #1 SMP Thu Jul 5 21:08:58 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_7_0 generated host.cmake
+## created: Tue Nov 19 15:20:06 PST 2013
+## system: Linux beetlehunter 2.6.32-358.6.1.el6.x86_64 #1 SMP Fri Mar 29 16:51:51 EDT 2013 x86_64 x86_64 x86_64 GNU/Linux
 ## by: biagas2
 
 ##
@@ -15,8 +15,14 @@ SET(VISITARCH linux-x86_64_gcc-4.4)
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+
+##
+## VisIt Thread Option
+##
+VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
+
 VISIT_OPTION_DEFAULT(DEBUG_MEMORY_LEAKS true TYPE BOOL)
 
 ##############################################################
@@ -35,7 +41,7 @@ VISIT_OPTION_DEFAULT(DEBUG_MEMORY_LEAKS true TYPE BOOL)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.3/linux-x86_64_gcc-4.4)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.5/linux-x86_64_gcc-4.4)
 
 ##
 ## Mesa
