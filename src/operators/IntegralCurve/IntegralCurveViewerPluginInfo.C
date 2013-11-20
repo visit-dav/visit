@@ -302,3 +302,4 @@ IntegralCurveViewerPluginInfo::XPMIconData() const
 {
     return IntegralCurve_xpm;
 }
+

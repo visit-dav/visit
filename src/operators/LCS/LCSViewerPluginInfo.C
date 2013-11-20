@@ -232,13 +232,13 @@ LCSViewerPluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
 
 std::string
 LCSViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
-                                                const ViewerPlot *plot)
+                                               const ViewerPlot *plot)
 {
     LCSAttributes *atts_in = (LCSAttributes *)atts;
 
     const char numTypes = 3;
     const char *typeString[2][3] = { { "FTLE", "FDLE", "FSLE" },
-                                     { "Time", "Arc length", "Ave. dist. from sedd" } };
+                                     { "Time", "Arc length", "Ave. dist. from seed" } };
 
     std::string var = plot->GetVariableName();
 

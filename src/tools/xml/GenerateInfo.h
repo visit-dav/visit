@@ -218,6 +218,10 @@
 //   Brad Whitlock, Mon Nov 21 10:20:04 PST 2011
 //   Use a macro to create the plugin version symbol.
 //
+//   Kathleen Biagas, Wed Nov 20 13:24:29 PST 2013
+//   Ensure GetCreatedExpressions logic to use expression vars is applied only
+//   when needed.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -1387,17 +1391,21 @@ class InfoGeneratorPlugin : public Plugin
                     AddExpressionFromMD(c, name, outExprTypes, QString("Tensor"), QString("Tensors"));
                 if (doMaterial || doSubset || doSpecies || doCurve || doLabel || doArray)
                     cerr << "Unsupported variable type for creating an expression.  Contact a VisIt developer." << endl;
-                c << "    const ExpressionList &oldEL = md->GetExprList();" << endl;
-                c << "    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)" << endl;
-                c << "    {" << endl;
-                c << "        const Expression &e = oldEL.GetExpressions(i);" << endl;
-                if (doScalar)
-                    AddExpressionFromExpr(c, name, outExprTypes, QString("ScalarMeshVar"));
-                if (doVector)
-                    AddExpressionFromExpr(c, name, outExprTypes, QString("VectorMeshVar"));
-                if (doTensor || doSymmTensor)
-                    AddExpressionFromExpr(c, name, outExprTypes, QString("TensorMeshVar"));
-                c << "    }" << endl;
+               
+                if (doScalar || doVector || doTensor || doSymmTensor)
+                { 
+                    c << "    const ExpressionList &oldEL = md->GetExprList();" << endl;
+                    c << "    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)" << endl;
+                    c << "    {" << endl;
+                    c << "        const Expression &e = oldEL.GetExpressions(i);" << endl;
+                    if (doScalar)
+                        AddExpressionFromExpr(c, name, outExprTypes, QString("ScalarMeshVar"));
+                    if (doVector)
+                        AddExpressionFromExpr(c, name, outExprTypes, QString("VectorMeshVar"));
+                    if (doTensor || doSymmTensor)
+                        AddExpressionFromExpr(c, name, outExprTypes, QString("TensorMeshVar"));
+                    c << "    }" << endl;
+                } 
                 c << "    return el;" << endl;
                 c << "}" << endl;
                 c << endl;

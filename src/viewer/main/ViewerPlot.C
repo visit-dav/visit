@@ -1610,6 +1610,9 @@ ViewerPlot::GetExpressions() const
 //    Hank Childs, Thu Dec 30 12:56:21 PST 2010
 //    Add support for operator expressions from scalars, vectors, tensors, etc.
 //
+//    Kathleen Biagas, Wed Nov 20 13:28:44 PST 2013
+//    Delete the operator created expression list.
+//
 // ****************************************************************************
 
 bool
@@ -1778,6 +1781,7 @@ ViewerPlot::SetVariableName(const std::string &name)
                     }
                 }
             }
+            delete exprs;
         }
     }
 

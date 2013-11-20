@@ -2555,6 +2555,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Brad Whitlock, Wed Jun 27 10:36:47 PDT 2012
 //    Add the operator before updating the plot list.
 //
+//    Kathleen Biagas, Wed Nov 20 13:26:45 PST 2013
+//    Delete the operatored created expression list.
+//
 // ****************************************************************************
 
 int
@@ -2689,33 +2692,35 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
         CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
 
         ExpressionList *exprs = info->GetCreatedExpressions(&md2);
-        if (exprs == NULL)
-            continue;
-        for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
+        if (exprs != NULL)
         {
-            Expression expr = exprs->GetExpressions(k);
-            if (var == expr.GetName())
+            for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
             {
-                if (expr.GetFromOperator()) // should always be true
+                Expression expr = exprs->GetExpressions(k);
+                if (var == expr.GetName())
                 {
-                    // See if it already has the operator
-                    int nOps = newPlot->GetNOperators();
-                    bool hasAlready = false;
-                    for (int opId = 0 ; opId < nOps ; opId++)
+                    if (expr.GetFromOperator()) // should always be true
                     {
-                        ViewerOperator *op = newPlot->GetOperator(opId);
-                        if (op->GetPluginID() == id)
-                            hasAlready = true;
-                    }
+                        // See if it already has the operator
+                        int nOps = newPlot->GetNOperators();
+                        bool hasAlready = false;
+                        for (int opId = 0 ; opId < nOps ; opId++)
+                        {
+                            ViewerOperator *op = newPlot->GetOperator(opId);
+                            if (op->GetPluginID() == id)
+                                hasAlready = true;
+                        }
 
-                    if (!hasAlready)
-                    {
-                        newPlot->AddOperator(j, true);
-                        newPlot->SetExpanded(true);
+                        if (!hasAlready)
+                        {
+                            newPlot->AddOperator(j, true);
+                            newPlot->SetExpanded(true);
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+            delete exprs; 
         }
     }
 
@@ -8049,6 +8054,9 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 //   Do not set operator attributes from the expression. This was for DataBinning
 //   and I moved the code into the viewer plugin info.
 //
+//   Kathleen Biagas, Wed Nov 20 13:27:19 PST 2013
+//   Delete the operator-created exression list.
+//
 // ****************************************************************************
 
 void
@@ -8146,6 +8154,7 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
                     exp.SetFromOperator(true);
                     newList.AddExpressions(exp);
                 }
+                delete exprs;
             }
         }
     }
