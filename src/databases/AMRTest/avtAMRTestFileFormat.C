@@ -39,7 +39,36 @@
 // ***************************************************************************
 //                            avtAMRTestFileFormat.C                          
 //
-//  Purpose:  Sample database that generates AMR data.
+//  Purpose: Sample database that generates AMR data.
+//
+//  Notes:
+//    The reader generates a 2D 50 x 50 top level mesh that extends from
+//    0 to 50. in both the x and y directions. The refinement ratios are
+//    2 in both the x and y directions. The domains are numbered as follows:
+//
+//    Level 0:                       0
+//
+//    Level 1:                    3  4
+//                                1  2
+//
+//    Level 2:             17 18 19 20
+//                         13 14 15 16
+//                          9 10 11 12
+//                          5  6  7  8
+//
+//    Level 3: 77 78 79 80 81 82 83 84
+//             69 70 71 72 73 74 75 76
+//             61 62 63 64 65 66 67 68
+//             53 54 55 56 57 58 59 60
+//             45 46 47 48 49 50 51 52
+//             37 38 39 40 41 42 43 44
+//             29 30 31 32 33 34 35 36
+//             21 22 23 24 25 26 27 28
+//
+//    This results in: domain 0 having children 1, 2, 3, 4
+//                     domain 1 having children 5, 6, 9, 10
+//                     domain 2 having children 7, 8, 11, 12
+//                                  ...
 //
 //  Programmer:  Eric Brugger
 //  Creation:    November 20, 2013
@@ -61,6 +90,24 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 
+// ****************************************************************************
+// Method: avtAMRTestFileFormat::GetLevelAndLocalPatch
+//
+// Purpose:
+//   Get the level and local patch numbers given a domain number.
+//
+// Arguments:
+//   domain     : The domain.
+//   level      : The level associated with the domain.
+//   localPatch : The local patch number associated with the domain.
+//
+// Programmer: Eric Brugger
+// Creation:   November 20, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void
 avtAMRTestFileFormat::GetLevelAndLocalPatch(int domain, int &level,
     int &localPatch)
@@ -71,6 +118,19 @@ avtAMRTestFileFormat::GetLevelAndLocalPatch(int domain, int &level,
     level --;
     localPatch = domain - patchOffsetForLevel[level];
 }
+
+// ****************************************************************************
+// Method: avtAMRTestFileFormat::PopulateDomainNesting
+//
+// Purpose:
+//   Populate the domain nesting structure and put it in the cache.
+//
+// Programmer: Eric Brugger
+// Creation:   November 20, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 avtAMRTestFileFormat::PopulateDomainNesting()
@@ -151,6 +211,16 @@ avtAMRTestFileFormat::PopulateDomainNesting()
                         0, -1, vr);
 }
 
+// ****************************************************************************
+//  Method: avtAMRTestFileFormat constructor
+//
+//  Programmer: Eric Brugger
+//  Creation:   November 20, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 avtAMRTestFileFormat::avtAMRTestFileFormat(const char *fname)
     : avtSTMDFileFormat(&fname, 1)
 {
@@ -178,9 +248,37 @@ avtAMRTestFileFormat::avtAMRTestFileFormat(const char *fname)
         totalPatches += int(pow(2., 2.*double(i)));
 }
 
+// ****************************************************************************
+//  Method: avtAMRTestFileFormat destructor
+//
+//  Programmer: Eric Brugger
+//  Creation:   November 20, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 avtAMRTestFileFormat::~avtAMRTestFileFormat()
 {
 }
+
+// ****************************************************************************
+//  Method: avtAMRTestFileFormat::GetMesh
+//
+//  Purpose:
+//      Gets the mesh associated with this file. The mesh is returned as a
+//      vtkRectilinearGrid.
+//
+//  Arguments:
+//      domain    : The domain.
+//      name      : The name of the mesh of interest. This is ignored.
+//
+//  Programmer: Eric Brugger
+//  Creation:   November 20, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
 
 vtkDataSet *
 avtAMRTestFileFormat::GetMesh(int domain, const char *name)
@@ -249,6 +347,23 @@ avtAMRTestFileFormat::GetMesh(int domain, const char *name)
     return rg;
 }
 
+// ****************************************************************************
+//  Method: avtAMRTestFileFormat::GetVar
+//
+//  Purpose:
+//      Gets a scalar variable associated with this file.
+//
+//  Arguments:
+//      domain   : The index of the domain.
+//      name     : The name of the variable requested. This is ignored.
+//
+//  Programmer: Eric Brugger
+//  Creation:   November 20, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 vtkDataArray *
 avtAMRTestFileFormat::GetVar(int domain, const char *name)
 {
@@ -291,6 +406,20 @@ avtAMRTestFileFormat::GetVar(int domain, const char *name)
 
     return scalars;
 }
+
+// ****************************************************************************
+//  Method: avtAMRTestFileFormat::PopulateDatabaseMetaData
+//
+//  Purpose:
+//      Return the database meta-data object. It is the table of contents
+//      for the file. The "file" contains a single mesh and a single variable.
+//
+//  Programmer: Eric Brugger
+//  Creation:   November 20, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
 
 void
 avtAMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
