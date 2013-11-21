@@ -55,7 +55,6 @@
 #include <vtkCellType.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkPolyData.h>
@@ -2369,6 +2368,10 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Gunther H. Weber, Wed Nov 20 15:49:21 PST 2013
+//    Return coordinates as double instead of float (consistent with data
+//    values).
+//
 // ****************************************************************************
 
 // Comaprator class used to sort an array with integers so that the permutation
@@ -2435,15 +2438,15 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
         rg->SetDimensions(dims);
 
-        vtkFloatArray  *xcoord = vtkFloatArray::New();
-        vtkFloatArray  *ycoord = vtkFloatArray::New();
-        vtkFloatArray  *zcoord = vtkFloatArray::New();
+        vtkDoubleArray *xcoord = vtkDoubleArray::New();
+        vtkDoubleArray *ycoord = vtkDoubleArray::New();
+        vtkDoubleArray *zcoord = vtkDoubleArray::New();
 
         xcoord->SetNumberOfTuples(dims[0]);
         ycoord->SetNumberOfTuples(dims[1]);
         zcoord->SetNumberOfTuples(dims[2]);
 
-        float *ptr = xcoord->GetPointer(0);
+        double *ptr = xcoord->GetPointer(0);
         if (!allowedToUseGhosts)
             ptr[0] = probLo[0] + lowI[patch]*dx[level][0]*aspectRatio[0];
         else
