@@ -102,7 +102,7 @@ cleanPluginDir () {
 }
 
 #
-# Buil the README file to be included in the tarball
+# Build the README file to be included in the tarball
 #
 makeInstructionsFile () {
     typeset upperPluginName=`echo $pluginName | tr \[a-z\] \[A-Z\]`
@@ -164,6 +164,8 @@ cat >> $1 <<- EOF
         % make clean
 
     If you have problems, please read about more details here...
+    http://visitusers.org/index.php?title=Building_plugins_using_CMake
+    and here...
     http://visitusers.org/index.php?title=DB_plugins
     If you still have problems, email mailto:visit-users@ornl.gov
 
