@@ -75,6 +75,10 @@
 #    Kathleen Biagas, Thu June 14 15:53:12 MST 2012 
 #    Add target for pyside on windows.
 #
+#    Gunther H. Weber, Thu Nov 21 18:26:51 PST 2013
+#    Use ${PYSIDE_PYTHONPATH} (set by findpackage PySide) instead of 
+#    ${VISIT_PYSIDE_DIR}/lib/site-packages to support system PySide installs
+#
 #----------------------------------------------------------------------------
 
 IF(MESA_FOUND)
@@ -221,7 +225,7 @@ ENDIF(VISIT_PYTHON_FILTERS)
 IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
     MESSAGE(STATUS "Adding PySide to lib/site-packages/")
     IF (NOT WIN32)
-        FILE(GLOB PYSIDE_MODULE_ITEMS "${VISIT_PYSIDE_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
+        FILE(GLOB PYSIDE_MODULE_ITEMS "${PYSIDE_PYTHONPATH}/*")
         FOREACH(ITM ${PYSIDE_MODULE_ITEMS})
             GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
             GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
@@ -241,9 +245,9 @@ IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
         ADD_CUSTOM_TARGET(pyside_modules ALL)
         ADD_CUSTOM_COMMAND(TARGET pyside_modules POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide
+                    ${PYSIDE_PYTHONPATH}/PySide
                     ${VISIT_LIBRARY_DIR}/site-packages/PySide
-            COMMENT "Copying ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide to ${VISIT_LIBRARY_DIR}/site-packages/PySide"
+            COMMENT "Copying ${PYSIDE_PYTHONPATH}/PySide to ${VISIT_LIBRARY_DIR}/site-packages/PySide"
             )
     ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
