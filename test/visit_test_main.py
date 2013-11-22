@@ -568,7 +568,7 @@ def JSONTextTestResult(case_name,status,nchanges,nlines,failed,skip):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def HTMLTextTestResult(case_name,stats,nchanges,nlines,failed,skip):
+def HTMLTextTestResult(case_name,status,nchanges,nlines,failed,skip):
     """
     Creates html entry for the result of a text based test.
     """
@@ -587,6 +587,71 @@ def HTMLTextTestResult(case_name,stats,nchanges,nlines,failed,skip):
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, case_name, case_name))
     html.write("  <td colspan=5 align=center>%d modifications totalling %d lines</td>\n" % (nchanges,nlines))
+    html.write(" </tr>\n")
+
+# ----------------------------------------------------------------------------
+#  Method: LogAssertTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Nov 22 2013
+# ----------------------------------------------------------------------------
+def LogAssertTestResult(case_name,assert_check,result,details):
+    """
+    Log the result of an assert based test.
+    """
+    details = str(details)
+    if not result:
+        if skip:
+            status = "skipped"
+        else:
+            status = "failed"
+    else:
+        status = "passed"
+    # write result
+    Log("    Test case '%s' (Assert: %s) %s" % (case_name,
+                                                assert_check,
+                                                status.upper()))
+    JSONTextTestResult(case_name,status,assert_check,result,details)
+    HTMLTextTestResult(case_name,status,assert_check,result,details)
+
+# ----------------------------------------------------------------------------
+#  Method: JSONAssertTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Nov 22 2013
+# ----------------------------------------------------------------------------
+def JSONTextTestResult(case_name,status,assert_check,result,details):
+    res = json_results_load()
+    t_res = {'name':         case_name,
+             'status':       status,
+             'assert_check': assert_check,
+             'details':      details}
+    res["sections"][-1]["cases"].append(t_res)
+    json_results_save(res)
+
+
+# ----------------------------------------------------------------------------
+#  Method: HTMLTextTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Nov 22 2013
+# ----------------------------------------------------------------------------
+def HTMLTextTestResult(case_name,status,assert_check,result,details):
+    """
+    Creates html entry for the result of an assert based test.
+    """
+    # TODO use template file
+    html = html_output_file_handle()
+    # write to the html file
+    color = "#00ff00"
+    if not result:
+        if skip:
+            color = "#0000ff"
+        else:
+            color = "#ff0000"
+    html.write(" <tr>\n")
+    html.write("  <td bgcolor=\"%s\">%s</td>\n" % (color, case_name))
+    html.write("  <td colspan=5 align=center> %s : %s (Assert_%s)</td>\n" % (details,str(result),assert_check))
     html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
@@ -1343,6 +1408,95 @@ def TestText(case_name, inText):
     # set error codes
     if failed and not skip:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+
+# ----------------------------------------------------------------------------
+# Function: AssertTrue
+#
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+def AssertTrue(case_name,val):
+    CheckInteractive(case_name)
+    result = val == True
+    LogAssertTestResult(case_name,"True",result,val)
+
+# ----------------------------------------------------------------------------
+# Function: AssertTrue
+#
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+def AssertFalse(case_name,val):
+    CheckInteractive(case_name)
+    result = val == False
+    LogAssertTestResult(case_name,"False",result,val)
+
+# ----------------------------------------------------------------------------
+# Function: AssertEqual
+#
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+def AssertEqual(case_name,val_a,val_b):
+    CheckInteractive(case_name)
+    result = val_a == val_b
+    LogAssertTestResult(case_name,"Equal",result,
+                        "%s == %s" % (str(val_a),str(val_b)))
+
+# ----------------------------------------------------------------------------
+# Function: AssertGT
+#
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+def AssertGT(case_name,val_a,val_b):
+    CheckInteractive(case_name)
+    result = val_a > val_b
+    LogAssertTestResult(case_name,"Greater than",
+                        result,"%s > %s" % (str(val_a),str(val_b)))
+
+# ----------------------------------------------------------------------------
+# Function: AssertGTE
+#
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+def AssertGTE(case_name,val_a,val_b):
+    CheckInteractive(case_name)
+    result = val_a >= val_b
+    LogAssertTestResult(case_name,"Greater than or Equal",
+                       result,"%s >= %s" % (str(val_a),str(val_b)))
+
+# ----------------------------------------------------------------------------
+# Function: AssertLT
+#
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+def AssertLT(case_name,val_a,val_b):
+    CheckInteractive(case_name)
+    result = val_a < val_b
+    LogAssertTestResult(case_name,"Less than",
+                        result,"%s < %s" % (str(val_a),str(val_b)))
+
+# ----------------------------------------------------------------------------
+# Function: AssertLTE
+#
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+def AssertLTE(case_name,val_a,val_b):
+    CheckInteractive(case_name)
+    result = val_a <= val_b
+    LogAssertTestResult(case_name,"Less than or Equal",
+                        result,"%s <= %s" % (str(val_a),str(val_b)))
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
