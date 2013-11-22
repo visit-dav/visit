@@ -321,6 +321,25 @@ def test3():
     DeleteAllPlots()
     CloseDatabase(data_path(db))
 
+    TestSection("Basic NETCDF reader with zone-centered data")
+    swa = SaveWindowAttributes()
+    swa.width = 1000 
+    swa.height = 1000
+    swa.screenCapture = 0
+    db = "netcdf_test_data/oase-mapdata.nc"
+    OpenDatabase(data_path(db))
+    AddPlot("Pseudocolor", "national_rivers_2D")
+    DrawPlots()
+    ResetView()
+    Test("netcdf_3_09", swa)
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", "as_zonal/national_rivers_2D")
+    DrawPlots()
+    ResetView()
+    Test("netcdf_3_10", swa)
+    DeleteAllPlots()
+    CloseDatabase(data_path(db))
+
 def test4():
     TestSection("CCSM reader")
     db = "netcdf_test_data/tas_mean_T63.nc"
