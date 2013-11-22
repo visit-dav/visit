@@ -110,3 +110,16 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ## PySide
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR /opt/local)
+SET(SHIBOKEN_PYTHON_SUFFIX "-python2.7")
+SET(SHIBOKEN_INCLUDE_DIR "/opt/local/include/shiboken-2.7")
+SET(SHIBOKEN_LIBRARY "/opt/local/lib/libshiboken-python2.7.dylib")
+SET(SHIBOKEN_PYTHON_INCLUDE_DIR "/opt/local/include/shiboken-2.7")
+SET(SHIBOKEN_PYTHON_INTERPRETER "/opt/local/bin/python2.7")
+SET(SHIBOKEN_PYTHON_LIBRARIES "-undefined dynamic_lookup")
+SET(SHIBOKEN_BINARY "/opt/local/bin/shiboken-2.7")
+SET(Shiboken_FOUND 1)
+SET(PYSIDE_INCLUDE_DIR "/opt/local/include/PySide-2.7")
+SET(PYSIDE_LIBRARY "/opt/local/lib/libpyside-python2.7.dylib")
+SET(PYSIDE_PYTHONPATH "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages")
+SET(PYSIDE_TYPESYSTEMS "/opt/local/share/PySide-2.7/typesystems")
+SET(PySide_FOUND 1)
