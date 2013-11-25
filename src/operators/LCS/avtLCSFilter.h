@@ -150,6 +150,11 @@ protected:
     void          ComputeFTLE( vtkDataArray* jacobian[3], 
                                vtkDataArray* result );
 
+    void          ComputeFLLE( vtkDataArray *times,
+                               vtkDataArray *lengths,
+                               vtkDataArray *exponents,
+                               int x_max, int y_max, int z_max );
+
     // Iterative cacluation methods for FSLE, and similar methods
     bool RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics );
     bool NativeMeshIterativeCalc( std::vector<avtIntegralCurve*> &ics );
@@ -173,13 +178,16 @@ protected:
                                                int & );
 
     void ComputeFSLE( vtkDataArray* jacobian[3], 
+                      vtkDataArray* dx,
+                      vtkDataArray* dy,
+                      vtkDataArray* dz,
                       vtkDataArray* times,
                       vtkDataArray* lengths,
                       vtkDataArray* result,
                       vtkDataArray* mask,
                       int, int, int );
 
-    bool Value( int x, int y, int z, vtkDataArray *array,
+    double Value( int x, int y, int z, vtkDataArray *array,
                 int x_max, int y_max, int z_max );
     void Increment( int x, int y, int z, vtkDataArray *mask,
                     int x_max, int y_max, int z_max );

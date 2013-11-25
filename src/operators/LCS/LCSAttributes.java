@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class LCSAttributes extends AttributeSubject implements Plugin
 {
-    private static int LCSAttributes_numAdditionalAtts = 40;
+    private static int LCSAttributes_numAdditionalAtts = 42;
 
     // Enum values
     public final static int SOURCETYPE_NATIVEMESH = 0;
@@ -99,6 +99,11 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public final static int OPERATIONTYPE_ARCLENGTH = 2;
     public final static int OPERATIONTYPE_AVERAGEDISTANCEFROMSEED = 3;
 
+    public final static int OPERATORTYPE_BASEVALUE = 0;
+    public final static int OPERATORTYPE_GRADIENT = 1;
+    public final static int OPERATORTYPE_JACOBIAN = 2;
+    public final static int OPERATORTYPE_RATIO = 3;
+
     public final static int TERMINATIONTYPE_TIME = 0;
     public final static int TERMINATIONTYPE_DISTANCE = 1;
     public final static int TERMINATIONTYPE_SIZE = 2;
@@ -129,6 +134,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         operationType = OPERATIONTYPE_LYAPUNOV;
+        operatorType = OPERATORTYPE_BASEVALUE;
         terminationType = TERMINATIONTYPE_TIME;
         terminateBySize = false;
         termSize = 10;
@@ -150,6 +156,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
+        clampLogValues = true;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -187,6 +194,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         operationType = OPERATIONTYPE_LYAPUNOV;
+        operatorType = OPERATORTYPE_BASEVALUE;
         terminationType = TERMINATIONTYPE_TIME;
         terminateBySize = false;
         termSize = 10;
@@ -208,6 +216,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
+        clampLogValues = true;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -250,6 +259,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         integrationDirection = obj.integrationDirection;
         maxSteps = obj.maxSteps;
         operationType = obj.operationType;
+        operatorType = obj.operatorType;
         terminationType = obj.terminationType;
         terminateBySize = obj.terminateBySize;
         termSize = obj.termSize;
@@ -272,6 +282,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[2] = obj.velocitySource[2];
 
         integrationType = obj.integrationType;
+        clampLogValues = obj.clampLogValues;
         parallelizationAlgorithmType = obj.parallelizationAlgorithmType;
         maxProcessCount = obj.maxProcessCount;
         maxDomainCacheSize = obj.maxDomainCacheSize;
@@ -333,6 +344,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
                 (integrationDirection == obj.integrationDirection) &&
                 (maxSteps == obj.maxSteps) &&
                 (operationType == obj.operationType) &&
+                (operatorType == obj.operatorType) &&
                 (terminationType == obj.terminationType) &&
                 (terminateBySize == obj.terminateBySize) &&
                 (termSize == obj.termSize) &&
@@ -351,6 +363,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
                 (fieldConstant == obj.fieldConstant) &&
                 velocitySource_equal &&
                 (integrationType == obj.integrationType) &&
+                (clampLogValues == obj.clampLogValues) &&
                 (parallelizationAlgorithmType == obj.parallelizationAlgorithmType) &&
                 (maxProcessCount == obj.maxProcessCount) &&
                 (maxDomainCacheSize == obj.maxDomainCacheSize) &&
@@ -454,100 +467,106 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         Select(8);
     }
 
+    public void SetOperatorType(int operatorType_)
+    {
+        operatorType = operatorType_;
+        Select(9);
+    }
+
     public void SetTerminationType(int terminationType_)
     {
         terminationType = terminationType_;
-        Select(9);
+        Select(10);
     }
 
     public void SetTerminateBySize(boolean terminateBySize_)
     {
         terminateBySize = terminateBySize_;
-        Select(10);
+        Select(11);
     }
 
     public void SetTermSize(double termSize_)
     {
         termSize = termSize_;
-        Select(11);
+        Select(12);
     }
 
     public void SetTerminateByDistance(boolean terminateByDistance_)
     {
         terminateByDistance = terminateByDistance_;
-        Select(12);
+        Select(13);
     }
 
     public void SetTermDistance(double termDistance_)
     {
         termDistance = termDistance_;
-        Select(13);
+        Select(14);
     }
 
     public void SetTerminateByTime(boolean terminateByTime_)
     {
         terminateByTime = terminateByTime_;
-        Select(14);
+        Select(15);
     }
 
     public void SetTermTime(double termTime_)
     {
         termTime = termTime_;
-        Select(15);
+        Select(16);
     }
 
     public void SetMaxStepLength(double maxStepLength_)
     {
         maxStepLength = maxStepLength_;
-        Select(16);
+        Select(17);
     }
 
     public void SetLimitMaximumTimestep(boolean limitMaximumTimestep_)
     {
         limitMaximumTimestep = limitMaximumTimestep_;
-        Select(17);
+        Select(18);
     }
 
     public void SetMaxTimeStep(double maxTimeStep_)
     {
         maxTimeStep = maxTimeStep_;
-        Select(18);
+        Select(19);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(19);
+        Select(20);
     }
 
     public void SetAbsTolSizeType(int absTolSizeType_)
     {
         absTolSizeType = absTolSizeType_;
-        Select(20);
+        Select(21);
     }
 
     public void SetAbsTolAbsolute(double absTolAbsolute_)
     {
         absTolAbsolute = absTolAbsolute_;
-        Select(21);
+        Select(22);
     }
 
     public void SetAbsTolBBox(double absTolBBox_)
     {
         absTolBBox = absTolBBox_;
-        Select(22);
+        Select(23);
     }
 
     public void SetFieldType(int fieldType_)
     {
         fieldType = fieldType_;
-        Select(23);
+        Select(24);
     }
 
     public void SetFieldConstant(double fieldConstant_)
     {
         fieldConstant = fieldConstant_;
-        Select(24);
+        Select(25);
     }
 
     public void SetVelocitySource(double[] velocitySource_)
@@ -555,7 +574,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = velocitySource_[0];
         velocitySource[1] = velocitySource_[1];
         velocitySource[2] = velocitySource_[2];
-        Select(25);
+        Select(26);
     }
 
     public void SetVelocitySource(double e0, double e1, double e2)
@@ -563,91 +582,97 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = e0;
         velocitySource[1] = e1;
         velocitySource[2] = e2;
-        Select(25);
+        Select(26);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(26);
+        Select(27);
+    }
+
+    public void SetClampLogValues(boolean clampLogValues_)
+    {
+        clampLogValues = clampLogValues_;
+        Select(28);
     }
 
     public void SetParallelizationAlgorithmType(int parallelizationAlgorithmType_)
     {
         parallelizationAlgorithmType = parallelizationAlgorithmType_;
-        Select(27);
+        Select(29);
     }
 
     public void SetMaxProcessCount(int maxProcessCount_)
     {
         maxProcessCount = maxProcessCount_;
-        Select(28);
+        Select(30);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(29);
+        Select(31);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(30);
+        Select(32);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(31);
+        Select(33);
     }
 
     public void SetPathlinesOverrideStartingTimeFlag(boolean pathlinesOverrideStartingTimeFlag_)
     {
         pathlinesOverrideStartingTimeFlag = pathlinesOverrideStartingTimeFlag_;
-        Select(32);
+        Select(34);
     }
 
     public void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_)
     {
         pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
-        Select(33);
+        Select(35);
     }
 
     public void SetPathlinesCMFE(int pathlinesCMFE_)
     {
         pathlinesCMFE = pathlinesCMFE_;
-        Select(34);
+        Select(36);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(35);
+        Select(37);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(36);
+        Select(38);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(37);
+        Select(39);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(38);
+        Select(40);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(39);
+        Select(41);
     }
 
     // Property getting methods
@@ -660,6 +685,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public int      GetIntegrationDirection() { return integrationDirection; }
     public int      GetMaxSteps() { return maxSteps; }
     public int      GetOperationType() { return operationType; }
+    public int      GetOperatorType() { return operatorType; }
     public int      GetTerminationType() { return terminationType; }
     public boolean  GetTerminateBySize() { return terminateBySize; }
     public double   GetTermSize() { return termSize; }
@@ -678,6 +704,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public double   GetFieldConstant() { return fieldConstant; }
     public double[] GetVelocitySource() { return velocitySource; }
     public int      GetIntegrationType() { return integrationType; }
+    public boolean  GetClampLogValues() { return clampLogValues; }
     public int      GetParallelizationAlgorithmType() { return parallelizationAlgorithmType; }
     public int      GetMaxProcessCount() { return maxProcessCount; }
     public int      GetMaxDomainCacheSize() { return maxDomainCacheSize; }
@@ -714,66 +741,70 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(8, buf))
             buf.WriteInt(operationType);
         if(WriteSelect(9, buf))
-            buf.WriteInt(terminationType);
+            buf.WriteInt(operatorType);
         if(WriteSelect(10, buf))
-            buf.WriteBool(terminateBySize);
+            buf.WriteInt(terminationType);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(termSize);
+            buf.WriteBool(terminateBySize);
         if(WriteSelect(12, buf))
-            buf.WriteBool(terminateByDistance);
+            buf.WriteDouble(termSize);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(termDistance);
+            buf.WriteBool(terminateByDistance);
         if(WriteSelect(14, buf))
-            buf.WriteBool(terminateByTime);
+            buf.WriteDouble(termDistance);
         if(WriteSelect(15, buf))
-            buf.WriteDouble(termTime);
+            buf.WriteBool(terminateByTime);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(maxStepLength);
+            buf.WriteDouble(termTime);
         if(WriteSelect(17, buf))
-            buf.WriteBool(limitMaximumTimestep);
+            buf.WriteDouble(maxStepLength);
         if(WriteSelect(18, buf))
-            buf.WriteDouble(maxTimeStep);
+            buf.WriteBool(limitMaximumTimestep);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteDouble(maxTimeStep);
         if(WriteSelect(20, buf))
-            buf.WriteInt(absTolSizeType);
+            buf.WriteDouble(relTol);
         if(WriteSelect(21, buf))
-            buf.WriteDouble(absTolAbsolute);
+            buf.WriteInt(absTolSizeType);
         if(WriteSelect(22, buf))
-            buf.WriteDouble(absTolBBox);
+            buf.WriteDouble(absTolAbsolute);
         if(WriteSelect(23, buf))
-            buf.WriteInt(fieldType);
+            buf.WriteDouble(absTolBBox);
         if(WriteSelect(24, buf))
-            buf.WriteDouble(fieldConstant);
+            buf.WriteInt(fieldType);
         if(WriteSelect(25, buf))
-            buf.WriteDoubleArray(velocitySource);
+            buf.WriteDouble(fieldConstant);
         if(WriteSelect(26, buf))
-            buf.WriteInt(integrationType);
+            buf.WriteDoubleArray(velocitySource);
         if(WriteSelect(27, buf))
-            buf.WriteInt(parallelizationAlgorithmType);
+            buf.WriteInt(integrationType);
         if(WriteSelect(28, buf))
-            buf.WriteInt(maxProcessCount);
+            buf.WriteBool(clampLogValues);
         if(WriteSelect(29, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(parallelizationAlgorithmType);
         if(WriteSelect(30, buf))
-            buf.WriteInt(workGroupSize);
+            buf.WriteInt(maxProcessCount);
         if(WriteSelect(31, buf))
-            buf.WriteBool(pathlines);
+            buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(32, buf))
-            buf.WriteBool(pathlinesOverrideStartingTimeFlag);
+            buf.WriteInt(workGroupSize);
         if(WriteSelect(33, buf))
-            buf.WriteDouble(pathlinesOverrideStartingTime);
+            buf.WriteBool(pathlines);
         if(WriteSelect(34, buf))
-            buf.WriteInt(pathlinesCMFE);
+            buf.WriteBool(pathlinesOverrideStartingTimeFlag);
         if(WriteSelect(35, buf))
-            buf.WriteBool(forceNodeCenteredData);
+            buf.WriteDouble(pathlinesOverrideStartingTime);
         if(WriteSelect(36, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteInt(pathlinesCMFE);
         if(WriteSelect(37, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(38, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(39, buf))
+            buf.WriteBool(issueStiffnessWarnings);
+        if(WriteSelect(40, buf))
+            buf.WriteBool(issueCriticalPointsWarnings);
+        if(WriteSelect(41, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -809,96 +840,102 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             SetOperationType(buf.ReadInt());
             break;
         case 9:
-            SetTerminationType(buf.ReadInt());
+            SetOperatorType(buf.ReadInt());
             break;
         case 10:
-            SetTerminateBySize(buf.ReadBool());
+            SetTerminationType(buf.ReadInt());
             break;
         case 11:
-            SetTermSize(buf.ReadDouble());
+            SetTerminateBySize(buf.ReadBool());
             break;
         case 12:
-            SetTerminateByDistance(buf.ReadBool());
+            SetTermSize(buf.ReadDouble());
             break;
         case 13:
-            SetTermDistance(buf.ReadDouble());
+            SetTerminateByDistance(buf.ReadBool());
             break;
         case 14:
-            SetTerminateByTime(buf.ReadBool());
+            SetTermDistance(buf.ReadDouble());
             break;
         case 15:
-            SetTermTime(buf.ReadDouble());
+            SetTerminateByTime(buf.ReadBool());
             break;
         case 16:
-            SetMaxStepLength(buf.ReadDouble());
+            SetTermTime(buf.ReadDouble());
             break;
         case 17:
-            SetLimitMaximumTimestep(buf.ReadBool());
+            SetMaxStepLength(buf.ReadDouble());
             break;
         case 18:
-            SetMaxTimeStep(buf.ReadDouble());
+            SetLimitMaximumTimestep(buf.ReadBool());
             break;
         case 19:
-            SetRelTol(buf.ReadDouble());
+            SetMaxTimeStep(buf.ReadDouble());
             break;
         case 20:
-            SetAbsTolSizeType(buf.ReadInt());
+            SetRelTol(buf.ReadDouble());
             break;
         case 21:
-            SetAbsTolAbsolute(buf.ReadDouble());
+            SetAbsTolSizeType(buf.ReadInt());
             break;
         case 22:
-            SetAbsTolBBox(buf.ReadDouble());
+            SetAbsTolAbsolute(buf.ReadDouble());
             break;
         case 23:
-            SetFieldType(buf.ReadInt());
+            SetAbsTolBBox(buf.ReadDouble());
             break;
         case 24:
-            SetFieldConstant(buf.ReadDouble());
+            SetFieldType(buf.ReadInt());
             break;
         case 25:
-            SetVelocitySource(buf.ReadDoubleArray());
+            SetFieldConstant(buf.ReadDouble());
             break;
         case 26:
-            SetIntegrationType(buf.ReadInt());
+            SetVelocitySource(buf.ReadDoubleArray());
             break;
         case 27:
-            SetParallelizationAlgorithmType(buf.ReadInt());
+            SetIntegrationType(buf.ReadInt());
             break;
         case 28:
-            SetMaxProcessCount(buf.ReadInt());
+            SetClampLogValues(buf.ReadBool());
             break;
         case 29:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetParallelizationAlgorithmType(buf.ReadInt());
             break;
         case 30:
-            SetWorkGroupSize(buf.ReadInt());
+            SetMaxProcessCount(buf.ReadInt());
             break;
         case 31:
-            SetPathlines(buf.ReadBool());
+            SetMaxDomainCacheSize(buf.ReadInt());
             break;
         case 32:
-            SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
+            SetWorkGroupSize(buf.ReadInt());
             break;
         case 33:
-            SetPathlinesOverrideStartingTime(buf.ReadDouble());
+            SetPathlines(buf.ReadBool());
             break;
         case 34:
-            SetPathlinesCMFE(buf.ReadInt());
+            SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
             break;
         case 35:
-            SetForceNodeCenteredData(buf.ReadBool());
+            SetPathlinesOverrideStartingTime(buf.ReadDouble());
             break;
         case 36:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetPathlinesCMFE(buf.ReadInt());
             break;
         case 37:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 38:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 39:
+            SetIssueStiffnessWarnings(buf.ReadBool());
+            break;
+        case 40:
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            break;
+        case 41:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -946,6 +983,16 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             str = str + "OPERATIONTYPE_ARCLENGTH";
         if(operationType == OPERATIONTYPE_AVERAGEDISTANCEFROMSEED)
             str = str + "OPERATIONTYPE_AVERAGEDISTANCEFROMSEED";
+        str = str + "\n";
+        str = str + indent + "operatorType = ";
+        if(operatorType == OPERATORTYPE_BASEVALUE)
+            str = str + "OPERATORTYPE_BASEVALUE";
+        if(operatorType == OPERATORTYPE_GRADIENT)
+            str = str + "OPERATORTYPE_GRADIENT";
+        if(operatorType == OPERATORTYPE_JACOBIAN)
+            str = str + "OPERATORTYPE_JACOBIAN";
+        if(operatorType == OPERATORTYPE_RATIO)
+            str = str + "OPERATORTYPE_RATIO";
         str = str + "\n";
         str = str + indent + "terminationType = ";
         if(terminationType == TERMINATIONTYPE_TIME)
@@ -1003,6 +1050,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         if(integrationType == INTEGRATIONTYPE_M3DC12DINTEGRATOR)
             str = str + "INTEGRATIONTYPE_M3DC12DINTEGRATOR";
         str = str + "\n";
+        str = str + boolToString("clampLogValues", clampLogValues, indent) + "\n";
         str = str + indent + "parallelizationAlgorithmType = ";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND)
             str = str + "PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND";
@@ -1044,6 +1092,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     private int      integrationDirection;
     private int      maxSteps;
     private int      operationType;
+    private int      operatorType;
     private int      terminationType;
     private boolean  terminateBySize;
     private double   termSize;
@@ -1062,6 +1111,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     private double   fieldConstant;
     private double[] velocitySource;
     private int      integrationType;
+    private boolean  clampLogValues;
     private int      parallelizationAlgorithmType;
     private int      maxProcessCount;
     private int      maxDomainCacheSize;

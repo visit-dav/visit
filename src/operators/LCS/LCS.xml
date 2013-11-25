@@ -52,6 +52,12 @@
         ArcLength
         AverageDistanceFromSeed        
       </Enum>
+      <Enum name="OperatorType">
+        BaseValue
+        Gradient
+        Jacobian
+        Ratio
+      </Enum>
       <Enum name="TerminationType">
         Time
         Distance
@@ -93,6 +99,9 @@
       </Field>
       <Field name="operationType" label="Operation type" type="enum" subtype="OperationType">
         Lyapunov
+      </Field>
+      <Field name="operatorType" label="Operator type" type="enum" subtype="OperatorType">
+        BaseValue
       </Field>
       <Field name="terminationType" label="Termination type" type="enum" subtype="TerminationType">
         Time
@@ -149,6 +158,9 @@
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince
+      </Field>
+      <Field name="clampLogValues" label="Clamp log values" type="bool">
+        true
       </Field>
       <Field name="parallelizationAlgorithmType" label="Parallelization algorithm type" type="enum" subtype="ParallelizationAlgorithmType">
         VisItSelects

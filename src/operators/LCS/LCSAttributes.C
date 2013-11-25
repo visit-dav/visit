@@ -343,6 +343,44 @@ LCSAttributes::OperationType_FromString(const std::string &s, LCSAttributes::Ope
 }
 
 //
+// Enum conversion methods for LCSAttributes::OperatorType
+//
+
+static const char *OperatorType_strings[] = {
+"BaseValue", "Gradient", "Jacobian", 
+"Ratio"};
+
+std::string
+LCSAttributes::OperatorType_ToString(LCSAttributes::OperatorType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return OperatorType_strings[index];
+}
+
+std::string
+LCSAttributes::OperatorType_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return OperatorType_strings[index];
+}
+
+bool
+LCSAttributes::OperatorType_FromString(const std::string &s, LCSAttributes::OperatorType &val)
+{
+    val = LCSAttributes::BaseValue;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == OperatorType_strings[i])
+        {
+            val = (OperatorType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LCSAttributes::TerminationType
 //
 
@@ -449,6 +487,7 @@ void LCSAttributes::Init()
     integrationDirection = Forward;
     maxSteps = 1000;
     operationType = Lyapunov;
+    operatorType = BaseValue;
     terminationType = Time;
     terminateBySize = false;
     termSize = 10;
@@ -469,6 +508,7 @@ void LCSAttributes::Init()
     velocitySource[1] = 0;
     velocitySource[2] = 0;
     integrationType = DormandPrince;
+    clampLogValues = true;
     parallelizationAlgorithmType = VisItSelects;
     maxProcessCount = 10;
     maxDomainCacheSize = 3;
@@ -521,6 +561,7 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     integrationDirection = obj.integrationDirection;
     maxSteps = obj.maxSteps;
     operationType = obj.operationType;
+    operatorType = obj.operatorType;
     terminationType = obj.terminationType;
     terminateBySize = obj.terminateBySize;
     termSize = obj.termSize;
@@ -542,6 +583,7 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     velocitySource[2] = obj.velocitySource[2];
 
     integrationType = obj.integrationType;
+    clampLogValues = obj.clampLogValues;
     parallelizationAlgorithmType = obj.parallelizationAlgorithmType;
     maxProcessCount = obj.maxProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
@@ -741,6 +783,7 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (integrationDirection == obj.integrationDirection) &&
             (maxSteps == obj.maxSteps) &&
             (operationType == obj.operationType) &&
+            (operatorType == obj.operatorType) &&
             (terminationType == obj.terminationType) &&
             (terminateBySize == obj.terminateBySize) &&
             (termSize == obj.termSize) &&
@@ -759,6 +802,7 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (fieldConstant == obj.fieldConstant) &&
             velocitySource_equal &&
             (integrationType == obj.integrationType) &&
+            (clampLogValues == obj.clampLogValues) &&
             (parallelizationAlgorithmType == obj.parallelizationAlgorithmType) &&
             (maxProcessCount == obj.maxProcessCount) &&
             (maxDomainCacheSize == obj.maxDomainCacheSize) &&
@@ -938,6 +982,7 @@ LCSAttributes::SelectAll()
     Select(ID_integrationDirection,              (void *)&integrationDirection);
     Select(ID_maxSteps,                          (void *)&maxSteps);
     Select(ID_operationType,                     (void *)&operationType);
+    Select(ID_operatorType,                      (void *)&operatorType);
     Select(ID_terminationType,                   (void *)&terminationType);
     Select(ID_terminateBySize,                   (void *)&terminateBySize);
     Select(ID_termSize,                          (void *)&termSize);
@@ -956,6 +1001,7 @@ LCSAttributes::SelectAll()
     Select(ID_fieldConstant,                     (void *)&fieldConstant);
     Select(ID_velocitySource,                    (void *)velocitySource, 3);
     Select(ID_integrationType,                   (void *)&integrationType);
+    Select(ID_clampLogValues,                    (void *)&clampLogValues);
     Select(ID_parallelizationAlgorithmType,      (void *)&parallelizationAlgorithmType);
     Select(ID_maxProcessCount,                   (void *)&maxProcessCount);
     Select(ID_maxDomainCacheSize,                (void *)&maxDomainCacheSize);
@@ -1053,6 +1099,12 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("operationType", OperationType_ToString(operationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_operatorType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("operatorType", OperatorType_ToString(operatorType)));
     }
 
     if(completeSave || !FieldsEqual(ID_terminationType, &defaultObject))
@@ -1161,6 +1213,12 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("integrationType", IntegrationType_ToString(integrationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_clampLogValues, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("clampLogValues", clampLogValues));
     }
 
     if(completeSave || !FieldsEqual(ID_parallelizationAlgorithmType, &defaultObject))
@@ -1365,6 +1423,22 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
                 SetOperationType(value);
         }
     }
+    if((node = searchNode->GetNode("operatorType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetOperatorType(OperatorType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OperatorType value;
+            if(OperatorType_FromString(node->AsString(), value))
+                SetOperatorType(value);
+        }
+    }
     if((node = searchNode->GetNode("terminationType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1457,6 +1531,8 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
                 SetIntegrationType(value);
         }
     }
+    if((node = searchNode->GetNode("clampLogValues")) != 0)
+        SetClampLogValues(node->AsBool());
     if((node = searchNode->GetNode("parallelizationAlgorithmType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1587,6 +1663,13 @@ LCSAttributes::SetOperationType(LCSAttributes::OperationType operationType_)
 }
 
 void
+LCSAttributes::SetOperatorType(LCSAttributes::OperatorType operatorType_)
+{
+    operatorType = operatorType_;
+    Select(ID_operatorType, (void *)&operatorType);
+}
+
+void
 LCSAttributes::SetTerminationType(LCSAttributes::TerminationType terminationType_)
 {
     terminationType = terminationType_;
@@ -1712,6 +1795,13 @@ LCSAttributes::SetIntegrationType(LCSAttributes::IntegrationType integrationType
 {
     integrationType = integrationType_;
     Select(ID_integrationType, (void *)&integrationType);
+}
+
+void
+LCSAttributes::SetClampLogValues(bool clampLogValues_)
+{
+    clampLogValues = clampLogValues_;
+    Select(ID_clampLogValues, (void *)&clampLogValues);
 }
 
 void
@@ -1881,6 +1971,12 @@ LCSAttributes::GetOperationType() const
     return OperationType(operationType);
 }
 
+LCSAttributes::OperatorType
+LCSAttributes::GetOperatorType() const
+{
+    return OperatorType(operatorType);
+}
+
 LCSAttributes::TerminationType
 LCSAttributes::GetTerminationType() const
 {
@@ -1993,6 +2089,12 @@ LCSAttributes::IntegrationType
 LCSAttributes::GetIntegrationType() const
 {
     return IntegrationType(integrationType);
+}
+
+bool
+LCSAttributes::GetClampLogValues() const
+{
+    return clampLogValues;
 }
 
 LCSAttributes::ParallelizationAlgorithmType
@@ -2134,6 +2236,7 @@ LCSAttributes::GetFieldName(int index) const
     case ID_integrationDirection:              return "integrationDirection";
     case ID_maxSteps:                          return "maxSteps";
     case ID_operationType:                     return "operationType";
+    case ID_operatorType:                      return "operatorType";
     case ID_terminationType:                   return "terminationType";
     case ID_terminateBySize:                   return "terminateBySize";
     case ID_termSize:                          return "termSize";
@@ -2152,6 +2255,7 @@ LCSAttributes::GetFieldName(int index) const
     case ID_fieldConstant:                     return "fieldConstant";
     case ID_velocitySource:                    return "velocitySource";
     case ID_integrationType:                   return "integrationType";
+    case ID_clampLogValues:                    return "clampLogValues";
     case ID_parallelizationAlgorithmType:      return "parallelizationAlgorithmType";
     case ID_maxProcessCount:                   return "maxProcessCount";
     case ID_maxDomainCacheSize:                return "maxDomainCacheSize";
@@ -2198,6 +2302,7 @@ LCSAttributes::GetFieldType(int index) const
     case ID_integrationDirection:              return FieldType_enum;
     case ID_maxSteps:                          return FieldType_int;
     case ID_operationType:                     return FieldType_enum;
+    case ID_operatorType:                      return FieldType_enum;
     case ID_terminationType:                   return FieldType_enum;
     case ID_terminateBySize:                   return FieldType_bool;
     case ID_termSize:                          return FieldType_double;
@@ -2216,6 +2321,7 @@ LCSAttributes::GetFieldType(int index) const
     case ID_fieldConstant:                     return FieldType_double;
     case ID_velocitySource:                    return FieldType_doubleArray;
     case ID_integrationType:                   return FieldType_enum;
+    case ID_clampLogValues:                    return FieldType_bool;
     case ID_parallelizationAlgorithmType:      return FieldType_enum;
     case ID_maxProcessCount:                   return FieldType_int;
     case ID_maxDomainCacheSize:                return FieldType_int;
@@ -2262,6 +2368,7 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_integrationDirection:              return "enum";
     case ID_maxSteps:                          return "int";
     case ID_operationType:                     return "enum";
+    case ID_operatorType:                      return "enum";
     case ID_terminationType:                   return "enum";
     case ID_terminateBySize:                   return "bool";
     case ID_termSize:                          return "double";
@@ -2280,6 +2387,7 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_fieldConstant:                     return "double";
     case ID_velocitySource:                    return "doubleArray";
     case ID_integrationType:                   return "enum";
+    case ID_clampLogValues:                    return "bool";
     case ID_parallelizationAlgorithmType:      return "enum";
     case ID_maxProcessCount:                   return "int";
     case ID_maxDomainCacheSize:                return "int";
@@ -2379,6 +2487,11 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (operationType == obj.operationType);
         }
         break;
+    case ID_operatorType:
+        {  // new scope
+        retval = (operatorType == obj.operatorType);
+        }
+        break;
     case ID_terminationType:
         {  // new scope
         retval = (terminationType == obj.terminationType);
@@ -2472,6 +2585,11 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_integrationType:
         {  // new scope
         retval = (integrationType == obj.integrationType);
+        }
+        break;
+    case ID_clampLogValues:
+        {  // new scope
+        retval = (clampLogValues == obj.clampLogValues);
         }
         break;
     case ID_parallelizationAlgorithmType:
