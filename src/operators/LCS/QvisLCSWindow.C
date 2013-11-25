@@ -394,7 +394,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     terminationLayout->setMargin(5);
     terminationLayout->setSpacing(10);
 
-    // For FTLE or FDLE base the termintion on the time or distance,
+    // For FTLE or FLLE base the termintion on the time or distance,
     // respectively. While using the max steps as a back up. This is
     // opposite of streamlines/pathlines which optionally use the
     // termination.
@@ -403,8 +403,9 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Create the operation of integration.
     terminationLayout->addWidget(new QLabel(tr("Operation type"),
                                             central), 0, 0);
+
     operationType = new QComboBox(central);
-    operationType->addItem(tr("Lyapunov"));
+    operationType->addItem(tr("Lyapunov Exponent"));
     operationType->addItem(tr("Integration time"));
     operationType->addItem(tr("Arc length"));
     operationType->addItem(tr("Average distance from seed"));
@@ -413,54 +414,68 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     terminationLayout->addWidget(operationType, 0, 1);
 
 
+    // Create the operator of integrator.
+    operatorType = new QComboBox(central);
+    operatorType->addItem(tr("Base value"));
+    operatorType->addItem(tr("Gradient"));
+    // operatorType->addItem(tr("Jacobian"));
+    // operatorType->addItem(tr("Ratio"));
+    connect(operatorType, SIGNAL(activated(int)),
+            this, SLOT(operatorTypeChanged(int)));
+    terminationLayout->addWidget(operatorType, 0, 2);
+
+    clampLogValues = new QCheckBox(tr("Clamp exponent values"), central);
+    connect(clampLogValues, SIGNAL(toggled(bool)), this, SLOT(clampLogValuesChanged(bool)));
+    terminationLayout->addWidget(clampLogValues, 0, 3);
+
     // Radio button termination type
     rb = new QRadioButton(tr("Limit maximum advection time i.e. FTLE"), terminationGroup);
     terminationTypeButtonGroup->addButton(rb, 0);
-    terminationLayout->addWidget(rb, 1,0);
+    terminationLayout->addWidget(rb, 1, 0, 1, 2);
 
     rb->setChecked(true);
 
-    rb = new QRadioButton(tr("Limit maximum advection distance i.e. FDLE"), terminationGroup);
+    rb = new QRadioButton(tr("Limit maximum advection distance i.e. FLLE"), terminationGroup);
     terminationTypeButtonGroup->addButton(rb, 1);
-    terminationLayout->addWidget(rb, 2,0);
+    terminationLayout->addWidget(rb, 2, 0, 1, 2);
 
     rb = new QRadioButton(tr("Limit maximum size i.e. FSLE"), terminationGroup);
     terminationTypeButtonGroup->addButton(rb, 2);
-    terminationLayout->addWidget(rb, 3,0);
+    terminationLayout->addWidget(rb, 3, 0, 1, 2);
 
     connect(terminationTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(terminationTypeButtonGroupChanged(int)));
 
     // Check box termination type
     limitMaxTime = new QCheckBox(tr("Limit maximum advection time"), terminationGroup);
     connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
-    terminationLayout->addWidget(limitMaxTime, 1,0);
+    terminationLayout->addWidget(limitMaxTime, 1, 0, 1, 2);
     limitMaxTime->hide();
 
     limitMaxDistance = new QCheckBox(tr("Limit maximum advection distance"), terminationGroup);
     connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
-    terminationLayout->addWidget(limitMaxDistance, 2,0);
+    terminationLayout->addWidget(limitMaxDistance, 2, 0, 1, 2);
     limitMaxDistance->hide();
 
     // Termination values
     maxTime = new QLineEdit(central);
     connect(maxTime, SIGNAL(returnPressed()), this, SLOT(maxTimeProcessText()));
-    terminationLayout->addWidget(maxTime, 1,1);
+    terminationLayout->addWidget(maxTime, 1, 2);
 
     maxDistance = new QLineEdit(central);
     connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
-    terminationLayout->addWidget(maxDistance, 2,1);
+    terminationLayout->addWidget(maxDistance, 2, 2);
 
     maxSize = new QLineEdit(central);
     connect(maxSize, SIGNAL(returnPressed()), this, SLOT(maxSizeProcessText()));
-    terminationLayout->addWidget(maxSize, 3,1);
+    terminationLayout->addWidget(maxSize, 3, 2);
 
     // Max steps override
     QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
-    terminationLayout->addWidget(maxStepsLabel, 4,0);
+    terminationLayout->addWidget(maxStepsLabel, 4, 0, 1, 2);
     maxSteps = new QLineEdit(central);
     connect(maxSteps, SIGNAL(returnPressed()),
             this, SLOT(maxStepsProcessText()));
-    terminationLayout->addWidget(maxSteps, 4,1);
+    terminationLayout->addWidget(maxSteps, 4, 2);
 }
 
 
@@ -820,6 +835,9 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               LCSAtts->SetTerminateByDistance( LCSAtts->GetTerminationType() == 1);
               LCSAtts->SetTerminateBySize( LCSAtts->GetTerminationType() == 2);
 
+              clampLogValues->show();
+              operatorType->hide();
+
               terminationTypeButtonGroup->blockSignals(false);
             }
             else
@@ -830,7 +848,28 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               maxSize->hide();
               limitMaxDistance->show();
               limitMaxTime->show();
+              operatorType->show();
+              if( LCSAtts->GetOperatorType() == LCSAttributes::BaseValue)
+                clampLogValues->hide();
+              else
+                clampLogValues->show();
             }
+            break;
+
+        case LCSAttributes::ID_operatorType:
+            operatorType->blockSignals(true);
+            operatorType->setCurrentIndex(int(LCSAtts->GetOperatorType()) );
+            operatorType->blockSignals(false);
+            if( LCSAtts->GetOperatorType() == LCSAttributes::BaseValue)
+              clampLogValues->hide();
+            else
+              clampLogValues->show();
+            break;
+
+        case LCSAttributes::ID_clampLogValues:
+            clampLogValues->blockSignals(true);
+            clampLogValues->setChecked(LCSAtts->GetClampLogValues());
+            clampLogValues->blockSignals(false);
             break;
 
         case LCSAttributes::ID_terminationType:
@@ -1611,6 +1650,23 @@ QvisLCSWindow::operationTypeChanged(int val)
         Apply();
     }
 }   
+
+void
+QvisLCSWindow::operatorTypeChanged(int val)
+ {
+    if(val != LCSAtts->GetOperatorType())
+    {
+        LCSAtts->SetOperatorType(LCSAttributes::OperatorType(val));
+        Apply();
+    }
+}   
+
+void
+QvisLCSWindow::clampLogValuesChanged(bool val)
+{
+    LCSAtts->SetClampLogValues(val);
+    Apply();
+}
 
 void
 QvisLCSWindow::terminationTypeButtonGroupChanged(int index)

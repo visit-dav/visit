@@ -213,6 +213,29 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
+    const char *operatorType_names = "BaseValue, Gradient, Jacobian, Ratio";
+    switch (atts->GetOperatorType())
+    {
+      case LCSAttributes::BaseValue:
+          SNPRINTF(tmpStr, 1000, "%soperatorType = %sBaseValue  # %s\n", prefix, prefix, operatorType_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::Gradient:
+          SNPRINTF(tmpStr, 1000, "%soperatorType = %sGradient  # %s\n", prefix, prefix, operatorType_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::Jacobian:
+          SNPRINTF(tmpStr, 1000, "%soperatorType = %sJacobian  # %s\n", prefix, prefix, operatorType_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::Ratio:
+          SNPRINTF(tmpStr, 1000, "%soperatorType = %sRatio  # %s\n", prefix, prefix, operatorType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *terminationType_names = "Time, Distance, Size";
     switch (atts->GetTerminationType())
     {
@@ -365,6 +388,11 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
+    if(atts->GetClampLogValues())
+        SNPRINTF(tmpStr, 1000, "%sclampLogValues = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sclampLogValues = 0\n", prefix);
+    str += tmpStr;
     const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
     switch (atts->GetParallelizationAlgorithmType())
     {
@@ -803,6 +831,39 @@ LCSAttributes_GetOperationType(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOperationType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the operatorType in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetOperatorType(LCSAttributes::OperatorType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid operatorType value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "BaseValue, Gradient, Jacobian, Ratio.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetOperatorType(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOperatorType()));
     return retval;
 }
 
@@ -1307,6 +1368,30 @@ LCSAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LCSAttributes_SetClampLogValues(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the clampLogValues in the object.
+    obj->data->SetClampLogValues(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetClampLogValues(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetClampLogValues()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
@@ -1658,6 +1743,8 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetMaxSteps", LCSAttributes_GetMaxSteps, METH_VARARGS},
     {"SetOperationType", LCSAttributes_SetOperationType, METH_VARARGS},
     {"GetOperationType", LCSAttributes_GetOperationType, METH_VARARGS},
+    {"SetOperatorType", LCSAttributes_SetOperatorType, METH_VARARGS},
+    {"GetOperatorType", LCSAttributes_GetOperatorType, METH_VARARGS},
     {"SetTerminationType", LCSAttributes_SetTerminationType, METH_VARARGS},
     {"GetTerminationType", LCSAttributes_GetTerminationType, METH_VARARGS},
     {"SetTerminateBySize", LCSAttributes_SetTerminateBySize, METH_VARARGS},
@@ -1694,6 +1781,8 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetVelocitySource", LCSAttributes_GetVelocitySource, METH_VARARGS},
     {"SetIntegrationType", LCSAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", LCSAttributes_GetIntegrationType, METH_VARARGS},
+    {"SetClampLogValues", LCSAttributes_SetClampLogValues, METH_VARARGS},
+    {"GetClampLogValues", LCSAttributes_GetClampLogValues, METH_VARARGS},
     {"SetParallelizationAlgorithmType", LCSAttributes_SetParallelizationAlgorithmType, METH_VARARGS},
     {"GetParallelizationAlgorithmType", LCSAttributes_GetParallelizationAlgorithmType, METH_VARARGS},
     {"SetMaxProcessCount", LCSAttributes_SetMaxProcessCount, METH_VARARGS},
@@ -1797,6 +1886,17 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "AverageDistanceFromSeed") == 0)
         return PyInt_FromLong(long(LCSAttributes::AverageDistanceFromSeed));
 
+    if(strcmp(name, "operatorType") == 0)
+        return LCSAttributes_GetOperatorType(self, NULL);
+    if(strcmp(name, "BaseValue") == 0)
+        return PyInt_FromLong(long(LCSAttributes::BaseValue));
+    if(strcmp(name, "Gradient") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Gradient));
+    if(strcmp(name, "Jacobian") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Jacobian));
+    if(strcmp(name, "Ratio") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Ratio));
+
     if(strcmp(name, "terminationType") == 0)
         return LCSAttributes_GetTerminationType(self, NULL);
     if(strcmp(name, "Time") == 0)
@@ -1871,6 +1971,8 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "M3DC12DIntegrator") == 0)
         return PyInt_FromLong(long(LCSAttributes::M3DC12DIntegrator));
 
+    if(strcmp(name, "clampLogValues") == 0)
+        return LCSAttributes_GetClampLogValues(self, NULL);
     if(strcmp(name, "parallelizationAlgorithmType") == 0)
         return LCSAttributes_GetParallelizationAlgorithmType(self, NULL);
     if(strcmp(name, "LoadOnDemand") == 0)
@@ -1943,6 +2045,8 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetMaxSteps(self, tuple);
     else if(strcmp(name, "operationType") == 0)
         obj = LCSAttributes_SetOperationType(self, tuple);
+    else if(strcmp(name, "operatorType") == 0)
+        obj = LCSAttributes_SetOperatorType(self, tuple);
     else if(strcmp(name, "terminationType") == 0)
         obj = LCSAttributes_SetTerminationType(self, tuple);
     else if(strcmp(name, "terminateBySize") == 0)
@@ -1979,6 +2083,8 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetVelocitySource(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = LCSAttributes_SetIntegrationType(self, tuple);
+    else if(strcmp(name, "clampLogValues") == 0)
+        obj = LCSAttributes_SetClampLogValues(self, tuple);
     else if(strcmp(name, "parallelizationAlgorithmType") == 0)
         obj = LCSAttributes_SetParallelizationAlgorithmType(self, tuple);
     else if(strcmp(name, "maxProcessCount") == 0)
