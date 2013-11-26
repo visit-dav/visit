@@ -611,8 +611,8 @@ def LogAssertTestResult(case_name,assert_check,result,details):
     Log("    Test case '%s' (Assert: %s) %s" % (case_name,
                                                 assert_check,
                                                 status.upper()))
-    JSONTextTestResult(case_name,status,assert_check,result,details)
-    HTMLTextTestResult(case_name,status,assert_check,result,details)
+    JSONAssertTestResult(case_name,status,assert_check,result,details)
+    HTMLAssertTestResult(case_name,status,assert_check,result,details)
 
 # ----------------------------------------------------------------------------
 #  Method: JSONAssertTestResult
@@ -620,7 +620,7 @@ def LogAssertTestResult(case_name,assert_check,result,details):
 #  Programmer: Cyrus Harrison
 #  Date:       Fri Nov 22 2013
 # ----------------------------------------------------------------------------
-def JSONTextTestResult(case_name,status,assert_check,result,details):
+def JSONAssertTestResult(case_name,status,assert_check,result,details):
     res = json_results_load()
     t_res = {'name':         case_name,
              'status':       status,
@@ -636,7 +636,7 @@ def JSONTextTestResult(case_name,status,assert_check,result,details):
 #  Programmer: Cyrus Harrison
 #  Date:       Fri Nov 22 2013
 # ----------------------------------------------------------------------------
-def HTMLTextTestResult(case_name,status,assert_check,result,details):
+def HTMLAssertTestResult(case_name,status,assert_check,result,details):
     """
     Creates html entry for the result of an assert based test.
     """
@@ -767,6 +767,9 @@ def JSONImageTestResult(case_name, status,
 #   I added the optional argument alreadySaved that indicates if the image
 #   has already been saved.
 #
+#   Brad Whitlock, Thu Nov  7 14:01:26 PST 2013
+#   Force width and height for the window.
+#
 # ----------------------------------------------------------------------------
 def Test(case_name, altSWA=0, alreadySaved=0):
     CheckInteractive(case_name)
@@ -784,6 +787,12 @@ def Test(case_name, altSWA=0, alreadySaved=0):
         else:
             sa = SaveWindowAttributes()
             sa.screenCapture=1
+            # Force the active window to be the right size.
+            width = TestEnv.params["width"]
+            height = TestEnv.params["height"]
+            g = GetGlobalAttributes()
+            win = g.windows[g.activeWindow]
+            ResizeWindow(win, width, height)
         sa.family   = 0
         sa.fileName = cur
         sa.format   = sa.PNG
