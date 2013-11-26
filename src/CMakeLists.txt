@@ -367,6 +367,9 @@
 #    Remove setting of CMAKE_Java_xxx, rely instead on the Java_xxx vars
 #    set by FindJava.cmake
 #
+#    Kathleen Biagas, Tue Nov 26 10:14:29 PST 2013
+#    Only add osxfixup dir if on APPLE.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -2553,7 +2556,9 @@ ENDIF (NOT WIN32)
 #ADD_DEPENDENCIES(osxfixup install)
 
 #todo: replace add_subdirectory with the lines above
-ADD_SUBDIRECTORY(osxfixup)
+IF(APPLE)
+    ADD_SUBDIRECTORY(osxfixup)
+ENDIF(APPLE)
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
