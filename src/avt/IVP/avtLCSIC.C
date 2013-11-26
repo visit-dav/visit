@@ -78,12 +78,12 @@ avtLCSIC::avtLCSIC(
     numSteps = 0;
     maxSteps = maxSteps_;
 
+    arcLength = 0.;
     distance = 0.;
     doDistance = doDistance_;
     maxDistance = maxDistance_;
 
-    summation = 0.;
-    
+    time = 0.;
     doTime = doTime_;
     maxTime = maxTime_;
     
@@ -91,6 +91,9 @@ avtLCSIC::avtLCSIC(
 
     p_start = p_start_;
     p_end = p_start_; /* the end and start begin at the same location */
+
+    summation0 = 0.;
+    summation1 = 0.;
 }
 
 
@@ -113,10 +116,12 @@ avtLCSIC::avtLCSIC() : avtIntegralCurve()
     doTime = false;
     maxTime = 0.;
 
-    time     = 0.;
-    distance = 0.;
+    time      = 0.;
+    arcLength = 0.;
+    distance  = 0.;
 
-    summation = 0.;
+    summation0 = 0.;
+    summation1 = 0.;
     
     terminatedBecauseOfMaxSteps = false;
 }
@@ -206,8 +211,11 @@ void avtLCSIC::AnalyzeStep( avtIVPStep &step,
     p_end = step.GetP1();
 
     time = step.GetT1();
-    distance += step.GetLength();
-    summation += (p_start - p_end).length();
+    arcLength += step.GetLength();
+    distance  += step.GetLength();
+
+    summation0 += (p_start - p_end).length();
+    summation1  = (p_start - p_end).length();
 }
 
 // ****************************************************************************

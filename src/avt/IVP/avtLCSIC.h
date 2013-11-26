@@ -92,8 +92,10 @@ public:
 
     virtual int    GetNumSteps()  { return numSteps; }
     virtual double GetTime()      { return time; }
+    virtual double GetArcLength() { return arcLength; }
     virtual double GetDistance()  { return distance; }
-    virtual double GetSummation() { return summation; }
+    virtual double GetSummation0() { return summation0; }
+    virtual double GetSummation1() { return summation1; }
 
     virtual void     AnalyzeStep( avtIVPStep &step, avtIVPField *field);
   
@@ -115,8 +117,10 @@ public:
     bool             terminatedBecauseOfMaxSteps;
 
     double           time;
+    double           arcLength;
     double           distance;
-    double           summation;
+    double           summation0;
+    double           summation1;
 
     avtVector p_start, p_end;
 };
