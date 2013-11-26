@@ -762,7 +762,7 @@ namespace paraDIS {
     if (mNeighborSegments.size() < 4) 
       return crossarms; 
 
-   vector<Arm*> armpair(2,NULL); 
+    vector<Arm*> armpair(2, (Arm*) NULL); 
     vector<bool> matched(mNeighborSegments.size(), false); 
     // first, identify looped cross arms
     for (uint32_t segnum = 0; segnum < mNeighborSegments.size()-1; segnum++) {
