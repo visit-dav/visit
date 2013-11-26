@@ -1241,6 +1241,7 @@ class GeneralArguments(object):
         self.nowin = 0
         self.threads = 0
         self.hw_accel = False
+        self.osmesa   = False
     def ParseArguments(self, i, args):
         if i >= len(args):
             return 0
@@ -1322,7 +1323,11 @@ class GeneralArguments(object):
         # snoop this without affecting any other parsing
         if not self.hw_accel and "-hw-accel" in args:
             self.hw_accel = True
+        # snoop this without affecting any other parsing
+        if "-osmesa" in args:
+            self.osmesa = True
         return n
+
 
     def ProduceArguments(self, parallel):
         args = []
@@ -2300,15 +2305,19 @@ class MainLauncher(object):
         #
         if os.path.isfile(osmesa_gl_lib):
             #
+            # if we get an explicit osmesa flag, make sure to use mesa
+            #
             # if we are using OSMesa in the viewer or engine we need to set VISIT_MESA_LIB
             # and adjust the LD_LIBRARY_PATH so VTK can pick up OSMesa instead of standard GL
             #
-            if ((self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
+            if ( (self.generalArgs.osmesa) or
+                 (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
                  (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
                 SETENV("LD_LIBRARY_PATH", self.joinpaths([GETENV("LD_LIBRARY_PATH"),
                                                          osmesa_gl_dir]))
                 SETENV("VISIT_MESA_LIB",osmesa_gl_lib)
-
+        elif self.generalArgs.osmesa:
+            self.error("Can't launch using osmesa. '-osmesa' specified, but the osmesa library is not available.")
 
     ############################################################################
     # Method: PrintEnvironment
@@ -2337,7 +2346,7 @@ class MainLauncher(object):
         # The environment variables whose values we're printing.
         vars = ["LIBPATH", "VISITHOME", "VISITARCHHOME", 
                 "VISITULTRAHOME", "VISITPLUGINDIR","TRAP_FPE",
-                "MESA_GLX_FX"]
+                "MESA_GLX_FX","VISIT_MESA_LIB"]
         # vars = vars + ["PYTHONHOME"] # don't set PYTHONHOME
         # A dictionary of extra vars whose source is different 
         diffvars = {}
@@ -2360,10 +2369,6 @@ class MainLauncher(object):
             value = GETENV(varnames[var])
             if value != "" or allowempty:
                 file.write(set + var + eq + self.quoted(value) + "\n")
-
-        # The value on this one is not from an environment var.
-        visitmesalib = os.path.join(self.visitlibdir, "libOSMesa." + soext)
-        file.write(set + "VISIT_MESA_LIB" + eq + "%s\n" % self.quoted(visitmesalib))
 
     ############################################################################
     # Method: PrintEnvironmentShell

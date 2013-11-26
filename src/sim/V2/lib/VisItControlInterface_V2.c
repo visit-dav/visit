@@ -1527,6 +1527,9 @@ visit_get_runtime_function(const char *name)
 *   Brad Whitlock, Mon Oct 24 09:44:38 PDT 2011
 *   Wrap it all with VISIT_STATIC since we don't use them in that case.
 *
+*   Cyrus Harrison, Tue Nov 26 10:53:52 PST 2013
+*   Support new osmesa setup for visit post 2.7.0
+*
 *******************************************************************************/
 #ifndef VISIT_STATIC
 #ifdef _WIN32
@@ -1572,6 +1575,39 @@ LIBSIM_MESSAGE1("Error: %x", GetLastError());
     return (dl_handle != NULL) ? VISIT_OKAY : VISIT_ERROR;
 }
 #else
+/*******************************************************************************
+*
+* Name: Preload_OSMesaGL
+*
+* Purpose: Loads OSMesa (from VISIT_MESA_LIB) as libGL.
+*
+* Author: Cyrus Harrison
+*
+* Modifications:
+*
+*******************************************************************************/
+int Preload_OSMesaGL(void)
+{
+/* load library */
+#ifdef __APPLE__
+    const char *extension = "dylib";
+#else
+    const char *extension = "so";
+#endif
+    void *gl_dl_handle = NULL;
+    if(getenv("VISIT_MESA_LIB") != NULL)
+    {
+        char *osmesa_lib_path = getenv("VISIT_MESA_LIB");
+        LIBSIM_MESSAGE1("Attempting to preload osmesa as libGL -- calling dlopen(%s)", osmesa_lib_path);
+        gl_dl_handle = dlopen(osmesa_lib_path, RTLD_LAZY | RTLD_GLOBAL);
+        if(gl_dl_handle == NULL)
+        {
+            LIBSIM_MESSAGE1("dlopen error: %s", dlerror());
+            LIBSIM_MESSAGE1("failed to preload osmesa from VISIT_MESA_LIB: %s",osmesa_lib_path);
+        }
+    }
+}
+
 static int LoadVisItLibrary_UNIX(void)
 {
     char lib[256];
@@ -1584,6 +1620,14 @@ static int LoadVisItLibrary_UNIX(void)
     const char *extension = "so";
     const char *LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
 #endif
+    /*
+       If VISIT_MESA_LIB is set we want to use osmesa instead of system gl.
+       For this case: load osmesa as libGL before the rest of libsim.
+    */
+    if(getenv("VISIT_MESA_LIB") != NULL)
+    {
+        Preload_OSMesaGL();
+    }
 
     if (isParallel)
     {
@@ -1595,7 +1639,7 @@ static int LoadVisItLibrary_UNIX(void)
     }
 
     LIBSIM_MESSAGE1("Calling dlopen(%s)", lib);
-    dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
+    dl_handle = dlopen(lib, RTLD_LAZY | RTLD_GLOBAL);
 
     if (dl_handle == NULL)
     {
@@ -1624,7 +1668,7 @@ static int LoadVisItLibrary_UNIX(void)
                 else
                     sprintf(lib, "%s/libsimV2runtime_ser.%s", libpath, extension);
                 LIBSIM_MESSAGE1("Calling dlopen(%s)", lib);
-                dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
+                dl_handle = dlopen(lib, RTLD_LAZY | RTLD_GLOBAL);
                 if(dl_handle == NULL)
                 {
                      LIBSIM_MESSAGE1("dlopen error: %s", dlerror());
