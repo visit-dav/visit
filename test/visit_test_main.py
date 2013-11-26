@@ -611,8 +611,8 @@ def LogAssertTestResult(case_name,assert_check,result,details):
     Log("    Test case '%s' (Assert: %s) %s" % (case_name,
                                                 assert_check,
                                                 status.upper()))
-    JSONTextTestResult(case_name,status,assert_check,result,details)
-    HTMLTextTestResult(case_name,status,assert_check,result,details)
+    JSONAssertTestResult(case_name,status,assert_check,result,details)
+    HTMLAssertTestResult(case_name,status,assert_check,result,details)
 
 # ----------------------------------------------------------------------------
 #  Method: JSONAssertTestResult
@@ -620,7 +620,7 @@ def LogAssertTestResult(case_name,assert_check,result,details):
 #  Programmer: Cyrus Harrison
 #  Date:       Fri Nov 22 2013
 # ----------------------------------------------------------------------------
-def JSONTextTestResult(case_name,status,assert_check,result,details):
+def JSONAssertTestResult(case_name,status,assert_check,result,details):
     res = json_results_load()
     t_res = {'name':         case_name,
              'status':       status,
@@ -636,7 +636,7 @@ def JSONTextTestResult(case_name,status,assert_check,result,details):
 #  Programmer: Cyrus Harrison
 #  Date:       Fri Nov 22 2013
 # ----------------------------------------------------------------------------
-def HTMLTextTestResult(case_name,status,assert_check,result,details):
+def HTMLAssertTestResult(case_name,status,assert_check,result,details):
     """
     Creates html entry for the result of an assert based test.
     """
