@@ -50,6 +50,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
     "pyconfig"
     "swig"
     "install_lib:"
+    "mpeg2encode"
     # auto generated code
     "Attributes"
     # OSX clang/gcc 4.2.1
