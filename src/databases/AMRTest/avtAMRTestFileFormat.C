@@ -91,6 +91,52 @@
 #include <DebugStream.h>
 
 // ****************************************************************************
+//  Code to calculate the patch values.
+// ****************************************************************************
+
+class complex
+{
+  public:
+    complex() : a(0.), b(0.) { }
+    complex(float A, float B) : a(A), b(B) { }
+    complex(const complex &obj) : a(obj.a), b(obj.b) { }
+    complex operator = (const complex &obj) { a = obj.a; b = obj.b; return *this;}
+    complex operator + (const complex &obj) const
+    {
+        return complex(a + obj.a, b + obj.b);
+    }
+    complex operator * (const complex &obj) const
+    {
+        return complex(a * obj.a - b * obj.b, a * obj.b + b * obj.a);
+    }
+    float mag2() const
+    {
+        return a*a + b*b;
+    }
+    float mag() const
+    {
+        return sqrt(a*a + b*b);
+    }
+  private:
+    float a,b;
+};
+
+#define MAXIT 30
+
+static float
+mandelbrot(const complex &c)
+{
+    complex z;
+    for (int zit = 0; zit < MAXIT; zit++)
+    {
+        z = (z * z) + c;
+        if (z.mag2() > 4.)
+            return float(zit+1);
+    }
+    return 0;
+}
+
+// ****************************************************************************
 // Method: avtAMRTestFileFormat::GetLevelAndLocalPatch
 //
 // Purpose:
@@ -218,6 +264,9 @@ avtAMRTestFileFormat::PopulateDomainNesting()
 //  Creation:   November 20, 2013
 //
 //  Modifications:
+//    Eric Brugger, Tue Nov 26 19:20:47 PST 2013
+//    I modified the routine to output a mandelbrot set instead of a
+//    distance field.
 //
 // ****************************************************************************
 
@@ -239,7 +288,7 @@ avtAMRTestFileFormat::avtAMRTestFileFormat(const char *fname)
         refinementForLevel[level]  = refinementForLevel[level-1] * 2;
     }
 
-    numLevels = 5;
+    numLevels = 6;
     totalPatches = patchOffsetForLevel[numLevels-1] +
                    nPatchesForLevel[numLevels-1];
 
@@ -361,6 +410,9 @@ avtAMRTestFileFormat::GetMesh(int domain, const char *name)
 //  Creation:   November 20, 2013
 //
 //  Modifications:
+//    Eric Brugger, Tue Nov 26 19:20:47 PST 2013
+//    I modified the routine to output a mandelbrot set instead of a
+//    distance field.
 //
 // ****************************************************************************
 
@@ -373,8 +425,8 @@ avtAMRTestFileFormat::GetVar(int domain, const char *name)
     ny = 50;
 
     double xDist, yDist;
-    xDist = 50.;
-    yDist = 50.;
+    xDist = 4.;
+    yDist = 4.;
 
     //
     // Get the level and local patch number.
@@ -389,7 +441,7 @@ avtAMRTestFileFormat::GetVar(int domain, const char *name)
              (xDist / double(refinementForLevel[level]));
     yStart = (localPatch / refinementForLevel[level]) *
              (yDist / double(refinementForLevel[level]));
-    delta = 1. / double(refinementForLevel[level]); 
+    delta = (xDist / 50.) / double(refinementForLevel[level]); 
 
     vtkFloatArray *scalars = vtkFloatArray::New();
     scalars->SetNumberOfTuples(nx*ny);
@@ -398,9 +450,9 @@ avtAMRTestFileFormat::GetVar(int domain, const char *name)
     {
         for (int j = 0; j < 50; j++)
         {
-            double x = (xStart + (double(i) + 0.5) * delta) - 25.;
-            double y = (yStart + (double(j) + 0.5) * delta) - 25.;
-            ptr[j*nx+i] = sqrt(x*x+y*y);
+            double x = (xStart + (double(i) + 0.5) * delta) - 2.;
+            double y = (yStart + (double(j) + 0.5) * delta) - 2.;
+            ptr[j*nx+i] = mandelbrot(complex(x, y));
         }
     }
 
@@ -418,6 +470,9 @@ avtAMRTestFileFormat::GetVar(int domain, const char *name)
 //  Creation:   November 20, 2013
 //
 //  Modifications:
+//    Eric Brugger, Tue Nov 26 19:20:47 PST 2013
+//    I modified the routine to output a mandelbrot set instead of a
+//    distance field.
 //
 // ****************************************************************************
 
@@ -468,7 +523,7 @@ avtAMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->Add(mesh);
     md->AddGroupInformation(numLevels,totalPatches,groupIds);
 
-    md->Add(new avtScalarMetaData("Density", "Mesh", AVT_ZONECENT));
+    md->Add(new avtScalarMetaData("Mandelbrot", "Mesh", AVT_ZONECENT));
 
     PopulateDomainNesting();
 }
