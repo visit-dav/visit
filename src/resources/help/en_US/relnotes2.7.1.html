@@ -41,6 +41,7 @@ list of changes in release 2.7.</p>
 <p><b><font size="4">Changes for VisIt developers in version 2.7.1</font></b></p>
 <ul>
   <li>The windows source distribution has been fixed so that a binary distribution can be sucessfully build from it (the _PACKAGE target).</li>
+  <li>An AMRTest reader was added that demonstrates how to create a simple AMR database reader. It is only built when -DVISIT_BUILD_ALL_PLUGINS="1" is specified with cmake. It generates the data internally. To use the reader you should create a zero length file that ends with ".amrtest" and open it. It has 6 levels and has a single variable that creates a Mandelbrot image. It also works with the 2d multi resolution capabilities. To invoke them bring up the "Rendering options" window and select "Multi resolution for 2d AMR data" on the "Basic" tab.</li>
   <li></li>
 </ul>
 
