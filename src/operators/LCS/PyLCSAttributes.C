@@ -213,7 +213,7 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *operatorType_names = "BaseValue, Gradient, Jacobian, Ratio";
+    const char *operatorType_names = "BaseValue, Gradient";
     switch (atts->GetOperatorType())
     {
       case LCSAttributes::BaseValue:
@@ -222,14 +222,6 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
       case LCSAttributes::Gradient:
           SNPRINTF(tmpStr, 1000, "%soperatorType = %sGradient  # %s\n", prefix, prefix, operatorType_names);
-          str += tmpStr;
-          break;
-      case LCSAttributes::Jacobian:
-          SNPRINTF(tmpStr, 1000, "%soperatorType = %sJacobian  # %s\n", prefix, prefix, operatorType_names);
-          str += tmpStr;
-          break;
-      case LCSAttributes::Ratio:
-          SNPRINTF(tmpStr, 1000, "%soperatorType = %sRatio  # %s\n", prefix, prefix, operatorType_names);
           str += tmpStr;
           break;
       default:
@@ -844,14 +836,14 @@ LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the operatorType in the object.
-    if(ival >= 0 && ival < 4)
+    if(ival >= 0 && ival < 2)
         obj->data->SetOperatorType(LCSAttributes::OperatorType(ival));
     else
     {
         fprintf(stderr, "An invalid operatorType value was given. "
-                        "Valid values are in the range of [0,3]. "
+                        "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "BaseValue, Gradient, Jacobian, Ratio.");
+                        "BaseValue, Gradient.");
         return NULL;
     }
 
@@ -1892,10 +1884,6 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LCSAttributes::BaseValue));
     if(strcmp(name, "Gradient") == 0)
         return PyInt_FromLong(long(LCSAttributes::Gradient));
-    if(strcmp(name, "Jacobian") == 0)
-        return PyInt_FromLong(long(LCSAttributes::Jacobian));
-    if(strcmp(name, "Ratio") == 0)
-        return PyInt_FromLong(long(LCSAttributes::Ratio));
 
     if(strcmp(name, "terminationType") == 0)
         return LCSAttributes_GetTerminationType(self, NULL);
