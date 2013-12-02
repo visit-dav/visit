@@ -101,8 +101,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
 
     public final static int OPERATORTYPE_BASEVALUE = 0;
     public final static int OPERATORTYPE_GRADIENT = 1;
-    public final static int OPERATORTYPE_JACOBIAN = 2;
-    public final static int OPERATORTYPE_RATIO = 3;
 
     public final static int TERMINATIONTYPE_TIME = 0;
     public final static int TERMINATIONTYPE_DISTANCE = 1;
@@ -989,10 +987,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             str = str + "OPERATORTYPE_BASEVALUE";
         if(operatorType == OPERATORTYPE_GRADIENT)
             str = str + "OPERATORTYPE_GRADIENT";
-        if(operatorType == OPERATORTYPE_JACOBIAN)
-            str = str + "OPERATORTYPE_JACOBIAN";
-        if(operatorType == OPERATORTYPE_RATIO)
-            str = str + "OPERATORTYPE_RATIO";
         str = str + "\n";
         str = str + indent + "terminationType = ";
         if(terminationType == TERMINATIONTYPE_TIME)

@@ -347,21 +347,20 @@ LCSAttributes::OperationType_FromString(const std::string &s, LCSAttributes::Ope
 //
 
 static const char *OperatorType_strings[] = {
-"BaseValue", "Gradient", "Jacobian", 
-"Ratio"};
+"BaseValue", "Gradient"};
 
 std::string
 LCSAttributes::OperatorType_ToString(LCSAttributes::OperatorType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 2) index = 0;
     return OperatorType_strings[index];
 }
 
 std::string
 LCSAttributes::OperatorType_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 2) ? 0 : t;
     return OperatorType_strings[index];
 }
 
@@ -369,7 +368,7 @@ bool
 LCSAttributes::OperatorType_FromString(const std::string &s, LCSAttributes::OperatorType &val)
 {
     val = LCSAttributes::BaseValue;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 2; ++i)
     {
         if(s == OperatorType_strings[i])
         {
@@ -1429,7 +1428,7 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
+            if(ival >= 0 && ival < 2)
                 SetOperatorType(OperatorType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
