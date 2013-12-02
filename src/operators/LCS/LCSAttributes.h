@@ -116,9 +116,7 @@ public:
     enum OperatorType
     {
         BaseValue,
-        Gradient,
-        Jacobian,
-        Ratio
+        Gradient
     };
     enum TerminationType
     {

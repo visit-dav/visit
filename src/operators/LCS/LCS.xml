@@ -55,8 +55,6 @@
       <Enum name="OperatorType">
         BaseValue
         Gradient
-        Jacobian
-        Ratio
       </Enum>
       <Enum name="TerminationType">
         Time

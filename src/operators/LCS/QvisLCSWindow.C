@@ -418,8 +418,6 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     operatorType = new QComboBox(central);
     operatorType->addItem(tr("Base value"));
     operatorType->addItem(tr("Gradient"));
-    // operatorType->addItem(tr("Jacobian"));
-    // operatorType->addItem(tr("Ratio"));
     connect(operatorType, SIGNAL(activated(int)),
             this, SLOT(operatorTypeChanged(int)));
     terminationLayout->addWidget(operatorType, 0, 2);
