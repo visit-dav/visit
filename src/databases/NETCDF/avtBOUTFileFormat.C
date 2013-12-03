@@ -779,6 +779,9 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
 // Creation:   Mon Dec  2 15:44:28 PST 2013
 //
 // Modifications:
+//   Eric Brugger, Tue Dec  3 08:59:26 PST 2013
+//   I corrected an uninitialized memory error in the code that forms the
+//   full path of the grid file.
 //
 // ****************************************************************************
 
@@ -805,7 +808,7 @@ avtBOUTFileFormat::ReadMeshMetaData()
             char *gridname = new char[strlen(filePath)+1+dims[0]+1];
             memcpy(gridname, filePath, strlen(filePath));
             gridname[strlen(filePath)] = VISIT_SLASH_CHAR;
-            memcpy(&gridname[strlen(gridname)], vals, dims[0]);
+            memcpy(&gridname[strlen(filePath)+1], vals, dims[0]);
             gridname[strlen(filePath)+1+dims[0]] = '\0';
 
             //
