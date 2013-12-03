@@ -63,8 +63,6 @@
 
 #include <string.h>
 
-static int mz = 65;
-
 // ****************************************************************************
 // Method: avtBOUTFileFormat::Identify
 //
@@ -165,6 +163,8 @@ avtBOUTFileFormat::CreateInterface(NETCDFFileObject *f,
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
+//   I added the ability to handle circular grids.
 //   
 // ****************************************************************************
 
@@ -191,7 +191,7 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename) :
     nz = 0;
     nzOut = 0;
 
-    for (int i = 0; i < N_SUB_MESHES; ++i)
+    for (int i = 0; i < MAX_SUB_MESHES; ++i)
     {
         subgrid[i].ijindex = 0;
         subgrid[i].jindex  = 0;
@@ -200,7 +200,7 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename) :
     }
 
     cacheDataRaw = 0;
-    for (int i = 0; i < N_SUB_MESHES; ++i)
+    for (int i = 0; i < MAX_SUB_MESHES; ++i)
         cacheData[i] = 0;
     cacheTime = -1;
 }
@@ -228,7 +228,7 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename,
     nz = 0;
     nzOut = 0;
 
-    for (int i = 0; i < N_SUB_MESHES; ++i)
+    for (int i = 0; i < MAX_SUB_MESHES; ++i)
     {
         subgrid[i].ijindex = 0;
         subgrid[i].jindex  = 0;
@@ -237,7 +237,7 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename,
     }
 
     cacheDataRaw = 0;
-    for (int i = 0; i < N_SUB_MESHES; ++i)
+    for (int i = 0; i < MAX_SUB_MESHES; ++i)
         cacheData[i] = 0;
     cacheTime = -1;
 }
@@ -252,6 +252,8 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename,
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
+//   I added the ability to handle circular grids.
 //   
 // ****************************************************************************
 
@@ -259,17 +261,17 @@ avtBOUTFileFormat::~avtBOUTFileFormat()
 {
     FreeUpResources();
 
-    delete filePath;
+    delete [] filePath;
 
     delete fileObject;
     if (meshFile != 0) delete meshFile;
 
-    if (Rxy != 0) free_void_mem(Rxy, FLOATARRAY_TYPE);
-    if (Zxy != 0) free_void_mem(Zxy, FLOATARRAY_TYPE);
-    if (zShift != 0) free_void_mem(zShift, FLOATARRAY_TYPE);
+    if (Rxy != 0) delete [] Rxy;
+    if (Zxy != 0) delete [] Zxy;
+    if (zShift != 0) delete [] zShift;
     if (zShiftZero != 0) delete [] zShiftZero;
 
-    for (int i = 0; i < N_SUB_MESHES; ++i)
+    for (int i = 0; i < MAX_SUB_MESHES; ++i)
     {
         if (subgrid[i].ijindex != 0) delete [] subgrid[i].ijindex;
         if (subgrid[i].jindex  != 0) delete [] subgrid[i].jindex;
@@ -278,7 +280,7 @@ avtBOUTFileFormat::~avtBOUTFileFormat()
     }
 
     if (cacheDataRaw != 0) delete [] cacheDataRaw;
-    for (int i = 0; i < N_SUB_MESHES; ++i)
+    for (int i = 0; i < MAX_SUB_MESHES; ++i)
         if (cacheData[i] != 0) cacheData[i]->Delete();
 }
 
@@ -450,6 +452,8 @@ avtBOUTFileFormat::GetTimes(doubleVector &t)
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
+//   I added the ability to handle circular grids.
 //
 // ****************************************************************************
 
@@ -497,6 +501,22 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     //
+    // Read the mesh meta data so that we can determine the type of
+    // mesh.
+    //
+    ReadMeshMetaData();
+    if (jyseps1_1 == -1)
+    {
+        circularMesh = true;
+        nSubMeshes = 1;
+    }
+    else
+    {
+        circularMesh = false;
+        nSubMeshes = 4;
+    }
+
+    //
     // Create some standard mesh and variable names.
     //
     std::string zShiftName("zShift");
@@ -524,18 +544,29 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 std::string varName(varname);
                 avtScalarMetaData *smd = new avtScalarMetaData(varName,
-                            meshName, AVT_NODECENT);
+                    meshName, AVT_NODECENT);
                 md->Add(smd);
 
                 std::string varNameZShift = varName + "_zshift";
                 smd = new avtScalarMetaData(varNameZShift,
-                            meshNameZShift, AVT_NODECENT);
+                    meshNameZShift, AVT_NODECENT);
                 md->Add(smd);
 
-                std::string varNameDiverter= varName + "_diverter";
-                smd = new avtScalarMetaData(varNameDiverter,
-                            meshNameDiverter, AVT_NODECENT);
-                md->Add(smd);
+                if (!circularMesh)
+                {
+                    std::string varNameDiverter= varName + "_diverter";
+                    smd = new avtScalarMetaData(varNameDiverter,
+                        meshNameDiverter, AVT_NODECENT);
+                    md->Add(smd);
+                }
+
+                size_t mz;
+                if ((status = nc_inq_dimlen(fileObject->GetFileHandle(),
+                                            vardims[3], &mz)) == NC_NOERR)
+                {
+                    nz = mz;
+                    nzOut = mz + 1;
+                }
             }
         }
     }
@@ -547,21 +578,25 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 meshName2D, AVT_NODECENT);
     md->Add(smd);
 
-    avtMeshMetaData *mmd = new avtMeshMetaData(meshName, N_SUB_MESHES * zperiod,
+    avtMeshMetaData *mmd = new avtMeshMetaData(meshName, nSubMeshes * zperiod,
         1, 1, 0, 3, 3, AVT_CURVILINEAR_MESH);
     md->Add(mmd);
 
-    mmd = new avtMeshMetaData(meshNameZShift, N_SUB_MESHES * zperiod,
+    mmd = new avtMeshMetaData(meshNameZShift, nSubMeshes * zperiod,
         1, 1, 0, 3, 3, AVT_CURVILINEAR_MESH);
     md->Add(mmd);
 
-    mmd = new avtMeshMetaData(meshName2D, N_SUB_MESHES,
+    mmd = new avtMeshMetaData(meshName2D, nSubMeshes,
         1, 1, 0, 2, 2, AVT_CURVILINEAR_MESH);
     md->Add(mmd);
 
-    mmd = new avtMeshMetaData(meshNameDiverter, N_DIVERTER_SUB_MESHES * zperiod,
-        1, 1, 0, 3, 3, AVT_CURVILINEAR_MESH);
-    md->Add(mmd);
+    if (!circularMesh)
+    {
+        mmd = new avtMeshMetaData(meshNameDiverter,
+            N_DIVERTER_SUB_MESHES * zperiod, 1, 1, 0, 3, 3,
+            AVT_CURVILINEAR_MESH);
+        md->Add(mmd);
+    }
 }
 
 // ****************************************************************************
@@ -733,33 +768,25 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
 }
 
 // ****************************************************************************
-// Method: avtBOUTFileFormat::ReadMesh
+// Method: avtBOUTFileFormat::ReadMeshMetaData
 //
-// Purpose: 
-//   This method reads the mesh information from the grid file.
+// Purpose:
+//   This method reads the mesh meta data from the grid file.
 //
 // Arguments:
 //
-// Returns:    True.
-//
 // Programmer: Eric Brugger
-// Creation:   Thu Aug  1 16:42:56 PDT 2013
+// Creation:   Mon Dec  2 15:44:28 PST 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-bool
-avtBOUTFileFormat::ReadMesh()
+void
+avtBOUTFileFormat::ReadMeshMetaData()
 {
-    const char *mName = "avtBOUTFileFormat::ReadMesh: ";
+    const char *mName = "avtBOUTFileFormat::ReadMeshMetaData: ";
     debug4 << mName << endl;
-
-    //
-    // Return if we have already read the mesh.
-    //
-    if (meshRead)
-        return true;
 
     //
     // Read the gridname string and open the mesh file.
@@ -777,7 +804,7 @@ avtBOUTFileFormat::ReadMesh()
             //
             char *gridname = new char[strlen(filePath)+1+dims[0]+1];
             memcpy(gridname, filePath, strlen(filePath));
-            gridname[strlen(filePath)] = VISIT_SLASH_CHAR; 
+            gridname[strlen(filePath)] = VISIT_SLASH_CHAR;
             memcpy(&gridname[strlen(gridname)], vals, dims[0]);
             gridname[strlen(filePath)+1+dims[0]] = '\0';
 
@@ -801,19 +828,36 @@ avtBOUTFileFormat::ReadMesh()
     //
     // Read some key scalars that indicate how the grid is connected.
     //
-#define READSCALARINTO(VARNAME, VAR, VARTYPE, T) \
+#define READSCALARINTO(VARNAME, VAR, VARTYPE) \
     {\
         TypeEnum t = NO_TYPE;\
         int ndims = 0, *dims = 0;\
         void *vals = 0;\
         if (meshFile->ReadVariable(VARNAME, &t, &ndims, &dims, &vals))\
         {\
-            if (t == VARTYPE && ndims == 0)\
+            if (ndims != 0) \
             {\
-                VAR = ((int*)vals)[0];\
+                std::string msg;\
+                msg = std::string("Error reading ") + std::string(VARNAME) + std::string(": Not a scalar");\
+                EXCEPTION2(NonCompliantFileException, "BOUT", msg);\
             }\
             delete [] dims;\
-            delete [] (T*) vals;\
+            if (t != INTEGERARRAY_TYPE && t != SHORTARRAY_TYPE) \
+            {\
+                std::string msg;\
+                msg = std::string("Error reading ") + std::string(VARNAME) + std::string(": Not an int or short");\
+                EXCEPTION2(NonCompliantFileException, "BOUT", msg);\
+            }\
+            if (t == INTEGERARRAY_TYPE) \
+            {\
+                VAR = ((int*)vals)[0];\
+                delete [] (int*) vals;\
+            }\
+            else if (t == SHORTARRAY_TYPE) \
+            {\
+                VAR = ((short*)vals)[0];\
+                delete [] (short*) vals; \
+            }\
         }\
         else\
         {\
@@ -822,12 +866,12 @@ avtBOUTFileFormat::ReadMesh()
             EXCEPTION2(NonCompliantFileException, "BOUT", msg);\
         }\
     }
-    READSCALARINTO("ixseps1", ixseps1, INTEGERARRAY_TYPE, int);
-    READSCALARINTO("ixseps2", ixseps2, SHORTARRAY_TYPE, short);
-    READSCALARINTO("jyseps1_1", jyseps1_1, INTEGERARRAY_TYPE, int);
-    READSCALARINTO("jyseps1_2", jyseps1_2, INTEGERARRAY_TYPE, int);
-    READSCALARINTO("jyseps2_1", jyseps2_1, INTEGERARRAY_TYPE, int);
-    READSCALARINTO("jyseps2_2", jyseps2_2, INTEGERARRAY_TYPE, int);
+    READSCALARINTO("ixseps1", ixseps1, INTEGERARRAY_TYPE);
+    READSCALARINTO("ixseps2", ixseps2, SHORTARRAY_TYPE);
+    READSCALARINTO("jyseps1_1", jyseps1_1, INTEGERARRAY_TYPE);
+    READSCALARINTO("jyseps1_2", jyseps1_2, INTEGERARRAY_TYPE);
+    READSCALARINTO("jyseps2_1", jyseps2_1, INTEGERARRAY_TYPE);
+    READSCALARINTO("jyseps2_2", jyseps2_2, INTEGERARRAY_TYPE);
 #if 0
     cerr << "ixseps1=" << ixseps1 << endl;
     cerr << "ixseps2=" << ixseps2 << endl;
@@ -836,6 +880,38 @@ avtBOUTFileFormat::ReadMesh()
     cerr << "jyseps2_1=" << jyseps2_1 << endl;
     cerr << "jyseps2_2=" << jyseps2_2 << endl;
 #endif
+}
+
+// ****************************************************************************
+// Method: avtBOUTFileFormat::ReadMesh
+//
+// Purpose: 
+//   This method reads the mesh information from the grid file.
+//
+// Arguments:
+//
+// Returns:    True.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Aug  1 16:42:56 PDT 2013
+//
+// Modifications:
+//   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
+//   I added the ability to handle circular grids.
+//   
+// ****************************************************************************
+
+bool
+avtBOUTFileFormat::ReadMesh()
+{
+    const char *mName = "avtBOUTFileFormat::ReadMesh: ";
+    debug4 << mName << endl;
+
+    //
+    // Return if we have already read the mesh.
+    //
+    if (meshRead)
+        return true;
 
     //
     // Read the coordinate information.
@@ -844,34 +920,51 @@ avtBOUTFileFormat::ReadMesh()
     TypeEnum rt = NO_TYPE, zt = NO_TYPE, zshiftt = NO_TYPE;
     int rndims = 0, zndims = 0, zshiftndims = 0;
     int *rdims = 0, *zdims = 0, *zshiftdims = 0;
-    void *rvals = 0, *zvals = 0, *zshiftvals = 0;
-    meshFile->ReadVariable("Rxy", &rt, &rndims, &rdims, &rvals);
-    meshFile->ReadVariable("Zxy", &zt, &zndims, &zdims, &zvals);
-    meshFile->ReadVariable("zShift", &zshiftt, &zshiftndims, &zshiftdims,
-                           &zshiftvals);
+    meshFile->InqVariable("Rxy", &rt, &rndims, &rdims);
+    meshFile->InqVariable("Zxy", &zt, &zndims, &zdims);
+    meshFile->InqVariable("zShift", &zshiftt, &zshiftndims, &zshiftdims);
 
-    if (rdims != 0 && rvals != 0 && rt == FLOATARRAY_TYPE &&
-        zdims != 0 && zvals != 0 && zt == FLOATARRAY_TYPE &&
-        zshiftdims != 0 && zshiftvals != 0 && zshiftt == FLOATARRAY_TYPE)
+    if (rndims != 2 || rdims == 0 ||
+        zndims != 2 || zdims == 0 || 
+        zshiftndims != 2 || zshiftdims == 0)
     {
-        Rxy = (float *)rvals;
-        Zxy = (float *)zvals;
-        zShift = (float *)zshiftvals;
+        if (rndims != 2 || rdims == 0)
+            debug4 << mName << "error reading Rxy" << endl;
+        if (zndims != 2 || zdims == 0)
+            debug4 << mName << "error reading Zxy" << endl;
+        if (zshiftndims != 2 || zshiftdims == 0)
+            debug4 << mName << "error reading zShift" << endl;
 
-        zShiftZero = new float[zshiftdims[0]*zshiftdims[1]];
-        memset(zShiftZero, 0, zshiftdims[0]*zshiftdims[1]*sizeof(float));
+        if (rdims != 0) delete [] rdims;
+        if (zdims != 0) delete [] zdims;
+        if (zshiftdims != 0) delete [] zshiftdims;
 
-        nx2d = rdims[0];
-        ny2d = rdims[1];
+        std::string msg("\"The grid could not be read.\"");
+        EXCEPTION1(InvalidVariableException, msg);
+    }
 
-        nxRaw = rdims[0];
-        nyRaw = rdims[1];
-        nz = (mz - 1);
-        nzOut = (mz - 1) + 1;
+    Rxy = new float[rdims[0]*rdims[1]];
+    Zxy = new float[zdims[0]*zdims[1]];
+    zShift = new float[zshiftdims[0]*zshiftdims[1]];
 
-        //
-        // Create the definitions of how to create the various subgrids.
-        //
+    meshFile->ReadVariableInto("Rxy", FLOATARRAY_TYPE, Rxy);
+    meshFile->ReadVariableInto("Zxy", FLOATARRAY_TYPE, Zxy);
+    meshFile->ReadVariableInto("zShift", FLOATARRAY_TYPE, zShift);
+
+    zShiftZero = new float[zshiftdims[0]*zshiftdims[1]];
+    memset(zShiftZero, 0, zshiftdims[0]*zshiftdims[1]*sizeof(float));
+
+    nx2d = rdims[0];
+    ny2d = rdims[1];
+
+    nxRaw = rdims[0];
+    nyRaw = rdims[1];
+
+    //
+    // Create the definitions of how to create the various subgrids.
+    //
+    if (!circularMesh)
+    {
         subgrid[0].nb = 2;
         subgrid[0].istart = 0;
         subgrid[0].iend = ixseps1 + 1;
@@ -909,7 +1002,7 @@ avtBOUTFileFormat::ReadMesh()
         //
         // Create the subgrids.
         //
-        for (int isubgrid = 0; isubgrid < N_SUB_MESHES; isubgrid++)
+        for (int isubgrid = 0; isubgrid < nSubMeshes; isubgrid++)
         {
             DetermineMeshReplication(subgrid[isubgrid]);
         }
@@ -919,9 +1012,9 @@ avtBOUTFileFormat::ReadMesh()
         // they meet at the center so that they all match.
         //
         int nxMax = int(std::max(subgrid[1].jnrep[jyseps1_1],
-                             subgrid[1].jnrep[jyseps2_2]));
+                                 subgrid[1].jnrep[jyseps2_2]));
         int nyMax = int(std::max(subgrid[0].jnrep[jyseps1_1],
-                             subgrid[2].jnrep[subgrid[2].nyIn-2]));
+                                 subgrid[2].jnrep[subgrid[2].nyIn-2]));
 
         subgrid[1].nyOut += (nxMax - subgrid[1].jnrep[jyseps1_1]) +
                             (nxMax - subgrid[1].jnrep[jyseps2_2]);
@@ -940,28 +1033,18 @@ avtBOUTFileFormat::ReadMesh()
     }
     else
     {
-        if (rvals == 0)
-            debug4 << mName << "error reading Rxy" << endl;
-        if (zvals == 0)
-            debug4 << mName << "error reading Zxy" << endl;
-        if (zshiftvals == 0)
-            debug4 << mName << "error reading zShift" << endl;
-        if (rt != FLOATARRAY_TYPE)
-            debug4 << mName << "Rxy was not the right type" << endl;
-        if (zt != FLOATARRAY_TYPE)
-            debug4 << mName << "Zxy was not the right type" << endl;
-        if (zshiftt != FLOATARRAY_TYPE)
-            debug4 << mName << "zShift was not the right type" << endl;
+        subgrid[0].nb = 2;
+        subgrid[0].istart = 0;
+        subgrid[0].iend = ixseps1;
+        subgrid[0].jstart[0] = jyseps1_1 + 1;
+        subgrid[0].jend[0] = jyseps2_2 + 1;
+        subgrid[0].jstart[1] = jyseps1_1 + 1;
+        subgrid[0].jend[1] = jyseps1_1 + 2;
 
-        if (rdims != 0) delete [] rdims;
-        if (rvals != 0) free_void_mem(rvals, rt);
-        if (zdims != 0) delete [] zdims;
-        if (zvals != 0) free_void_mem(zvals, zt);
-        if (zshiftdims != 0) delete [] zshiftdims;
-        if (zshiftvals != 0) free_void_mem(zshiftvals, zshiftt);
-
-        std::string msg("\"The grid could not be read.\"");
-        EXCEPTION1(InvalidVariableException, msg);
+        //
+        // Create the subgrid.
+        //
+        DetermineMeshReplication(subgrid[0]);
     }
 
     meshRead = true;
@@ -1425,6 +1508,8 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
+//   I added the ability to handle circular grids.
 //   
 // ****************************************************************************
 
@@ -1492,14 +1577,14 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
     int dims[3];
     if (strcmp(var, "mesh") == 0 || strcmp(var, "mesh_zshift") == 0)
     {
-        int isubgrid = domain % N_SUB_MESHES;
+        int isubgrid = domain % nSubMeshes;
         dims[0] = subgrid[isubgrid].nyOut;
         dims[1] = subgrid[isubgrid].nxOut;
         dims[2] = nzOut;
     }
     else if (strcmp(var, "mesh_2d") == 0)
     {
-        int isubgrid = domain % N_SUB_MESHES;
+        int isubgrid = domain % nSubMeshes;
         dims[0] = subgrid[isubgrid].nyOut;
         dims[1] = subgrid[isubgrid].nxOut;
         dims[2] = 1;
@@ -1521,20 +1606,20 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
 
     if (strcmp(var, "mesh") == 0)
     {
-        int iblock = domain / N_SUB_MESHES;
-        int isubgrid = domain % N_SUB_MESHES;
+        int iblock = domain / nSubMeshes;
+        int isubgrid = domain % nSubMeshes;
         CreateMesh(subgrid[isubgrid], iblock, 3, zShiftZero, pts);
     }
     else if (strcmp(var, "mesh_zshift") == 0)
     {
-        int iblock = domain / N_SUB_MESHES;
-        int isubgrid = domain % N_SUB_MESHES;
+        int iblock = domain / nSubMeshes;
+        int isubgrid = domain % nSubMeshes;
         CreateMesh(subgrid[isubgrid], iblock, 3, zShift, pts);
     }
     else if (strcmp(var, "mesh_2d") == 0)
     {
-        int iblock = domain / N_SUB_MESHES;
-        int isubgrid = domain % N_SUB_MESHES;
+        int iblock = domain / nSubMeshes;
+        int isubgrid = domain % nSubMeshes;
         CreateMesh(subgrid[isubgrid], iblock, 2, zShiftZero, pts);
     }
     else
@@ -1566,6 +1651,8 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
+//   I added the ability to handle circular grids.
 //   
 // ****************************************************************************
 
@@ -1636,8 +1723,8 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
     }
     else
     {
-        iblock = domain / N_SUB_MESHES;
-        isubgrid = domain % N_SUB_MESHES;
+        iblock = domain / nSubMeshes;
+        isubgrid = domain % nSubMeshes;
     }
 
     //
@@ -1762,7 +1849,7 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
     }
     if (cacheVar != var || cacheTime != ts)
     {
-        for (int i = 0; i < N_SUB_MESHES; ++i)
+        for (int i = 0; i < MAX_SUB_MESHES; ++i)
         {
             if (cacheData[i] != NULL) cacheData[i]->Delete();
             cacheData[i] = NULL;
