@@ -2309,7 +2309,11 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
     for (int i = 0; i < numICs; i++)
     {
-        avtStateRecorderIntegralCurve *ic = dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+        avtStateRecorderIntegralCurve *ic =
+          dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+
+        // std::cerr << ic->status << std::endl;
+
         size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
         if (numSamps <= 1)
             continue;
