@@ -47,6 +47,7 @@
 #include <limits>
 
 #include <DebugStream.h>
+#include <avtCallback.h>
 
 #include <vtkCellData.h>
 #include <vtkIntArray.h>
@@ -92,7 +93,7 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
 
   float *vec_ptr = (float *) vecs->GetVoidPointer(0);
 
-  unsigned int iDim, iBlockSize[3], npts = 1;
+  unsigned int iDim, iBlockSize[3], iNumBlocks, npts = 1;
 
   // Get the number of point per spectrial elements
   vtkIntArray *semVTK =
@@ -103,6 +104,7 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
     iBlockSize[0] = semVTK->GetValue(0);
     iBlockSize[1] = semVTK->GetValue(1);
     iBlockSize[2] = semVTK->GetValue(2);
+    iNumBlocks    = semVTK->GetValue(3);
 
     if( iBlockSize[2] > 1 )
       iDim = 3;
@@ -117,9 +119,21 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
   unsigned int pts_per_element = iBlockSize[0] * iBlockSize[1];
   if (iDim == 3)
     pts_per_element *= iBlockSize[2];
-
+ 
   // Get the numver of elements for checking the validity of the data.
   unsigned int num_elements = pts->GetNumberOfPoints() / pts_per_element;
+
+  if( num_elements != iNumBlocks )
+  {
+    std::string str("The number of elements available for advection does not "
+                    "match the number blocks in the dataset. As such, curves "
+                    "may not be advected across element boundaries. "
+                    "This can occur when the Nek5000 file contains boundary or "
+                    "extents meta data. In the 'Advanced' tab select "
+                    "'Parallelization' to be 'Parallelize over domains'.");
+
+    avtCallback::IssueWarning(str.c_str());
+  }
 
   unsigned int hexes_per_element = (iBlockSize[0]-1)*(iBlockSize[1]-1);
   if (iDim == 3)

@@ -432,6 +432,8 @@ inline std::ostream& operator<<(std::ostream& out,
         out<<"ExitTemporalBoundary ";
     if (status.NumericalError())
         out<<"NumericalError ";
+    if (status.BadStepError())
+        out<<"BadStepError ";
     
     out<<"}";
     return out;
