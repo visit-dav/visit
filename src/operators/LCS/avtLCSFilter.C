@@ -1254,10 +1254,10 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         }
     }
 
-    std::cerr << "Max steps " << maxSteps
-              << "  max time " << maxTime
-              << "  max arc length " << maxLength
-              << std::endl;
+    // std::cerr << "Max steps " << maxSteps
+    //           << "  max time " << maxTime
+    //           << "  max arc length " << maxLength
+    //           << std::endl;
 
     // std::cout << PAR_Rank() << " total integral pts: "
     //        << ics.size() << std::endl;
@@ -1399,7 +1399,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
             remapTimes[index] = all_times[j];
             remapLengths[index] = all_lengths[j];
-
             remapPoints[index].set( all_points[k+0],
                                     all_points[k+1],
                                     all_points[k+2]);
@@ -1436,53 +1435,52 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
           jacobian[1]->Delete();
           jacobian[2]->Delete();
         }
-        else
+        else if( atts.GetOperatorType() == LCSAttributes::BaseValue )
         {
           int index = atts.GetOperationType() - 1;
+          
+          for (size_t l = 0; l < leafSize; l++)
+            component->SetTuple1(l, remapPoints[l][index]);
+        }
 
-          if( atts.GetOperatorType() == LCSAttributes::BaseValue )
+        else if( atts.GetOperatorType() == LCSAttributes::Gradient )
+        {
+          int index = atts.GetOperationType() - 1;
+          
+          // The base value is used to clamp the log values to be only
+          // positive or both positive and negative.
+          double baseValue;
+
+          if (atts.GetClampLogValues() == true )
+            baseValue = 1.0;
+          else
+            baseValue = std::numeric_limits<double>::epsilon();
+
+          for (size_t l = 0; l < leafSize; l++)
+            component->SetTuple1(l, remapPoints[l][index]);
+
+          vtkDataArray* gradient =
+            avtGradientExpression::CalculateGradient(rect_grid, var.c_str());
+
+          for (size_t l = 0; l < leafSize; l++)
           {
-            for (size_t l = 0; l < leafSize; l++)
-              component->SetTuple1(l, remapPoints[l][index]);
+            double *grad = gradient->GetTuple3(l);
+
+            double lambda = baseValue;
+            lambda = std::max( lambda, grad[0]*grad[0] );
+            lambda = std::max( lambda, grad[1]*grad[1] );
+            lambda = std::max( lambda, grad[2]*grad[2] );
+            lambda = log( sqrtf( lambda ) );
+
+            if( doTime )
+              lambda /= maxTime;
+            else if( doDistance )
+              lambda /= maxDistance;
+
+            component->SetTuple1(l, lambda);
           }
 
-          else if( atts.GetOperatorType() == LCSAttributes::Gradient )
-          {
-            // The base value is used to clamp the log values to be only
-            // positive or both positive and negative.
-            double baseValue;
-
-            if (atts.GetClampLogValues() == true )
-              baseValue = 1.0;
-            else
-              baseValue = std::numeric_limits<double>::epsilon();
-
-            for (size_t l = 0; l < leafSize; l++)
-              component->SetTuple1(l, remapPoints[l][index]);
-
-            vtkDataArray* gradient =
-              avtGradientExpression::CalculateGradient(rect_grid, var.c_str());
-
-            for (size_t l = 0; l < leafSize; l++)
-            {
-              double *grad = gradient->GetTuple3(l);
-
-              double lambda = baseValue;
-              lambda = std::max( lambda, grad[0]*grad[0] );
-              lambda = std::max( lambda, grad[1]*grad[1] );
-              lambda = std::max( lambda, grad[2]*grad[2] );
-              lambda = log( sqrtf( lambda ) );
-
-              if( doTime )
-                lambda /= maxTime;
-              else if( doDistance )
-                lambda /= maxDistance;
-
-              component->SetTuple1(l, lambda);
-            }
-
-            gradient->Delete();
-          }
+          gradient->Delete();
         }
 
         //min and max values over all datasets of the tree.

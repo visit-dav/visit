@@ -829,9 +829,9 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               limitMaxDistance->hide();
               limitMaxTime->hide();
 
-              LCSAtts->SetTerminateByTime( LCSAtts->GetTerminationType() == 0);
-              LCSAtts->SetTerminateByDistance( LCSAtts->GetTerminationType() == 1);
-              LCSAtts->SetTerminateBySize( LCSAtts->GetTerminationType() == 2);
+              LCSAtts->SetTerminateByTime(     LCSAtts->GetTerminationType() == LCSAttributes::Time);
+              LCSAtts->SetTerminateByDistance( LCSAtts->GetTerminationType() == LCSAttributes::Distance);
+              LCSAtts->SetTerminateBySize(     LCSAtts->GetTerminationType() == LCSAttributes::Size);
 
               clampLogValues->show();
               operatorType->hide();
@@ -858,10 +858,12 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             operatorType->blockSignals(true);
             operatorType->setCurrentIndex(int(LCSAtts->GetOperatorType()) );
             operatorType->blockSignals(false);
-            if( LCSAtts->GetOperatorType() == LCSAttributes::BaseValue)
-              clampLogValues->hide();
-            else
+
+            if( LCSAtts->GetOperationType() == LCSAttributes::Lyapunov ||
+                LCSAtts->GetOperatorType() == LCSAttributes::Gradient)
               clampLogValues->show();
+            else
+              clampLogValues->hide();
             break;
 
         case LCSAttributes::ID_clampLogValues:

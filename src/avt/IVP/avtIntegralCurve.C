@@ -255,15 +255,18 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
     // Catch cases where the start position is outside the
     // domain of field; in this case, mark the curve 
-    avtIVPField::Result fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+    avtIVPField::Result fieldRes =
+      field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
 
     if (fieldRes != avtIVPField::OK)
     {
         if( DebugStream::Level5() )
             debug5 << "avtIntegralCurve::Advance(): initial point is outside domain\n";
-        if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+        if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
+            fieldRes == avtIVPField::OUTSIDE_BOTH)
             status.SetAtSpatialBoundary();
-        if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+        if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL ||
+            fieldRes == avtIVPField::OUTSIDE_BOTH)
             status.SetAtTemporalBoundary();
         return;
     }
