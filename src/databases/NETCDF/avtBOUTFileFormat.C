@@ -455,6 +455,9 @@ avtBOUTFileFormat::GetTimes(doubleVector &t)
 //   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
 //   I added the ability to handle circular grids.
 //
+//   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
+//   I added the ability to handle grids with two X points.
+//
 // ****************************************************************************
 
 void
@@ -507,13 +510,18 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     ReadMeshMetaData();
     if (jyseps1_1 == -1)
     {
-        circularMesh = true;
+        gridType = circularGrid;
         nSubMeshes = 1;
+    }
+    else if (jyseps2_1 == jyseps1_2)
+    {
+        gridType = oneXGrid;
+        nSubMeshes = 4;
     }
     else
     {
-        circularMesh = false;
-        nSubMeshes = 4;
+        gridType = twoXGrid;
+        nSubMeshes = 7;
     }
 
     //
@@ -552,7 +560,7 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     meshNameZShift, AVT_NODECENT);
                 md->Add(smd);
 
-                if (!circularMesh)
+                if (gridType != circularGrid)
                 {
                     std::string varNameDiverter= varName + "_diverter";
                     smd = new avtScalarMetaData(varNameDiverter,
@@ -590,7 +598,7 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         1, 1, 0, 2, 2, AVT_CURVILINEAR_MESH);
     md->Add(mmd);
 
-    if (!circularMesh)
+    if (gridType != circularGrid)
     {
         mmd = new avtMeshMetaData(meshNameDiverter,
             N_DIVERTER_SUB_MESHES * zperiod, 1, 1, 0, 3, 3,
@@ -902,6 +910,9 @@ avtBOUTFileFormat::ReadMeshMetaData()
 //   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
 //   I added the ability to handle circular grids.
 //   
+//   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
+//   I added the ability to handle grids with two X points.
+//
 // ****************************************************************************
 
 bool
@@ -963,10 +974,29 @@ avtBOUTFileFormat::ReadMesh()
     nxRaw = rdims[0];
     nyRaw = rdims[1];
 
+    delete [] rdims;
+    delete [] zdims;
+    delete [] zshiftdims;
+
     //
     // Create the definitions of how to create the various subgrids.
     //
-    if (!circularMesh)
+    if (gridType == circularGrid)
+    {
+        subgrid[0].nb = 2;
+        subgrid[0].istart = 0;
+        subgrid[0].iend = ixseps1;
+        subgrid[0].jstart[0] = jyseps1_1 + 1;
+        subgrid[0].jend[0] = jyseps2_2 + 1;
+        subgrid[0].jstart[1] = jyseps1_1 + 1;
+        subgrid[0].jend[1] = jyseps1_1 + 2;
+
+        //
+        // Create the subgrid.
+        //
+        DetermineMeshReplication(subgrid[0]);
+    }
+    else if (gridType == oneXGrid)
     {
         subgrid[0].nb = 2;
         subgrid[0].istart = 0;
@@ -998,10 +1028,6 @@ avtBOUTFileFormat::ReadMesh()
         subgrid[3].jstart[1] = jyseps2_2 + 1;
         subgrid[3].jend[1] = jyseps2_2 - 1;
  
-        delete [] rdims;
-        delete [] zdims;
-        delete [] zshiftdims;
-
         //
         // Create the subgrids.
         //
@@ -1030,7 +1056,7 @@ avtBOUTFileFormat::ReadMesh()
         subgrid[2].jnrep[subgrid[2].nyIn-2] = nyMax;
 
         subgrid[3].nxOut = nxMax + 1;
-        subgrid[3].jnrep[0] = nxMax;
+        subgrid[3].inrep[0] = nxMax;
         subgrid[3].nyOut = nyMax + 1;
         subgrid[3].jnrep[0] = nyMax;
     }
@@ -1038,16 +1064,103 @@ avtBOUTFileFormat::ReadMesh()
     {
         subgrid[0].nb = 2;
         subgrid[0].istart = 0;
-        subgrid[0].iend = ixseps1;
-        subgrid[0].jstart[0] = jyseps1_1 + 1;
-        subgrid[0].jend[0] = jyseps2_2 + 1;
-        subgrid[0].jstart[1] = jyseps1_1 + 1;
-        subgrid[0].jend[1] = jyseps1_1 + 2;
+        subgrid[0].iend = ixseps1 + 1;
+        subgrid[0].jstart[0] = 0;
+        subgrid[0].jend[0] = jyseps1_1 + 1;
+        subgrid[0].jstart[1] = jyseps2_2 + 1;
+        subgrid[0].jend[1] = nyRaw;
+
+        subgrid[1].nb = 1;
+        subgrid[1].istart = ixseps1;
+        subgrid[1].iend = nxRaw;
+        subgrid[1].jstart[0] = 0;
+        subgrid[1].jend[0] = jyseps2_1 + (jyseps1_2 - jyseps2_1) / 2 + 1;
+
+        subgrid[2].nb = 1;
+        subgrid[2].istart = ixseps1;
+        subgrid[2].iend = nxRaw;
+        subgrid[2].jstart[0] = jyseps2_1 + (jyseps1_2 - jyseps2_1) / 2 + 1;
+        subgrid[2].jend[0] = nyRaw;
+
+        subgrid[3].nb = 1;
+        subgrid[3].istart = 0;
+        subgrid[3].iend = ixseps1 + 1;
+        subgrid[3].jstart[0] = jyseps1_1 + 1;
+        subgrid[3].jend[0] = jyseps2_1 + (jyseps1_2 - jyseps2_1) / 2 + 1;
+
+        subgrid[4].nb = 2;
+        subgrid[4].istart = 0;
+        subgrid[4].iend = ixseps1 + 1;
+        subgrid[4].jstart[0] = jyseps2_1 + (jyseps1_2 - jyseps2_1) / 2 + 1;
+        subgrid[4].jend[0] = jyseps2_2 + 1;
+        subgrid[4].jstart[1] = jyseps1_1 + 1;
+        subgrid[4].jend[1] = jyseps1_1 + 2;
+
+        subgrid[5].nb = 2;
+        subgrid[5].istart = ixseps1;
+        subgrid[5].iend = ixseps1 + 1;
+        subgrid[5].jstart[0] = jyseps1_1;
+        subgrid[5].jend[0] = jyseps1_1 + 2;
+        subgrid[5].jstart[1] = jyseps2_2 + 1;
+        subgrid[5].jend[1] = jyseps2_2 - 1;
+ 
+        subgrid[6].nb = 2;
+        subgrid[6].istart = 0;
+        subgrid[6].iend = 1;
+        subgrid[6].jstart[0] = jyseps2_1;
+        subgrid[6].jend[0] = jyseps2_1 + 2;
+        subgrid[6].jstart[1] = jyseps1_2 + 1;
+        subgrid[6].jend[1] = jyseps1_2 - 1;
+ 
+        //
+        // Create the subgrids.
+        //
+        for (int isubgrid = 0; isubgrid < nSubMeshes; isubgrid++)
+        {
+            DetermineMeshReplication(subgrid[isubgrid]);
+        }
 
         //
-        // Create the subgrid.
+        // Adjust the replication factors of the different grids where
+        // they meet at the center so that they all match.
         //
-        DetermineMeshReplication(subgrid[0]);
+        int nxMax = int(std::max(subgrid[1].jnrep[jyseps1_1],
+                                 subgrid[2].jnrep[jyseps2_2-jyseps2_1-6]));
+        int nyMax = int(std::max(subgrid[0].jnrep[jyseps1_1],
+                                 subgrid[4].jnrep[subgrid[4].nyIn-2]));
+
+        subgrid[1].nyOut += (nxMax - subgrid[1].jnrep[jyseps1_1]);
+        subgrid[1].jnrep[jyseps1_1] = nxMax;
+        subgrid[2].nyOut += (nxMax - subgrid[2].jnrep[jyseps2_2-jyseps2_1-5]);
+        subgrid[2].jnrep[jyseps2_2-jyseps2_1-5] = nxMax;
+
+        subgrid[0].nyOut += nyMax - subgrid[0].jnrep[jyseps1_1];
+        subgrid[0].jnrep[jyseps1_1] = nyMax;
+        subgrid[4].nyOut += nyMax - subgrid[4].jnrep[subgrid[4].nyIn-2];
+        subgrid[4].jnrep[subgrid[4].nyIn-2] = nyMax;
+
+        subgrid[5].nxOut = nxMax + 1;
+        subgrid[5].inrep[0] = nxMax;
+        subgrid[5].nyOut = nyMax + 1;
+        subgrid[5].jnrep[0] = nyMax;
+
+        nxMax = int(std::max(subgrid[1].jnrep[jyseps2_1],
+                             subgrid[2].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]));
+        nxMax = int(std::max(nxMax,
+                             subgrid[3].jnrep[jyseps2_1 - jyseps1_1 - 1]));
+        nxMax = int(std::max(nxMax,
+                             subgrid[4].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]));
+        subgrid[1].nyOut += (nxMax - subgrid[1].jnrep[jyseps2_1]);
+        subgrid[1].jnrep[jyseps2_1] = nxMax;
+        subgrid[2].nyOut += (nxMax - subgrid[2].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]);
+        subgrid[2].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1] = nxMax;
+        subgrid[3].nyOut += (nxMax - subgrid[3].jnrep[jyseps2_1 - jyseps1_1 - 1]);
+        subgrid[3].jnrep[jyseps2_1 - jyseps1_1 - 1] = nxMax;
+        subgrid[4].nyOut += (nxMax - subgrid[4].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]);
+        subgrid[4].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1] = nxMax;
+
+        subgrid[6].nxOut = nxMax + 1;
+        subgrid[6].inrep[0] = nxMax;
     }
 
     meshRead = true;
@@ -1514,6 +1627,9 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
 //   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
 //   I added the ability to handle circular grids.
 //   
+//   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
+//   I added the ability to handle grids with two X points.
+//
 // ****************************************************************************
 
 #if 0
@@ -1594,7 +1710,12 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
     }
     else
     {
-        dims[0] = subgrid[DIVERTER_SUBGRID].nxOut;
+        int isubgrid;
+        if (gridType == oneXGrid)
+            isubgrid = 0;
+        else
+            isubgrid = domain % N_DIVERTER_SUB_MESHES;
+        dims[0] = subgrid[DIVERTER_SUBGRID+isubgrid].nxOut;
         dims[1] = nzOut;
         dims[2] = 1;
     }
@@ -1627,7 +1748,13 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
     }
     else
     {
-        CreateDiverterMesh(subgrid[DIVERTER_SUBGRID], domain, zShift, pts);
+        int isubgrid;
+        if (gridType == oneXGrid)
+            isubgrid = 0;
+        else
+            isubgrid = domain % N_DIVERTER_SUB_MESHES;
+        CreateDiverterMesh(subgrid[DIVERTER_SUBGRID+isubgrid],
+                           domain, zShift, pts);
     }
 
     retval = sgrid;
@@ -1657,6 +1784,9 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
 //   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
 //   I added the ability to handle circular grids.
 //   
+//   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
+//   I added the ability to handle grids with two X points.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1813,7 +1943,12 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
     int nValues2;
     if (diverter_var)
     {
-        nValues2 = subgrid[DIVERTER_SUBGRID].nxOut * nzOut;
+        int isubgrid;
+        if (gridType == oneXGrid)
+            isubgrid = 0;
+        else
+            isubgrid = domain % N_DIVERTER_SUB_MESHES;
+        nValues2 = subgrid[DIVERTER_SUBGRID+isubgrid].nxOut * nzOut;
     }
     else
     {
@@ -1833,7 +1968,13 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
 
     if (diverter_var)
     {
-        CreateDiverterVar(subgrid[DIVERTER_SUBGRID], domain, data, vals);
+        int isubgrid;
+        if (gridType == oneXGrid)
+            isubgrid = 0;
+        else
+            isubgrid = domain % N_DIVERTER_SUB_MESHES;
+        CreateDiverterVar(subgrid[DIVERTER_SUBGRID+isubgrid],
+                          domain, data, vals);
     }
     else
     {
