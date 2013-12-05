@@ -59,12 +59,17 @@ class avtFileFormatInterface;
 //   Eric Brugger, Mon Dec  2 15:43:26 PST 2013
 //   I added the ability to handle circular grids.
 //   
+//   Eric Brugger, Tue Dec  3 10:20:02 PST 2013
+//   I added the ability to handle grids with two X points.
+//
 // ****************************************************************************
 
-#define MAX_SUB_MESHES 4
+#define MAX_SUB_MESHES 7
 
 #define N_DIVERTER_SUB_MESHES 2
 #define DIVERTER_SUBGRID 1
+
+enum GridType {circularGrid, oneXGrid, twoXGrid};
 
 struct Subgrid
 {
@@ -78,7 +83,6 @@ struct Subgrid
     int               *inrep;
     int               *jnrep;
 };
-
 
 class avtBOUTFileFormat : public avtMTMDFileFormat
 {
@@ -126,7 +130,7 @@ public:
     int                    ixseps1, ixseps2;
     int                    jyseps1_1, jyseps1_2;
     int                    jyseps2_1, jyseps2_2;
-    bool                   circularMesh;
+    GridType               gridType;
     int                    nSubMeshes;
     Subgrid                subgrid[MAX_SUB_MESHES];
 
