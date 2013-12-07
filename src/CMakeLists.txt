@@ -722,6 +722,7 @@ VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
 VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
 VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
+VISIT_3RDPARTY_VAR(UINTAH_DIR   "Path containing the Uintah library's include and lib")
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -1271,6 +1272,12 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
     IF(MDSPLUS_FOUND)
         SET(HAVE_LIBMDSPLUS 1)
     ENDIF(MDSPLUS_FOUND)
+
+    # Configure Uintah support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindUintah.cmake)
+    IF(UINTAH_FOUND)
+        SET(HAVE_LIBUINTAH 1)
+    ENDIF(UINTAH_FOUND)
 ENDIF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
 
 # Configure Manta support.
