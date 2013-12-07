@@ -36,6 +36,7 @@
             <lib name="manta"/>
             <lib name="mpich"/>
             <lib name="zlib"/>
+            <lib name="uintah"/>
         </optional>
 
 
@@ -138,6 +139,7 @@
             <lib name="tcmalloc"/>
             <lib name="itaps"/>
             <lib name="hdf4"/>
+            <lib name="uintah"/>
         </group>
     </license>
 
