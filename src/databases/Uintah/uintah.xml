@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <Plugin name="Uintah" type="database" label="Uintah" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      -DUINTAH_LIBRARY_DIR="${UINTAH_LIBRARY_DIR}"
+      -DUINTAH_LIB="${UINTAH_LIB}"
+      -DUINTAH_UDA_TO_VIS_LIB="${UINTAH_LIBRARY_DIR}/${UINTAH_LIB}"
+      ${UINTAH_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${UINTAH_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${UINTAH_LIB}
+    </LIBS>
+    <FilePatterns>
+      *.xml
+    </FilePatterns>
+    <Files components="M">
+      avtUintahFileFormat.C
+      avtUintahOptions.C
+    </Files>
+    <Files components="E">
+      avtUintahFileFormat.C
+      avtUintahOptions.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
