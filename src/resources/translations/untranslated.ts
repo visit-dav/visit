@@ -30,12 +30,12 @@
 <context>
     <name>AddWindowAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="107"/>
+        <location filename="../../viewer/main/WindowActions.C" line="111"/>
         <source>Create a new viewer window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="108"/>
+        <location filename="../../viewer/main/WindowActions.C" line="112"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
@@ -43,12 +43,12 @@
 <context>
     <name>AnimationPlayAction</name>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="153"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="178"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="154"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="179"/>
         <source>Play animation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -56,12 +56,12 @@
 <context>
     <name>AnimationReversePlayAction</name>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="91"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="96"/>
         <source>Reverse play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="92"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="97"/>
         <source>Play animation in reverse</source>
         <translation type="unfinished"></translation>
     </message>
@@ -69,12 +69,12 @@
 <context>
     <name>AnimationStopAction</name>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="122"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="127"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="123"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="128"/>
         <source>Stop animation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -82,7 +82,7 @@
 <context>
     <name>ChangeActivePlotsVarAction</name>
     <message>
-        <location filename="../../viewer/main/PlotAndOperatorActions.C" line="1846"/>
+        <location filename="../../viewer/main/PlotAndOperatorActions.C" line="1850"/>
         <source>VisIt was unable to change the active variable because: %1
 </source>
         <translation type="unfinished"></translation>
@@ -119,7 +119,7 @@
 <context>
     <name>ClearAllWindowsAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="354"/>
+        <location filename="../../viewer/main/WindowActions.C" line="358"/>
         <source>Clear all windows</source>
         <translation type="unfinished"></translation>
     </message>
@@ -127,7 +127,7 @@
 <context>
     <name>ClearPickPointsAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="397"/>
+        <location filename="../../viewer/main/WindowActions.C" line="401"/>
         <source>Clear pick points</source>
         <translation type="unfinished"></translation>
     </message>
@@ -135,7 +135,7 @@
 <context>
     <name>ClearReferenceLinesAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="463"/>
+        <location filename="../../viewer/main/WindowActions.C" line="467"/>
         <source>Clear reference lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -143,7 +143,7 @@
 <context>
     <name>ClearWindowAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="286"/>
+        <location filename="../../viewer/main/WindowActions.C" line="290"/>
         <source>Clear all plots from this window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -151,12 +151,12 @@
 <context>
     <name>CloneWindowAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="156"/>
+        <location filename="../../viewer/main/WindowActions.C" line="160"/>
         <source>Clone this window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="157"/>
+        <location filename="../../viewer/main/WindowActions.C" line="161"/>
         <source>Clone</source>
         <translation type="unfinished"></translation>
     </message>
@@ -164,8 +164,77 @@
 <context>
     <name>CopyPlotAction</name>
     <message>
-        <location filename="../../viewer/main/PlotAndOperatorActions.C" line="2446"/>
+        <location filename="../../viewer/main/PlotAndOperatorActions.C" line="2450"/>
         <source>Copy active plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DDTSession</name>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="216"/>
+        <location filename="../../viewer/main/DDTSession.C" line="224"/>
+        <source>Not connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="218"/>
+        <source>Connecting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="220"/>
+        <source>Connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="222"/>
+        <source>Disconnecting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="246"/>
+        <source>No domain information, may not be a parallel simulation. DDT&apos;s focus will not be changed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="256"/>
+        <source>Cannot focus DDT on domain %0 as VisIt is not currently connected to DDT.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="280"/>
+        <source>Connection refused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="282"/>
+        <source>Connection closed by DDT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="284"/>
+        <source>DDT not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="286"/>
+        <source>Insufficient permissions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="288"/>
+        <source>Too many sockets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="290"/>
+        <source>Timed out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/DDTSession.C" line="292"/>
+        <source>Connection error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -180,12 +249,12 @@
 <context>
     <name>DeleteWindowAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="209"/>
+        <location filename="../../viewer/main/WindowActions.C" line="213"/>
         <source>Delete this window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="210"/>
+        <location filename="../../viewer/main/WindowActions.C" line="214"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
@@ -201,67 +270,67 @@
 <context>
     <name>EnableToolAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1176"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1199"/>
         <source>Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1185"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1208"/>
         <source>Box</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1185"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1208"/>
         <source>Box tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1187"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1210"/>
         <source>Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1187"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1210"/>
         <source>Line tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1189"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1212"/>
         <source>Plane</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1189"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1212"/>
         <source>Plane tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1191"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1214"/>
         <source>Sphere</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1191"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1214"/>
         <source>Sphere tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1193"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1216"/>
         <source>Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1193"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1216"/>
         <source>Point tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1195"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1218"/>
         <source>Axis Restriction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1195"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1218"/>
         <source>Axis Restriction tool</source>
         <translation type="unfinished"></translation>
     </message>
@@ -306,12 +375,12 @@
 <context>
     <name>InvertBackgroundAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="874"/>
+        <location filename="../../viewer/main/WindowActions.C" line="878"/>
         <source>Invert background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="875"/>
+        <location filename="../../viewer/main/WindowActions.C" line="879"/>
         <source>Swap background and foreground colors</source>
         <translation type="unfinished"></translation>
     </message>
@@ -909,6 +978,56 @@
         <source>Zone Dump</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/CartographicProjectionGUIPluginInfo.C" line="79"/>
+        <source>Cartographic Projection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtractPointFunction2D/ExtractPointFunction2DGUIPluginInfo.C" line="79"/>
+        <source>Extract Point Function 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/IntegralCurveGUIPluginInfo.C" line="79"/>
+        <source>IntegralCurve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/LCSGUIPluginInfo.C" line="79"/>
+        <source>LCS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/ModelBasedClusteringGUIPluginInfo.C" line="79"/>
+        <source>ModelBasedClustering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/PeaksOverThresholdGUIPluginInfo.C" line="79"/>
+        <source>PeaksOverThreshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/PoincareGUIPluginInfo.C" line="79"/>
+        <source>Poincare</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ProgrammableOp/ProgrammableOpGUIPluginInfo.C" line="79"/>
+        <source>ProgrammableOp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/RectilinearProject2D/RectilinearProject2DGUIPluginInfo.C" line="79"/>
+        <source>Rectilinear Project 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/StatisticalTrendsGUIPluginInfo.C" line="79"/>
+        <source>StatisticalTrends</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PlotNames</name>
@@ -1031,23 +1150,23 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../gui/GUIBase.C" line="619"/>
+        <location filename="../../gui/GUIBase.C" line="620"/>
         <source>Reopening </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/GUIBase.C" line="620"/>
-        <location filename="../../gui/GUIBase.C" line="625"/>
+        <location filename="../../gui/GUIBase.C" line="621"/>
+        <location filename="../../gui/GUIBase.C" line="626"/>
         <source> on </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/GUIBase.C" line="624"/>
+        <location filename="../../gui/GUIBase.C" line="625"/>
         <source>Opening </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/GUIBase.C" line="649"/>
+        <location filename="../../gui/GUIBase.C" line="650"/>
         <source>VisIt could not open the file %1.
 
 The metadata server returned the following message:
@@ -1056,31 +1175,31 @@ The metadata server returned the following message:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/GUIBase.C" line="889"/>
+        <location filename="../../gui/GUIBase.C" line="890"/>
         <source>The value(s) for &apos;%1&apos; were invalid. Resetting to the last good value(s) of %2.</source>
         <comment>ResettingError</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBoxItem.C" line="498"/>
+        <location filename="../../gui/QvisPlotListBoxItem.C" line="503"/>
         <source>Use selection [%1]</source>
         <comment>QvisPlotListBoxItem</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBoxItem.C" line="571"/>
-        <location filename="../../gui/QvisPlotListBoxItem.C" line="1231"/>
+        <location filename="../../gui/QvisPlotListBoxItem.C" line="579"/>
+        <location filename="../../gui/QvisPlotListBoxItem.C" line="1239"/>
         <source>hidden</source>
         <comment>QvisPlotListBoxItem</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBoxItem.C" line="589"/>
+        <location filename="../../gui/QvisPlotListBoxItem.C" line="597"/>
         <source>Create selection [%1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/viewer.C" line="220"/>
+        <location filename="../../viewer/main/viewer.C" line="229"/>
         <source>VisIt has encountered the following error: %1.
 VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
         <translation type="unfinished"></translation>
@@ -1906,318 +2025,366 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <location filename="../../operators/Box/QvisBoxWindow.C" line="147"/>
-        <location filename="../../operators/Box/QvisBoxWindow.C" line="280"/>
+        <location filename="../../operators/Box/QvisBoxWindow.C" line="290"/>
         <source>X-Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Box/QvisBoxWindow.C" line="154"/>
-        <location filename="../../operators/Box/QvisBoxWindow.C" line="294"/>
+        <location filename="../../operators/Box/QvisBoxWindow.C" line="304"/>
         <source>X-Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Box/QvisBoxWindow.C" line="161"/>
-        <location filename="../../operators/Box/QvisBoxWindow.C" line="308"/>
+        <location filename="../../operators/Box/QvisBoxWindow.C" line="318"/>
         <source>Y-Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Box/QvisBoxWindow.C" line="168"/>
-        <location filename="../../operators/Box/QvisBoxWindow.C" line="322"/>
+        <location filename="../../operators/Box/QvisBoxWindow.C" line="332"/>
         <source>Y-Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Box/QvisBoxWindow.C" line="175"/>
-        <location filename="../../operators/Box/QvisBoxWindow.C" line="336"/>
+        <location filename="../../operators/Box/QvisBoxWindow.C" line="346"/>
         <source>Z-Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Box/QvisBoxWindow.C" line="182"/>
-        <location filename="../../operators/Box/QvisBoxWindow.C" line="350"/>
+        <location filename="../../operators/Box/QvisBoxWindow.C" line="360"/>
         <source>Z-Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Box/QvisBoxWindow.C" line="189"/>
+        <source>Inverse</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisCMFEWizard</name>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="163"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="170"/>
         <source>Data-Level Comparison Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="413"/>
-        <location filename="../../gui/QvisCMFEWizard.C" line="608"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="480"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="739"/>
         <source>Target Database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="420"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="456"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="468"/>
         <source>Database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="531"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="661"/>
         <source>Data-Level Comparisons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="532"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="662"/>
         <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="547"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="678"/>
+        <source>Between two or more meshes in a single database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="682"/>
         <source>Between different time slices on the same mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="552"/>
-        <source>Between meshes in a single database</source>
+        <location filename="../../gui/QvisCMFEWizard.C" line="687"/>
+        <source>Between meshes in two or more separate databases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="556"/>
-        <source>Between meshes in two separate databases</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="589"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="720"/>
         <source>Donor &amp; Target Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="591"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="722"/>
         <source>Which mesh should be used as the evaluation target? What is the desired donor field?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="630"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="761"/>
         <source>Target Mesh:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="648"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="779"/>
         <source>Donor Database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="671"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="803"/>
         <source>Donor Field:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="710"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="826"/>
+        <source>Add Donor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="827"/>
+        <source>Delete Donor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="828"/>
+        <source>Delete All Donors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="866"/>
         <source>Specify Donor Time Slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="711"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="867"/>
         <source>Which time slice do you want to extract data from?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="718"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="874"/>
         <source>&lt;u&gt;Absolute Versus Relative Time&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="723"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="879"/>
         <source>I want to specify an absolute time.
 The time slice I specify should not change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="728"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="884"/>
         <source>I want to specify a relative time.
 The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="739"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="895"/>
         <source>&lt;u&gt;Time Type and Value&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="746"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="902"/>
         <source>Simulation time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="751"/>
-        <location filename="../../gui/QvisCMFEWizard.C" line="762"/>
-        <location filename="../../gui/QvisCMFEWizard.C" line="773"/>
-        <location filename="../../gui/QvisCMFEWizard.C" line="889"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="907"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="918"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="929"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1045"/>
         <source>0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="757"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="913"/>
         <source>Simulation cycle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="767"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="923"/>
         <source>Time index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="778"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="934"/>
         <source>(Time index is the most robust and works in all circumstances)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="788"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="944"/>
         <source>&lt;u&gt;Examples&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="791"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="947"/>
         <source>#1: &quot;Simulation time&quot; with &quot;10.5&quot; and absolute time will always return the data from simulation time 10.5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="793"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="949"/>
         <source>#2: &quot;Time index&quot; with &quot;-1&quot; and relative time will always return the data from the time slice immediately preceding the current one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="820"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="976"/>
         <source>Specify Evaluation Scheme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="821"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="977"/>
         <source>Do you want to use indexing or interpolation?  How will you handle regions of non-overlap?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="827"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="983"/>
         <source>&lt;u&gt;Evaluation Scheme&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="836"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="992"/>
         <source>Connectivity-based CMFE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="839"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="995"/>
         <source>The value at index &apos;i&apos; of the target is assigned</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="842"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="998"/>
         <source>the value of index &apos;i&apos; from the donor.  This is efficient,</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="845"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1001"/>
         <source>but requires that the meshes are congruent.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="853"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1009"/>
         <source>Position-based CMFE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="857"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1013"/>
         <source>The value at index &apos;i&apos; from the target is evaluated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="860"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1016"/>
         <source>by first determining its location and then determining the</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="863"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1019"/>
         <source>value at that location from the donor mesh.  This is less</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="866"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1022"/>
         <source>efficient, but is robust and works on non-congruent meshes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="877"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1033"/>
         <source>&lt;u&gt;Handling For Non-Overlapping Regions&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="884"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1040"/>
         <source>Use a constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="894"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1050"/>
         <source>Use a variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="937"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1093"/>
         <source>Setting Up The Expression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="938"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1094"/>
         <source>How do you want to use your new CMFE expression?  What is its name?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="946"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1102"/>
         <source>Name of Expression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="959"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1115"/>
         <source>&lt;u&gt;What do you want to do with the donor field?&lt;u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="962"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1120"/>
         <source>Simply place it on the target mesh (you can then use this field in the expression editor to do more complex things)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="971"/>
-        <source>Difference with </source>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1130"/>
+        <source>Expression with </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="982"/>
-        <location filename="../../gui/QvisCMFEWizard.C" line="1148"/>
-        <location filename="../../gui/QvisCMFEWizard.C" line="1198"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1142"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1331"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1383"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="2427"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="2439"/>
         <source>&lt;Select&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="988"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1150"/>
+        <source>Minimum of valves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1153"/>
+        <source>Maximum of valves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1158"/>
+        <source>Sum of values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1161"/>
+        <source>Average of values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1164"/>
+        <source>Variance of values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1170"/>
         <source>Absolute value of difference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="991"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1173"/>
         <source>Donor field minus variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="994"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="1176"/>
         <source>Variable minus donor field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="1961"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="2340"/>
         <source>Select Target Database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisCMFEWizard.C" line="1994"/>
+        <location filename="../../gui/QvisCMFEWizard.C" line="2373"/>
         <source>Select Donor Database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2292,6 +2459,75 @@ The time slice I want will change as I change the time slider</source>
     <message>
         <location filename="../../plots/Volume/QvisCMap2Widget.C" line="355"/>
         <source>paraboloid</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisCartographicProjectionWindow</name>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="131"/>
+        <source>Projection type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="137"/>
+        <source>Aitoff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="138"/>
+        <source>Eckert IV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="139"/>
+        <source>Equidistant Conic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="140"/>
+        <source>Hammer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="141"/>
+        <source>Lambert Azimuthal Equal Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="142"/>
+        <source>Lambert Conformal Conic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="143"/>
+        <source>Mercator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="144"/>
+        <source>Miller Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="145"/>
+        <source>Mollweide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="146"/>
+        <source>Orthographic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="147"/>
+        <source>Winkel II</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="154"/>
+        <location filename="../../operators/CartographicProjection/QvisCartographicProjectionWindow.C" line="235"/>
+        <source>Central Meridian</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3179,168 +3415,264 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisCurvePlotWindow</name>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="165"/>
-        <source>Line/Point Geometry</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="177"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="359"/>
         <source>Show lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="188"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="370"/>
         <source>Line style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="198"/>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="396"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="380"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="576"/>
         <source>Line width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="213"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="406"/>
         <source>Show points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="248"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="397"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="442"/>
         <source>Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="249"/>
-        <source>triangle up</source>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="175"/>
+        <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="250"/>
-        <source>triangle down</source>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="182"/>
+        <source>Geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="251"/>
-        <source>square</source>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="189"/>
+        <source>Extras</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="252"/>
-        <source>circle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="253"/>
-        <source>plus</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="254"/>
-        <source>X</source>
+        <source>Fill</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="259"/>
-        <source>Symbol</source>
+        <source>Fill mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="269"/>
-        <source>Point size</source>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="262"/>
+        <source>No Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="263"/>
+        <source>Solid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="264"/>
+        <source>Horizontal Gradient</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="265"/>
+        <source>Vertical Gradient</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="270"/>
+        <source>Color 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="285"/>
+        <source>Color 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="349"/>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="443"/>
+        <source>triangle up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="444"/>
+        <source>triangle down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="445"/>
+        <source>square</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="446"/>
+        <source>circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="447"/>
+        <source>plus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="448"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="453"/>
+        <source>Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="463"/>
+        <source>Point size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="479"/>
         <source>Static</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="294"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="488"/>
         <source>Point stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="305"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="499"/>
         <source>Dynamic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="314"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="508"/>
         <source>Point density</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="327"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="218"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="335"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="226"/>
         <source>Curve color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="339"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="230"/>
         <source>Cycle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="343"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="234"/>
         <source>Custom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="361"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="541"/>
         <source>Create Cue For Current Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="368"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="548"/>
         <source>Add Ball</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="378"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="558"/>
         <source>Ball size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="385"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="565"/>
         <source>Add Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="404"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="584"/>
         <source>Crop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="409"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="589"/>
         <source>Position of cue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="420"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="304"/>
         <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="428"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="312"/>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="434"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="318"/>
         <source>Labels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="757"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="600"/>
+        <source>Coordinate System</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="608"/>
+        <source>Polar to Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="616"/>
+        <source>R_Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="617"/>
+        <source>Theta_R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="618"/>
+        <source>Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="630"/>
+        <source>Radians</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="631"/>
+        <source>Degrees</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="632"/>
+        <source>Units</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="1047"/>
         <source>Time Cue Ball Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="771"/>
+        <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="1061"/>
         <source>timeForTimeCue</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3349,20 +3681,25 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisCylinderWindow</name>
     <message>
         <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="130"/>
-        <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="227"/>
+        <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="237"/>
         <source>Endpoint 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="137"/>
-        <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="241"/>
+        <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="251"/>
         <source>Endpoint 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="144"/>
-        <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="255"/>
+        <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="265"/>
         <source>Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Cylinder/QvisCylinderWindow.C" line="151"/>
+        <source>Inverse</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3382,139 +3719,164 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisDataBinningWindow</name>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="136"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="142"/>
         <source>Bin Definitions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="141"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="147"/>
         <source>Dimensions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="156"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="162"/>
         <source>Dimension 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="157"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="163"/>
         <source>Dimension 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="158"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="164"/>
         <source>Dimension 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="164"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="215"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="266"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="170"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="221"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="272"/>
         <source>Bin based on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="169"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="220"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="271"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="357"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="175"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="226"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="277"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="363"/>
         <source>Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="176"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="227"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="278"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="182"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="233"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="284"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="178"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="229"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="280"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="184"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="235"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="286"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="180"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="231"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="282"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="186"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="237"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="288"/>
         <source>Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="189"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="234"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="285"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="814"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="856"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="195"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="240"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="291"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="860"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="902"/>
         <source>Number of bins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="196"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="241"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="292"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="202"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="247"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="298"/>
         <source>Specify range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="201"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="246"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="297"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="744"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="786"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="828"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="207"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="252"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="303"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="790"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="832"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="874"/>
         <source>Min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="208"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="253"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="304"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="758"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="800"/>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="842"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="214"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="259"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="310"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="804"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="846"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="888"/>
         <source>Max</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="317"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="323"/>
         <source>Behavior for data outside range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="324"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="330"/>
         <source>Clamp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="327"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="333"/>
         <source>Discard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="335"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="341"/>
         <source>Reduction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="340"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="346"/>
         <source>Reduction Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="365"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="371"/>
         <source>Value for bins with no data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="772"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="378"/>
+        <source>Remove bins with no data (curves only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="384"/>
+        <source>Output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="389"/>
+        <source>Output on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="396"/>
+        <source>Bins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="399"/>
+        <source>Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="818"/>
         <source>NumBins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="870"/>
+        <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="916"/>
         <source>Value for Bins With No Data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4087,201 +4449,201 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisExpressionsWindow</name>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="457"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="476"/>
         <source>Math</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="459"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="478"/>
         <source>Vector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="461"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="480"/>
         <source>Tensor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="463"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="482"/>
         <source>Array</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="465"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="484"/>
         <source>Material</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="467"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="486"/>
         <source>Mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="469"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="488"/>
         <source>Mesh Quality</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="471"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="490"/>
         <source>Comparison</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="473"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="492"/>
         <source>Image Processing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="475"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="494"/>
         <source>Miscellaneous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="477"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="496"/>
         <source>Trigonometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="479"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="498"/>
         <source>Relational</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="481"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="500"/>
         <source>Conditional</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="483"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="502"/>
         <source>Logical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="485"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="504"/>
         <source>Time Iteration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="561"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="580"/>
         <source>Expression List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="567"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="586"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="570"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="589"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="573"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="592"/>
         <source>Display expressions from database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="578"/>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="666"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="597"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="685"/>
         <source>Definition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="583"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="602"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="589"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="608"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="592"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="611"/>
         <source>Scalar Mesh Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="593"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="612"/>
         <source>Vector Mesh Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="594"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="613"/>
         <source>Tensor Mesh Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="595"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="614"/>
         <source>Symmetric Tensor Mesh Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="596"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="615"/>
         <source>Array Mesh Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="597"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="616"/>
         <source>Curve Mesh Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="603"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="622"/>
         <source>Show variable in plot menus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="611"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="630"/>
         <source>Standard Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="614"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="633"/>
         <source>Python Expression Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="675"/>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="743"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="694"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="762"/>
         <source>Insert Function...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="697"/>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="765"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="716"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="784"/>
         <source>Insert Variable...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="730"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="749"/>
         <source>Arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="776"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="795"/>
         <source>Python Expression Script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="1077"/>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="1271"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="1096"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="1290"/>
         <source>unnamed%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="2100"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="2135"/>
         <source>Open Attribute XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="2102"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="2137"/>
         <source>XML Files (*.xml);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisExpressionsWindow.C" line="2128"/>
+        <location filename="../../gui/QvisExpressionsWindow.C" line="2163"/>
         <source>The expressions loaded from %1 contained expressions having the same names as expressions already in the expression list. You may want to edit some of your expression names so they are unique.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4300,91 +4662,276 @@ The time slice I want will change as I change the time slider</source>
     </message>
 </context>
 <context>
-    <name>QvisExtremeValueAnalysisWindow</name>
+    <name>QvisExtractPointFunction2DWindow</name>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="131"/>
-        <source>Compute Maxes:</source>
+        <location filename="../../operators/ExtractPointFunction2D/QvisExtractPointFunction2DWindow.C" line="130"/>
+        <location filename="../../operators/ExtractPointFunction2D/QvisExtractPointFunction2DWindow.C" line="217"/>
+        <source>I</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="138"/>
+        <location filename="../../operators/ExtractPointFunction2D/QvisExtractPointFunction2DWindow.C" line="137"/>
+        <location filename="../../operators/ExtractPointFunction2D/QvisExtractPointFunction2DWindow.C" line="231"/>
+        <source>J</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisExtremeValueAnalysisWindow</name>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="223"/>
         <source>Monthly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="141"/>
-        <source>Annually</source>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="134"/>
+        <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="148"/>
-        <source>Display Month</source>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="140"/>
+        <source>Start year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="152"/>
-        <source>January</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="153"/>
-        <source>February</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="154"/>
-        <source>March</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="155"/>
-        <source>April</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="156"/>
-        <source>May</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="157"/>
-        <source>June</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="158"/>
-        <source>July</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="159"/>
-        <source>August</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="160"/>
-        <source>September</source>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="147"/>
+        <source>Analysis year range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="161"/>
+        <source>Ensemble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="166"/>
+        <source>Number of members</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="174"/>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="620"/>
+        <source>Data Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="187"/>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="193"/>
+        <source>Extremes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="199"/>
+        <source>Minima</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="202"/>
+        <source>Maxima</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="210"/>
+        <source>Optimization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="212"/>
+        <source>Nelder-Mead</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="213"/>
+        <source>BFGS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="219"/>
+        <source>Aggregation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="221"/>
+        <source>Annual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="222"/>
+        <source>Seasonal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="233"/>
+        <source>Trend Modeling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="240"/>
+        <source>Linear trend in log scale parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="246"/>
+        <source>Linear trend in location parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="252"/>
+        <source>Linear trend in shape parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="264"/>
+        <source>Outputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="270"/>
+        <source>Compute return value for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="281"/>
+        <source>Compute return value differences for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="296"/>
+        <source>Output parameter values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="303"/>
+        <source>Dump Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="309"/>
+        <source>Dump Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="315"/>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="318"/>
+        <source>Winter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="319"/>
+        <source>Spring</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="320"/>
+        <source>Summer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="321"/>
+        <source>Fall</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="327"/>
+        <source>January</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="328"/>
+        <source>February</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="329"/>
+        <source>March</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="330"/>
+        <source>April</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="331"/>
+        <source>May</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="332"/>
+        <source>June</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="333"/>
+        <source>July</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="334"/>
+        <source>August</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="335"/>
+        <source>September</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="336"/>
         <source>October</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="162"/>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="337"/>
         <source>November</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="163"/>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="338"/>
         <source>December</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="169"/>
-        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="271"/>
-        <source>R Code Directory</source>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="564"/>
+        <source>dataYearBegin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="578"/>
+        <source>dataAnalysisYear1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="592"/>
+        <source>dataAnalysisYear2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="606"/>
+        <source>numEnsembles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="634"/>
+        <source>returnValues</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="648"/>
+        <source>rvDifference1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ExtremeValueAnalysis/QvisExtremeValueAnalysisWindow.C" line="662"/>
+        <source>rvDifference2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4426,87 +4973,427 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisFTLEWindow</name>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="134"/>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="396"/>
-        <source>Integration Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="141"/>
-        <source>FTLE Direction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="148"/>
-        <source>Forward</source>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="144"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="311"/>
+        <source>Integration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="151"/>
-        <source>Backward</source>
+        <source>Appearance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="158"/>
-        <source>Treat flow as: </source>
+        <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="165"/>
-        <source>Unsteady state</source>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="185"/>
+        <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="168"/>
-        <source>Steady state</source>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="193"/>
+        <source>Source type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="175"/>
-        <source>Where to evaluate FTLE</source>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="195"/>
+        <source>Native Mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="182"/>
-        <source>At the native resolution of the mesh</source>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="226"/>
+        <source>Data start extent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="186"/>
-        <source>On a regular grid</source>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="229"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="249"/>
+        <source>Full</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="194"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="233"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="253"/>
+        <source>Subset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="246"/>
+        <source>Data end extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="266"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="274"/>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="276"/>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="277"/>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="278"/>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="279"/>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="280"/>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="281"/>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="288"/>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="299"/>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="305"/>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="320"/>
+        <source>Integration direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="323"/>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="324"/>
+        <source>Backward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="330"/>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="332"/>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="333"/>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="334"/>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="335"/>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="336"/>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="337"/>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="343"/>
+        <source>Step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="350"/>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="361"/>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="368"/>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="376"/>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="383"/>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="384"/>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="390"/>
+        <source>Termination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="402"/>
+        <source>Limit maximum time i.e. FTLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="408"/>
+        <source>Limit maximum distance i.e. FDLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="412"/>
+        <source>Limit maximum size i.e. FSLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="440"/>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="471"/>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="479"/>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="480"/>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="490"/>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="497"/>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="502"/>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="511"/>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="519"/>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="520"/>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="561"/>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="569"/>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="571"/>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="572"/>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="573"/>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="574"/>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="580"/>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="589"/>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="598"/>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="609"/>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="620"/>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="627"/>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="629"/>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="631"/>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="638"/>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="640"/>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="642"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1393"/>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1172"/>
+        <source>StartPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1186"/>
+        <source>EndPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1201"/>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1215"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1229"/>
+        <source>step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1243"/>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1255"/>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1267"/>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1279"/>
+        <source>maxsize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1291"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1361"/>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1306"/>
+        <source>relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1321"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1334"/>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1348"/>
+        <source>velocity source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="196"/>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="212"/>
         <source>Regular Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="198"/>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="410"/>
-        <source>Resolution</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="205"/>
-        <source>Start at DataSet Extent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="210"/>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="424"/>
-        <source>Subset Start</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="217"/>
-        <source>End at DataSet Extent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="222"/>
-        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="438"/>
-        <source>Subset End</source>
+        <location filename="../../operators/FTLE/QvisFTLEWindow.C" line="1158"/>
+        <source>Resolution</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4544,47 +5431,47 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisFileOpenWindow</name>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="199"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="202"/>
         <source>Directories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="218"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="221"/>
         <source>Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="238"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="241"/>
         <source>Open file as type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="242"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="245"/>
         <source>Set default open options...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="256"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="259"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="262"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="265"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="268"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="271"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="366"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="378"/>
         <source>Guess from file name/extension</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileOpenWindow.C" line="804"/>
+        <location filename="../../gui/QvisFileOpenWindow.C" line="817"/>
         <source>Default file opening options for %1 reader</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4598,8 +5485,8 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisFilePanel.C" line="297"/>
-        <location filename="../../gui/QvisFilePanel.C" line="1429"/>
-        <location filename="../../gui/QvisFilePanel.C" line="2535"/>
+        <location filename="../../gui/QvisFilePanel.C" line="1441"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2547"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4615,7 +5502,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisFilePanel.C" line="313"/>
-        <location filename="../../gui/QvisFilePanel.C" line="2189"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2201"/>
         <source>&amp;Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4661,28 +5548,28 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="1432"/>
-        <location filename="../../gui/QvisFilePanel.C" line="2532"/>
+        <location filename="../../gui/QvisFilePanel.C" line="1444"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2544"/>
         <source>ReOpen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2181"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2193"/>
         <source>&amp;Activate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2183"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2195"/>
         <source>Re&amp;Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2530"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2542"/>
         <source>Activate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2598"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2610"/>
         <source>Reopen cannot be used to change the active time state for an animation because reopen discards all cached networks and causes the database to actually be reopened. If you want to change the active time state, use the animation slider or select a new time state and click the Replace button.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4753,113 +5640,118 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisFileWindowBase</name>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="276"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="285"/>
         <source>(current directory)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="277"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="286"/>
         <source>(go up 1 directory level)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="439"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="451"/>
         <source>Host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="459"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="471"/>
         <source>Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="471"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="483"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="479"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="494"/>
         <source>Use &quot;current working directory&quot; by default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="491"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="500"/>
+        <source>Show dot files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisFileWindowBase.C" line="512"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="492"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="513"/>
         <source>On</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="493"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="514"/>
         <source>Smart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="498"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="519"/>
         <source>File grouping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="509"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="530"/>
         <source>Remove recent paths</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="510"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="531"/>
         <source>Remove paths . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1185"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1232"/>
         <source>Opening server on %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1212"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1259"/>
         <source>&quot;%1&quot; is not a valid host.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1312"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1359"/>
         <source>Changing directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1323"/>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1810"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1370"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1823"/>
         <source>The MetaData server running on %1 could not change the current directory to %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1344"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1391"/>
         <source>The MetaData server running on %1 could not get the file list for the current directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1441"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1488"/>
         <source>The MetaData server running could not get the file list for the current directory, which is required before setting the file filter. Try entering a valid path before changing the file filter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1449"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1496"/>
         <source>An error occured when trying to set the file filter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1462"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1509"/>
         <source>An invalid filter was entered.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1761"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1774"/>
         <source>Changing directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFileWindowBase.C" line="1822"/>
+        <location filename="../../gui/QvisFileWindowBase.C" line="1835"/>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5068,507 +5960,507 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisGUIApplication</name>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="789"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="805"/>
         <source>File selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="790"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="806"/>
         <source>File information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="791"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="807"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="792"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3347"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="808"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3424"/>
         <source>Output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="793"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="809"/>
         <source>Host profiles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="794"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="810"/>
         <source>Set save options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="795"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="811"/>
         <source>Compute engines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="796"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3371"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="812"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3448"/>
         <source>Animation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="797"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3376"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="813"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3453"/>
         <source>Annotation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="798"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3386"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="814"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3463"/>
         <source>Color tables</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="799"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3391"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="815"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3468"/>
         <source>Expressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="800"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3396"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="816"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3473"/>
         <source>Subset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="801"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="817"/>
         <source>Plugin Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="802"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3415"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="818"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3492"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="803"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3428"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="819"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3505"/>
         <source>Appearance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="804"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="820"/>
         <source>Keyframe Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="805"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3443"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="821"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3520"/>
         <source>Lighting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="806"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="822"/>
         <source>Lineout options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="807"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="823"/>
         <source>Material Reconstruction Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="808"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3459"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="824"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3536"/>
         <source>Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="809"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3467"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="825"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3544"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="810"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3475"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="826"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3552"/>
         <source>Query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="811"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3486"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="827"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3563"/>
         <source>Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="812"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="828"/>
         <source>Rendering options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="813"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="829"/>
         <source>Database correlation list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="814"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3506"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="830"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3583"/>
         <source>QueryOverTime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="815"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="831"/>
         <source>Interactors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="816"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3517"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="832"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3594"/>
         <source>Simulations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="817"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3532"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="833"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3609"/>
         <source>Export Database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="818"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="834"/>
         <source>Commands</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="819"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="835"/>
         <source>Mesh Management Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="820"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="836"/>
         <source>File open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="821"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3560"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="837"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3637"/>
         <source>Macros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="822"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="3568"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="838"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3645"/>
         <source>Selections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="823"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="839"/>
         <source>Setup Host Profiles and Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1120"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1137"/>
         <source>Calculating window metrics...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1141"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1158"/>
         <source>Creating main window...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1150"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1167"/>
         <source>Starting viewer...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1166"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1185"/>
         <source>Starting metadata server...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1178"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1201"/>
         <source>Launched the metadata server...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1186"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1209"/>
         <source>Getting the path...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1192"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1215"/>
         <source>Creating crucial windows...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1201"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1224"/>
         <source>Loading plugin information...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1210"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1234"/>
         <source>Processing config file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1611"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1643"/>
         <source>Creating visible windows...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1619"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1651"/>
         <source>Processing window configs...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1627"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1659"/>
         <source>VisIt is ready.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1649"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1681"/>
         <source>When a session file is specified on the command line, files specified with the -o argument are ignored.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1970"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="2029"/>
         <source>There is more than 1 VisIt client connected to the viewer. Do you want to quit everything? 
 
 Answering No will just detach the GUI and leave the viewer and its remaining clients running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3339"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3416"/>
         <source>FileInfo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3353"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3430"/>
         <source>Profiles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3358"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3435"/>
         <source>Save options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3363"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3440"/>
         <source>Engines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3407"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3484"/>
         <source>Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3434"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3511"/>
         <source>Keyframer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3448"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3525"/>
         <source>Lineout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3453"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3530"/>
         <source>MIR Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3491"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3568"/>
         <source>Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3501"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3578"/>
         <source>Correlations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3511"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3588"/>
         <source>Interactor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3540"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3617"/>
         <source>Command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3548"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3625"/>
         <source>MeshManagement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3843"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3923"/>
         <source>Loading plugins...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3865"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3945"/>
         <source>Creating plugin windows...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4047"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4127"/>
         <source>%1 plot attributes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4048"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4128"/>
         <source>%1 plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4093"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4173"/>
         <source>%1 operator attributes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4094"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4174"/>
         <source>%1 operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4339"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4427"/>
         <source>VisIt %1 [%2]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4422"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4510"/>
         <source>VisIt session</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4423"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4511"/>
         <source>Save Session File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4690"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="4746"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4791"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4847"/>
         <source>Open VisIt Session File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4784"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4885"/>
         <source>VisIt was able to read the session file, %1, but the session file might be from before VisIt 1.5.5. Consequently, VisIt will open the session file in the normal manner. If you want to restore this session using different sources then you should first resave your session with a newer version of VisIt.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5572"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5682"/>
         <source>Preventing the metadata server from being launched on %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5603"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="6078"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5713"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6188"/>
         <source>Hostname &quot;%1&quot; is not a recognized host.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5624"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5734"/>
         <source>VisIt could not set the host back to &quot;%1&quot; because no metadata server could be launched on that host.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5631"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5741"/>
         <source>VisIt could not set the host back to &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5640"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="6098"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5750"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6208"/>
         <source>The metadata server running on %1 could not change the current directory to %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5659"/>
-        <location filename="../../gui/QvisGUIApplication.C" line="6119"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5769"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6229"/>
         <source>The metadata server running on %1 could not get the file list for the current directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5666"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5776"/>
         <source>VisIt could not launch a metadata server on host &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5673"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5783"/>
         <source>The launch of a metadata server on host &quot;%1&quot; was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="6126"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6236"/>
         <source>VisIt could not open %1 because it could not launch a metadata server on host &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="6280"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6390"/>
         <source>Saving settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="6762"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6872"/>
         <source>VisIt encountered an error while setting up printer options.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7352"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7469"/>
         <source>VisIt has been updated. Would you like VisIt to save 
 its session, quit, and restart the session using the new 
 version of VisIt?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7355"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7472"/>
         <source>VisIt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7394"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7511"/>
         <source>VisIt could not automatically relaunch itself. Please exit and restart VisIt.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7558"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7674"/>
         <source>Client method %1 is supported by the GUI but not enough information was passed in the method request.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7663"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7779"/>
         <source>VisIt movie progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7664"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7780"/>
         <source>Making movie</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="8377"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8496"/>
         <source>VisIt executed the following command line to begin making your movie:
 
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="8392"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8511"/>
         <source>VisIt could not run %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="8398"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8517"/>
         <source>Execute the following command at the command prompt on your local computer to begin making your movie. All settings, including the number of processors, will be the same as your current VisIt session when you invoke:
 
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="8547"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8666"/>
         <source>Crash recovery</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="8548"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8667"/>
         <source>VisIt found a crash recovery session file. Would you like to restore it to return to the last saved state?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5662,165 +6554,165 @@ by Lineout Operator</source>
 <context>
     <name>QvisHelpWindow</name>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="193"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="194"/>
         <source>Help Navigation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="208"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="209"/>
         <source>Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="216"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="217"/>
         <source>&amp;Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="226"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="227"/>
         <source>&amp;Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="246"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="247"/>
         <source>&amp;Bookmarks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="256"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="257"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="260"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="261"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="280"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="281"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="286"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="287"/>
         <source>Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="292"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="293"/>
         <source>Home</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="297"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="298"/>
         <source>Larger font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="300"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="301"/>
         <source>Smaller font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="303"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="304"/>
         <source>Add bookmark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="309"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="310"/>
         <source>Dismiss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="405"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="406"/>
         <source>VisIt home page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="411"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="412"/>
         <source>Release Notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="417"/>
-        <location filename="../../gui/QvisHelpWindow.C" line="588"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="418"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="589"/>
         <source>Command line arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="423"/>
-        <location filename="../../gui/QvisHelpWindow.C" line="589"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="424"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="590"/>
         <source>Frequently asked questions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="429"/>
-        <location filename="../../gui/QvisHelpWindow.C" line="587"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="430"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="588"/>
         <source>Copyright</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="435"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="436"/>
         <source>VisIt Contributors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="441"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="442"/>
         <source>VisIt UltraWrapper</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="457"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="458"/>
         <source>VisIt User&apos;s Manual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="486"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="487"/>
         <source>VisIt cannot read the help index file! No online help will be available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="590"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="591"/>
         <source>FAQ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="591"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="592"/>
         <source>Ultra wrapper</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="592"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="593"/>
         <source>VisIt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="593"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="594"/>
         <source>Release notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1172"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1268"/>
         <source>Help topic not found!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1301"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1397"/>
         <source>The release notes file cannot be opened.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1679"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1775"/>
         <source>The bookmark was not added because it is already in the list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1683"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1779"/>
         <source>The bookmark could not be added.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1686"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1782"/>
         <source>This page cannot be bookmarked.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5884,196 +6776,211 @@ by Lineout Operator</source>
 <context>
     <name>QvisHistogramPlotWindow</name>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="147"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="150"/>
         <source>Histogram based on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="154"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="157"/>
         <source>Array of variables (one zone)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="156"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="159"/>
         <source>Many zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="174"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="177"/>
         <source>Histogram Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="183"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="185"/>
         <source>Number of Bins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="196"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="198"/>
         <source>Bin Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="203"/>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="307"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="205"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="334"/>
         <source>Linear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="204"/>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="311"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="206"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="338"/>
         <source>Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="205"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="207"/>
         <source>Square root</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="222"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="224"/>
         <source>Bin contribution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="231"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="233"/>
         <source>Frequency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="233"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="235"/>
         <source>Weighted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="250"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="252"/>
         <source>Weighting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="258"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="260"/>
         <source>Weighted by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="266"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="268"/>
         <source>Area (2D) / Volume (3D)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="267"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="269"/>
         <source>Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="280"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="282"/>
         <source>Variable to Weight By</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="292"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="296"/>
+        <source>Statistical Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="304"/>
+        <source>Normalize Histogram</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="311"/>
+        <source>Compute the CDF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="319"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="302"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="329"/>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="314"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="341"/>
         <source>Square Root</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="332"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="359"/>
         <source>Limits</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="335"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="362"/>
         <source>Use Original Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="336"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="363"/>
         <source>Use Current Plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="342"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="369"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="352"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="379"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="365"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="392"/>
         <source>Single Zone Plot Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="373"/>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="786"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="400"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="828"/>
         <source>domain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="381"/>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="800"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="408"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="842"/>
         <source>zone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="389"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="416"/>
         <source>Use bin widths</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="399"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="426"/>
         <source>Plot Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="412"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="439"/>
         <source>Curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="413"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="440"/>
         <source>Block</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="427"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="454"/>
         <source>Type of Output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="431"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="458"/>
         <source>Line Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="440"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="467"/>
         <source>Line Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="449"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="476"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="758"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="800"/>
         <source>minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="772"/>
+        <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="814"/>
         <source>maximum</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6114,344 +7021,389 @@ by Lineout Operator</source>
 <context>
     <name>QvisHostProfileWindow</name>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="162"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="381"/>
         <source>Hosts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="169"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="395"/>
         <source>New Host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="173"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="399"/>
         <source>Delete Host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="177"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="403"/>
         <source>Copy Host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="185"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="419"/>
         <source>Host Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="188"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="422"/>
         <source>Launch Profiles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="224"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="709"/>
         <source>Machine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="234"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="719"/>
         <source>Host nickname</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="242"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="727"/>
         <source>Remote host name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="250"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="735"/>
         <source>Host name aliases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="260"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="745"/>
         <source>Maximum nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="271"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="756"/>
         <source>Maximum processors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="290"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="775"/>
         <source>Path to VisIt installation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="299"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="784"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="309"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="794"/>
         <source>Username</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="317"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="802"/>
         <source>Connection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="329"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="814"/>
         <source>Share batch job with Metadata Server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="336"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="821"/>
         <source>Tunnel data connections through SSH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="345"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="830"/>
         <source>Use local machine name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="346"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="831"/>
         <source>Parse from SSH_CLIENT environment variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="348"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="833"/>
         <source>Specify manually:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="356"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="841"/>
         <source>Method used to determine local host name when not tunneling:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="374"/>
-        <source>Specify SSH port</source>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="278"/>
+        <source>Duplicate detected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="384"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="279"/>
+        <source>Entry already exists for %1. Allow Duplicate?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="407"/>
+        <source>Export Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="416"/>
+        <source>Machines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="425"/>
+        <source>Remote Profiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="467"/>
+        <source>Update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="472"/>
+        <source>Import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="482"/>
+        <source>Profiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="859"/>
+        <source>SSH command</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="869"/>
+        <source>SSH port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="879"/>
         <source>Use gateway</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="435"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="930"/>
         <source>New Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="438"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="933"/>
         <source>Delete Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="441"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="936"/>
         <source>Copy Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="444"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="939"/>
         <source>Make Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="455"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="950"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="458"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="953"/>
         <source>Parallel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="461"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="956"/>
         <source>GPU Acceleration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="501"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="996"/>
         <source>Profile name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="511"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1006"/>
         <source>Timeout (minutes)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="519"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1014"/>
         <source>Additional arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="551"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1046"/>
         <source>Launch parallel engine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="560"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1055"/>
         <source>Launch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="561"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1056"/>
         <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="616"/>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1785"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1111"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2305"/>
         <source>(default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="645"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1141"/>
         <source>Parallel launch method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="655"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1151"/>
         <source>Partition / Pool / Queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="667"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1163"/>
         <source>Default number of processors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="678"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1174"/>
         <source>Default number of nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="688"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1184"/>
         <source>Default Bank / Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="698"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1194"/>
         <source>Default Time Limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="708"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1204"/>
         <source>Default Machine File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="752"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1248"/>
         <source>Auto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="753"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1249"/>
         <source>Static</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="754"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1250"/>
         <source>Dynamic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="758"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1254"/>
         <source>Load balancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="764"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1260"/>
         <source>Use VisIt script to set up parallel environment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="774"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1270"/>
         <source>Launcher arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="784"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1280"/>
         <source>Sublauncher arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="794"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1290"/>
         <source>Sublauncher pre-mpi command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="804"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1300"/>
         <source>Sublauncher post-mpi command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="846"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1342"/>
         <source>These options are for hardware accelerating the scalable rendering feature on a compute cluster. In other modes, VisIt will automatically use hardware acceleration. This tab only needs to be modified for compute clusters that have graphics cards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="862"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1358"/>
         <source>Use cluster&apos;s graphics cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="872"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1368"/>
         <source>DISPLAY:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="881"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1377"/>
         <source>Have VisIt launch X servers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="886"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1382"/>
         <source>Number of GPUs per node:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="896"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1392"/>
         <source>X server arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1727"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2247"/>
         <source>Profile name cannot be empty, reverting to &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1753"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2273"/>
         <source>Host name cannot be empty, reverting to &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1774"/>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1955"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2294"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2475"/>
         <source>Username cannot be empty, reverting to &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1811"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2331"/>
         <source>An invalid number of processors was specified, reverting to %1 processors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1836"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2356"/>
         <source>An invalid number of nodes was specified, reverting to %1 nodes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1924"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2444"/>
         <source>An invalid timeout was specified, reverting to %1 minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="2230"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="2765"/>
         <source>(default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="3782"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="4415"/>
         <source>New profile</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6595,6 +7547,842 @@ by Lineout Operator</source>
     <message>
         <location filename="../../operators/IndexSelect/QvisIndexSelectWindow.C" line="365"/>
         <source>Use Whole Collection</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisIntegralCurveWindow</name>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="241"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="606"/>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="248"/>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="255"/>
+        <source>Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="281"/>
+        <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="289"/>
+        <source>Source type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="291"/>
+        <source>Single Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="292"/>
+        <source>Point List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="293"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="832"/>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="294"/>
+        <source>Circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="295"/>
+        <source>Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="296"/>
+        <source>Sphere</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="297"/>
+        <source>Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="298"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="447"/>
+        <source>Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="318"/>
+        <source>Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="331"/>
+        <source>Read Text File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="337"/>
+        <source>Add Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="338"/>
+        <source>Delete Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="339"/>
+        <source>Delete All Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="352"/>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="360"/>
+        <source>End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="371"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="399"/>
+        <source>Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="380"/>
+        <source>Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="389"/>
+        <source>Up axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="407"/>
+        <source>Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="414"/>
+        <source>Whole data set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="423"/>
+        <source>X Extents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="432"/>
+        <source>Y Extents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="441"/>
+        <source>Z Extents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="460"/>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="469"/>
+        <source>Sampling type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="472"/>
+        <source>Uniform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="473"/>
+        <source>Random</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="481"/>
+        <source>Sampling along:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="484"/>
+        <source>Boundary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="485"/>
+        <source>Interior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="495"/>
+        <source>Number of random samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="503"/>
+        <source>Random number seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="514"/>
+        <source>Sample density 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="515"/>
+        <source>Sample density 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="516"/>
+        <source>Sample density 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="540"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2391"/>
+        <source>Sample distance 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="541"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2404"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2417"/>
+        <source>Sample distance 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="542"/>
+        <source>Sample distance 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="559"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="567"/>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="569"/>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="570"/>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="571"/>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="572"/>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="573"/>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="574"/>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="581"/>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="592"/>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="614"/>
+        <source>Integration direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="617"/>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="618"/>
+        <source>Backward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="619"/>
+        <source>Both</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="625"/>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="627"/>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="628"/>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="629"/>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="630"/>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="631"/>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="632"/>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="638"/>
+        <source>Step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="646"/>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="656"/>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="663"/>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="671"/>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="678"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="793"/>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="679"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="794"/>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="685"/>
+        <source>Termination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="692"/>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="699"/>
+        <source>Limit maximum time elapsed for particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="706"/>
+        <source>Limit maximum distance traveled by particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="754"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="762"/>
+        <source>Data value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="765"/>
+        <source>Solid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="766"/>
+        <source>Seed point ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="767"/>
+        <source>Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="768"/>
+        <source>Vorticity magnitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="769"/>
+        <source>Arc length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="770"/>
+        <source>Absolute time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="771"/>
+        <source>Relative time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="772"/>
+        <source>Ave. dist. from seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="773"/>
+        <source>Correlation distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="774"/>
+        <source>Difference</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="775"/>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="788"/>
+        <source>Angular tolerance (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="789"/>
+        <source>Minimum measuring distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="810"/>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="817"/>
+        <source>Show lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="822"/>
+        <source>Show points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="828"/>
+        <source>Line geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="836"/>
+        <source>Tubes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="840"/>
+        <source>Ribbons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="850"/>
+        <source>Coordinate transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="859"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="860"/>
+        <source>Cylindrical to Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="861"/>
+        <source>Cartesian to Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="874"/>
+        <source>Phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="884"/>
+        <source>(When displaying in cylindrical coordinates.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="888"/>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="896"/>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="897"/>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="907"/>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="914"/>
+        <source>Override starting time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="919"/>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="928"/>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="936"/>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="937"/>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="977"/>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="985"/>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="987"/>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="988"/>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="989"/>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="990"/>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="996"/>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1005"/>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1014"/>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1025"/>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1036"/>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1043"/>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1045"/>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1047"/>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1054"/>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1056"/>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1058"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2520"/>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1751"/>
+        <source>Samples along line:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1762"/>
+        <source>Distance in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1763"/>
+        <source>Distance in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1777"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1869"/>
+        <source>Samples in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1778"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1870"/>
+        <source>Samples in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1804"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1810"/>
+        <source>Samples in Theta:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1805"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1837"/>
+        <source>Samples in R:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1831"/>
+        <source>Samples in Latitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1832"/>
+        <source>Samples in Longitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1871"/>
+        <source>Samples in Z:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="1891"/>
+        <source>Sampling stride:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2144"/>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2158"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2172"/>
+        <source>step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2186"/>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2198"/>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2210"/>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2222"/>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2237"/>
+        <source>relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2252"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2265"/>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2279"/>
+        <source>velocity source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2293"/>
+        <source>point source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2307"/>
+        <source>line start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2321"/>
+        <source>line end</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2335"/>
+        <source>plane origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2349"/>
+        <source>plane normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2363"/>
+        <source>plane up axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2377"/>
+        <source>plane radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2431"/>
+        <source>sphere origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2450"/>
+        <source>The box extents contained errors so the previous values will be used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2506"/>
+        <source>phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2536"/>
+        <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2543"/>
+        <source>Correlation distance angular tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2559"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2582"/>
+        <source>Correlation distance minimum distance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2566"/>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="2589"/>
+        <source>Correlation distance minimum distnace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="3030"/>
+        <source>Open text file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6836,6 +8624,478 @@ by Lineout Operator</source>
         <location filename="../../gui/QvisKeyframeWindow.C" line="624"/>
         <source>Cannot set state index to less than zero
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisLCSWindow</name>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="144"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="311"/>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="151"/>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="158"/>
+        <source>Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="185"/>
+        <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="193"/>
+        <source>Source type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="195"/>
+        <source>Native Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="196"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="212"/>
+        <source>Regular Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="217"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1262"/>
+        <source>Resolution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="226"/>
+        <source>Data start extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="229"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="249"/>
+        <source>Full</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="233"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="253"/>
+        <source>Subset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="246"/>
+        <source>Data end extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="266"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="274"/>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="276"/>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="277"/>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="278"/>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="279"/>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="280"/>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="281"/>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="288"/>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="299"/>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="320"/>
+        <source>Integration direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="323"/>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="324"/>
+        <source>Backward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="330"/>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="332"/>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="333"/>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="334"/>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="335"/>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="336"/>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="337"/>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="343"/>
+        <source>Step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="350"/>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="361"/>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="368"/>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="376"/>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="383"/>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="384"/>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="390"/>
+        <source>Termination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="404"/>
+        <source>Operation type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="408"/>
+        <source>Lyapunov Exponent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="409"/>
+        <source>Integration time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="410"/>
+        <source>Arc length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="411"/>
+        <source>Average distance from seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="419"/>
+        <source>Base value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="420"/>
+        <source>Gradient</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="425"/>
+        <source>Clamp exponent values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="430"/>
+        <source>Limit maximum advection time i.e. FTLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="436"/>
+        <source>Limit maximum advection distance i.e. FLLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="440"/>
+        <source>Limit maximum size i.e. FSLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="447"/>
+        <source>Limit maximum advection time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="452"/>
+        <source>Limit maximum advection distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="471"/>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="502"/>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="510"/>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="511"/>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="521"/>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="528"/>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="533"/>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="542"/>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="550"/>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="551"/>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="592"/>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="600"/>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="602"/>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="603"/>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="604"/>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="605"/>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="611"/>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="620"/>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="629"/>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="640"/>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="651"/>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="658"/>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="660"/>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="662"/>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="669"/>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="671"/>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="673"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1497"/>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1276"/>
+        <source>StartPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1290"/>
+        <source>EndPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1305"/>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1319"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1333"/>
+        <source>step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1347"/>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1359"/>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1371"/>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1383"/>
+        <source>maxsize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1395"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1465"/>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1410"/>
+        <source>relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1425"/>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1438"/>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/LCS/QvisLCSWindow.C" line="1452"/>
+        <source>velocity source</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7474,7 +9734,7 @@ by Lineout Operator</source>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="173"/>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="776"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2759"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2771"/>
         <source>Toroidal</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7517,7 +9777,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="225"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2743"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2755"/>
         <source>Coordinate layout R, Z</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7565,16 +9825,16 @@ using the &quot;Apply to all windows&quot; option.</source>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="263"/>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="550"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1445"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1457"/>
         <source>Number of arrays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="271"/>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="559"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1481"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2745"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2754"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1493"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2757"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2766"/>
         <source>Toroidal angle between arrays</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7641,7 +9901,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="453"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2747"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2759"/>
         <source>R</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7652,33 +9912,33 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="463"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1570"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2748"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1582"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2760"/>
         <source>Poloidal angle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="471"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1584"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2749"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1596"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2761"/>
         <source>Poloidal plane R-tilt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="479"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1598"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2750"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1610"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2762"/>
         <source>Poloidal plane Z-tilt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="487"/>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="606"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1612"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1877"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1905"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2751"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2756"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1624"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1889"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1917"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2763"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2768"/>
         <source>Toroidal angle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7695,7 +9955,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="569"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2755"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2767"/>
         <source> R, Z, Phi, and Poloidal Angle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7740,25 +10000,20 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="675"/>
-        <source>Cylinder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="686"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1711"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1723"/>
         <source>Linear sample distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="694"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1725"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1737"/>
         <source>Sample volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="702"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1669"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1681"/>
         <source>Cylinder radius</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7779,7 +10034,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="734"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1697"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1709"/>
         <source>Standard deviation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7806,7 +10061,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="787"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2760"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2772"/>
         <source>Sample toroidally as time</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7817,7 +10072,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="802"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2761"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2773"/>
         <source>Toroidal angle sampling</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7839,7 +10094,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="827"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2762"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2774"/>
         <source>Toroidal sample angle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7858,7 +10113,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="846"/>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="902"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1823"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1835"/>
         <source>Stride</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7919,19 +10174,19 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="963"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1626"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1638"/>
         <source>1D plot height scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="971"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1640"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1652"/>
         <source>1D plot channel offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="979"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1654"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1666"/>
         <source>1D plot array offset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7981,144 +10236,144 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1467"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1479"/>
         <source>Number of channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1500"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1512"/>
         <source>Parallel/Grid: Offset between channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1514"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1526"/>
         <source>Divergent: Angle between channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1528"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1540"/>
         <source>Grid: Number of rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1542"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1554"/>
         <source>Grid: Offset between rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1556"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1568"/>
         <source>Array origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1753"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1765"/>
         <source>Toroidal start angle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1767"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1779"/>
         <source>Toroidal stop angle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1781"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1793"/>
         <source>Toroidal sampling angle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1795"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1807"/>
         <source>Start time step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1809"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1821"/>
         <source>Stop time step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1891"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="1903"/>
         <source>Number of channel list arrays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2421"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2433"/>
         <source>Open channel configuration file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2531"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2543"/>
         <source>Open wall configuration file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2720"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2732"/>
         <source>Coordinate layout X, Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2722"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2731"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2734"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2743"/>
         <source>Y distance between arrays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2723"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2735"/>
         <source>Array origin (X,Y,Z)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2724"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2736"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2725"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2737"/>
         <source>Y axis rotation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2726"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2738"/>
         <source>Y plane X-tilt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2727"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2739"/>
         <source>Y plane Z-tilt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2728"/>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2733"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2740"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2745"/>
         <source>Y axis offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2732"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2744"/>
         <source> X, Y, Z, and Y Rotation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2736"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2748"/>
         <source>Y axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2737"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2749"/>
         <source>Sample Y axis as time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2738"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2750"/>
         <source>Y axis sampling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2739"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2751"/>
         <source>Y sample distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2746"/>
+        <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="2758"/>
         <source>Array origin (R,Phi,Z)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8182,13 +10437,23 @@ using the &quot;Apply to all windows&quot; option.</source>
 <context>
     <name>QvisLineoutQueryWidget</name>
     <message>
-        <location filename="../../gui/QvisLineoutQueryWidget.C" line="83"/>
+        <location filename="../../gui/QvisLineoutQueryWidget.C" line="86"/>
         <source>Start point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisLineoutQueryWidget.C" line="91"/>
+        <location filename="../../gui/QvisLineoutQueryWidget.C" line="94"/>
         <source>End point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisLineoutQueryWidget.C" line="100"/>
+        <source>Use Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisLineoutQueryWidget.C" line="104"/>
+        <source>Sample Points </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8248,496 +10513,507 @@ using the &quot;Apply to all windows&quot; option.</source>
 <context>
     <name>QvisMainWindow</name>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="441"/>
+        <location filename="../../gui/QvisMainWindow.C" line="447"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="447"/>
-        <location filename="../../gui/QvisMainWindow.C" line="2635"/>
+        <location filename="../../gui/QvisMainWindow.C" line="453"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2664"/>
         <source>Select &amp;file . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="452"/>
+        <location filename="../../gui/QvisMainWindow.C" line="458"/>
         <source>Open file . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="459"/>
-        <location filename="../../gui/QvisMainWindow.C" line="2647"/>
+        <location filename="../../gui/QvisMainWindow.C" line="465"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2676"/>
         <source>Advanced file options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="464"/>
-        <location filename="../../gui/QvisMainWindow.C" line="2658"/>
-        <location filename="../../gui/QvisMainWindow.C" line="2713"/>
+        <location filename="../../gui/QvisMainWindow.C" line="470"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2687"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2743"/>
         <source>Close file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="475"/>
-        <location filename="../../gui/QvisMainWindow.C" line="2651"/>
-        <location filename="../../gui/QvisMainWindow.C" line="2720"/>
+        <location filename="../../gui/QvisMainWindow.C" line="481"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2680"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2750"/>
         <source>ReOpen file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="482"/>
+        <location filename="../../gui/QvisMainWindow.C" line="488"/>
         <source>Refresh file list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="485"/>
+        <location filename="../../gui/QvisMainWindow.C" line="491"/>
         <source>File &amp;information . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="491"/>
+        <location filename="../../gui/QvisMainWindow.C" line="497"/>
         <source>Save session</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="493"/>
+        <location filename="../../gui/QvisMainWindow.C" line="499"/>
         <source>Save session as . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="495"/>
+        <location filename="../../gui/QvisMainWindow.C" line="501"/>
         <source>Restore session . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="497"/>
+        <location filename="../../gui/QvisMainWindow.C" line="503"/>
         <source>Restore session with sources . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="502"/>
+        <location filename="../../gui/QvisMainWindow.C" line="508"/>
         <source>Simulations . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="507"/>
-        <source>&amp;Save window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisMainWindow.C" line="510"/>
-        <source>Set Save &amp;options . . .</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisMainWindow.C" line="513"/>
-        <source>Save movie . . .</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisMainWindow.C" line="515"/>
-        <source>Print window</source>
+        <location filename="../../gui/QvisMainWindow.C" line="511"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1765"/>
+        <source>Connect to DDT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="521"/>
+        <source>&amp;Save window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMainWindow.C" line="524"/>
+        <source>Set Save &amp;options . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMainWindow.C" line="527"/>
+        <source>Save movie . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMainWindow.C" line="529"/>
+        <source>Print window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMainWindow.C" line="535"/>
         <source>Export database . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="526"/>
+        <location filename="../../gui/QvisMainWindow.C" line="540"/>
         <source>Compute &amp;engines . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="533"/>
+        <location filename="../../gui/QvisMainWindow.C" line="547"/>
         <source>&amp;Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="536"/>
+        <location filename="../../gui/QvisMainWindow.C" line="550"/>
         <source>E&amp;xit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="544"/>
+        <location filename="../../gui/QvisMainWindow.C" line="558"/>
         <source>&amp;Controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="545"/>
+        <location filename="../../gui/QvisMainWindow.C" line="559"/>
         <source>&amp;Animation . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="548"/>
+        <location filename="../../gui/QvisMainWindow.C" line="562"/>
         <source>A&amp;nnotation . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="551"/>
+        <location filename="../../gui/QvisMainWindow.C" line="565"/>
         <source>Color &amp;table . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="554"/>
+        <location filename="../../gui/QvisMainWindow.C" line="568"/>
         <source>Launch CLI . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="557"/>
+        <location filename="../../gui/QvisMainWindow.C" line="571"/>
         <source>Command . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="560"/>
+        <location filename="../../gui/QvisMainWindow.C" line="574"/>
         <source>&amp;Data-Level Comparisons . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="563"/>
+        <location filename="../../gui/QvisMainWindow.C" line="577"/>
         <source>&amp;Database correlations . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="566"/>
+        <location filename="../../gui/QvisMainWindow.C" line="580"/>
         <source>&amp;Expressions . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="569"/>
+        <location filename="../../gui/QvisMainWindow.C" line="583"/>
         <source>&amp;Keyframing . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="572"/>
+        <location filename="../../gui/QvisMainWindow.C" line="586"/>
         <source>&amp;Lighting . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="575"/>
+        <location filename="../../gui/QvisMainWindow.C" line="589"/>
         <source>&amp;Lineout . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="578"/>
+        <location filename="../../gui/QvisMainWindow.C" line="592"/>
         <source>Macros . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="580"/>
+        <location filename="../../gui/QvisMainWindow.C" line="594"/>
         <source>&amp;Material Options . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="583"/>
+        <location filename="../../gui/QvisMainWindow.C" line="597"/>
         <source>&amp;Mesh management . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="586"/>
+        <location filename="../../gui/QvisMainWindow.C" line="600"/>
         <source>&amp;Pick . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="591"/>
+        <location filename="../../gui/QvisMainWindow.C" line="605"/>
         <source>Quer&amp;y . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="594"/>
+        <location filename="../../gui/QvisMainWindow.C" line="608"/>
         <source>Quer&amp;y over time options . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="598"/>
+        <location filename="../../gui/QvisMainWindow.C" line="612"/>
         <source>&amp;Query over time options . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="601"/>
+        <location filename="../../gui/QvisMainWindow.C" line="615"/>
         <source>&amp;Query . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="605"/>
+        <location filename="../../gui/QvisMainWindow.C" line="619"/>
         <source>Selections . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="608"/>
+        <location filename="../../gui/QvisMainWindow.C" line="622"/>
         <source>S&amp;ubset . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="611"/>
+        <location filename="../../gui/QvisMainWindow.C" line="625"/>
         <source>&amp;View . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="618"/>
+        <location filename="../../gui/QvisMainWindow.C" line="632"/>
         <source>&amp;Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="619"/>
+        <location filename="../../gui/QvisMainWindow.C" line="633"/>
         <source>&amp;Appearance . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="623"/>
+        <location filename="../../gui/QvisMainWindow.C" line="637"/>
         <source>&amp;Host profiles . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="626"/>
+        <location filename="../../gui/QvisMainWindow.C" line="640"/>
         <source>Host profiles and Configuration Setup . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="629"/>
+        <location filename="../../gui/QvisMainWindow.C" line="643"/>
         <source>&amp;Interactors . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="632"/>
+        <location filename="../../gui/QvisMainWindow.C" line="646"/>
         <source>&amp;Plugin Manager . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="634"/>
+        <location filename="../../gui/QvisMainWindow.C" line="648"/>
         <source>Preferences . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="636"/>
+        <location filename="../../gui/QvisMainWindow.C" line="650"/>
         <source>Rendering . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="641"/>
+        <location filename="../../gui/QvisMainWindow.C" line="655"/>
         <source>Save Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="648"/>
+        <location filename="../../gui/QvisMainWindow.C" line="662"/>
         <source>&amp;Windows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="650"/>
+        <location filename="../../gui/QvisMainWindow.C" line="664"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="657"/>
+        <location filename="../../gui/QvisMainWindow.C" line="671"/>
         <source>Clone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="659"/>
+        <location filename="../../gui/QvisMainWindow.C" line="673"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="663"/>
+        <location filename="../../gui/QvisMainWindow.C" line="677"/>
         <source>Clear all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="666"/>
+        <location filename="../../gui/QvisMainWindow.C" line="680"/>
         <source>Layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="668"/>
+        <location filename="../../gui/QvisMainWindow.C" line="682"/>
         <source>1x1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="670"/>
+        <location filename="../../gui/QvisMainWindow.C" line="684"/>
         <source>1x2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="672"/>
+        <location filename="../../gui/QvisMainWindow.C" line="686"/>
         <source>2x2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="674"/>
+        <location filename="../../gui/QvisMainWindow.C" line="688"/>
         <source>2x3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="676"/>
+        <location filename="../../gui/QvisMainWindow.C" line="690"/>
         <source>2x4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="678"/>
+        <location filename="../../gui/QvisMainWindow.C" line="692"/>
         <source>3x3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="684"/>
-        <location filename="../../gui/QvisMainWindow.C" line="1156"/>
+        <location filename="../../gui/QvisMainWindow.C" line="698"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1170"/>
         <source>Active window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="694"/>
+        <location filename="../../gui/QvisMainWindow.C" line="708"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="697"/>
+        <location filename="../../gui/QvisMainWindow.C" line="711"/>
         <source>View from</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="704"/>
+        <location filename="../../gui/QvisMainWindow.C" line="718"/>
         <source>Lighting from</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="710"/>
+        <location filename="../../gui/QvisMainWindow.C" line="724"/>
         <source>Annotations from</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="716"/>
+        <location filename="../../gui/QvisMainWindow.C" line="730"/>
         <source>Plots from</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="723"/>
+        <location filename="../../gui/QvisMainWindow.C" line="737"/>
         <source>Everything from</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="734"/>
+        <location filename="../../gui/QvisMainWindow.C" line="748"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="735"/>
+        <location filename="../../gui/QvisMainWindow.C" line="749"/>
         <source>Pick points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="736"/>
+        <location filename="../../gui/QvisMainWindow.C" line="750"/>
         <source>Plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="737"/>
+        <location filename="../../gui/QvisMainWindow.C" line="751"/>
         <source>Reference lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="741"/>
+        <location filename="../../gui/QvisMainWindow.C" line="755"/>
         <source>Lock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="743"/>
+        <location filename="../../gui/QvisMainWindow.C" line="757"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="744"/>
+        <location filename="../../gui/QvisMainWindow.C" line="758"/>
         <source>Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="745"/>
+        <location filename="../../gui/QvisMainWindow.C" line="759"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="747"/>
+        <location filename="../../gui/QvisMainWindow.C" line="761"/>
         <source>Unlock everything</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="752"/>
+        <location filename="../../gui/QvisMainWindow.C" line="766"/>
         <source>Full frame mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="754"/>
+        <location filename="../../gui/QvisMainWindow.C" line="768"/>
         <source>Spin mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="767"/>
+        <location filename="../../gui/QvisMainWindow.C" line="781"/>
         <source>Main Controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="767"/>
+        <location filename="../../gui/QvisMainWindow.C" line="781"/>
         <source>Main</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="816"/>
+        <location filename="../../gui/QvisMainWindow.C" line="830"/>
         <source>Output window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="980"/>
+        <location filename="../../gui/QvisMainWindow.C" line="994"/>
         <source>&amp;Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="982"/>
+        <location filename="../../gui/QvisMainWindow.C" line="996"/>
         <source>About . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="985"/>
+        <location filename="../../gui/QvisMainWindow.C" line="999"/>
         <source>Copyright . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="988"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1002"/>
         <source>Help . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="992"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1006"/>
         <source>Release notes . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="997"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1011"/>
         <source>Check for new version . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1147"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1161"/>
         <source>Global</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1167"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1181"/>
         <source>Auto apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1298"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1312"/>
         <source>done</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1299"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1313"/>
         <source>of stage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1625"/>
-        <location filename="../../gui/QvisMainWindow.C" line="1707"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1639"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1725"/>
         <source>Window </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMainWindow.C" line="1763"/>
+        <source>Disconnect from DDT</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9325,6 +11601,67 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
 </context>
 <context>
+    <name>QvisModelBasedClusteringWindow</name>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="130"/>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="285"/>
+        <source>Number of clusters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="137"/>
+        <source>Clustering Method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="144"/>
+        <source>EM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="147"/>
+        <source>ACEM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="150"/>
+        <source>APECM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="153"/>
+        <source>APECMA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="156"/>
+        <source>K_MEANS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="163"/>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="299"/>
+        <source>Threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="170"/>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="313"/>
+        <source>Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="177"/>
+        <source>Variable 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/ModelBasedClustering/QvisModelBasedClusteringWindow.C" line="185"/>
+        <source>Variable 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisModelFitWindow</name>
     <message>
         <location filename="../../operators/ModelFit/QvisModelFitWindow.C" line="146"/>
@@ -9676,76 +12013,83 @@ using the &quot;Apply to all windows&quot; option.</source>
 <context>
     <name>QvisMultiCurvePlotWindow</name>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="146"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="149"/>
         <source>Curve colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="158"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="161"/>
         <source>Single</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="161"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="164"/>
         <source>Multiple</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="179"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="182"/>
         <source>Curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="189"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="192"/>
         <source>Line Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="196"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="199"/>
         <source>Line Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="203"/>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="516"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="206"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="549"/>
         <source>Y-Axis title format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="210"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="213"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="563"/>
         <source>Y-Axis tick spacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="220"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="223"/>
         <source>Display markers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="225"/>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="544"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="228"/>
+        <source>Marker line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="235"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="577"/>
+        <source>Marker scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="242"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="590"/>
         <source>Marker variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="232"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="249"/>
         <source>Display ids</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="237"/>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="558"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="254"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="604"/>
         <source>Id variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="244"/>
+        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="261"/>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/MultiCurve/QvisMultiCurvePlotWindow.C" line="530"/>
-        <source>yAxisTickSpacing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10219,6 +12563,295 @@ Do you want to apply the %2 operator?
     </message>
 </context>
 <context>
+    <name>QvisPeaksOverThresholdWindow</name>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="134"/>
+        <source>Inputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="140"/>
+        <source>Start year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="146"/>
+        <source>Analysis year range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="159"/>
+        <source>Ensemble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="164"/>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="748"/>
+        <source>Number of members</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="171"/>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="762"/>
+        <source>Cutoff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="178"/>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="776"/>
+        <source>Data Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="190"/>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="197"/>
+        <source>Upper tail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="201"/>
+        <source>Lower tail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="210"/>
+        <source>No consecutive day events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="216"/>
+        <source>Optimization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="218"/>
+        <source>Nelder-Mead</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="219"/>
+        <source>BFGS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="225"/>
+        <source>Aggregation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="227"/>
+        <source>Annual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="228"/>
+        <source>Seasonal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="229"/>
+        <source>Monthly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="234"/>
+        <source>Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="251"/>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="832"/>
+        <source>Days per year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="258"/>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="846"/>
+        <source>Days per month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="270"/>
+        <source>Trend Modeling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="277"/>
+        <source>Linear trend in log scale parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="283"/>
+        <source>Linear trend in location parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="289"/>
+        <source>Linear trend in shape parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="300"/>
+        <source>Outputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="306"/>
+        <source>Compute return value for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="316"/>
+        <source>Compute return value differences for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="330"/>
+        <source>Output parameter values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="337"/>
+        <source>Dump Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="342"/>
+        <source>Dump Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="347"/>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="350"/>
+        <source>Winter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="351"/>
+        <source>Spring</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="352"/>
+        <source>Summer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="353"/>
+        <source>Fall</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="359"/>
+        <source>January</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="360"/>
+        <source>February</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="361"/>
+        <source>March</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="362"/>
+        <source>April</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="363"/>
+        <source>May</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="364"/>
+        <source>June</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="365"/>
+        <source>July</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="366"/>
+        <source>August</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="367"/>
+        <source>September</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="368"/>
+        <source>October</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="369"/>
+        <source>November</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="370"/>
+        <source>December</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="707"/>
+        <source>Year begin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="720"/>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="734"/>
+        <source>Analysis year 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="790"/>
+        <source>Annual Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="804"/>
+        <source>Seasonal Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="818"/>
+        <source>Monthly Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="860"/>
+        <source>Return values computed for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="874"/>
+        <source>RV Difference1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/PeaksOverThreshold/QvisPeaksOverThresholdWindow.C" line="888"/>
+        <source>RV Difference2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisPersistentParticlesWindow</name>
     <message>
         <location filename="../../operators/PersistentParticles/QvisPersistentParticlesWindow.C" line="132"/>
@@ -10394,170 +13027,175 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPickWindow</name>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="293"/>
+        <location filename="../../gui/QvisPickWindow.C" line="354"/>
         <source>Max Tabs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="297"/>
+        <location filename="../../gui/QvisPickWindow.C" line="358"/>
         <source>Save Picks as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="303"/>
+        <location filename="../../gui/QvisPickWindow.C" line="364"/>
         <source>Variables</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="316"/>
+        <location filename="../../gui/QvisPickWindow.C" line="377"/>
         <source>Float Format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="325"/>
+        <location filename="../../gui/QvisPickWindow.C" line="386"/>
         <source>Automatically show window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="330"/>
+        <location filename="../../gui/QvisPickWindow.C" line="393"/>
+        <source>Focus DDT on Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPickWindow.C" line="399"/>
         <source>Don&apos;t clear this window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="335"/>
+        <location filename="../../gui/QvisPickWindow.C" line="404"/>
         <source>Clear Picks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="376"/>
+        <location filename="../../gui/QvisPickWindow.C" line="445"/>
         <source>Output Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="380"/>
+        <location filename="../../gui/QvisPickWindow.C" line="449"/>
         <source>Concise Output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="386"/>
+        <location filename="../../gui/QvisPickWindow.C" line="455"/>
         <source>Mesh Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="391"/>
+        <location filename="../../gui/QvisPickWindow.C" line="460"/>
         <source>Timestep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="396"/>
+        <location filename="../../gui/QvisPickWindow.C" line="465"/>
         <source>Incident nodes/zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="401"/>
+        <location filename="../../gui/QvisPickWindow.C" line="470"/>
         <source>Global nodes/zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="406"/>
+        <location filename="../../gui/QvisPickWindow.C" line="475"/>
         <source>Reference pick letter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="415"/>
+        <location filename="../../gui/QvisPickWindow.C" line="484"/>
         <source>For Nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="421"/>
-        <location filename="../../gui/QvisPickWindow.C" line="446"/>
+        <location filename="../../gui/QvisPickWindow.C" line="490"/>
+        <location filename="../../gui/QvisPickWindow.C" line="515"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="425"/>
+        <location filename="../../gui/QvisPickWindow.C" line="494"/>
         <source>Physical Coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="429"/>
-        <location filename="../../gui/QvisPickWindow.C" line="450"/>
+        <location filename="../../gui/QvisPickWindow.C" line="498"/>
+        <location filename="../../gui/QvisPickWindow.C" line="519"/>
         <source>Domain-Logical Coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="433"/>
-        <location filename="../../gui/QvisPickWindow.C" line="454"/>
+        <location filename="../../gui/QvisPickWindow.C" line="502"/>
+        <location filename="../../gui/QvisPickWindow.C" line="523"/>
         <source>Block-Logical Coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="440"/>
+        <location filename="../../gui/QvisPickWindow.C" line="509"/>
         <source>For Zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="480"/>
+        <location filename="../../gui/QvisPickWindow.C" line="549"/>
         <source>Time Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="484"/>
+        <location filename="../../gui/QvisPickWindow.C" line="553"/>
         <source>Do Time Curve with next pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="490"/>
+        <location filename="../../gui/QvisPickWindow.C" line="559"/>
         <source>Time curve use picked element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="491"/>
+        <location filename="../../gui/QvisPickWindow.C" line="560"/>
         <source>Time curve use picked coordinates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="498"/>
+        <location filename="../../gui/QvisPickWindow.C" line="567"/>
         <source>Time curve use single Y axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="499"/>
+        <location filename="../../gui/QvisPickWindow.C" line="568"/>
         <source>Time curve use multiple Y axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="505"/>
+        <location filename="../../gui/QvisPickWindow.C" line="574"/>
         <source>Repeat Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="530"/>
+        <location filename="../../gui/QvisPickWindow.C" line="599"/>
         <source>Spreadsheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="534"/>
+        <location filename="../../gui/QvisPickWindow.C" line="603"/>
         <source>Create spreadsheet with next pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="541"/>
+        <location filename="../../gui/QvisPickWindow.C" line="610"/>
         <source>Display in Spreadsheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="1035"/>
+        <location filename="../../gui/QvisPickWindow.C" line="1108"/>
         <source>Invalid pick floating point format string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="1949"/>
+        <location filename="../../gui/QvisPickWindow.C" line="2024"/>
         <source>Choose save filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPickWindow.C" line="1971"/>
+        <location filename="../../gui/QvisPickWindow.C" line="2046"/>
         <source>VisIt could not save the pick resultsto the selected file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10565,122 +13203,122 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPlotListBox</name>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="690"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="726"/>
         <source>&amp;Hide/Show</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="691"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="727"/>
         <source>Hide or Show this plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="695"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="731"/>
         <source>Draw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="696"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="732"/>
         <source>Draw this plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="699"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="735"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="700"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="736"/>
         <source>Clear this plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="703"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="739"/>
         <source>Redraw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="704"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="740"/>
         <source>Redraw this plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="707"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="743"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="708"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="744"/>
         <source>Delete this plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="711"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="747"/>
         <source>Clone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="712"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="748"/>
         <source>Clone this plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="715"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="751"/>
         <source>Edit plot description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="716"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="752"/>
         <source>Add a meaningful name for the plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="719"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="755"/>
         <source>Move toward first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="720"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="756"/>
         <source>Move this plot one slot toward the first plot in the plot list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="723"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="759"/>
         <source>Move toward last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="724"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="760"/>
         <source>Move this plot one slot toward the last plot in the plot list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="727"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="763"/>
         <source>Make first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="728"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="764"/>
         <source>Make this plot be the first in the plot list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="731"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="767"/>
         <source>Make last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="732"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="768"/>
         <source>Make this plot be the last in the plot list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="760"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="796"/>
         <source>Follow time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="761"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="797"/>
         <source>Set whether this plot follows the time slider</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10732,12 +13370,12 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="382"/>
-        <source>Active Window</source>
+        <source>active window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="385"/>
-        <source>All Windows</source>
+        <source>all windows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10771,47 +13409,47 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1483"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1486"/>
         <source>Remove last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1484"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1487"/>
         <source>Remove all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1507"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1510"/>
         <source>Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1508"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1511"/>
         <source>Debugging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1509"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1512"/>
         <source>Geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1510"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1513"/>
         <source>Molecular</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1511"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1514"/>
         <source>Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1512"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1515"/>
         <source>Slicing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1513"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1516"/>
         <source>Transforms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10930,664 +13568,1513 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPoincarePlotWindow</name>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="150"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="823"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="152"/>
         <source>Fieldlines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="156"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="158"/>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="163"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="165"/>
         <source>Source Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="167"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="169"/>
         <source>Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="168"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="170"/>
         <source>Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="174"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="176"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="183"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="185"/>
         <source>Start Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="190"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="192"/>
         <source>End Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="197"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="199"/>
         <source>Point density</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="209"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="217"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="211"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="219"/>
         <source>Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="219"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="221"/>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="220"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="223"/>
         <source>M3D-C1 2D</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="221"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="224"/>
         <source>M3D-C1 3D</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="222"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="226"/>
         <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="223"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="222"/>
         <source>Flash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="230"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="233"/>
         <source>Constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="242"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="245"/>
         <source>Velocity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="250"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="259"/>
         <source>Integration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="258"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="267"/>
         <source>Integrator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="260"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="269"/>
         <source>Forward Euler (Single-step)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="261"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="270"/>
         <source>Leapfrog (Single-step)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="262"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="271"/>
         <source>Dormand-Prince (Runge-Kutta)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="263"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="272"/>
         <source>Adams-Bashforth (Multi-step)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="264"/>
-        <source>Unused</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="265"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="274"/>
         <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="271"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="280"/>
         <source>Step length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="278"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="287"/>
         <source>Limit maximum time step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="289"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="298"/>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="296"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1478"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="305"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1757"/>
         <source>Relative tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="304"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="313"/>
         <source>Absolute tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="311"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="320"/>
         <source>Absolute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="312"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="321"/>
         <source>Fraction of Bounding Box</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="316"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="252"/>
         <source>Force node centering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="344"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="225"/>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="273"/>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="348"/>
         <source>Punctures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="352"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="622"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="356"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="654"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="361"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="631"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="365"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="663"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="371"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="375"/>
         <source>Puncture Plane</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="379"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="383"/>
         <source>Poloidal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="383"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="387"/>
         <source>Toroidal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="394"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="420"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="398"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="424"/>
         <source>Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="398"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="402"/>
         <source>Analysis type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="406"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="410"/>
         <source>None - Punctures only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="410"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="414"/>
         <source>Full</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="428"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="432"/>
         <source>Maximum toroidal winding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="438"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="442"/>
         <source>Override toroidal winding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="448"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="452"/>
         <source>Override poloidal winding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="458"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="462"/>
         <source>Winding pair confidence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="467"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="471"/>
         <source>Rational surface factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="476"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="480"/>
+        <source>Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="487"/>
+        <source>Detect Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="493"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="516"/>
+        <source>Maximum iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="503"/>
         <source>Critical Points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="483"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="510"/>
         <source>Detect O Points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="489"/>
-        <source> Maximum iterations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="502"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="780"/>
         <source>Overlaps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="509"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="787"/>
         <source>Overlaping curve sections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="517"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="795"/>
         <source>Raw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="521"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="799"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="525"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="803"/>
         <source>Merge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="529"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="807"/>
         <source>Smooth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="539"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="748"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="565"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="817"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="546"/>
-        <source>Show islands only</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="527"/>
+        <source>O-Line Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="552"/>
-        <source>Show chaotic fieldlines (as points)</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="534"/>
+        <source>Perform O-Line analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="557"/>
-        <source>Show 1D plots (distance/ridgelines)</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="541"/>
+        <source>O-Line toroidal windings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="562"/>
-        <source>Verbose</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="572"/>
-        <source>Appearance</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="573"/>
+        <source>Show chaotic fieldlines as points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="578"/>
-        <source>Data</source>
+        <source>Show islands only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="587"/>
-        <source>Data value:</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="584"/>
+        <source>Summary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="591"/>
-        <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="592"/>
-        <source>Safety Factor Q</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="593"/>
-        <source>Safety Factor P</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="589"/>
+        <source>Verbose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="594"/>
-        <source>Safety Factor Q if Q==P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="595"/>
-        <source>Safety Factor P if P!=Q</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="596"/>
-        <source>Toroidal Windings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="597"/>
-        <source>Poloidal Windings Q</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="598"/>
-        <source>Poloidal Windings P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="599"/>
-        <source>Fieldline Order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="600"/>
-        <source>Point Order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="601"/>
-        <source>Plane Order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="602"/>
-        <source>Winding Group Order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="603"/>
-        <source>Winding Point Order</source>
+        <source>Show distance/ridgeline plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="604"/>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="610"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="619"/>
+        <source>Data value:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="623"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="624"/>
+        <source>Safety Factor Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="625"/>
+        <source>Safety Factor P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="626"/>
+        <source>Safety Factor Q if Q==P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="627"/>
+        <source>Safety Factor P if P!=Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="628"/>
+        <source>Toroidal Windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="629"/>
+        <source>Poloidal Windings Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="630"/>
+        <source>Poloidal Windings P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="631"/>
+        <source>Fieldline Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="632"/>
+        <source>Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="633"/>
+        <source>Plane Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="634"/>
+        <source>Winding Group Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="635"/>
+        <source>Winding Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="636"/>
         <source>Winding Point Order Modulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="609"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="641"/>
         <source>   </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="620"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="652"/>
         <source>Limits</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="644"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="676"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="652"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="684"/>
         <source>Single color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="659"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="691"/>
         <source>Color table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="670"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="702"/>
         <source>Opacity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="675"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="707"/>
         <source>Set explicitly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="679"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="711"/>
         <source>From color table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="703"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="735"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="710"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="742"/>
         <source>Mesh type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="714"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="746"/>
         <source>Curves</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="715"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="747"/>
         <source>Surfaces</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="720"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="752"/>
         <source>Number of planes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="729"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="761"/>
         <source>Base plane (degrees)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="736"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="768"/>
         <source>Adjust plane index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="755"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="824"/>
         <source>Show Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="760"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="829"/>
         <source>Line style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="766"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="835"/>
         <source>Line width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="772"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="841"/>
         <source>Show Points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="785"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="854"/>
         <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="793"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="862"/>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="799"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="868"/>
         <source>Lighting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="808"/>
-        <source>Parallel</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="877"/>
+        <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="813"/>
-        <source>Parallel fieldline options</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="904"/>
+        <source>Parallel integration options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="821"/>
-        <source>Parallelize across</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="913"/>
+        <source>Parallelization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="824"/>
-        <source>Domains</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="915"/>
+        <source>Parallelize over curves</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="825"/>
-        <source>Fieldlines and Domains</source>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="916"/>
+        <source>Parallelize over domains</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="831"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="917"/>
+        <source>Parallelize over curves and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="918"/>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1871"/>
+        <source>OLineAxisFileName</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1885"/>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="2645"/>
+        <source>Open O-Line Axis Point File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="924"/>
         <source>Communication threshold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="840"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="933"/>
         <source>Domain cache size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="849"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="942"/>
         <source>Work group size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1394"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="954"/>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="963"/>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="964"/>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="974"/>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="981"/>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="986"/>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="995"/>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1003"/>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1004"/>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1014"/>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1026"/>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1033"/>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1035"/>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1037"/>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1044"/>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1046"/>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1048"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1917"/>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1673"/>
         <source>Velocity Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1408"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1687"/>
         <source>Point Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1422"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1701"/>
         <source>Line Point Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1436"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1715"/>
         <source>Line Point End</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1450"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1729"/>
         <source>field constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1464"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1743"/>
         <source>Maximum step length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1493"/>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1506"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1772"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1785"/>
         <source>absolute tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1520"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1799"/>
         <source>windingPairConfidence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1534"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1813"/>
         <source>rationalSurfaceFactor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1548"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1827"/>
         <source>singlePlane</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1562"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1841"/>
         <source>min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1576"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1855"/>
         <source>max</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPoincareWindow</name>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="149"/>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="297"/>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="156"/>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="475"/>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="163"/>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="170"/>
+        <source>Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="196"/>
+        <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="203"/>
+        <source>Source Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="207"/>
+        <source>Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="208"/>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="214"/>
+        <source>Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="223"/>
+        <source>Start Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="230"/>
+        <source>End Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="237"/>
+        <source>Point density</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="249"/>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="257"/>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="259"/>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="260"/>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="261"/>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="262"/>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="263"/>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="264"/>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="271"/>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="283"/>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="305"/>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="307"/>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="308"/>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="309"/>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="310"/>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="311"/>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="312"/>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="318"/>
+        <source>Step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="325"/>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="336"/>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="343"/>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1551"/>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="351"/>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="358"/>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="359"/>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="386"/>
+        <source>Punctures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="394"/>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="403"/>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="413"/>
+        <source>Puncture Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="421"/>
+        <source>Poloidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="425"/>
+        <source>Toroidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="453"/>
+        <source>Analysis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="461"/>
+        <source>None - Punctures only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="465"/>
+        <source>Full</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="483"/>
+        <source>Maximum toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="493"/>
+        <source>Override toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="503"/>
+        <source>Override poloidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="513"/>
+        <source>Winding pair confidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="522"/>
+        <source>Rational surface factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="531"/>
+        <source>Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="538"/>
+        <source>Detect Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="544"/>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="567"/>
+        <source>Maximum iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="554"/>
+        <source>Critical Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="561"/>
+        <source>Detect O Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="578"/>
+        <source>O-Line Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="585"/>
+        <source>Perform O-Line analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="592"/>
+        <source>O-Line toroidal windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="615"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="623"/>
+        <source>Show chaotic fieldlines as points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="628"/>
+        <source>Show islands only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="634"/>
+        <source>Summary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="639"/>
+        <source>Verbose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="644"/>
+        <source>Show distance/ridgeline plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="672"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="681"/>
+        <source>Data value:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="685"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="686"/>
+        <source>Safety Factor Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="687"/>
+        <source>Safety Factor P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="688"/>
+        <source>Safety Factor Q if Q==P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="689"/>
+        <source>Safety Factor P if P!=Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="690"/>
+        <source>Toroidal Windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="691"/>
+        <source>Poloidal Windings Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="692"/>
+        <source>Poloidal Windings P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="693"/>
+        <source>Fieldline Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="694"/>
+        <source>Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="695"/>
+        <source>Plane Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="696"/>
+        <source>Winding Group Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="697"/>
+        <source>Winding Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="698"/>
+        <source>Winding Point Order Modulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="703"/>
+        <source>   </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="707"/>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="714"/>
+        <source>Mesh type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="718"/>
+        <source>Curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="719"/>
+        <source>Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="724"/>
+        <source>Show Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="729"/>
+        <source>Show Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="734"/>
+        <source>Number of planes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="743"/>
+        <source>Base plane (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="750"/>
+        <source>Adjust plane index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="762"/>
+        <source>Overlaps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="769"/>
+        <source>Overlaping curve sections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="777"/>
+        <source>Raw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="781"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="785"/>
+        <source>Merge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="789"/>
+        <source>Smooth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="799"/>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="807"/>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="808"/>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="818"/>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="825"/>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="830"/>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="839"/>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="847"/>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="848"/>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="880"/>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="889"/>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="891"/>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="892"/>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="893"/>
+        <source>Parallelize over curves and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="894"/>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="900"/>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="909"/>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="918"/>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="929"/>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="941"/>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="948"/>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="950"/>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="952"/>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="959"/>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="961"/>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="963"/>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1683"/>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1467"/>
+        <source>Velocity Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1481"/>
+        <source>Point Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1495"/>
+        <source>Line Point Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1509"/>
+        <source>Line Point End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1523"/>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1537"/>
+        <source>Maximum step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1566"/>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1579"/>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1593"/>
+        <source>windingPairConfidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1607"/>
+        <source>rationalSurfaceFactor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1621"/>
+        <source>singlePlane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1637"/>
+        <source>OLineAxisFileName</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1651"/>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="2224"/>
+        <source>Open O-Line Axis Point File</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisPointControl</name>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="99"/>
+        <location filename="../../gui/QvisPointControl.C" line="102"/>
         <source>Point type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="102"/>
+        <location filename="../../gui/QvisPointControl.C" line="105"/>
         <source>Box</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="103"/>
+        <location filename="../../gui/QvisPointControl.C" line="106"/>
         <source>Axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="104"/>
+        <location filename="../../gui/QvisPointControl.C" line="107"/>
         <source>Icosahedron</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="105"/>
+        <location filename="../../gui/QvisPointControl.C" line="108"/>
+        <source>Octahedron</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPointControl.C" line="109"/>
+        <source>Tetrahedron</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPointControl.C" line="110"/>
+        <source>Sphere Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPointControl.C" line="111"/>
         <source>Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="106"/>
+        <location filename="../../gui/QvisPointControl.C" line="112"/>
         <source>Sphere</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="112"/>
-        <location filename="../../gui/QvisPointControl.C" line="656"/>
+        <location filename="../../gui/QvisPointControl.C" line="118"/>
+        <location filename="../../gui/QvisPointControl.C" line="665"/>
         <source>Point size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="121"/>
+        <location filename="../../gui/QvisPointControl.C" line="127"/>
         <source>Scale point size by variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="660"/>
+        <location filename="../../gui/QvisPointControl.C" line="669"/>
         <source>Point size (pixels)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11595,25 +15082,30 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPostableWindow</name>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="98"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="102"/>
         <source>Untitled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="412"/>
-        <location filename="../../gui/QvisPostableWindow.C" line="573"/>
-        <location filename="../../gui/QvisPostableWindow.C" line="612"/>
-        <location filename="../../gui/QvisPostableWindow.C" line="766"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="417"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="578"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="641"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="800"/>
         <source>Post</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="517"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="522"/>
         <source>Unpost</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="768"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="797"/>
+        <source>?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPostableWindow.C" line="802"/>
         <source>Dismiss</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11644,57 +15136,62 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPostableWindowSimpleObserver</name>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="269"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="270"/>
         <source>Make default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="277"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="278"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="284"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="285"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="291"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="292"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="298"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="299"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="309"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="311"/>
+        <source>?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="315"/>
         <source>Post</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="319"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="325"/>
         <source>Dismiss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="375"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="383"/>
         <source>Do you really want to make these the default attributes?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="378"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="386"/>
         <source>Ok</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="378"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="386"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="379"/>
+        <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="387"/>
         <source>Yes, Do not prompt again</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11735,195 +15232,229 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPreferencesWindow</name>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="200"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="206"/>
         <source>Clone window on first reference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="206"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="212"/>
         <source>Post windows when shown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="212"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="218"/>
         <source>Prompt before setting default attributes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="218"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="224"/>
         <source>Prompt before applying new operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="224"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="230"/>
         <source>New plots inherit SIL restriction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="230"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="236"/>
         <source>New plots automatically expanded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="235"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="241"/>
         <source>Replace plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="240"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="246"/>
         <source>Enable warning message popups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="250"/>
-        <source>Databases</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="256"/>
-        <source>Try harder to get accurate cycles/times</source>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="255"/>
+        <source>Floating point precision:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="262"/>
+        <source>Float</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="265"/>
+        <source>Native</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="268"/>
+        <source>Double</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="277"/>
+        <source>Databases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="283"/>
+        <source>Try harder to get accurate cycles/times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="289"/>
         <source>Ignore database extents (may degrade performance)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="269"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="296"/>
         <source>Treat all databases as time-varying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="275"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="302"/>
         <source>Automatically create mesh quality expressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="281"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="308"/>
         <source>Automatically create time derivative expressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="287"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="314"/>
         <source>Automatically create vector magnitude expressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="296"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="323"/>
         <source>Session files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="302"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="329"/>
         <source>User directory is default location for session files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="309"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="336"/>
         <source>Periodically save a crash recovery file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="319"/>
-        <source>File panel properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="327"/>
-        <source>Show selected files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="335"/>
-        <source>Automatically highlight open file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="344"/>
-        <source>Display time using:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="347"/>
-        <source>Cycles</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="350"/>
-        <source>Times</source>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="343"/>
+        <source>Restore session on startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="353"/>
+        <source>File panel properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="361"/>
+        <source>Show selected files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="369"/>
+        <source>Automatically highlight open file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="378"/>
+        <source>Display time using:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="381"/>
+        <source>Cycles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="384"/>
+        <source>Times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="387"/>
         <source>Cycles and times</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="363"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="397"/>
         <source>Number of significant digits</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisProgrammableOpWindow</name>
+    <message>
+        <location filename="../../operators/ProgrammableOp/QvisProgrammableOpWindow.C" line="130"/>
+        <location filename="../../operators/ProgrammableOp/QvisProgrammableOpWindow.C" line="207"/>
+        <source>scriptMap</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisProjectWindow</name>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="131"/>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="133"/>
         <source>Projection type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="136"/>
-        <source>X-Axis Cartesian (x &lt;= z, y &lt;= y)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="137"/>
-        <source>Y-Axis Cartesian (x &lt;= x, y &lt;= z)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="138"/>
-        <source>Z-Axis Cartesian (x &lt;= x, y &lt;= y)</source>
+        <source>X-Axis Cartesian (x&apos; = z, y&apos; = y)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="139"/>
-        <source>X-Axis Cylindrical (x &lt;= x, y &lt;= r)</source>
+        <source>Y-Axis Cartesian (x&apos; = x, y&apos; = z)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="140"/>
-        <source>Y-Axis Cylindrical (x &lt;= y, y &lt;= r)</source>
+        <source>Z-Axis Cartesian (x&apos; = x, y&apos; = y)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="141"/>
-        <source>Z-Axis Cylindrical (x &lt;= z, y &lt;= r)</source>
+        <source>X-Axis Cylindrical (x&apos; = x, y&apos; = r)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="146"/>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="142"/>
+        <source>Y-Axis Cylindrical (x&apos; = y, y&apos; = r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="143"/>
+        <source>Z-Axis Cylindrical (x&apos; = z, y&apos; = r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="148"/>
         <source>Vector transform method:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="150"/>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="152"/>
         <source>No transformation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="151"/>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="153"/>
         <source>Treat as point coordinates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="152"/>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="154"/>
         <source>Treat as coordinate displacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="153"/>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="155"/>
         <source>Treat as instantaneous directions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11931,164 +15462,353 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPseudocolorPlotWindow</name>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="195"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="200"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="244"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="205"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="254"/>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="210"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="259"/>
         <source>Linear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="214"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="263"/>
         <source>Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="217"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="266"/>
         <source>Skew</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="242"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="291"/>
         <source>Limits</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="245"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="294"/>
         <source>Use Original Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="246"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="295"/>
         <source>Use Current Plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="252"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="301"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="262"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="311"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="278"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="327"/>
         <source>Centering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="282"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="331"/>
         <source>Original</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="286"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="335"/>
         <source>Nodal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="289"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="338"/>
         <source>Zonal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="300"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="349"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="310"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="359"/>
         <source>Color table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="326"/>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="347"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="375"/>
+        <source>Fully opaque</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="376"/>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="377"/>
+        <source>Ramp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="378"/>
+        <source>Variable range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="381"/>
         <source>Opacity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="330"/>
-        <source>Set explicitly</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="334"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="374"/>
         <source>From color table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="363"/>
-        <source>Point / Line Style</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="389"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="534"/>
         <source>Line style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="397"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="543"/>
         <source>Line width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="409"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="207"/>
         <source>Geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="416"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="718"/>
         <source>Smoothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="423"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="622"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="725"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="426"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="728"/>
         <source>Fast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="429"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="731"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="437"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="465"/>
         <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="445"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="384"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="582"/>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="401"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1408"/>
+        <source>Opacity Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="402"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1422"/>
+        <source>Opacity Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="473"/>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="451"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="479"/>
         <source>Lighting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="736"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="510"/>
+        <source>Line </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="523"/>
+        <source>Line type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="526"/>
+        <source>Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="527"/>
+        <source>Tubes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="528"/>
+        <source>Ribbons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="553"/>
+        <source>Display density</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="562"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="640"/>
+        <source>Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="563"/>
+        <source>Radius used for tubes and ribbons.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="572"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="648"/>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="573"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="649"/>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="578"/>
+        <source>Vary radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="590"/>
+        <source>Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="619"/>
+        <source>Show end points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="623"/>
+        <source>Tails</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="624"/>
+        <source>Heads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="625"/>
+        <source>Both</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="630"/>
+        <source>Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="634"/>
+        <source>Spheres</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="635"/>
+        <source>Cones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="654"/>
+        <source>Height:Radius Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="665"/>
+        <source>Point </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="690"/>
+        <source>Rendering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="699"/>
+        <source>Draw objects as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="702"/>
+        <source>Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="707"/>
+        <source>Wireframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="712"/>
+        <source>Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1382"/>
         <source>minimum value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="749"/>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="762"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1445"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1458"/>
+        <source>tube radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1475"/>
+        <source>Tube vary radius factor must be &gt;= 1.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1482"/>
+        <source>Tube vary radius factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1497"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1511"/>
+        <source>endPoint radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1524"/>
+        <source>endPoint ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1369"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="1395"/>
         <source>maximum value</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12126,24 +15846,24 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="300"/>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="335"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="303"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="341"/>
         <source>Python Script File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="301"/>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="336"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="304"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="342"/>
         <source>All Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="304"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="307"/>
         <source>Save Python Filter Script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="338"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="344"/>
         <source>Load Python Filter</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12196,213 +15916,223 @@ same window.</source>
 <context>
     <name>QvisQueryWindow</name>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="293"/>
-        <location filename="../../gui/QvisQueryWindow.C" line="735"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="298"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="752"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="304"/>
-        <location filename="../../gui/QvisQueryWindow.C" line="739"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="309"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="756"/>
         <source>All queries-over-time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="308"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="313"/>
         <source>Display </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="316"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="321"/>
         <source>Queries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="322"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="327"/>
         <source>Query parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="332"/>
-        <location filename="../../gui/QvisQueryWindow.C" line="452"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="337"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="469"/>
         <source>Variables</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="365"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="370"/>
         <source>Use Global Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="374"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="379"/>
         <source>Original Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="377"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="382"/>
         <source>Actual Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="382"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="387"/>
         <source>Dump Steps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="419"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="393"/>
+        <source>Dump Coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisQueryWindow.C" line="399"/>
+        <source>Dump Values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisQueryWindow.C" line="436"/>
         <source>Query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="466"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="483"/>
         <source>Python Query Script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="476"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="493"/>
         <source>Execute Query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="507"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="524"/>
         <source>Query results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="509"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="526"/>
         <source>Float Format:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="569"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="586"/>
         <source>Clear results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="574"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="591"/>
         <source>Save results as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="581"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="598"/>
         <source>Post</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="583"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="600"/>
         <source>Dismiss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1006"/>
-        <location filename="../../gui/QvisQueryWindow.C" line="1018"/>
-        <location filename="../../gui/QvisQueryWindow.C" line="1030"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1027"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1039"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1051"/>
         <source>Domain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1008"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1029"/>
         <source>Zone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1020"/>
-        <location filename="../../gui/QvisQueryWindow.C" line="1032"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1041"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1053"/>
         <source>Node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1050"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1071"/>
         <source>Number of Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1053"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1074"/>
         <source>Number of Bins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1056"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1077"/>
         <source>Min Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1059"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1080"/>
         <source>Max Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1074"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1095"/>
         <source>Output File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1080"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1101"/>
         <source>Beta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1083"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1104"/>
         <source>NMax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1086"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1107"/>
         <source>Recomp Output (Vtk)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1087"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1108"/>
         <source>[skip]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1327"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1366"/>
         <source>Invalid query floating point format string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1416"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1459"/>
         <source>The domain must be an integer &gt;= 0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1424"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1467"/>
         <source>The zone must be an integer &gt;= 0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1426"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1469"/>
         <source>The node must be an integer &gt;= 0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1554"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1605"/>
         <source>Performing %1 query.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1747"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="1798"/>
         <source>The list of variables contains an error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1935"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="2016"/>
         <source>There are currently no query results to save.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1962"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="2043"/>
         <source>save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1965"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="2046"/>
         <source>Save Query Results As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisQueryWindow.C" line="1983"/>
+        <location filename="../../gui/QvisQueryWindow.C" line="2064"/>
         <source>VisIt could not save the query results to the selected file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12437,6 +16167,29 @@ same window.</source>
     <message>
         <location filename="../../gui/QvisRecentPathRemovalWindow.C" line="145"/>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisRectilinearProject2DWindow</name>
+    <message>
+        <location filename="../../operators/RectilinearProject2D/QvisRectilinearProject2DWindow.C" line="130"/>
+        <source>Reduction Operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/RectilinearProject2D/QvisRectilinearProject2DWindow.C" line="137"/>
+        <source>Sum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/RectilinearProject2D/QvisRectilinearProject2DWindow.C" line="140"/>
+        <source>Average</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/RectilinearProject2D/QvisRectilinearProject2DWindow.C" line="147"/>
+        <source>Map Grid</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13173,581 +16926,604 @@ atoms at unit cell boundaries.</source>
 <context>
     <name>QvisSaveMovieWizard</name>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="293"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="308"/>
         <source>Save movie wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="540"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="569"/>
         <source>VisIt could not save the new movie template&apos;s Python script.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="701"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2849"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="730"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2903"/>
         <source>Movie type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="702"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="731"/>
         <source>Would you like to create a new simple movie or use your previous settings?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="716"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="745"/>
         <source>Use my previous movie settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="720"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2851"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="749"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2905"/>
         <source>New simple movie</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="723"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="752"/>
         <source>New template movie</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="758"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="787"/>
         <source>Template usage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="759"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="788"/>
         <source>Movie templates allow you to create complex movies. What would you like to do?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="773"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="802"/>
         <source>Use existing template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="778"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="807"/>
         <source>Edit existing template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="781"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="810"/>
         <source>Create new template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="815"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="844"/>
         <source>Choose template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="816"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="845"/>
         <source>Choose a movie template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="840"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="869"/>
         <source>No preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="875"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="904"/>
         <source>Update sources</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="876"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="905"/>
         <source>Make sure that the sources used in this template are up to date. You can change the sources here to make a movie using a template that was created with other data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="915"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="944"/>
         <source>Viewports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="916"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="945"/>
         <source>Change the movie template&apos;s viewports. Viewports are regions of the final movie image to which VisIt&apos;s visualization windows can be mapped.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="940"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="969"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="945"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1070"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="974"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1099"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="956"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="985"/>
         <source>Viewport properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="964"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="993"/>
         <source>Lower left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="972"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1001"/>
         <source>Upper right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="977"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1006"/>
         <source>Compositing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="982"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1011"/>
         <source>Overlay</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="985"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1014"/>
         <source>Blend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="988"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1017"/>
         <source>Replace color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="991"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1020"/>
         <source>Replace background color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1005"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1034"/>
         <source>Add drop shadow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1049"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1078"/>
         <source>Sequences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1050"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1079"/>
         <source>Create new sequences of frames and map them to movie template viewports.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1075"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1104"/>
         <source>Sequence properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1085"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1114"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1095"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1124"/>
         <source>Map to viewport</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1103"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1132"/>
         <source>User interface (*.ui)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1104"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1133"/>
         <source>Get User Interface filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1106"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1135"/>
         <source>User interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1107"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1136"/>
         <source>User interface definition file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1122"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1151"/>
         <source>Sequence to viewport mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1150"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1179"/>
         <source>Save new template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1151"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1180"/>
         <source>Save this movie as a new template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1183"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1212"/>
         <source>Save new template as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1184"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1213"/>
         <source>Enter the information that will be saved with your template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1196"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1225"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1206"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1235"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1216"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1245"/>
         <source>Template filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1220"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1249"/>
         <source>Choose template filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1233"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1262"/>
         <source>Choose preview image filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1265"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1294"/>
         <source>Settings check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1266"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1295"/>
         <source>Do these movie settings look okay?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1281"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1687"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1822"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1310"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1734"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1869"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1285"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1691"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1826"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1314"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1738"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1873"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1298"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1327"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1298"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1327"/>
         <source>Values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1338"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1375"/>
         <source>Choose format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1339"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1376"/>
         <source>Choose movie formats and resolutions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1347"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1384"/>
         <source>Format and resolution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1370"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1484"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1407"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1531"/>
         <source>Format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1382"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1419"/>
         <source>Use current window size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1392"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1429"/>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1397"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1434"/>
         <source>Specify movie size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1408"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1445"/>
         <source>Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1421"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1458"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1427"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1464"/>
         <source>lock aspect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1439"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1476"/>
         <source>Stereo movie</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1444"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2967"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="4419"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1481"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3032"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="4503"/>
         <source>Left/Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1445"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2969"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="4421"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1482"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3034"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="4505"/>
         <source>Red/Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1446"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2971"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="4423"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1483"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3036"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="4507"/>
         <source>Red/Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1450"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1487"/>
         <source>Stereo type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1475"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1497"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2969"/>
+        <source>Use Screen Capture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1522"/>
         <source>Output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1484"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1531"/>
         <source>Resolution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1484"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1531"/>
         <source>Stereo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1518"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1531"/>
+        <source>Screen Capture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1565"/>
         <source>Choose length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1520"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1567"/>
         <source>Choose movie start/end time and frames per second.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1530"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1577"/>
         <source>Frames per second</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1538"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1585"/>
         <source>First frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1546"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1593"/>
         <source>Last frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1554"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1601"/>
         <source>Frame stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1596"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1643"/>
         <source>Choose filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1598"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1645"/>
         <source>Choose the output directory and base filename for your movie(s).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1610"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2863"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1657"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2917"/>
         <source>Output directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1638"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2867"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1685"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2921"/>
         <source>Base filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1674"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2908"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1721"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2962"/>
         <source>E-mail notification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1675"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1722"/>
         <source>Do you want to be notified by E-mail when your movie completes?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1703"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1750"/>
         <source>E-mail address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1744"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1791"/>
         <source>Choose method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1745"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1792"/>
         <source>Choose when and how you would like VisIt to create your movies.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1761"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2842"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1808"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2896"/>
         <source>Now, use currently allocated processors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1766"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2844"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1813"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2898"/>
         <source>Now, use a new instance of VisIt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="1771"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2846"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="1818"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2900"/>
         <source>Later, tell me the command to run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2296"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2347"/>
         <source>[User defined] </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2370"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2421"/>
         <source>VisIt could not read the session file: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2381"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2432"/>
         <source>VisIt was able to read the session file that is used by the current movie template but the session file might be from before VisIt 1.5.5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2578"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2629"/>
         <source>(none)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2840"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2894"/>
         <source>Generation method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2853"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2907"/>
         <source>Use movie template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2858"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2912"/>
         <source>Movie template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2871"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2925"/>
         <source>Formats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2885"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2958"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="4416"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2939"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3023"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="4500"/>
         <source>Current</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2896"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2950"/>
         <source> Left/Right stereo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2898"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2952"/>
         <source> Red/Blue stereo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2900"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2954"/>
         <source> Red/Green stereo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2912"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2966"/>
         <source>none</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="2965"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="4417"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2971"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3038"/>
+        <source>yes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="2973"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3038"/>
+        <source>no</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3030"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="4501"/>
         <source>off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="3105"/>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="3109"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3179"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3183"/>
         <source>set in template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="3494"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3568"/>
         <source>The user interface file %1 could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="3495"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3569"/>
         <source>The user interface files %1 could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="3523"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3597"/>
         <source>%1 sequence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="3686"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="3760"/>
         <source>No description available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSaveMovieWizard.C" line="4625"/>
+        <location filename="../../gui/QvisSaveMovieWizard.C" line="4714"/>
         <source>Select output directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14136,137 +17912,152 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="747"/>
-        <source>Point</source>
+        <source>Octahedron</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="748"/>
+        <source>Tetrahedron</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="749"/>
+        <source>Sphere Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="750"/>
+        <source>Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="751"/>
         <source>Sphere</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="752"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="755"/>
         <source>Point Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="760"/>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1075"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="763"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1078"/>
         <source>Point size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="768"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="771"/>
         <source>Roles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="772"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="775"/>
         <source>X coordinate:    </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="774"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="777"/>
         <source>Y coordinate:    </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="776"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="779"/>
         <source>Z coordinate:    </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="778"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="781"/>
         <source>Color:    </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="785"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="788"/>
         <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="793"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="796"/>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1080"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1083"/>
         <source>Point size (pixels)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1215"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1218"/>
         <source>Variable 1 minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1229"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1232"/>
         <source>Variable 1 max</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1243"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1246"/>
         <source>Variable 1 skew factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1257"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1260"/>
         <source>Variable 2 minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1271"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1274"/>
         <source>Variable 2 maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1285"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1288"/>
         <source>Variable 2 skew factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1299"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1302"/>
         <source>Variable 3 minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1313"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1316"/>
         <source>Variable 3 maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1327"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1330"/>
         <source>Variable 3 skew factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1341"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1344"/>
         <source>Variable 4 minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1355"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1358"/>
         <source>Variable 4 maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1369"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1372"/>
         <source>Variable 4 skew factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1386"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1389"/>
         <source>point size (pixels)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1398"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1401"/>
         <source>point size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1483"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1486"/>
         <source>The %1 role was being fulfilled by another input variable. To ensure that the %2 role is fulfilled by the %3 variable, the other variable&apos;s role has been set to None.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14363,115 +18154,115 @@ atoms at unit cell boundaries.</source>
 <context>
     <name>QvisSelectionsWindow</name>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="207"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="209"/>
         <source>Selections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="217"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="219"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="222"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="224"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="227"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="229"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="232"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="234"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="240"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="242"/>
         <source>Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="241"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="243"/>
         <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="280"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="282"/>
         <source>Selection source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="281"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="283"/>
         <source>The data source that defines the selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="288"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="290"/>
         <source>Relate cells using</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="291"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="293"/>
         <source>Domain and cell numbers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="294"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="296"/>
         <source>Global cell numbers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="297"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="299"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="300"/>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="536"/>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1317"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="302"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="554"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1380"/>
         <source>Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="322"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="324"/>
         <source>Cumulative Query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="335"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="337"/>
         <source>Range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="336"/>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="507"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="338"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="509"/>
         <source>Histogram</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="339"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="341"/>
         <source>Automatically apply updated selections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="345"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="347"/>
         <source>Update Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="382"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="384"/>
         <source>Add variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="391"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="393"/>
         <source>Get variable ranges</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="394"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="396"/>
         <source>Populate the list of variables used for the cumulative query
 selection from the list of variables used in the selection&apos;s
 originating plot. The originating plot must be a Parallel
@@ -14479,164 +18270,174 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="402"/>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="512"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="404"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="514"/>
         <source>Update Query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="448"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="450"/>
         <source>Query over time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="453"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="455"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="459"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="461"/>
         <source>End</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="465"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="467"/>
         <source>Stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="526"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="531"/>
+        <source>Bin 0 (0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="538"/>
+        <source>Bin 9 (0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="544"/>
         <source>Axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="531"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="549"/>
         <source>Display axis type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="533"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="551"/>
         <source>Time slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="534"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="552"/>
         <source>ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="535"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="553"/>
         <source>Matches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="558"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="576"/>
         <source>Number of bins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="569"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="587"/>
         <source>Summation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="574"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="592"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="576"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="594"/>
         <source>Include cells matching in any time step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="577"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="595"/>
         <source>Include cells matching in all time steps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="582"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="600"/>
         <source>Minimum bin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="590"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="608"/>
         <source>Maximum bin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="632"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="650"/>
         <source>Cells in selection:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="636"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="654"/>
         <source>Cells in dataset:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="741"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="759"/>
         <source>minimum time state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="752"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="770"/>
         <source>maximum time state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="769"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="787"/>
         <source>time stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="998"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1055"/>
         <source>Number of Cells vs. Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1000"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1057"/>
         <source>Frequency vs. Matches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1002"/>
-        <source>Frequency vs. ID</source>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1059"/>
+        <source>Average frequency vs. ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1004"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1061"/>
         <source>Frequency vs. Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1101"/>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1152"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1158"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1215"/>
         <source>none</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1318"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1381"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1319"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1382"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1499"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1562"/>
         <source>The selection was not created because the id variable was not set.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1641"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1704"/>
         <source>VisIt can&apos;t determine the host for the compute engine to use for loading the selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSelectionsWindow.C" line="1649"/>
+        <location filename="../../gui/QvisSelectionsWindow.C" line="1712"/>
         <source>Load selection from file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14697,7 +18498,7 @@ Coordinates plot.</source>
 <context>
     <name>QvisSessionFileDatabaseLoader</name>
     <message>
-        <location filename="../../gui/QvisSessionFileDatabaseLoader.C" line="239"/>
+        <location filename="../../gui/QvisSessionFileDatabaseLoader.C" line="243"/>
         <source>The launch of a metadata server for accessing data files relevant to the requested session file was cancelled so the session file will not be opened.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14776,22 +18577,22 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="257"/>
+        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="261"/>
         <source>The configuration file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="258"/>
+        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="262"/>
         <source> already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="259"/>
+        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="263"/>
         <source>Replace existing configuration file?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="348"/>
+        <location filename="../../gui/QvisSetupHostProfilesAndConfigWindow.C" line="349"/>
         <source>Host profiles and configuration files have been installed and will be available after VisIt is restarted.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15316,6 +19117,125 @@ Coordinates plot.</source>
     </message>
 </context>
 <context>
+    <name>QvisStatisticalTrendsWindow</name>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="132"/>
+        <source>Time Slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="140"/>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="166"/>
+        <source>Type of sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="148"/>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="173"/>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="151"/>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="176"/>
+        <source>Relative</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="158"/>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="388"/>
+        <source>Index of first time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="183"/>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="402"/>
+        <source>Index of last time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="191"/>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="416"/>
+        <source>Skip rate between time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="201"/>
+        <source>Statistic Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="211"/>
+        <source>Sum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="215"/>
+        <source>Mean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="219"/>
+        <source>Variance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="223"/>
+        <source>Slope</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="227"/>
+        <source>Residuals</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="231"/>
+        <source>Std. Dev.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="243"/>
+        <source>Trend axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="252"/>
+        <source>Step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="256"/>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="260"/>
+        <source>Cycle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="453"/>
+        <source>Index of the first time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="457"/>
+        <source>Number of slices backwards in time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="486"/>
+        <source>Index of the last time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/StatisticalTrends/QvisStatisticalTrendsWindow.C" line="490"/>
+        <source>Number of slices forward in time</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisStreamlinePlotWindow</name>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="240"/>
@@ -15515,14 +19435,14 @@ Coordinates plot.</source>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="509"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3151"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3161"/>
         <source>Sample distance 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="510"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3164"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3177"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3174"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3187"/>
         <source>Sample distance 1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15532,134 +19452,129 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="529"/>
-        <source>Streamline direction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="532"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="587"/>
         <source>Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="533"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="588"/>
         <source>Backward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="534"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="589"/>
         <source>Both</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="543"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="551"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="528"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="536"/>
         <source>Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="553"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="538"/>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="554"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="540"/>
         <source>M3D-C1 2D</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="555"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="541"/>
         <source>M3D-C1 3D</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="556"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="543"/>
         <source>NIMROD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="557"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="539"/>
         <source>Flash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="564"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="550"/>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="893"/>
         <source>Constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="575"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="561"/>
         <source>Velocity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="583"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="575"/>
         <source>Integration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="591"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="596"/>
         <source>Integrator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="593"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="598"/>
         <source>Forward Euler (Single-step)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="594"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="599"/>
         <source>Leapfrog (Single-step)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="595"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="600"/>
         <source>Dormand-Prince (Runge-Kutta)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="596"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="601"/>
         <source>Adams-Bashforth (Multi-step)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="597"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="602"/>
         <source>Runge-Kutta 4 (Single-step)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="598"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="603"/>
         <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="604"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="609"/>
         <source>Step length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="611"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="616"/>
         <source>Limit maximum time step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="622"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="627"/>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="629"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="634"/>
         <source>Relative tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="637"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="642"/>
         <source>Absolute tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="644"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="649"/>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="813"/>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="991"/>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="997"/>
@@ -15669,7 +19584,7 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="645"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="650"/>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="814"/>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="992"/>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="998"/>
@@ -15679,7 +19594,7 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="649"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="568"/>
         <source>Force node centering</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15694,13 +19609,23 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="670"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="677"/>
         <source>Limit maximum distance traveled by particles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="677"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="670"/>
         <source>Limit maximum time elapsed for particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="542"/>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="584"/>
+        <source>Integration direction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15859,13 +19784,13 @@ Coordinates plot.</source>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="918"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3467"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3477"/>
         <source>Opacity Min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="919"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3481"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3491"/>
         <source>Opacity Max</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16037,27 +19962,66 @@ Coordinates plot.</source>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1196"/>
-        <source>Parallel streamline options</source>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1207"/>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1208"/>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1209"/>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1246"/>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1255"/>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1256"/>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1318"/>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1325"/>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1336"/>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1338"/>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1205"/>
         <source>Parallelization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1207"/>
-        <source>Parallelize Over Particles</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1208"/>
-        <source>Parallelize Over Domains</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1209"/>
-        <source>Parallelize Over Particles and Domains</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16078,25 +20042,6 @@ Coordinates plot.</source>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1234"/>
         <source>Work group size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1246"/>
-        <source>Pathlines vs Streamlines</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1255"/>
-        <source>Streamline
-    Compute particle trajectories in an (instantaneous) snapshot
-    of the vector field. Uses and loads only velocity field from current time slice.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1256"/>
-        <source>Pathline    
-    Compute trajectories in the time-varying vector field.
-    Uses and loads velocity data from all relevant time slices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16130,16 +20075,6 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1318"/>
-        <source>Issue warning when the maximum number of steps is reached</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1325"/>
-        <source>Issue warning when stiffness is detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1327"/>
         <source>(Stiffness refers to one vector component being so much </source>
         <translation type="unfinished"></translation>
@@ -16150,260 +20085,250 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1336"/>
-        <source>Issue warning when a particle doesn&apos;t terminate at a critical point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1338"/>
-        <source>(Meaning it circles round and round the critical point without stopping.)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="1340"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3495"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3505"/>
         <source>Speed cutoff for critical points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2511"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2521"/>
         <source>Samples along line:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2522"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2532"/>
         <source>Distance in X:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2523"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2533"/>
         <source>Distance in Y:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2537"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2629"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2547"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2639"/>
         <source>Samples in X:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2538"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2630"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2548"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2640"/>
         <source>Samples in Y:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2564"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2570"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2574"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2580"/>
         <source>Samples in Theta:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2565"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2597"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2575"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2607"/>
         <source>Samples in R:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2591"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2601"/>
         <source>Samples in Latitude:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2592"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2602"/>
         <source>Samples in Longitude:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2631"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2641"/>
         <source>Samples in Z:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2651"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2661"/>
         <source>Sampling stride:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2904"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2914"/>
         <source>field constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2918"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2932"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2928"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2942"/>
         <source>step length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2946"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2956"/>
         <source>maxsteps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2958"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2968"/>
         <source>maxtime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2970"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2980"/>
         <source>maxdistance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2982"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2992"/>
         <source>Pathlines Override Starting Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="2997"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3007"/>
         <source>relative tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3012"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3025"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3022"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3035"/>
         <source>absolute tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3039"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3049"/>
         <source>velocity source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3053"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3063"/>
         <source>point source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3067"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3077"/>
         <source>line start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3081"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3091"/>
         <source>line end</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3095"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3105"/>
         <source>plane origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3109"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3119"/>
         <source>plane normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3123"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3133"/>
         <source>plane up axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3137"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3147"/>
         <source>plane radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3191"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3201"/>
         <source>sphere origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3210"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3220"/>
         <source>The box extents contained errors so the previous values will be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3247"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3260"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3257"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3270"/>
         <source>tube radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3275"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3288"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3285"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3298"/>
         <source>ribbon width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3322"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3332"/>
         <source>phi scaling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3336"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3346"/>
         <source>Legend Min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3349"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3359"/>
         <source>Legend Max</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3362"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3372"/>
         <source>Display Begin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3375"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3385"/>
         <source>Display End</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3398"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3411"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3408"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3421"/>
         <source>Seed radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3426"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3439"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3436"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3449"/>
         <source>Head radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3453"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3463"/>
         <source>Head height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3511"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3521"/>
         <source>Tube vary radius factor must be &gt;= 1.0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3518"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3528"/>
         <source>Tube vary radius factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3534"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3544"/>
         <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3541"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3551"/>
         <source>Correlation distance angular tolerance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3557"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3580"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3567"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3590"/>
         <source>Correlation distance minimum distance must be &gt;= 0.0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3564"/>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3587"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3574"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="3597"/>
         <source>Correlation distance minimum distnace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="4493"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="4435"/>
         <source>Open text file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17272,39 +21197,39 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="447"/>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="702"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="461"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="716"/>
         <source>min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="455"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="469"/>
         <source>Invalid lower bound; will reset to min.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="461"/>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="703"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="475"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="717"/>
         <source>max</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="469"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="483"/>
         <source>Invalid upper bound; will reset to max.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="477"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="491"/>
         <source>Lower bound exceeds upper bound; will reverse them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="706"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="720"/>
         <source>All in range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="707"/>
+        <location filename="../../operators/Threshold/QvisThresholdWindow.C" line="721"/>
         <source>Part in range</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17361,7 +21286,7 @@ not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisTimeSliderControlWidget.C" line="855"/>
+        <location filename="../../gui/QvisTimeSliderControlWidget.C" line="860"/>
         <source>The active time slider is already at state</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17828,246 +21753,251 @@ not cycles or times.</source>
 <context>
     <name>QvisVectorPlotWindow</name>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="197"/>
-        <source>Location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="206"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="248"/>
         <source>Where to place the vectors and how many of them</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="213"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="255"/>
         <source>Vector placement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="218"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="260"/>
         <source>Adapted to resolution of mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="222"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="264"/>
         <source>Uniformly located throughout mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="231"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="273"/>
         <source>Vector amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="236"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="278"/>
         <source>Fixed number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="240"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="282"/>
         <source>Stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="262"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="304"/>
         <source>Only show vectors on original nodes/cells</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="272"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="281"/>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="294"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="456"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="469"/>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="299"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="474"/>
         <source>Scale by magnitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="305"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="480"/>
         <source>Auto scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="314"/>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="341"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="489"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="533"/>
         <source>Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="323"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="498"/>
         <source>Glyph type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="326"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="501"/>
         <source>Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="327"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="502"/>
         <source>Ellipsoid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="336"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="528"/>
         <source>Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="349"/>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="367"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="541"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="555"/>
         <source>Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="358"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="527"/>
         <source>Cylinder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="373"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="508"/>
         <source>Draw head</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="383"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="518"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="397"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="570"/>
         <source>Vector origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="401"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="574"/>
         <source>Head</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="404"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="577"/>
         <source>Middle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="407"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="580"/>
         <source>Tail</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="417"/>
-        <source>Geometry</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="424"/>
-        <source>Quality</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="431"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="605"/>
         <source>Fast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="435"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="608"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="443"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="590"/>
         <source>Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="452"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="376"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="464"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="388"/>
         <source>Magnitude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="467"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="391"/>
         <source>Constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="494"/>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="501"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="336"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="343"/>
         <source>Limits</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="504"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="197"/>
+        <source>Vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="204"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="211"/>
+        <source>Glyphs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="346"/>
         <source>Use Original Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="505"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="347"/>
         <source>Use Current Plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="511"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="353"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="521"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="363"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="534"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="417"/>
         <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="542"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="425"/>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="865"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="524"/>
+        <source>Arrow body</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="598"/>
+        <source>Geometry Quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="1007"/>
         <source>scale value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="879"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="1021"/>
         <source>head size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="893"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="1035"/>
         <source>number of vectors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="907"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="1049"/>
         <source>stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="920"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="1062"/>
         <source>minimum value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="934"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="1076"/>
         <source>maximum value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="954"/>
+        <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="1096"/>
         <source>stem width</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18482,341 +22412,397 @@ not cycles or times.</source>
 <context>
     <name>QvisVolumePlotWindow</name>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="309"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="341"/>
         <source>Renderer Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="312"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="344"/>
         <source>1D transfer function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="317"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="349"/>
         <source>2D transfer function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="388"/>
-        <source>Color</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="378"/>
+        <source>Lighting and Material Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="401"/>
-        <source>Color table</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="421"/>
+        <source>Ambient:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="411"/>
-        <source>+</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="422"/>
+        <source>Diffuse:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="415"/>
-        <source>-</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="423"/>
+        <source>Specular:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="420"/>
-        <source>Align</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="428"/>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="982"/>
-        <source>Smoothing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="431"/>
-        <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="432"/>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="469"/>
-        <source>Linear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="433"/>
-        <source>Cubic Spline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="438"/>
-        <source>Equal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="457"/>
-        <source>Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="464"/>
-        <source>Scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="473"/>
-        <source>Log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="476"/>
-        <source>Skew</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="424"/>
+        <source>Shininess:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="514"/>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="710"/>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="527"/>
+        <source>Color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="537"/>
+        <source>+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="541"/>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="546"/>
+        <source>Align</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="554"/>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="557"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="558"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="595"/>
+        <source>Linear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="559"/>
+        <source>Cubic Spline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="564"/>
+        <source>Equal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="583"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="590"/>
+        <source>Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="599"/>
+        <source>Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="602"/>
+        <source>Skew</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="640"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="842"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="524"/>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="722"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="650"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="854"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="560"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="686"/>
         <source>Opacity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="575"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="701"/>
         <source>Interaction mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="584"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="710"/>
         <source>Freeform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="589"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="715"/>
         <source>Gaussian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="593"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="719"/>
         <source>From Color Table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="601"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="727"/>
         <source>Show colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="662"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="794"/>
         <source>Smooth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="672"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="804"/>
         <source>Attenuation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="690"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="822"/>
         <source>Opacity variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="703"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="835"/>
         <source>Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="814"/>
-        <source>Rendering Method</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="963"/>
+        <source>Splatting Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="822"/>
-        <source>Splatting</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="981"/>
+        <source>3D Texturing Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="823"/>
-        <source>3D Texturing</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1002"/>
+        <source>Ray Casting Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="824"/>
-        <source>Ray casting: compositing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="825"/>
-        <source>Ray casting: integration (grey scale)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="827"/>
-        <source>Tuvok</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="830"/>
-        <source>SLIVR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="845"/>
-        <source>Transfer function</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="849"/>
-        <source>1D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="852"/>
-        <source>2D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="863"/>
-        <source>Sampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="871"/>
-        <source>Sample data onto regular grid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="884"/>
-        <source>Number of samples</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="894"/>
-        <source>Number of slices</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="907"/>
-        <source>Samples per ray</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="921"/>
-        <source>Sampling rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="936"/>
-        <source>Compact support variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="947"/>
-        <source>Methods</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="955"/>
-        <source>Gradient method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="959"/>
-        <source>Centered differences</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="962"/>
-        <source>Sobel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="967"/>
-        <source>Sampling method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="971"/>
-        <source>Rasterization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="974"/>
-        <source>Kernel Based</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="990"/>
-        <source>Smooth Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="999"/>
-        <source>Low gradient lighting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1008"/>
-        <source>Reduction factor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1025"/>
-        <source>Reduction maximum value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1041"/>
-        <source>Misc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1049"/>
-        <source>Legend</source>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1022"/>
+        <source>Trilinear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1055"/>
+        <source>SLIVR Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1076"/>
+        <source>Tuvok Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1283"/>
+        <source>Rendering Method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1288"/>
+        <source>Splatting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1289"/>
+        <source>3D Texturing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1290"/>
+        <source>Ray casting: compositing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1291"/>
+        <source>Ray casting: integration (grey scale)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1293"/>
+        <source>Tuvok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1296"/>
+        <source>SLIVR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1297"/>
+        <source>Ray casting: SLIVR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1313"/>
+        <source>Transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1319"/>
+        <source>1D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1322"/>
+        <source>2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="944"/>
+        <source>Sample data onto regular grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="943"/>
+        <source>Number of samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="985"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1080"/>
+        <source>Number of slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1011"/>
+        <source>Samples per ray</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1015"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1059"/>
+        <source>Sampling rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="967"/>
+        <source>Compact support variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1336"/>
+        <source>Methods</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1341"/>
+        <source>Gradient method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1345"/>
+        <source>Centered differences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1348"/>
+        <source>Sobel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1018"/>
+        <source>Sampling method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1020"/>
+        <source>Rasterization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1021"/>
+        <source>Kernel Based</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1410"/>
+        <source>Smooth Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1361"/>
+        <source>Low gradient lighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1368"/>
+        <source>Reduction factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1386"/>
+        <source>Reduction maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1402"/>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="384"/>
         <source>Lighting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2255"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="1416"/>
+        <source>Show Legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2434"/>
         <source>The minimum value for the color variable was invalid.Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2270"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2449"/>
         <source>The maximum value for the color variable was invalid.Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2285"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2464"/>
         <source>The minimum value for the opacity variable was invalid.Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2300"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2479"/>
         <source>The maximum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2326"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2506"/>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2349"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2528"/>
         <source>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2387"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2565"/>
         <source>The range set for indexing colors will also be used when indexing opacities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19003,67 +22989,77 @@ not cycles or times.</source>
 <context>
     <name>QvisXRayImageQueryWidget</name>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="83"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="88"/>
         <source>Output Image Format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="85"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="90"/>
         <source>bmp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="86"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="91"/>
         <source>jpeg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="87"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="92"/>
         <source>png</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="88"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="93"/>
         <source>tiff</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="89"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="94"/>
         <source>rawfloats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="93"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="95"/>
+        <source>bov</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="99"/>
         <source>Divide Emis by Absorb</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="100"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="106"/>
         <source>Origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="108"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="114"/>
+        <source>Up Vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="122"/>
         <source>Theta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="116"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="130"/>
         <source>Phi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="124"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="138"/>
         <source>Image Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="132"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="146"/>
         <source>Image Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="140"/>
+        <location filename="../../gui/QvisXRayImageQueryWidget.C" line="154"/>
         <source>Image Pixel Size</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19121,6 +23117,14 @@ not cycles or times.</source>
     <message>
         <location filename="../../viewer/main/ViewActions.C" line="182"/>
         <source>Redo view</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ReleaseToDDTAction</name>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="1506"/>
+        <source>Release control of this simulation to DDT</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -19222,12 +23226,12 @@ not cycles or times.</source>
 <context>
     <name>SetActiveWindowAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="535"/>
+        <location filename="../../viewer/main/WindowActions.C" line="539"/>
         <source>Make active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="536"/>
+        <location filename="../../viewer/main/WindowActions.C" line="540"/>
         <source>Make this window active</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19235,7 +23239,7 @@ not cycles or times.</source>
 <context>
     <name>SetPlotFollowsTimeAction</name>
     <message>
-        <location filename="../../viewer/main/PlotAndOperatorActions.C" line="2529"/>
+        <location filename="../../viewer/main/PlotAndOperatorActions.C" line="2533"/>
         <source>Plot follows time slider</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19243,27 +23247,27 @@ not cycles or times.</source>
 <context>
     <name>SetToolUpdateModeAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1339"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1362"/>
         <source>Tool Updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1340"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1363"/>
         <source>Set tool update frequency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1345"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1368"/>
         <source>Continuously</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1346"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1369"/>
         <source>On Mouse Release</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="1347"/>
+        <location filename="../../viewer/main/WindowActions.C" line="1370"/>
         <source>On Tool Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19279,78 +23283,78 @@ not cycles or times.</source>
 <context>
     <name>SetWindowLayoutAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="719"/>
+        <location filename="../../viewer/main/WindowActions.C" line="723"/>
         <source>Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="720"/>
+        <location filename="../../viewer/main/WindowActions.C" line="724"/>
         <source>Set window layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="727"/>
-        <location filename="../../viewer/main/WindowActions.C" line="736"/>
-        <source>1x1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="727"/>
-        <source>1 x 1 window layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="728"/>
-        <location filename="../../viewer/main/WindowActions.C" line="737"/>
-        <source>1x2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="728"/>
-        <source>1 x 2 window layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="729"/>
-        <location filename="../../viewer/main/WindowActions.C" line="738"/>
-        <source>2x2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="729"/>
-        <source>2 x 2 window layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="730"/>
-        <location filename="../../viewer/main/WindowActions.C" line="739"/>
-        <source>2x3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/WindowActions.C" line="730"/>
-        <source>2 x 3 window layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="731"/>
         <location filename="../../viewer/main/WindowActions.C" line="740"/>
-        <source>2x4</source>
+        <source>1x1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="731"/>
-        <source>2 x 4 window layout</source>
+        <source>1 x 1 window layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="732"/>
         <location filename="../../viewer/main/WindowActions.C" line="741"/>
-        <source>3x3</source>
+        <source>1x2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="732"/>
+        <source>1 x 2 window layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="733"/>
+        <location filename="../../viewer/main/WindowActions.C" line="742"/>
+        <source>2x2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="733"/>
+        <source>2 x 2 window layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="734"/>
+        <location filename="../../viewer/main/WindowActions.C" line="743"/>
+        <source>2x3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="734"/>
+        <source>2 x 3 window layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="735"/>
+        <location filename="../../viewer/main/WindowActions.C" line="744"/>
+        <source>2x4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="735"/>
+        <source>2 x 4 window layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="736"/>
+        <location filename="../../viewer/main/WindowActions.C" line="745"/>
+        <source>3x3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="736"/>
         <source>3 x 3 window layout</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19358,78 +23362,89 @@ not cycles or times.</source>
 <context>
     <name>SetWindowModeAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="931"/>
+        <location filename="../../viewer/main/WindowActions.C" line="941"/>
         <source>Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="932"/>
+        <location filename="../../viewer/main/WindowActions.C" line="942"/>
         <source>Set window mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="945"/>
-        <location filename="../../viewer/main/WindowActions.C" line="954"/>
+        <location filename="../../viewer/main/WindowActions.C" line="955"/>
+        <location filename="../../viewer/main/WindowActions.C" line="965"/>
         <source>Navigate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="945"/>
+        <location filename="../../viewer/main/WindowActions.C" line="955"/>
         <source>Navigate mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="946"/>
-        <location filename="../../viewer/main/WindowActions.C" line="955"/>
+        <location filename="../../viewer/main/WindowActions.C" line="956"/>
+        <location filename="../../viewer/main/WindowActions.C" line="966"/>
         <source>Zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="946"/>
+        <location filename="../../viewer/main/WindowActions.C" line="956"/>
         <source>Zoom mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="947"/>
-        <location filename="../../viewer/main/WindowActions.C" line="956"/>
+        <location filename="../../viewer/main/WindowActions.C" line="957"/>
+        <location filename="../../viewer/main/WindowActions.C" line="967"/>
         <source>Zone Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="947"/>
+        <location filename="../../viewer/main/WindowActions.C" line="957"/>
         <source>Zone Pick mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="948"/>
-        <location filename="../../viewer/main/WindowActions.C" line="957"/>
+        <location filename="../../viewer/main/WindowActions.C" line="958"/>
+        <location filename="../../viewer/main/WindowActions.C" line="968"/>
         <source>Node Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="948"/>
+        <location filename="../../viewer/main/WindowActions.C" line="958"/>
         <source>Node Pick mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="949"/>
-        <location filename="../../viewer/main/WindowActions.C" line="958"/>
+        <location filename="../../viewer/main/WindowActions.C" line="959"/>
+        <location filename="../../viewer/main/WindowActions.C" line="969"/>
         <source>Spreadsheet Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="949"/>
+        <location filename="../../viewer/main/WindowActions.C" line="959"/>
         <source>Spreadsheet Pick mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="950"/>
-        <location filename="../../viewer/main/WindowActions.C" line="959"/>
+        <location filename="../../viewer/main/WindowActions.C" line="960"/>
+        <location filename="../../viewer/main/WindowActions.C" line="970"/>
+        <source>DDT Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="960"/>
+        <source>DDT Pick mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/WindowActions.C" line="961"/>
+        <location filename="../../viewer/main/WindowActions.C" line="971"/>
         <source>Lineout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="950"/>
+        <location filename="../../viewer/main/WindowActions.C" line="961"/>
         <source>Lineout mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19472,7 +23487,7 @@ not cycles or times.</source>
 <context>
     <name>SplashScreen</name>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="187"/>
+        <location filename="../../gui/SplashScreen.C" line="188"/>
         <source>VisIt %1 splash screen</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19492,87 +23507,82 @@ not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="279"/>
-        <source>svn revision</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/SplashScreen.C" line="286"/>
+        <location filename="../../gui/SplashScreen.C" line="284"/>
         <source>January</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="287"/>
+        <location filename="../../gui/SplashScreen.C" line="285"/>
         <source>February</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="288"/>
+        <location filename="../../gui/SplashScreen.C" line="286"/>
         <source>March</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="289"/>
+        <location filename="../../gui/SplashScreen.C" line="287"/>
         <source>April</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="290"/>
+        <location filename="../../gui/SplashScreen.C" line="288"/>
         <source>May</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="291"/>
+        <location filename="../../gui/SplashScreen.C" line="289"/>
         <source>June</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="292"/>
+        <location filename="../../gui/SplashScreen.C" line="290"/>
         <source>July</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="293"/>
+        <location filename="../../gui/SplashScreen.C" line="291"/>
         <source>August</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="294"/>
+        <location filename="../../gui/SplashScreen.C" line="292"/>
         <source>September</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="295"/>
+        <location filename="../../gui/SplashScreen.C" line="293"/>
         <source>October</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="296"/>
+        <location filename="../../gui/SplashScreen.C" line="294"/>
         <source>November</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="297"/>
+        <location filename="../../gui/SplashScreen.C" line="295"/>
         <source>December</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="312"/>
+        <location filename="../../gui/SplashScreen.C" line="310"/>
         <source>Starting VisIt...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="365"/>
+        <location filename="../../gui/SplashScreen.C" line="363"/>
         <source>Copyright...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="374"/>
+        <location filename="../../gui/SplashScreen.C" line="372"/>
         <source>Contributors...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="384"/>
+        <location filename="../../gui/SplashScreen.C" line="382"/>
         <source>Dismiss</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19782,12 +23792,12 @@ not cycles or times.</source>
 <context>
     <name>TimeSliderForwardStepAction</name>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="184"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="231"/>
         <source>Forward step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="185"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="232"/>
         <source>Step forward one frame</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19795,12 +23805,12 @@ not cycles or times.</source>
 <context>
     <name>TimeSliderReverseStepAction</name>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="67"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="72"/>
         <source>Reverse step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/AnimationActions.C" line="68"/>
+        <location filename="../../viewer/main/AnimationActions.C" line="73"/>
         <source>Step back one frame</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19866,12 +23876,12 @@ not cycles or times.</source>
 <context>
     <name>ToggleSpinModeAction</name>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="627"/>
+        <location filename="../../viewer/main/WindowActions.C" line="631"/>
         <source>Spin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/WindowActions.C" line="628"/>
+        <location filename="../../viewer/main/WindowActions.C" line="632"/>
         <source>Toggle spin mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19893,78 +23903,50 @@ not cycles or times.</source>
     </message>
 </context>
 <context>
-    <name>ViewerChangeUsernameWindow</name>
-    <message>
-        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="90"/>
-        <source>Username for localhost: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="100"/>
-        <source>Confirm username</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="105"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="185"/>
-        <source>Choose new username</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="188"/>
-        <source>New username for %1: </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ViewerConfigManager</name>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="481"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="500"/>
         <source>VisIt exported the current session to: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="487"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="506"/>
         <source>VisIt could not save your session to: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="567"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="586"/>
         <source> Note that the session file was saved using VisIt %1  and it may not be 100% compatible with VisIt %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="584"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="603"/>
         <source>The list of sources used to restore the session was empty. The session could not be restored.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="647"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="666"/>
         <source>VisIt detected serious errors in the session file from: %1 so the session was not restored.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="655"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="674"/>
         <source>VisIt imported a session from: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="669"/>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="674"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="688"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="693"/>
         <source>VisIt could not locate the session file: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="670"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="689"/>
         <source> VisIt looks for session files in %1 by default.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerConfigManager.C" line="676"/>
+        <location filename="../../viewer/main/ViewerConfigManager.C" line="695"/>
         <source> Check that you provided the correct session file name or try including the entire path to the session file.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19990,39 +23972,39 @@ not cycles or times.</source>
 <context>
     <name>ViewerEngineManager</name>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="580"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="586"/>
         <source>Launching engine on %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="723"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="715"/>
         <source>VisIt could not launch a compute engine on host &quot;%1&quot; because that host does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="736"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="728"/>
         <source>VisIt cannot use the compute engine on host &quot;%1&quot; because the engine has an incompatible  version number.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="750"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="742"/>
         <source>VisIt cannot use the compute engine on host &quot;%1&quot;because the compute engine did not provide the proper credentials.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="763"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="755"/>
         <source>VisIt could not launch the compute engine on host &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="775"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="767"/>
         <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.
 
 You might want to check the job control system on &quot;%2&quot; to be sure the job is no longer present</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="794"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="786"/>
         <source>Communication with the compute engine on host &quot;%1&quot; has been lost.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20032,77 +24014,77 @@ You might want to check the job control system on &quot;%2&quot; to be sure the 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="982"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="971"/>
         <source>VisIt could not connect to the simulation on host &quot;%1&quot; because that host does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="995"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="984"/>
         <source>VisIt cannot use the simulation on host &quot;%1&quot; because the simulation has an incompatible  version number.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1009"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="998"/>
         <source>VisIt cannot use the simulation on host &quot;%1&quot;because the simulation did not provide the proper credentials.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1022"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1011"/>
         <source>VisIt could not connect to the simulation on host &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1033"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1022"/>
         <source>The connection to the simulation on host &quot;%1&quot; has been cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1164"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1153"/>
         <source>Closed the compute engine on host %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1170"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1159"/>
         <source>Cannot close the compute engine on host %1 because there is no compute engine running on that host.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1226"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1215"/>
         <source>Interrupting the compute engine on host %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1232"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1221"/>
         <source>Cannot interrupt the compute engine on host %1 because there is no compute engine running on that host.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1439"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1428"/>
         <source>VisIt is not connected to the simulation &apos;%1&apos; on host %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="1445"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="1434"/>
         <source>VisIt could not find a compute engine to use for the plot on host %1. VisIt will try to launch a compute engine on that host.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="2671"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="2660"/>
         <source>VisIt has been disconnected from the simulation &apos;%1&apos; on host %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="2677"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="2666"/>
         <source>The compute engine running on %1 has exited abnormally.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="2840"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="2829"/>
         <source>The compute engine running on host %1 issued the following warning: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerEngineManager.C" line="3423"/>
+        <location filename="../../viewer/main/ViewerEngineManager.C" line="3433"/>
         <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20110,12 +24092,12 @@ You might want to check the job control system on &quot;%2&quot; to be sure the 
 <context>
     <name>ViewerFileServer</name>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="540"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="543"/>
         <source>GetMetaDataForState called with ANY_STATE. That is not allowed so VisIt will instead use time state 0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="740"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="745"/>
         <source>VisIt could not read from the file &quot;%1&quot;.
 
 The generated error message was:
@@ -20124,7 +24106,7 @@ The generated error message was:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="748"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="753"/>
         <source>VisIt could not read from the file &quot;%1&quot; on host %2.
 
 The generated error message was:
@@ -20133,24 +24115,24 @@ The generated error message was:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="761"/>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1063"/>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1199"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="766"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1070"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1208"/>
         <source>The metadata server running on host %1 has exited abnormally. VisIt is trying to restart it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="773"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="778"/>
         <source>VisIt was unable to open &quot;%1&quot;.  Each attempt to open it caused VisIt&apos;s metadata server to crash.  This can occur when the file is corrupted, or when the underlying file format has changed and VisIt&apos;s readers have not been updated yet, or when the reader VisIt is using for your file format is not robust.  Please check whether the file is corrupted and, if not, contact a VisIt developer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="918"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="923"/>
         <source>GetSILForState called with ANY_STATE. That is not allowed so VisIt will instead use time state 0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1051"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1058"/>
         <source>VisIt cannot read the SIL for the file &quot;%1&quot; on host %2.
 
 The metadata server returned the following message:
@@ -20159,25 +24141,25 @@ The metadata server returned the following message:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1487"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1501"/>
         <source>VisIt cannot launch a metadata server on host %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1495"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1509"/>
         <source>The metadata server on host %1 is an incompatible version. It cannot be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1507"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1521"/>
         <source>The metadata server on host %1 did not return the proper credentials. It cannot be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1520"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1542"/>
         <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
 
-It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
+%2It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
 
 If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
 
@@ -20191,37 +24173,37 @@ If none of these suggestions allow you to successfully connect to %1 then contac
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="1599"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="1621"/>
         <source>The launch of the metadata server on host &quot;%1&quot; has been cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2282"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2320"/>
         <source>VisIt cannot create a database correlation that does not use any databases.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2349"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2387"/>
         <source>The times for %1 may not be accurate so the new correlation %2 might not work as expected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2365"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2403"/>
         <source>The cycles for %1 may not be accurate so the new correlation %2 might not work as expected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2383"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2421"/>
         <source>VisIt could not retrieve metadata for %1 so the correlation %2 could not be created.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="3126"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="3164"/>
         <source>VisIt was unable to determine the variable type for %1&apos;s %2 variable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="3203"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="3241"/>
         <source>VisIt was unable to determine the real variable type for %1&apos;s %2 variable.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20270,105 +24252,71 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     </message>
 </context>
 <context>
-    <name>ViewerPasswordWindow</name>
-    <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="105"/>
-        <source>Password for localhost: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="116"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="121"/>
-        <source>Change username</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="126"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="130"/>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="416"/>
-        <source>Enter password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="414"/>
-        <source>Enter passphrase</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ViewerPlot</name>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2135"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2251"/>
         <source>VisIt cannot apply other operators after a %1 operator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2147"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2263"/>
         <source>You have added the &quot;Slice&quot; operator multiple times. This can lead to an empty plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2237"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2358"/>
         <source>VisIt cannot move the %1 operator because it is already the first operator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2244"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2365"/>
         <source>VisIt cannot move the %1 operator because it is already the last operator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2279"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2400"/>
         <source>VisIt cannot move a %1 operator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2405"/>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2479"/>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2546"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2531"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2610"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2682"/>
         <source>VisIt cannot remove a %1 operator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="2643"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="2784"/>
         <source>You have more than one %1 operator applied to a plot but none of the %1 operators is the active operator. Please make one of the %1 operators be the active operator by expanding the plot and clicking one of its %1 operators so VisIt will apply the operator settings to the correct %1 operator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="3118"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="3264"/>
         <source>The %1 plot of &quot;%2&quot; for the file &quot;%3&quot; could not be generated by the compute engine on host &quot;%4&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="4991"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="5151"/>
         <source>The ViewerPlot node was not found in the session file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="5006"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="5166"/>
         <source>The session file wanted VisIt to create a plot using the &quot;%1&quot; plugin, which is either invalid or refers to a plugin that is not present in this VisIt installation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="5040"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="5200"/>
         <source>The session file contains a plot that uses the %1 plugin and that plot references the %2 operator plugin, which is either invalid or it is not present in this VisIt installation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="5053"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="5213"/>
         <source>The session file contains a plot that uses the %1 plugin and that plot references an operator of an undetermined type. The session file is probably corrupted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlot.C" line="5070"/>
+        <location filename="../../viewer/main/ViewerPlot.C" line="5230"/>
         <source>The session file was missing the pluginID for a plot.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20381,13 +24329,13 @@ If none of these suggestions allow you to successfully connect to %1 then contac
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="1695"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="1709"/>
         <source>Would you like to create a &quot;%1&quot; database correlation for the following databases?
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="1708"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="1722"/>
         <source>
 Please be aware that &quot;Time&quot; database correlations may require
 opening and reading time information from all files in the database.
@@ -20396,109 +24344,109 @@ operation could take as much as a few minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="1729"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="1743"/>
         <source>You chose not to create a database correlation. VisIt will not prompt you again to create a database correlation for:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="2550"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="2570"/>
         <source>Cannot create a plot until a database has been opened.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="2565"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="2585"/>
         <source>VisIt could not create the desired plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="3157"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="3179"/>
         <source>VisIt could not copy plots.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="3463"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="3485"/>
         <source>VisIt could not create a SIL restriction for %1. The plot of &quot;%2&quot; cannot be added.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="4126"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="4148"/>
         <source>Visit could not copy active plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="4478"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="4501"/>
         <source>VisIt cannot set the %1 plot attributes since no plots of that type are selected. This can either mean that you have no plots selected or you have more than one instance of the %1 plot in your plot list. Please select a %1 plot before trying to modify its plot attributes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="4916"/>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5111"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="4954"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5224"/>
         <source>The %1 plot of &quot;%2&quot; cannot be regenerated using the database: %3 since the variable is not contained in the new database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5148"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5261"/>
         <source>The %1 plot of &quot;%2&quot; cannot be overlayed using the database: %3 since the variable is not contained in the new database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5161"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5274"/>
         <source>No plots were created as a result of the overlay because no plots were selected in the plot list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5409"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5522"/>
         <source>VisIt could not read the SIL for %1 at state %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5432"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5545"/>
         <source>VisIt could not read the MetaData for %1 at state %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5570"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5683"/>
         <source>VisIt could not read the SIL for %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="6689"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="6802"/>
         <source>Some plots had errors. VisIt will try to regenerate those plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="6877"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="6990"/>
         <source>The %1 plot of variable &quot;%2&quot; yielded no data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="7117"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="7230"/>
         <source>The plot spatial dimensions do not match, 2D vs 3D. Plots need to be in windows with plots of the same spatial dimension.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="8376"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="8495"/>
         <source>VisIt does not have all the information it needs to perform a pick.  Please wait while the necessary information is calculated.  All current pick selections have been cached and will be performed when calculations are complete.  VisIt will notify you when it is fully ready for more picks.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="8389"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="8508"/>
         <source>Pick mode now fully ready.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="9048"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="9167"/>
         <source>Your session file was saved before VisIt 1.5.5. If you want to restore your session file using a different list of data sources then you will first have to load your session into VisIt 1.5.5 and save it before attempting to restore the session with a different list of sources.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="9366"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="9485"/>
         <source>Could not create a plot of type from variable %1 of database %2 on host %3.  This often happens because something has changed since the session file was saved.  (For example, the file was overwritten.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="9516"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="9635"/>
         <source>The session file did not specify how many plots to create.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20506,223 +24454,238 @@ operation could take as much as a few minutes.</source>
 <context>
     <name>ViewerQueryManager</name>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="430"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="433"/>
         <source>Lineout requires an active non-hidden plot. Please select a plot and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="449"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="452"/>
         <source>Lineout requires scalar variable.  %1 is not scalar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="477"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="480"/>
         <source>VisIt could not create the desired plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1097"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1103"/>
         <source>%1 is not a valid query name.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1103"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1109"/>
         <source>Regular (non-time) query is not available for %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1114"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1120"/>
         <source>%1 has had an internal error when processing.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1269"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1290"/>
         <source>VisIt could not satisfy the query %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1329"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1350"/>
         <source>VisIt was not able to execute the query.  Please contact a VisIt developer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1412"/>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2855"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1430"/>
+        <source>Lineout requires start_point argument.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1440"/>
+        <source>Lineout requires end_point argument.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1470"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2956"/>
         <source>Lineout cannot be performed on curve windows.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1417"/>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2860"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1475"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2961"/>
         <source>Lineout cannot be performed on axis array windows.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1423"/>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2890"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1481"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2991"/>
         <source>Only 2D points allowed for 2D lineouts. Please set z-coord to 0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1969"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2038"/>
         <source>PICK requires an active non-hidden Plot.
 Please select a plot and try again.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2194"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2273"/>
         <source>Glyph pick could not find a valid intersection.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2276"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2355"/>
         <source>Pick failed with an internal error. Please contact a VisIt developer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2346"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2425"/>
         <source>Could not create a spreadsheet with the pick, because the spreadsheet plugin is not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2519"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2604"/>
         <source>Please choose a different window to place the histogram of the array variable into.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2528"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2613"/>
         <source>Could not create a histogram of the array variable, because the Histogram plugin is not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2589"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2674"/>
         <source>The picked point is not contained in a surface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2662"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2747"/>
         <source>Pick requires an active non-hidden Plot.
 Please select a plot and try again.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="3304"/>
-        <source>%1 requires a &apos;coord&apos; parameter.
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2770"/>
+        <source>Cannot focus on domain %0, unable to connect to DDT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="3416"/>
+        <source>%1 requires a &apos;coord&apos; parameter (numeric tuple).
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4435"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4542"/>
         <source>Time history query is not available for %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4452"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4559"/>
         <source>Cannot create a time query curve with 1 time state.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4508"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4615"/>
         <source>The centering of the query (zone) does not match the centering of the plot&apos;s current variable (node).  Please try again with the appropriately centered query: &apos;Variable By Node&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4515"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4622"/>
         <source>The centering of the query (node) does not match the centering of the plot&apos;s current variable (zone).  Please try again with the appropriately centered query: &apos;Variable By Zone&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4547"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4654"/>
         <source>Clamping start time to 0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4552"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4659"/>
         <source>Clamping end time to number of available timesteps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4558"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4665"/>
         <source>Query over time: start time must be smaller than end time please correct and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4565"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4672"/>
         <source>Query over time requires more than 1 frame, please correct start and end times try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4585"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4692"/>
         <source>Please choose a different window method for the time query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4837"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4944"/>
         <source>The centering of the pick-through-time (zone) does not match the centering of the plot&apos;s current variable (node).  Please try again with the appropriately centered Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4846"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4953"/>
         <source>The centering of the pick-through-time (node) does not match the centering of the plot&apos;s current variable (zone).  Please try again with the appropriately centered Pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4889"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4996"/>
         <source>Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5038"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5145"/>
         <source>Cannot perform a %1 query on variable %2.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5049"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5156"/>
         <source>Cannot perform a %1 query with only %2 variables, it requires %3 variables.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5136"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5243"/>
         <source>%1 requires exactly %2 plots to be selected, realized, and drawn. Please select them and try again.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5155"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5262"/>
         <source>Multiple input queries require all their inputs to be on the same host.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5459"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5566"/>
         <source>There is no running engine with which to perform the query.  Please ensure the plot has finished drawing and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5555"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5667"/>
         <source>%1 requires an active non-hidden Plot.
 Please select a plot and try again.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5563"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5675"/>
         <source>Performing %1 query...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5583"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5695"/>
         <source>ViewerQueryManager could not determine query type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5630"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5765"/>
         <source>Need a running engine to retrieve query parameters.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20730,214 +24693,229 @@ Please select a plot and try again.
 <context>
     <name>ViewerSubject</name>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5114"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="3749"/>
+        <source>Host profile %1 exported to %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ViewerSubject.C" line="3755"/>
+        <source>VisIt exported host profile &quot;%1&quot; to the file: %2. </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5508"/>
         <source>You cannot define a database correlation that has the same name as a source. No database correlation will be created for %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5227"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5621"/>
         <source>VisIt did not open a new compute engine on host %1 because a compute engine is already running there.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5380"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5774"/>
         <source>To construct a data binning, you must have an active plot.  No data binning was created.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5385"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5779"/>
         <source>Only one data binning can be created at a time.  VisIt is using the first active plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5396"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5790"/>
         <source>Created data binning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5400"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5794"/>
         <source>Unable to create data binning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5443"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5837"/>
         <source>To export a database, you must have an active plot.  No database was saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5447"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5841"/>
         <source>Only one database can be exported at a time.  VisIt is exporting the first active plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5457"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5851"/>
         <source>Exported database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5461"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5855"/>
         <source>Unable to export database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5466"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5860"/>
         <source>Unable to export database: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5966"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="6360"/>
         <source>Color table %1 exported to %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5972"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="6366"/>
         <source>VisIt exported color table &quot;%1&quot; to the file: %2. You can share that file with colleagues who want to use your color table. Simply put the file in their .visit directory, run VisIt and the color table will appear in their list of color tables when VisIt starts up.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="6053"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="6447"/>
         <source>VisIt could not save your settings to: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="7832"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="8240"/>
         <source>Sending keep alive signals...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9251"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="9873"/>
         <source>Currently, GetProcessAttributes() works only for &quot;engine&quot; or &quot;viewer&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9330"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="9952"/>
         <source>Added a new client to the viewer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9339"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="9961"/>
         <source>VisIt could not connect to the new client %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10096"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10791"/>
         <source>An invalid selection name was provided. No selection was applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10119"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10814"/>
         <source>To apply a named selection, you must have an active plot.  No named selection was applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10138"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10833"/>
         <source>All plots involving a named selection must come from the same engine.  No named selection was applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10163"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10858"/>
         <source>Applied named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10226"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10921"/>
         <source>To create a named selection, you must have an active plot that has been drawn.  No named selection was created.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10232"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10927"/>
         <source>You can only have one active plot when creating a named selection.  No named selection was created.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10297"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10992"/>
         <source>Created named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10309"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11004"/>
         <source>Unable to create named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10534"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11229"/>
         <source>Deleted named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10536"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11231"/>
         <source>Unable to delete named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10582"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11277"/>
         <source>Loaded named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10600"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11295"/>
         <source>Unable to load named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10655"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11350"/>
         <source>VisIt could not determine the source or plot that creates the %1 selection.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10664"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11359"/>
         <source>VisIt cannot update the %1 selection because it does not exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10799"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11494"/>
         <source>Saved named selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10803"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11498"/>
         <source>Unable to save named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ViewerSubject.C" line="11937"/>
+        <source>Cannot focus DDT on domain %0: failed to connect to DDT</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ViewerWindow</name>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="1270"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="1285"/>
         <source>VisIt does not allow view keyframes to be deleted when the active window is not in keyframe mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="1345"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="1360"/>
         <source>VisIt does not allow view keyframes to be moved when the active window is not in keyframe mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="1437"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="1452"/>
         <source>VisIt does not allow view keyframes to be added when the active window is not in keyframe mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="3482"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="3555"/>
         <source>The annotation object could not be added.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="4158"/>
-        <location filename="../../viewer/main/ViewerWindow.C" line="4286"/>
-        <location filename="../../viewer/main/ViewerWindow.C" line="4638"/>
-        <location filename="../../viewer/main/ViewerWindow.C" line="4778"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="4231"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="4359"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="4711"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="4851"/>
         <source>There are plots in the window that do not
 support log-scaling.  It will not be done.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="5912"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="5996"/>
         <source>VisIt could not pick the center of rotation. You might not have clicked on a plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="6669"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="6753"/>
         <source>An error occurred while trying to take a pick.
 This happens most often when trying to do a choose center while the engine times out or otherwise has problems.
 
@@ -20946,7 +24924,7 @@ The error message was: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="9910"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="9994"/>
         <source>Unable to update view with new image from engine</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20954,79 +24932,79 @@ The error message was: %2</source>
 <context>
     <name>ViewerWindowManager</name>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="571"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="574"/>
         <source>The maximum number of windows was exceeded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="944"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="947"/>
         <source>Can&apos;t delete the last window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1018"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1021"/>
         <source>Window %1 was deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1321"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1357"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1397"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1324"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1360"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1400"/>
         <source>Invalid window index (windowIndex = %1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1333"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1374"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1412"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1336"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1377"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1415"/>
         <source>The specified window does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1699"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1706"/>
         <source>VisIt cannot save images in the specified file format.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1722"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1729"/>
         <source>The specified filename was empty. VisIt will use the name &quot;visit&quot; as the base for the files to be saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1834"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2254"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2349"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1852"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2272"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2367"/>
         <source>Saving tiled image...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1838"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1856"/>
         <source>Rendering window %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1871"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1878"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1889"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1896"/>
         <source>The window was too large to save at the requested resolution.  The resolution has been automatically reduced.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1938"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1956"/>
         <source>You cannot save curve formats (ultra, curve) from a window that is currently in scalable rendering mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1957"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="1975"/>
         <source>Saving window %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="1999"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2017"/>
         <source>No image was saved.  This is frequently because you have asked to save an empty window.  If this is not the case, please contact a VisIt developer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2006"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2024"/>
         <source>No surface was saved.  This is frequently because you have asked to save an empty window.  This also happens if you are in Scalable Rendering mode.  If this is not the case, please contact a VisIt developer.
 
 
@@ -21034,79 +25012,79 @@ If you are in scalable rendering mode and want to save a polygonal file, go to O
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2022"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2040"/>
         <source>Saved %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2029"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2047"/>
         <source>Could not save window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2120"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2138"/>
         <source>Currently, you cannot save images when in nowin mode using screen capture and Mesa has been stubbed out in the viewer.  Either disable screen capture, or rebuild without the Mesa stub library.  Note that the Mesa stub library was in place to prevent compatibility problems with some graphics drivers.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2136"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2154"/>
         <source>Currently, you cannot use non-screen-capture mode saves when you have animation caching turned on. Either turn off animation caching or use screen capture to save your windows.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2215"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2233"/>
         <source>VisIt did not save a tiled image because none of the windows had any plots.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2318"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2336"/>
         <source>VisIt did not do an advanced window save because none of the windows had any plots.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2452"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2470"/>
         <source>You cannot print the window to a file because you did not specify an output filename.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2461"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2479"/>
         <source>You cannot print the window because you have not specified a printer name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2473"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2491"/>
         <source>Printing window %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2541"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2559"/>
         <source>Unable to obtain an image to print.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2542"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2560"/>
         <source>Print from VisIt failed....</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2574"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2592"/>
         <source>Window %1 saved to %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2581"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2599"/>
         <source>Window %1 sent to printer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2712"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2908"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2730"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2926"/>
         <source>There are plots in the window that do not
 support log-scaling.  It will not be done.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2726"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2744"/>
         <source>There are non-positive values in the domain of 
 the curve, so log scaling cannot be done. You must
 limit the spatial extents to positive values.
@@ -21116,7 +25094,7 @@ in Controls-&gt;View-&gt;Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2751"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2769"/>
         <source>There are non-positive values in the range of 
 the curve, so log scaling cannot be done. You must
 limit the spatial extents to positive values.
@@ -21126,7 +25104,7 @@ in Controls-&gt;View-&gt;Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2922"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2940"/>
         <source>There are non-positive values in the x-coords 
 of the mesh, so log scaling cannot be done. You must
 limit the spatial extents to positive values.
@@ -21136,7 +25114,7 @@ in Controls-&gt;View-&gt;Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="2948"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="2966"/>
         <source>There are non-positive values in the y-coords
 of the mesh, so log scaling cannot be done. You
 must limit the spatial extents to positive values.
@@ -21146,17 +25124,17 @@ in Controls-&gt;View-&gt;Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3653"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3671"/>
         <source>Would you like to modify the %1 correlation so it correlates the following databases?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3656"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3674"/>
         <source>Alter correlation?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3676"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3694"/>
         <source>Would you like to correlate the following databases
 to ensure that changing the time will apply to all
 windows that are locked in time?
@@ -21164,104 +25142,166 @@ windows that are locked in time?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3682"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3700"/>
         <source>Create correlation?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3703"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3721"/>
         <source>VisIt created a new database correlation called %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3714"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3732"/>
         <source>Since you opted not to create a database correlation, changing time sliders in one locked window might not affect other locked windows.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="4406"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="4424"/>
         <source>Window layout %1 is an unsupported layout.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="4586"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="4604"/>
         <source>The specified window doesn&apos;t exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="4692"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="4710"/>
         <source>ViewerWindowManager::GetActiveWindow() There are no windows.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6035"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6509"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6053"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6538"/>
         <source>VisIt did not set the time state for these windows: %1.The time slider in cannot be set by the active window&apos;s time slider since the correlations of the time sliders have nothing in common.
 
 To avoid this warning in the future, make sure that locked windows have compatible time sliders.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6423"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6452"/>
         <source>VisIt could not find a database correlation for the desired time slider so it must not be a valid time slider.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6448"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6477"/>
         <source>You&apos;ve made the keyframe animation time slider be the active time slider. Other windows that are also time locked will not have their time sliders set to the keyframe time slider.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6717"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6746"/>
         <source>You cannot alter a database correlation that corresponds directly to a database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6755"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6784"/>
         <source>You cannot alter a database correlation for %1 because there is no such database correlation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6792"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6821"/>
         <source>You cannot delete a database correlation that corresponds directly to a source.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6941"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6970"/>
         <source>VisIt could not close &quot;%1&quot; because it is still being used by one or more plots.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6996"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="7025"/>
         <source>VisIt closed &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="8179"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="8235"/>
         <source>Window %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="9071"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="9116"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="9127"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="9172"/>
         <source>VisIt could not open a window for Lineout because the maximum number of windows was exceeded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="9868"/>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="9900"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="9924"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="9956"/>
         <source>Could not create named selection %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="10064"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="10120"/>
         <source>The maximum number of windows are already being used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="10140"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="10196"/>
         <source>VisIt could not open a window for TimeQuery because the maximum number of windows was exceeded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VisItChangeUsernameWindow</name>
+    <message>
+        <location filename="../../viewer/main/VisItChangeUsernameWindow.C" line="67"/>
+        <source>Choose new username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItChangeUsernameWindow.C" line="75"/>
+        <source>Username for localhost: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItChangeUsernameWindow.C" line="85"/>
+        <source>Confirm username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItChangeUsernameWindow.C" line="90"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItChangeUsernameWindow.C" line="126"/>
+        <source>New username for %1: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VisItPasswordWindow</name>
+    <message>
+        <location filename="../../viewer/main/VisItPasswordWindow.C" line="84"/>
+        <source>Password for localhost: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItPasswordWindow.C" line="95"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItPasswordWindow.C" line="100"/>
+        <source>Change username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItPasswordWindow.C" line="105"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItPasswordWindow.C" line="109"/>
+        <location filename="../../viewer/main/VisItPasswordWindow.C" line="157"/>
+        <source>Enter password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/VisItPasswordWindow.C" line="155"/>
+        <source>Enter passphrase</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
