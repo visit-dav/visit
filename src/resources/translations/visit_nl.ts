@@ -173,6 +173,61 @@
     </message>
 </context>
 <context>
+    <name>DDTSession</name>
+    <message>
+        <source>Not connected</source>
+        <translation type="unfinished">Niet verbonden</translation>
+    </message>
+    <message>
+        <source>Connecting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disconnecting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No domain information, may not be a parallel simulation. DDT&apos;s focus will not be changed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot focus DDT on domain %0 as VisIt is not currently connected to DDT.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection closed by DDT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DDT not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insufficient permissions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Too many sockets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Timed out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection error</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DeleteActivePlotsAction</name>
     <message>
         <source>Delete active plots</source>
@@ -789,6 +844,46 @@
     </message>
     <message>
         <source>ToroidalPoloidalProjection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartographic Projection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Extract Point Function 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IntegralCurve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LCS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ModelBasedClustering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PeaksOverThreshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poincare</source>
+        <translation type="unfinished">Poincare</translation>
+    </message>
+    <message>
+        <source>ProgrammableOp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rectilinear Project 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>StatisticalTrends</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1640,6 +1735,10 @@ De metadataserver gaf het volgende bericht door:
         <source>The value of maxz was invalid. Resetting to the last good value of %1.</source>
         <translation type="obsolete">De waarde van MaxZ was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
+    <message>
+        <source>Inverse</source>
+        <translation type="unfinished">Inverse</translation>
+    </message>
 </context>
 <context>
     <name>QvisCMFEWizard</name>
@@ -1665,14 +1764,6 @@ De metadataserver gaf het volgende bericht door:
     </message>
     <message>
         <source>Between different time slices on the same mesh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Between meshes in a single database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Between meshes in two separate databases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1834,10 +1925,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Difference with </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Absolute value of difference</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1859,6 +1946,50 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Select Donor Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between two or more meshes in a single database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between meshes in two or more separate databases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Donor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Donor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Donors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expression with </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum of valves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum of valves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sum of values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Average of values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variance of values</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1919,6 +2050,61 @@ The time slice I want will change as I change the time slider</source>
     <message>
         <source>paraboloid</source>
         <translation>paraboloïde</translation>
+    </message>
+</context>
+<context>
+    <name>QvisCartographicProjectionWindow</name>
+    <message>
+        <source>Projection type</source>
+        <translation type="unfinished">Projectietype</translation>
+    </message>
+    <message>
+        <source>Aitoff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eckert IV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Equidistant Conic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hammer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lambert Azimuthal Equal Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lambert Conformal Conic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mercator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Miller Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mollweide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Orthographic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winkel II</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Central Meridian</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2869,10 +3055,6 @@ The time slice I want will change as I change the time slider</source>
         <translation>Diversen</translation>
     </message>
     <message>
-        <source>Line/Point Geometry</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Show lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2928,6 +3110,86 @@ The time slice I want will change as I change the time slider</source>
         <source>timeForTimeCue</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Gegevens</translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished">Geometrie</translation>
+    </message>
+    <message>
+        <source>Extras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Solid</source>
+        <translation type="unfinished">Solide</translation>
+    </message>
+    <message>
+        <source>Horizontal Gradient</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertical Gradient</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Lijn</translation>
+    </message>
+    <message>
+        <source>Coordinate System</source>
+        <translation type="unfinished">Coördinaatsysteem</translation>
+    </message>
+    <message>
+        <source>Polar to Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>R_Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Theta_R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radians</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Degrees</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Units</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCylinderWindow</name>
@@ -2954,6 +3216,10 @@ The time slice I want will change as I change the time slider</source>
     <message>
         <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
         <translation type="obsolete">De waarde van de straal was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
+    </message>
+    <message>
+        <source>Inverse</source>
+        <translation type="unfinished">Inverse</translation>
     </message>
 </context>
 <context>
@@ -3059,6 +3325,26 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Number of bins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove bins with no data (curves only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation type="unfinished">Uitvoer</translation>
+    </message>
+    <message>
+        <source>Output on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3736,21 +4022,20 @@ The time slice I want will change as I change the time slider</source>
     </message>
 </context>
 <context>
+    <name>QvisExtractPointFunction2DWindow</name>
+    <message>
+        <source>I</source>
+        <translation type="unfinished">I</translation>
+    </message>
+    <message>
+        <source>J</source>
+        <translation type="unfinished">J</translation>
+    </message>
+</context>
+<context>
     <name>QvisExtremeValueAnalysisWindow</name>
     <message>
-        <source>Compute Maxes:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Monthly</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Annually</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display Month</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3802,7 +4087,155 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished">december</translation>
     </message>
     <message>
-        <source>R Code Directory</source>
+        <source>Inputs</source>
+        <translation type="unfinished">Invoer</translation>
+    </message>
+    <message>
+        <source>Start year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis year range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ensemble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of members</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished">Analyse</translation>
+    </message>
+    <message>
+        <source>Extremes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minima</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maxima</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Optimization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nelder-Mead</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>BFGS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aggregation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Annual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seasonal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trend Modeling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear trend in log scale parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear trend in location parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear trend in shape parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compute return value for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compute return value differences for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output parameter values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">Toon</translation>
+    </message>
+    <message>
+        <source>Winter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spring</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Summer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fall</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dataYearBegin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dataAnalysisYear1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dataAnalysisYear2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>numEnsembles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>returnValues</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rvDifference1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rvDifference2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3835,44 +4268,12 @@ The time slice I want will change as I change the time slider</source>
 <context>
     <name>QvisFTLEWindow</name>
     <message>
-        <source>Integration Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FTLE Direction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Forward</source>
         <translation type="unfinished">Vooruit</translation>
     </message>
     <message>
         <source>Backward</source>
         <translation type="unfinished">Achteruit</translation>
-    </message>
-    <message>
-        <source>Treat flow as: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Unsteady state</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Steady state</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Where to evaluate FTLE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>At the native resolution of the mesh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>On a regular grid</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Regular Grid</source>
@@ -3883,19 +4284,319 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished">Resolutie</translation>
     </message>
     <message>
-        <source>Start at DataSet Extent</source>
+        <source>Integration</source>
+        <translation type="unfinished">Integratie</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Voorkomen</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Gevorderd</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">Bron</translation>
+    </message>
+    <message>
+        <source>Source type</source>
+        <translation type="unfinished">Brontype</translation>
+    </message>
+    <message>
+        <source>Native Mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Subset Start</source>
+        <source>Data start extent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>End at DataSet Extent</source>
+        <source>Full</source>
+        <translation type="unfinished">Volledig</translation>
+    </message>
+    <message>
+        <source>Subset</source>
+        <translation type="unfinished">Subset</translation>
+    </message>
+    <message>
+        <source>Data end extent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Subset End</source>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">Standaard</translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Constant</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished">Dormand-Prince (Runge-Kutta)</translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished">Adams-Bashforth (Multi-step)</translation>
+    </message>
+    <message>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
+        <translation type="unfinished">Staplengte</translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished">Relatieve tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished">Absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished">Absoluut</translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Termination</source>
+        <translation type="unfinished">Beëindiging</translation>
+    </message>
+    <message>
+        <source>Limit maximum time i.e. FTLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum distance i.e. FDLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum size i.e. FSLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Tijd</translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished">Communicatiedrempel</translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished">Domein cacheafmeting</translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished">Werkgroep afmeting</translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>StartPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EndPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>step length</source>
+        <translation type="unfinished">staplengte</translation>
+    </message>
+    <message>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxsize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>relative tolerance</source>
+        <translation type="unfinished">relatieve tolerantie</translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished">absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>velocity source</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4363,6 +5064,10 @@ The time slice I want will change as I change the time slider</source>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
         <translation>De MetaData server lopend op %1 kon niet de bestandenlijst van de huidige map niet verkrijgen.</translation>
+    </message>
+    <message>
+        <source>Show dot files</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5378,6 +6083,18 @@ door de Lineout Operator</translation>
         <source>Use bin widths</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Statistical Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normalize Histogram</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compute the CDF</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisHohlraumFluxQueryWidget</name>
@@ -5578,7 +6295,7 @@ door de Lineout Operator</translation>
     </message>
     <message>
         <source>Specify SSH port</source>
-        <translation>Specificeer SSH poort</translation>
+        <translation type="obsolete">Specificeer SSH poort</translation>
     </message>
     <message>
         <source>These options are for hardware accelerating the scalable rendering feature on a parallel cluster. In other modes, VisIt will automatically use hardware acceleration. This tab only needs to be modified for parallel clusters that have graphics cards.</source>
@@ -5776,6 +6493,46 @@ door de Lineout Operator</translation>
         <source>X server arguments</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Duplicate detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entry already exists for %1. Allow Duplicate?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Machines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remote Profiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Profiles</source>
+        <translation type="unfinished">Profielen</translation>
+    </message>
+    <message>
+        <source>SSH command</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SSH port</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisImageAnnotationInterface</name>
@@ -5889,6 +6646,661 @@ door de Lineout Operator</translation>
     <message>
         <source>  </source>
         <translation type="unfinished">..</translation>
+    </message>
+</context>
+<context>
+    <name>QvisIntegralCurveWindow</name>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished">Integratie</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Voorkomen</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Gevorderd</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">Bron</translation>
+    </message>
+    <message>
+        <source>Source type</source>
+        <translation type="unfinished">Brontype</translation>
+    </message>
+    <message>
+        <source>Single Point</source>
+        <translation type="unfinished">Enkelvoudige punt</translation>
+    </message>
+    <message>
+        <source>Point List</source>
+        <translation type="unfinished">Puntenlijst</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Lijn</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation type="unfinished">Cirkel</translation>
+    </message>
+    <message>
+        <source>Plane</source>
+        <translation type="unfinished">Plat vlak</translation>
+    </message>
+    <message>
+        <source>Sphere</source>
+        <translation type="unfinished">Bol</translation>
+    </message>
+    <message>
+        <source>Box</source>
+        <translation type="unfinished">Doos</translation>
+    </message>
+    <message>
+        <source>Selection</source>
+        <translation type="unfinished">Selectie</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished">Locatie</translation>
+    </message>
+    <message>
+        <source>Read Text File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="unfinished">Start</translation>
+    </message>
+    <message>
+        <source>End</source>
+        <translation type="unfinished">Einde</translation>
+    </message>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished">Oorsprong</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished">Normaal</translation>
+    </message>
+    <message>
+        <source>Up axis</source>
+        <translation type="unfinished">Omhoogwijzende as</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished">Straal</translation>
+    </message>
+    <message>
+        <source>Whole data set</source>
+        <translation type="unfinished">Gehele dataset</translation>
+    </message>
+    <message>
+        <source>X Extents</source>
+        <translation type="unfinished">Omvang in X</translation>
+    </message>
+    <message>
+        <source>Y Extents</source>
+        <translation type="unfinished">Omvang in Y</translation>
+    </message>
+    <message>
+        <source>Z Extents</source>
+        <translation type="unfinished">Omvang in Z</translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uniform</source>
+        <translation type="unfinished">Uniform</translation>
+    </message>
+    <message>
+        <source>Random</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling along:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Boundary</source>
+        <translation type="unfinished">Grens</translation>
+    </message>
+    <message>
+        <source>Interior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of random samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Random number seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">Standaard</translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Constant</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward</source>
+        <translation type="unfinished">Vooruit</translation>
+    </message>
+    <message>
+        <source>Backward</source>
+        <translation type="unfinished">Achteruit</translation>
+    </message>
+    <message>
+        <source>Both</source>
+        <translation type="unfinished">Beiden</translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished">Dormand-Prince (Runge-Kutta)</translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished">Adams-Bashforth (Multi-step)</translation>
+    </message>
+    <message>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
+        <translation type="unfinished">Staplengte</translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished">Relatieve tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished">Absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished">Absoluut</translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Termination</source>
+        <translation type="unfinished">Beëindiging</translation>
+    </message>
+    <message>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time elapsed for particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum distance traveled by particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Gegevens</translation>
+    </message>
+    <message>
+        <source>Data value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Solid</source>
+        <translation type="unfinished">Solide</translation>
+    </message>
+    <message>
+        <source>Seed point ID</source>
+        <translation type="unfinished">Zaaipunt ID</translation>
+    </message>
+    <message>
+        <source>Speed</source>
+        <translation type="unfinished">Snelheid</translation>
+    </message>
+    <message>
+        <source>Vorticity magnitude</source>
+        <translation type="unfinished">Grootte van de vorticiteit</translation>
+    </message>
+    <message>
+        <source>Arc length</source>
+        <translation type="unfinished">Booglengte</translation>
+    </message>
+    <message>
+        <source>Absolute time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ave. dist. from seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Difference</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Angular tolerance (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum measuring distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">Toon</translation>
+    </message>
+    <message>
+        <source>Show lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show points</source>
+        <translation type="unfinished">Toon punten</translation>
+    </message>
+    <message>
+        <source>Line geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tubes</source>
+        <translation type="unfinished">Buizen</translation>
+    </message>
+    <message>
+        <source>Ribbons</source>
+        <translation type="unfinished">Linten</translation>
+    </message>
+    <message>
+        <source>Coordinate transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">Geen</translation>
+    </message>
+    <message>
+        <source>Cylindrical to Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartesian to Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(When displaying in cylindrical coordinates.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override starting time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Tijd</translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished">Communicatiedrempel</translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished">Domein cacheafmeting</translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished">Werkgroep afmeting</translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples along line:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Theta:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in R:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Latitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Longitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Z:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling stride:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>step length</source>
+        <translation type="unfinished">staplengte</translation>
+    </message>
+    <message>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>relative tolerance</source>
+        <translation type="unfinished">relatieve tolerantie</translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished">absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>velocity source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point source</source>
+        <translation type="unfinished">puntbron</translation>
+    </message>
+    <message>
+        <source>line start</source>
+        <translation type="unfinished">lijnstart</translation>
+    </message>
+    <message>
+        <source>line end</source>
+        <translation type="unfinished">lijneinde</translation>
+    </message>
+    <message>
+        <source>plane origin</source>
+        <translation type="unfinished">vlakoorsprong</translation>
+    </message>
+    <message>
+        <source>plane normal</source>
+        <translation type="unfinished">vlaknormaal</translation>
+    </message>
+    <message>
+        <source>plane up axis</source>
+        <translation type="unfinished">omhoogwijzende as van het vlak</translation>
+    </message>
+    <message>
+        <source>plane radius</source>
+        <translation type="unfinished">vlakstraal</translation>
+    </message>
+    <message>
+        <source>sphere origin</source>
+        <translation type="unfinished">boloorsprong</translation>
+    </message>
+    <message>
+        <source>The box extents contained errors so the previous values will be used.</source>
+        <translation type="unfinished">De doosafmetingen bevat fouten. Laatste geldige waarde %1 opnieuw gezet.</translation>
+    </message>
+    <message>
+        <source>phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distnace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open text file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6184,6 +7596,377 @@ door de Lineout Operator</translation>
     <message>
         <source>Use view keyframes</source>
         <translation>Gebruik aanzichtskeyframes</translation>
+    </message>
+</context>
+<context>
+    <name>QvisLCSWindow</name>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished">Integratie</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Voorkomen</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Gevorderd</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">Bron</translation>
+    </message>
+    <message>
+        <source>Source type</source>
+        <translation type="unfinished">Brontype</translation>
+    </message>
+    <message>
+        <source>Native Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Regular Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resolution</source>
+        <translation type="unfinished">Resolutie</translation>
+    </message>
+    <message>
+        <source>Data start extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Full</source>
+        <translation type="unfinished">Volledig</translation>
+    </message>
+    <message>
+        <source>Subset</source>
+        <translation type="unfinished">Subset</translation>
+    </message>
+    <message>
+        <source>Data end extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">Standaard</translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Constant</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward</source>
+        <translation type="unfinished">Vooruit</translation>
+    </message>
+    <message>
+        <source>Backward</source>
+        <translation type="unfinished">Achteruit</translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished">Dormand-Prince (Runge-Kutta)</translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished">Adams-Bashforth (Multi-step)</translation>
+    </message>
+    <message>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
+        <translation type="unfinished">Staplengte</translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished">Relatieve tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished">Absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished">Absoluut</translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Termination</source>
+        <translation type="unfinished">Beëindiging</translation>
+    </message>
+    <message>
+        <source>Operation type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lyapunov Exponent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arc length</source>
+        <translation type="unfinished">Booglengte</translation>
+    </message>
+    <message>
+        <source>Average distance from seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gradient</source>
+        <translation type="unfinished">Gradiënt</translation>
+    </message>
+    <message>
+        <source>Clamp exponent values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum advection time i.e. FTLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum advection distance i.e. FLLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum size i.e. FSLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum advection time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum advection distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Tijd</translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished">Communicatiedrempel</translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished">Domein cacheafmeting</translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished">Werkgroep afmeting</translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>StartPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EndPosition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>step length</source>
+        <translation type="unfinished">staplengte</translation>
+    </message>
+    <message>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxsize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>relative tolerance</source>
+        <translation type="unfinished">relatieve tolerantie</translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished">absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>velocity source</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6781,7 +8564,7 @@ door de Lineout Operator</translation>
     </message>
     <message>
         <source>Cylinder</source>
-        <translation type="unfinished">Cilinder</translation>
+        <translation type="obsolete">Cilinder</translation>
     </message>
     <message>
         <source>Cone</source>
@@ -7261,6 +9044,14 @@ using the &quot;Apply to all windows&quot; option.</source>
     <message>
         <source>End point</source>
         <translation type="unfinished">Eindpunt</translation>
+    </message>
+    <message>
+        <source>Use Sampling</source>
+        <translation type="unfinished">Gebruik bemonstering</translation>
+    </message>
+    <message>
+        <source>Sample Points </source>
+        <translation type="unfinished">Bemonsterpunten </translation>
     </message>
 </context>
 <context>
@@ -7769,6 +9560,14 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Host profiles and Configuration Setup . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect to DDT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disconnect from DDT</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8347,6 +10146,53 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
 </context>
 <context>
+    <name>QvisModelBasedClusteringWindow</name>
+    <message>
+        <source>Number of clusters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clustering Method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ACEM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>APECM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>APECMA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>K_MEANS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Threshold</source>
+        <translation type="unfinished">Drempel</translation>
+    </message>
+    <message>
+        <source>Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2</source>
+        <translation type="unfinished">Variabele 2</translation>
+    </message>
+    <message>
+        <source>Variable 3</source>
+        <translation type="unfinished">Variabele 3</translation>
+    </message>
+</context>
+<context>
     <name>QvisModelFitWindow</name>
     <message>
         <source>Models</source>
@@ -8695,7 +10541,15 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>yAxisTickSpacing</source>
-        <translation>yAsTickAfstand</translation>
+        <translation type="obsolete">yAsTickAfstand</translation>
+    </message>
+    <message>
+        <source>Marker line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marker scale</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9297,6 +11151,233 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
 </context>
 <context>
+    <name>QvisPeaksOverThresholdWindow</name>
+    <message>
+        <source>Inputs</source>
+        <translation type="unfinished">Invoer</translation>
+    </message>
+    <message>
+        <source>Start year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis year range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ensemble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of members</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cutoff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished">Analyse</translation>
+    </message>
+    <message>
+        <source>Upper tail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lower tail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No consecutive day events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Optimization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nelder-Mead</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>BFGS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aggregation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Annual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seasonal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Monthly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Days per year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Days per month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trend Modeling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear trend in log scale parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear trend in location parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear trend in shape parameter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compute return value for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compute return value differences for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output parameter values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">Toon</translation>
+    </message>
+    <message>
+        <source>Winter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spring</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Summer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fall</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>January</source>
+        <translation type="unfinished">januari</translation>
+    </message>
+    <message>
+        <source>February</source>
+        <translation type="unfinished">februari</translation>
+    </message>
+    <message>
+        <source>March</source>
+        <translation type="unfinished">maart</translation>
+    </message>
+    <message>
+        <source>April</source>
+        <translation type="unfinished">april</translation>
+    </message>
+    <message>
+        <source>May</source>
+        <translation type="unfinished">mei</translation>
+    </message>
+    <message>
+        <source>June</source>
+        <translation type="unfinished">juni</translation>
+    </message>
+    <message>
+        <source>July</source>
+        <translation type="unfinished">juli</translation>
+    </message>
+    <message>
+        <source>August</source>
+        <translation type="unfinished">augustus</translation>
+    </message>
+    <message>
+        <source>September</source>
+        <translation type="unfinished">september</translation>
+    </message>
+    <message>
+        <source>October</source>
+        <translation type="unfinished">oktober</translation>
+    </message>
+    <message>
+        <source>November</source>
+        <translation type="unfinished">november</translation>
+    </message>
+    <message>
+        <source>December</source>
+        <translation type="unfinished">december</translation>
+    </message>
+    <message>
+        <source>Year begin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis year 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Annual Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seasonal Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Monthly Percentile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Return values computed for years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RV Difference1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RV Difference2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisPersistentParticlesWindow</name>
     <message>
         <source> </source>
@@ -9668,6 +11749,10 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <source>Spreadsheet</source>
         <translation type="unfinished">Rekenblad</translation>
     </message>
+    <message>
+        <source>Focus DDT on Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisPlotListBox</name>
@@ -9995,11 +12080,11 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Active Window</source>
+        <source>active window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>All Windows</source>
+        <source>all windows</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10620,19 +12705,11 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source> Maximum iterations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Overlaping curve sections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show islands only</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show chaotic fieldlines (as points)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10681,7 +12758,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>Parallel</source>
-        <translation type="unfinished">Parallel</translation>
+        <translation type="obsolete">Parallel</translation>
     </message>
     <message>
         <source>Parallel streamline options</source>
@@ -10689,11 +12766,11 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>Parallelize across</source>
-        <translation type="unfinished">Paralleliseer over</translation>
+        <translation type="obsolete">Paralleliseer over</translation>
     </message>
     <message>
         <source>Domains</source>
-        <translation type="unfinished">Domeinen</translation>
+        <translation type="obsolete">Domeinen</translation>
     </message>
     <message>
         <source>Streamlines and Domains</source>
@@ -10768,10 +12845,6 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unused</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10809,10 +12882,6 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>Rational surface factor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show 1D plots (distance/ridgelines)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10868,14 +12937,6 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Parallel fieldline options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fieldlines and Domains</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Velocity Source</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10889,6 +12950,705 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>rationalSurfaceFactor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O-Line Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Perform O-Line analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O-Line toroidal windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show chaotic fieldlines as points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Summary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show distance/ridgeline plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Gevorderd</translation>
+    </message>
+    <message>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Tijd</translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OLineAxisFileName</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open O-Line Axis Point File</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPoincareWindow</name>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished">Integratie</translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished">Analyse</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Voorkomen</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Gevorderd</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">Bron</translation>
+    </message>
+    <message>
+        <source>Source Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">Punt</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Lijn</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished">Locatie</translation>
+    </message>
+    <message>
+        <source>Start Point</source>
+        <translation type="unfinished">Startpunt</translation>
+    </message>
+    <message>
+        <source>End Point</source>
+        <translation type="unfinished">Eindpunt</translation>
+    </message>
+    <message>
+        <source>Point density</source>
+        <translation type="unfinished">Puntdichtheid</translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">Standaard</translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Constant</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished">Dormand-Prince (Runge-Kutta)</translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished">Adams-Bashforth (Multi-step)</translation>
+    </message>
+    <message>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
+        <translation type="unfinished">Staplengte</translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished">Relatieve tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished">Absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished">Absoluut</translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Punctures</source>
+        <translation type="unfinished">Puncties</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Minimum</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Maximum</translation>
+    </message>
+    <message>
+        <source>Puncture Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None - Punctures only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Full</source>
+        <translation type="unfinished">Volledig</translation>
+    </message>
+    <message>
+        <source>Maximum toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override poloidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding pair confidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rational surface factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect Rational Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Critical Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect O Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O-Line Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Perform O-Line analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O-Line toroidal windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished">Opties</translation>
+    </message>
+    <message>
+        <source>Show chaotic fieldlines as points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show islands only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Summary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Verbose</source>
+        <translation type="unfinished">Informatief</translation>
+    </message>
+    <message>
+        <source>Show distance/ridgeline plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Gegevens</translation>
+    </message>
+    <message>
+        <source>Data value:</source>
+        <translation type="unfinished">Gegevenswaarde:</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">Geen</translation>
+    </message>
+    <message>
+        <source>Safety Factor Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor Q if Q==P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P if P!=Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal Windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldline Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Group Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order Modulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>   </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">Toon</translation>
+    </message>
+    <message>
+        <source>Mesh type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished">Krommen</translation>
+    </message>
+    <message>
+        <source>Surfaces</source>
+        <translation type="unfinished">Oppervlakken</translation>
+    </message>
+    <message>
+        <source>Show Lines</source>
+        <translation type="unfinished">Toon lijnen</translation>
+    </message>
+    <message>
+        <source>Show Points</source>
+        <translation type="unfinished">Toon punten</translation>
+    </message>
+    <message>
+        <source>Number of planes</source>
+        <translation type="unfinished">Aantal vlakken</translation>
+    </message>
+    <message>
+        <source>Base plane (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust plane index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlaps</source>
+        <translation type="unfinished">Overlappen</translation>
+    </message>
+    <message>
+        <source>Overlaping curve sections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Raw</source>
+        <translation type="unfinished">Ruw</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Verwijder</translation>
+    </message>
+    <message>
+        <source>Merge</source>
+        <translation type="unfinished">Samenvoegen</translation>
+    </message>
+    <message>
+        <source>Smooth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Tijd</translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished">Communicatiedrempel</translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished">Domein cacheafmeting</translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished">Werkgroep afmeting</translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Source</source>
+        <translation type="unfinished">Puntbron</translation>
+    </message>
+    <message>
+        <source>Line Point Start</source>
+        <translation type="unfinished">Beginpunt lijn</translation>
+    </message>
+    <message>
+        <source>Line Point End</source>
+        <translation type="unfinished">Eindpunt lijn</translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum step length</source>
+        <translation type="unfinished">Maximum staplengte</translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished">absolute tolerantie</translation>
+    </message>
+    <message>
+        <source>windingPairConfidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rationalSurfaceFactor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>singlePlane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OLineAxisFileName</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open O-Line Axis Point File</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10934,6 +13694,18 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <source>Point type</source>
         <translation>Punttype</translation>
     </message>
+    <message>
+        <source>Octahedron</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tetrahedron</source>
+        <translation type="unfinished">Tetraëder</translation>
+    </message>
+    <message>
+        <source>Sphere Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisPostableWindow</name>
@@ -10952,6 +13724,10 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <source>Dismiss</source>
         <translation>Heenzenden</translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11018,6 +13794,10 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <source>Save</source>
         <translation>Bewaar</translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11153,6 +13933,33 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <source>Enable warning message popups</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Floating point precision:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Float</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Native</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Double</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restore session on startup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisProgrammableOpWindow</name>
+    <message>
+        <source>scriptMap</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisProjectWindow</name>
@@ -11174,27 +13981,27 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>X-Axis Cartesian (x &lt;= z, y &lt;= y)</source>
-        <translation>X-as Cartesisch (x &lt;= z, y &lt;= y)</translation>
+        <translation type="obsolete">X-as Cartesisch (x &lt;= z, y &lt;= y)</translation>
     </message>
     <message>
         <source>Y-Axis Cartesian (x &lt;= x, y &lt;= z)</source>
-        <translation>Y-as Cartesisch (x &lt;= x, y &lt;= z)</translation>
+        <translation type="obsolete">Y-as Cartesisch (x &lt;= x, y &lt;= z)</translation>
     </message>
     <message>
         <source>Z-Axis Cartesian (x &lt;= x, y &lt;= y)</source>
-        <translation>Z-as Cartesisch (x &lt;= x, y &lt;= y)</translation>
+        <translation type="obsolete">Z-as Cartesisch (x &lt;= x, y &lt;= y)</translation>
     </message>
     <message>
         <source>X-Axis Cylindrical (x &lt;= x, y &lt;= r)</source>
-        <translation>X-as cilindrisch (x &lt;= z, y &lt;= r)</translation>
+        <translation type="obsolete">X-as cilindrisch (x &lt;= z, y &lt;= r)</translation>
     </message>
     <message>
         <source>Y-Axis Cylindrical (x &lt;= y, y &lt;= r)</source>
-        <translation>Y-as cilindrisch (x &lt;= y, y &lt;= r)</translation>
+        <translation type="obsolete">Y-as cilindrisch (x &lt;= y, y &lt;= r)</translation>
     </message>
     <message>
         <source>Z-Axis Cylindrical (x &lt;= z, y &lt;= r)</source>
-        <translation>Z-as cilindrisch (x &lt;= z, y &lt;= r)</translation>
+        <translation type="obsolete">Z-as cilindrisch (x &lt;= z, y &lt;= r)</translation>
     </message>
     <message>
         <source>Vector transform method:</source>
@@ -11215,6 +14022,30 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <source>Treat as instantaneous directions</source>
         <translation>Behandel als instantane richtingen</translation>
+    </message>
+    <message>
+        <source>X-Axis Cartesian (x&apos; = z, y&apos; = y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis Cartesian (x&apos; = x, y&apos; = z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cartesian (x&apos; = x, y&apos; = y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X-Axis Cylindrical (x&apos; = x, y&apos; = r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis Cylindrical (x&apos; = y, y&apos; = r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cylindrical (x&apos; = z, y&apos; = r)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11361,7 +14192,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>Set explicitly</source>
-        <translation>Zet expliciet</translation>
+        <translation type="obsolete">Zet expliciet</translation>
     </message>
     <message>
         <source>From color table</source>
@@ -11369,7 +14200,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     </message>
     <message>
         <source>Point / Line Style</source>
-        <translation>Punt- / Lijnstijl</translation>
+        <translation type="obsolete">Punt- / Lijnstijl</translation>
     </message>
     <message>
         <source>Geometry</source>
@@ -11382,6 +14213,158 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <source>Misc</source>
         <translation>Diversen</translation>
+    </message>
+    <message>
+        <source>Fully opaque</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Constant</translation>
+    </message>
+    <message>
+        <source>Ramp</source>
+        <translation type="unfinished">Sprong</translation>
+    </message>
+    <message>
+        <source>Variable range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity Min</source>
+        <translation type="unfinished">Opaciteit Min</translation>
+    </message>
+    <message>
+        <source>Opacity Max</source>
+        <translation type="unfinished">Opaciteit Max</translation>
+    </message>
+    <message>
+        <source>Line </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lines</source>
+        <translation type="unfinished">Lijnen</translation>
+    </message>
+    <message>
+        <source>Tubes</source>
+        <translation type="unfinished">Buizen</translation>
+    </message>
+    <message>
+        <source>Ribbons</source>
+        <translation type="unfinished">Linten</translation>
+    </message>
+    <message>
+        <source>Display density</source>
+        <translation type="unfinished">Toon dichtheid</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished">Straal</translation>
+    </message>
+    <message>
+        <source>Radius used for tubes and ribbons.</source>
+        <translation type="unfinished">Straal voor buizen en linten.</translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished">Absoluut</translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vary radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show end points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tails</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Heads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Both</source>
+        <translation type="unfinished">Beiden</translation>
+    </message>
+    <message>
+        <source>Style</source>
+        <translation type="unfinished">Stijl</translation>
+    </message>
+    <message>
+        <source>Spheres</source>
+        <translation type="unfinished">Bollen</translation>
+    </message>
+    <message>
+        <source>Cones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height:Radius Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rendering</source>
+        <translation type="unfinished">Weergeven</translation>
+    </message>
+    <message>
+        <source>Draw objects as</source>
+        <translation type="unfinished">Teken objecten als</translation>
+    </message>
+    <message>
+        <source>Surfaces</source>
+        <translation type="unfinished">Oppervlakken</translation>
+    </message>
+    <message>
+        <source>Wireframe</source>
+        <translation type="unfinished">Draadmodel</translation>
+    </message>
+    <message>
+        <source>Points</source>
+        <translation type="unfinished">Punten</translation>
+    </message>
+    <message>
+        <source>tube radius</source>
+        <translation type="unfinished">buisstraal</translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor must be &gt;= 1.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>endPoint radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>endPoint ratio</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11716,6 +14699,14 @@ same window.</source>
         <source>Dump Steps</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Dump Coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump Values</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisRecentPathRemovalWindow</name>
@@ -11742,6 +14733,25 @@ same window.</source>
     <message>
         <source>Cancel</source>
         <translation>Annuleer</translation>
+    </message>
+</context>
+<context>
+    <name>QvisRectilinearProject2DWindow</name>
+    <message>
+        <source>Reduction Operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sum</source>
+        <translation type="unfinished">Som</translation>
+    </message>
+    <message>
+        <source>Average</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Map Grid</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12896,6 +15906,22 @@ over alle processoren
         <source>Frame stride</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Use Screen Capture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Screen Capture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>yes</source>
+        <translation type="unfinished">ja</translation>
+    </message>
+    <message>
+        <source>no</source>
+        <translation type="unfinished">nee</translation>
+    </message>
 </context>
 <context>
     <name>QvisSaveWindow</name>
@@ -13366,6 +16392,18 @@ over alle processoren
         <source>Normalize the axis to a cube</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Octahedron</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tetrahedron</source>
+        <translation type="unfinished">Tetraëder</translation>
+    </message>
+    <message>
+        <source>Sphere Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisScatterPlotWizard</name>
@@ -13708,10 +16746,6 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Frequency vs. ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Frequency vs. Variable</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13741,6 +16775,18 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>The selection was not created because the id variable was not set.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bin 0 (0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bin 9 (0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Average frequency vs. ID</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14414,6 +17460,97 @@ Coordinates plot.</source>
     </message>
 </context>
 <context>
+    <name>QvisStatisticalTrendsWindow</name>
+    <message>
+        <source>Time Slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type of sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished">Absoluut</translation>
+    </message>
+    <message>
+        <source>Relative</source>
+        <translation type="unfinished">Relatief</translation>
+    </message>
+    <message>
+        <source>Index of first time slice</source>
+        <translation type="unfinished">Index van de eerste tijdsnede</translation>
+    </message>
+    <message>
+        <source>Index of last time slice</source>
+        <translation type="unfinished">Index van de laatste tijdsnede</translation>
+    </message>
+    <message>
+        <source>Skip rate between time slices</source>
+        <translation type="unfinished">Skip rate between time slices</translation>
+    </message>
+    <message>
+        <source>Statistic Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sum</source>
+        <translation type="unfinished">Som</translation>
+    </message>
+    <message>
+        <source>Mean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slope</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Residuals</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Std. Dev.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trend axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step</source>
+        <translation type="unfinished">Stap</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Tijd</translation>
+    </message>
+    <message>
+        <source>Cycle</source>
+        <translation type="unfinished">Cyclus</translation>
+    </message>
+    <message>
+        <source>Index of the first time slice</source>
+        <translation type="unfinished">Index van het eerste tijdplakje</translation>
+    </message>
+    <message>
+        <source>Number of slices backwards in time</source>
+        <translation type="unfinished">Aantal tijdsplakjes terug in de tijd</translation>
+    </message>
+    <message>
+        <source>Index of the last time slice</source>
+        <translation type="unfinished">Index van de laatste tijdsplakje</translation>
+    </message>
+    <message>
+        <source>Number of slices forward in time</source>
+        <translation type="unfinished">Aantal tijdsplakjes vooruit in de tijd</translation>
+    </message>
+</context>
+<context>
     <name>QvisStreamlinePlotWindow</name>
     <message>
         <source>Termination Criterion</source>
@@ -14433,7 +17570,7 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Streamline direction</source>
-        <translation>Stroomlijnrichting</translation>
+        <translation type="obsolete">Stroomlijnrichting</translation>
     </message>
     <message>
         <source>Forward</source>
@@ -14601,7 +17738,7 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Parallel streamline options</source>
-        <translation>Parallelle stroomlijnopties</translation>
+        <translation type="obsolete">Parallelle stroomlijnopties</translation>
     </message>
     <message>
         <source>Parallelize across:</source>
@@ -15296,34 +18433,6 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Parallelize Over Particles</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Parallelize Over Domains</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Parallelize Over Particles and Domains</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pathlines vs Streamlines</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Streamline
-    Compute particle trajectories in an (instantaneous) snapshot
-    of the vector field. Uses and loads only velocity field from current time slice.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pathline    
-    Compute trajectories in the time-varying vector field.
-    Uses and loads velocity data from all relevant time slices</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Pathlines Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15344,27 +18453,11 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Issue warning when the maximum number of steps is reached</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Issue warning when stiffness is detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>(Stiffness refers to one vector component being so much </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>larger than another that tolerances can&apos;t be met.)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Issue warning when a particle doesn&apos;t terminate at a critical point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>(Meaning it circles round and round the critical point without stopping.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15421,6 +18514,62 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Sampling stride:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nek5000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel integration options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize over curves and domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines vs Pathlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute trajectories in an (instantaneous) snapshot of the vector field.
+    Uses and loads vector data from only the current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads vector data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(I.e. the curve circles around the critical point without stopping.)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -17163,7 +20312,7 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Data</source>
-        <translation type="obsolete">Gegevens</translation>
+        <translation type="unfinished">Gegevens</translation>
     </message>
     <message>
         <source>Display</source>
@@ -17171,11 +20320,11 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Geometry</source>
-        <translation>Geometrie</translation>
+        <translation type="obsolete">Geometrie</translation>
     </message>
     <message>
         <source>Quality</source>
-        <translation>Kwaliteit</translation>
+        <translation type="obsolete">Kwaliteit</translation>
     </message>
     <message>
         <source>Fast</source>
@@ -17191,7 +20340,7 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Location</source>
-        <translation type="unfinished">Locatie</translation>
+        <translation type="obsolete">Locatie</translation>
     </message>
     <message>
         <source>Where to place the vectors and how many of them</source>
@@ -17218,10 +20367,6 @@ not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Glyph type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17236,6 +20381,22 @@ not cycles or times.</source>
     <message>
         <source>Rendering</source>
         <translation type="unfinished">Weergeven</translation>
+    </message>
+    <message>
+        <source>Vectors</source>
+        <translation type="unfinished">Vectoren</translation>
+    </message>
+    <message>
+        <source>Glyphs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arrow body</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry Quality</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17789,7 +20950,7 @@ FTP Fout: </translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation>Legenda</translation>
+        <translation type="obsolete">Legenda</translation>
     </message>
     <message>
         <source>Lighting</source>
@@ -17924,10 +21085,6 @@ FTP Fout: </translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Sampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Methods</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17969,6 +21126,58 @@ FTP Fout: </translation>
     </message>
     <message>
         <source>Compact support variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lighting and Material Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ambient:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Diffuse:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specular:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shininess:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Splatting Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3D Texturing Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ray Casting Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trilinear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SLIVR Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tuvok Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ray casting: SLIVR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Legend</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -18169,6 +21378,14 @@ FTP Fout: </translation>
         <source>Image Pixel Size</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>bov</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Up Vector</source>
+        <translation type="unfinished">Vector omhoog</translation>
+    </message>
 </context>
 <context>
     <name>QvisZoneDumpWindow</name>
@@ -18225,6 +21442,13 @@ FTP Fout: </translation>
     <message>
         <source>Redo view</source>
         <translation>Aanzicht opnieuw</translation>
+    </message>
+</context>
+<context>
+    <name>ReleaseToDDTAction</name>
+    <message>
+        <source>Release control of this simulation to DDT</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18479,6 +21703,14 @@ FTP Fout: </translation>
         <source>Spreadsheet Pick mode</source>
         <translation>Spreadsheetkiesmodus</translation>
     </message>
+    <message>
+        <source>DDT Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DDT Pick mode</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ShowToolbarsAction</name>
@@ -18529,7 +21761,7 @@ FTP Fout: </translation>
     </message>
     <message>
         <source>svn revision</source>
-        <translation>svn revisie</translation>
+        <translation type="obsolete">svn revisie</translation>
     </message>
     <message>
         <source>August 2009</source>
@@ -18877,23 +22109,23 @@ FTP Fout: </translation>
     <name>ViewerChangeUsernameWindow</name>
     <message>
         <source>Username for localhost: </source>
-        <translation>Gebruikersnaam voor localhost: </translation>
+        <translation type="obsolete">Gebruikersnaam voor localhost: </translation>
     </message>
     <message>
         <source>Confirm username</source>
-        <translation>Bevestig gebruikersnaam</translation>
+        <translation type="obsolete">Bevestig gebruikersnaam</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Annuleer</translation>
+        <translation type="obsolete">Annuleer</translation>
     </message>
     <message>
         <source>Choose new username</source>
-        <translation>Kies nieuwe gebruikersnaam</translation>
+        <translation type="obsolete">Kies nieuwe gebruikersnaam</translation>
     </message>
     <message>
         <source>New username for %1: </source>
-        <translation>Nieuwe gebruikersnaam voor %1: </translation>
+        <translation type="obsolete">Nieuwe gebruikersnaam voor %1: </translation>
     </message>
 </context>
 <context>
@@ -19179,13 +22411,29 @@ If you found debug log files on %1 but VisIt still can&apos;t connect then it&ap
 If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
 
 If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
-        <translation>De metadataserver op computer %1 kon niet gelanceerd worden of kon geen verbinding opzetten met Uw lokale computer. Er zijn vele mogelijke verklaringen voor dit euvel.
+        <translation type="obsolete">De metadataserver op computer %1 kon niet gelanceerd worden of kon geen verbinding opzetten met Uw lokale computer. Er zijn vele mogelijke verklaringen voor dit euvel.
 
 Het is mogelijk dat SSH niet in staat was VisIt te starten op %1. Als U dit wilt verifiëren gebruik dan &quot;visit -debug 5&quot; en controlleer of er in uw thuismap logbestanden zijn van vcl, mdserver of de rekenmachine. Als er geen logbestanden zijn dan is het mogelijk dat VisIt geen componenten op %1 kon starten. In dat geval controlleer of een SSH sessie opgebouwd kan worden met %1, of de (omgevings)paden naar VisIt op %1 gespecificeerd zijn. 
 
 Andere mogelijkheden zijn: een nieuwere Linux versie (gebruik eens &quot;visit -nopty -debug 5&quot;), het (VPN) netwerk, een lokale firewall die poorten 5600-5609 dicht houdt.
 
 Verdere uitleg volgt nog. </translation>
+    </message>
+    <message>
+        <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
+
+%2It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
+
+If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
+
+&quot;vglrun&quot;: If you do not know what &quot;vglrun&quot; is, you can ignore this paragraph.  If there were no debug logs to be found on %1 and you are using vglrun, then vglrun may be causing VisIt to fail. Some versions of vglrun cause the ssh program to fail.  If you are running VisIt in conjunction with vglrun, this may be causing your failure.  (You can test this by running &quot;vglrun ssh&quot; and seeing if it cores.)
+
+If you found debug log files on %1 but VisIt still can&apos;t connect then it&apos;s possible that %1 cannot connect to your local computer. Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using &quot;Parse from SSH_CLIENT&quot; in your host profile for host %1. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the Host profiles window and go to the Advanced options tab. Click the &quot;Specify manually&quot; radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.
+
+If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
+
+If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19227,27 +22475,27 @@ Verdere uitleg volgt nog. </translation>
     <name>ViewerPasswordWindow</name>
     <message>
         <source>Password for localhost: </source>
-        <translation>Wachtwoord voor localhost: </translation>
+        <translation type="obsolete">Wachtwoord voor localhost: </translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation type="obsolete">OK</translation>
     </message>
     <message>
         <source>Change username</source>
-        <translation>Wijzig gebruikersnaam</translation>
+        <translation type="obsolete">Wijzig gebruikersnaam</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Annuleer</translation>
+        <translation type="obsolete">Annuleer</translation>
     </message>
     <message>
         <source>Enter password</source>
-        <translation>Voer wachtwoord in</translation>
+        <translation type="obsolete">Voer wachtwoord in</translation>
     </message>
     <message>
         <source>Enter passphrase</source>
-        <translation>Voer sleutelzin in</translation>
+        <translation type="obsolete">Voer sleutelzin in</translation>
     </message>
 </context>
 <context>
@@ -19599,11 +22847,6 @@ Gelieve een plot te selecteren en probeer het overnieuw.
         <translation>Er is geen lopende machine waarme de vraag uitgevoerd kan worden.  Gelieve te verzekeren dat de plot is getekend en probeer het overnieuw.</translation>
     </message>
     <message>
-        <source>%1 requires a &apos;coord&apos; parameter.
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19617,6 +22860,23 @@ Gelieve een plot te selecteren en probeer het overnieuw.
     </message>
     <message>
         <source>Need a running engine to retrieve query parameters.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lineout requires start_point argument.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lineout requires end_point argument.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot focus on domain %0, unable to connect to DDT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 requires a &apos;coord&apos; parameter (numeric tuple).
+</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -19792,6 +23052,18 @@ Gelieve een plot te selecteren en probeer het overnieuw.
     </message>
     <message>
         <source>VisIt cannot update the %1 selection because it does not exist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host profile %1 exported to %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt exported host profile &quot;%1&quot; to the file: %2. </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot focus DDT on domain %0: failed to connect to DDT</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -20122,6 +23394,56 @@ Om deze waarschuwing in de toekomst te vermijden, zorg er dan voor dat de venste
     <message>
         <source>Could not create named selection %1.</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VisItChangeUsernameWindow</name>
+    <message>
+        <source>Choose new username</source>
+        <translation type="unfinished">Kies nieuwe gebruikersnaam</translation>
+    </message>
+    <message>
+        <source>Username for localhost: </source>
+        <translation type="unfinished">Gebruikersnaam voor localhost: </translation>
+    </message>
+    <message>
+        <source>Confirm username</source>
+        <translation type="unfinished">Bevestig gebruikersnaam</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Annuleer</translation>
+    </message>
+    <message>
+        <source>New username for %1: </source>
+        <translation type="unfinished">Nieuwe gebruikersnaam voor %1: </translation>
+    </message>
+</context>
+<context>
+    <name>VisItPasswordWindow</name>
+    <message>
+        <source>Password for localhost: </source>
+        <translation type="unfinished">Wachtwoord voor localhost: </translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <source>Change username</source>
+        <translation type="unfinished">Wijzig gebruikersnaam</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Annuleer</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <translation type="unfinished">Voer wachtwoord in</translation>
+    </message>
+    <message>
+        <source>Enter passphrase</source>
+        <translation type="unfinished">Voer sleutelzin in</translation>
     </message>
 </context>
 <context>
