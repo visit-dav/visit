@@ -21,6 +21,10 @@
 #   Brad Whitlock, Wed Apr  3 14:48:05 PDT 2013
 #   Set LD_LIBRARY_PATH so VisIt's python interpreter will work.
 #
+#   Eric Brugger, Tue Dec 10 14:06:38 PST 2013
+#   Modified the script to use the the python that goes with the version of
+#   visit specified rather than the python that goes with the newest visit.
+#
 ###############################################################################
 
 # Determine VisIt architecture
@@ -56,12 +60,12 @@ fi
 # Come up with a list of versions, starting with current
 versions="current"
 for minor in 9 8 7 6 5 4 3 2 1 0; do
-    for patch in 2 1 0; do
+    for patch in 3 2 1 0; do
         versions="$versions 3.$minor.$patch"
     done
 done
 for minor in 9 8 7 6; do
-    for patch in 2 1 0; do
+    for patch in 3 2 1 0; do
         versions="$versions 2.$minor.$patch"
     done
 done
@@ -76,6 +80,24 @@ for ver in $versions; do
         break
     fi
 done
+
+# If the user specified a specific version then use the python that
+# goes with it.
+args=$@
+while [ $# -gt 0 ]
+do
+    case $1 in
+        -v | -forceversion)
+            thispython="$dir/../$2/$platform/bin/python"
+            if test -x "$thispython"; then
+                visitpython="$thispython"
+                break
+            fi
+            ;;
+    esac
+    shift
+done
+set -- $args
 
 # Execute VisIt's Python or system Python, depending on what's available
 frontendlauncherpy="$(dirname $0)/frontendlauncher.py"
