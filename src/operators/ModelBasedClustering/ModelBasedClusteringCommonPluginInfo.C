@@ -127,7 +127,7 @@ ModelBasedClusteringCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMet
             e2.SetType(Expression::ScalarMeshVar);
             e2.SetFromOperator(true);
             e2.SetOperatorName("ModelBasedClustering");
-            sprintf(defn, "cell_constant(%s, 0.)", mmd->name.c_str());
+            sprintf(defn, "cell_constant(<%s>, 0.)", mmd->name.c_str());
             e2.SetDefinition(defn);
             el->AddExpressions(e2);
         }
@@ -147,7 +147,7 @@ ModelBasedClusteringCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMet
                 e2.SetType(Expression::ScalarMeshVar);
                 e2.SetFromOperator(true);
                 e2.SetOperatorName("ModelBasedClustering");
-                sprintf(defn, "cell_constant(%s, 0.)", e.GetName().c_str());
+                sprintf(defn, "cell_constant(<%s>, 0.)", e.GetName().c_str());
                 e2.SetDefinition(defn);
                 el->AddExpressions(e2);
             }
