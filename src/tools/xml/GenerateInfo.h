@@ -985,7 +985,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "            e2.SetType(Expression::" << outtypes[j] << ");" << endl;
             c << "            e2.SetFromOperator(true);" << endl;
             c << "            e2.SetOperatorName(\"" << opName << "\");" << endl;
-            c << "            sprintf(defn, \"cell_constant(%s, 0.)\", mmd->name.c_str());" << endl;
+            c << "            sprintf(defn, \"cell_constant(<%s>, 0.)\", mmd->name.c_str());" << endl;
             c << "            e2.SetDefinition(defn);" << endl;
             c << "            el->AddExpressions(e2);" << endl;
             c << "        }" << endl;
@@ -1007,7 +1007,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "                e2.SetType(Expression::" << outtypes[j] << ");" << endl;
             c << "                e2.SetFromOperator(true);" << endl;
             c << "                e2.SetOperatorName(\"" << opName << "\");" << endl;
-            c << "                sprintf(defn, \"cell_constant(%s, 0.)\", e.GetName().c_str());" << endl;
+            c << "                sprintf(defn, \"cell_constant(<%s>, 0.)\", e.GetName().c_str());" << endl;
             c << "                e2.SetDefinition(defn);" << endl;
             c << "                el->AddExpressions(e2);" << endl;
             c << "            }" << endl;
