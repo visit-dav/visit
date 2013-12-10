@@ -134,7 +134,7 @@ StatisticalTrendsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaDa
                 e2.SetType(Expression::ScalarMeshVar);
                 e2.SetFromOperator(true);
                 e2.SetOperatorName("StatisticalTrends");
-                sprintf(defn, "cell_constant(%s, 0.)", mmd->name.c_str());
+                sprintf(defn, "cell_constant(<%s>, 0.)", mmd->name.c_str());
                 e2.SetDefinition(defn);
                 el->AddExpressions(e2);
             }
@@ -159,7 +159,7 @@ StatisticalTrendsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaDa
                 e2.SetType(Expression::ScalarMeshVar);
                 e2.SetFromOperator(true);
                 e2.SetOperatorName("StatisticalTrends");
-                sprintf(defn, "cell_constant(%s, 0.)", e.GetName().c_str());
+                sprintf(defn, "cell_constant(<%s>, 0.)", e.GetName().c_str());
                 e2.SetDefinition(defn);
                 el->AddExpressions(e2);
             }

@@ -127,7 +127,7 @@ SurfaceNormalCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *
             e2.SetType(Expression::VectorMeshVar);
             e2.SetFromOperator(true);
             e2.SetOperatorName("SurfaceNormal");
-            sprintf(defn, "cell_constant(%s, 0.)", mmd->name.c_str());
+            sprintf(defn, "cell_constant(<%s>, 0.)", mmd->name.c_str());
             e2.SetDefinition(defn);
             el->AddExpressions(e2);
         }

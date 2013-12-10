@@ -116,7 +116,7 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         e2.SetType(Expression::CurveMeshVar);
         e2.SetFromOperator(true);
         e2.SetOperatorName("DataBinning");
-        sprintf(defn, "cell_constant(%s, 0)", mesh);
+        sprintf(defn, "cell_constant(<%s>, 0)", mesh);
         e2.SetDefinition(defn);
         el->AddExpressions(e2);
     
@@ -126,7 +126,7 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         e.SetType(Expression::ScalarMeshVar);
         e.SetFromOperator(true);
         e.SetOperatorName("DataBinning");
-        sprintf(defn, "cell_constant(%s, 0)", mesh);
+        sprintf(defn, "cell_constant(<%s>, 0)", mesh);
         e.SetDefinition(defn);
         el->AddExpressions(e);
     
@@ -136,7 +136,7 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         e3.SetType(Expression::ScalarMeshVar);
         e3.SetFromOperator(true);
         e3.SetOperatorName("DataBinning");
-        sprintf(defn, "cell_constant(%s, 0)", mesh);
+        sprintf(defn, "cell_constant(<%s>, 0)", mesh);
         e3.SetDefinition(defn);
         el->AddExpressions(e3);
     }

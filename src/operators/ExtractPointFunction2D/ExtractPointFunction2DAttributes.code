@@ -20,7 +20,7 @@ ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseM
         e.SetType(Expression::ScalarMeshVar);
         e.SetFromOperator(true);
         e.SetOperatorName("ExtractPointFunction2D");
-        sprintf(defn, "cell_constant(%s, 0)", mesh);
+        sprintf(defn, "cell_constant(<%s>, 0)", mesh);
         e.SetDefinition(defn);
         el->AddExpressions(e);
     }
