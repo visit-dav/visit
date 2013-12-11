@@ -1529,7 +1529,7 @@ QvisCMFEWizard::GetMeshForTargetDatabase(void)
 void
 QvisCMFEWizard::AddCMFEExpression(void)
 {
-    char file_var_part[1024];
+    char file_var_part[1024] = "\0";
 
     if( decision_donorType == DONOR_SINGLE_DATABASE ||
         decision_donorType == DONOR_MULTIPLE_DATABASES )
@@ -1546,8 +1546,6 @@ QvisCMFEWizard::AddCMFEExpression(void)
     }
     else if (decision_donorType == DONOR_TIME_SLICES)
     {
-        char file_var_part[1024];
-
         if (decision_timeType == TIME_TYPE_SIMTIME)
             SNPRINTF(file_var_part, 1024, "<[%f]t%s:%s", decision_time, 
                      (decision_absolute ? "" : "d"), decision_variable.c_str());
