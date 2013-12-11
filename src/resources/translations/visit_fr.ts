@@ -1,70 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.0" language="fr_FR">
 <context>
     <name>AddOperatorAction</name>
     <message>
         <source>Add operator</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un filtre</translation>
     </message>
     <message>
         <source>Add %1 operator</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter le filtre &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>AddPlotAction</name>
     <message>
         <source>Add plot</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un tracé</translation>
     </message>
     <message>
         <source>Add %1 plot</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un tracé &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>AddWindowAction</name>
     <message>
         <source>Create a new viewer window</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer une nouvelle fenêtre</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouvelle fenêtre</translation>
     </message>
 </context>
 <context>
     <name>AnimationPlayAction</name>
     <message>
         <source>Play</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer</translation>
     </message>
     <message>
         <source>Play animation</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer l&apos;animation</translation>
     </message>
 </context>
 <context>
     <name>AnimationReversePlayAction</name>
     <message>
         <source>Reverse play</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer à l&apos;envers</translation>
     </message>
     <message>
         <source>Play animation in reverse</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer l&apos;animation à l&apos;envers</translation>
     </message>
 </context>
 <context>
     <name>AnimationStopAction</name>
     <message>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Stop</translation>
     </message>
     <message>
         <source>Stop animation</source>
-        <translation type="unfinished"></translation>
+        <translation>Arrêter l&apos;animation</translation>
     </message>
 </context>
 <context>
@@ -72,44 +72,44 @@
     <message>
         <source>VisIt was unable to change the active variable because: %1
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de modifier la variable active : %1</translation>
     </message>
 </context>
 <context>
     <name>ChooseCenterOfRotationAction</name>
     <message>
         <source>Choose center</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir un centre de rotation</translation>
     </message>
     <message>
         <source>Choose center of rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir un centre de rotation</translation>
     </message>
     <message>
         <source>The center of rotation cannot be chosen interactively when VisIt is run in -nowin mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de choisir interactivement un centre de rotation lorsque VisIt fonctionne en mode -nowin.</translation>
     </message>
     <message>
         <source>The new center of rotation is: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau centre de rotation : %1.</translation>
     </message>
     <message>
         <source>VisIt could not set the center of rotation. You might not have clicked on a plot.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de définir le centre de rotation. Vérifiez que vous avez correctement sélectionné un point.</translation>
     </message>
 </context>
 <context>
     <name>ClearAllWindowsAction</name>
     <message>
         <source>Clear all windows</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer toutes les fenêtres</translation>
     </message>
 </context>
 <context>
     <name>ClearPickPointsAction</name>
     <message>
         <source>Clear pick points</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer les cibles</translation>
     </message>
 </context>
 <context>
@@ -123,25 +123,25 @@
     <name>ClearWindowAction</name>
     <message>
         <source>Clear all plots from this window</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer tous les tracés de cette fenêtre</translation>
     </message>
 </context>
 <context>
     <name>CloneWindowAction</name>
     <message>
         <source>Clone</source>
-        <translation type="unfinished"></translation>
+        <translation>Dupliquer</translation>
     </message>
     <message>
         <source>Clone this window</source>
-        <translation type="unfinished"></translation>
+        <translation>Dupliquer cette fenêtre</translation>
     </message>
 </context>
 <context>
     <name>CopyPlotAction</name>
     <message>
         <source>Copy active plots</source>
-        <translation type="unfinished"></translation>
+        <translation>Dupliquer les tracés actifs</translation>
     </message>
 </context>
 <context>
@@ -203,153 +203,153 @@
     <name>DeleteActivePlotsAction</name>
     <message>
         <source>Delete active plots</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer les tracés actifs</translation>
     </message>
 </context>
 <context>
     <name>DeleteWindowAction</name>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Delete this window</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer cette fenêtre</translation>
     </message>
 </context>
 <context>
     <name>DrawPlotsAction</name>
     <message>
         <source>Draw plots</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer</translation>
     </message>
 </context>
 <context>
     <name>EnableToolAction</name>
     <message>
         <source>Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Outils</translation>
     </message>
     <message>
         <source>Box</source>
-        <translation type="unfinished">Boîte</translation>
+        <translation>Boîte</translation>
     </message>
     <message>
         <source>Box tool</source>
-        <translation type="unfinished"></translation>
+        <translation>Outil Boîte</translation>
     </message>
     <message>
         <source>Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligne</translation>
     </message>
     <message>
         <source>Line tool</source>
-        <translation type="unfinished"></translation>
+        <translation>Outil ligne</translation>
     </message>
     <message>
         <source>Plane</source>
-        <translation type="unfinished"></translation>
+        <translation>Plan</translation>
     </message>
     <message>
         <source>Plane tool</source>
-        <translation type="unfinished"></translation>
+        <translation>Outil plan</translation>
     </message>
     <message>
         <source>Sphere</source>
-        <translation type="unfinished"></translation>
+        <translation>Sphère</translation>
     </message>
     <message>
         <source>Sphere tool</source>
-        <translation type="unfinished"></translation>
+        <translation>Outil sphère</translation>
     </message>
     <message>
         <source>Point</source>
-        <translation type="unfinished"></translation>
+        <translation>Point</translation>
     </message>
     <message>
         <source>Point tool</source>
-        <translation type="unfinished"></translation>
+        <translation>Outil point</translation>
     </message>
     <message>
         <source>Axis Restriction</source>
-        <translation type="unfinished"></translation>
+        <translation>Restriction des axes</translation>
     </message>
     <message>
         <source>Axis Restriction tool</source>
-        <translation type="unfinished"></translation>
+        <translation>Outil de restriction des axes</translation>
     </message>
 </context>
 <context>
     <name>EnableToolbarAction</name>
     <message>
         <source>Toolbars</source>
-        <translation type="unfinished"></translation>
+        <translation>Barres d&apos;outils</translation>
     </message>
     <message>
         <source>Enable toolbars</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer les barres d&apos;outils</translation>
     </message>
 </context>
 <context>
     <name>HideActivePlotsAction</name>
     <message>
         <source>Hide active plots</source>
-        <translation type="unfinished"></translation>
+        <translation>Cacher les tracés actifs</translation>
     </message>
 </context>
 <context>
     <name>HideToolbarsAction</name>
     <message>
         <source>Hide toolbars</source>
-        <translation type="unfinished"></translation>
+        <translation>Cacher les barres d&apos;outils</translation>
     </message>
 </context>
 <context>
     <name>HideToolbarsForAllWindowsAction</name>
     <message>
         <source>Hide toolbars (all windows)</source>
-        <translation type="unfinished"></translation>
+        <translation>Cacher les barres d&apos;outils (toutes les fenêtres)</translation>
     </message>
 </context>
 <context>
     <name>InvertBackgroundAction</name>
     <message>
         <source>Invert background</source>
-        <translation type="unfinished"></translation>
+        <translation>Inverser</translation>
     </message>
     <message>
         <source>Swap background and foreground colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Inverser les couleurs du fond et du texte</translation>
     </message>
 </context>
 <context>
     <name>KeyframeDataModel</name>
     <message>
         <source>Current frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Image courante</translation>
     </message>
     <message>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Vue</translation>
     </message>
     <message>
         <source>State</source>
-        <translation type="unfinished"></translation>
+        <translation>État</translation>
     </message>
     <message>
         <source>Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>Attributs</translation>
     </message>
     <message>
         <source>Keyframes</source>
-        <translation type="unfinished"></translation>
+        <translation>Transitions</translation>
     </message>
 </context>
 <context>
     <name>MenuQuitAction</name>
     <message>
         <source>Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>Quitter</translation>
     </message>
 </context>
 <context>
@@ -552,19 +552,19 @@
     <name>OperatorNames</name>
     <message>
         <source>Boundary</source>
-        <translation>Frontière</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Box</source>
-        <translation>Boîte</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Clip</source>
-        <translation>Couper</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Cone</source>
-        <translation>Cone</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Reduce Connected Components</source>
@@ -588,7 +588,7 @@
     </message>
     <message>
         <source>Cylinder</source>
-        <translation>Cylindre</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Decimate</source>
@@ -636,7 +636,7 @@
     </message>
     <message>
         <source>Merge</source>
-        <translation>Combiner</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Metric Threshold</source>
@@ -672,7 +672,7 @@
     </message>
     <message>
         <source>Revolve</source>
-        <translation>Tourner</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Silo Dump</source>
@@ -859,31 +859,31 @@
     <name>PlotNames</name>
     <message>
         <source>Boundary</source>
-        <translation>Frontière</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Contour</source>
-        <translation>Contour</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Curve</source>
-        <translation>Courbe</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Filled Boundary</source>
-        <translation>Frontière rempli</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Histogram</source>
-        <translation>Histogramme</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Label</source>
-        <translation>étiquette</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Mesh</source>
-        <translation>Maille</translation>
+        <translation>Maillage</translation>
     </message>
     <message>
         <source>Molecule</source>
@@ -891,19 +891,19 @@
     </message>
     <message>
         <source>Parallel Coordinates</source>
-        <translation>Coordonnées parallèle</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Pseudocolor</source>
-        <translation>Couleur Faux</translation>
+        <translation>Pseudo couleur</translation>
     </message>
     <message>
         <source>Scatter</source>
-        <translation>Graphe de dispersion</translation>
+        <translation>Nuage de points</translation>
     </message>
     <message>
         <source>Spreadsheet</source>
-        <translation>Feuille de calcul</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Streamline</source>
@@ -911,31 +911,31 @@
     </message>
     <message>
         <source>Subset</source>
-        <translation>Partie</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Surface</source>
-        <translation>Surface</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Tensor</source>
-        <translation>Tenseur</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Topology</source>
-        <translation>Topologie</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Truecolor</source>
-        <translation>Couleur juste</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Vector</source>
-        <translation>Vecteur</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Volume</source>
-        <translation>Rendu volumique </translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>MultiCurve</source>
@@ -1051,450 +1051,451 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     <name>QvisAnimationWindow</name>
     <message>
         <source>Cache animation for faster playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le cache pour accélérer la lecture</translation>
     </message>
     <message>
         <source>Animation playback</source>
-        <translation type="unfinished"></translation>
+        <translation>Lecture</translation>
     </message>
     <message>
         <source>Looping</source>
-        <translation type="unfinished"></translation>
+        <translation>En boucle</translation>
     </message>
     <message>
         <source>Play once</source>
-        <translation type="unfinished"></translation>
+        <translation>Unique</translation>
     </message>
     <message>
         <source>Swing</source>
-        <translation type="unfinished"></translation>
+        <translation>Aller-retour</translation>
     </message>
     <message>
         <source>Animation speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Vitesse</translation>
     </message>
     <message>
         <source>slower</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus lent</translation>
     </message>
     <message>
         <source>faster</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus rapide</translation>
     </message>
     <message>
         <source>Animation increment</source>
-        <translation type="unfinished"></translation>
+        <translation>Incrément</translation>
     </message>
 </context>
 <context>
     <name>QvisAnnotationObjectInterface</name>
     <message>
         <source>The %1 value was invalid. Resetting to the last good value.</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur incorrecte : %1
+La valeur précédente a été rétablie.</translation>
     </message>
 </context>
 <context>
     <name>QvisAnnotationWindow</name>
     <message>
         <source>General</source>
-        <translation type="unfinished"></translation>
+        <translation>Général</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>No annotations</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucune décoration</translation>
     </message>
     <message>
         <source>Database</source>
-        <translation type="unfinished"></translation>
+        <translation>Données</translation>
     </message>
     <message>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier</translation>
     </message>
     <message>
         <source>Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire</translation>
     </message>
     <message>
         <source>Full</source>
-        <translation type="unfinished"></translation>
+        <translation>Complet</translation>
     </message>
     <message>
         <source>Smart</source>
-        <translation type="unfinished"></translation>
+        <translation>Intelligent</translation>
     </message>
     <message>
         <source>Smart Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire intelligent</translation>
     </message>
     <message>
         <source>Path Expansion</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>User information</source>
-        <translation type="unfinished"></translation>
+        <translation>Informations utilisateur</translation>
     </message>
     <message>
         <source>2D</source>
-        <translation type="unfinished"></translation>
+        <translation>2D</translation>
     </message>
     <message>
         <source>Show axes</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les axes</translation>
     </message>
     <message>
         <source>General 2D</source>
-        <translation type="unfinished"></translation>
+        <translation>Général 2D</translation>
     </message>
     <message>
         <source>X-Axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Abscisses</translation>
     </message>
     <message>
         <source>Y-Axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Ordonnées</translation>
     </message>
     <message>
         <source>Auto scale label values</source>
-        <translation type="unfinished"></translation>
+        <translation>Redimensionner automatiquement les noms des axes</translation>
     </message>
     <message>
         <source>Auto set ticks</source>
-        <translation type="unfinished"></translation>
+        <translation>Placement automatique des marques</translation>
     </message>
     <message>
         <source>Inside</source>
-        <translation type="unfinished"></translation>
+        <translation>Intérieur</translation>
     </message>
     <message>
         <source>Outside</source>
-        <translation type="unfinished"></translation>
+        <translation>Extérieur</translation>
     </message>
     <message>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>Les deux</translation>
     </message>
     <message>
         <source>Tick mark locations</source>
-        <translation type="unfinished"></translation>
+        <translation>Emplacement des marques</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>En bas</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>À gauche</translation>
     </message>
     <message>
         <source>Bottom-left</source>
-        <translation type="unfinished"></translation>
+        <translation>En bas et à gauche</translation>
     </message>
     <message>
         <source>All axes</source>
-        <translation type="unfinished"></translation>
+        <translation>Sur tous les bords</translation>
     </message>
     <message>
         <source>Line width</source>
-        <translation type="unfinished"></translation>
+        <translation>Épaisseur</translation>
     </message>
     <message>
         <source>3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D</translation>
     </message>
     <message>
         <source>Show triad</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher la base d&apos;orientation</translation>
     </message>
     <message>
         <source>Show bounding box</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher la boîte</translation>
     </message>
     <message>
         <source>General 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>Général 3D</translation>
     </message>
     <message>
         <source>Z-Axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Profondeur</translation>
     </message>
     <message>
         <source>Closest triad</source>
-        <translation type="unfinished"></translation>
+        <translation>Base d&apos;orientation la plus proche</translation>
     </message>
     <message>
         <source>Furthest triad</source>
-        <translation type="unfinished"></translation>
+        <translation>Base d&apos;orientation la plus éloignée</translation>
     </message>
     <message>
         <source>Outside edges</source>
-        <translation type="unfinished"></translation>
+        <translation>Bords externes</translation>
     </message>
     <message>
         <source>Static triad</source>
-        <translation type="unfinished"></translation>
+        <translation>Base statique</translation>
     </message>
     <message>
         <source>Static edges</source>
-        <translation type="unfinished"></translation>
+        <translation>Tous les bords</translation>
     </message>
     <message>
         <source>Axis type</source>
-        <translation type="unfinished"></translation>
+        <translation>Position des axes</translation>
     </message>
     <message>
         <source>Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleurs</translation>
     </message>
     <message>
         <source>Background color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur de fond</translation>
     </message>
     <message>
         <source>Foreground color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur de police</translation>
     </message>
     <message>
         <source>Background style</source>
-        <translation type="unfinished"></translation>
+        <translation>Style de fond</translation>
     </message>
     <message>
         <source>Solid</source>
-        <translation type="unfinished"></translation>
+        <translation>Plein</translation>
     </message>
     <message>
         <source>Gradient</source>
-        <translation type="unfinished"></translation>
+        <translation>Gradient</translation>
     </message>
     <message>
         <source>Image</source>
-        <translation type="unfinished"></translation>
+        <translation>Image</translation>
     </message>
     <message>
         <source>Image sphere</source>
-        <translation type="unfinished"></translation>
+        <translation>Image sphérique</translation>
     </message>
     <message>
         <source>Top to bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Haut en bas</translation>
     </message>
     <message>
         <source>Bottom to top</source>
-        <translation type="unfinished"></translation>
+        <translation>Bas en haut</translation>
     </message>
     <message>
         <source>Left to right</source>
-        <translation type="unfinished"></translation>
+        <translation>Gauche à droite</translation>
     </message>
     <message>
         <source>Right to left</source>
-        <translation type="unfinished"></translation>
+        <translation>Droite à gauche</translation>
     </message>
     <message>
         <source>Radial</source>
-        <translation type="unfinished"></translation>
+        <translation>Radial</translation>
     </message>
     <message>
         <source>Gradient style</source>
-        <translation type="unfinished"></translation>
+        <translation>Type de gradient</translation>
     </message>
     <message>
         <source>Gradient color 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur 1</translation>
     </message>
     <message>
         <source>Gradient color 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur 2</translation>
     </message>
     <message>
         <source>Background image</source>
-        <translation type="unfinished"></translation>
+        <translation>Image</translation>
     </message>
     <message>
         <source>The local file must be accessible to the compute engine in order to be used in scalable rendering mode.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Le fichier local doit être accessible au moteur pour être utilisé en mode rendu évolutif.</translation>
     </message>
     <message>
         <source>Repetitions in X</source>
-        <translation type="unfinished"></translation>
+        <translation>Périodicité en X</translation>
     </message>
     <message>
         <source>Repetitions in Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Périodicité en Y</translation>
     </message>
     <message>
         <source>Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Objets</translation>
     </message>
     <message>
         <source>Create new</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Annotation objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Objets texte</translation>
     </message>
     <message>
         <source>Hide/Show</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher/Cacher</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Enter a name for the new annotation object.</source>
-        <translation type="unfinished"></translation>
+        <translation>Indiquer un nom pour le nouvel objet texte.</translation>
     </message>
     <message>
         <source>No annotation object was created.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun objet texte n&apos;a été créé.</translation>
     </message>
     <message>
         <source>Time scale factor</source>
-        <translation type="unfinished"></translation>
+        <translation>Facteur d&apos;échelle</translation>
     </message>
     <message>
         <source>Time offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Décalage initial</translation>
     </message>
     <message>
         <source>Array</source>
-        <translation type="unfinished"></translation>
+        <translation>Tableaux</translation>
     </message>
     <message>
         <source>General Array</source>
-        <translation type="unfinished"></translation>
+        <translation>Général</translation>
     </message>
     <message>
         <source>Axes</source>
-        <translation type="unfinished"></translation>
+        <translation>Axes</translation>
     </message>
     <message>
         <source>Tick marks visible</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les marques</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Set bounding box location manually</source>
-        <translation type="unfinished"></translation>
+        <translation>Définir manuellement la boîte</translation>
     </message>
 </context>
 <context>
     <name>QvisAppearanceWindow</name>
     <message>
         <source>GUI background</source>
-        <translation type="unfinished"></translation>
+        <translation>Fond</translation>
     </message>
     <message>
         <source>GUI foreground</source>
-        <translation type="unfinished"></translation>
+        <translation>Texte</translation>
     </message>
     <message>
         <source>GUI style</source>
-        <translation type="unfinished"></translation>
+        <translation>Style</translation>
     </message>
     <message>
         <source>Vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>Vertical</translation>
     </message>
     <message>
         <source>Horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>Horizontal</translation>
     </message>
     <message>
         <source>GUI orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>Orientation</translation>
     </message>
     <message>
         <source>GUI font</source>
-        <translation type="unfinished"></translation>
+        <translation>Police</translation>
     </message>
     <message>
         <source>The background color and foreground color will not be changed because the selected colors are too similar and using them would make it too difficult to use VisIt.</source>
-        <translation type="unfinished"></translation>
+        <translation>Les couleurs n&apos;ont pas été modifiées car elles sont trop proches, ce qui rendrait difficile l&apos;utilisation de VisIt.</translation>
     </message>
     <message>
         <source>Use default system appearance</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser les valeurs par défaut du système</translation>
     </message>
 </context>
 <context>
     <name>QvisAxisAttributesWidget</name>
     <message>
         <source>Title</source>
-        <translation type="unfinished"></translation>
+        <translation>Titre</translation>
     </message>
     <message>
         <source>Custom title</source>
-        <translation type="unfinished"></translation>
+        <translation>Titre personnalisé</translation>
     </message>
     <message>
         <source>Custom Units</source>
-        <translation type="unfinished"></translation>
+        <translation>Unité personnalisée</translation>
     </message>
     <message>
         <source>Labels</source>
-        <translation type="unfinished"></translation>
+        <translation>Étiquettes</translation>
     </message>
     <message>
         <source>Scaling (x10^?)</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle (x10^?)</translation>
     </message>
     <message>
         <source>Tick marks</source>
-        <translation type="unfinished"></translation>
+        <translation>Marques</translation>
     </message>
     <message>
         <source>Major minimum</source>
-        <translation type="unfinished"></translation>
+        <translation>Majeure min</translation>
     </message>
     <message>
         <source>Major maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>Majeure max</translation>
     </message>
     <message>
         <source>Minor spacing</source>
-        <translation type="unfinished"></translation>
+        <translation>Espacement mineure</translation>
     </message>
     <message>
         <source>Major spacing</source>
-        <translation type="unfinished"></translation>
+        <translation>Espacement majeure</translation>
     </message>
     <message>
         <source>Show grid</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher la grille</translation>
     </message>
     <message>
         <source>An invalid value was provided for </source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur invalide pour </translation>
     </message>
 </context>
 <context>
     <name>QvisBaseVariableButton</name>
     <message>
         <source>Scalars</source>
-        <translation type="unfinished"></translation>
+        <translation>Scalaires</translation>
     </message>
     <message>
         <source>Vectors</source>
-        <translation type="unfinished"></translation>
+        <translation>Vecteurs</translation>
     </message>
     <message>
         <source>Meshes</source>
-        <translation type="unfinished"></translation>
+        <translation>Maillages</translation>
     </message>
     <message>
         <source>Materials</source>
@@ -1514,11 +1515,11 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>Tensors</source>
-        <translation type="unfinished"></translation>
+        <translation>Tenseurs</translation>
     </message>
     <message>
         <source>Symmetric Tensors</source>
-        <translation type="unfinished"></translation>
+        <translation>Tenseur symmétrique</translation>
     </message>
     <message>
         <source>Labels</source>
@@ -1526,30 +1527,30 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>Arrays</source>
-        <translation type="unfinished"></translation>
+        <translation>Tableaux</translation>
     </message>
     <message>
         <source>Create new expression ...</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer une nouvelle expression ...</translation>
     </message>
 </context>
 <context>
     <name>QvisBoundaryOpWindow</name>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished"></translation>
+        <translation>Lissage</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Fast</source>
-        <translation type="unfinished"></translation>
+        <translation>Rapide</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="unfinished"></translation>
+        <translation>Fort</translation>
     </message>
 </context>
 <context>
@@ -1631,43 +1632,43 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     <name>QvisBoxWindow</name>
     <message>
         <source>Amount of cell in the range</source>
-        <translation type="unfinished"></translation>
+        <translation>Proportion de la cellule dans l&apos;intervalle</translation>
     </message>
     <message>
         <source>Some</source>
-        <translation type="unfinished"></translation>
+        <translation>Intersection non vide</translation>
     </message>
     <message>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Inclus</translation>
     </message>
     <message>
         <source>X-Minimum</source>
-        <translation type="unfinished"></translation>
+        <translation>X minimum</translation>
     </message>
     <message>
         <source>X-Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>X maximum</translation>
     </message>
     <message>
         <source>Y-Minimum</source>
-        <translation type="unfinished"></translation>
+        <translation>Y minimum</translation>
     </message>
     <message>
         <source>Y-Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>Y maximum</translation>
     </message>
     <message>
         <source>Z-Minimum</source>
-        <translation type="unfinished"></translation>
+        <translation>Z minimum</translation>
     </message>
     <message>
         <source>Z-Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>Z maximum</translation>
     </message>
     <message>
         <source>Inverse</source>
-        <translation type="unfinished"></translation>
+        <translation>Complémentaire</translation>
     </message>
 </context>
 <context>
@@ -2168,75 +2169,75 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisColorTableWindow</name>
     <message>
         <source>Active color table</source>
-        <translation type="unfinished"></translation>
+        <translation>Code de couleur actif</translation>
     </message>
     <message>
         <source>Continuous</source>
-        <translation type="unfinished"></translation>
+        <translation>Continu</translation>
     </message>
     <message>
         <source>Discrete</source>
-        <translation type="unfinished"></translation>
+        <translation>Discret</translation>
     </message>
     <message>
         <source>Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestion</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Exporter</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditeur</translation>
     </message>
     <message>
         <source>Number of colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de couleurs</translation>
     </message>
     <message>
         <source>Color table type</source>
-        <translation type="unfinished"></translation>
+        <translation>Type de code de couleur</translation>
     </message>
     <message>
         <source>Align</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligner</translation>
     </message>
     <message>
         <source>Equal</source>
-        <translation type="unfinished"></translation>
+        <translation>Égal</translation>
     </message>
     <message>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Rouge</translation>
     </message>
     <message>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Vert</translation>
     </message>
     <message>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Bleu</translation>
     </message>
     <message>
         <source>The color table </source>
-        <translation type="unfinished"></translation>
+        <translation>Le code de couleur</translation>
     </message>
     <message>
         <source> is already in the color table list. You must provide a unique name for the new color table before it can be added.</source>
-        <translation type="unfinished"></translation>
+        <translation> est déjà dans la liste des codes de couleurs. Vous devez fournir un nom unique pour un nouveau code de couleur avant de l&apos;ajouter.</translation>
     </message>
     <message>
         <source>Show index hints</source>
@@ -2244,98 +2245,98 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Alpha</source>
-        <translation type="unfinished"></translation>
+        <translation>Alpha</translation>
     </message>
     <message>
         <source>Smoothing</source>
-        <translation type="unfinished"></translation>
+        <translation>Lissage</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="unfinished"></translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Cubic Spline</source>
-        <translation type="unfinished"></translation>
+        <translation>Spline cubique</translation>
     </message>
 </context>
 <context>
     <name>QvisCommandWindow</name>
     <message>
         <source>Commands</source>
-        <translation type="unfinished"></translation>
+        <translation>Commandes</translation>
     </message>
     <message>
         <source>Record</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer</translation>
     </message>
     <message>
         <source>Start recording commands</source>
-        <translation type="unfinished"></translation>
+        <translation>Commencer l&apos;enregistrement des commandes</translation>
     </message>
     <message>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Pause</translation>
     </message>
     <message>
         <source>Pause recording commands</source>
-        <translation type="unfinished"></translation>
+        <translation>Mettre en pause l&apos;enregistrement</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Stop</translation>
     </message>
     <message>
         <source>Stop recording commands</source>
-        <translation type="unfinished"></translation>
+        <translation>Arrêter l&apos;enregistrement</translation>
     </message>
     <message>
         <source>Active tab</source>
-        <translation type="unfinished"></translation>
+        <translation>Onglet actif</translation>
     </message>
     <message>
         <source>First empty tab</source>
-        <translation type="unfinished"></translation>
+        <translation>Premier onglet disponible</translation>
     </message>
     <message>
         <source>Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>Macros</translation>
     </message>
     <message>
         <source>Store commands in</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer dans</translation>
     </message>
     <message>
         <source>Append commands to existing text</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter au texte déjà existant</translation>
     </message>
     <message>
         <source>Execute</source>
-        <translation type="unfinished"></translation>
+        <translation>Exécuter</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Make macro</source>
-        <translation type="unfinished"></translation>
+        <translation>Transformer en macro</translation>
     </message>
     <message>
         <source>Update macros</source>
-        <translation type="unfinished"></translation>
+        <translation>Mettre à jour les macros</translation>
     </message>
     <message>
         <source>Please enter the name of the macro to be defined (as you want it to appear in a button).</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrez le nom de la macro à définir (tel que vous voulez qu&apos;il apparaisse sur le bouton).</translation>
     </message>
     <message>
         <source>VisIt could not update the file: </source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de mettre à jour le fichier : </translation>
     </message>
 </context>
 <context>
@@ -2353,43 +2354,43 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisConeWindow</name>
     <message>
         <source>Angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="unfinished"></translation>
+        <translation>Origine</translation>
     </message>
     <message>
         <source>Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Direction</translation>
     </message>
     <message>
         <source>Representation</source>
-        <translation type="unfinished"></translation>
+        <translation>Représentation</translation>
     </message>
     <message>
         <source>In 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>En 3D</translation>
     </message>
     <message>
         <source>Projected to 2D</source>
-        <translation type="unfinished"></translation>
+        <translation>Projection 2D</translation>
     </message>
     <message>
         <source>Cylindrical</source>
-        <translation type="unfinished"></translation>
+        <translation>Cylindrique</translation>
     </message>
     <message>
         <source>Up Axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Axe vertical</translation>
     </message>
     <message>
         <source>Cut cone off?   Length</source>
-        <translation type="unfinished"></translation>
+        <translation>Couper le cône ?   Longueur</translation>
     </message>
     <message>
         <source>Cone Length</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille du cône</translation>
     </message>
 </context>
 <context>
@@ -2441,111 +2442,111 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisContourPlotWindow</name>
     <message>
         <source>Line style</source>
-        <translation type="unfinished"></translation>
+        <translation>Style</translation>
     </message>
     <message>
         <source>Line width</source>
-        <translation type="unfinished"></translation>
+        <translation>Épaisseur</translation>
     </message>
     <message>
         <source>Contour colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleurs</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="unfinished"></translation>
+        <translation>Code de couleur</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation type="unfinished"></translation>
+        <translation>Unique</translation>
     </message>
     <message>
         <source>Multiple</source>
-        <translation type="unfinished"></translation>
+        <translation>Multiple</translation>
     </message>
     <message>
         <source>Level</source>
-        <translation type="unfinished"></translation>
+        <translation>Niveau</translation>
     </message>
     <message>
         <source>N levels</source>
-        <translation type="unfinished"></translation>
+        <translation>N niveaux</translation>
     </message>
     <message>
         <source>Value(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur(s)</translation>
     </message>
     <message>
         <source>Percent(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pourcentage(s)</translation>
     </message>
     <message>
         <source>Select by</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="unfinished"></translation>
+        <translation>Linéaire</translation>
     </message>
     <message>
         <source>Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>Wireframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Fil de fer</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur</translation>
     </message>
     <message>
         <source>Percent</source>
-        <translation type="unfinished"></translation>
+        <translation>Pourcentage</translation>
     </message>
     <message>
         <source>VisIt requires at least one contour.</source>
-        <translation type="unfinished"></translation>
+        <translation>Au moins une valeure est requise.</translation>
     </message>
     <message>
         <source>VisIt will not allow more than %1 contours.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de définir plus de %1 contours.</translation>
     </message>
     <message>
         <source>Contour Levels</source>
-        <translation type="unfinished"></translation>
+        <translation>Niveaux</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="unfinished"></translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Line Style</source>
-        <translation type="unfinished"></translation>
+        <translation>Style</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>minimum value</source>
-        <translation type="unfinished"></translation>
+        <translation>valeur minimale</translation>
     </message>
     <message>
         <source>maximum value</source>
-        <translation type="unfinished"></translation>
+        <translation>valeur maximale</translation>
     </message>
 </context>
 <context>
@@ -3532,19 +3533,19 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisExpressionsWindow</name>
     <message>
         <source>Math</source>
-        <translation type="unfinished"></translation>
+        <translation>Maths</translation>
     </message>
     <message>
         <source>Vector</source>
-        <translation type="unfinished">Vecteur</translation>
+        <translation>Vecteur</translation>
     </message>
     <message>
         <source>Tensor</source>
-        <translation type="unfinished">Tenseur</translation>
+        <translation>Tenseur</translation>
     </message>
     <message>
         <source>Array</source>
-        <translation type="unfinished"></translation>
+        <translation>Tableau</translation>
     </message>
     <message>
         <source>Material</source>
@@ -3552,115 +3553,115 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="unfinished">Maille</translation>
+        <translation>Maillage</translation>
     </message>
     <message>
         <source>Mesh Quality</source>
-        <translation type="unfinished"></translation>
+        <translation>Qualité du maillage</translation>
     </message>
     <message>
         <source>Comparison</source>
-        <translation type="unfinished"></translation>
+        <translation>Comparaison</translation>
     </message>
     <message>
         <source>Image Processing</source>
-        <translation type="unfinished"></translation>
+        <translation>Traitement d&apos;image</translation>
     </message>
     <message>
         <source>Miscellaneous</source>
-        <translation type="unfinished"></translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>Trigonometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Trigonométrique</translation>
     </message>
     <message>
         <source>Relational</source>
-        <translation type="unfinished"></translation>
+        <translation>Relation binaire</translation>
     </message>
     <message>
         <source>Conditional</source>
-        <translation type="unfinished"></translation>
+        <translation>Condition</translation>
     </message>
     <message>
         <source>Logical</source>
-        <translation type="unfinished"></translation>
+        <translation>Logique</translation>
     </message>
     <message>
         <source>Expression List</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste d&apos;expressions</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouvelle</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Display expressions from database</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les expressions stockées avec les données</translation>
     </message>
     <message>
         <source>Definition</source>
-        <translation type="unfinished"></translation>
+        <translation>Définition</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>Scalar Mesh Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable scalaire</translation>
     </message>
     <message>
         <source>Vector Mesh Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable scalaire</translation>
     </message>
     <message>
         <source>Tensor Mesh Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable de tenseur</translation>
     </message>
     <message>
         <source>Symmetric Tensor Mesh Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable de tenseur symmétrique</translation>
     </message>
     <message>
         <source>Array Mesh Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable de tableau</translation>
     </message>
     <message>
         <source>Curve Mesh Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable de courbe</translation>
     </message>
     <message>
         <source>Show variable in plot menus</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher dans le menu des tracés</translation>
     </message>
     <message>
         <source>Insert Function...</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter une fonction...</translation>
     </message>
     <message>
         <source>Insert Variable...</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter une variable...</translation>
     </message>
     <message>
         <source>Time Iteration</source>
-        <translation type="unfinished"></translation>
+        <translation>Temporelle</translation>
     </message>
     <message>
         <source>Arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Arguments</translation>
     </message>
     <message>
         <source>Python Expression Script</source>
-        <translation type="unfinished"></translation>
+        <translation>Script d&apos;expression Python</translation>
     </message>
     <message>
         <source>Open Attribute XML</source>
@@ -3668,23 +3669,23 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>XML Files (*.xml);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers XML (*.xml);;Tous les fichiers (*)</translation>
     </message>
     <message>
         <source>The expressions loaded from %1 contained expressions having the same names as expressions already in the expression list. You may want to edit some of your expression names so they are unique.</source>
-        <translation type="unfinished"></translation>
+        <translation>Certaines des expressions chargées à partir de %1 ont le même nom que celles déjà dans votre liste. Il est conseillé de les renommer pour assurer l&apos;unicité.</translation>
     </message>
     <message>
         <source>Standard Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditeur standard</translation>
     </message>
     <message>
         <source>Python Expression Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditeur d&apos;expression Python</translation>
     </message>
     <message>
         <source>unnamed%1</source>
-        <translation type="unfinished"></translation>
+        <translation>SansNom%1</translation>
     </message>
 </context>
 <context>
@@ -4307,54 +4308,54 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisFileOpenWindow</name>
     <message>
         <source>Directories</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoires</translation>
     </message>
     <message>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers</translation>
     </message>
     <message>
         <source>Open file as type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir le fichier en tant que :</translation>
     </message>
     <message>
         <source>Set default open options...</source>
-        <translation type="unfinished"></translation>
+        <translation>Définir les options d&apos;ouverture...</translation>
     </message>
     <message>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Rafraîchir</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>Guess from file name/extension</source>
-        <translation type="unfinished"></translation>
+        <translation>Deviner à partir du nom/extension</translation>
     </message>
     <message>
         <source>Default file opening options for %1 reader</source>
-        <translation type="unfinished"></translation>
+        <translation>Options d&apos;ouverture par défaut pour le format %1</translation>
     </message>
 </context>
 <context>
     <name>QvisFilePanel</name>
     <message>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir</translation>
     </message>
     <message>
         <source>Replace</source>
-        <translation type="unfinished"></translation>
+        <translation>Remplacer</translation>
     </message>
     <message>
         <source>Overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>Surcouche</translation>
     </message>
     <message>
         <source>Hosts</source>
@@ -4370,7 +4371,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>ReOpen</source>
-        <translation type="unfinished"></translation>
+        <translation>Réouvrir</translation>
     </message>
     <message>
         <source>Activate</source>
@@ -4386,11 +4387,11 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>&amp;Open</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Ouvrir</translation>
     </message>
     <message>
         <source>&amp;Replace</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Remplacer</translation>
     </message>
     <message>
         <source>Replace &amp;Selected</source>
@@ -4398,11 +4399,11 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>&amp;Overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>Surc&amp;ouche</translation>
     </message>
     <message>
         <source>&amp;Close</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Fermer</translation>
     </message>
     <message>
         <source>&amp;Activate</source>
@@ -4410,7 +4411,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Re&amp;Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Ré&amp;ouvrir</translation>
     </message>
 </context>
 <context>
@@ -4468,51 +4469,51 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisFileWindowBase</name>
     <message>
         <source>(current directory)</source>
-        <translation type="unfinished"></translation>
+        <translation>(dossier courant)</translation>
     </message>
     <message>
         <source>(go up 1 directory level)</source>
-        <translation type="unfinished"></translation>
+        <translation>(dossier parent)</translation>
     </message>
     <message>
         <source>Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Hôte</translation>
     </message>
     <message>
         <source>Path</source>
-        <translation type="unfinished"></translation>
+        <translation>Chemin</translation>
     </message>
     <message>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtre</translation>
     </message>
     <message>
         <source>Use &quot;current working directory&quot; by default</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le dossier courant par défaut</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Non</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished"></translation>
+        <translation>Oui</translation>
     </message>
     <message>
         <source>Smart</source>
-        <translation type="unfinished"></translation>
+        <translation>Intelligent</translation>
     </message>
     <message>
         <source>File grouping</source>
-        <translation type="unfinished"></translation>
+        <translation>Groupement</translation>
     </message>
     <message>
         <source>Remove recent paths</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer les chemins récents</translation>
     </message>
     <message>
         <source>Remove paths . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer des chemins . . .</translation>
     </message>
     <message>
         <source>Opening server on %1</source>
@@ -4556,7 +4557,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Show dot files</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les fichiers cachés</translation>
     </message>
 </context>
 <context>
@@ -4700,23 +4701,23 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisFontAttributesWidget</name>
     <message>
         <source>Font name</source>
-        <translation type="unfinished"></translation>
+        <translation>Police</translation>
     </message>
     <message>
         <source>Font scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle</translation>
     </message>
     <message>
         <source>Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>Gras</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation type="unfinished"></translation>
+        <translation>Italique</translation>
     </message>
     <message>
         <source>Use foreground color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur</translation>
     </message>
 </context>
 <context>
@@ -5184,131 +5185,131 @@ by Lineout Operator</source>
     <name>QvisHelpWindow</name>
     <message>
         <source>Help Navigation</source>
-        <translation type="unfinished"></translation>
+        <translation>Aide à la navigation</translation>
     </message>
     <message>
         <source>Contents</source>
-        <translation type="unfinished"></translation>
+        <translation>Contenu</translation>
     </message>
     <message>
         <source>&amp;Contents</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Contenu</translation>
     </message>
     <message>
         <source>&amp;Index</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Index</translation>
     </message>
     <message>
         <source>&amp;Bookmarks</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Marque page</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Précédent</translation>
     </message>
     <message>
         <source>Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>Suivant</translation>
     </message>
     <message>
         <source>Home</source>
-        <translation type="unfinished"></translation>
+        <translation>Retour</translation>
     </message>
     <message>
         <source>Larger font</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus gros</translation>
     </message>
     <message>
         <source>Smaller font</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus petit</translation>
     </message>
     <message>
         <source>Dismiss</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>VisIt User&apos;s Manual</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuel utilisateur de VisIt</translation>
     </message>
     <message>
         <source>VisIt cannot read the help index file! No online help will be available.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de lire le fichier d&apos;index de l&apos;aide ! Aucune aide en ligne ne sera disponible.</translation>
     </message>
     <message>
         <source>VisIt Contributors</source>
-        <translation type="unfinished"></translation>
+        <translation>Contributeurs de VisIt</translation>
     </message>
     <message>
         <source>Copyright</source>
-        <translation type="unfinished"></translation>
+        <translation>Copyright</translation>
     </message>
     <message>
         <source>Frequently asked questions</source>
-        <translation type="unfinished"></translation>
+        <translation>FAQ</translation>
     </message>
     <message>
         <source>Command line arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Arguments en ligne de commande</translation>
     </message>
     <message>
         <source>Release Notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Notes de version</translation>
     </message>
     <message>
         <source>VisIt home page</source>
-        <translation type="unfinished"></translation>
+        <translation>Page d&apos;accueil de VisIt</translation>
     </message>
     <message>
         <source>FAQ</source>
-        <translation type="unfinished"></translation>
+        <translation>FAQ</translation>
     </message>
     <message>
         <source>VisIt</source>
-        <translation type="unfinished"></translation>
+        <translation>VisIt</translation>
     </message>
     <message>
         <source>Release notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Notes de version</translation>
     </message>
     <message>
         <source>Help topic not found!</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de trouver la section de l&apos;aide!</translation>
     </message>
     <message>
         <source>The release notes file cannot be opened.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le fichier des notes de version n&apos;a pas pu être ouvert.</translation>
     </message>
     <message>
         <source>The bookmark was not added because it is already in the list.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le marque page n&apos;a pas été ajouté car il existe déjà.</translation>
     </message>
     <message>
         <source>The bookmark could not be added.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible d&apos;ajouter le marque page.</translation>
     </message>
     <message>
         <source>This page cannot be bookmarked.</source>
-        <translation type="unfinished"></translation>
+        <translation>Cette page ne peux pas être enregistrée.</translation>
     </message>
     <message>
         <source>Add bookmark</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un marque page</translation>
     </message>
     <message>
         <source>VisIt UltraWrapper</source>
-        <translation type="unfinished"></translation>
+        <translation>Visit UltraWrapper</translation>
     </message>
     <message>
         <source>Ultra wrapper</source>
-        <translation type="unfinished"></translation>
+        <translation>Ultra wrapper</translation>
     </message>
 </context>
 <context>
@@ -5552,311 +5553,311 @@ by Lineout Operator</source>
     <name>QvisHostProfileWindow</name>
     <message>
         <source>New profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau profil</translation>
     </message>
     <message>
         <source>Profile name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom du profil</translation>
     </message>
     <message>
         <source>Remote host name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de l&apos;hôte distant</translation>
     </message>
     <message>
         <source>Host name aliases</source>
-        <translation type="unfinished"></translation>
+        <translation>Alias de noms d&apos;hôte</translation>
     </message>
     <message>
         <source>Username</source>
-        <translation type="unfinished"></translation>
+        <translation>Login</translation>
     </message>
     <message>
         <source>Timeout (minutes)</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeout (minutes)</translation>
     </message>
     <message>
         <source>(default)</source>
-        <translation type="unfinished"></translation>
+        <translation>(défaut)</translation>
     </message>
     <message>
         <source>Parallel launch method</source>
-        <translation type="unfinished"></translation>
+        <translation>Méthode de démarrage en parallèle</translation>
     </message>
     <message>
         <source>Launcher arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Argument de démarrage</translation>
     </message>
     <message>
         <source>Sublauncher arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Arguments pour les sous-processus</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatique</translation>
     </message>
     <message>
         <source>Static</source>
-        <translation type="unfinished"></translation>
+        <translation>Statique</translation>
     </message>
     <message>
         <source>Dynamic</source>
-        <translation type="unfinished"></translation>
+        <translation>Dynamique</translation>
     </message>
     <message>
         <source>Load balancing</source>
-        <translation type="unfinished"></translation>
+        <translation>Répartition de la charge</translation>
     </message>
     <message>
         <source>Default number of processors</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre par défaut de processeurs</translation>
     </message>
     <message>
         <source>Default number of nodes</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre par défaut de noeuds</translation>
     </message>
     <message>
         <source>Default Time Limit</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps par défaut</translation>
     </message>
     <message>
         <source>Default Machine File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier de machine par défaut</translation>
     </message>
     <message>
         <source>Share batch job with Metadata Server</source>
-        <translation type="unfinished"></translation>
+        <translation>Partager le travail avec le serveur de métadonnées</translation>
     </message>
     <message>
         <source>Use VisIt script to set up parallel environment</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser un script VisIt pour définir l&apos;environnement parallèle</translation>
     </message>
     <message>
         <source>Tunnel data connections through SSH</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser un tunnel SSH pour les données</translation>
     </message>
     <message>
         <source>Use local machine name</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le nom d&apos;hôte local</translation>
     </message>
     <message>
         <source>Parse from SSH_CLIENT environment variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Lire la variable d&apos;environnement SSH_CLIENT</translation>
     </message>
     <message>
         <source>Specify manually:</source>
-        <translation type="unfinished"></translation>
+        <translation>Définir manuellement :</translation>
     </message>
     <message>
         <source>Method used to determine local host name when not tunneling:</source>
-        <translation type="unfinished"></translation>
+        <translation>Méthode de détermination de l&apos;hôte local (hors tunnel) :</translation>
     </message>
     <message>
         <source>Use cluster&apos;s graphics cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser les cartes graphiques</translation>
     </message>
     <message>
         <source>Sublauncher pre-mpi command</source>
-        <translation type="unfinished"></translation>
+        <translation>Commande pré-mpi pour les sous-processus</translation>
     </message>
     <message>
         <source>Sublauncher post-mpi command</source>
-        <translation type="unfinished"></translation>
+        <translation>Commande post-mpi pour les sous-processus</translation>
     </message>
     <message>
         <source>Profile name cannot be empty, reverting to &quot;%1&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le nom du profil ne peut être vide. Rétablissement à &quot;%1&quot;.</translation>
     </message>
     <message>
         <source>Host name cannot be empty, reverting to &quot;%1&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le nom d&apos;hôte ne peut être vide. Rétablissement de &quot;%1&quot;.</translation>
     </message>
     <message>
         <source>Username cannot be empty, reverting to &quot;%1&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le login ne peut être vide. Rétablissement de &quot;%1&quot;.</translation>
     </message>
     <message>
         <source>An invalid number of processors was specified, reverting to %1 processors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de processeurs incorrect, rétabli à %1.</translation>
     </message>
     <message>
         <source>An invalid number of nodes was specified, reverting to %1 nodes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de noeuds incorrect, rétabli à %1.</translation>
     </message>
     <message>
         <source>An invalid timeout was specified, reverting to %1 minutes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeout incorrect, rétabli à %1.</translation>
     </message>
     <message>
         <source>Hosts</source>
-        <translation type="unfinished"></translation>
+        <translation>Hôtes</translation>
     </message>
     <message>
         <source>Host Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètres de l&apos;hôte</translation>
     </message>
     <message>
         <source>Launch Profiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Profils de démarrage</translation>
     </message>
     <message>
         <source>Host nickname</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <source>Path to VisIt installation</source>
-        <translation type="unfinished"></translation>
+        <translation>Chemin vers l&apos;installation de VisIt</translation>
     </message>
     <message>
         <source>Make Default</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauver comme valeur par défaut</translation>
     </message>
     <message>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètres</translation>
     </message>
     <message>
         <source>Parallel</source>
-        <translation type="unfinished"></translation>
+        <translation>Parallèle</translation>
     </message>
     <message>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Avancé</translation>
     </message>
     <message>
         <source>Additional arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Arguments supplémentaires</translation>
     </message>
     <message>
         <source>Partition / Pool / Queue</source>
-        <translation type="unfinished"></translation>
+        <translation>Partition / Groupe / Queue</translation>
     </message>
     <message>
         <source>Default Bank / Account</source>
-        <translation type="unfinished"></translation>
+        <translation>Compte/Banque par défaut</translation>
     </message>
     <message>
         <source>(default</source>
-        <translation type="unfinished"></translation>
+        <translation>(défaut)</translation>
     </message>
     <message>
         <source>Use gateway</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser une passerelle</translation>
     </message>
     <message>
         <source>DISPLAY:</source>
-        <translation type="unfinished"></translation>
+        <translation>Affichage:</translation>
     </message>
     <message>
         <source>Have VisIt launch X servers</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrer les serveurs X</translation>
     </message>
     <message>
         <source>Number of GPUs per node:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de GPUs par noeud :</translation>
     </message>
     <message>
         <source>New Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouvel hôte</translation>
     </message>
     <message>
         <source>Delete Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer l&apos;hôte</translation>
     </message>
     <message>
         <source>Copy Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Copier l&apos;hôte</translation>
     </message>
     <message>
         <source>Machine</source>
-        <translation type="unfinished"></translation>
+        <translation>Machine</translation>
     </message>
     <message>
         <source>Maximum nodes</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre maximum de noeuds</translation>
     </message>
     <message>
         <source>Maximum processors</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre maximum de processeurs</translation>
     </message>
     <message>
         <source>Account</source>
-        <translation type="unfinished"></translation>
+        <translation>Compte</translation>
     </message>
     <message>
         <source>Connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Connexion</translation>
     </message>
     <message>
         <source>New Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau Profil</translation>
     </message>
     <message>
         <source>Delete Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer le profil</translation>
     </message>
     <message>
         <source>Copy Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Copier le profil</translation>
     </message>
     <message>
         <source>GPU Acceleration</source>
-        <translation type="unfinished"></translation>
+        <translation>Accélération GPU</translation>
     </message>
     <message>
         <source>Launch parallel engine</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrer le moteur en parallèle</translation>
     </message>
     <message>
         <source>Launch</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrage</translation>
     </message>
     <message>
         <source>These options are for hardware accelerating the scalable rendering feature on a compute cluster. In other modes, VisIt will automatically use hardware acceleration. This tab only needs to be modified for compute clusters that have graphics cards.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ces options servent pour utiliser l&apos;accélération matérielle lors du rendu évolutif sur un groupe de calcul. Dans les autres modes, VisIt utilisera de façon automatique l&apos;accélération matérielle. Cet onglet n&apos;a pas à être modifié si le groupe de calcul n&apos;a pas de carte graphique.</translation>
     </message>
     <message>
         <source>X server arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Arguments pour le serveur X</translation>
     </message>
     <message>
         <source>Duplicate detected</source>
-        <translation type="unfinished"></translation>
+        <translation>Doublon détecté</translation>
     </message>
     <message>
         <source>Entry already exists for %1. Allow Duplicate?</source>
-        <translation type="unfinished"></translation>
+        <translation>Une entrée existe déjà pour %1. Dupliquer tout de même ?</translation>
     </message>
     <message>
         <source>Export Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Exporter l&apos;hôte</translation>
     </message>
     <message>
         <source>Machines</source>
-        <translation type="unfinished"></translation>
+        <translation>Machines</translation>
     </message>
     <message>
         <source>Remote Profiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Profils distants</translation>
     </message>
     <message>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Rafraîchir</translation>
     </message>
     <message>
         <source>Import</source>
-        <translation type="unfinished"></translation>
+        <translation>Importer</translation>
     </message>
     <message>
         <source>Profiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Profils</translation>
     </message>
     <message>
         <source>SSH command</source>
-        <translation type="unfinished"></translation>
+        <translation>Commande SSH</translation>
     </message>
     <message>
         <source>SSH port</source>
-        <translation type="unfinished"></translation>
+        <translation>Port SSH</translation>
     </message>
 </context>
 <context>
@@ -6795,28 +6796,28 @@ by Lineout Operator</source>
     <name>QvisKeyframeWindow</name>
     <message>
         <source>Keyframing enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer les transitions</translation>
     </message>
     <message>
         <source>Number of frames</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de transitions</translation>
     </message>
     <message>
         <source>Add state keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter une transition d&apos;état</translation>
     </message>
     <message>
         <source>Cannot set state index to less than zero
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de définir un état inférieur à 0</translation>
     </message>
     <message>
         <source>Add view keyframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter une transition de fenêtre</translation>
     </message>
     <message>
         <source>Use view keyframes</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser les transitions de fenêtre</translation>
     </message>
 </context>
 <context>
@@ -7555,59 +7556,59 @@ by Lineout Operator</source>
     <name>QvisLightingWindow</name>
     <message>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Édition</translation>
     </message>
     <message>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>Aperçu</translation>
     </message>
     <message>
         <source>Active light</source>
-        <translation type="unfinished"></translation>
+        <translation>Lumière</translation>
     </message>
     <message>
         <source>Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Propriétés</translation>
     </message>
     <message>
         <source>Ambient</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambiante</translation>
     </message>
     <message>
         <source>Object</source>
-        <translation type="unfinished"></translation>
+        <translation>Objet</translation>
     </message>
     <message>
         <source>Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Caméra</translation>
     </message>
     <message>
         <source>Light type</source>
-        <translation type="unfinished"></translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Direction</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Brightness</source>
-        <translation type="unfinished"></translation>
+        <translation>Luminosité</translation>
     </message>
     <message>
         <source>Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Activé</translation>
     </message>
     <message>
         <source>The direction vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>La direction choisie est incorrecte. L&apos;ancienne valeur &quot;%1&quot; a été rétablie.</translation>
     </message>
 </context>
 <context>
@@ -8270,14 +8271,14 @@ using the &quot;Apply to all windows&quot; option.</source>
     <name>QvisMacroWindow</name>
     <message>
         <source>Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>Macros</translation>
     </message>
 </context>
 <context>
     <name>QvisMainWindow</name>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished">&amp;Fichier</translation>
+        <translation>&amp;Fichier</translation>
     </message>
     <message>
         <source>Select &amp;file . . .</source>
@@ -8289,11 +8290,11 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Advanced file options</source>
-        <translation>Fichier choix évolué</translation>
+        <translation type="unfinished">Fichier choix évolué</translation>
     </message>
     <message>
         <source>ReOpen file</source>
-        <translation type="unfinished">Ouvrir fichier encore . . .</translation>
+        <translation>Réouvrir fichier</translation>
     </message>
     <message>
         <source>Close file</source>
@@ -8301,51 +8302,51 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Refresh file list</source>
-        <translation type="unfinished"></translation>
+        <translation>Rafraîchir la liste des fichiers</translation>
     </message>
     <message>
         <source>File &amp;information . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Informations . . .</translation>
     </message>
     <message>
         <source>Compute &amp;engines . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Mot&amp;eurs de calcul . . .</translation>
     </message>
     <message>
         <source>Simulations . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Simulations . . .</translation>
     </message>
     <message>
         <source>&amp;Save window</source>
-        <translation>Enregistrer fenêtre</translation>
+        <translation>&amp;Capture de la fenêtre courante</translation>
     </message>
     <message>
         <source>Set Save &amp;options . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Options de capture . . .</translation>
     </message>
     <message>
         <source>Save movie . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer une animation . . .</translation>
     </message>
     <message>
         <source>Export database . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Exporter les données . . .</translation>
     </message>
     <message>
         <source>Print window</source>
-        <translation>Imprimer fenêtre</translation>
+        <translation>Imprimer la fenêtre</translation>
     </message>
     <message>
         <source>Restore session . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Restaurer une session . . .</translation>
     </message>
     <message>
         <source>Restore session with sources . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Restaurer une session avec d&apos;autres données . . .</translation>
     </message>
     <message>
         <source>&amp;Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Quitter</translation>
     </message>
     <message>
         <source>E&amp;xit</source>
@@ -8353,7 +8354,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>&amp;Controls</source>
-        <translation>&amp;Commandes</translation>
+        <translation>&amp;Contrôles</translation>
     </message>
     <message>
         <source>&amp;Animation . . .</source>
@@ -8361,15 +8362,15 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>A&amp;nnotation . . .</source>
-        <translation>A&amp;nnotation . . .</translation>
+        <translation>&amp;Formats et décorations . . .</translation>
     </message>
     <message>
         <source>Color &amp;table . . .</source>
-        <translation>Tableaux des couleurs . . .</translation>
+        <translation>Codes de &amp;Couleurs . . .</translation>
     </message>
     <message>
         <source>Command . . .</source>
-        <translation type="unfinished">Automation . . .</translation>
+        <translation>Commandes . . .</translation>
     </message>
     <message>
         <source>&amp;Database correlations . . .</source>
@@ -8381,7 +8382,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>&amp;Keyframing . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Transitions . . .</translation>
     </message>
     <message>
         <source>&amp;Lighting . . .</source>
@@ -8393,7 +8394,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Macros . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Macros . . .</translation>
     </message>
     <message>
         <source>&amp;Material Options . . .</source>
@@ -8401,15 +8402,15 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>&amp;Mesh management . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Maillage . . .</translation>
     </message>
     <message>
         <source>&amp;Pick . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Cibles . . .</translation>
     </message>
     <message>
         <source>Quer&amp;y . . .</source>
-        <translation>Fenêtre d&apos;interrogation . . .</translation>
+        <translation>Re&amp;quête . . .</translation>
     </message>
     <message>
         <source>Quer&amp;y over time options . . .</source>
@@ -8421,27 +8422,27 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>&amp;Query . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Re&amp;quête . . .</translation>
     </message>
     <message>
         <source>S&amp;ubset . . .</source>
-        <translation>Components . . .</translation>
+        <translation>&amp;Objets . . .</translation>
     </message>
     <message>
         <source>&amp;View . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Caméra . . .</translation>
     </message>
     <message>
         <source>&amp;Options</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Options</translation>
     </message>
     <message>
         <source>&amp;Appearance . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Affichage . . .</translation>
     </message>
     <message>
         <source>&amp;Host profiles . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Hôtes distants . . .</translation>
     </message>
     <message>
         <source>&amp;Interactors . . .</source>
@@ -8449,99 +8450,99 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>&amp;Plugin Manager . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Plugins . . .</translation>
     </message>
     <message>
         <source>Preferences . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Préférences . . .</translation>
     </message>
     <message>
         <source>Rendering . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Rendu . . .</translation>
     </message>
     <message>
         <source>Save Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer les paramètres</translation>
     </message>
     <message>
         <source>&amp;Windows</source>
-        <translation>Fenêtres</translation>
+        <translation>&amp;Fenêtres</translation>
     </message>
     <message>
         <source>Clone</source>
-        <translation type="unfinished"></translation>
+        <translation>Dupliquer</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>Clear all</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer toutes les fenêtres</translation>
     </message>
     <message>
         <source>1x1</source>
-        <translation type="unfinished"></translation>
+        <translation>1x1</translation>
     </message>
     <message>
         <source>1x2</source>
-        <translation type="unfinished"></translation>
+        <translation>1x2</translation>
     </message>
     <message>
         <source>2x2</source>
-        <translation type="unfinished"></translation>
+        <translation>2x2</translation>
     </message>
     <message>
         <source>2x3</source>
-        <translation type="unfinished"></translation>
+        <translation>2x3</translation>
     </message>
     <message>
         <source>2x4</source>
-        <translation type="unfinished"></translation>
+        <translation>2x4</translation>
     </message>
     <message>
         <source>3x3</source>
-        <translation type="unfinished"></translation>
+        <translation>3x3</translation>
     </message>
     <message>
         <source>Layouts</source>
-        <translation type="unfinished"></translation>
+        <translation>Disposition</translation>
     </message>
     <message>
         <source>Active window</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer la fenêtre</translation>
     </message>
     <message>
         <source>View from</source>
-        <translation type="unfinished"></translation>
+        <translation>Caméra</translation>
     </message>
     <message>
         <source>Lighting from</source>
-        <translation type="unfinished"></translation>
+        <translation>Lumière</translation>
     </message>
     <message>
         <source>Annotations from</source>
-        <translation type="unfinished"></translation>
+        <translation>Formats et décorations</translation>
     </message>
     <message>
         <source>Plots from</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracés</translation>
     </message>
     <message>
         <source>Everything from</source>
-        <translation type="unfinished"></translation>
+        <translation>Tout</translation>
     </message>
     <message>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Copier</translation>
     </message>
     <message>
         <source>Pick points</source>
-        <translation type="unfinished"></translation>
+        <translation>Cibles</translation>
     </message>
     <message>
         <source>Plots</source>
-        <translation>Graphes</translation>
+        <translation>Tracés</translation>
     </message>
     <message>
         <source>Reference lines</source>
@@ -8549,51 +8550,51 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Outils</translation>
     </message>
     <message>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Caméra</translation>
     </message>
     <message>
         <source>Unlock everything</source>
-        <translation type="unfinished"></translation>
+        <translation>Tout délier</translation>
     </message>
     <message>
         <source>Lock</source>
-        <translation type="unfinished"></translation>
+        <translation>Lier</translation>
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Aide</translation>
     </message>
     <message>
         <source>About . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>À propos . . .</translation>
     </message>
     <message>
         <source>Copyright . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Copyright . . .</translation>
     </message>
     <message>
         <source>Help . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Aide . . .</translation>
     </message>
     <message>
         <source>Release notes . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Version . . .</translation>
     </message>
     <message>
         <source>Check for new version . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Vérifier les mises à jour . . .</translation>
     </message>
     <message>
         <source>Output window</source>
@@ -8605,23 +8606,23 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>done</source>
-        <translation type="unfinished">fini</translation>
+        <translation>effectué</translation>
     </message>
     <message>
         <source>of stage</source>
-        <translation type="unfinished">d&apos;etage</translation>
+        <translation>de l&apos;étape</translation>
     </message>
     <message>
         <source>Window </source>
-        <translation>Fenêtre</translation>
+        <translation>Fenêtre </translation>
     </message>
     <message>
         <source>Save session</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer la session</translation>
     </message>
     <message>
         <source>Save session as . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer la session sous . . .</translation>
     </message>
     <message>
         <source>&amp;Data-Level Comparisons . . .</source>
@@ -8633,15 +8634,15 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouvelle fenêtre</translation>
     </message>
     <message>
         <source>Full frame mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximiser l&apos;affichage</translation>
     </message>
     <message>
         <source>Spin mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotation 3D</translation>
     </message>
     <message>
         <source>Main Controls</source>
@@ -8649,23 +8650,23 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Main</source>
-        <translation type="unfinished"></translation>
+        <translation>Général</translation>
     </message>
     <message>
         <source>Global</source>
-        <translation type="unfinished"></translation>
+        <translation>Global</translation>
     </message>
     <message>
         <source>Auto apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer automatiquement</translation>
     </message>
     <message>
         <source>Launch CLI . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Interface en ligne de commande python . . .</translation>
     </message>
     <message>
         <source>Host profiles and Configuration Setup . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuration automatique d&apos;hôtes distants . . .</translation>
     </message>
     <message>
         <source>Connect to DDT</source>
@@ -9447,7 +9448,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     <name>QvisMovieProgressDialog</name>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
 </context>
 <context>
@@ -9581,11 +9582,11 @@ Do you want to apply the %2 operator?
     <name>QvisOutputWindow</name>
     <message>
         <source>ERROR: </source>
-        <translation type="unfinished"></translation>
+        <translation>ERREUR:</translation>
     </message>
     <message>
         <source>MESSAGE: </source>
-        <translation type="unfinished"></translation>
+        <translation>MESSAGE:</translation>
     </message>
     <message>
         <source>WARNING: </source>
@@ -10237,47 +10238,47 @@ Do you want to apply the %2 operator?
     <name>QvisPickWindow</name>
     <message>
         <source>Max Tabs</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre maximum d&apos;onglets</translation>
     </message>
     <message>
         <source>Save Picks as</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer la cible sous</translation>
     </message>
     <message>
         <source>Variables</source>
-        <translation type="unfinished"></translation>
+        <translation>Variables</translation>
     </message>
     <message>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
     <message>
         <source>Physical Coords</source>
-        <translation type="unfinished"></translation>
+        <translation>Coordonnées physiques</translation>
     </message>
     <message>
         <source>Domain-Logical Coords</source>
-        <translation type="unfinished"></translation>
+        <translation>Coordonnées du domaine</translation>
     </message>
     <message>
         <source>Block-Logical Coords</source>
-        <translation type="unfinished"></translation>
+        <translation>Coordonnées du bloc</translation>
     </message>
     <message>
         <source>Automatically show window</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher automatiquement la fenêtre</translation>
     </message>
     <message>
         <source>Don&apos;t clear this window</source>
-        <translation type="unfinished"></translation>
+        <translation>Ne pas effacer cette fenêtre</translation>
     </message>
     <message>
         <source>Time curve use picked element</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser l&apos;élément ciblé pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Time curve use picked coordinates</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser les coordonnées ciblées pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Invalid pick floating point format string.</source>
@@ -10285,47 +10286,47 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>VisIt could not save the pick resultsto the selected file</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de sauvegarder la cible</translation>
     </message>
     <message>
         <source>Float Format</source>
-        <translation type="unfinished"></translation>
+        <translation>Format de flottant</translation>
     </message>
     <message>
         <source>Concise Output</source>
-        <translation type="unfinished"></translation>
+        <translation>Sortie brève</translation>
     </message>
     <message>
         <source>Clear Picks</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer les cibles</translation>
     </message>
     <message>
         <source>Repeat Pick</source>
-        <translation type="unfinished"></translation>
+        <translation>Refaire</translation>
     </message>
     <message>
         <source>Create spreadsheet with next pick</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer une feuille de calcul avec la prochaine cible</translation>
     </message>
     <message>
         <source>Display in Spreadsheet</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher dans une feuille de calcul</translation>
     </message>
     <message>
         <source>Choose save filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir le nom du fichier</translation>
     </message>
     <message>
         <source>Mesh Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom du maillage</translation>
     </message>
     <message>
         <source>Timestep</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas de temps</translation>
     </message>
     <message>
         <source>Incident nodes/zones</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Noeud/Zones voisins</translation>
     </message>
     <message>
         <source>Global nodes/zones</source>
@@ -10333,27 +10334,27 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Reference pick letter</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher la cible</translation>
     </message>
     <message>
         <source>For Nodes</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Pour les noeuds</translation>
     </message>
     <message>
         <source>For Zones</source>
-        <translation type="unfinished"></translation>
+        <translation>Pour les zones</translation>
     </message>
     <message>
         <source>Do Time Curve with next pick</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer une courbe temporelle avec la prochaine cible</translation>
     </message>
     <message>
         <source>Time curve use single Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser un unique axe des ordonnées pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Time curve use multiple Y axes</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser plusieurs axes des ordonnées pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Output Display</source>
@@ -10361,11 +10362,11 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Time Pick</source>
-        <translation type="unfinished"></translation>
+        <translation>Cible temporelle</translation>
     </message>
     <message>
         <source>Spreadsheet</source>
-        <translation type="unfinished">Feuille de calcul</translation>
+        <translation>Feuille de calcul</translation>
     </message>
     <message>
         <source>Focus DDT on Pick</source>
@@ -10475,103 +10476,103 @@ Do you want to apply the %2 operator?
     <name>QvisPlotManagerWidget</name>
     <message>
         <source>Hide/Show</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher/Cacher</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Draw</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer</translation>
     </message>
     <message>
         <source>Plots</source>
-        <translation type="unfinished">Graphes</translation>
+        <translation>Tracés</translation>
     </message>
     <message>
         <source>Remove last</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer le dernier</translation>
     </message>
     <message>
         <source>Remove all</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer tous</translation>
     </message>
     <message>
         <source>Operators</source>
-        <translation type="unfinished"></translation>
+        <translation>Filtres</translation>
     </message>
     <message>
         <source>Plot Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>Attributs du tracé</translation>
     </message>
     <message>
         <source>PlotAtts</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditer tracés</translation>
     </message>
     <message>
         <source>Operator Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>Attributs du filtre</translation>
     </message>
     <message>
         <source>OpAtts</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditer filtres</translation>
     </message>
     <message>
         <source>Variables</source>
-        <translation type="unfinished"></translation>
+        <translation>Variables</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter</translation>
     </message>
     <message>
         <source>Analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>Analyse</translation>
     </message>
     <message>
         <source>Debugging</source>
-        <translation type="unfinished"></translation>
+        <translation>Débug</translation>
     </message>
     <message>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Gémoétrie</translation>
     </message>
     <message>
         <source>Molecular</source>
-        <translation type="unfinished"></translation>
+        <translation>Molécules</translation>
     </message>
     <message>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner</translation>
     </message>
     <message>
         <source>Slicing</source>
-        <translation type="unfinished"></translation>
+        <translation>Coupes</translation>
     </message>
     <message>
         <source>Transforms</source>
-        <translation type="unfinished"></translation>
+        <translation>Transformations</translation>
     </message>
     <message>
         <source>Apply operators to all plots</source>
-        <translation type="unfinished"></translation>
+        <translation>Appliquer les filtres à tous les tracés</translation>
     </message>
     <message>
         <source>Apply subset selections to all plots</source>
-        <translation type="unfinished"></translation>
+        <translation>Appliquer les sélections à tous les tracés</translation>
     </message>
     <message>
         <source>Apply to</source>
-        <translation type="unfinished"></translation>
+        <translation>Appliquer à</translation>
     </message>
     <message>
         <source>active window</source>
-        <translation type="unfinished"></translation>
+        <translation>fenêtre active</translation>
     </message>
     <message>
         <source>all windows</source>
-        <translation type="unfinished"></translation>
+        <translation>toutes les fenêtres</translation>
     </message>
 </context>
 <context>
@@ -11873,19 +11874,19 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Post</source>
-        <translation type="unfinished"></translation>
+        <translation>Épingler</translation>
     </message>
     <message>
         <source>Unpost</source>
-        <translation type="unfinished"></translation>
+        <translation>Dépingler</translation>
     </message>
     <message>
         <source>Dismiss</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>?</translation>
     </message>
 </context>
 <context>
@@ -11911,51 +11912,51 @@ Do you want to apply the %2 operator?
     <name>QvisPostableWindowSimpleObserver</name>
     <message>
         <source>Make default</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauver comme valeur par défaut</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialiser</translation>
     </message>
     <message>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Appliquer</translation>
     </message>
     <message>
         <source>Post</source>
-        <translation type="unfinished"></translation>
+        <translation>Épingler</translation>
     </message>
     <message>
         <source>Dismiss</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>Do you really want to make these the default attributes?</source>
-        <translation type="unfinished"></translation>
+        <translation>Voulez-vous vraiment enregistrer ces valeurs comme valeur par défaut ?</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>Yes, Do not prompt again</source>
-        <translation type="unfinished"></translation>
+        <translation>Oui, ne plus demander</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer</translation>
     </message>
     <message>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>?</translation>
     </message>
 </context>
 <context>
@@ -12704,27 +12705,27 @@ same window.</source>
     <name>QvisRecentPathRemovalWindow</name>
     <message>
         <source>Select paths to remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner les chemins à enlever</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Remove all</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer tous</translation>
     </message>
     <message>
         <source>Invert selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Inverser la sélection</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
 </context>
 <context>
@@ -13303,11 +13304,11 @@ atoms at unit cell boundaries.</source>
     <name>QvisSaveMovieWizard</name>
     <message>
         <source>Movie type</source>
-        <translation type="unfinished"></translation>
+        <translation>Type d&apos;animation</translation>
     </message>
     <message>
         <source>Would you like to create a new simple movie or use your previous settings?</source>
-        <translation type="unfinished"></translation>
+        <translation>Voulez-vous créer une nouvelle animation simple ou utiliser des réglages précédents ?</translation>
     </message>
     <message>
         <source>Movie templates allow you to create complex movies. What would you like to do?</source>
@@ -13371,7 +13372,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Choose format</source>
-        <translation type="unfinished"></translation>
+        <translation>Choix du format</translation>
     </message>
     <message>
         <source>Choose movie formats and resolutions.</source>
@@ -13379,7 +13380,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Choose length</source>
-        <translation type="unfinished"></translation>
+        <translation>Choix de la longueur</translation>
     </message>
     <message>
         <source>Choose movie start/end time and frames per second.</source>
@@ -13387,23 +13388,23 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Choose filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Choix du nom de fichier</translation>
     </message>
     <message>
         <source>Choose the output directory and base filename for your movie(s).</source>
-        <translation type="unfinished"></translation>
+        <translation>Veuillez choisir le répertoire et le nom de fichier pour votre (vos) animation(s).</translation>
     </message>
     <message>
         <source>E-mail notification</source>
-        <translation type="unfinished"></translation>
+        <translation>Notification par E-mail</translation>
     </message>
     <message>
         <source>Do you want to be notified by E-mail when your movie completes?</source>
-        <translation type="unfinished"></translation>
+        <translation>Voulez-vous être informé par E-mail de la fin du traitement ?</translation>
     </message>
     <message>
         <source>Choose method</source>
-        <translation type="unfinished"></translation>
+        <translation>Choix de la méthode</translation>
     </message>
     <message>
         <source>Choose when and how you would like VisIt to create your movies.</source>
@@ -13419,11 +13420,11 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Use my previous movie settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser mes réglages précédents</translation>
     </message>
     <message>
         <source>New simple movie</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouvelle animation simple</translation>
     </message>
     <message>
         <source>New template movie</source>
@@ -13539,11 +13540,11 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Yes</source>
-        <translation type="unfinished"></translation>
+        <translation>Oui</translation>
     </message>
     <message>
         <source>No</source>
-        <translation type="unfinished"></translation>
+        <translation>Non</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -13559,99 +13560,99 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Format</source>
-        <translation type="unfinished"></translation>
+        <translation>Format</translation>
     </message>
     <message>
         <source>Use current window size</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser la taille de fenêtre courante</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle</translation>
     </message>
     <message>
         <source>Specify movie size</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir la taille de l&apos;animation</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="unfinished"></translation>
+        <translation>Largeur</translation>
     </message>
     <message>
         <source>Height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur</translation>
     </message>
     <message>
         <source>lock aspect</source>
-        <translation type="unfinished"></translation>
+        <translation>Lier</translation>
     </message>
     <message>
         <source>Stereo movie</source>
-        <translation type="unfinished"></translation>
+        <translation>Animation en stéréo</translation>
     </message>
     <message>
         <source>Left/Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Gauche/Droite</translation>
     </message>
     <message>
         <source>Red/Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Rouge/Bleu</translation>
     </message>
     <message>
         <source>Red/Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Rouge/Vert</translation>
     </message>
     <message>
         <source>Stereo type</source>
-        <translation type="unfinished"></translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>Output</source>
-        <translation type="unfinished"></translation>
+        <translation>Sortie</translation>
     </message>
     <message>
         <source>Resolution</source>
-        <translation type="unfinished"></translation>
+        <translation>Résolution</translation>
     </message>
     <message>
         <source>Stereo</source>
-        <translation type="unfinished"></translation>
+        <translation>Stéréo</translation>
     </message>
     <message>
         <source>Frames per second</source>
-        <translation type="unfinished"></translation>
+        <translation>Images par seconde</translation>
     </message>
     <message>
         <source>First frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Première image</translation>
     </message>
     <message>
         <source>Last frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Dernière image</translation>
     </message>
     <message>
         <source>Output directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire</translation>
     </message>
     <message>
         <source>Base filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Base du nom du fichier</translation>
     </message>
     <message>
         <source>E-mail address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse E-mail</translation>
     </message>
     <message>
         <source>Now, use currently allocated processors</source>
-        <translation type="unfinished"></translation>
+        <translation>Maintenant, utiliser les processus déjà démarrés</translation>
     </message>
     <message>
         <source>Now, use a new instance of VisIt</source>
-        <translation type="unfinished"></translation>
+        <translation>Maintenant, démarrer une nouvelle instance de VisIt</translation>
     </message>
     <message>
         <source>Later, tell me the command to run</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus tard, m&apos;indiquer la commande à lancer</translation>
     </message>
     <message>
         <source>[User defined] </source>
@@ -13671,7 +13672,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Use movie template</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser un modèle d&apos;animation</translation>
     </message>
     <message>
         <source>Movie template</source>
@@ -13755,90 +13756,90 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>yes</source>
-        <translation type="unfinished"></translation>
+        <translation>oui</translation>
     </message>
     <message>
         <source>no</source>
-        <translation type="unfinished"></translation>
+        <translation>non</translation>
     </message>
 </context>
 <context>
     <name>QvisSaveWindow</name>
     <message>
         <source>Output files to current directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer les fichiers dans le répertoire courant</translation>
     </message>
     <message>
         <source>Output directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrer dans le répertoire</translation>
     </message>
     <message>
         <source>Filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de fichier</translation>
     </message>
     <message>
         <source>File type</source>
-        <translation type="unfinished"></translation>
+        <translation>Format de fichier</translation>
     </message>
     <message>
         <source>Quality</source>
-        <translation type="unfinished"></translation>
+        <translation>Qualité</translation>
     </message>
     <message>
         <source>Progressive</source>
-        <translation type="unfinished"></translation>
+        <translation>Progressif</translation>
     </message>
     <message>
         <source>Compression type</source>
-        <translation type="unfinished"></translation>
+        <translation>Compression</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucune</translation>
     </message>
     <message>
         <source>PackBits</source>
-        <translation type="unfinished"></translation>
+        <translation>PackBits</translation>
     </message>
     <message>
         <source>JPEG</source>
-        <translation type="unfinished"></translation>
+        <translation>JPEG</translation>
     </message>
     <message>
         <source>Deflate</source>
-        <translation type="unfinished"></translation>
+        <translation>Deflate</translation>
     </message>
     <message>
         <source>Resolution</source>
-        <translation type="unfinished"></translation>
+        <translation>Résolution</translation>
     </message>
     <message>
         <source>Screen ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Même qu&apos;à l&apos;écran</translation>
     </message>
     <message>
         <source>1:1 aspect ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>1:1</translation>
     </message>
     <message>
         <source>No resolution constraint</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas de contrainte</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="unfinished"></translation>
+        <translation>Largeur</translation>
     </message>
     <message>
         <source>Height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur</translation>
     </message>
     <message>
         <source>Family</source>
-        <translation type="unfinished"></translation>
+        <translation>Famille</translation>
     </message>
     <message>
         <source>Screen capture</source>
-        <translation type="unfinished"></translation>
+        <translation>Capture d&apos;écran</translation>
     </message>
     <message>
         <source>Save tiled</source>
@@ -13846,11 +13847,11 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Binary</source>
-        <translation type="unfinished"></translation>
+        <translation>Binaire</translation>
     </message>
     <message>
         <source>Stereo</source>
-        <translation type="unfinished"></translation>
+        <translation>Stéréo</translation>
     </message>
     <message>
         <source>Force parallel merge</source>
@@ -13858,83 +13859,83 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder</translation>
     </message>
     <message>
         <source>Select output directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir le répertoire d&apos;enregistrement</translation>
     </message>
     <message>
         <source>The output directory was invalid. Resetting to the last good value &quot;%1&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire incorrect. L&apos;ancienne valeur &quot;%1&quot; a été rétablie.</translation>
     </message>
     <message>
         <source>The filename was invalid. Resetting to the last good value &quot;%1&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de fichier incorrect. L&apos;ancienne valeur &quot;%1&quot; a été rétablie.</translation>
     </message>
     <message>
         <source>The width was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Largeur incorrecte. L&apos;ancienne valeur &quot;%1&quot; a été rétablie.</translation>
     </message>
     <message>
         <source>The height was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur incorrecte. L&apos;ancienne valeur &quot;%1&quot; a été rétablie.</translation>
     </message>
     <message>
         <source>Format Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Options de format</translation>
     </message>
     <message>
         <source>Standard Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrement standard</translation>
     </message>
     <message>
         <source>Advanced Multi-Window Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrement avancé multi-fenêtres</translation>
     </message>
     <message>
         <source>Do Advanced Multi-Window Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer</translation>
     </message>
     <message>
         <source>Total Window Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille totale de fenêtre</translation>
     </message>
     <message>
         <source>Individual Window Controls</source>
-        <translation type="unfinished"></translation>
+        <translation>Contrôles individuels des fenêtres</translation>
     </message>
     <message>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Fenêtre</translation>
     </message>
     <message>
         <source>Omit Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactiver cette fenêtre</translation>
     </message>
     <message>
         <source>Position (X)</source>
-        <translation type="unfinished"></translation>
+        <translation>Position (X)</translation>
     </message>
     <message>
         <source>Position (Y)</source>
-        <translation type="unfinished"></translation>
+        <translation>Position (Y)</translation>
     </message>
     <message>
         <source>Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>Couche</translation>
     </message>
     <message>
         <source>Transparency</source>
-        <translation type="unfinished"></translation>
+        <translation>Transparence</translation>
     </message>
     <message>
         <source>The x position was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>La position en x est incorrecte. L&apos;ancienne valeur &quot;%1&quot; a été rétablie.</translation>
     </message>
     <message>
         <source>The y position was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>La position en y est incorrecte. L&apos;ancienne valeur &quot;%1&quot; a été rétablie.</translation>
     </message>
 </context>
 <context>
@@ -14631,27 +14632,27 @@ Coordinates plot.</source>
     <name>QvisSimulationWindow</name>
     <message>
         <source>Attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>Attribut</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur</translation>
     </message>
     <message>
         <source>Interrupt</source>
-        <translation type="unfinished"></translation>
+        <translation>Interrompre</translation>
     </message>
     <message>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Déconnecter</translation>
     </message>
     <message>
         <source>Clear cache</source>
-        <translation type="unfinished"></translation>
+        <translation>Vider le cache</translation>
     </message>
     <message>
         <source>Host</source>
-        <translation type="unfinished"></translation>
+        <translation>Hôte</translation>
     </message>
     <message>
         <source>Name</source>
@@ -14888,31 +14889,31 @@ Coordinates plot.</source>
     <name>QvisSourceManagerWidget</name>
     <message>
         <source>Sources</source>
-        <translation type="unfinished"></translation>
+        <translation>Sources</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>Reopen</source>
-        <translation type="unfinished"></translation>
+        <translation>Réouvrir</translation>
     </message>
     <message>
         <source>Replace</source>
-        <translation type="unfinished"></translation>
+        <translation>Remplacer</translation>
     </message>
     <message>
         <source>Overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>Surcouche</translation>
     </message>
     <message>
         <source>Active source</source>
-        <translation type="unfinished"></translation>
+        <translation>Source active</translation>
     </message>
 </context>
 <context>
@@ -16413,15 +16414,15 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur</translation>
     </message>
     <message>
         <source>Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Texte</translation>
     </message>
     <message>
         <source>Text color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Use foreground color</source>
@@ -16429,19 +16430,19 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Font family</source>
-        <translation type="unfinished"></translation>
+        <translation>Famille</translation>
     </message>
     <message>
         <source>Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>Gras</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation type="unfinished"></translation>
+        <translation>Italique</translation>
     </message>
     <message>
         <source>Shadow</source>
-        <translation type="unfinished"></translation>
+        <translation>Ombre</translation>
     </message>
     <message>
         <source>Visible</source>
@@ -16449,15 +16450,15 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Arial</source>
-        <translation type="unfinished"></translation>
+        <translation>Arial</translation>
     </message>
     <message>
         <source>Courier</source>
-        <translation type="unfinished"></translation>
+        <translation>Courier</translation>
     </message>
     <message>
         <source>Times</source>
-        <translation type="unfinished"></translation>
+        <translation>Times</translation>
     </message>
 </context>
 <context>
@@ -16638,11 +16639,11 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Starting timestep</source>
-        <translation type="unfinished"></translation>
+        <translation>Premier pas de temps</translation>
     </message>
     <message>
         <source>Ending timestep</source>
-        <translation type="unfinished"></translation>
+        <translation>Dernier pas de temps</translation>
     </message>
     <message>
         <source>Stride</source>
@@ -18399,7 +18400,7 @@ not cycles or times.</source>
     <name>SplashScreen</name>
     <message>
         <source>All Rights Reserved</source>
-        <translation>Touts droits réservé</translation>
+        <translation>Touts droits réservés</translation>
     </message>
     <message>
         <source>svn revision</source>
@@ -18407,7 +18408,7 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Starting VisIt...</source>
-        <translation>VisIt commence...</translation>
+        <translation>Démarrage de Visit...</translation>
     </message>
     <message>
         <source>Copyright...</source>
@@ -18415,15 +18416,15 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Contributors...</source>
-        <translation>Cotisants...</translation>
+        <translation>Contributions...</translation>
     </message>
     <message>
         <source>Dismiss</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>VisIt %1 splash screen</source>
-        <translation>VisIt %1</translation>
+        <translation>Écran de démarrage de VisIt %1</translation>
     </message>
     <message>
         <source>Beta</source>
@@ -18431,7 +18432,7 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Patch %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Patch %1</translation>
     </message>
     <message>
         <source>July 2008</source>
@@ -18439,51 +18440,51 @@ not cycles or times.</source>
     </message>
     <message>
         <source>January</source>
-        <translation type="unfinished"></translation>
+        <translation>Janvier</translation>
     </message>
     <message>
         <source>February</source>
-        <translation type="unfinished"></translation>
+        <translation>Février</translation>
     </message>
     <message>
         <source>March</source>
-        <translation type="unfinished"></translation>
+        <translation>Mars</translation>
     </message>
     <message>
         <source>April</source>
-        <translation type="unfinished"></translation>
+        <translation>Avril</translation>
     </message>
     <message>
         <source>May</source>
-        <translation type="unfinished"></translation>
+        <translation>Mai</translation>
     </message>
     <message>
         <source>June</source>
-        <translation type="unfinished"></translation>
+        <translation>Juin</translation>
     </message>
     <message>
         <source>July</source>
-        <translation type="unfinished"></translation>
+        <translation>Juillet</translation>
     </message>
     <message>
         <source>August</source>
-        <translation type="unfinished"></translation>
+        <translation>Août</translation>
     </message>
     <message>
         <source>September</source>
-        <translation type="unfinished"></translation>
+        <translation>Septembre</translation>
     </message>
     <message>
         <source>October</source>
-        <translation type="unfinished"></translation>
+        <translation>Octobre</translation>
     </message>
     <message>
         <source>November</source>
-        <translation type="unfinished"></translation>
+        <translation>Novembre</translation>
     </message>
     <message>
         <source>December</source>
-        <translation type="unfinished"></translation>
+        <translation>Décembre</translation>
     </message>
 </context>
 <context>
@@ -18786,15 +18787,15 @@ not cycles or times.</source>
     <name>ViewerConnectionProgressDialog</name>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>VisIt is waiting for a parallel %1 to launch on %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>En attente d&apos;un %1 parallèle sur %2.</translation>
     </message>
     <message>
         <source>VisIt is waiting for a %1 to launch on %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>En attente d&apos;un %1 sur %2.</translation>
     </message>
 </context>
 <context>
@@ -19575,27 +19576,27 @@ The error message was: %2</source>
     <name>ViewerWindowManager</name>
     <message>
         <source>The maximum number of windows was exceeded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre maximal de fenêtres atteint.</translation>
     </message>
     <message>
         <source>Can&apos;t delete the last window.</source>
-        <translation type="unfinished">On ne peux pas enlever la fenêtre derniere.</translation>
+        <translation>Impossible de supprimer la dernière fenêtre.</translation>
     </message>
     <message>
         <source>Window %1 was deleted.</source>
-        <translation type="unfinished"></translation>
+        <translation>Fenêtre %1 supprimée.</translation>
     </message>
     <message>
         <source>Invalid window index (windowIndex = %1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Indice de fenêtre invalide (windowIndex = %1)</translation>
     </message>
     <message>
         <source>The specified window does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>La fenêtre choisie n&apos;existe pas.</translation>
     </message>
     <message>
         <source>VisIt cannot save images in the specified file format.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de sauver les images dans le format spécifié.</translation>
     </message>
     <message>
         <source>The specified filename was empty. VisIt will use the name &quot;visit&quot; as the base for the files to be saved.</source>
@@ -19607,7 +19608,7 @@ The error message was: %2</source>
     </message>
     <message>
         <source>Rendering window %1...</source>
-        <translation type="unfinished"></translation>
+        <translation>Rendu de la fenêtre %1...</translation>
     </message>
     <message>
         <source>The window was too large to save at the requested resolution.  The resolution has been automatically reduced.</source>
@@ -19619,7 +19620,7 @@ The error message was: %2</source>
     </message>
     <message>
         <source>Saving window %1...</source>
-        <translation type="unfinished"></translation>
+        <translation>Enregistrement de la fenêtre %1...</translation>
     </message>
     <message>
         <source>No image was saved.  This is frequently because you have asked to save an empty window.  If this is not the case, please contact a VisIt developer.</source>
@@ -19638,7 +19639,7 @@ If you are in scalable rendering mode and want to save a polygonal file, go to O
     </message>
     <message>
         <source>Could not save window</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de sauvegarder la fenêtre</translation>
     </message>
     <message>
         <source>Currently, you cannot save images when in nowin mode using screen capture and Mesa has been stubbed out in the viewer.  Either disable screen capture, or rebuild without the Mesa stub library.  Note that the Mesa stub library was in place to prevent compatibility problems with some graphics drivers.</source>
@@ -19824,50 +19825,50 @@ in Controls-&gt;View-&gt;Advanced</source>
     <name>VisItChangeUsernameWindow</name>
     <message>
         <source>Choose new username</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir un nouveau nom d&apos;utilisateur</translation>
     </message>
     <message>
         <source>Username for localhost: </source>
-        <translation type="unfinished"></translation>
+        <translation>Nom d&apos;utilisateur pour localhost : </translation>
     </message>
     <message>
         <source>Confirm username</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmer le nom d&apos;utilisateur</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>New username for %1: </source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau nom d&apos;utilisateur pour %1 : </translation>
     </message>
 </context>
 <context>
     <name>VisItPasswordWindow</name>
     <message>
         <source>Password for localhost: </source>
-        <translation type="unfinished"></translation>
+        <translation>Mot de passe pour localhost : </translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Change username</source>
-        <translation type="unfinished"></translation>
+        <translation>Changer le nom d&apos;utilisateur</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>Enter password</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrer le mot de passe</translation>
     </message>
     <message>
         <source>Enter passphrase</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrer le mot de passe</translation>
     </message>
 </context>
 <context>
@@ -20499,7 +20500,7 @@ equality calculations</source>
     </message>
     <message>
         <source>Subset</source>
-        <translation type="unfinished">Partie</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Species</source>
