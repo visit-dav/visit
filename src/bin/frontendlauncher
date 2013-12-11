@@ -82,22 +82,40 @@ for ver in $versions; do
 done
 
 # If the user specified a specific version then use the python that
-# goes with it.
-args=$@
-while [ $# -gt 0 ]
+# goes with it. This logic is overly complex, but it leaves the command
+# line arguments untouched. The first loop finds a version specified with
+# -v, the second loop finds a version specified with -forceversion, and
+# the last if test sets visitpython if a version was specified and the
+# python that goes with it exists. 
+version=""
+have_version=no
+for arg in $@
 do
-    case $1 in
-        -v | -forceversion)
-            thispython="$dir/../$2/$platform/bin/python"
-            if test -x "$thispython"; then
-                visitpython="$thispython"
-                break
-            fi
-            ;;
-    esac
-    shift
+    if test "$have_version" = "yes"; then
+        version=$arg
+        break
+    fi
+    if test "$arg" = "-v"; then
+        have_version=yes
+    fi
 done
-set -- $args
+have_version=no
+for arg in $@
+do
+    if test "$have_version" = "yes"; then
+        version=$arg
+        break
+    fi
+    if test "$arg" = "-forceversion"; then
+        have_version=yes
+    fi
+done
+if test "$version" != ""; then
+    thispython="$dir/../$2/$platform/bin/python"
+    if test -x "$thispython"; then
+        visitpython="$thispython"
+    fi
+fi
 
 # Execute VisIt's Python or system Python, depending on what's available
 frontendlauncherpy="$(dirname $0)/frontendlauncher.py"
