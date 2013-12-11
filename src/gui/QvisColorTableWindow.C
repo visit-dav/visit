@@ -632,7 +632,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 void
 QvisColorTableWindow::UpdateEditor()
 {
-    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+
     if(ccpl)
     {
         if(ccpl->GetDiscreteFlag())
@@ -646,6 +647,13 @@ QvisColorTableWindow::UpdateEditor()
 
             discreteColors->show();
             showIndexHintsCheckBox->show();
+
+            // When discrete set the smoothing to none so the legend is correct.
+            ccpl->SetSmoothing(ColorControlPointList::None);
+
+            smoothingMethod->blockSignals(true);
+            smoothingMethod->setCurrentIndex(0);
+            smoothingMethod->blockSignals(false);
         }
         else
         {
@@ -1740,6 +1748,9 @@ QvisColorTableWindow::setColorTableType(int index)
     {
         ccpl->SetDiscreteFlag(index == 1);
         colorAtts->SelectColorTables();
+        // When discrete set the smoothing to none so the legend is correct.
+        if(index == 1)
+          ccpl->SetSmoothing(ColorControlPointList::None);
         Apply();
     }
 }
