@@ -111,7 +111,7 @@ do
     fi
 done
 if test "$version" != ""; then
-    thispython="$dir/../$2/$platform/bin/python"
+    thispython="$dir/../$version/$platform/bin/python"
     if test -x "$thispython"; then
         visitpython="$thispython"
     fi
