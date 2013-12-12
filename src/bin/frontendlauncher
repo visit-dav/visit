@@ -93,7 +93,7 @@ for arg in $@
 do
     if test "$have_version" = "yes"; then
         version=$arg
-        break
+        have_version=no
     fi
     if test "$arg" = "-v"; then
         have_version=yes
@@ -104,7 +104,7 @@ for arg in $@
 do
     if test "$have_version" = "yes"; then
         version=$arg
-        break
+        have_version=no
     fi
     if test "$arg" = "-forceversion"; then
         have_version=yes
