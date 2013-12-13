@@ -104,8 +104,9 @@ void* dlGetProcAddressVisIt (const GLubyte* name)
 
   if (h == NULL && gpa == NULL)
   {
-    if ((h = dlopen("libGL.so", RTLD_LAZY | RTLD_LOCAL)) == NULL)
-        return NULL;
+//    if ((h = dlopen("libGL.so", RTLD_LAZY | RTLD_LOCAL)) == NULL)
+    if ((h = dlopen(NULL, RTLD_LAZY | RTLD_LOCAL)) == NULL)  
+          return NULL;
 
     gpa = dlsym(h, "glXGetProcAddress");
 
