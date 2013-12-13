@@ -2299,7 +2299,7 @@ class MainLauncher(object):
         # OSMesa GL Settings
         #
         osmesa_gl_dir = os.path.join(self.visitlibdir,"osmesa")
-        osmesa_gl_lib = os.path.join(osmesa_gl_dir,"libGL.so")
+        osmesa_gl_lib = os.path.join(osmesa_gl_dir,"libGL.so.1")
         #
         # if we have osmesa, use it for the engine & viewer -nowin
         #
