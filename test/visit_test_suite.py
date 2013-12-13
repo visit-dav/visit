@@ -198,6 +198,8 @@ def launch_visit_test(args):
     tparams["pixdiff"]        = opts["pixdiff"]
     tparams["avgdiff"]        = opts["avgdiff"]
     tparams["numdiff"]        = opts["numdiff"]
+    tparams["width"]          = opts["width"]
+    tparams["height"]         = opts["height"]
     tparams["top_dir"]        = top_dir
     tparams["data_dir"]       = opts["data_dir"]
     tparams["baseline_dir"]   = opts["baseline_dir"]
@@ -825,7 +827,8 @@ def run_visit_test(script_file,
              data_dir=None,
              baseline_dir=None,
              output_dir=None,
-             visit_bin="/usr/gapps/visit/bin/visit",
+             visit_bin=None,
+             nprocs=None,
              verbose=False):
     tests = [script_file]
     return run_visit_tests(tests,
@@ -833,13 +836,15 @@ def run_visit_test(script_file,
                            baseline_dir,
                            output_dir,
                            visit_bin,
+                           nprocs,
                            verbose)
 
 def run_visit_tests(tests,
                     data_dir=None,
                     baseline_dir=None,
                     output_dir=None,
-                    visit_bin="/usr/gapps/visit/bin/visit",
+                    visit_bin=None,
+                    nprocs=None,
                     verbose=False):
     opts = default_suite_options()
     if not data_dir is None:
@@ -848,12 +853,18 @@ def run_visit_tests(tests,
         opts["baseline_dir"] = baseline_dir
     if not output_dir is None:
         opts["result_dir"] = output_dir
-    opts["executable"] = visit_bin
+    # Future: try to find "visit" in path?
+    if not visit_bin is None:
+        opts["executable"] = visit_bin
     # override other default options
     opts["check_data"]    = False
     opts["cleanup_delay"] = 1
     if verbose:
         opts["verbose"] = True
+    if not nprocs is None:
+        opts["nprocs"] = nprocs
+    else:
+        opts["nprocs"] = 1 # default to 1 for now
     opts["test_dir"] = os.path.split(os.path.abspath(__file__))[0]
     print opts["test_dir"]
     res_file  = main(opts,tests)
