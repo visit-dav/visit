@@ -206,7 +206,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
 
     Dl_info info;
     if (dladdr(__builtin_return_address(0), &info)) {
-      char *lastslash = strrchr(info.dli_fname,'/');
+      const char *lastslash = strrchr(info.dli_fname,'/');
 
       if( lastslash )
       {
