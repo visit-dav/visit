@@ -49,6 +49,7 @@
 #include <string>
 #include <vector>
 #include <climits> 
+#include <dlfcn.h>
 
 #ifdef PARALLEL
 #  include <mpi.h>
@@ -79,6 +80,7 @@
 #include <InvalidDBTypeException.h>
 #include <DBOptionsAttributes.h>
 #include <InvalidFilesException.h>
+#include <InstallationFunctions.h>
 
 using std::max;
 using std::min;
@@ -147,15 +149,148 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   strcpy(tmp, "THREAD_NO_ATEXIT=1");
   putenv(tmp);
   
-//  const char * lib = "/Projects/Uintah/trunk/opt/lib/libStandAlone_tools_uda2vis.dylib";
-  //<ctc> part of the secret of bundling udaReader with VisIt... 
-  //const char * lib = "@executable_path/../lib/uintah/libStandAlone_tools_uda2vis.dylib";
+  int dlopen_mode = RTLD_NOW;
 
-#ifdef UINTAH_LIB
-  const char * lib_name = STR( UINTAH_LIB );
+#ifdef UINTAH_UDA2VIS_LIB
+  const char * lib_name = STR( UINTAH_UDA2VIS_LIB );
 #else
-#error  "UINTAH_LIB has not been defined"
+#error  "UINTAH_UDA2VIS_LIB has not been defined"
 #endif
+
+  // First try to open the library without any paths - assumes the
+  // user has the Uintah library parth in their *_LIBRARY_PATH.
+  libHandle = dlopen(lib_name, dlopen_mode);
+
+  // if( libHandle )
+  //   std::cerr << __LINE__ << " Uintah lib " << lib_name << std::endl;
+
+  // Try the visit installation library directory.
+  if (!libHandle)
+  {
+    const char *vlibdir = GetVisItLibraryDirectory().c_str();
+
+    if( vlibdir )
+    {
+      char *lib = (char *) malloc( strlen(vlibdir) + strlen(lib_name) + 8 );
+
+      sprintf( lib, "%s/%s", vlibdir, lib_name );
+
+      libHandle = dlopen(lib, dlopen_mode);
+
+      // if( libHandle )
+      //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+    }
+
+    // Try a relative installed path
+    if (!libHandle)
+    {
+      char *lib = (char *) malloc( strlen(vlibdir) + strlen(lib_name) + 12 );
+
+      sprintf( lib, "%s/uintah/%s", vlibdir, lib_name );
+
+      libHandle = dlopen(lib, dlopen_mode);
+      
+      // if( libHandle )
+      //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+    }
+  }
+
+  // Did not open so try to open the library using the path from the
+  // calling library which would be in plugins/databases.
+#ifdef HAVE_WINDOWS_H
+  // Not sure to do here???
+#else
+  if (!libHandle)
+  {
+    char *pathname = 0;
+
+    Dl_info info;
+    if (dladdr(__builtin_return_address(0), &info)) {
+      char *lastslash = strrchr(info.dli_fname,'/');
+
+      if( lastslash )
+      {
+        int pathLen = strlen(info.dli_fname) - strlen(lastslash);
+        
+        pathname = (char *) malloc(pathLen+2);
+        strncpy( pathname, info.dli_fname, pathLen );
+        pathname[pathLen] = '\0';
+      }
+    }
+
+    if( pathname )
+    {
+      char *lib = (char *) malloc( strlen(pathname) + strlen(lib_name) + 8 );
+
+      sprintf( lib, "%s/%s", pathname, lib_name );
+
+      libHandle = dlopen(lib, dlopen_mode);
+
+      // if( libHandle )
+      //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+    }
+
+    // Try a relative installed path
+    if (!libHandle)
+    {
+      char *lib = (char *) malloc( strlen(pathname) + strlen(lib_name) + 24 );
+
+      sprintf( lib, "%s/../../lib/uintah/%s", pathname, lib_name );
+
+      libHandle = dlopen(lib, dlopen_mode);
+      
+      // if( libHandle )
+      //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+    }
+
+    // Try a relative installed path
+    if (!libHandle)
+    {
+      char *lib = (char *) malloc( strlen(pathname) + strlen(lib_name) + 16 );
+
+      sprintf( lib, "%s/../../lib/%s", pathname, lib_name );
+
+      libHandle = dlopen(lib, dlopen_mode);
+      
+      // if( libHandle )
+      //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+    }
+  }
+
+#endif
+
+  // Did not open so try to open the library using the library path
+  // found where the user installed Uintah.
+#if __APPLE__
+  if (!libHandle)
+  {
+    char *lib = (char *) malloc( strlen(lib_name) + 32 );
+  
+    sprintf( lib, "@executable_path/../lib/uintah/%s", lib_name );
+
+    libHandle = dlopen(lib, dlopen_mode);
+
+    // if( libHandle )
+    //   std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+  }
+
+  if (!libHandle)
+  {
+    char *lib = (char *) malloc( strlen(lib_name) + 32 );
+  
+    sprintf( lib, "@executable_path/../lib/%s", lib_name );
+
+    libHandle = dlopen(lib, dlopen_mode);
+
+    // if( libHandle )
+    //   std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+  }
+
+#endif
+
+  // Did not open so try to open the library using the Uintah library path
+  // found when VisIt was configured.
+  if (!libHandle) {
 
 #ifdef UINTAH_LIBRARY_DIR
   const char * lib_path = STR( UINTAH_LIBRARY_DIR );
@@ -163,28 +298,17 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
 #error  "UINTAH_LIBRARY_DIR has not been defined"
 #endif
 
-#ifdef UINTAH_UDA_TO_VIS_LIB
-  const char * lib = STR( UINTAH_UDA_TO_VIS_LIB );
-#else
-#error  "UINTAH_UDA_TO_VIS_LIB has not been defined"
-#endif
+    char *lib = (char *) malloc( strlen(lib_path) + strlen(lib_name) + 8 );
 
-  // std::cerr << "lib_name " << lib_name << std::endl;
-  // std::cerr << "lib_path " << lib_path << std::endl;
-  // std::cerr << "lib "      << lib << std::endl;
+    sprintf( lib, "%s/%s", lib_path, lib_name );
 
-  // First try to open the library using the library path(s)
-  libHandle = dlopen(lib_name, RTLD_NOW);
+    libHandle = dlopen(lib, dlopen_mode);
 
-  if (!libHandle) {
-
-//    std::cerr << "can not find " << lib_name << std::endl;
-
-    // That failed so try to open the library using the library path
-    // found when VisIt was compiled.
-    libHandle = dlopen(lib, RTLD_NOW);
+    // if( libHandle )
+    //   std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
   }
 
+  // Library was never opened so report back an error.
   if (!libHandle) {
     char* errString = dlerror();
     std::string str = "The library " + std::string(lib_name) +
