@@ -35,8 +35,6 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
-#   Removed VISIT_MSVC_VERSION from windows handling.
 #
 #****************************************************************************/
 
@@ -44,8 +42,67 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
- SET_UP_THIRD_PARTY(UINTAH lib ../src StandAlone_tools_uda2visdll)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(UINTAH lib ../src StandAlone_tools_uda2vis)
-ENDIF (WIN32)
+# Note UINTAH_UDA2VIS_LIB is called in the reader using dlopen
+# so the true library name is need for the compiled operating system.
+# This variable MUST BE the FIRST variable in the library list.
+# Here the base name is set and passed to the third party set up
+SET(UINTAH_UDA2VIS_LIB
+  StandAlone_tools_uda2vis
+)
+
+SET_UP_THIRD_PARTY(UINTAH lib ../src
+  ${UINTAH_UDA2VIS_LIB}
+#  CCA_Components_Arches
+#  CCA_Components_Arches_fortran
+#  CCA_Components_DataArchiver
+#  CCA_Components_Examples
+#  CCA_Components_ICE
+#  CCA_Components_LoadBalancers
+#  CCA_Components_MPM
+#  CCA_Components_MPMArches
+#  CCA_Components_MPMICE
+#  CCA_Components_Models
+#  CCA_Components_OnTheFlyAnalysis
+#  CCA_Components_Parent
+#  CCA_Components_PatchCombiner
+  CCA_Components_ProblemSpecification
+#  CCA_Components_Regridder
+#  CCA_Components_Schedulers
+#  CCA_Components_SimulationController
+#  CCA_Components_Solvers
+#  CCA_Components_SwitchingCriteria
+  CCA_Ports
+  Core_Basis
+  Core_Containers
+  Core_DataArchive
+  Core_Datatypes
+  Core_Disclosure
+  Core_Exceptions
+  Core_Geometry
+#  Core_GeometryPiece
+  Core_Grid
+#  Core_IO
+#  Core_Labels
+  Core_Malloc
+  Core_Math
+#  Core_OS
+  Core_Parallel
+  Core_Persistent
+  Core_ProblemSpec
+  Core_Thread
+#  Core_Tracker
+  Core_Util
+#  testprograms_TestBoxGrouper
+#  testprograms_TestConsecutiveRangeSet
+#  testprograms_TestMatrix3
+#  testprograms_TestRangeTree
+#  testprograms_TestSuite
+  )
+
+# Note UINTAH_UDA2VIS_LIB is called in the reader using dlopen
+# so the true library is need for the compiled operating system.
+# This variable MUST BE the FIRST variable in the library list.
+# Here the true name is retrieved from the third party set up
+LIST(GET UINTAH_LIB 0 UINTAH_UDA2VIS_LIB)
+
+#MESSAGE(STATUS "UINTAH_UDA2VIS_LIB = ${UINTAH_UDA2VIS_LIB}")

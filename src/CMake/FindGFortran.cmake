@@ -35,23 +35,11 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
-#   Removed VISIT_MSVC_VERSION from windows handling.
 #
 #****************************************************************************/
 
-# Use the MDSPLUS_DIR hint from the config-site .cmake file 
+# Use the GFORTRAN_DIR hint from the config-site .cmake file 
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
-    SET_UP_THIRD_PARTY(MDSPLUS lib include MdsLib)
-ELSE (WIN32)
-    IF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
-        # Linux requires librt to resolve "clock_gettime"
-        # add this as a general dep:
-        SET(MDSPLUS_LIBDEP /usr/lib rt "${MDSPLUS_LIBDEP}")
-    ENDIF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
-    SET_UP_THIRD_PARTY(MDSPLUS lib include MdsLib_client MdsIpShr MdsShr)
-ENDIF (WIN32)
-
+SET_UP_THIRD_PARTY(GFORTRAN lib include gfortran quadmath gcc_s.1)
