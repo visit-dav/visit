@@ -57,6 +57,8 @@
 //  Creation:    April  2, 2009
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Dec 18 11:20:33 PST 2013
+//    Add nmats to track original number of materials.
 //
 // ****************************************************************************
 class MIR_API YoungsMIR : public MIR
@@ -83,7 +85,7 @@ class MIR_API YoungsMIR : public MIR
     vtkDataSet **output;
     std::vector<int> mapMatToUsedMat;
     std::vector<int> mapUsedMatToMat;
-
+    int nmats;
 };
 
 
