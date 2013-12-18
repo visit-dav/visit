@@ -197,6 +197,9 @@ avtLAMMPSDumpFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Fri Apr 30 10:03:17 EDT 2010
 //    Added cycles to meta-data.
 //
+//    Jeremy Meredith, Wed Dec 18 12:24:47 EST 2013
+//    Add ID as a field since we're no longer re-sorting by it.
+//
 // ****************************************************************************
 
 void
@@ -232,6 +235,7 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
     md->Add(mmd);
 
     AddScalarVarToMetaData(md, "species", "mesh", AVT_NODECENT);
+    AddScalarVarToMetaData(md, "id", "mesh", AVT_NODECENT);
     for (int v=0; v<nVars; v++)
     {
         if (v == idIndex || v == speciesIndex)
@@ -377,6 +381,9 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
 //    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
 //    The number of atoms can now vary per timestep.
 //
+//    Jeremy Meredith, Wed Dec 18 12:24:47 EST 2013
+//    Add ID as a field since we're no longer re-sorting by it.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -385,15 +392,17 @@ avtLAMMPSDumpFileFormat::GetVar(int timestep, const char *varname)
     ReadTimeStep(timestep);
 
     // element is a built-in variable
-    if (string(varname) == "species")
+    if (string(varname) == "species" || string(varname) == "id")
     {
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(nAtoms[timestep]);
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<nAtoms[timestep]; i++)
-        {
-            ptr[i] = speciesVar[i];
-        }
+        if (string(varname) == "species")
+            for (int i=0; i<nAtoms[timestep]; i++)
+                ptr[i] = speciesVar[i];
+        else // (string(varname) == "id")
+            for (int i=0; i<nAtoms[timestep]; i++)
+                ptr[i] = idVar[i];
         return scalars;
     }
 
@@ -471,6 +480,11 @@ avtLAMMPSDumpFileFormat::GetVectorVar(int timestep, const char *varname)
 //    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
 //    The number of atoms can now vary per timestep.
 //
+//    Jeremy Meredith, Wed Dec 18 12:17:28 EST 2013
+//    Don't re-sort atoms by their "id" field.  That field is NOT
+//    actually guaranteed to be 1 to natoms.  (New atoms get inserted
+//    with new IDs and old ones go away.)  Instead, add ID as a new field.
+//
 // ****************************************************************************
 void
 avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
@@ -486,6 +500,7 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
     in.seekg(file_positions[timestep]);
 
     speciesVar.resize(nAtoms[timestep]);
+    idVar.resize(nAtoms[timestep]);
     for (int v=0; v<vars.size(); v++)
     {
         // id and species are ints; don't bother with the float arrays for them
@@ -512,15 +527,16 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
             else
                 sin >> tmpVars[v];
         }
-        --tmpID;  // 1-origin; we need 0-origin
 
+        int index = a;  // no longer tmpID (tmpID-1 actually); don't re-sort
         for (int v=0; v<nVars; v++)
         {
             if (v == idIndex || v == speciesIndex)
                 continue;
-            vars[v][tmpID] = tmpVars[v];
+            vars[v][index] = tmpVars[v];
         }
-        speciesVar[tmpID] = tmpSpecies - 1;
+        speciesVar[index] = tmpSpecies - 1;
+        idVar[index] = tmpID;
     }
 }
 

@@ -70,7 +70,7 @@ class avtLAMMPSDumpFileFormat : public avtMTSDFileFormat
     int                      xIndex, yIndex, zIndex;
     int                      speciesIndex, idIndex;
     std::vector< std::vector<float> >  vars;
-    std::vector<int>              speciesVar;
+    std::vector<int>                   speciesVar, idVar;
     std::vector< std::string >         varNames;
 
     virtual void    PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
