@@ -47,6 +47,10 @@
 #   Use ${PYSIDE_PYTHONPATH} instead of ${VISIT_PYSIDE_DIR}/lib/site-packages
 #   to support using system PySide.
 #
+#   Kathleen Biagas, Wed Dec 18 08:05:38 PST 2013
+#   Exclude '.svn' from INSTALL command, probably a rare case, but a
+#   developer did run into an issue.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
@@ -99,6 +103,7 @@ IF(PySide_FOUND)
                         GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                         WORLD_READ WORLD_EXECUTE
             CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+            PATTERN ".svn" EXCLUDE
             )
 ENDIF(PySide_FOUND)
 
