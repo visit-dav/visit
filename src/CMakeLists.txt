@@ -831,12 +831,12 @@ VISIT_INSTALLED_VERSION_INCLUDE
 # deafult to off until things are
 # settled down
 SET(BUILD_TESTING OFF CACHE BOOL "Build testing tree")
-INCLUDE(CTest)
-CONFIGURE_FILE(
-    "${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake"
-    @ONLY)
 IF(BUILD_TESTING)
+    INCLUDE(CTest)
+    CONFIGURE_FILE(
+        "${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake"
+        @ONLY)
     SUBDIRS(tests)
 ENDIF()
 
