@@ -71,6 +71,7 @@ using std::vector;
 // ****************************************************************************
 YoungsMIR::YoungsMIR()
 {
+    nmats = 0;
 }
 
 // ****************************************************************************
@@ -122,7 +123,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     visitTimer->StopTimer(th_packmat, "MIR: Pack material");
 
     //vector<string> matNames = mat->GetMaterials();
-    int nmats = mat->GetNMaterials();
+    nmats = mat->GetNMaterials();
     int ncells = ds->GetNumberOfCells();
     vector<vtkFloatArray *>vf(nmats);
     for (int m=0; m<nmats; m++)
@@ -298,6 +299,9 @@ YoungsMIR::Reconstruct2DMesh(vtkDataSet *ds, avtMaterial *mat)
 //    Jeremy Meredith, Mon Jan  4 15:09:23 EST 2010
 //    Added some timings.
 //
+//    Kathleen Biagas, Wed Dec 18 11:21:12 PST 2013
+//    Return all materials if mats is empty. (To match behavior of ZooMIR).
+//
 // ****************************************************************************
 vtkDataSet *
 YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds, 
@@ -305,31 +309,42 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
                       bool doMats,
                       avtMaterial *mat)
 {
-    if (mats.size() == 0)
-        return NULL;
+    bool doAllMats = mats.size() == 0;
 
     int timerHandle = visitTimer->StartTimer();
 
     // Collect up all the data sets we're asked for
     vector<int>         matIndex;
     vector<vtkDataSet*> matDS;
-    for (unsigned int i=0; i<mats.size(); i++)
+
+    if (!doAllMats)
     {
-        int matno = mats[i];
-        int index = -1;
-        for (unsigned int m=0; m<mapUsedMatToMat.size(); m++)
+        for (unsigned int i=0; i<mats.size(); i++)
         {
-            if (mapUsedMatToMat[m] == matno)
+            int matno = mats[i];
+            int index = -1;
+            for (unsigned int m=0; m<mapUsedMatToMat.size(); m++)
             {
-                index = m;
-                break;
+                if (mapUsedMatToMat[m] == matno)
+                {
+                    index = m;
+                    break;
+                }
+            }
+        
+            if (index >= 0)
+            {
+                matIndex.push_back(index);
+                matDS.push_back(output[index]);
             }
         }
-        
-        if (index >= 0)
+    }
+    else
+    {
+        for (int i = 0; i < nmats; i++)
         {
-            matIndex.push_back(index);
-            matDS.push_back(output[index]);
+            matIndex.push_back(i);
+            matDS.push_back(output[i]);
         }
     }
 
