@@ -75,7 +75,8 @@ public:
   // Draw the actor as per the vtkProp superclass' API.
   int RenderOverlay(vtkViewport *);
   int RenderOpaqueGeometry(vtkViewport *);
-  int RenderTranslucentGeometry(vtkViewport *) { return 0;};
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) { return 0;}
+  int HasTranslucentPolygonalGeometry() { return 0;}
 
   // Description:
   // Sets the corner colors.

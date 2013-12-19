@@ -246,7 +246,8 @@ public:
   // Description:
   // Draw the axis. 
   virtual int RenderOpaqueGeometry(vtkViewport* viewport);
-  virtual int RenderTranslucentGeometry(vtkViewport *) {return 0;}
+  virtual int RenderTranslucentPolygonalGeometry(vtkViewport *) {return 0;}
+  virtual int HasTranslucentPolygonalGeometry() {return 0;}
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.
