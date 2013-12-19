@@ -279,6 +279,10 @@ using std::vector;
 //    Hank Childs, Mon Mar  4 18:35:27 PST 2013
 //    Initialize duplicateData member.
 //
+//    Kathleen Biagas, Thu Dec 19 09:25:29 PST 2013
+//    Test if read options exist before attemtping to access them.
+//    Default to the same defaults as stored in the Options file.
+//
 // ****************************************************************************
 
 avtNek5000FileFormat::avtNek5000FileFormat(const char *filename,
@@ -298,8 +302,15 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename,
     numberOfTimePeriods = 1;
     gapBetweenTimePeriods = 0.0;
 
-    readOptionToGetAllTimes = atts->GetBool("Read all times and cycles");
-    duplicateData = atts->GetBool("Duplicate data for particle advection (slower for all other techniques)");
+    readOptionToGetAllTimes = true;
+    duplicateData = false;
+    if (atts)
+    {
+        if (atts->FindIndex("Read all times and cycles") >= 0)
+            readOptionToGetAllTimes = atts->GetBool("Read all times and cycles");
+        if (atts->FindIndex("Duplicate data for particle advection (slower for all other techniques)") >= 0)
+            duplicateData = atts->GetBool("Duplicate data for particle advection (slower for all other techniques)");
+    }
 
     iNumBlocks = 0;
     iBlockSize[0] = 1;
