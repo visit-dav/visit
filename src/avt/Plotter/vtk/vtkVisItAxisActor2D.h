@@ -299,7 +299,8 @@ public:
   // Draw the axis. 
   int RenderOverlay(vtkViewport* viewport);
   int RenderOpaqueGeometry(vtkViewport* viewport);
-  int RenderTranslucentGeometry(vtkViewport *) {return 0;}
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) {return 0;}
+  int HasTranslucentPolygonalGeometry() {return 0;}
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.

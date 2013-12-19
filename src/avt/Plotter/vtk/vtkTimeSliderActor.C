@@ -563,7 +563,13 @@ vtkTimeSliderActor::RenderOpaqueGeometry(vtkViewport *)
 }
 
 int
-vtkTimeSliderActor::RenderTranslucentGeometry(vtkViewport *)
+vtkTimeSliderActor::RenderTranslucentPolygonalGeometry(vtkViewport *)
+{
+    return 0;
+}
+
+int
+vtkTimeSliderActor::HasTranslucentPolygonalGeometry()
 {
     return 0;
 }
