@@ -408,7 +408,7 @@ avtMFIXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     AddScalarVarToMetaData(md, "flagclass_var", "Mesh", AVT_ZONECENT);
 
     // The actual variables go here
-    for (int i =0; i < this->VariableNames->GetMaxId(); ++i) {
+    for (int i =0; i <= this->VariableNames->GetMaxId(); ++i) {
         const char *name = this->VariableNames->GetValue(i);
         if (this->VariableComponents->GetValue(i) == 1)
             AddScalarVarToMetaData(md, name, "Mesh", AVT_ZONECENT);
@@ -641,7 +641,7 @@ avtMFIXFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 int
 avtMFIXFileFormat::get_var_index(const char *varname)
 {
-    for (int i = 0; i < this->VariableNames->GetMaxId(); ++i)
+    for (int i = 0; i <= this->VariableNames->GetMaxId(); ++i)
         if (strcmp(VariableNames->GetValue(i), varname) == 0)
             return (i);
     EXCEPTION1(InvalidVariableException, varname);
@@ -2432,12 +2432,12 @@ void avtMFIXFileFormat::GetNumberOfVariablesInSPXFiles()
 
     //initialize VariablesToSkipTable to 0
     //for windows
-    for(int i =0;i<this->VariableNames->GetMaxId()+1;i++) {
+    for(int i =0;i<=this->VariableNames->GetMaxId(); i++) {
         this->VariableToSkipTable->InsertValue(i,0);
     }
 
     for (int j =1; j<this->NumberOfSPXFilesUsed; j++) {
-        for(int i =0;i<this->VariableNames->GetMaxId()+1;i++) {
+        for(int i =0;i<=this->VariableNames->GetMaxId();i++) {
             if ((this->VariableIndexToSPX->GetValue(i) == j)
                 && (this->VariableComponents->GetValue(i) == 1)) {
                 NumberOfVariablesInSPX++;
