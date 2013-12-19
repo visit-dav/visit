@@ -78,7 +78,8 @@ public:
   // Description:
   // Draw the legend and annotation text to the screen.
   int RenderOpaqueGeometry(vtkViewport* viewport);
-  int RenderTranslucentGeometry(vtkViewport*) { return 0; };
+  int RenderTranslucentPolygonalGeometry(vtkViewport*) { return 0; }
+  int HasTranslucentPolygonalGeometry() { return 0; }
   virtual int RenderOverlay(vtkViewport* viewport);
 
   // Description:

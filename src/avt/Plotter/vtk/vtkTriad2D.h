@@ -78,7 +78,8 @@ public:
   // Draw the triad as per the vtkProp superclass' API.
   int RenderOverlay(vtkViewport *);
   int RenderOpaqueGeometry(vtkViewport *);
-  int RenderTranslucentGeometry(vtkViewport *) { return 0;};
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) { return 0;}
+  int HasTranslucentPolygonalGeometry() { return 0;}
 
   // Description:
   // Set the origin of the triad in normalized viewport coordinates.
