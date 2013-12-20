@@ -24,6 +24,9 @@
     <Field name="formatCanDoDomainDecomposition" label="Format can decompose data" type="bool">
       false
     </Field>
+    <Field name="formatCanDoMultires" label="Format can provide multiple resolutions of the data" type="bool">
+      false
+    </Field>
     <Field name="useCatchAllMesh" label="Use catch-all mesh" type="bool">
       false
     </Field>

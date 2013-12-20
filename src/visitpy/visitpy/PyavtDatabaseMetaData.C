@@ -121,6 +121,11 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
     else
         SNPRINTF(tmpStr, 1000, "%sformatCanDoDomainDecomposition = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetFormatCanDoMultires())
+        SNPRINTF(tmpStr, 1000, "%sformatCanDoMultires = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sformatCanDoMultires = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetUseCatchAllMesh())
         SNPRINTF(tmpStr, 1000, "%suseCatchAllMesh = 1\n", prefix);
     else
@@ -604,6 +609,30 @@ avtDatabaseMetaData_GetFormatCanDoDomainDecomposition(PyObject *self, PyObject *
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFormatCanDoDomainDecomposition()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+avtDatabaseMetaData_SetFormatCanDoMultires(PyObject *self, PyObject *args)
+{
+    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the formatCanDoMultires in the object.
+    obj->data->SetFormatCanDoMultires(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtDatabaseMetaData_GetFormatCanDoMultires(PyObject *self, PyObject *args)
+{
+    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetFormatCanDoMultires()?1L:0L);
     return retval;
 }
 
@@ -2597,6 +2626,8 @@ PyMethodDef PyavtDatabaseMetaData_methods[AVTDATABASEMETADATA_NMETH] = {
     {"GetMustAlphabetizeVariables", avtDatabaseMetaData_GetMustAlphabetizeVariables, METH_VARARGS},
     {"SetFormatCanDoDomainDecomposition", avtDatabaseMetaData_SetFormatCanDoDomainDecomposition, METH_VARARGS},
     {"GetFormatCanDoDomainDecomposition", avtDatabaseMetaData_GetFormatCanDoDomainDecomposition, METH_VARARGS},
+    {"SetFormatCanDoMultires", avtDatabaseMetaData_SetFormatCanDoMultires, METH_VARARGS},
+    {"GetFormatCanDoMultires", avtDatabaseMetaData_GetFormatCanDoMultires, METH_VARARGS},
     {"SetUseCatchAllMesh", avtDatabaseMetaData_SetUseCatchAllMesh, METH_VARARGS},
     {"GetUseCatchAllMesh", avtDatabaseMetaData_GetUseCatchAllMesh, METH_VARARGS},
     {"SetTimeStepPath", avtDatabaseMetaData_SetTimeStepPath, METH_VARARGS},
@@ -2731,6 +2762,8 @@ PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
         return avtDatabaseMetaData_GetMustAlphabetizeVariables(self, NULL);
     if(strcmp(name, "formatCanDoDomainDecomposition") == 0)
         return avtDatabaseMetaData_GetFormatCanDoDomainDecomposition(self, NULL);
+    if(strcmp(name, "formatCanDoMultires") == 0)
+        return avtDatabaseMetaData_GetFormatCanDoMultires(self, NULL);
     if(strcmp(name, "useCatchAllMesh") == 0)
         return avtDatabaseMetaData_GetUseCatchAllMesh(self, NULL);
     if(strcmp(name, "timeStepPath") == 0)
@@ -2815,6 +2848,8 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtDatabaseMetaData_SetMustAlphabetizeVariables(self, tuple);
     else if(strcmp(name, "formatCanDoDomainDecomposition") == 0)
         obj = avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(self, tuple);
+    else if(strcmp(name, "formatCanDoMultires") == 0)
+        obj = avtDatabaseMetaData_SetFormatCanDoMultires(self, tuple);
     else if(strcmp(name, "useCatchAllMesh") == 0)
         obj = avtDatabaseMetaData_SetUseCatchAllMesh(self, tuple);
     else if(strcmp(name, "timeStepPath") == 0)
