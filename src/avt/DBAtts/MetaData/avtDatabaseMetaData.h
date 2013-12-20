@@ -149,6 +149,7 @@ public:
     void SetMustRepopulateOnStateChange(bool mustRepopulateOnStateChange_);
     void SetMustAlphabetizeVariables(bool mustAlphabetizeVariables_);
     void SetFormatCanDoDomainDecomposition(bool formatCanDoDomainDecomposition_);
+    void SetFormatCanDoMultires(bool formatCanDoMultires_);
     void SetUseCatchAllMesh(bool useCatchAllMesh_);
     void SetTimeStepPath(const std::string &timeStepPath_);
     void SetTimeStepNames(const stringVector &timeStepNames_);
@@ -174,6 +175,7 @@ public:
     bool                           GetMustRepopulateOnStateChange() const;
     bool                           GetMustAlphabetizeVariables() const;
     bool                           GetFormatCanDoDomainDecomposition() const;
+    bool                           GetFormatCanDoMultires() const;
     bool                           GetUseCatchAllMesh() const;
     const std::string              &GetTimeStepPath() const;
           std::string              &GetTimeStepPath();
@@ -411,6 +413,7 @@ public:
         ID_mustRepopulateOnStateChange,
         ID_mustAlphabetizeVariables,
         ID_formatCanDoDomainDecomposition,
+        ID_formatCanDoMultires,
         ID_useCatchAllMesh,
         ID_timeStepPath,
         ID_timeStepNames,
@@ -452,6 +455,7 @@ private:
     bool                     mustRepopulateOnStateChange;
     bool                     mustAlphabetizeVariables;
     bool                     formatCanDoDomainDecomposition;
+    bool                     formatCanDoMultires;
     bool                     useCatchAllMesh;
     std::string              timeStepPath;
     stringVector             timeStepNames;
@@ -484,6 +488,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTDATABASEMETADATA_TMFS "bddibbbbbss*i*i*d*i*sssaa*a*a*a*a*a*a*a*a*a*a*a*bas*i"
+#define AVTDATABASEMETADATA_TMFS "bddibbbbbbss*i*i*d*i*sssaa*a*a*a*a*a*a*a*a*a*a*a*bas*i"
 
 #endif

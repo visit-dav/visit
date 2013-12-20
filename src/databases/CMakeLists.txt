@@ -155,6 +155,9 @@
 #    Eric Brugger, Wed Nov 20 11:16:52 PST 2013
 #    I added the AMRTest reader.
 #
+#    Eric Brugger, Fri Dec 20 12:18:17 PST 2013
+#    I added the MRTest reader.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -373,8 +376,9 @@ IF (NOT WIN32)
     SET(OPTIONAL_DATABASE_PLUGINS
         AMRTest
         Hex
-        Rect
+        MRTest
         PICS_Tester
+        Rect
         VLI
     )
 ENDIF (NOT WIN32)

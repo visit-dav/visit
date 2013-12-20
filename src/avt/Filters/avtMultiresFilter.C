@@ -42,14 +42,19 @@
 
 #include <avtMultiresFilter.h>
 
+#include <avtCallback.h>
 #include <avtDataAttributes.h>
+#include <avtDatabase.h>
+#include <avtDatabaseMetaData.h>
 #include <avtDomainNesting.h>
 #include <avtExtents.h>
 #include <avtMeshMetaData.h>
 #include <avtMetaData.h>
-#include <avtResolutionSelection.h>
+#include <avtMultiresSelection.h>
 #include <avtStructuredDomainNesting.h>
 #include <DebugStream.h>
+
+#include <InvalidFilesException.h>
 
 #include <float.h>
 #include <limits.h>
@@ -67,6 +72,8 @@
 //  Creation:   Tue Oct 25 14:10:30 PDT 2011
 //
 //  Modifications:
+//    Eric Brugger, Fri Dec 20 11:52:45 PST 2013
+//    Add support for doing multi resolution data selections.
 //
 // ****************************************************************************
 
@@ -74,8 +81,10 @@ avtMultiresFilter::avtMultiresFilter(double *frust, double size)
 {
     nDims = 3;
     for (int i = 0; i < 6; i++)
-        frustum[i] = frust[i];
-    smallestCellSize = size;
+        desiredFrustum[i] = frust[i];
+    desiredCellSize = size;
+
+    selID = -1;
 }
 
 // ****************************************************************************
@@ -104,6 +113,10 @@ avtMultiresFilter::~avtMultiresFilter()
 //  Programmer: Eric Brugger
 //  Creation:   Tue Oct 25 14:10:30 PDT 2011
 //
+//  Modifications:
+//    Eric Brugger, Fri Dec 20 11:52:45 PST 2013
+//    Add support for doing multi resolution data selections.
+//
 // ****************************************************************************
 
 void
@@ -111,17 +124,36 @@ avtMultiresFilter::Execute(void)
 {
     avtDataAttributes &dataAtts = GetTypedOutput()->GetInfo().GetAttributes();
 
-    //
-    // Set the multires extents.
-    //
-    avtExtents multiresExtents(nDims);
-    multiresExtents.Set(frustum);
-    dataAtts.SetMultiresExtents(&multiresExtents);
+    if (selID != -1)
+    {
+        //
+        // The database can do multiresolution so just set the multires
+        // extents and cell size so that Visit doesn't complain.
+        //
+        avtExtents *oldExtents = dataAtts.GetMultiresExtents();
+        double oldFrustum[6];
+        oldExtents->CopyTo(oldFrustum);
 
-    //
-    // Set the multires cell size.
-    //
-    dataAtts.SetMultiresCellSize(cellSize);
+        avtExtents multiresExtents(nDims);
+        multiresExtents.Set(oldFrustum);
+        dataAtts.SetMultiresExtents(&multiresExtents);
+
+        double oldCellSize;
+        oldCellSize = dataAtts.GetMultiresCellSize();
+        dataAtts.SetMultiresCellSize(oldCellSize);
+    }
+    else
+    {
+        //
+        // The database can't do multiresolution so set the multires
+        // extents and cell size using the information from this class.
+        //
+        avtExtents multiresExtents(nDims);
+        multiresExtents.Set(desiredFrustum);
+        dataAtts.SetMultiresExtents(&multiresExtents);
+
+        dataAtts.SetMultiresCellSize(actualCellSize);
+    }
 
     //
     // Copy the input to the output.
@@ -135,10 +167,14 @@ avtMultiresFilter::Execute(void)
 //
 //  Purpose:
 //    Modify the contract to only serve up a subset of the chunks based on the
-//    view frustum and the smallest cell size.
+//    view frustum and the desired cell size.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Tue Oct 25 14:10:30 PDT 2011
+//
+//  Modifications:
+//    Eric Brugger, Fri Dec 20 11:52:45 PST 2013
+//    Add support for doing multi resolution data selections.
 //
 // ****************************************************************************
 
@@ -154,12 +190,12 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     dataAtts.GetOriginalSpatialExtents()->CopyTo(extents);
 
     //
-    // If the frustum is invalid, set it from the extents.
+    // If the desired frustum is invalid, set it from the extents.
     //
-    if (frustum[0] == DBL_MAX && frustum[1] == -DBL_MAX)
+    if (desiredFrustum[0] == DBL_MAX && desiredFrustum[1] == -DBL_MAX)
     {
         for (int i = 0; i < 6; i++)
-            frustum[i] = extents[i];
+            desiredFrustum[i] = extents[i];
     }
 
     //
@@ -167,6 +203,26 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     //
     if (nDims != 2)
         return contract;
+
+    //
+    // If the format can do multires then add a multi resolution data
+    // selection to the contract and return.
+    //
+    std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+    if (*dbp == NULL)
+        EXCEPTION1(InvalidFilesException, db.c_str());
+    avtDatabaseMetaData *dbmd = dbp->GetMetaData(0,true,true,false);
+
+    if (dbmd->GetFormatCanDoMultires())
+    {
+        avtMultiresSelection *selection = new avtMultiresSelection;
+        selection->SetDesiredFrustum(desiredFrustum);
+        selection->SetDesiredCellSize(desiredCellSize);
+        selID = contract->GetDataRequest()->AddDataSelection(selection);
+
+        return contract;
+    }
 
     //
     // Lookup the domain level information. If it gives this information,
@@ -237,22 +293,22 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
         {
             patchDx = (extents[i*2+1] - extents[i*2]) / (topLogicalWidth[i] * ratios[i]);
             patchDiag += patchDx * patchDx;
-            frustumDx = (frustum[i*2+1] - frustum[i*2]);
+            frustumDx = (desiredFrustum[i*2+1] - desiredFrustum[i*2]);
             frustumDiag += frustumDx * frustumDx;
             double min, max;
             min = double(logicalExtents[i]) * patchDx;
             max = (double(logicalExtents[i+3]) + 1.) * patchDx;
-            if (max < frustum[i*2] || min > frustum[i*2+1])
+            if (max < desiredFrustum[i*2] || min > desiredFrustum[i*2+1])
                 visible = false;
         }
         patchDiag = sqrt(patchDiag);
         frustumDiag = sqrt(frustumDiag);
         double ratio = patchDiag / frustumDiag;
-        if (visible && ratio < smallestCellSize)
+        if (visible && ratio < desiredCellSize)
         {
             maxPatchDiag = patchDiag > maxPatchDiag ? patchDiag : maxPatchDiag;
         }
-        if (ratio < smallestCellSize)
+        if (ratio < desiredCellSize)
             visible = false;
 
         //
@@ -266,7 +322,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
             nVisible++;
         }
     }
-    cellSize = maxPatchDiag;
+    actualCellSize = maxPatchDiag;
 
     contract->GetDataRequest()->GetRestriction()->RestrictDomains(domain_list);
 

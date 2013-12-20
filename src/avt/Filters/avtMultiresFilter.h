@@ -49,6 +49,8 @@
 
 class vtkDataSet;
 
+class avtMultiresSelection;
+
 // ****************************************************************************
 //  Class: avtMultiresFilter
 //
@@ -60,6 +62,8 @@ class vtkDataSet;
 //  Creation:   Tue Oct 25 14:04:58 PDT 2011
 //
 //  Modifications:
+//    Eric Brugger, Fri Dec 20 11:50:18 PST 2013
+//    Add support for doing multi resolution data selections.
 //
 // ****************************************************************************
 
@@ -74,9 +78,11 @@ class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 
   protected:
     int                    nDims;
-    double                 frustum[6];
-    double                 smallestCellSize;
-    double                 cellSize;
+    double                 desiredFrustum[6];
+    double                 desiredCellSize;
+    double                 actualCellSize;
+
+    int                    selID;
 
     virtual void           Execute(void);
 

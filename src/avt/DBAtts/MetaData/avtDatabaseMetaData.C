@@ -84,6 +84,7 @@ void avtDatabaseMetaData::Init()
     mustRepopulateOnStateChange = false;
     mustAlphabetizeVariables = true;
     formatCanDoDomainDecomposition = false;
+    formatCanDoMultires = false;
     useCatchAllMesh = false;
     isSimulation = false;
     replacementMask = -65;
@@ -118,6 +119,7 @@ void avtDatabaseMetaData::Copy(const avtDatabaseMetaData &obj)
     mustRepopulateOnStateChange = obj.mustRepopulateOnStateChange;
     mustAlphabetizeVariables = obj.mustAlphabetizeVariables;
     formatCanDoDomainDecomposition = obj.formatCanDoDomainDecomposition;
+    formatCanDoMultires = obj.formatCanDoMultires;
     useCatchAllMesh = obj.useCatchAllMesh;
     timeStepPath = obj.timeStepPath;
     timeStepNames = obj.timeStepNames;
@@ -623,6 +625,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
             (mustRepopulateOnStateChange == obj.mustRepopulateOnStateChange) &&
             (mustAlphabetizeVariables == obj.mustAlphabetizeVariables) &&
             (formatCanDoDomainDecomposition == obj.formatCanDoDomainDecomposition) &&
+            (formatCanDoMultires == obj.formatCanDoMultires) &&
             (useCatchAllMesh == obj.useCatchAllMesh) &&
             (timeStepPath == obj.timeStepPath) &&
             (timeStepNames == obj.timeStepNames) &&
@@ -801,6 +804,7 @@ avtDatabaseMetaData::SelectAll()
     Select(ID_mustRepopulateOnStateChange,    (void *)&mustRepopulateOnStateChange);
     Select(ID_mustAlphabetizeVariables,       (void *)&mustAlphabetizeVariables);
     Select(ID_formatCanDoDomainDecomposition, (void *)&formatCanDoDomainDecomposition);
+    Select(ID_formatCanDoMultires,            (void *)&formatCanDoMultires);
     Select(ID_useCatchAllMesh,                (void *)&useCatchAllMesh);
     Select(ID_timeStepPath,                   (void *)&timeStepPath);
     Select(ID_timeStepNames,                  (void *)&timeStepNames);
@@ -1018,6 +1022,51 @@ avtDatabaseMetaData::SetFormatCanDoDomainDecomposition(bool can)
     formatCanDoDomainDecomposition = can;
 }
 
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetFormatCanDoMultires
+//
+//  Purpose:
+//     Sets flag indicating that format can provide multiple resolutions
+//     of the data. This means all meshes should have numBlocks set to 1.
+//     Upon each attempt to get data from the database, the format can decide
+//     what resolution of the data to provide and how to decompose the data
+//     across processors. This also means that when VisIt "load-balances"
+//     blocks (i.e. domains) across processors, it will do so by assigning
+//     the one and only block to each and every processor. It is up to the
+//     plugin to decide which portion of the whole it will actually return
+//     in a request to GetMesh(), GetVar(), ...
+//
+//  Programmer:  Eric Brugger
+//  Creation:    December 20, 2013
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetFormatCanDoMultires(bool can)
+{
+    if (can)
+    {
+        // see if there are any meshes with other than a single block
+        bool someMeshesHaveOtherThanOneBlock = false;
+        for (int i = 0; i < GetNumMeshes(); i++)
+        {
+            if (GetMeshes(i).numBlocks != 1)
+            {
+                someMeshesHaveOtherThanOneBlock = true;
+                break;
+            }
+        }
+
+        if (someMeshesHaveOtherThanOneBlock)
+        {
+            EXCEPTION1(ImproperUseException, "Format cannot provide "
+                "multiple resolutions of the data with meshes having other "
+                "than a single block");
+        }
+    }
+
+    formatCanDoMultires = can;
+}
+
 void
 avtDatabaseMetaData::SetUseCatchAllMesh(bool useCatchAllMesh_)
 {
@@ -1173,6 +1222,12 @@ bool
 avtDatabaseMetaData::GetFormatCanDoDomainDecomposition() const
 {
     return formatCanDoDomainDecomposition;
+}
+
+bool
+avtDatabaseMetaData::GetFormatCanDoMultires() const
+{
+    return formatCanDoMultires;
 }
 
 bool

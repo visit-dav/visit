@@ -61,6 +61,7 @@
 #include <avtExtents.h>
 #include <avtIOInformation.h>
 #include <avtIntervalTree.h>
+#include <avtMultiresSelection.h>
 #include <avtSIL.h>
 
 #include <DebugStream.h>
@@ -792,6 +793,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Tue Oct 23 14:43:37 PDT 2012
 //    Mark the zones and nodes as invalidated if selections were applied.
 //
+//    Eric Brugger, Fri Dec 20 11:44:53 PST 2013
+//    Set the multi resolution data selection information into the meta data.
+//
 // ****************************************************************************
 
 void
@@ -1083,6 +1087,30 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         }
     }
     atts.SetActiveVariable(var);
+
+    //
+    // Transfer the multi resolution data selection information to the 
+    // avtDataAttributes.
+    //
+    if (*spec != NULL)
+    {
+        vector<avtDataSelection_p> selList = spec->GetAllDataSelections();
+        for (int i = 0; i < selList.size(); i++)
+        {
+            if (string(selList[i]->GetType()) == "Multi Resolution Data Selection")
+            {
+                avtMultiresSelection *sel= (avtMultiresSelection*)*(selList[i]);
+                double frustum[6];
+                sel->GetActualFrustum(frustum);
+                double cellSize = sel->GetActualCellSize();
+
+                avtExtents multiresExtents(3);
+                multiresExtents.Set(frustum);
+                atts.SetMultiresExtents(&multiresExtents);
+                atts.SetMultiresCellSize(cellSize);
+            }
+        }
+    }
 
     //
     // SPECIAL CASE:
