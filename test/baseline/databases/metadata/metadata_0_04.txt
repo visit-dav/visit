@@ -6,6 +6,7 @@ isVirtualDatabase = 0
 mustRepopulateOnStateChange = 0
 mustAlphabetizeVariables = 1
 formatCanDoDomainDecomposition = 0
+formatCanDoMultires = 0
 useCatchAllMesh = 0
 timeStepPath = ""
 timeStepNames = ("VISIT_TOP_DIR/data/shapefile_test_data/alameda/tgr06001lkA.shp")

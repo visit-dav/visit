@@ -6,6 +6,7 @@ isVirtualDatabase = 0
 mustRepopulateOnStateChange = 1
 mustAlphabetizeVariables = 1
 formatCanDoDomainDecomposition = 0
+formatCanDoMultires = 0
 useCatchAllMesh = 0
 timeStepPath = ""
 timeStepNames = ("VISIT_TOP_DIR/data/samrai_test_data/mats-par3/dumps.visit")
