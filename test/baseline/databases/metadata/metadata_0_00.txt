@@ -6,6 +6,7 @@ isVirtualDatabase = 0
 mustRepopulateOnStateChange = 0
 mustAlphabetizeVariables = 1
 formatCanDoDomainDecomposition = 0
+formatCanDoMultires = 0
 useCatchAllMesh = 0
 timeStepPath = ""
 timeStepNames = ("VISIT_TOP_DIR/data/silo_hdf5_test_data/noise.silo")

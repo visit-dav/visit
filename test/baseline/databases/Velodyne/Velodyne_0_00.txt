@@ -6,6 +6,7 @@ isVirtualDatabase = 1
 mustRepopulateOnStateChange = 0
 mustAlphabetizeVariables = 1
 formatCanDoDomainDecomposition = 0
+formatCanDoMultires = 0
 useCatchAllMesh = 0
 timeStepPath = "VISIT_TOP_DIR/data/Velodyne_test_data/"
 timeStepNames = ("pelh.1.vld", "pelh.2.vld", "pelh.3.vld", "pelh.4.vld", "pelh.5.vld", "pelh.6.vld", "pelh.7.vld", "pelh.8.vld", "pelh.9.vld", "pelh.10.vld", "pelh.11.vld", "pelh.12.vld", "pelh.13.vld", "pelh.14.vld", "pelh.15.vld", "pelh.16.vld", "pelh.17.vld", "pelh.18.vld", "pelh.19.vld", "pelh.20.vld", "pelh.21.vld", "pelh.22.vld", "pelh.23.vld")

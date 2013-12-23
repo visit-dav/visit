@@ -6,6 +6,7 @@ isVirtualDatabase = 1
 mustRepopulateOnStateChange = 0
 mustAlphabetizeVariables = 1
 formatCanDoDomainDecomposition = 0
+formatCanDoMultires = 0
 useCatchAllMesh = 0
 timeStepPath = "VISIT_TOP_DIR/data/silo_hdf5_test_data/"
 timeStepNames = ("wave0000.silo", "wave0010.silo", "wave0020.silo", "wave0030.silo", "wave0040.silo", "wave0050.silo", "wave0060.silo", "wave0070.silo", "wave0080.silo", "wave0090.silo", "wave0100.silo", "wave0110.silo", "wave0120.silo", "wave0130.silo", "wave0140.silo", "wave0150.silo", "wave0160.silo", "wave0170.silo", "wave0180.silo", "wave0190.silo", "wave0200.silo", "wave0210.silo", "wave0220.silo", "wave0230.silo", "wave0240.silo", "wave0250.silo", "wave0260.silo", "wave0270.silo", "wave0280.silo", "wave0290.silo", "wave0300.silo", "wave0310.silo", "wave0320.silo", "wave0330.silo", "wave0340.silo", "wave0350.silo", "wave0360.silo", "wave0370.silo", "wave0380.silo", "wave0390.silo", "wave0400.silo", "wave0410.silo", "wave0420.silo", "wave0430.silo", "wave0440.silo", "wave0450.silo", "wave0460.silo", "wave0470.silo", "wave0480.silo", "wave0490.silo", "wave0500.silo", "wave0510.silo", "wave0520.silo", "wave0530.silo", "wave0540.silo", "wave0550.silo", "wave0560.silo", "wave0570.silo", "wave0580.silo", "wave0590.silo", "wave0600.silo", "wave0610.silo", "wave0620.silo", "wave0630.silo", "wave0640.silo", "wave0650.silo", "wave0660.silo", "wave0670.silo", "wave0680.silo", "wave0690.silo", "wave0700.silo")
