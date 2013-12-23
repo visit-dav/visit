@@ -146,6 +146,7 @@ private:
     void UpdateSelectedFileList(void);
     void UpdateRemoveFileButton(void);
     void UpdateSelectAllButton(void);
+    bool eventFilter(QObject *o, QEvent *e);
 
 private slots:
     void okClicked();

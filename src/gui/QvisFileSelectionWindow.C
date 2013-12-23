@@ -48,6 +48,7 @@
 #include <QPushButton>
 #include <QSplitter>
 #include <QWidget>
+#include <QKeyEvent>
 
 #include <QvisFileSelectionWindow.h>
 #include <QvisRecentPathRemovalWindow.h>
@@ -201,6 +202,13 @@ QvisFileSelectionWindow::~QvisFileSelectionWindow()
 //   Cyrus Harrison, Thu Dec  4 09:13:50 PST 2008
 //   Removed unnecssary todo comment.
 //
+//   Cyrus Harrison, Fri Dec 20 12:48:32 PST 2013
+//   Using Hari's fix from the File Open Window to fix some GUI issues on OSX.
+//
+//   Cyrus Harrison, Fri Dec 20 12:48:32 PST 2013
+//   Using Brad's fix from file open window: 
+//    Pass central to the progress callback on newer Qt's.
+//
 // ****************************************************************************
 
 void
@@ -245,11 +253,13 @@ QvisFileSelectionWindow::CreateWindowContents()
     
     connect(fileList, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(selectFileDblClick(QListWidgetItem *)));
-    connect(fileList, SIGNAL(itemActivated(QListWidgetItem *)),
-            this, SLOT(selectFileReturnPressed(QListWidgetItem *)));
+    // connect(fileList, SIGNAL(itemActivated(QListWidgetItem *)),
+    //        this, SLOT(selectFileReturnPressed(QListWidgetItem *)));
     connect(fileList, SIGNAL(itemSelectionChanged()),
             this, SLOT(selectFileChanged()));
-    
+
+    fileList->installEventFilter(this);
+
     //
     // Create the selection buttons.
     //
@@ -315,6 +325,15 @@ QvisFileSelectionWindow::CreateWindowContents()
     // Get the applied file list from the file server and store it in
     // the intermediateFile list.
     intermediateFileList = fileServer->GetAppliedFileList();
+    
+#if defined(Q_WS_MACX) && QT_VERSION >= 0x040800
+    // On Mac with Qt 4.8, we run into problems with the window not
+    // coming back fully after calling setEnabled(true) on the window.
+    // As a workaround, we disable the central widget instead of the
+    // window itself. This lets the host, path, and filter widgets work
+    // after we connected to a remote computer.
+    fileServer->SetProgressCallback(ProgressCallback, (void *)central);
+#endif
 }
 
 // ****************************************************************************
@@ -857,13 +876,16 @@ QvisFileSelectionWindow::selectFile()
 // Creation:   Fri Jul 30 11:03:49 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Dec 20 12:48:32 PST 2013
+//   Using Hari's fix from the File Open Window to fix some GUI issues on OSX.
+//
 // ****************************************************************************
 
 void
 QvisFileSelectionWindow::selectFileReturnPressed(QListWidgetItem *)
 {
-    selectFile();
+    //selectFile();
+    okClicked();
 }
 
 // ****************************************************************************
@@ -1121,3 +1143,33 @@ QvisFileSelectionWindow::show()
     refreshFiles();
     UpdateSelectedFileList();
 }
+
+// ****************************************************************************
+// Method: QVisFileSelectionWindow::eventFilter
+//
+// Purpose: 
+//   Event filter that solves gui issue on osx. (From Hari's File Open Fix)
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Dec 20 09:59:45 PST 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+QvisFileSelectionWindow::eventFilter(QObject *o, QEvent *e)
+{
+    if(e->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *event = dynamic_cast<QKeyEvent*>(e);
+        if(event != NULL && (event->key() == Qt::Key_Return))
+        {
+            okClicked();
+            return true;
+        }
+    }
+    return false;
+
+}
+
+
