@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #ifndef AVT_MULTIRES_SELECTION_H
-#define AVT_MULTIRES_SELECTION_H 
+#define AVT_MULTIRES_SELECTION_H
 #include <pipeline_exports.h>
 
 #include <ref_ptr.h>
@@ -58,67 +58,34 @@
 //    provided.
 //
 //  Programmer: Eric Brugger
-//  Creation:   December 20, 2013 
+//  Creation:   December 20, 2013
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-class PIPELINE_API avtMultiresSelection : public avtDataSelection 
+class PIPELINE_API avtMultiresSelection : public avtDataSelection
 {
   public:
                             avtMultiresSelection() {} ;
     virtual                ~avtMultiresSelection() {} ;
 
     virtual const char *    GetType() const
-                                { return "Multi Resolution Data Selection"; }; 
-    virtual std::string     DescriptionString(void)
-                                { char str[1024];
-                                  sprintf(str, "avtMultiresSelection:%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f",
-                                      desiredFrustum[0], desiredFrustum[1],
-                                      desiredFrustum[2], desiredFrustum[3],
-                                      desiredFrustum[4], desiredFrustum[5],
-                                      actualFrustum[0], actualFrustum[1],
-                                      actualFrustum[2], actualFrustum[3],
-                                      actualFrustum[4], actualFrustum[5],
-                                      desiredCellSize, actualCellSize); };
+                                { return "Multi Resolution Data Selection"; }
+    virtual std::string     DescriptionString(void);
 
-    void                    SetDesiredFrustum(const double frust[6])
-                                { desiredFrustum[0] = frust[0];
-                                  desiredFrustum[1] = frust[1];
-                                  desiredFrustum[2] = frust[2];
-                                  desiredFrustum[3] = frust[3];
-                                  desiredFrustum[4] = frust[4];
-                                  desiredFrustum[5] = frust[5]; };
-    void                    GetDesiredFrustum(double frust[6]) const
-                                { frust[0] = desiredFrustum[0];
-                                  frust[1] = desiredFrustum[1];
-                                  frust[2] = desiredFrustum[2];
-                                  frust[3] = desiredFrustum[3];
-                                  frust[4] = desiredFrustum[4];
-                                  frust[5] = desiredFrustum[5]; };
-    void                    SetActualFrustum(const double frust[6])
-                                { actualFrustum[0] = frust[0];
-                                  actualFrustum[1] = frust[1];
-                                  actualFrustum[2] = frust[2];
-                                  actualFrustum[3] = frust[3];
-                                  actualFrustum[4] = frust[4];
-                                  actualFrustum[5] = frust[5]; };
-    void                    GetActualFrustum(double frust[6]) const
-                                { frust[0] = actualFrustum[0];
-                                  frust[1] = actualFrustum[1];
-                                  frust[2] = actualFrustum[2];
-                                  frust[3] = actualFrustum[3];
-                                  frust[4] = actualFrustum[4];
-                                  frust[5] = actualFrustum[5]; };
+    void                    SetDesiredFrustum(const double frust[6]);
+    void                    GetDesiredFrustum(double frust[6]) const;
+    void                    SetActualFrustum(const double frust[6]);
+    void                    GetActualFrustum(double frust[6]) const;
     void                    SetDesiredCellSize(double size)
-                                { desiredCellSize = size; };
+                                { desiredCellSize = size; }
     double                  GetDesiredCellSize() const
-                                { return desiredCellSize; };
+                                { return desiredCellSize; }
     void                    SetActualCellSize(double size)
-                                { actualCellSize = size; };
+                                { actualCellSize = size; }
     double                  GetActualCellSize() const
-                                { return actualCellSize; };
+                                { return actualCellSize; }
 
   private:
     double desiredFrustum[6];
@@ -127,6 +94,6 @@ class PIPELINE_API avtMultiresSelection : public avtDataSelection
     double actualCellSize;
 };
 
-typedef ref_ptr<avtMultiresSelection> avtMultiresSelectiont_p;
+typedef ref_ptr<avtMultiresSelection> avtMultiresSelection_p;
 
 #endif

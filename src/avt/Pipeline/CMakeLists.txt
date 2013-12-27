@@ -99,6 +99,7 @@ Data/avtMaterial.C
 Data/avtMaximumIntensityProjectionRF.C
 Data/avtMetaData.C
 Data/avtMixedVariable.C
+Data/avtMultiresSelection.C
 Data/avtNullData.C
 Data/avtOpacityMap.C
 Data/avtOpacityMapSamplePointArbitrator.C
@@ -114,6 +115,7 @@ Data/avtRay.C
 Data/avtRayFunction.C
 Data/avtRelativeValueSamplePointArbitrator.C
 Data/avtResampleSelection.C
+Data/avtResolutionSelection.C
 Data/avtSamplePointArbitrator.C
 Data/avtSamplePoints.C
 Data/avtSpatialBoxSelection.C
