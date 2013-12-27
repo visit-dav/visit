@@ -30,48 +30,17 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                          avtResolutionSelection.h                         //
-// ************************************************************************* //
-#ifndef _AVT_RESOLUTION_SELECTION_H_
-#define _AVT_RESOLUTION_SELECTION_H_
-#include <pipeline_exports.h>
-
-#include "avtDataSelection.h"
+#include "avtResolutionSelection.h"
 
 // ****************************************************************************
-//  Class: avtResolutionSelection
-//
-//  Purpose:
-//
-//    This class is used to communicate a selected resolution from the
-//    VisIt UI.
-//
-//  Programmer: Andrew Foulks <rafoulks@cs.unh.edu>
-//  Creation:   Winter 2009
-//
-//  Modifications:
-//
-//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
-//    Add method DescriptionString.
 //
 // ****************************************************************************
-class PIPELINE_API avtResolutionSelection : public avtDataSelection
+
+std::string
+avtResolutionSelection::DescriptionString()
 {
-public:
-                         avtResolutionSelection() {}
-    virtual              ~avtResolutionSelection() {}
-    // base class api
-    virtual const char*  GetType() const { return "avtResolutionSelection"; }
-    virtual std::string     DescriptionString(void);
-
-    // added functionality
-    virtual void         setResolution(int r) { mResolution = r; }
-    virtual int          resolution() const { return mResolution; }
-
-private:
-    int mResolution;
-};
-
-#endif // _AVT_RESOLUTION_SELECTION_H_
+    char str[1024];  
+    sprintf(str, "avtResolutionSelection:%d", mResolution);
+    return std::string(str);
+}
 
