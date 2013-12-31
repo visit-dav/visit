@@ -443,6 +443,9 @@ class VisitInteractor;
 //    SetMultiresolutionCellSize and GetMultiresolutionCellSize to support
 //    adding a multi resolution display capability for AMR data.
 //
+//    Kathleen Biagas, Tue Dec 31 11:27:50 PST 2013
+//    Added Add/RemoveForegroundStartObserver.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -827,6 +830,9 @@ protected:
     double               GetAverageExternalRenderingTime(void) const;
     void                 DoNextExternalRenderAsVisualQueue(
                              int w, int h, const double *color);
+
+    void                 AddForegroundStartObserver(void) const;
+    void                 RemoveForegroundStartObserver(void) const;
 };
 
 
