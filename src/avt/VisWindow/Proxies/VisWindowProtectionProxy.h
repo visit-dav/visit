@@ -170,6 +170,9 @@ class     VisitInteractor;
 //    Brad Whitlock, Fri Oct 14 16:28:24 PDT 2011
 //    Create mappers vis proxy.
 //
+//    Kathleen Biagas, Tue Dec 31 11:26:30 PST 2013
+//    Added Add/RemoveForegroundStartObserver.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -256,6 +259,9 @@ class VISWINDOW_API VisWindowProtectionProxy
     double              ProxiedGetAverageExternalRenderingTime(void) const;
     void                ProxiedDoNextExternalRenderAsVisualQueue(
                             int w, int h, const double *c);
+
+    void                ProxiedAddForegroundStartObserver(void) const;
+    void                ProxiedRemoveForegroundStartObserver(void) const;
 
 };
 
