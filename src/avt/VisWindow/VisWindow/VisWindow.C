@@ -7217,3 +7217,58 @@ FontAttributes_To_VisWinTextAttributes(const FontAttributes &f)
 
     return atts;
 }
+
+
+// ****************************************************************************
+// Method: VisWindow::AddForegroundStartObserver
+//
+// Purpose: 
+//   Allow the foreground renderer to observe the rendering Start event.
+//
+// Note:       This is needed when the foreground is the only renderer in
+//             the window (as in PostProcessScreenCapture).
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 31, 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::AddForegroundStartObserver() const
+{
+    vtkRenderer *fg = rendering->GetForeground();
+    if (fg != NULL)
+    {
+        fg->AddObserver(vtkCommand::StartEvent, startRenderCallback);
+    }
+}
+
+
+// ****************************************************************************
+// Method: VisWindow::RemoveForegroundStartObserver
+//
+// Purpose: 
+//   Stop the foreground renderer from observing the rendering Start event.
+//
+// Note:       Usually, the background renderer observes the event, so when
+//             the background is available in the render window, we don't
+//             want the foreground also observing.
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 31, 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::RemoveForegroundStartObserver() const
+{
+    vtkRenderer *fg = rendering->GetForeground();
+    if (fg != NULL)
+    {
+        fg->RemoveObserver(startRenderCallback);
+    }
+}
