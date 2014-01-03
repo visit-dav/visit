@@ -75,13 +75,19 @@
 //    Eric Brugger, Fri Dec 20 11:52:45 PST 2013
 //    Add support for doing multi resolution data selections.
 //
+//    Eric Brugger, Thu Jan  2 15:16:28 PST 2014
+//    Add support for 3d multi resolution data selections.
+//
 // ****************************************************************************
 
-avtMultiresFilter::avtMultiresFilter(double *frust, double size)
+avtMultiresFilter::avtMultiresFilter(double *frust2D, double *frust3D,
+    double size)
 {
     nDims = 3;
     for (int i = 0; i < 6; i++)
-        desiredFrustum[i] = frust[i];
+        desiredFrustum2D[i] = frust2D[i];
+    for (int i = 0; i < 6; i++)
+        desiredFrustum3D[i] = frust3D[i];
     desiredCellSize = size;
 
     selID = -1;
@@ -176,16 +182,29 @@ avtMultiresFilter::Execute(void)
 //    Eric Brugger, Fri Dec 20 11:52:45 PST 2013
 //    Add support for doing multi resolution data selections.
 //
+//    Eric Brugger, Thu Jan  2 15:16:28 PST 2014
+//    Add support for 3d multi resolution data selections.
+//
 // ****************************************************************************
 
 avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
 {
     //
-    // Get the spatial extents for the mesh.
+    // Get the desired frustum and the spatial extents for the mesh.
     //
     avtMetaData *md = GetMetaData();
     avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
     nDims = dataAtts.GetSpatialDimension();
+    if (nDims == 2)
+    {
+        for (int i = 0; i < 6; i++)
+            desiredFrustum[i] = desiredFrustum2D[i];
+    }
+    else
+    {
+        for (int i = 0; i < 6; i++)
+            desiredFrustum[i] = desiredFrustum3D[i];
+    }
     double extents[6];
     dataAtts.GetOriginalSpatialExtents()->CopyTo(extents);
 
@@ -197,12 +216,6 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
         for (int i = 0; i < 6; i++)
             desiredFrustum[i] = extents[i];
     }
-
-    //
-    // Currently we are only implemented for 2d, so return if not 2d.
-    //
-    if (nDims != 2)
-        return contract;
 
     //
     // If the format can do multires then add a multi resolution data
