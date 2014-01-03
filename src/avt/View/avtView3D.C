@@ -47,10 +47,8 @@
 #include <avtViewInfo.h>
 #include <View3DAttributes.h>
 
-//
-// Local macros.
-//
-#define max(x,y) ((x) > (y) ? (x) : (y))
+#include <vtkCamera.h>
+#include <vtkMatrix4x4.h>
 
 
 // ****************************************************************************
@@ -380,7 +378,7 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     // number should be as large as possible.  10000 would probably also
     // work, but 100000 would start showing z buffering artifacts.
     //
-    viewInfo.nearPlane = max (nearPlane + distance, (farPlane - nearPlane) / 5000.);
+    viewInfo.nearPlane = std::max(nearPlane + distance, (farPlane - nearPlane) / 5000.);
     viewInfo.farPlane = farPlane + distance;
 
     //
@@ -503,4 +501,99 @@ avtView3D::SetToView3DAttributes(View3DAttributes *view3DAtts) const
     view3DAtts->SetAxis3DScaleFlag(axis3DScaleFlag);
     view3DAtts->SetAxis3DScales(axis3DScales);
     view3DAtts->SetShear(shear);
+}
+
+// ****************************************************************************
+//  Method: avtView3D::GetFrustum
+//
+//  Purpose: 
+//    Returns the view frustum given the aspect ratio of the window width
+//    to height.
+//
+//  Arguments:
+//    frustum    : The returned frustum.
+//    aspect     : The aspect ratio of the window width to height.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Jan  2 15:05:55 PST 2014
+//
+// ****************************************************************************
+
+void
+avtView3D::GetFrustum(double *frustum, double aspect) const
+{
+    //
+    // Get the inverse of the composite projection transform matrix.
+    //
+    avtViewInfo viewInfo;
+    SetViewInfoFromView(viewInfo);
+    vtkCamera *vtkcam = vtkCamera::New();
+    viewInfo.SetCameraFromView(vtkcam);
+    double matrix[4][4];
+    vtkMatrix4x4::DeepCopy(
+        *matrix,
+        vtkcam->GetCompositeProjectionTransformMatrix(aspect, -1, +1));
+    vtkMatrix4x4::Invert(*matrix,*matrix);
+
+    //
+    // Transform the corners in normalized device coordinates to
+    // world coordinates.
+    //
+    double c[8][4];
+    c[0][0] = -1.; c[0][1] = -1.; c[0][2] = -1.; c[0][3] = 1.;
+    c[1][0] = +1.; c[1][1] = -1.; c[1][2] = -1.; c[1][3] = 1.;
+    c[2][0] = +1.; c[2][1] = +1.; c[2][2] = -1.; c[2][3] = 1.;
+    c[3][0] = -1.; c[3][1] = +1.; c[3][2] = -1.; c[3][3] = 1.;
+    c[4][0] = -1.; c[4][1] = -1.; c[4][2] = +1.; c[4][3] = 1.;
+    c[5][0] = +1.; c[5][1] = -1.; c[5][2] = +1.; c[5][3] = 1.;
+    c[6][0] = +1.; c[6][1] = +1.; c[6][2] = +1.; c[6][3] = 1.;
+    c[7][0] = -1.; c[7][1] = +1.; c[7][2] = +1.; c[7][3] = 1.;
+    for (int i = 0; i < 8; i++)
+    {
+        vtkMatrix4x4::MultiplyPoint(*matrix, c[i], c[i]);
+        c[i][0] /= c[i][3]; c[i][1] /= c[i][3]; c[i][2] /= c[i][3];
+    }
+
+    //
+    // Calculate the frustum (an AABB (axis aligned bounding box)) from
+    // the corners.
+    //
+    double xmin, xmax, ymin, ymax, zmin, zmax; 
+    xmin = c[0][0]; xmax = c[0][0];
+    ymin = c[0][1]; ymax = c[0][1];
+    zmin = c[0][2]; zmax = c[0][2];
+    for (int i = 1; i < 8; i++)
+    {
+        xmin = std::min(xmin, c[i][0]);
+        xmax = std::max(xmax, c[i][0]);
+        ymin = std::min(ymin, c[i][1]);
+        ymax = std::max(ymax, c[i][1]);
+        zmin = std::min(zmin, c[i][2]);
+        zmax = std::max(zmax, c[i][2]);
+    }
+    
+    frustum[0] = xmin;
+    frustum[1] = xmax;
+    frustum[2] = ymin;
+    frustum[3] = ymax;
+    frustum[4] = zmin;
+    frustum[5] = zmax;
+
+#if 0
+    cerr << "frustum=" << frustum[0] << "," << frustum[1] << ","
+                       << frustum[2] << "," << frustum[3] << ","
+                       << frustum[4] << "," << frustum[5] << endl;
+
+    //
+    // Code that gets the plane equations of the 6 frustum planes.
+    // I'm leaving it here in case I decide I later want to use
+    // that instead of an AABB for the frustum.
+    avtViewInfo viewInfo;
+    SetViewInfoFromView(viewInfo);
+    vtkCamera *vtkcam = vtkCamera::New();
+    viewInfo.SetCameraFromView(vtkcam);
+    double planes[24];
+    vtkcam->GetFrustumPlanes(aspect, planes);
+    vtkcam->Delete();
+#endif
 }

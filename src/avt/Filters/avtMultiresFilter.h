@@ -65,12 +65,15 @@ class avtMultiresSelection;
 //    Eric Brugger, Fri Dec 20 11:50:18 PST 2013
 //    Add support for doing multi resolution data selections.
 //
+//    Eric Brugger, Thu Jan  2 15:15:54 PST 2014
+//    Add support for 3d multi resolution data selections.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 {
   public:
-                           avtMultiresFilter(double *, double);
+                           avtMultiresFilter(double *, double *, double);
     virtual               ~avtMultiresFilter();
 
     virtual const char    *GetType(void)  {return "avtMultiresFilter";};
@@ -78,6 +81,8 @@ class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 
   protected:
     int                    nDims;
+    double                 desiredFrustum2D[6];
+    double                 desiredFrustum3D[6];
     double                 desiredFrustum[6];
     double                 desiredCellSize;
     double                 actualCellSize;

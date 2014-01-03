@@ -79,6 +79,10 @@ class View3DAttributes;
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
 //
+//    Eric Brugger, Thu Jan  2 15:04:00 PST 2014
+//    I added GetFrustum to add support for 3d multi resolution data
+//    selections.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView3D
@@ -109,6 +113,8 @@ struct AVTVIEW_API avtView3D
 
     void            SetFromView3DAttributes(const View3DAttributes *);
     void            SetToView3DAttributes(View3DAttributes *) const;
+
+    void            GetFrustum(double *, double) const;
 };
 
 

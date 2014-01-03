@@ -10029,6 +10029,8 @@ ViewerPlotList::PermitsLogViewScaling(WINDOW_MODE wm)
 // Creation:   Fri Oct 28 09:54:23 PDT 2011
 //
 // Modifications:
+//    Eric Brugger, Thu Jan  2 15:19:29 PST 2014
+//    I added support for 3d multi resolution data selections.
 //   
 // ****************************************************************************
 
@@ -10069,7 +10071,10 @@ ViewerPlotList::ShouldRefineData(double smallestCellSize) const
     else if (window->GetWindowMode() == WINMODE_3D)
     {
         const avtView3D &view3D = window->GetView3D();
-        return false;
+        int width, height;
+        window->GetSize(width, height);
+        double aspect = double(width) / double(height);
+        view3D.GetFrustum(fustrum, aspect);
     }
     else
     {
