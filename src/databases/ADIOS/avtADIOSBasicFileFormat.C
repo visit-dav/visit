@@ -71,7 +71,7 @@
 // ****************************************************************************
 
 bool
-avtADIOSBasicFileFormat::Identify(ADIOSFileObject *f)
+avtADIOSBasicFileFormat::Identify(const char *fname)
 {
     //Any bp file is a basic file format.
     return true;
@@ -146,6 +146,7 @@ avtADIOSBasicFileFormat::~avtADIOSBasicFileFormat()
 int
 avtADIOSBasicFileFormat::GetNTimesteps()
 {
+  cout<<"NSTEPS: "<<fileObj->NumTimeSteps()<<endl;
     return fileObj->NumTimeSteps();
 }
 
@@ -163,7 +164,12 @@ avtADIOSBasicFileFormat::GetNTimesteps()
 void
 avtADIOSBasicFileFormat::GetCycles(std::vector<int> &cycles)
 {
-    fileObj->GetCycles(cycles);
+  int nt = fileObj->NumTimeSteps();
+  cycles.resize(nt);
+  for (int i = 0; i < nt; i++)
+        cycles[i] = i;
+  
+  cout<<"cycles sz= "<<cycles.size()<<endl;
 }
 
 
@@ -292,6 +298,7 @@ vtkDataSet *
 avtADIOSBasicFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
     debug1 << "avtADIOSBasicFileFormat::GetMesh " << meshname << endl;
+    cout << "avtADIOSBasicFileFormat::GetMesh " << meshname << " "<<domain<<" "<<timestate<<endl;
     Initialize();
 
     // Look it up in the mesh table.
@@ -302,7 +309,6 @@ avtADIOSBasicFileFormat::GetMesh(int timestate, int domain, const char *meshname
         grid = CreateUniformGrid(m->second.start,
                                  m->second.count);
         grid->Register(NULL);
-        
         return grid;
     }
 
@@ -313,8 +319,8 @@ avtADIOSBasicFileFormat::GetMesh(int timestate, int domain, const char *meshname
         vtkRectilinearGrid *grid = NULL;
         grid = CreateUniformGrid(v->second.start,
                                  v->second.count);
-        vtkFloatArray *vals = NULL;
-        if (!fileObj->ReadVariable(meshname, timestate, &vals))
+        vtkDataArray *vals = NULL;
+        if (!fileObj->ReadVariable(meshname, timestate, 0, &vals))
             EXCEPTION1(InvalidVariableException, meshname);
         vals->SetName(meshname);
         grid->GetPointData()->SetScalars(vals);
@@ -349,9 +355,10 @@ vtkDataArray *
 avtADIOSBasicFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
     debug1 << "avtADIOSBasicFileFormat::GetVar " << varname << endl;
+    cout << "avtADIOSBasicFileFormat::GetVar " << varname << " "<<timestate<<" "<<domain<<endl;
     Initialize();
-    vtkFloatArray *arr = NULL;
-    if (! fileObj->ReadVariable(varname, timestate, &arr))
+    vtkDataArray *arr = NULL;
+    if (! fileObj->ReadVariable(varname, timestate, 0, &arr))
         EXCEPTION1(InvalidVariableException, varname);
         
     return arr;
@@ -401,10 +408,7 @@ avtADIOSBasicFileFormat::GenerateMeshName(const ADIOSVar &v)
     std::string meshname = "mesh_";
 
     for (int i=0; i<v.dim; i++)
-    {
-        if (i != v.timedim)
-            dims.insert(dims.begin(), v.global[i]);
-    }
+        dims.insert(dims.begin(), v.global[i]);
 
     for (int i=0; i <dims.size(); i++)
     {
@@ -431,6 +435,7 @@ avtADIOSBasicFileFormat::GenerateMeshName(const ADIOSVar &v)
 void
 avtADIOSBasicFileFormat::Initialize()
 {
+  cout<<"INitialize()"<<endl;
     if (! fileObj->Open())
         EXCEPTION0(ImproperUseException);
 
@@ -558,7 +563,7 @@ avtADIOSBasicFileFormat::DoDomainDecomposition()
         }
     }
 
-    //Set each mesh.
+        //Set each mesh.v
     std::map<std::string, meshInfo>::iterator m;
     for (m = meshes.begin(); m != meshes.end(); m++)
     {
@@ -604,7 +609,7 @@ avtADIOSBasicFileFormat::CreateUniformGrid(const uint64_t *start,
 {
     vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
     vtkFloatArray *coords[3] = {NULL,NULL,NULL};
-    
+
     int dims[3] = {1,1,1};
     for (int i = 0; i<3; i++)
     {
@@ -616,13 +621,8 @@ avtADIOSBasicFileFormat::CreateUniformGrid(const uint64_t *start,
 
         int x = (int)start[i];
 
-        debug5<<"I= "<<i<<endl;
-        for (int j = 0; j < count[i]; j++, x++)
-        {
+        for (int j = 0; j < dims[i]; j++, x++)
             data[j] = (float)x;
-            debug5<<"  "<<x;
-        }
-        debug5<<endl;
     }
     grid->SetDimensions(dims);
     grid->SetXCoordinates(coords[0]);

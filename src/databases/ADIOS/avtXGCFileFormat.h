@@ -66,11 +66,12 @@ class vtkRectilinearGrid;
 class avtXGCFileFormat : public avtMTMDFileFormat
 {
   public:
-    static bool        Identify(ADIOSFileObject *);
+    static bool        Identify(const char *fname);
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
     static std::string CreateMeshName(const std::string &filename);
+    static std::string CreateDiagName(const std::string &filename);
     static bool IsFieldPFile(ADIOSFileObject *f);
     static bool IsFieldIFile(ADIOSFileObject *f);
     
@@ -104,13 +105,17 @@ class avtXGCFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
-    ADIOSFileObject *file, *meshFile;
+    ADIOSFileObject *file, *meshFile, *diagFile;
     std::map<std::string, std::string> labelToVar;
     
     bool             initialized;
+    int numNodes, numTris, numPhi;
 
 
     void                   Initialize();
+    vtkDataArray          *GetTurbulence(int ts, int dom);
+    vtkDataArray          *GetSep();
+    vtkDataSet            *GetSepMesh();
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
