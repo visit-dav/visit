@@ -49,12 +49,18 @@
 #ifdef PARALLEL
 #include <mpi.h>
 #else
+extern "C"
+{
+#include <mpidummy.h>
+}
 #define _NOMPI
 #endif
 
 extern "C"
 {
 #include <adios_read.h>
+
+extern void adios_read_bp_reset_dimension_order (const ADIOS_FILE *fp, int is_fortran);
 }
 
 class ADIOSVar;
@@ -101,8 +107,6 @@ class ADIOSFileObject
     std::string Filename() const {return fileName;}
     int NumTimeSteps();
     void GetCycles(std::vector<int> &cycles);
-    void GetCycles(std::string &varNm, std::vector<int> &cycles);
-    void GetTimes(std::string &varNm, std::vector<double> &times);
 
     //Attributes
     bool GetIntAttr(const std::string &nm, int &val);
@@ -122,23 +126,27 @@ class ADIOSFileObject
     //Variables.
     bool ReadVariable(const std::string &nm,
                       int ts,
+                      int dom,
                       vtkDataArray **array);
     bool ReadVariable(const std::string &nm,
                       int ts,
+                      int dom,
                       vtkFloatArray **array);
     
     std::map<std::string, ADIOSVar> variables;
     std::map<std::string, ADIOSScalar> scalars;
     std::map<std::string, ADIOSAttr> attributes;
 
+    void SetResetDimensionOrder() {resetDimensionOrder = true;}
+    void UnsetResetDimensionOrder() {resetDimensionOrder = false;}
+
   protected:
     std::string fileName;
 
     ADIOS_FILE *fp;
-    ADIOS_GROUP **gps;
-
-    void OpenGroup(int grpIdx);
-    void CloseGroup(int grpIdx);
+    int numTimeSteps;
+    bool resetDimensionOrder;
+    void ResetDimensionOrder() {adios_read_bp_reset_dimension_order(fp, 0);}
     
     static vtkPoints *AllocatePoints(ADIOS_DATATYPES &t);
     static vtkDataArray *AllocateArray(ADIOS_DATATYPES &t);
@@ -160,13 +168,13 @@ class ADIOSVar
 {
   public:
     ADIOSVar();
-    ADIOSVar(const std::string &nm, int grpIdx, ADIOS_VARINFO *avi);
+    ADIOSVar(const std::string &nm, ADIOS_VARINFO *avi);
     ~ADIOSVar() {}
 
     void GetReadArrays(int ts, uint64_t *s, uint64_t *c, int *ntuples);
     
     ADIOS_DATATYPES type;
-    int dim, groupIdx, varid, timedim;
+    int dim, varIdx, nTimeSteps;
     uint64_t start[3], count[3], global[3];
     std::string name;
     double extents[2];
@@ -298,8 +306,7 @@ class ADIOSAttr : public ADIOSScalar
 inline std::ostream& operator<<(std::ostream& out, const ADIOSVar &v)
 {
     out<<"ADIOSVar: "<<v.name<<endl;
-    out<<"  dim= "<<v.dim<<" timedim= "<<v.timedim<<endl;
-    out<<"  type= "<<v.type<<" gIdx, vId= "<<v.groupIdx<<" "<<v.varid<<endl;
+    out<<"  dim= "<<v.dim<<" type= "<<v.type<<" idx= "<<v.varIdx<<" nTime= "<<v.nTimeSteps<<endl;
     out<<"  global= ["<<v.global[0]<<" "<<v.global[1]<<" "<<v.global[2]<<"]"<<endl;
     out<<"  start= ["<<v.start[0]<<" "<<v.start[1]<<" "<<v.start[2]<<"]"<<endl;
     out<<"  count= ["<<v.count[0]<<" "<<v.count[1]<<" "<<v.count[2]<<"]"<<endl;
@@ -343,10 +350,10 @@ inline std::ostream& operator<<(std::ostream& out, const ADIOSScalar &s)
 inline std::ostream& operator<<(std::ostream& out, const ADIOSAttr &s)
 {
     out<<"ADIOSAttr: "<<s.Name()<<" value= ";
-    if (s.IsInt()) out<<s.AsInt();
-    else if (s.IsFloat()) out<<s.AsFloat();
-    else if (s.IsDouble()) out<<s.AsDouble();
-    else if (s.IsString()) out<<s.AsString();
+    if (s.IsInt()) out<<s.AsInt()<<" type=INT";
+        else if (s.IsFloat()) out<<s.AsFloat()<<" type=FLOAT";
+    else if (s.IsDouble()) out<<s.AsDouble()<<" type=DOUBLE";
+    else if (s.IsString()) out<<"'"<<s.AsString()<<"' type=STRING";
     out<<endl;
     return out;
 }
