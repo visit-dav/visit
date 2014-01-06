@@ -26,11 +26,11 @@ echo "mxml"
 
 function bv_adios_info
 {
-export ADIOS_FILE=${ADIOS_FILE:-"adios-1.3-mpi1.tar.gz"}
-export ADIOS_VERSION=${ADIOS_VERSION:-"1.3"}
-export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.3"}
-export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.3"}
-export ADIOS_MD5_CHECKSUM="5eb937491eac015966dc6c6146fe5876"
+export ADIOS_FILE=${ADIOS_FILE:-"adios-1.6.0.tar.gz"}
+export ADIOS_VERSION=${ADIOS_VERSION:-"1.6.0"}
+export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.6.0"}
+export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.6.0"}
+export ADIOS_MD5_CHECKSUM="171c95208ff9eab2c34023ecc2414992"
 export ADIOS_SHA256_CHECKSUM=""
 }
 
@@ -115,12 +115,14 @@ function build_ADIOS
         ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             MPICXX="$VISIT_MPI_COMPILER" \
+	    --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
             --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
     else
         ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             --without-mpi --disable-fortran\
+	    --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
             --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
     fi
