@@ -1190,37 +1190,3 @@ VisWindowProtectionProxy::ProxiedCreateXorGridMapper()
 {
      return viswin->CreateXorGridMapper();
 }
-
-
-// ****************************************************************************
-//  Method: VisWindowProtectionProxy::ProxiedAddForegroundStartObserver
-//
-//  Purpose: Allow foreground to observe Start Event.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   December 31, 2013
-//
-// ****************************************************************************
-
-void
-VisWindowProtectionProxy::ProxiedAddForegroundStartObserver() const
-{
-    viswin->AddForegroundStartObserver();
-}
-
-
-// ****************************************************************************
-//  Method: VisWindowProtectionProxy::ProxiedRemoveForegroundStartObserver
-//
-//  Purpose: Allow foreground to stop observing Start Event.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   December 31, 2013
-//
-// ****************************************************************************
-
-void
-VisWindowProtectionProxy::ProxiedRemoveForegroundStartObserver() const
-{
-    viswin->RemoveForegroundStartObserver();
-}

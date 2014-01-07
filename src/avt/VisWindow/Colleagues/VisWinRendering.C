@@ -1285,10 +1285,6 @@ VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
 //    Brad Whitlock, Tue Sep 27 16:03:21 PDT 2011
 //    Removed extra call to set pixel data.
 //
-//    Kathleen Biagas, Tue Dec 31 11:14:31 PST 2013
-//    Temporarily allow foreground to observe rendering start event,
-//    otherwise our start_render method is never called.
-//
 // ****************************************************************************
 
 avtImage_p
@@ -1325,12 +1321,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
     renWin->RemoveRenderer(background);
 
     // render (foreground layer only)
-    // without the background, the StartEvent is no longer observed, and
-    // our start_render callback will not be called.  Temporarily allow 
-    // foreground to observe the Start event. 
-    mediator.AddForegroundStartObserver();
     RenderRenderWindow();
-    mediator.RemoveForegroundStartObserver();
 
     // capture the whole image now 
     GetCaptureRegion(r0, c0, w, h, false);
