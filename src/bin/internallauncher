@@ -95,6 +95,10 @@ class JobSubmitter_mpirun(JobSubmitter):
             parcmd = parcmd + self.parallel.launchargs
         if self.parallel.np != None:
             parcmd = parcmd + ["-np", self.parallel.np]
+            nodes = self.parallel.nn
+            if nodes != None:
+                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+                parcmd = parcmd + ["-ppn", ppn]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
         if self.parallel.machinefile != None:
@@ -697,6 +701,10 @@ class JobSubmitter_qsub(JobSubmitter):
             mpicmd = mpicmd + self.parallel.sublaunchargs
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-np", self.parallel.np]
+            nodes = self.parallel.nn
+            if nodes != None:
+                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+                mpicmd = mpicmd + ["-ppn", ppn]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable()
