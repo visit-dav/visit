@@ -145,9 +145,6 @@
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
-//    Kathleen Biagas, Tue Dec 31 11:26:30 PST 2013
-//    Added Add/RemoveForegroundStartObserver.
-//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -280,10 +277,6 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                DoNextExternalRenderAsVisualQueue(int w, int h, const double *c)
                              { ProxiedDoNextExternalRenderAsVisualQueue(w,h,c); };
 
-    void                AddForegroundStartObserver() const
-                                  { ProxiedAddForegroundStartObserver(); }
-    void                RemoveForegroundStartObserver() const
-                                  { ProxiedRemoveForegroundStartObserver(); }
 };
 
 
