@@ -97,15 +97,33 @@ static int GetCellType(ADIOS_CELL_TYPE &ct);
 bool
 avtADIOSSchemaFileFormat::Identify(const char *fname)
 {
-    ADIOSFileObject *f = new ADIOSFileObject(fname);
-    f->Open();
-    bool val = false;
-    string meshType;
-    if (f->GetStringAttr("/adios_schema/mesh/type", meshType))
-        val = true;
-    
-    delete f;
-    return val;
+    ADIOS_FILE *fp;
+#ifdef PARALLEL
+    fp = adios_read_open_file(fname, ADIOS_READ_METHOD_BP, (MPI_Comm)VISIT_MPI_COMM);
+#else
+    MPI_Comm comm_dummy = 0;
+    fp = adios_read_open_file(fname, ADIOS_READ_METHOD_BP, comm_dummy);
+#endif
+
+    cout<<"nmeshes= "<<fp->nmeshes<<endl;
+    bool isSchema = false;
+    for (int i = 0; i < fp->nvars && !isSchema; i++)
+    {
+        ADIOS_VARINFO *avi = adios_inq_var_byid(fp, i);
+        if (adios_inq_var_meshinfo(fp, avi) != 0)
+            continue;
+        if (avi->meshinfo == NULL)
+            continue;
+        ADIOS_MESH *am = adios_inq_mesh_byid(fp, avi->meshinfo->meshid);
+        if (am != NULL)
+            isSchema = true;
+        adios_free_varinfo(avi);
+        adios_free_meshinfo(am);
+    }
+
+    adios_read_close(fp);
+
+    return isSchema;
 }
 
 
@@ -425,27 +443,14 @@ avtADIOSSchemaFileFormat::GetVar(int timestate, int domain, const char *varname)
     Initialize();
     
     ADIOS_VARINFO *avi = vars.find(varname)->second;
-    string meshNm = varMeshes.find(varname)->second;
 
     int sz = 1;
     for (int i = 0; i < avi->ndim; i++)
         sz *= avi->dims[i];
     
+    //cout<<"GetVar "<<varname<<" sz= "<<sz<<" mesh= "<<varMeshes.find(varname)->second<<endl;
     vtkDataArray *arr = AllocateArray(avi->type, sz);
-    void *data = arr->GetVoidPointer(0);
-    
-    ADIOS_SELECTION *sel;
-    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
-    cout<<"ndim= "<<avi->ndim<<endl;
-    cout<<"GetVar: avi->dims: "<<avi->dims[0]<<" "<<avi->dims[1]<<" "<<avi->dims[2]<<" "<<avi->dims[3]<<endl;
-    for (int i = 0; i < avi->ndim; i++)
-        count[i] = avi->dims[i];
-    
-    sel = adios_selection_boundingbox(avi->ndim, start, count);
-    adios_schedule_read_byid(fp, sel, avi->varid, timestate, 1, data);
-    int retval = adios_perform_reads(fp, 1);
-
-    adios_selection_delete(sel);
+    ReadData(avi, timestate, arr->GetVoidPointer(0));
 
     return arr;
 }
@@ -512,13 +517,13 @@ avtADIOSSchemaFileFormat::Initialize()
     bool firstIter = true;
     for (int i = 0; i < fp->nvars; i++)
     {
-        cout<<i<<" "<<fp->var_namelist[i]<<endl;
+        //cout<<i<<" "<<fp->var_namelist[i]<<endl;
         ADIOS_VARINFO *avi = adios_inq_var_byid(fp, i);
         if (adios_inq_var_meshinfo(fp, avi) != 0)
             continue;
         if (avi->meshinfo == NULL)
             continue;
-        cout<<"GET MESH, id= "<<avi->meshinfo->meshid<<endl;
+        //cout<<"GET MESH, id= "<<avi->meshinfo->meshid<<endl;
         ADIOS_MESH *am = adios_inq_mesh_byid(fp, avi->meshinfo->meshid);
         if (am == NULL)
             continue;
@@ -538,12 +543,11 @@ avtADIOSSchemaFileFormat::Initialize()
                 EXCEPTION1(InvalidVariableException, "Variable inconsitency");
         }
         //print some info
-        cout<<i<<" "<<fp->var_namelist[i]<<" mesh= "<<am->name;
+        //cout<<i<<" "<<fp->var_namelist[i]<<" mesh= "<<am->name;
         cout<<" dims: ";
         for (int i = 0; i < avi->ndim; i++)
             cout<<avi->dims[i]<<" ";
         cout<<endl;
-        cout<<__LINE__<<endl;
         /*
         for (int i = 0; i < avi->nsteps; i++)
         {
@@ -571,36 +575,50 @@ vtkDataSet *
 avtADIOSSchemaFileFormat::MakeUniformMesh(MESH_UNIFORM *m, int ts, int dom)
 {
     vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
-
-    int dims[3] = {1,1,1};
-    for (int i = 0; i < m->num_dimensions; i++)
-        dims[i] = m->dimensions[i];
-    rg->SetDimensions(dims);
-    cout<<"Uniform Mesh dims: "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
-    
     vtkFloatArray *xyz[3];
     for (int d = 0; d < 3; d++)
     {
         xyz[d] = vtkFloatArray::New();
-        if (dims[d] == 0)
+        if (m->dimensions[d] == 0)
         {
             xyz[d]->SetNumberOfTuples(1);
             xyz[d]->SetTuple1(0, 0.0f);
-            dims[d] = 1;
         }
         else
         {
-            xyz[d]->SetNumberOfTuples(dims[d]);
-            for (int i = 0; i < dims[d]; i++)
+            xyz[d]->SetNumberOfTuples(m->dimensions[d]);
+            for (int i = 0; i < m->dimensions[d]; i++)
                 xyz[d]->SetTuple1(i, m->origins[d] + i*m->spacings[d]);
         }
     }
-    xyz[0]->Print(cout);
-    xyz[1]->Print(cout);
-    xyz[2]->Print(cout);
-    rg->SetXCoordinates(xyz[0]);
-    rg->SetYCoordinates(xyz[1]);
-    rg->SetZCoordinates(xyz[2]);
+    
+    int dims[3] = {1,1,1};
+    if (m->num_dimensions == 1)
+    {
+        dims[0] = m->dimensions[0];
+        rg->SetXCoordinates(xyz[0]);
+        rg->SetYCoordinates(xyz[1]);
+        rg->SetZCoordinates(xyz[2]);
+    }
+    else if (m->num_dimensions == 2)
+    {
+        dims[0] = m->dimensions[1];
+        dims[1] = m->dimensions[0];
+        rg->SetXCoordinates(xyz[1]);
+        rg->SetYCoordinates(xyz[0]);
+        rg->SetZCoordinates(xyz[2]);
+    }
+    else if (m->num_dimensions == 3)
+    {
+        dims[0] = m->dimensions[2];
+        dims[1] = m->dimensions[1];
+        dims[0] = m->dimensions[0];
+        rg->SetXCoordinates(xyz[2]);
+        rg->SetYCoordinates(xyz[1]);
+        rg->SetZCoordinates(xyz[0]);
+    }
+    rg->SetDimensions(dims);
+    //cout<<"Uniform Mesh dims: "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
 
     xyz[0]->Delete();
     xyz[1]->Delete();
@@ -613,10 +631,6 @@ vtkDataSet *
 avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int dom)
 {
     vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
-    int dims[3] = {1,1,1};
-    for (int i = 0; i < m->num_dimensions; i++)
-        dims[i] = m->dimensions[i];
-
     vtkDataArray *xyz[3];
     if (m->use_single_var == 1)
     {
@@ -629,7 +643,7 @@ avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int d
             if (d < m->num_dimensions)
             {
                 ADIOS_VARINFO *avi = adios_inq_var(fp, m->coordinates[d]);
-                xyz[d] = AllocateArray(avi->type, dims[d]);
+                xyz[d] = AllocateArray(avi->type, m->dimensions[d]);
                 ReadData(avi, ts, xyz[d]->GetVoidPointer(0));
             }
             else
@@ -640,11 +654,33 @@ avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int d
             }
         }
     }
-    
+    int dims[3] = {1,1,1};
+    if (m->num_dimensions == 1)
+    {
+        dims[0] = m->dimensions[0];
+        rg->SetXCoordinates(xyz[0]);
+        rg->SetYCoordinates(xyz[1]);
+        rg->SetZCoordinates(xyz[2]);
+    }
+    else if (m->num_dimensions == 2)
+    {
+        dims[0] = m->dimensions[1];
+        dims[1] = m->dimensions[0];
+        rg->SetXCoordinates(xyz[1]);
+        rg->SetYCoordinates(xyz[0]);
+        rg->SetZCoordinates(xyz[2]);
+    }
+    else if (m->num_dimensions == 3)
+    {
+        dims[0] = m->dimensions[2];
+        dims[1] = m->dimensions[1];
+        dims[0] = m->dimensions[0];
+        rg->SetXCoordinates(xyz[2]);
+        rg->SetYCoordinates(xyz[1]);
+        rg->SetZCoordinates(xyz[0]);
+    }
+    //cout<<"Rect Mesh dims: "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
     rg->SetDimensions(dims);
-    rg->SetXCoordinates(xyz[0]);
-    rg->SetYCoordinates(xyz[1]);
-    rg->SetZCoordinates(xyz[2]);
 
     xyz[0]->Delete();
     xyz[1]->Delete();
@@ -820,8 +856,8 @@ avtADIOSSchemaFileFormat::ReadData(ADIOS_VARINFO *avi, int ts, void *data)
     uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
     for (int i = 0; i < avi->ndim; i++)
         count[i] = avi->dims[i];
-    cout<<"READS: "<<start[0]<<" "<<start[1]<<" "<<start[2]<<" "<<start[3]<<endl;
-    cout<<"READC: "<<count[0]<<" "<<count[1]<<" "<<count[2]<<" "<<count[3]<<endl;
+    //cout<<"READS: "<<start[0]<<" "<<start[1]<<" "<<start[2]<<" "<<start[3]<<endl;
+    //cout<<"READC: "<<count[0]<<" "<<count[1]<<" "<<count[2]<<" "<<count[3]<<endl;
     sel = adios_selection_boundingbox(avi->ndim, start, count);
     adios_schedule_read_byid(fp, sel, avi->varid, ts, 1, data);
     int retval = adios_perform_reads(fp, 1);

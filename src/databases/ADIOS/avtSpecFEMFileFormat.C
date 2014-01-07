@@ -86,6 +86,9 @@ static int DIV = 1;
 bool
 avtSpecFEMFileFormat::Identify(const char *fname)
 {
+    return false;
+
+
     ADIOSFileObject *f = new ADIOSFileObject(fname);
     f->Open();
     bool val = false;
