@@ -11439,6 +11439,9 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
 //
 //    Mark C. Miller, Wed Sep 25 10:30:05 PDT 2013
 //    Added logic to handle 3D, co-linear, cylindrical meshes from Silo
+//    
+//    Mark C. Miller, Tue Jan  7 10:28:47 PST 2014
+//    Only query cached SDB for extents if all meshes have same block count.
 // ****************************************************************************
 
 vtkDataSet *
@@ -11526,9 +11529,18 @@ avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn, int domain)
         qm->base_index[1] == 0 &&
         qm->base_index[2] == 0) 
     {
-        void_ref_ptr vr = cache->GetVoidRef("any_mesh",
-                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
-        if (*vr != NULL)
+        bool allSameBlockCount = true;
+        for (int i = 0; (i < (int) blocksForMesh.size() - 1) && allSameBlockCount; i++)
+        {
+            if (blocksForMesh[i] != blocksForMesh[i+1])
+                allSameBlockCount = false;
+        }
+
+        void_ref_ptr vr;
+        if (allSameBlockCount)
+            vr = cache->GetVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
+
+        if (*vr != 0)
         {
             avtStructuredDomainBoundaries *dbi = 
                 (avtStructuredDomainBoundaries*)*vr;

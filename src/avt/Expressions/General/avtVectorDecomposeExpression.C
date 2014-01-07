@@ -119,8 +119,10 @@ avtVectorDecomposeExpression::GetVariableDimension(void)
         return 1;
 
     int inDim = atts.GetVariableDimension(activeVariable);
-    if (inDim == 9)
+    if (inDim == 9 || inDim == 6)
         return 3;
+    else if (inDim == 4) // 2D symmetric tensor
+        return 2;
     else if (inDim == 3)
         return 1;
 
@@ -160,6 +162,8 @@ avtVectorDecomposeExpression::GetVariableDimension(void)
 //    Hank Childs, Tue Oct 26 21:12:49 PDT 2010
 //    Fix bug with decomposing 2D tensor data.
 //
+//    Mark C. Miller, Tue Jan  7 11:07:50 PST 2014
+//    Handle decomposing symmetric tensor data in 2 and 3D.
 // ****************************************************************************
 
 vtkDataArray *
@@ -222,6 +226,38 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
                 rv->SetTuple1(i, val);
             }
         }
+        else if (arr->GetNumberOfComponents() == 4) // 2D symmetric tensor
+        {
+            //
+            // Give one row of the symmetric tensor back.  Assume Voigt Notation
+            // for component ordering within the tensor matrix like so...
+            //
+            //    0   2
+            //    2   1
+            //
+            // Since VTK dislikes vectors of size 2, make sure that we have 3 components.
+            //
+            rv->SetNumberOfComponents(3);
+            rv->SetNumberOfTuples(ntuples);
+            if (which_comp == 0)
+            {
+                for (vtkIdType i = 0 ; i < ntuples ; i++)
+                {
+                    double val1 = arr->GetComponent(i, 0);
+                    double val2 = arr->GetComponent(i, 2);
+                    rv->SetTuple3(i, val1, val2, 0.);
+                }
+            }
+            else
+            {
+                for (vtkIdType i = 0 ; i < ntuples ; i++)
+                {
+                    double val1 = arr->GetComponent(i, 2);
+                    double val2 = arr->GetComponent(i, 1);
+                    rv->SetTuple3(i, val1, val2, 0.);
+                }
+            }
+        }
         else if (arr->GetNumberOfComponents() == 9)
         {
             //
@@ -261,6 +297,41 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
             {
                 double val = arr->GetComponent(i, which_comp);
                 rv->SetTuple1(i, val);
+            }
+        }
+        else if (arr->GetNumberOfComponents() == 6)
+        {
+            //
+            // Symmetric tensor data.  Return a row (*X, *Y, *Z). Assume Voigt Notation.
+            // For 6 components, component order in full tensor is then...
+            //
+            //     0   5   4
+            //     5   1   3
+            //     4   3   2
+            rv->SetNumberOfComponents(3);
+            rv->SetNumberOfTuples(ntuples);
+            for (vtkIdType i = 0 ; i < ntuples ; i++)
+            {
+                double val1, val2, val3;
+                switch (which_comp)
+                {
+                    case 0:
+                        val1 = arr->GetComponent(i, 0);
+                        val2 = arr->GetComponent(i, 5);
+                        val3 = arr->GetComponent(i, 4);
+                        break;
+                    case 1:
+                        val1 = arr->GetComponent(i, 5);
+                        val2 = arr->GetComponent(i, 1);
+                        val3 = arr->GetComponent(i, 3);
+                        break;
+                    case 2:
+                        val1 = arr->GetComponent(i, 4);
+                        val2 = arr->GetComponent(i, 3);
+                        val3 = arr->GetComponent(i, 2);
+                        break;
+                }
+                rv->SetTuple3(i, val1, val2, val3);
             }
         }
         else if (arr->GetNumberOfComponents() == 9)
