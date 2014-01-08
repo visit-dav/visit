@@ -578,16 +578,16 @@ avtADIOSSchemaFileFormat::MakeUniformMesh(MESH_UNIFORM *m, int ts, int dom)
     for (int d = 0; d < 3; d++)
     {
         xyz[d] = vtkFloatArray::New();
-        if (m->dimensions[d] == 0)
-        {
-            xyz[d]->SetNumberOfTuples(1);
-            xyz[d]->SetTuple1(0, 0.0f);
-        }
-        else
+        if (d < m->num_dimensions)
         {
             xyz[d]->SetNumberOfTuples(m->dimensions[d]);
             for (int i = 0; i < m->dimensions[d]; i++)
                 xyz[d]->SetTuple1(i, m->origins[d] + i*m->spacings[d]);
+        }
+        else
+        {
+            xyz[d]->SetNumberOfTuples(1);
+            xyz[d]->SetTuple1(0, 0.0f);
         }
     }
     
