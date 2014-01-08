@@ -48,7 +48,7 @@
 #include <VisWinColleague.h>
 
 
-class vtkVisItAxisActor2D;
+class vtkAxesActor2D;
 
 class VisWindowColleagueProxy;
 
@@ -72,12 +72,12 @@ class VisWindowColleagueProxy;
 //    numbers in scientific notation.
 //
 //    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001
-//    Added methods for user-control of axes appearance. 
+//    Added methods for user-control of axes appearance.
 //
-//    Kathleen Bonnell, Fri Jul  6 14:09:00 PDT 2001 
+//    Kathleen Bonnell, Fri Jul  6 14:09:00 PDT 2001
 //    Added SetXGridVisibility, SetYGridVisibility.
 //
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002  
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
 //    Added members xTitle and yTitle, methods StartCurveMode, StopCurveMode.
 //
 //    Eric Brugger, Wed Nov  6 07:58:25 PST 2002
@@ -96,7 +96,7 @@ class VisWindowColleagueProxy;
 //    Eric Brugger, Wed Jun 25 14:09:15 PDT 2003
 //    I added SetLineWidth.
 //
-//    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003
 //    Added SetLabelScaling, autolabelscalng, userPowX, userPowY.
 //
 //    Brad Whitlock, Thu Jul 28 08:52:38 PDT 2005
@@ -105,8 +105,11 @@ class VisWindowColleagueProxy;
 //    Kathleen Bonnell, Thu Mar 29 10:30:41 PDT 2007
 //    Added AdjustLabelFormatForLogScale.
 //
-//    Kathleen Bonnell, Wed May  9 10:54:12 PDT 2007 
+//    Kathleen Bonnell, Wed May  9 10:54:12 PDT 2007
 //    Added bool args to AdjustLabelFormatForLogScale.
+//
+//    Kathleen Biagas, Wed Jan  8 14:16:04 PST 2014
+//    Utilize new vtkAxisActor2D.
 //
 // ****************************************************************************
 
@@ -156,14 +159,14 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     void                      SetYUnits(const std::string &, bool);
 
     void                      SetTitleTextAttributes(
-                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &xAxis,
                                   const VisWinTextAttributes &yAxis);
     void                      SetLabelTextAttributes(
-                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &xAxis,
                                   const VisWinTextAttributes &yAxis);
   protected:
-    vtkVisItAxisActor2D       *xAxis, *yAxis;
- 
+    vtkAxesActor2D   *axes;
+
     int                       lastXPow, lastYPow;
     int                       lastXAxisDigits, lastYAxisDigits;
     bool                      addedAxes;
