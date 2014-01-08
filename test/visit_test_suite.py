@@ -198,8 +198,6 @@ def launch_visit_test(args):
     tparams["pixdiff"]        = opts["pixdiff"]
     tparams["avgdiff"]        = opts["avgdiff"]
     tparams["numdiff"]        = opts["numdiff"]
-    tparams["width"]          = opts["width"]
-    tparams["height"]         = opts["height"]
     tparams["top_dir"]        = top_dir
     tparams["data_dir"]       = opts["data_dir"]
     tparams["baseline_dir"]   = opts["baseline_dir"]
