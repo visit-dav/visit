@@ -46,6 +46,7 @@
 #include <vector>
 #include <snprintf.h>
 
+#include <vtkAxesActor2D.h>
 #include <vtkVisItAxisActor2D.h>
 #include <vtkProperty2D.h>
 #include <vtkRenderer.h>
@@ -85,10 +86,10 @@ using   std::vector;
 //    doing it.
 //
 //    Kathleen Bonnell, Mon Nov 26 9:16:32 PST 2001
-//    Make the axis un-pickable. 
+//    Make the axis un-pickable.
 //
-//    Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
-//    Initialize xTitle, yTitle. 
+//    Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002
+//    Initialize xTitle, yTitle.
 //
 //    Hank Childs, Fri Sep 27 16:16:56 PDT 2002
 //    Initialize more data members for the title.
@@ -99,8 +100,8 @@ using   std::vector;
 //    Eric Brugger, Fri Jan 24 09:06:18 PST 2003
 //    Changed the way the font sizes for the axes labels are set.
 //
-//    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003 
-//    Intialize autlabelscaling, userPowX,  userPowY. 
+//    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003
+//    Intialize autlabelscaling, userPowX,  userPowY.
 //
 //    Brad Whitlock, Thu Jul 28 08:47:01 PDT 2005
 //    I initialized some label flags.
@@ -109,38 +110,14 @@ using   std::vector;
 //    Call SetUseSeparateColors(1) on the axes so the colors will come from
 //    the title and label text properties.
 //
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
 {
-    xAxis = vtkVisItAxisActor2D::New();
-    xAxis->SetTickVisibility(1);
-    xAxis->SetLabelVisibility(1);
-    xAxis->SetTitleVisibility(1);
-    xAxis->SetFontFamilyToCourier();
-    xAxis->SetLabelFontHeight(0.02);
-    xAxis->SetTitleFontHeight(0.02);
-    xAxis->SetShadow(0);
-    xAxis->SetAdjustLabels(1);
-    xAxis->GetPoint1Coordinate()->SetCoordinateSystemToNormalizedViewport();
-    xAxis->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
-    xAxis->PickableOff();
-    xAxis->SetUseSeparateColors(1);
-
-    yAxis = vtkVisItAxisActor2D::New();
-    yAxis->SetTickVisibility(1);
-    yAxis->SetLabelVisibility(1);
-    yAxis->SetTitleVisibility(1);
-    yAxis->SetFontFamilyToCourier();
-    yAxis->SetLabelFontHeight(0.02);
-    yAxis->SetTitleFontHeight(0.02);
-    yAxis->SetShadow(0);
-    yAxis->SetAdjustLabels(1);
-    yAxis->GetPoint1Coordinate()->SetCoordinateSystemToNormalizedViewport();
-    yAxis->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
-    yAxis->PickableOff();
-    yAxis->SetUseSeparateColors(1);
-
+    axes = vtkAxesActor2D::New();
     lastXPow = 0;
     lastYPow = 0;
 
@@ -157,7 +134,7 @@ VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
     powY = 0;
     SetTitle();
 
-    autolabelScaling = true; 
+    autolabelScaling = true;
     userPowX = 0;
     userPowY = 0;
     userXTitle = false;
@@ -173,19 +150,18 @@ VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
 //  Programmer: Hank Childs
 //  Creation:   June 9, 2000
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 VisWinAxes::~VisWinAxes()
 {
-    if (xAxis != NULL)
+    if (axes != NULL)
     {
-        xAxis->Delete();
-        xAxis = NULL;
-    }
-    if (yAxis != NULL)
-    {
-        yAxis->Delete();
-        yAxis = NULL;
+        axes->Delete();
+        axes = NULL;
     }
 }
 
@@ -208,13 +184,15 @@ VisWinAxes::~VisWinAxes()
 //    Brad Whitlock, Thu Mar 27 11:09:01 PDT 2008
 //    Update the title and label text attributes.
 //
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetForegroundColor(double fr, double fg, double fb)
 {
-    xAxis->GetProperty()->SetColor(fr, fg, fb);
-    yAxis->GetProperty()->SetColor(fr, fg, fb);
+    axes->SetColor(fr, fg, fb);
     UpdateTitleTextAttributes(fr, fg, fb);
     UpdateLabelTextAttributes(fr, fg, fb);
 }
@@ -235,11 +213,11 @@ VisWinAxes::SetForegroundColor(double fr, double fg, double fb)
 //    Hank Childs, Thu Jul  6 11:34:01 PDT 2000
 //    Pushed logic of adding axes to the window into its own routine.
 //
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002  
-//    Set the titles here, since CurveMode uses different titles. 
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
+//    Set the titles here, since CurveMode uses different titles.
 //
-//    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004 
-//    Don't set title here, allow them to be over-ridden by user-set titles. 
+//    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004
+//    Don't set title here, allow them to be over-ridden by user-set titles.
 //
 // ****************************************************************************
 
@@ -285,12 +263,12 @@ VisWinAxes::Stop2DMode(void)
 //      Adds the axes to the window.  The axes are added to the background
 //      renderer.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 8, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 8, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004 
-//    Don't set x/ytitle here, allow them to be over-ridden by user-set titles. 
+//    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004
+//    Don't set x/ytitle here, allow them to be over-ridden by user-set titles.
 //
 // ****************************************************************************
 
@@ -312,7 +290,7 @@ VisWinAxes::StartCurveMode(void)
 //      Removes the axes from the window.  The axes are removed from the
 //      background renderer.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   May 8, 2002
 //
 // ****************************************************************************
@@ -344,15 +322,7 @@ VisWinAxes::StopCurveMode(void)
 void
 VisWinAxes::SetViewport(double vl, double vb, double vr, double vt)
 {
-    xAxis->GetPoint1Coordinate()->SetValue(vl, vb);
-    xAxis->GetPoint2Coordinate()->SetValue(vr, vb);
-
-    //
-    // Make coordinates for y-axis backwards so the labels will appear on
-    // the left side and out of the viewport.
-    //
-    yAxis->GetPoint1Coordinate()->SetValue(vl, vt);
-    yAxis->GetPoint2Coordinate()->SetValue(vl, vb);
+    axes->SetCoordinateValuesFromViewport(vl, vb, vr, vt);
 }
 
 
@@ -370,6 +340,9 @@ VisWinAxes::SetViewport(double vl, double vb, double vr, double vt)
 //    Kathleen Bonnell, Fri Jul  6 14:09:00 PDT 2001
 //    Added axes to foreground instead of background.
 //
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
@@ -381,8 +354,7 @@ VisWinAxes::AddAxesToWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->AddActor2D(xAxis);
-    foreground->AddActor2D(yAxis);
+    foreground->AddActor2D(axes);
 
     addedAxes = true;
 }
@@ -402,6 +374,9 @@ VisWinAxes::AddAxesToWindow(void)
 //    Kathleen Bonnell, Fri Jul  6 14:09:00 PDT 2001
 //    Removed axes from foreground instead of background.
 //
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
@@ -413,8 +388,7 @@ VisWinAxes::RemoveAxesFromWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    foreground->RemoveActor2D(xAxis);
-    foreground->RemoveActor2D(yAxis);
+    foreground->RemoveActor2D(axes);
 
     addedAxes = false;
 }
@@ -435,8 +409,8 @@ VisWinAxes::RemoveAxesFromWindow(void)
 //  Creation:   July 6, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
-//    Allowed for curve mdoe.
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
+//    Allowed for curve mode.
 //
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
 //    No axes if axis annotations have already been disabled in the vis window.
@@ -451,8 +425,8 @@ VisWinAxes::RemoveAxesFromWindow(void)
 bool
 VisWinAxes::ShouldAddAxes(void)
 {
-    return ((mediator.GetMode() == WINMODE_2D || 
-             mediator.GetMode() == WINMODE_CURVE) && 
+    return ((mediator.GetMode() == WINMODE_2D ||
+             mediator.GetMode() == WINMODE_CURVE) &&
              mediator.HasPlots());
 }
 
@@ -513,24 +487,24 @@ VisWinAxes::NoPlots(void)
 //    Re-wrote function.
 //
 //    Kathleen Bonnell, Fri Jul  6 14:09:00 PDT 2001
-//    Added functionality to set up gridlines. 
+//    Added functionality to set up gridlines.
 //
-//    Kathleen Bonnell, Fri Tue Mar 12 11:31:32 PST 2002 
-//    Ensure gridlines have correct length. 
+//    Kathleen Bonnell, Fri Tue Mar 12 11:31:32 PST 2002
+//    Ensure gridlines have correct length.
 //
-//    Kathleen Bonnell,  Wed May  8 14:06:50 PDT 2002  
+//    Kathleen Bonnell,  Wed May  8 14:06:50 PDT 2002
 //    Scale y direction for winmode Curve.
 //
-//    Kathleen Bonnell,  Fri May 17 09:50:12 PDT 2002 
-//    Correct gridline length. 
+//    Kathleen Bonnell,  Fri May 17 09:50:12 PDT 2002
+//    Correct gridline length.
 //
 //    Eric Brugger, Fri Feb 28 11:18:28 PST 2003
 //    Modified the routine to change the major tick mark labels to
 //    scientific notation using vtkVisItAxisActor2D::SetMajorTickLabelScale
 //    instead of modifying the range passed to vtkVisItAxisActor2D::SetRange.
 //
-//    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003  
-//    Scaling of labels can take place for 2D views well as Curve views. 
+//    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003
+//    Scaling of labels can take place for 2D views well as Curve views.
 //    
 //    Eric Brugger, Mon Nov 24 15:55:23 PST 2003
 //    I removed the code to adjust the range using the scale factor since
@@ -539,20 +513,24 @@ VisWinAxes::NoPlots(void)
 //    viewports.
 //
 //    Kathleen Bonnell, Thu Apr 29 16:54:44 PDT 2004
-//    Initialize min_x, etc, to avoid UMR's. 
+//    Initialize min_x, etc, to avoid UMR's.
 //
-//    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
+//    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007
 //    Send the log-scaling mode to the axis if Curve mode.
 //
 //    Kathleen Bonnell, Thu Mar 29 10:30:41 PDT 2007
 //    Call AdjustLabelFormatForLogScale.
 //
-//    Kathleen Bonnell, Wed May  9 11:01:47 PDT 2007 
+//    Kathleen Bonnell, Wed May  9 11:01:47 PDT 2007
 //    Account for 2D log scaling.
 //
 //    Kathleen Bonnell,Tue May 15 08:52:02 PDT 2007
-//    Remove early termination if not 2D or Curve, was causing regression 
+//    Remove early termination if not 2D or Curve, was causing regression
 //    failures.
+//
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.  Moved gridline-lenght setting logic to the
+//    new actor, as it wasn't working correctly in this spot.
 //
 // ****************************************************************************
 
@@ -569,36 +547,17 @@ VisWinAxes::UpdateView(void)
     AdjustValues(min_x, max_x, min_y, max_y);
     AdjustRange(min_x, max_x, min_y, max_y);
 
-    //
-    // We put the y-axis in reverse so that its labels would appear on the
-    // correct side of the viewport.  Must propogate kludge by sending
-    // range in backwards.
-    //
-    yAxis->SetRange(max_y, min_y);
-    yAxis->SetUseOrientationAngle(1);
-    yAxis->SetOrientationAngle(-1.5707963);
-    if (powY != 0)
-        yAxis->SetMajorTickLabelScale(1./pow(10., powY));
-    else
-        yAxis->SetMajorTickLabelScale(1.);
-    xAxis->SetRange(min_x, max_x);
-    xAxis->SetUseOrientationAngle(1);
-    xAxis->SetOrientationAngle(0.);
-    if (powX != 0)
-        xAxis->SetMajorTickLabelScale(1./pow(10., powX));
-    else
-        xAxis->SetMajorTickLabelScale(1.);
+    axes->SetXRange(min_x, max_x);
+    axes->SetYRange(min_y, max_y);
 
-    //
-    // Set up Gridlines lengths. 
-    // 
-    vtkRenderer *fg = mediator.GetForeground();
-    int *x = xAxis->GetPoint2Coordinate()->GetComputedViewportValue(fg);
-    int *y = yAxis->GetPoint1Coordinate()->GetComputedViewportValue(fg);
-    xAxis->SetGridlineXLength(0.);
-    xAxis->SetGridlineYLength(abs(x[1] - y[1]));
-    yAxis->SetGridlineXLength(abs(x[0] - y[0]));
-    yAxis->SetGridlineYLength(0.);
+    if (powY != 0)
+        axes->SetYLabelScale(1./pow(10., powY));
+    else
+        axes->SetYLabelScale(1.);
+    if (powX != 0)
+        axes->SetXLabelScale(1./pow(10., powX));
+    else
+        axes->SetXLabelScale(1.);
 
     bool scaleMode[2] = {false, false};
 
@@ -606,17 +565,17 @@ VisWinAxes::UpdateView(void)
     if (vw->GetWindowMode() == WINMODE_CURVE)
     {
         const avtViewCurve viewCurve = vw->GetViewCurve();
-        scaleMode[0] = viewCurve.domainScale == LOG;     
-        scaleMode[1] = viewCurve.rangeScale == LOG;     
+        scaleMode[0] = viewCurve.domainScale == LOG;
+        scaleMode[1] = viewCurve.rangeScale == LOG;
     }
     else if (vw->GetWindowMode() == WINMODE_2D)
     {
         const avtView2D view2D = vw->GetView2D();
-        scaleMode[0] = view2D.xScale == LOG;     
-        scaleMode[1] = view2D.yScale == LOG;     
+        scaleMode[0] = view2D.xScale == LOG;
+        scaleMode[1] = view2D.yScale == LOG;
     }
-    xAxis->SetLogScale((int)scaleMode[0]);
-    yAxis->SetLogScale((int)scaleMode[1]);
+    axes->SetXLogScaling((int)scaleMode[0]);
+    axes->SetYLogScaling((int)scaleMode[1]);
     if (scaleMode[0] || scaleMode[1])
     {
         AdjustLabelFormatForLogScale(min_x, max_x, min_y, max_y, scaleMode);
@@ -638,7 +597,7 @@ VisWinAxes::UpdateView(void)
 //    Hank Childs, Wed Oct 15 21:44:19 PDT 2003
 //    Add labels.
 //
-//    Kathleen Bonnell, Tue Mar 23 08:57:31 PST 2004 
+//    Kathleen Bonnell, Tue Mar 23 08:57:31 PST 2004
 //    Allow labels from DataAtts to be set for Curve window, too.
 //
 //    Brad Whitlock, Thu Jul 28 08:48:35 PDT 2005
@@ -722,7 +681,7 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
 //    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
 //    Add missing cases for the switch statement.
 //
-//    Kathleen Bonnell, Tue Nov 20 15:12:57 PST 2007 
+//    Kathleen Bonnell, Tue Nov 20 15:12:57 PST 2007
 //    Removed debug message for default case.
 // 
 // ****************************************************************************
@@ -778,7 +737,7 @@ VisWinAxes::GetRange(double &min_x, double &max_x, double &min_y, double &max_y)
 //  Creation:   July 11, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
 //    Use members to set titles, as they change depending on winmode.
 //
 //    Hank Childs, Fri Sep 27 17:46:30 PDT 2002
@@ -787,8 +746,8 @@ VisWinAxes::GetRange(double &min_x, double &max_x, double &min_y, double &max_y)
 //    Eric Brugger, Fri Feb 28 11:18:28 PST 2003
 //    Modified the routine to leave the input values unchanged.
 //
-//    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003 
-//    Utilize user-set exponents if autolabelscaling is off. 
+//    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003
+//    Utilize user-set exponents if autolabelscaling is off.
 //
 // ****************************************************************************
 
@@ -797,17 +756,17 @@ VisWinAxes::AdjustValues(double min_x, double max_x, double min_y, double max_y)
 {
     int curPowX;
     int curPowY;
-    if (autolabelScaling) 
+    if (autolabelScaling)
     {
         curPowX = LabelExponent(min_x, max_x);
         curPowY = LabelExponent(min_y, max_y);
     }
-    else 
+    else
     {
         curPowX = userPowX;
         curPowY = userPowY;
     }
- 
+
     if (curPowX != powX)
     {
         powX = curPowX;
@@ -842,6 +801,9 @@ VisWinAxes::AdjustValues(double min_x, double max_x, double min_y, double max_y)
 //    Modified the routine to correct the range values using powX and powY
 //    since they are not being corrected before calling this routine.
 //
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
@@ -857,7 +819,7 @@ VisWinAxes::AdjustRange(double min_x, double max_x, double min_y, double max_y)
     {
         char  format[16];
         SNPRINTF(format, 16, "%%.%df", xAxisDigits);
-        xAxis->SetLabelFormat(format);
+        axes->SetXLabelFormatString(format);
         lastXAxisDigits = xAxisDigits;
     }
 
@@ -871,7 +833,7 @@ VisWinAxes::AdjustRange(double min_x, double max_x, double min_y, double max_y)
     {
         char  format[16];
         SNPRINTF(format, 16, "%%.%df", yAxisDigits);
-        yAxis->SetLabelFormat(format);
+        axes->SetYLabelFormatString(format);
         lastYAxisDigits = yAxisDigits;
     }
 }
@@ -941,7 +903,7 @@ Digits(double min, double max)
             digitsPastDecimal = 5;
         }
     }
- 
+
     return digitsPastDecimal;
 }
 
@@ -1006,194 +968,223 @@ LabelExponent(double min, double max)
     }
 
     return (int)ipow10;
-}    
+}
 
 
 // ****************************************************************************
 //  Method: VisWinAxes::SetXTickVisibility
 //
 //  Purpose:
-//    Sets the visibility of x-axis ticks. 
+//    Sets the visibility of x-axis ticks.
 //
 //  Arguments:
-//    xVis       The visibility of the x-axis ticks. 
-//    xLabelsVis The visibility of the x-axis labels. 
+//    xVis       The visibility of the x-axis ticks.
+//    xLabelsVis The visibility of the x-axis labels.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 18, 2001. 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 18, 2001.
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
 void
 VisWinAxes::SetXTickVisibility(int xVis, int xLabelsVis)
 {
-    xAxis->SetMinorTicksVisible(xVis);
+    axes->SetXMinorTickVisibility(xVis);
 
     // Major ticks dependent upon visibility of labels.
-    xAxis->SetTickVisibility(xVis || xLabelsVis);
-} 
+    axes->SetXMajorTickVisibility(xVis || xLabelsVis);
+}
 
 
 // ****************************************************************************
 //  Method: VisWinAxes::SetYTickVisibility
 //
 //  Purpose:
-//      Sets the visibility of y-axis ticks. 
+//      Sets the visibility of y-axis ticks.
 //
 //  Arguments:
-//    yVis       The visibility of the y-axis ticks. 
-//    yLabelsVis The visibility of the y-axis labels. 
+//    yVis       The visibility of the y-axis ticks.
+//    yLabelsVis The visibility of the y-axis labels.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 18, 2001. 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 18, 2001
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
 void
 VisWinAxes::SetYTickVisibility(int yVis, int yLabelsVis)
 {
-    yAxis->SetMinorTicksVisible(yVis);
+    axes->SetYMinorTickVisibility(yVis);
     // Major ticks dependent upon visibility of labels.
-    yAxis->SetTickVisibility(yVis || yLabelsVis);
-} 
+    axes->SetYMajorTickVisibility(yVis || yLabelsVis);
+}
 
 
 // ****************************************************************************
 //  Method: VisWinAxes::SetLabelsVisibility
 //
 //  Purpose:
-//      Sets the visibility of x-axis and y-axis labels. 
+//      Sets the visibility of x-axis and y-axis labels.
 //
 //  Arguments:
-//      x-vis     The visibility of the x-axis labels. 
-//      y-vis     The visibility of the y-axis labels. 
+//      x-vis     The visibility of the x-axis labels.
+//      y-vis     The visibility of the y-axis labels.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 18, 2001. 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 18, 2001
 //
 //  Modifications:
 //    Eric Brugger, Wed Nov  5 11:41:19 PST 2002
 //    Removed the control of the title visibility out of this method into
 //    its own method.
 //
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetLabelsVisibility(int xVis, int yVis)
 {
-    xAxis->SetLabelVisibility(xVis);
-    yAxis->SetLabelVisibility(yVis);
-} 
+    axes->SetXLabelVisibility(xVis);
+    axes->SetYLabelVisibility(yVis);
+}
 
 
 // ****************************************************************************
 //  Method: VisWinAxes::SetTitleVisibility
 //
 //  Purpose:
-//      Sets the visibility of x-axis and y-axis titles. 
+//      Sets the visibility of x-axis and y-axis titles.
 //
 //  Arguments:
-//      x-vis     The visibility of the x-axis titles. 
-//      y-vis     The visibility of the y-axis titles. 
+//      x-vis     The visibility of the x-axis titles.
+//      y-vis     The visibility of the y-axis titles.
 //
 //  Programmer: Eric Brugger
 //  Creation:   November 6, 2002
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
 void
 VisWinAxes::SetTitleVisibility(int xVis, int yVis)
 {
-    xAxis->SetTitleVisibility(xVis);
-    yAxis->SetTitleVisibility(yVis);
-} 
+    axes->SetXTitleVisibility(xVis);
+    axes->SetYTitleVisibility(yVis);
+}
 
 
 // ****************************************************************************
 //  Method: VisWinAxes::SetVisibility
 //
 //  Purpose:
-//      Sets the visibility of this colleague. 
+//      Sets the visibility of this colleague.
 //
 //  Arguments:
-//      vis     The visibility of this colleague.  
+//      vis     The visibility of this colleague.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 18, 2001. 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 18, 2001
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
 void
 VisWinAxes::SetVisibility(int vis)
 {
-    xAxis->SetVisibility(vis);
-    yAxis->SetVisibility(vis);
-} 
-       
-    
+    axes->SetVisibility(vis);
+}
+
+
 // ****************************************************************************
 //  Method: VisWinAxes::SetTickLocation
 //
 //  Purpose:
-//      Sets the location of the ticks. 
+//      Sets the location of the ticks.
 //
 //  Arguments:
-//      loc     The location of the ticks.  
+//      loc     The location of the ticks.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 27, 2001. 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 27, 2001
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
 void
 VisWinAxes::SetTickLocation(int loc)
 {
-    xAxis->SetTickLocation(loc);
-    yAxis->SetTickLocation(loc);
-} 
+    axes->SetTickLocation(loc);
+}
 
 
 // ****************************************************************************
 //  Method: VisWinAxes::SetXGridVisibility
 //
 //  Purpose:
-//      Sets the visibility of x-axis gridlines. 
+//      Sets the visibility of x-axis gridlines.
 //
 //  Arguments:
-//      vis     The visibility of the gridlines. 
+//      vis     The visibility of the gridlines.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 6, 2001. 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 6, 2001
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
 void
 VisWinAxes::SetXGridVisibility(int vis)
 {
-    xAxis->SetDrawGridlines(vis);
-} 
-       
-       
+    axes->SetXGridVisibility(vis);
+}
+
+
 // ****************************************************************************
 //  Method: VisWinAxes::SetYGridVisibility
 //
 //  Purpose:
-//      Sets the visibility of y-axis gridlines. 
+//      Sets the visibility of y-axis gridlines.
 //
 //  Arguments:
-//      vis     The visibility of the gridlines. 
+//      vis     The visibility of the gridlines.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 6, 2001. 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 6, 2001
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
 void
 VisWinAxes::SetYGridVisibility(int vis)
 {
-    yAxis->SetDrawGridlines(vis);
-} 
-       
+    axes->SetYGridVisibility(vis);
+}
+
 
 // ****************************************************************************
 //  Method: VisWinAxes::SetAutoSetTicks
@@ -1209,13 +1200,16 @@ VisWinAxes::SetYGridVisibility(int vis)
 //  Programmer: Eric Brugger
 //  Creation:   November 5, 2002
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetAutoSetTicks(int autoSetTicks)
 {
-    xAxis->SetAdjustLabels(autoSetTicks);
-    yAxis->SetAdjustLabels(autoSetTicks);
+    axes->SetAutoAdjustLabels(autoSetTicks);
 }
 
 
@@ -1232,13 +1226,17 @@ VisWinAxes::SetAutoSetTicks(int autoSetTicks)
 //  Programmer: Eric Brugger
 //  Creation:   November 5, 2002
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetMajorTickMinimum(double xMajorMinimum, double yMajorMinimum)
 {
-    xAxis->SetMajorTickMinimum(xMajorMinimum);
-    yAxis->SetMajorTickMinimum(yMajorMinimum);
+    axes->SetXMajorTickMinimum(xMajorMinimum);
+    axes->SetYMajorTickMinimum(yMajorMinimum);
 }
 
 
@@ -1255,13 +1253,17 @@ VisWinAxes::SetMajorTickMinimum(double xMajorMinimum, double yMajorMinimum)
 //  Programmer: Eric Brugger
 //  Creation:   November 5, 2002
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetMajorTickMaximum(double xMajorMaximum, double yMajorMaximum)
 {
-    xAxis->SetMajorTickMaximum(xMajorMaximum);
-    yAxis->SetMajorTickMaximum(yMajorMaximum);
+    axes->SetXMajorTickMaximum(xMajorMaximum);
+    axes->SetYMajorTickMaximum(yMajorMaximum);
 }
 
 
@@ -1278,13 +1280,17 @@ VisWinAxes::SetMajorTickMaximum(double xMajorMaximum, double yMajorMaximum)
 //  Programmer: Eric Brugger
 //  Creation:   November 5, 2002
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetMajorTickSpacing(double xMajorSpacing, double yMajorSpacing)
 {
-    xAxis->SetMajorTickSpacing(xMajorSpacing);
-    yAxis->SetMajorTickSpacing(yMajorSpacing);
+    axes->SetXMajorTickSpacing(xMajorSpacing);
+    axes->SetYMajorTickSpacing(yMajorSpacing);
 }
 
 
@@ -1301,13 +1307,17 @@ VisWinAxes::SetMajorTickSpacing(double xMajorSpacing, double yMajorSpacing)
 //  Programmer: Eric Brugger
 //  Creation:   November 5, 2002
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetMinorTickSpacing(double xMinorSpacing, double yMinorSpacing)
 {
-    xAxis->SetMinorTickSpacing(xMinorSpacing);
-    yAxis->SetMinorTickSpacing(yMinorSpacing);
+    axes->SetXMinorTickSpacing(xMinorSpacing);
+    axes->SetYMinorTickSpacing(yMinorSpacing);
 }
 
 
@@ -1323,12 +1333,16 @@ VisWinAxes::SetMinorTickSpacing(double xMinorSpacing, double yMinorSpacing)
 //  Programmer: Eric Brugger
 //  Creation:   January 24, 2003
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetXLabelFontHeight(double height)
 {
-    xAxis->SetLabelFontHeight(height);
+    axes->SetXLabelFontHeight(height);
 }
 
 
@@ -1344,12 +1358,16 @@ VisWinAxes::SetXLabelFontHeight(double height)
 //  Programmer: Eric Brugger
 //  Creation:   January 24, 2003
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetYLabelFontHeight(double height)
 {
-    yAxis->SetLabelFontHeight(height);
+    axes->SetYLabelFontHeight(height);
 }
 
 
@@ -1365,12 +1383,16 @@ VisWinAxes::SetYLabelFontHeight(double height)
 //  Programmer: Eric Brugger
 //  Creation:   January 24, 2003
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetXTitleFontHeight(double height)
 {
-    xAxis->SetTitleFontHeight(height);
+    axes->SetXTitleFontHeight(height);
 }
 
 
@@ -1386,12 +1408,16 @@ VisWinAxes::SetXTitleFontHeight(double height)
 //  Programmer: Eric Brugger
 //  Creation:   January 24, 2003
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetYTitleFontHeight(double height)
 {
-    yAxis->SetTitleFontHeight(height);
+    axes->SetYTitleFontHeight(height);
 }
 
 
@@ -1407,13 +1433,16 @@ VisWinAxes::SetYTitleFontHeight(double height)
 //  Programmer: Eric Brugger
 //  Creation:   June 25, 2003
 //
+// Modifications:
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetLineWidth(int width)
 {
-    xAxis->GetProperty()->SetLineWidth(width);
-    yAxis->GetProperty()->SetLineWidth(width);
+    axes->SetLineWidth(width);
 }
 
 
@@ -1447,6 +1476,9 @@ VisWinAxes::SetLineWidth(int width)
 //    Brad Whitlock, Wed Aug 31 14:35:43 PDT 2011
 //    Remove end of line for Y-axis units.
 //
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
@@ -1467,7 +1499,7 @@ VisWinAxes::SetTitle(void)
         else
             SNPRINTF(buffer, 1024, "%s (x10^%d %s)", xTitle, powX, unitsX);
     }
-    xAxis->SetTitle(buffer);
+    axes->SetXTitle(buffer);
 
     if (powY == 0)
     {
@@ -1483,7 +1515,7 @@ VisWinAxes::SetTitle(void)
         else
             SNPRINTF(buffer, 1024, " %s (x10^%d %s)", yTitle, powY, unitsY);
     }
-    yAxis->SetTitle(buffer);
+    axes->SetYTitle(buffer);
 }
 
 
@@ -1491,9 +1523,9 @@ VisWinAxes::SetTitle(void)
 //  Method: VisWinAxes::SetLabelScaling
 //
 //  Purpose:
-//      Sets autolabelscaling and the exponents to be used with each axis. 
+//      Sets autolabelscaling and the exponents to be used with each axis.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   December 16, 2003
 //
 //  Modifications:
@@ -1506,7 +1538,7 @@ VisWinAxes::SetLabelScaling(bool autoscale, int upowX, int upowY)
     autolabelScaling = autoscale;
     userPowX = upowX;
     userPowY = upowY;
-} 
+}
 
 // ****************************************************************************
 // Method: VisWinAxes::SetTitle
@@ -1522,7 +1554,7 @@ VisWinAxes::SetLabelScaling(bool autoscale, int upowX, int upowY)
 // Creation:   Thu Jul 28 10:58:41 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1555,7 +1587,7 @@ VisWinAxes::SetYTitle(const string &title, bool userSet)
 // Creation:   Thu Jul 28 10:58:41 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1577,7 +1609,7 @@ VisWinAxes::SetYUnits(const string &units, bool userSet)
 // ****************************************************************************
 // Method: VisWinAxes::AdjustLabelFormatForLogScale
 //
-// Purpose: 
+// Purpose:
 //   Performs some of the same adjustments as AdjustLabels and AdjustRange,
 //   without the side-effect of setting ivars.  Does, however change
 //   the axis label formats.
@@ -1588,19 +1620,22 @@ VisWinAxes::SetYUnits(const string &units, bool userSet)
 //   min_y     The minimum y value. (already log-scaled)
 //   max_y     The maximum y value. (already log-scaled)
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   March 29, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   March 29, 2007
 //
 // Modifications:
 //   Kathleen Bonnell, Wed Apr  4 17:04:54 PDT 2007
 //   Modified to handle situations where scientific notation is required.
-// 
-//   Kathleen Bonnell, Thu Apr  5 15:03:40 PDT 2007 
-//   Fix setting of y-axis info, also changed to use new LogLabelFormat so 
-//   that the switching between Log-Linear the labels have the right format. 
 //
-//    Kathleen Bonnell, Wed May  9 11:01:47 PDT 2007 
-//    Account for 2D log scaling, added bool args.
+//   Kathleen Bonnell, Thu Apr  5 15:03:40 PDT 2007
+//   Fix setting of y-axis info, also changed to use new LogLabelFormat so
+//   that the switching between Log-Linear the labels have the right format.
+//
+//   Kathleen Bonnell, Wed May  9 11:01:47 PDT 2007
+//   Account for 2D log scaling, added bool args.
+//
+//   Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//   Utilize new vtkAxesActor2D.
 //
 // ****************************************************************************
 
@@ -1618,7 +1653,7 @@ VisWinAxes::AdjustLabelFormatForLogScale(
     // to get the correct range that will be used.
     //
     if (sm[0])
-    {    
+    {
         double minx = pow(10., min_x);
         double maxx = pow(10., max_x);
         int xAxisDigits = Digits(minx, maxx);
@@ -1632,12 +1667,12 @@ VisWinAxes::AdjustLabelFormatForLogScale(
 
         if (ipow_min < -4 || ipow_max > 4)
             SNPRINTF(format, 16, "%%.%de", xAxisDigits);
-        else 
+        else
             SNPRINTF(format, 16, "%%.%df", xAxisDigits);
-        xAxis->SetLogLabelFormat(format);
+        axes->SetXLogLabelFormatString(format);
     }
     if (sm[1])
-    {    
+    {
         double miny = pow(10., min_y);
         double maxy = pow(10., max_y);
         int yAxisDigits = Digits(miny, maxy);
@@ -1650,36 +1685,36 @@ VisWinAxes::AdjustLabelFormatForLogScale(
 
         if (ipow_min < -4 || ipow_max > 4)
             SNPRINTF(format, 16, "%%.%de", yAxisDigits);
-        else 
+        else
             SNPRINTF(format, 16, "%%.%df", yAxisDigits);
-        yAxis->SetLogLabelFormat(format);
+        axes->SetYLogLabelFormatString(format);
     }
 }
 
 // ****************************************************************************
 // Method: VisWinAxes::SetTitleTextAttributes
 //
-// Purpose: 
+// Purpose:
 //   Sets the title properties for all axes.
 //
 // Arguments:
 //   x : The text properties for the X axis title.
 //   y : The text properties for the Y axis title.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 26 14:17:25 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetTitleTextAttributes(
-    const VisWinTextAttributes &x, 
+    const VisWinTextAttributes &x,
     const VisWinTextAttributes &y)
 {
     titleTextAttributes[0] = x;
@@ -1693,27 +1728,27 @@ VisWinAxes::SetTitleTextAttributes(
 // ****************************************************************************
 // Method: VisWinAxes::SetLabelTextAttributes
 //
-// Purpose: 
+// Purpose:
 //   Sets the label properties for all axes.
 //
 // Arguments:
 //   xAxis : The text properties for the X axis labels.
 //   yAxis : The text properties for the Y axis labels.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 26 14:17:25 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 VisWinAxes::SetLabelTextAttributes(
-    const VisWinTextAttributes &x, 
+    const VisWinTextAttributes &x,
     const VisWinTextAttributes &y)
 {
     labelTextAttributes[0] = x;
@@ -1727,97 +1762,101 @@ VisWinAxes::SetLabelTextAttributes(
 // ****************************************************************************
 // Method: VisWinAxes::UpdateTitleTextAttributes
 //
-// Purpose: 
+// Purpose:
 //   Sets the title text properties into the axes.
 //
 // Arguments:
 //   fr, fg, fb : Red, green, blue color components [0.,1].
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 26 14:18:45 PDT 2008
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::UpdateTitleTextAttributes(double fr, double fg, double fb)
 {
-    vtkVisItAxisActor2D *axes[2];
-    axes[0] = xAxis;
-    axes[1] = yAxis;
+    vtkTextProperty *titles[2];
+    titles[0] = axes->GetXTitleTextProperty();
+    titles[1] = axes->GetYTitleTextProperty();
 
     for(int i = 0; i < 2; ++i)
     {
         // Set the colors
         if(titleTextAttributes[i].useForegroundColor)
-            axes[i]->GetTitleTextProperty()->SetColor(fr, fg, fb);
+            titles[i]->SetColor(fr, fg, fb);
         else
         {
-            axes[i]->GetTitleTextProperty()->SetColor(
+            titles[i]->SetColor(
                 titleTextAttributes[i].color[0],
                 titleTextAttributes[i].color[1],
                 titleTextAttributes[i].color[2]);
         }
 
-        axes[i]->GetTitleTextProperty()->SetFontFamily((int)titleTextAttributes[i].font);
-        axes[i]->GetTitleTextProperty()->SetBold(titleTextAttributes[i].bold?1:0);
-        axes[i]->GetTitleTextProperty()->SetItalic(titleTextAttributes[i].italic?1:0);
+        titles[i]->SetFontFamily((int)titleTextAttributes[i].font);
+        titles[i]->SetBold(titleTextAttributes[i].bold?1:0);
+        titles[i]->SetItalic(titleTextAttributes[i].italic?1:0);
 
         // Pass the opacity in the line offset.
-        axes[i]->GetTitleTextProperty()->SetLineOffset(titleTextAttributes[i].color[3]);
+        titles[i]->SetLineOffset(titleTextAttributes[i].color[3]);
     }
 }
 
 // ****************************************************************************
 // Method: VisWinAxes::UpdateLabelTextAttributes
 //
-// Purpose: 
+// Purpose:
 //   Sets the label text properties into the axes.
 //
 // Arguments:
 //   fr, fg, fb : Red, green, blue color components [0.,1].
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 26 14:18:45 PDT 2008
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
+//    Utilize new vtkAxesActor2D.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::UpdateLabelTextAttributes(double fr, double fg, double fb)
 {
-    vtkVisItAxisActor2D *axes[2];
-    axes[0] = xAxis;
-    axes[1] = yAxis;
+    vtkTextProperty *labels[2];
+    labels[0] = axes->GetXLabelTextProperty();
+    labels[1] = axes->GetYLabelTextProperty();
 
     for(int i = 0; i < 2; ++i)
     {
         // Set the colors
         if(labelTextAttributes[i].useForegroundColor)
-            axes[i]->GetLabelTextProperty()->SetColor(fr, fg, fb);
+            labels[i]->SetColor(fr, fg, fb);
         else
         {
-            axes[i]->GetLabelTextProperty()->SetColor(
+            labels[i]->SetColor(
                 labelTextAttributes[i].color[0],
                 labelTextAttributes[i].color[1],
                 labelTextAttributes[i].color[2]);
         }
 
-        axes[i]->GetLabelTextProperty()->SetFontFamily((int)labelTextAttributes[i].font);
-        axes[i]->GetLabelTextProperty()->SetBold(labelTextAttributes[i].bold?1:0);
-        axes[i]->GetLabelTextProperty()->SetItalic(labelTextAttributes[i].italic?1:0);
+        labels[i]->SetFontFamily((int)labelTextAttributes[i].font);
+        labels[i]->SetBold(labelTextAttributes[i].bold?1:0);
+        labels[i]->SetItalic(labelTextAttributes[i].italic?1:0);
 
         // Pass the opacity in the line offset.
-        axes[i]->GetLabelTextProperty()->SetLineOffset(labelTextAttributes[i].color[3]);
+        labels[i]->SetLineOffset(labelTextAttributes[i].color[3]);
     }
 }

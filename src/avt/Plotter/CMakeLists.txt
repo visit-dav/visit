@@ -52,6 +52,9 @@
 #   Kathleen Biagas, Tue Sep  3 11:08:03 PDT 2013
 #   Swap avtGLEWInitializer for avtOpenGLExtensionManager.
 #
+#   Kathleen Biagas, Wed Jan  8 14:19:28 PST 2014
+#   Add vtkAxesActor2D.
+#
 #****************************************************************************/
 
 SET(VISIT_VTK_MANTA_SOURCES
@@ -91,6 +94,7 @@ ENDIF(VISIT_USE_GLEW)
 
 SET(AVTPLOTTER_VTK_SOURCES
 vtk/InitVTKRendering.C 
+vtk/vtkAxesActor2D.C 
 vtk/vtkBackgroundActor.C 
 vtk/vtkLineLegend.C 
 vtk/vtkMultiFontVectorText.C 
