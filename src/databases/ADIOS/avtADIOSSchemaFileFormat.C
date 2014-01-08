@@ -541,13 +541,13 @@ avtADIOSSchemaFileFormat::Initialize()
             if (numTimes != avi->nsteps)
                 EXCEPTION1(InvalidVariableException, "Variable inconsitency");
         }
+        /*
         //print some info
-        //cout<<i<<" "<<fp->var_namelist[i]<<" mesh= "<<am->name;
+        cout<<i<<" "<<fp->var_namelist[i]<<" mesh= "<<am->name;
         cout<<" dims: ";
         for (int i = 0; i < avi->ndim; i++)
             cout<<avi->dims[i]<<" ";
         cout<<endl;
-        /*
         for (int i = 0; i < avi->nsteps; i++)
         {
             cout<<"Step: "<<i<<endl;
@@ -766,7 +766,6 @@ avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom
 vtkDataSet *
 avtADIOSSchemaFileFormat::MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int dom)
 {
-    cout<<__LINE__<<endl;
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
     vtkDataArray *xyz[3];
@@ -810,7 +809,6 @@ avtADIOSSchemaFileFormat::MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int
     
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(m->npoints);
-    cout<<"nPts= "<<m->npoints<<endl;
     ugrid->SetPoints(pts);
     pts->Delete();
 
@@ -820,13 +818,13 @@ avtADIOSSchemaFileFormat::MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int
                       xyz[0]->GetTuple1(i),
                       xyz[1]->GetTuple1(i),
                       xyz[2]->GetTuple1(i));
-        cout<<i<<": "<<xyz[0]->GetTuple1(i)<<" "<<xyz[1]->GetTuple1(i)<<" "<<xyz[2]->GetTuple1(i)<<endl;
+        //cout<<i<<": "<<xyz[0]->GetTuple1(i)<<" "<<xyz[1]->GetTuple1(i)<<" "<<xyz[2]->GetTuple1(i)<<endl;
     }
 
     for (int c = 0; c < m->ncsets; c++)
     {
         ADIOS_VARINFO *avi = adios_inq_var(fp, m->cdata[c]);
-        cout<<"CELL TYPE = "<<m->ctypes[c]<<endl;
+        //cout<<"CELL TYPE = "<<m->ctypes[c]<<endl;
         //m->ctypes[c] = ADIOS_CELL_TRI;
         int nVerts = NumberOfVertices(m->ctypes[c]);
         vtkDataArray *cells = AllocateArray(avi->type, m->ccounts[c], nVerts);
@@ -835,16 +833,18 @@ avtADIOSSchemaFileFormat::MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int
         
         int cellType = GetCellType(m->ctypes[c]);
         vtkIdType *verts = new vtkIdType[nVerts];
-        cout<<"CELLS: "<<endl;
+        //cout<<"CELLS: "<<endl;
         for (int i = 0; i < m->ccounts[c]; i++)
         {
             for (int j = 0; j < nVerts; j++)
                 verts[j] = cells->GetComponent(i, j);
-            
+          
+            /*  
             cout<<" "<<i<<" :"<<cellType<<" [";
             for (int j = 0; j < nVerts; j++)
                 cout<<verts[j]<<" ";
             cout<<"]"<<endl;
+            */
             
             ugrid->InsertNextCell(cellType, nVerts, verts);
         }
