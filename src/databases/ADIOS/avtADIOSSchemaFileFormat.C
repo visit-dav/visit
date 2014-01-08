@@ -105,7 +105,6 @@ avtADIOSSchemaFileFormat::Identify(const char *fname)
     fp = adios_read_open_file(fname, ADIOS_READ_METHOD_BP, comm_dummy);
 #endif
 
-    cout<<"nmeshes= "<<fp->nmeshes<<endl;
     bool isSchema = false;
     for (int i = 0; i < fp->nvars && !isSchema; i++)
     {
@@ -694,10 +693,22 @@ avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom
     vtkStructuredGrid *sg = vtkStructuredGrid::New();
     vtkPoints *pts = vtkPoints::New();
     int dims[3] = {1,1,1};
-    for (int i = 0; i < m->num_dimensions; i++)
-        dims[i] = m->dimensions[i];
-    cout<<"STRUCTURED: dims= "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
-    
+
+    if (m->num_dimensions == 1)
+        dims[0] = m->dimensions[0];
+    else if (m->num_dimensions == 2)
+    {
+        dims[0] = m->dimensions[1];
+        dims[1] = m->dimensions[0];
+    }
+    else
+    {
+        dims[0] = m->dimensions[2];
+        dims[1] = m->dimensions[1];
+        dims[2] = m->dimensions[0];
+    }
+
+    //cout<<"STRUCTURED: dims= "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
     int sz = dims[0]*dims[1]*dims[2];
     vtkDataArray *xyz[3];
     if (m->use_single_var == 1)
@@ -723,10 +734,7 @@ avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom
         }
     }
 
-    //DRP FIX THIS!!!!!
     pts->SetNumberOfPoints(sz);
-    dims[0] = 129;
-    dims[1] = 65;
     sg->SetDimensions(dims);
 
     int cnt = 0;
@@ -734,15 +742,13 @@ avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom
         for (int j = 0; j < dims[1]; j++)
             for (int k = 0; k < dims[2]; k++)
             {
-                int idx = cnt; //i*dims[1] + j;
+                int idx = cnt;
                 pts->SetPoint(cnt,
                               xyz[0]->GetTuple1(idx),
                               xyz[1]->GetTuple1(idx),
                               xyz[2]->GetTuple1(idx));
-                cout<<cnt<<": "<<xyz[0]->GetTuple1(idx)<<" "<<xyz[1]->GetTuple1(idx)<<endl;
                 cnt++;
             }
-    cout<<"CNT= "<<cnt<<" sz= "<<sz<<endl;
                               
     xyz[0]->Delete();
     xyz[1]->Delete();
