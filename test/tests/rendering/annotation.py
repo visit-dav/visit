@@ -45,6 +45,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Wed Jan  8 13:39:46 PST 2014
+#    Added 2d tests 26 & 27, gridlines with a different saved window size.
+#
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
@@ -296,6 +300,25 @@ Test("annot2d_24")
 v.windowCoords = (0., 0.0001, 0.216897, 4.925)
 SetView2D(v)
 Test("annot2d_25")
+
+##
+## Gridlines with a changed window size (#1676)
+##
+ResetView()
+DeleteAllPlots()
+OpenDatabase(silo_data_path("multi_rect2d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+a.axes2D.xAxis.grid = 1
+a.axes2D.yAxis.grid = 1
+SetAnnotationAttributes(a)
+Test("annot2d_26")
+swa_orig = SaveWindowAttributes()
+swa = SaveWindowAttributes()
+swa.height = 800
+swa.width = 600
+swa.resConstraint = swa.NoConstraint
+Test("annot2d_27", swa)
 
 ##
 ## Test 3D options
