@@ -345,6 +345,9 @@
 #   
 #    Cyrus Harrison, Wed Oct 30 18:37:53 EDT 2013
 #    Added option for Clemson network. 
+#
+#    Mark C. Miller, Wed Jan  8 11:25:02 PST 2014
+#    Made handling of 'data' directory conditional
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -704,9 +707,11 @@ distributiondir=distribution/`ls distribution`
 #
 # If the installation directory doesn't exist, create it.
 #
-[ ! -e "$dir" ] &&                mkdir "$dir"
-[ ! -e "$dir"/bin ] &&            mkdir "$dir"/bin
-[ ! -e "$dir"/data ] &&           mkdir "$dir"/data
+[ ! -e "$dir" ] &&          mkdir "$dir"
+[ ! -e "$dir"/bin ] &&      mkdir "$dir"/bin
+if [ -e "$distributiondir"/data ]; then
+    [ ! -e "$dir"/data ] && mkdir "$dir"/data
+fi
 
 #
 # Copy in the new files.  We are careful to leave the current
@@ -741,8 +746,10 @@ for f in `echo $platformPath | tr "/" " "`; do
 done
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
-cd ../data
-find . -print | cpio -pmud "$dir"/data
+if [ -e "$dir"/data ]; then
+    cd ../data
+    find . -print | cpio -pmud "$dir"/data
+fi
 cd ../../..
 
 #
@@ -871,8 +878,10 @@ chmod $dir_permission "$dir"/bin/frontendlauncher.py+
 chmod $dir_permission "$dir"/bin/xml2plugin+
 chmod $dir_permission "$dir"/bin/visit_plugin+
 chmod $dir_permission "$dir"/bin/mkgrdbl+
-chmod $dir_permission "$dir"/data
-find "$dir"/data -type f -exec chmod $file_permission {} \;
+if [ -e "$dir"/data ]; then
+    chmod $dir_permission "$dir"/data
+    find "$dir"/data -type f -exec chmod $file_permission {} \;
+fi
 
 #
 # Note that there is a short period of time when the second command
@@ -910,7 +919,11 @@ fi
 # Set the group ownership properly
 #
 if [ "$group_ownership" != "none" ]; then
-    chgrp -R $group_ownership "$dir"/bin "$dir"/data "$dir"/$version+
+    if [ -e "$dir"/data ]; then
+        chgrp -R $group_ownership "$dir"/bin "$dir"/data "$dir"/$version+
+    else
+        chgrp -R $group_ownership "$dir"/bin "$dir"/$version+
+    fi
 fi
 
 #
