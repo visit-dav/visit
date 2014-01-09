@@ -18,7 +18,7 @@ struct range {
     cout << "range: (" << start << ", " << end << ")" << endl; 
   }
  
-  bool operator ==(range &r) const  { return r.start == start && r.end == end;}
+  bool operator ==(const range &r) const  { return r.start == start && r.end == end;}
   bool Contains(long num) const  { return num >= start && num <= end;}
   bool operator < (const range &r) const { return start < r.start; }
   bool operator < (long num) const { return num > end; }
