@@ -336,6 +336,9 @@ avtDatabaseFactory::SetPrecisionType(const int pType)
 //    Dave Pugmire, Thu Feb 14 13:56:46 EST 2013
 //    Support for ensemble .visit files (files with identical time states)
 //
+//    Mark C. Miller, Wed Jan  8 18:15:01 PST 2014
+//    Added some error checking for !NBLOCKS, !TIMES declarations and adjusted
+//    the debug output to be a little more helpful.
 // ****************************************************************************
 
 avtDatabase *
@@ -364,24 +367,39 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     {
          if (strstr(filelist[fileIndex], "!NBLOCKS ") != NULL)
          {
-             nBlocks = atoi(filelist[fileIndex] + strlen("!NBLOCKS "));
-             if (nBlocks <= 0)
+             errno = 0;
+             nBlocks = strtol(filelist[fileIndex] + strlen("!NBLOCKS "), 0, 10);
+             if (errno != 0 || nBlocks <= 0)
              {
-                 debug1 << "BAD SYNTAX FOR N BLOCKS, RESETTING TO 1"  << endl;
+                 debug1 << "BAD SYNTAX FOR !NBLOCKS, \"" << filelist[fileIndex] << "\", RESETTING TO 1"  << endl;
                  nBlocks = 1;
              }
              else
-                 debug1 << "Found a multi-block file with " << nBlocks << " blocks."
-                        << endl;
+             {
+                 debug1 << "Found a multi-block file with " << nBlocks << " blocks." << endl;
+             }
              fileIndex++;
          }
          else if (strstr(filelist[fileIndex], "!TIME ") != NULL)
          {
-             times.push_back(atof(filelist[fileIndex] + strlen("!TIME ")));
+             char *endptr = 0;
+             errno = 0;
+             double time = strtod(filelist[fileIndex] + strlen("!TIME "), &endptr);
+             if (errno != 0 || (time == 0.0 || endptr == filelist[fileIndex] + strlen("!TIME ")))
+             {
+                 debug1 << "BAD SYNTAX FOR !TIME, \"" << filelist[fileIndex] << "\", RESETTING TO ";
+                 if (times.size())
+                     time = times[times.size()-1];
+                 else
+                     time = 0.0;
+                 debug1 << time << endl;
+             }
+             times.push_back(time);
              fileIndex++;
          }
          else if (strstr(filelist[fileIndex], "!ENSEMBLE") != NULL)
          {
+             debug1 << "!ENSEMBLE FLAG ENCOUNTERED" << endl;
              filesAreEnsemble = true;
              fileIndex++;
          }
