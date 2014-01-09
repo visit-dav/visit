@@ -44,7 +44,10 @@
 
 #include <visitstream.h>
 #include <visit-config.h>
+
+#include <cerrno>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <Expression.h>
 #include <ExprNode.h>
@@ -2311,11 +2314,13 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Kathleen Biagas, Mon Sep 24 18:32:43 MST 2012
 //    Check for ':' when determining if directory should be prepended.
 //
+//    Mark C. Miller, Wed Jan  8 18:16:00 PST 2014
+//    Added support for !NBLOCKS declaration in the file
 // ****************************************************************************
 
 void
 avtDatabase::GetFileListFromTextFile(const char *textfile,
-                                     char **&filelist, int &filelistN)
+                                     char **&filelist, int &filelistN, int *bang_nBlocks)
 {
     ifstream ifile(textfile);
 
@@ -2349,6 +2354,24 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 
         if (str_auto[0] != '\0' && str_auto[0] != '#')
         {
+            if (strstr(str_auto, "!NBLOCKS ") != NULL)
+            {
+                errno = 0;
+                int bnb = strtol(str_auto + strlen("!NBLOCKS "), 0, 10);
+                if (errno != 0 || bnb <= 0)
+                {
+                    debug1 << "BAD SYNTAX FOR !NBLOCKS, \"" << str_auto << "\", RESETTING TO 1"  << endl;
+                    bnb = 1;
+                }
+                else
+                    debug1 << "Found a multi-block file with " << bnb << " blocks." << endl;
+
+                if (bang_nBlocks)
+                    *bang_nBlocks = bnb;
+
+                continue;
+            }
+
             ConvertSlashes(str_auto);
             if (str_auto[0] == VISIT_SLASH_CHAR || str_auto[0] == '!' ||
                 (str_auto_len > 2 && str_auto[1] == ':'))

@@ -362,7 +362,7 @@ class DATABASE_API avtDatabase
                                     const int dom, std::string &) {;};
 
     static void                 GetFileListFromTextFile(const char *,
-                                                        char **&, int &);
+                                                        char **&, int &, int * =0);
 
     void                        SetFileFormat(const std::string &ff)
                                       { fileFormat = ff; };

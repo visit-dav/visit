@@ -90,6 +90,10 @@ ExodusCommonPluginInfo::GetDatabaseType()
 //    I changed the code so when nBlocks==-1 it will treat the list of files
 //    as domains so multiblock files work again.
 //
+//    Mark C. Miller, Wed Jan  8 18:07:37 PST 2014
+//    I enabled this to work for cases in which we have timestep groups *and*
+//    many files as well as the most common case where nBlocks is number of
+//    files in the list.
 // ****************************************************************************
 #include <string>
 
@@ -113,15 +117,23 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         file1.length() > 8 && file1.substr(file1.length()-8,8)==".NEMESIS")
         containsManyFiles = true;
 
+    //
+    // Note that in the context of Exodus, the !NBLOCKS directive and 'nBlocks' here
+    // is *not* equivalent to Exodus' notion of 'Element Blocks'. Instead, it is really
+    // the number of independent files (or series of files for cases where the output is
+    // broken into multiple timestep groups).
+    //
+
     if (containsManyFiles)
     {
         const char *filename = list[0];
         char  **reallist  = NULL;
         int     listcount = 0;
-        avtDatabase::GetFileListFromTextFile(filename, reallist, listcount);
+        int     bang_nBlocks=-1;
+        avtDatabase::GetFileListFromTextFile(filename, reallist, listcount, &bang_nBlocks);
 
         avtDatabase *rv = ExodusCommonPluginInfo::SetupDatabase(reallist,
-                                                                listcount,-1);
+                              listcount, bang_nBlocks);
 
         //
         // Clean up memory
@@ -145,6 +157,7 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
     if (!containsManyFiles)
     {
         fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
+        nBlock = nList;
     }
 
     int nTimestepGroups = 1;
@@ -154,6 +167,7 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         // with a list of domains.
         nBlock = nList;
     }
+
     nTimestepGroups = nList / nBlock;
 
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
