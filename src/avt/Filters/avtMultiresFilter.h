@@ -68,12 +68,17 @@ class avtMultiresSelection;
 //    Eric Brugger, Thu Jan  2 15:15:54 PST 2014
 //    Add support for 3d multi resolution data selections.
 //
+//    Eric Brugger, Wed Jan  8 16:58:34 PST 2014
+//    I added a ViewArea to the multi resolution data selection since the
+//    view frustum was insufficient in 3d.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 {
   public:
-                           avtMultiresFilter(double *, double *, double);
+                           avtMultiresFilter(double, double,
+                               double *, double *, double);
     virtual               ~avtMultiresFilter();
 
     virtual const char    *GetType(void)  {return "avtMultiresFilter";};
@@ -81,6 +86,9 @@ class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 
   protected:
     int                    nDims;
+    double                 viewArea2D;
+    double                 viewArea3D;
+    double                 viewArea;
     double                 desiredFrustum2D[6];
     double                 desiredFrustum3D[6];
     double                 desiredFrustum[6];

@@ -86,6 +86,7 @@ void View3DAttributes::Init()
     shear[0] = 0;
     shear[1] = 0;
     shear[2] = 1;
+    windowValid = false;
 
     View3DAttributes::SelectAll();
 }
@@ -143,6 +144,7 @@ void View3DAttributes::Copy(const View3DAttributes &obj)
     shear[1] = obj.shear[1];
     shear[2] = obj.shear[2];
 
+    windowValid = obj.windowValid;
 
     View3DAttributes::SelectAll();
 }
@@ -350,7 +352,8 @@ View3DAttributes::operator == (const View3DAttributes &obj) const
             centerOfRotation_equal &&
             (axis3DScaleFlag == obj.axis3DScaleFlag) &&
             axis3DScales_equal &&
-            shear_equal);
+            shear_equal &&
+            (windowValid == obj.windowValid));
 }
 
 // ****************************************************************************
@@ -510,6 +513,7 @@ View3DAttributes::SelectAll()
     Select(ID_axis3DScaleFlag,     (void *)&axis3DScaleFlag);
     Select(ID_axis3DScales,        (void *)axis3DScales, 3);
     Select(ID_shear,               (void *)shear, 3);
+    Select(ID_windowValid,         (void *)&windowValid);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -638,6 +642,12 @@ View3DAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("shear", shear, 3));
     }
 
+    if(completeSave || !FieldsEqual(ID_windowValid, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("windowValid", windowValid));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -706,6 +716,8 @@ View3DAttributes::SetFromNode(DataNode *parentNode)
         SetAxis3DScales(node->AsDoubleArray());
     if((node = searchNode->GetNode("shear")) != 0)
         SetShear(node->AsDoubleArray());
+    if((node = searchNode->GetNode("windowValid")) != 0)
+        SetWindowValid(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -835,6 +847,13 @@ View3DAttributes::SetShear(const double *shear_)
     shear[1] = shear_[1];
     shear[2] = shear_[2];
     Select(ID_shear, (void *)shear, 3);
+}
+
+void
+View3DAttributes::SetWindowValid(bool windowValid_)
+{
+    windowValid = windowValid_;
+    Select(ID_windowValid, (void *)&windowValid);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -979,6 +998,12 @@ View3DAttributes::GetShear()
     return shear;
 }
 
+bool
+View3DAttributes::GetWindowValid() const
+{
+    return windowValid;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1065,6 +1090,7 @@ View3DAttributes::GetFieldName(int index) const
     case ID_axis3DScaleFlag:     return "axis3DScaleFlag";
     case ID_axis3DScales:        return "axis3DScales";
     case ID_shear:               return "shear";
+    case ID_windowValid:         return "windowValid";
     default:  return "invalid index";
     }
 }
@@ -1105,6 +1131,7 @@ View3DAttributes::GetFieldType(int index) const
     case ID_axis3DScaleFlag:     return FieldType_bool;
     case ID_axis3DScales:        return FieldType_doubleArray;
     case ID_shear:               return FieldType_doubleArray;
+    case ID_windowValid:         return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1145,6 +1172,7 @@ View3DAttributes::GetFieldTypeName(int index) const
     case ID_axis3DScaleFlag:     return "bool";
     case ID_axis3DScales:        return "doubleArray";
     case ID_shear:               return "doubleArray";
+    case ID_windowValid:         return "bool";
     default:  return "invalid index";
     }
 }
@@ -1284,6 +1312,11 @@ View3DAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             shear_equal = (shear[i] == obj.shear[i]);
 
         retval = shear_equal;
+        }
+        break;
+    case ID_windowValid:
+        {  // new scope
+        retval = (windowValid == obj.windowValid);
         }
         break;
     default: retval = false;

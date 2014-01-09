@@ -110,6 +110,7 @@ public:
     void SetAxis3DScaleFlag(bool axis3DScaleFlag_);
     void SetAxis3DScales(const double *axis3DScales_);
     void SetShear(const double *shear_);
+    void SetWindowValid(bool windowValid_);
 
     // Property getting methods
     const double *GetViewNormal() const;
@@ -135,6 +136,7 @@ public:
           double *GetAxis3DScales();
     const double *GetShear() const;
           double *GetShear();
+    bool         GetWindowValid() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -169,6 +171,7 @@ public:
         ID_axis3DScaleFlag,
         ID_axis3DScales,
         ID_shear,
+        ID_windowValid,
         ID__LAST
     };
 
@@ -189,11 +192,12 @@ private:
     bool   axis3DScaleFlag;
     double axis3DScales[3];
     double shear[3];
+    bool   windowValid;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEW3DATTRIBUTES_TMFS "DDDddddDdbdbDbDD"
+#define VIEW3DATTRIBUTES_TMFS "DDDddddDdbdbDbDDb"
 
 #endif

@@ -44,7 +44,8 @@ avtMultiresSelection::DescriptionString()
 {
     char str[1024];
     sprintf(str,
-            "avtMultiresSelection:%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f",
+            "avtMultiresSelection:%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f",
+            viewArea,
             desiredFrustum[0], desiredFrustum[1],
             desiredFrustum[2], desiredFrustum[3],
             desiredFrustum[4], desiredFrustum[5],
