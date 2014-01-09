@@ -2368,8 +2368,6 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 
                 if (bang_nBlocks)
                     *bang_nBlocks = bnb;
-
-                continue;
             }
 
             ConvertSlashes(str_auto);
