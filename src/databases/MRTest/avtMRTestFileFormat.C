@@ -118,6 +118,8 @@ mandelbrot(const complex &c)
 //  Creation:   Fri Dec 20 12:20:07 PDT 2013
 //
 //  Modifications:
+//    Eric Brugger, Wed Jan  8 17:09:17 PST 2014
+//    I modified the reader to also create 3d meshes.
 //
 // ****************************************************************************
 
@@ -126,9 +128,11 @@ avtMRTestFileFormat::avtMRTestFileFormat(const char *fname)
 {
     filename = fname;
 
-    meshNx = 4096, meshNy = 4096;
+    meshNx = 4096, meshNy = 4096; meshNz = 4096;
     meshXmin = 0., meshXmax = 4096., meshYmin = 0., meshYmax = 4096.;
-    coarseNx = 64, coarseNy = 64;
+    meshZmin = 0., meshZmax = 4096.;
+    coarseNx = 64, coarseNy = 64; coarseNz = 64;
+    maxLevel2d = 18; maxLevel3d = 6;
 }
 
 
@@ -199,20 +203,47 @@ avtMRTestFileFormat::RegisterDataSelections(
 //  Creation:   Fri Dec 20 12:20:07 PDT 2013
 //
 //  Modifications:
+//    Eric Brugger, Wed Jan  8 17:09:17 PST 2014
+//    I modified the reader to also create 3d meshes.
 //
 // ****************************************************************************
 
 void
 avtMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    avtMeshMetaData *mesh = new avtMeshMetaData;
-    mesh->name = "Mesh";
-    mesh->meshType = AVT_RECTILINEAR_MESH;
-    mesh->numBlocks = 1;
-    mesh->blockOrigin = 0;
-    mesh->spatialDimension = 2;
-    mesh->topologicalDimension = 2;
-    md->Add(mesh);
+    avtMeshMetaData *mesh2d = new avtMeshMetaData;
+    mesh2d->name = "Mesh";
+    mesh2d->meshType = AVT_RECTILINEAR_MESH;
+    mesh2d->numBlocks = 1;
+    mesh2d->blockOrigin = 0;
+    mesh2d->spatialDimension = 2;
+    mesh2d->topologicalDimension = 2;
+
+    mesh2d->hasSpatialExtents = true;
+    mesh2d->minSpatialExtents[0] = meshXmin;
+    mesh2d->maxSpatialExtents[0] = meshXmax;
+    mesh2d->minSpatialExtents[1] = meshYmin;
+    mesh2d->maxSpatialExtents[1] = meshYmax;
+
+    md->Add(mesh2d);
+
+    avtMeshMetaData *mesh3d = new avtMeshMetaData;
+    mesh3d->name = "Mesh3d";
+    mesh3d->meshType = AVT_RECTILINEAR_MESH;
+    mesh3d->numBlocks = 1;
+    mesh3d->blockOrigin = 0;
+    mesh3d->spatialDimension = 3;
+    mesh3d->topologicalDimension = 3;
+
+    mesh3d->hasSpatialExtents = true;
+    mesh3d->minSpatialExtents[0] = meshXmin;
+    mesh3d->maxSpatialExtents[0] = meshXmax;
+    mesh3d->minSpatialExtents[1] = meshYmin;
+    mesh3d->maxSpatialExtents[1] = meshYmax;
+    mesh3d->minSpatialExtents[2] = meshZmin;
+    mesh3d->maxSpatialExtents[2] = meshZmax;
+
+    md->Add(mesh3d);
 
     md->SetFormatCanDoMultires(true);
 
@@ -239,65 +270,22 @@ avtMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   Fri Dec 20 12:20:07 PDT 2013
 //
 //  Modifications:
+//    Eric Brugger, Wed Jan  8 17:09:17 PST 2014
+//    I modified the reader to also create 3d meshes.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtMRTestFileFormat::GetMesh(int domain, const char *meshname)
 {
-    //
-    // Determine the mesh starting location and size of each cell.
-    //
-    double tileXmin, tileXmax, tileYmin, tileYmax;
-    int nx, ny;
-
-    CalculateMesh(tileXmin, tileXmax, tileYmin, tileYmax, nx, ny);
-
-    double xStart, yStart;
-    double xDelta, yDelta;
-
-    xStart = tileXmin;
-    yStart = tileYmin;
-    xDelta = (tileXmax - tileXmin) / nx;
-    yDelta = (tileYmax - tileYmin) / ny;
-
-    //
-    // Create the grid.
-    //
-    int dims[3];
-    dims[0] = nx + 1;
-    dims[1] = ny + 1;
-    dims[2] = 1;
-
-    vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
-    rg->SetDimensions(dims);
-
-    vtkFloatArray  *xcoord = vtkFloatArray::New();
-    vtkFloatArray  *ycoord = vtkFloatArray::New();
-    vtkFloatArray  *zcoord = vtkFloatArray::New();
-
-    xcoord->SetNumberOfTuples(dims[0]);
-    ycoord->SetNumberOfTuples(dims[1]);
-    zcoord->SetNumberOfTuples(dims[2]);
-
-    float *ptr = xcoord->GetPointer(0);
-    for (int i = 0; i < nx + 1; i++)
-        ptr[i] = xStart + double(i) * xDelta;
-    ptr = ycoord->GetPointer(0);
-    for (int i = 0; i < ny + 1; i++)
-        ptr[i] = yStart + double(i) * yDelta;
-    ptr = zcoord->GetPointer(0);
-    ptr[0] = 0.;
-
-    rg->SetXCoordinates(xcoord);
-    rg->SetYCoordinates(ycoord);
-    rg->SetZCoordinates(zcoord);
-
-    xcoord->Delete();
-    ycoord->Delete();
-    zcoord->Delete();
-
-    return rg;
+    if (strcmp(meshname, "Mesh") == 0)
+    {
+        return GetMesh2d();
+    }
+    else
+    {
+        return GetMesh3d();
+    }
 }
 
 
@@ -319,6 +307,8 @@ avtMRTestFileFormat::GetMesh(int domain, const char *meshname)
 //  Creation:   Fri Dec 20 12:20:07 PDT 2013
 //
 //  Modifications:
+//    Eric Brugger, Wed Jan  8 17:09:17 PST 2014
+//    I modified the reader to also create 3d meshes.
 //
 // ****************************************************************************
 
@@ -331,7 +321,7 @@ avtMRTestFileFormat::GetVar(int domain, const char *varname)
     double tileXmin, tileXmax, tileYmin, tileYmax;
     int nx, ny;
 
-    CalculateMesh(tileXmin, tileXmax, tileYmin, tileYmax, nx, ny);
+    CalculateMesh2d(tileXmin, tileXmax, tileYmin, tileYmax, nx, ny);
 
     double xStart, yStart;
     double xDelta, yDelta;
@@ -365,7 +355,7 @@ avtMRTestFileFormat::GetVar(int domain, const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtMRTestFileFormat::CalculateMesh
+//  Method: avtMRTestFileFormat::CalculateMesh2d
 //
 //  Purpose:
 //    Calculates the parameters defining the mesh for the current multi
@@ -383,16 +373,19 @@ avtMRTestFileFormat::GetVar(int domain, const char *varname)
 //  Creation:   Fri Dec 20 12:20:07 PDT 2013
 //
 //  Modifications:
+//    Eric Brugger, Wed Jan  8 17:09:17 PST 2014
+//    I modified the reader to also create 3d meshes.
 //
 // ****************************************************************************
 
 void
-avtMRTestFileFormat::CalculateMesh(double &tileXmin, double &tileXmax,
+avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     double &tileYmin, double &tileYmax, int &nx, int &ny)
 {
     //
     // Get the multi resolution data selection.
     //
+    double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
     double frustum[6] = {meshXmin, meshXmax, meshYmin, meshYmax, 0., 0.};
     double cellSize = .002;
 
@@ -402,6 +395,7 @@ avtMRTestFileFormat::CalculateMesh(double &tileXmin, double &tileXmax,
         if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
         {
             selection = (avtMultiresSelection *) *(selectionsList[i]);
+            viewArea = selection->GetViewArea();
             selection->GetDesiredFrustum(frustum);
             cellSize = selection->GetDesiredCellSize();
 
@@ -415,24 +409,26 @@ avtMRTestFileFormat::CalculateMesh(double &tileXmin, double &tileXmax,
         frustum[2] = meshYmin;
         frustum[3] = meshYmax;
     }
+    if (viewArea == DBL_MAX)
+    {
+        viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
+    }
 
     //
     // Calculate the extents of the mesh, with the extents aligning with
     // tile boundaries.
     //
-    double xRange = frustum[1] - frustum[0];
-    double yRange = frustum[3] - frustum[2];
-    double maxRange = std::max(xRange, yRange);
-    double diag = sqrt(2.) * maxRange;
+    double viewSize = sqrt(viewArea);
 
     double meshXRange = meshXmax - meshXmin;
     double meshYRange = meshYmax - meshYmin;
 
-    double meshMaxRange = std::max(meshXRange, meshYRange);
-    double meshDiag = sqrt(2.) * meshMaxRange;
-    double coarseDiag = meshDiag / coarseNx;
-    double cellDiag = diag * cellSize;
-    int level = std::max(0, int(ceil(log(coarseDiag / cellDiag) / log(2.))));
+    double meshVolume = meshXRange * meshYRange;
+    double meshSize = sqrt(meshVolume);
+    double coarseSize = meshSize / coarseNx;
+    double cellSize2 = viewSize * cellSize;
+    int level = std::min(maxLevel2d,
+        std::max(0, int(ceil(log(coarseSize / cellSize2) / log(2.)))));
 
     double tileXRange = meshXRange / pow(2., level); 
     double tileYRange = meshYRange / pow(2., level);
@@ -510,4 +506,337 @@ avtMRTestFileFormat::CalculateMesh(double &tileXmin, double &tileXmax,
         selection->SetActualFrustum(frustum);
         selection->SetActualCellSize(cellSize);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtMRTestFileFormat::CalculateMesh3d
+//
+//  Purpose:
+//    Calculates the parameters defining the mesh for the current multi
+//    resolution data selection.
+//
+//  Arguments:
+//    tileXmin  The tile aligned minimum X value of the mesh.
+//    tileXmax  The tile aligned maximum X value of the mesh.
+//    tileYmin  The tile aligned minimum Y value of the mesh.
+//    tileYmax  The tile aligned maximum Y value of the mesh.
+//    tileZmin  The tile aligned minimum Z value of the mesh.
+//    tileZmax  The tile aligned maximum Z value of the mesh.
+//    nx        The number of zones in the X direction.
+//    ny        The number of zones in the Y direction.
+//    nz        The number of zones in the Z direction.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Jan  8 17:09:17 PST 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
+    double &tileYmin, double &tileYmax, double &tileZmin, double &tileZmax,
+    int &nx, int &ny, int &nz)
+{
+    //
+    // Get the multi resolution data selection.
+    //
+    double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
+    double frustum[6] = {meshXmin, meshXmax, meshYmin, meshYmax,
+                         meshZmin, meshZmax};
+    double cellSize = .002;
+
+    avtMultiresSelection *selection = NULL;
+    for (int i = 0; i < selectionsList.size(); i++)
+    {
+        if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
+        {
+            selection = (avtMultiresSelection *) *(selectionsList[i]);
+            viewArea = selection->GetViewArea();
+            selection->GetDesiredFrustum(frustum);
+            cellSize = selection->GetDesiredCellSize();
+
+            (*selectionsApplied)[i] = true;
+        }
+    }
+    if (frustum[0] == DBL_MAX && frustum[1] == -DBL_MAX)
+    {
+        frustum[0] = meshXmin;
+        frustum[1] = meshXmax;
+        frustum[2] = meshYmin;
+        frustum[3] = meshYmax;
+        frustum[4] = meshZmin;
+        frustum[5] = meshZmax;
+    }
+    if (viewArea == DBL_MAX)
+    {
+        viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
+    }
+
+    //
+    // Calculate the extents of the mesh, with the extents aligning with
+    // tile boundaries.
+    //
+    double viewSize = sqrt(viewArea);
+
+    double meshXRange = meshXmax - meshXmin;
+    double meshYRange = meshYmax - meshYmin;
+    double meshZRange = meshZmax - meshZmin;
+
+    double meshVolume = meshXRange * meshYRange * meshZRange;
+    double meshSize = pow(meshVolume, 1. / 3.);
+    double coarseSize = meshSize / coarseNx;
+    double cellSize2 = viewSize * cellSize;
+    int level = std::min(maxLevel3d,
+        std::max(0, int(ceil(log(coarseSize / cellSize2) / log(2.)))));
+
+    double tileXRange = meshXRange / pow(2., level); 
+    double tileYRange = meshYRange / pow(2., level);
+    double tileZRange = meshZRange / pow(2., level);
+
+    int iTile = std::max(0., floor((frustum[0] - meshXmin) / tileXRange));
+    tileXmin = meshXmin + iTile * tileXRange;
+    iTile = std::min(pow(2., level), ceil((frustum[1] - meshXmin) / tileXRange));
+    tileXmax = meshXmin + iTile * tileXRange;
+
+    iTile = std::max(0., floor((frustum[2] - meshYmin) / tileYRange));
+    tileYmin = meshYmin + iTile * tileYRange;
+    iTile = std::min(pow(2., level), ceil((frustum[3] - meshYmin) / tileYRange));
+    tileYmax = meshYmin + iTile * tileYRange;
+
+    iTile = std::max(0., floor((frustum[4] - meshZmin) / tileZRange));
+    tileZmin = meshZmin + iTile * tileZRange;
+    iTile = std::min(pow(2., level), ceil((frustum[5] - meshZmin) / tileZRange));
+    tileZmax = meshZmin + iTile * tileZRange;
+
+    //
+    // Handle the cases where we end up with a mesh with zero or negative
+    // extents in one or both directions.
+    //
+    if (tileXmin <= meshXmin && tileXmax <= meshXmin)
+    {
+        //
+        // We have gone off the right edge.
+        //
+        tileXmin = meshXmin;
+        tileXmax = meshXmin + tileXRange;
+    }
+    else if (tileXmin >= meshXmax && tileXmax >= meshXmax)
+    {
+        //
+        // We have gone off the left edge.
+        //
+        tileXmin = meshXmax - tileXRange;
+        tileXmax = meshXmax;
+    }
+    if (tileYmin <= meshYmin && tileYmax <= meshYmin)
+    {
+        //
+        // We have gone off the top edge.
+        //
+        tileYmin = meshYmin;
+        tileYmax = meshYmin + tileYRange;
+    }
+    else if (tileYmin >= meshYmax && tileYmax >= meshYmax)
+    {
+        //
+        // We have gone off the bottom edge.
+        //
+        tileYmin = meshYmax - tileYRange;
+        tileYmax = meshYmax;
+    }
+    if (tileZmin <= meshZmin && tileZmax <= meshZmin)
+    {
+        //
+        // We have gone off the front edge.
+        //
+        tileZmin = meshZmin;
+        tileZmax = meshZmin + tileZRange;
+    }
+    else if (tileZmin >= meshZmax && tileZmax >= meshZmax)
+    {
+        //
+        // We have gone off the back edge.
+        //
+        tileZmin = meshZmax - tileZRange;
+        tileZmax = meshZmax;
+    }
+
+    //
+    // Determine the number of zones in each direction.
+    //
+    nx = int((tileXmax - tileXmin) / tileXRange) * coarseNx;
+    ny = int((tileYmax - tileYmin) / tileYRange) * coarseNy;
+    nz = int((tileZmax - tileZmin) / tileZRange) * coarseNz;
+
+    //
+    // Set the actual multi resolution selection back into the selection.
+    //
+    if (selection != NULL)
+    {
+        frustum[0] = tileXmin;
+        frustum[1] = tileXmax;
+        frustum[2] = tileYmin;
+        frustum[3] = tileYmax;
+        frustum[4] = tileZmin;
+        frustum[5] = tileZmax;
+
+        double xDelta, yDelta, zDelta;
+        xDelta = (tileXmax - tileXmin) / nx;
+        yDelta = (tileYmax - tileYmin) / ny;
+        zDelta = (tileZmax - tileZmin) / nz;
+
+        cellSize = sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
+        selection->SetActualFrustum(frustum);
+        selection->SetActualCellSize(cellSize);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMRTestFileFormat::GetMesh2d
+//
+//  Purpose:
+//    Gets the 2d mesh associated with this file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Jan  8 17:09:17 PST 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtMRTestFileFormat::GetMesh2d()
+{
+    //
+    // Determine the mesh starting location and size of each cell.
+    //
+    double tileXmin, tileXmax, tileYmin, tileYmax;
+    int nx, ny;
+
+    CalculateMesh2d(tileXmin, tileXmax, tileYmin, tileYmax, nx, ny);
+
+    double xStart, yStart;
+    double xDelta, yDelta;
+
+    xStart = tileXmin;
+    yStart = tileYmin;
+    xDelta = (tileXmax - tileXmin) / nx;
+    yDelta = (tileYmax - tileYmin) / ny;
+
+    //
+    // Create the grid.
+    //
+    int dims[3];
+    dims[0] = nx + 1;
+    dims[1] = ny + 1;
+    dims[2] = 1;
+
+    vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
+    rg->SetDimensions(dims);
+
+    vtkFloatArray  *xcoord = vtkFloatArray::New();
+    vtkFloatArray  *ycoord = vtkFloatArray::New();
+    vtkFloatArray  *zcoord = vtkFloatArray::New();
+
+    xcoord->SetNumberOfTuples(dims[0]);
+    ycoord->SetNumberOfTuples(dims[1]);
+    zcoord->SetNumberOfTuples(dims[2]);
+
+    float *ptr = xcoord->GetPointer(0);
+    for (int i = 0; i < nx + 1; i++)
+        ptr[i] = xStart + double(i) * xDelta;
+    ptr = ycoord->GetPointer(0);
+    for (int i = 0; i < ny + 1; i++)
+        ptr[i] = yStart + double(i) * yDelta;
+    ptr = zcoord->GetPointer(0);
+    ptr[0] = 0.;
+
+    rg->SetXCoordinates(xcoord);
+    rg->SetYCoordinates(ycoord);
+    rg->SetZCoordinates(zcoord);
+
+    xcoord->Delete();
+    ycoord->Delete();
+    zcoord->Delete();
+
+    return rg;
+}
+
+
+// ****************************************************************************
+//  Method: avtMRTestFileFormat::GetMesh3d
+//
+//  Purpose:
+//    Gets the 3d mesh associated with this file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Jan  8 17:09:17 PST 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtMRTestFileFormat::GetMesh3d()
+{
+    //
+    // Determine the mesh starting location and size of each cell.
+    //
+    double tileXmin, tileXmax, tileYmin, tileYmax, tileZmin, tileZmax;
+    int nx, ny, nz;
+
+    CalculateMesh3d(tileXmin, tileXmax, tileYmin, tileYmax, tileZmin, tileZmax,
+                    nx, ny, nz);
+
+    double xStart, yStart, zStart;
+    double xDelta, yDelta, zDelta;
+
+    xStart = tileXmin;
+    yStart = tileYmin;
+    zStart = tileZmin;
+    xDelta = (tileXmax - tileXmin) / nx;
+    yDelta = (tileYmax - tileYmin) / ny;
+    zDelta = (tileZmax - tileZmin) / nz;
+
+    //
+    // Create the grid.
+    //
+    int dims[3];
+    dims[0] = nx + 1;
+    dims[1] = ny + 1;
+    dims[2] = nz + 1;
+
+    vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
+    rg->SetDimensions(dims);
+
+    vtkFloatArray  *xcoord = vtkFloatArray::New();
+    vtkFloatArray  *ycoord = vtkFloatArray::New();
+    vtkFloatArray  *zcoord = vtkFloatArray::New();
+
+    xcoord->SetNumberOfTuples(dims[0]);
+    ycoord->SetNumberOfTuples(dims[1]);
+    zcoord->SetNumberOfTuples(dims[2]);
+
+    float *ptr = xcoord->GetPointer(0);
+    for (int i = 0; i < nx + 1; i++)
+        ptr[i] = xStart + double(i) * xDelta;
+    ptr = ycoord->GetPointer(0);
+    for (int i = 0; i < ny + 1; i++)
+        ptr[i] = yStart + double(i) * yDelta;
+    ptr = zcoord->GetPointer(0);
+    for (int i = 0; i < nz + 1; i++)
+        ptr[i] = zStart + double(i) * zDelta;
+
+    rg->SetXCoordinates(xcoord);
+    rg->SetYCoordinates(ycoord);
+    rg->SetZCoordinates(zcoord);
+
+    xcoord->Delete();
+    ycoord->Delete();
+    zcoord->Delete();
+
+    return rg;
 }

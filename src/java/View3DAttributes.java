@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class View3DAttributes extends AttributeSubject
 {
-    private static int View3DAttributes_numAdditionalAtts = 16;
+    private static int View3DAttributes_numAdditionalAtts = 17;
 
     public View3DAttributes()
     {
@@ -98,6 +98,7 @@ public class View3DAttributes extends AttributeSubject
         shear[0] = 0;
         shear[1] = 0;
         shear[2] = 1;
+        windowValid = false;
     }
 
     public View3DAttributes(int nMoreFields)
@@ -140,6 +141,7 @@ public class View3DAttributes extends AttributeSubject
         shear[0] = 0;
         shear[1] = 0;
         shear[2] = 1;
+        windowValid = false;
     }
 
     public View3DAttributes(View3DAttributes obj)
@@ -191,6 +193,7 @@ public class View3DAttributes extends AttributeSubject
         shear[1] = obj.shear[1];
         shear[2] = obj.shear[2];
 
+        windowValid = obj.windowValid;
 
         SelectAll();
     }
@@ -260,7 +263,8 @@ public class View3DAttributes extends AttributeSubject
                 centerOfRotation_equal &&
                 (axis3DScaleFlag == obj.axis3DScaleFlag) &&
                 axis3DScales_equal &&
-                shear_equal);
+                shear_equal &&
+                (windowValid == obj.windowValid));
     }
 
     // Property setting methods
@@ -428,6 +432,12 @@ public class View3DAttributes extends AttributeSubject
         Select(15);
     }
 
+    public void SetWindowValid(boolean windowValid_)
+    {
+        windowValid = windowValid_;
+        Select(16);
+    }
+
     // Property getting methods
     public double[] GetViewNormal() { return viewNormal; }
     public double[] GetFocus() { return focus; }
@@ -445,6 +455,7 @@ public class View3DAttributes extends AttributeSubject
     public boolean  GetAxis3DScaleFlag() { return axis3DScaleFlag; }
     public double[] GetAxis3DScales() { return axis3DScales; }
     public double[] GetShear() { return shear; }
+    public boolean  GetWindowValid() { return windowValid; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -481,6 +492,8 @@ public class View3DAttributes extends AttributeSubject
             buf.WriteDoubleArray(axis3DScales);
         if(WriteSelect(15, buf))
             buf.WriteDoubleArray(shear);
+        if(WriteSelect(16, buf))
+            buf.WriteBool(windowValid);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -535,6 +548,9 @@ public class View3DAttributes extends AttributeSubject
         case 15:
             SetShear(buf.ReadDoubleArray());
             break;
+        case 16:
+            SetWindowValid(buf.ReadBool());
+            break;
         }
     }
 
@@ -557,6 +573,7 @@ public class View3DAttributes extends AttributeSubject
         str = str + boolToString("axis3DScaleFlag", axis3DScaleFlag, indent) + "\n";
         str = str + doubleArrayToString("axis3DScales", axis3DScales, indent) + "\n";
         str = str + doubleArrayToString("shear", shear, indent) + "\n";
+        str = str + boolToString("windowValid", windowValid, indent) + "\n";
         return str;
     }
 
@@ -578,5 +595,6 @@ public class View3DAttributes extends AttributeSubject
     private boolean  axis3DScaleFlag;
     private double[] axis3DScales;
     private double[] shear;
+    private boolean  windowValid;
 }
 

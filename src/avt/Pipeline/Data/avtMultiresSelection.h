@@ -61,6 +61,9 @@
 //  Creation:   December 20, 2013
 //
 //  Modifications:
+//    Eric Brugger, Wed Jan  8 16:41:12 PST 2014
+//    I added a ViewArea to the multi resolution data selection since the
+//    view frustum was insufficient in 3d.
 //
 // ****************************************************************************
 
@@ -74,6 +77,10 @@ class PIPELINE_API avtMultiresSelection : public avtDataSelection
                                 { return "Multi Resolution Data Selection"; }
     virtual std::string     DescriptionString(void);
 
+    void                    SetViewArea(double area)
+                                { viewArea = area; }
+    double                  GetViewArea() const
+                                { return viewArea; }
     void                    SetDesiredFrustum(const double frust[6]);
     void                    GetDesiredFrustum(double frust[6]) const;
     void                    SetActualFrustum(const double frust[6]);
@@ -88,6 +95,7 @@ class PIPELINE_API avtMultiresSelection : public avtDataSelection
                                 { return actualCellSize; }
 
   private:
+    double viewArea;
     double desiredFrustum[6];
     double actualFrustum[6];
     double desiredCellSize;

@@ -78,12 +78,18 @@
 //    Eric Brugger, Thu Jan  2 15:16:28 PST 2014
 //    Add support for 3d multi resolution data selections.
 //
+//    Eric Brugger, Wed Jan  8 17:00:23 PST 2014
+//    I added a ViewArea to the multi resolution data selection since the
+//    view frustum was insufficient in 3d.
+//
 // ****************************************************************************
 
-avtMultiresFilter::avtMultiresFilter(double *frust2D, double *frust3D,
-    double size)
+avtMultiresFilter::avtMultiresFilter(double area2D, double area3D,
+    double *frust2D, double *frust3D, double size)
 {
     nDims = 3;
+    viewArea2D = area2D;
+    viewArea3D = area3D;
     for (int i = 0; i < 6; i++)
         desiredFrustum2D[i] = frust2D[i];
     for (int i = 0; i < 6; i++)
@@ -185,6 +191,10 @@ avtMultiresFilter::Execute(void)
 //    Eric Brugger, Thu Jan  2 15:16:28 PST 2014
 //    Add support for 3d multi resolution data selections.
 //
+//    Eric Brugger, Wed Jan  8 17:00:23 PST 2014
+//    I added a ViewArea to the multi resolution data selection since the
+//    view frustum was insufficient in 3d.
+//
 // ****************************************************************************
 
 avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
@@ -197,11 +207,13 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     nDims = dataAtts.GetSpatialDimension();
     if (nDims == 2)
     {
+        viewArea = viewArea2D;
         for (int i = 0; i < 6; i++)
             desiredFrustum[i] = desiredFrustum2D[i];
     }
     else
     {
+        viewArea = viewArea3D;
         for (int i = 0; i < 6; i++)
             desiredFrustum[i] = desiredFrustum3D[i];
     }
@@ -218,6 +230,44 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     }
 
     //
+    // If the view area is invalid, set it from the desiredFrustum
+    // or extents. Note that those may also be invalid so we need
+    // to check for validity before calculating the viewArea to
+    // avoid an arithmetic overflow.
+    //
+    if (viewArea == DBL_MAX)
+    {
+        if (nDims == 2)
+        {
+            if (desiredFrustum[0] != DBL_MAX && desiredFrustum[1] != -DBL_MAX)
+            {
+                viewArea = (desiredFrustum[1] - desiredFrustum[0]) *
+                           (desiredFrustum[3] - desiredFrustum[2]);
+            }
+        }
+        else
+        {
+            if (extents[0] != DBL_MAX && extents[1] != -DBL_MAX)
+            {
+                //
+                // We don't know the aspect ratio of the window and the
+                // zoom factor so assume they are both 1.
+                //
+                double ratio = 1.;
+                double imageZoom = 1.;
+                double parallelScale = 0.5 * sqrt((extents[1]-extents[0]) *
+                                                  (extents[1]-extents[0]) +
+                                                  (extents[3]-extents[2]) *
+                                                  (extents[3]-extents[2]) +
+                                                  (extents[5]-extents[4]) *
+                                                  (extents[5]-extents[4]));
+                viewArea = (parallelScale * parallelScale * ratio) /
+                           (imageZoom * imageZoom);
+            }
+        }
+    }
+
+    //
     // If the format can do multires then add a multi resolution data
     // selection to the contract and return.
     //
@@ -230,6 +280,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     if (dbmd->GetFormatCanDoMultires())
     {
         avtMultiresSelection *selection = new avtMultiresSelection;
+        selection->SetViewArea(viewArea);
         selection->SetDesiredFrustum(desiredFrustum);
         selection->SetDesiredCellSize(desiredCellSize);
         selID = contract->GetDataRequest()->AddDataSelection(selection);
@@ -291,7 +342,8 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     std::vector<int> domain_list;
     std::back_insert_iterator<std::vector<int> > doms(domain_list);
 
-    double maxPatchDiag = 0.;
+    double viewSize = sqrt(viewArea);
+    double maxPatchSize = 0.;
     int nVisible = 0;
     for(int dom=0; dom < max_domain; ++dom)
     {
@@ -300,26 +352,23 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
         std::vector<int> logicalExtents = sdn->GetDomainLogicalExtents(dom);
 
         bool visible = true;
-        double patchDx, frustumDx;
-        double patchDiag = 0., frustumDiag = 0.;
+        double patchDx;
+        double patchVolume = 1.;
         for (int i = 0; i < nDims; ++i)
         {
             patchDx = (extents[i*2+1] - extents[i*2]) / (topLogicalWidth[i] * ratios[i]);
-            patchDiag += patchDx * patchDx;
-            frustumDx = (desiredFrustum[i*2+1] - desiredFrustum[i*2]);
-            frustumDiag += frustumDx * frustumDx;
+            patchVolume *= patchDx;
             double min, max;
             min = double(logicalExtents[i]) * patchDx;
             max = (double(logicalExtents[i+3]) + 1.) * patchDx;
             if (max < desiredFrustum[i*2] || min > desiredFrustum[i*2+1])
                 visible = false;
         }
-        patchDiag = sqrt(patchDiag);
-        frustumDiag = sqrt(frustumDiag);
-        double ratio = patchDiag / frustumDiag;
+        double patchSize = pow(patchVolume, 1. / double(nDims));
+        double ratio = patchSize / viewSize;
         if (visible && ratio < desiredCellSize)
         {
-            maxPatchDiag = patchDiag > maxPatchDiag ? patchDiag : maxPatchDiag;
+            maxPatchSize = patchSize > maxPatchSize ? patchSize : maxPatchSize;
         }
         if (ratio < desiredCellSize)
             visible = false;
@@ -335,7 +384,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
             nVisible++;
         }
     }
-    actualCellSize = maxPatchDiag;
+    actualCellSize = maxPatchSize;
 
     contract->GetDataRequest()->GetRestriction()->RestrictDomains(domain_list);
 

@@ -215,6 +215,11 @@ PyView3DAttributes_ToString(const View3DAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    if(atts->GetWindowValid())
+        SNPRINTF(tmpStr, 1000, "%swindowValid = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%swindowValid = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -821,6 +826,30 @@ View3DAttributes_GetShear(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+View3DAttributes_SetWindowValid(PyObject *self, PyObject *args)
+{
+    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the windowValid in the object.
+    obj->data->SetWindowValid(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+View3DAttributes_GetWindowValid(PyObject *self, PyObject *args)
+{
+    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetWindowValid()?1L:0L);
+    return retval;
+}
+
 
 // ****************************************************************************
 // Method: RotateAxis
@@ -891,6 +920,8 @@ PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH] = {
     {"GetAxis3DScales", View3DAttributes_GetAxis3DScales, METH_VARARGS},
     {"SetShear", View3DAttributes_SetShear, METH_VARARGS},
     {"GetShear", View3DAttributes_GetShear, METH_VARARGS},
+    {"SetWindowValid", View3DAttributes_SetWindowValid, METH_VARARGS},
+    {"GetWindowValid", View3DAttributes_GetWindowValid, METH_VARARGS},
     {"RotateAxis", View3DAttributes_RotateAxis, METH_VARARGS},
     {NULL, NULL}
 };
@@ -952,6 +983,8 @@ PyView3DAttributes_getattr(PyObject *self, char *name)
         return View3DAttributes_GetAxis3DScales(self, NULL);
     if(strcmp(name, "shear") == 0)
         return View3DAttributes_GetShear(self, NULL);
+    if(strcmp(name, "windowValid") == 0)
+        return View3DAttributes_GetWindowValid(self, NULL);
 
     return Py_FindMethod(PyView3DAttributes_methods, self, name);
 }
@@ -998,6 +1031,8 @@ PyView3DAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = View3DAttributes_SetAxis3DScales(self, tuple);
     else if(strcmp(name, "shear") == 0)
         obj = View3DAttributes_SetShear(self, tuple);
+    else if(strcmp(name, "windowValid") == 0)
+        obj = View3DAttributes_SetWindowValid(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

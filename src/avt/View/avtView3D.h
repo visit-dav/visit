@@ -83,6 +83,10 @@ class View3DAttributes;
 //    I added GetFrustum to add support for 3d multi resolution data
 //    selections.
 //
+//    Eric Brugger, Wed Jan  8 16:44:28 PST 2014
+//    I added windowValid to support adding a multi resolution display
+//    capability.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView3D
@@ -103,6 +107,7 @@ struct AVTVIEW_API avtView3D
     bool     axis3DScaleFlag;
     double   axis3DScales[3];
     double   shear[3];
+    bool     windowValid;
 
   public:
                     avtView3D();

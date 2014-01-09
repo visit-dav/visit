@@ -1038,6 +1038,10 @@ NetworkManager::StartNetwork(const std::string &format,
 //    Eric Brugger, Thu Jan  2 15:18:21 PST 2014
 //    I added support for 3d multi resolution data selections.
 //
+//    Eric Brugger, Wed Jan  8 17:03:56 PST 2014
+//    I added a ViewArea to the multi resolution data selection since the
+//    view frustum was insufficient in 3d.
+//
 // ****************************************************************************
 
 void
@@ -1132,11 +1136,13 @@ NetworkManager::StartNetwork(const std::string &format,
     VisWindow *visWin = viswinMap[windowID].viswin;
     if (visWin->GetMultiresolutionMode())
     {
-        // Get the 2D frustum.
+        // Get the 2D view area and frustum.
+        double area2D;
         double frustum2D[6];
         const avtView2D view2D = visWin->GetView2D();
         if (!view2D.windowValid)
         {
+            area2D = DBL_MAX;
             frustum2D[0] = DBL_MAX;
             frustum2D[1] = -DBL_MAX;
             frustum2D[2] = DBL_MAX;
@@ -1144,26 +1150,44 @@ NetworkManager::StartNetwork(const std::string &format,
         }
         else
         {
+            area2D = (view2D.window[1] - view2D.window[0]) *
+                     (view2D.window[3] - view2D.window[2]);
             frustum2D[0] = view2D.window[0];
             frustum2D[1] = view2D.window[1];
             frustum2D[2] = view2D.window[2];
             frustum2D[3] = view2D.window[3];
         }
 
-        // Get the 3D frustum.
+        // Get the 3D view area and frustum.
+        double area3D;
         double frustum3D[6];
         const avtView3D view3D = visWin->GetView3D();
-        int width, height;
-        visWin->GetSize(width, height);
-        double aspect = double(width) / double(height);
-        view3D.GetFrustum(frustum3D, aspect);
+        if (!view3D.windowValid)
+        {
+            area3D = DBL_MAX;
+            frustum3D[0] = DBL_MAX;
+            frustum3D[1] = -DBL_MAX;
+            frustum3D[2] = DBL_MAX;
+            frustum3D[3] = -DBL_MAX;
+            frustum3D[4] = DBL_MAX;
+            frustum3D[5] = -DBL_MAX;
+        }
+        else
+        {
+            int width, height;
+            visWin->GetSize(width, height);
+            double aspect = double(width) / double(height);
+            area3D = (view3D.parallelScale * view3D.parallelScale * aspect) /
+                     (view3D.imageZoom * view3D.imageZoom);
+            view3D.GetFrustum(frustum3D, aspect);
+        }
 
         // Get the cell size.
         double cellSize = visWin->GetMultiresolutionCellSize();
 
         // Add the multires filter.
-        avtMultiresFilter *f2 = new avtMultiresFilter(frustum2D, frustum3D,
-                                                      cellSize);
+        avtMultiresFilter *f2 = new avtMultiresFilter(area2D, area3D,
+                                        frustum2D, frustum3D, cellSize);
         filt = new NetnodeFilter(f2, "MultiresFilter");
         filt->GetInputNodes().push_back(input);
         workingNet->AddNode(filt);

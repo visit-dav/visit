@@ -10032,6 +10032,10 @@ ViewerPlotList::PermitsLogViewScaling(WINDOW_MODE wm)
 //    Eric Brugger, Thu Jan  2 15:19:29 PST 2014
 //    I added support for 3d multi resolution data selections.
 //   
+//    Eric Brugger, Wed Jan  8 17:06:16 PST 2014
+//    I added a ViewArea to the multi resolution data selection since the
+//    view frustum was insufficient in 3d.
+//
 // ****************************************************************************
 
 bool
@@ -10059,10 +10063,13 @@ ViewerPlotList::ShouldRefineData(double smallestCellSize) const
         cellSize = atts.GetMultiresCellSize();
     }
 
+    double viewArea;
     double fustrum[6];
     if (window->GetWindowMode() == WINMODE_2D)
     {
         const avtView2D &view2D = window->GetView2D();
+        viewArea = (view2D.window[1] - view2D.window[0]) *
+                   (view2D.window[3] - view2D.window[2]);
         fustrum[0] = view2D.window[0];
         fustrum[1] = view2D.window[1];
         fustrum[2] = view2D.window[2];
@@ -10074,6 +10081,8 @@ ViewerPlotList::ShouldRefineData(double smallestCellSize) const
         int width, height;
         window->GetSize(width, height);
         double aspect = double(width) / double(height);
+        viewArea = (view3D.parallelScale * view3D.parallelScale * aspect) /
+                   (view3D.imageZoom * view3D.imageZoom);
         view3D.GetFrustum(fustrum, aspect);
     }
     else
@@ -10082,20 +10091,17 @@ ViewerPlotList::ShouldRefineData(double smallestCellSize) const
     }
 
     bool refineData = false;
-    double frustumDx = 0.;
     for (int i = 0; i < nDims; i++)
     {
-        frustumDx += ((fustrum[i*2+1]-fustrum[i*2])*
-                      (fustrum[i*2+1]-fustrum[i*2]));
         if (fustrum[i*2] < ext[i*2] ||
             fustrum[i*2+1] > ext[i*2+1])
         {
             refineData = true;
         }
     }
-    frustumDx = sqrt(frustumDx);
-    double ratio = cellSize / frustumDx;
     
+    double viewSize = sqrt(viewArea);
+    double ratio = cellSize / viewSize;
     if (ratio > smallestCellSize)
         refineData = true;
 

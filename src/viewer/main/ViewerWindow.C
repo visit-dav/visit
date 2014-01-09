@@ -272,7 +272,7 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    I added a force option to SetAnnotationAttributes.
 //
 //    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//    Add a multi resolution display capability for AMR data.
+//    I added a multi resolution display capability for 2d.
 //
 // ****************************************************************************
 
@@ -2308,7 +2308,7 @@ ViewerWindow::InvertBackgroundColor()
 //   Add compact domain options.
 //
 //   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//   Add a multi resolution display capability for AMR data.
+//   I added a multi resolution display capability for 2d.
 //
 // ****************************************************************************
 
@@ -4283,7 +4283,7 @@ ViewerWindow::RecenterViewCurve(const double *limits)
 //    CanDoLogViewScaling changed to PermitsLogViewScaling.
 //
 //    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//    Add a multi resolution display capability for AMR data.
+//    I added a multi resolution display capability for 2d.
 //
 // ****************************************************************************
 
@@ -4417,6 +4417,9 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    repeated re-centering with a non-1:1:1 3D scale will cause the parallel
 //    scale to keep shrinking/growing.
 //
+//    Eric Brugger, Wed Jan  8 16:52:11 PST 2014
+//    I added a multi resolution display capability for 3d.
+//
 // ****************************************************************************
 
 void
@@ -4437,6 +4440,7 @@ ViewerWindow::RecenterView3d(const double *limits)
     if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
     {
         centeringValid3d = false;
+        view3D.windowValid = false;
         if (boundingBoxValid3d)
         {
             //
@@ -4445,12 +4449,12 @@ ViewerWindow::RecenterView3d(const double *limits)
             view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
             view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
             view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
-
-            //
-            // Update the view.
-            //
-            visWindow->SetView3D(view3D);
         }
+
+        //
+        // Update the view.
+        //
+        visWindow->SetView3D(view3D);
 
         return;
     }
@@ -4526,6 +4530,11 @@ ViewerWindow::RecenterView3d(const double *limits)
     view3D.centerOfRotation[0] = view3D.focus[0];
     view3D.centerOfRotation[1] = view3D.focus[1];
     view3D.centerOfRotation[2] = view3D.focus[2];
+
+    //
+    // Mark the view as valid.
+    //
+    view3D.windowValid = false;
 
     //
     // Update the view.
@@ -4778,7 +4787,7 @@ ViewerWindow::ResetViewCurve()
 //    CanDoLogViewScaling changed to PermitsLogViewScaling.
 //
 //    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//    Add a multi resolution display capability for AMR data.
+//    I added a multi resolution display capability for 2d.
 //
 // ****************************************************************************
 
@@ -4938,6 +4947,9 @@ ViewerWindow::ResetView2d()
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
 //
+//    Eric Brugger, Wed Jan  8 16:52:11 PST 2014
+//    I added a multi resolution display capability for 3d.
+//
 // ****************************************************************************
 
 void
@@ -4968,6 +4980,8 @@ ViewerWindow::ResetView3d()
         centeringValid3d = false;
         viewSetIn3d = false;
         viewPartialSetIn3d = false;
+        view3D.windowValid = false;
+        visWindow->SetView3D(view3D);
         return;
     }
 
@@ -4978,6 +4992,7 @@ ViewerWindow::ResetView3d()
     centeringValid3d = true;
     viewSetIn3d = true;
     viewPartialSetIn3d = true;
+    view3D.windowValid = true;
 
     //
     // Set the scale.  They are choosen such that the object should fit
@@ -6452,7 +6467,7 @@ ViewerWindow::SetLargeIcons(bool val)
 //    Add compact domain options.
 //
 //    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//    Add a multi resolution display capability for AMR data.
+//    I added a multi resolution display capability for 2d.
 //
 // ****************************************************************************
 
@@ -8402,7 +8417,7 @@ ViewerWindow::GetCompactDomainsAutoThreshold() const
 //   Added automatic depth cueing mode.
 //
 //   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//   Add a multi resolution display capability for AMR data.
+//   I added a multi resolution display capability for 2d.
 //
 // ****************************************************************************
 
@@ -8694,7 +8709,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   I added a force option to SetAnnotationAttributes.
 //
 //   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//   Add a multi resolution display capability for AMR data.
+//   I added a multi resolution display capability for 2d.
 //
 // ****************************************************************************
 
