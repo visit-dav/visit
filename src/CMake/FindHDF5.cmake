@@ -41,15 +41,19 @@
 #   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
 #   Remove ${VISIT_MSVC_VERSION} from lib location.
 #
+#   Kathleen Biagas, Thu Jan 9 18:47:21 PDT 2014
+#   Add patch from John Cary for hdf5 without 'dll' suffix on name.
+#
 #****************************************************************************/
 
 # Use the HDF5_DIR hint from the config-site .cmake file 
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
- SET_UP_THIRD_PARTY(HDF5 lib include hdf5dll hdf5_hldll)
-ELSE (WIN32)
+OPTION(HDF5_LIBNAMES_AFFIX_DLL "Whether HDF5 library base names end with dll" ON)
+IF(WIN32 AND HDF5_LIBNAMES_AFFIX_DLL)
+  SET_UP_THIRD_PARTY(HDF5 lib include hdf5dll hdf5_hldll)
+ELSE()
   SET_UP_THIRD_PARTY(HDF5 lib include hdf5)
-ENDIF (WIN32)
+ENDIF()
 
