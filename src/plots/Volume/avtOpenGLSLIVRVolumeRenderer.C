@@ -364,6 +364,9 @@ avtOpenGLSLIVRVolumeRenderer::OnlyLightingFlagIsDifferent(
 //   Brad Whitlock, Wed Apr 22 12:10:06 PDT 2009
 //   I changed the interface.
 //
+//   Kathleen Biagas, Thu Jan 9 16:29:43 PST 2014
+//   Added early return and intel-specific warning message.
+//
 // ****************************************************************************
 
 void
@@ -372,13 +375,32 @@ avtOpenGLSLIVRVolumeRenderer::Render(
     const avtVolumeRendererImplementation::VolumeData &volume)
 {
     const char *mName = "avtOpenGLSLIVRVolumeRenderer::Render: ";
-
+    static bool haveIssuedWarning = false;
     // Initializes SLIVR shaders and GLEW.
     if(!slivrInit)
     {
         debug5 << mName << "Initializing SLIVR" << endl;
         SLIVR::ShaderProgramARB::init_shaders_supported();
         slivrInit = true;
+    }
+
+    if (SLIVR::ShaderProgramARB::shaders_supported() == false)
+    {
+        if (!haveIssuedWarning)
+        {
+            std::stringstream sstr;
+            if (SLIVR::ShaderProgramARB::isGFXIntel())
+            {
+                sstr << "SLIVR currently does not support Intel graphics cards.";
+            }
+            else
+            {
+                sstr << "SLIVR uses shaders which your graphics card does not support.";
+            }
+            avtCallback::IssueWarning(sstr.str().c_str());
+            haveIssuedWarning = true;
+        }
+        return;
     }
 
     // Get the sampling rate that the renderer will use.

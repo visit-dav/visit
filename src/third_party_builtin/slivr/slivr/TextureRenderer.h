@@ -149,7 +149,7 @@ protected:
 			       bool normal, bool fog,
 			       vector<int> *mask=0);
 
-  void build_colormap1(vector<float> cmap_array,
+  void build_colormap1(vector<float> &cmap_array,
 		       unsigned int& cmap_tex, bool& cmap_dirty,
 		       bool& alpha_dirty,  double level_exponent = 0.0);
 
@@ -159,7 +159,7 @@ protected:
   void colormap2_hardware_rasterize();
 
 
-  void bind_colormap1(vector<float> cmap_array, unsigned int cmap_tex);
+  void bind_colormap1(vector<float> &cmap_array, unsigned int cmap_tex);
   void bind_colormap2();
 
   void release_colormap1();
