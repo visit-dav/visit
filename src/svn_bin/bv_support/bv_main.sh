@@ -59,8 +59,10 @@ if [[ "$OPSYS" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET=10.7
    elif [[ ${VER%%.*} == 12 ]] ; then
       export MACOSX_DEPLOYMENT_TARGET=10.8
+   elif [[ ${VER%%.*} == 13 ]] ; then
+      export MACOSX_DEPLOYMENT_TARGET=10.9
    else
-      export MACOSX_DEPLOYMENT_TARGET=10.8
+      export MACOSX_DEPLOYMENT_TARGET=10.9
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
