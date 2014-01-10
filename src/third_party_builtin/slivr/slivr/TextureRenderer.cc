@@ -628,7 +628,7 @@ TextureRenderer::draw_polygons_wireframe(vector<float>& vertex,
 
 
 void
-TextureRenderer::build_colormap1(vector<float> cmap_array,
+TextureRenderer::build_colormap1(vector<float> &cmap_array,
                                  unsigned int& cmap_tex, bool& cmap_dirty,
                                  bool& alpha_dirty,  double level_exponent)
 {
@@ -984,7 +984,7 @@ TextureRenderer::build_colormap2()
 }
 
 void
-TextureRenderer::bind_colormap1(vector<float> cmap_array,
+TextureRenderer::bind_colormap1(vector<float> &cmap_array,
                                 unsigned int cmap_tex)
 {
 #if defined( GL_TEXTURE_COLOR_TABLE_SGI ) && defined(__sgi)
