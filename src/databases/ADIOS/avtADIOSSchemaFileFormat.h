@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -40,63 +40,46 @@
 //                            avtADIOSFileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_ADIOS_BASIC_FILE_FORMAT_H
-#define AVT_ADIOS_BASIC_FILE_FORMAT_H
+#ifndef AVT_ADIOSSchema_FILE_FORMAT_H
+#define AVT_ADIOSSchema_FILE_FORMAT_H
 
 #include <avtMTMDFileFormat.h>
 #include <vector>
 #include <string>
 #include <map>
 
-class ADIOSFileObject;
 class avtFileFormatInterface;
 class vtkRectilinearGrid;
 
-
 // ****************************************************************************
-//  Class: avtADIOSBasicFileFormat
+//  Class: avtADIOSSchemaFileFormat
 //
 //  Purpose:
-//      Reads in ADIOS files as a plugin to VisIt.
+//      Reads in ADIOSSchema-ADIOS files as a plugin to VisIt.
 //
 //  Programmer: Dave Pugmire
-//  Creation:   Thu Sep 17 11:23:05 EDT 2009
+//  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
 //  Modifications:
 //
-//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
-//   Use uint64_t for start/count arrays.
-//
 // ****************************************************************************
 
-class avtADIOSBasicFileFormat : public avtMTMDFileFormat
+class avtADIOSSchemaFileFormat : public avtMTMDFileFormat
 {
   public:
     static bool        Identify(const char *fname);
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
-    avtADIOSBasicFileFormat(const char *);
-    virtual  ~avtADIOSBasicFileFormat();
+    
+    avtADIOSSchemaFileFormat(const char *);
+    virtual  ~avtADIOSSchemaFileFormat();
 
-    //
-    // This is used to return unconvention data -- ranging from material
-    // information to information about block connectivity.
-    //
-    // virtual void      *GetAuxiliaryData(const char *var, int timestep, 
-    //                                     const char *type, void *args, 
-    //                                     DestructorFunction &);
-    //
+    virtual void        GetCycles(std::vector<int> &);
+    virtual void        GetTimes(std::vector<double> &);
+    virtual int         GetNTimesteps(void);
 
-    //
-    // If you know the times and cycle numbers, overload this function.
-    // Otherwise, VisIt will make up some reasonable ones for you.
-    //
-        virtual void        GetCycles(std::vector<int> &);
-
-    virtual int            GetNTimesteps(void);
-
-    virtual const char    *GetType(void)   { return "ADIOS"; };
+    virtual const char    *GetType(void)   { return "ADIOSSchema"; };
     virtual void           FreeUpResources(void); 
 
     virtual vtkDataSet    *GetMesh(int, int, const char *);
@@ -104,42 +87,23 @@ class avtADIOSBasicFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
-    ADIOSFileObject *fileObj;
+    std::string filename;
     bool             initialized;
+    void             Initialize();
 
+    virtual void     PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-    void                   Initialize();
-    std::string            GenerateMeshName(const ADIOSVar &v);
-    void                   DoDomainDecomposition();
+    ADIOS_FILE *fp;
+    int numTimes;
+    std::map<std::string, ADIOS_MESH *> meshes;
+    std::map<std::string, ADIOS_VARINFO *> vars;
+    std::map<std::string, std::string> varMeshes;
 
-    class meshInfo
-    {
-      public:
-        meshInfo()
-        {
-            start[0] = start[1] = start[2] = 0;
-            count[0] = count[1] = count[2] = 0;
-            global[0] = global[1] = global[2] = 0;
-            dim = 0;
-        }
-        ~meshInfo() {}
+    vtkDataSet * MakeUniformMesh(MESH_UNIFORM *m, int ts, int dom);
+    vtkDataSet * MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int dom);
+    vtkDataSet * MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom);
+    vtkDataSet * MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int dom);
 
-        int dim;
-        uint64_t start[3], count[3], global[3];
-        std::string name;
-    };
-
-    std::map<std::string, meshInfo> meshes;
-
-    vtkRectilinearGrid    *CreateUniformGrid(const uint64_t *start,
-                                             const uint64_t *count);
-    
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
-
-    static void ComputeStartCount(uint64_t *globalDims,
-                                  int dim,
-                                  uint64_t *start,
-                                  uint64_t *count);
+    void ReadData(ADIOS_VARINFO *avi, int ts, void *data);
 };
-
 #endif

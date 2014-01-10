@@ -13,7 +13,8 @@
       avtADIOSFileFormat.C
       avtADIOSBasicFileFormat.C
       avtXGCFileFormat.C
-      avtPixieFileFormat.C
+      avtSpecFEMFileFormat.C
+      avtADIOSSchemaFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="M">
@@ -23,7 +24,8 @@
       avtADIOSFileFormat.C
       avtADIOSBasicFileFormat.C
       avtXGCFileFormat.C
-      avtPixieFileFormat.C
+      avtSpecFEMFileFormat.C
+      avtADIOSSchemaFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="ESer">

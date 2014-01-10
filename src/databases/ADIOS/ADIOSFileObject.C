@@ -78,7 +78,7 @@ ADIOSFileObject::ADIOSFileObject(const char *fname)
 {
     fileName = fname;
     fp = NULL;
-    gps = NULL;
+    resetDimensionOrder = false;
 }
 
 // ****************************************************************************
@@ -96,7 +96,6 @@ ADIOSFileObject::ADIOSFileObject(const std::string &fname)
 {
     fileName = fname;
     fp = NULL;
-    gps = NULL;
 }
 
 
@@ -131,7 +130,7 @@ int
 ADIOSFileObject::NumTimeSteps()
 {
     Open();
-    return fp->ntimesteps;
+    return numTimeSteps;
 }
 
 // ****************************************************************************
@@ -151,96 +150,8 @@ ADIOSFileObject::GetCycles(std::vector<int> &cycles)
     Open();
     
     cycles.resize(0);
-    for (int i = 0; i < fp->ntimesteps; i++)
-        cycles.push_back(fp->tidx_start + i);
-}
-
-// ****************************************************************************
-// Method:  ADIOSFileObject::GetCycles
-//
-// Purpose:
-//   Return cycles.
-//
-// Programmer:  Dave Pugmire
-// Creation:    January 27, 2011
-//
-// ****************************************************************************
-
-void
-ADIOSFileObject::GetCycles(std::string &varNm, std::vector<int> &cycles)
-{
-    Open();
-    cycles.resize(0);
-
-    varIter vi = variables.find(varNm);
-    if (vi == variables.end())
-    {
-        debug5<<"Variable "<<varNm<<" not found."<<endl;
-        return;
-    }
-    ADIOSVar v = vi->second;
-    
-    int tupleSz = adios_type_size(v.type, NULL);
-    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
-
-    count[0] = v.count[0];
-    int ntuples = v.count[0];
-    
-    void *readData = malloc(ntuples*tupleSz);
-    OpenGroup(v.groupIdx);
-    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
-    CloseGroup(v.groupIdx);
-
-    if (retval > 0)
-    {
-        cycles.resize(ntuples);
-        ConvertTo(&cycles[0], ntuples, v.type, readData);
-    }
-    free(readData);
-}
-
-
-// ****************************************************************************
-// Method:  ADIOSFileObject::GetTimes
-//
-// Purpose:
-//   
-// Programmer:  Dave Pugmire
-// Creation:    January 26, 2011
-//
-// ****************************************************************************
-
-void
-ADIOSFileObject::GetTimes(std::string &varNm, std::vector<double> &times)
-{
-    Open();
-    times.resize(0);
-    
-    varIter vi = variables.find(varNm);
-    if (vi == variables.end())
-    {
-        debug5<<"Variable "<<varNm<<" not found."<<endl;
-        return;
-    }
-    ADIOSVar v = vi->second;
-
-    int tupleSz = adios_type_size(v.type, NULL);
-    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
-
-    count[0] = v.count[0];
-    int ntuples = v.count[0];
-    
-    void *readData = malloc(ntuples*tupleSz);
-    OpenGroup(v.groupIdx);
-    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
-    CloseGroup(v.groupIdx);
-
-    if (retval > 0)
-    {
-        times.resize(ntuples);
-        ConvertTo(&times[0], ntuples, v.type, readData);
-    }
-    free(readData);
+    for (int i = 0; i < numTimeSteps; i++)
+        cycles.push_back(i);
 }
 
 
@@ -265,19 +176,147 @@ ADIOSFileObject::Open()
 {
     if (IsOpen())
         return true;
-
+    
 #ifdef PARALLEL
-    fp = adios_fopen(fileName.c_str(), (MPI_Comm)VISIT_MPI_COMM);
+    fp = adios_read_open_file(fileName.c_str(), ADIOS_READ_METHOD_BP, (MPI_Comm)VISIT_MPI_COMM);
 #else
-    fp = adios_fopen(fileName.c_str(), 0);
+    MPI_Comm comm_dummy = 0;
+    fp = adios_read_open_file(fileName.c_str(), ADIOS_READ_METHOD_BP, comm_dummy);
+#endif
+
+    if (resetDimensionOrder)
+        ResetDimensionOrder();
+
+    if (fp == NULL)
+    {
+        EXCEPTION1(InvalidDBTypeException, fileName.c_str());
+    }
+    numTimeSteps = -1;
+
+    //Read vars.
+    for (int i = 0; i < fp->nvars; i++)
+    {
+          ADIOS_VARINFO *avi = adios_inq_var_byid(fp, i);
+          adios_inq_var_stat(fp, avi, 0, 0);
+
+          if (!SupportedVariable(avi))
+                {
+                  debug5<<"Skipping variable: "<<fp->var_namelist[i]<<" dim= "<<avi->ndim<<endl;
+                  cout<<"**Skipping variable: "<<fp->var_namelist[i]<<" dim= "<<avi->ndim<<endl;
+                  continue;
+                }
+          
+          if (avi->ndim == 0)
+                { 
+                  ADIOSScalar s(fp->var_namelist[i], avi);
+                  scalars[s.Name()] = s;
+                  debug5<<"  added scalar "<<s<<endl;
+                  cout<<"  added scalar "<<s<<endl;
+                }
+          else
+                {
+                  ADIOSVar v(fp->var_namelist[i], avi);
+                  variables[v.name] = v;
+                  debug5<<"  added variable "<< v.name<<endl;
+                  cout<<"  added variable "<<v<<" global= "<<avi->global<<endl;
+                  cout<<"   ***** nblocks[0] "<<avi->nblocks[0]<<" "<<avi->sum_nblocks<<endl;
+                  adios_inq_var_blockinfo(fp, avi);
+                  /*
+                  for (int kk = 0; kk < avi->nblocks[0]; kk++)
+                  {
+                      cout<<kk<<":";
+                      cout<<"(";
+                      for (int d = 0; d < avi->ndim; d++)
+                          cout<<avi->blockinfo[kk].start[d]<<" ";
+                      cout<<") (";
+                      for (int d = 0; d < avi->ndim; d++)
+                          cout<<avi->blockinfo[kk].count[d]<<" ";
+                      cout<<")"<<endl;
+                  }
+                  */
+                  if (numTimeSteps < 0)
+                        numTimeSteps = avi->nsteps;
+                  else if (numTimeSteps != avi->nsteps)
+                        {
+                          EXCEPTION1(InvalidDBTypeException,
+                                                 "File contains variables with differening number of time steps.");
+                        }
+                }
+          adios_free_varinfo(avi);
+    }
+
+    //Read attributes.
+    for (int i = 0; i < fp->nattrs; i++)
+    {
+          ADIOS_DATATYPES attrType;
+          int  asize;
+          void *data;
+          adios_get_attr_byid(fp, i, &attrType, &asize, &data);
+
+          ADIOSAttr attr(fp->attr_namelist[i], attrType, data);
+          attributes[attr.Name()] = attr;
+          free(data);
+          cout<<"  added attribute "<<attr<<endl;
+    }
+    return true;
+
+
+#if 0
+    
+    int err;
+    ADIOS_READ_METHOD read_method = ADIOS_READ_METHOD_BP;
+    int timeoutSec = 0;
+    
+#ifdef PARALLEL
+    err = adios_read_init_method(read_method, (MPI_Comm)VISIT_MPI_COMM, "");
+    fp = adios_read_open_stream(fileName.c_str(), read_method, (MPI_Comm)VISIT_MPI_COMM, 
+                                ADIOS_LOCKMODE_ALL, timeoutSec);
+
+#else
+    err = adios_read_init_method(read_method, 0, "");
+    fp = adios_read_open_file(fileName.c_str(), read_method, 0);
 #endif
     
     char errmsg[1024];
-    if (fp == NULL)
+    if (fp == NULL || adios_errno == err_file_not_found || adios_errno == err_end_of_stream)
     {
         sprintf(errmsg, "Error opening bp file %s:\n%s", fileName.c_str(), adios_errmsg());
         EXCEPTION1(InvalidDBTypeException, errmsg);
     }
+
+
+    char **groupNames;
+    int64_t gh;
+    VarInfo *varinfo;
+    ADIOS_VARINFO *v;
+
+    while (adios_errno != err_end_of_stream)
+    {
+        adios_get_grouplist(fp, &groupNames);
+        adios_declare_group(&gh, groupNames[0], "", adios_flag_yes);
+        
+        varinfo = (VarInfo *) malloc (sizeof(VarInfo) * fp->nvars);
+
+        for (int i=0; i<fp->nvars; i++) 
+        {
+            //cout <<"Get info on variable "<<i<<" "<<fp->var_namelist[i]<<endl;
+            varinfo[i].v = adios_inq_var_byid(fp, i);
+            if (varinfo[i].v == NULL)
+                THROW(eavlException, "ADIOS Importer: variable inquiry failed.");
+
+            if (!SupportedVariable(varinfo[i].v))
+                continue;
+            
+            // add variable to map, map id = variable path without the '/' in the beginning
+            ADIOSVar v(fp->var_namelist[i], varinfo[i].v);
+            variables[v.name] = v;
+        }
+        break;
+    }
+
+
+
+
 
     
     ADIOS_VARINFO *avi;
@@ -322,6 +361,7 @@ ADIOSFileObject::Open()
                     ADIOSScalar s(gps[gr]->var_namelist[vr], avi);
                     scalars[s.Name()] = s;
                     debug5<<"  added scalar "<<s<<endl;
+                    cout<<"  added scalar "<<s<<endl;
                 }
                 //Variable
                 else
@@ -362,6 +402,8 @@ ADIOSFileObject::Open()
     }
 
     return true;
+#endif
+
 }
 
 // ****************************************************************************
@@ -383,75 +425,9 @@ ADIOSFileObject::Open()
 void
 ADIOSFileObject::Close()
 {
-    if (fp && gps)
-    {
-        for (int gr=0; gr<fp->groups_count; gr++)
-            if (gps[gr] != NULL)
-                adios_gclose(gps[gr]);
-    }
-    
-    if (gps)
-        free(gps);
     if (fp)
-        adios_fclose(fp);
-    
+        adios_read_close(fp);
     fp = NULL;
-    gps = NULL;
-}
-
-
-// ****************************************************************************
-//  Method: ADIOSFileObject::OpenGroup
-//
-//  Purpose:
-//      Open a group.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Mar  9 12:40:15 EST 2010
-//
-// ****************************************************************************
-
-void
-ADIOSFileObject::OpenGroup(int grpIdx)
-{
-    if (!gps)
-        return;
-    if (gps[grpIdx] == NULL)
-        gps[grpIdx] = adios_gopen_byid(fp, grpIdx);
-
-    if (gps[grpIdx] == NULL)
-    {
-        std::string errmsg = "Error opening group "+std::string(fp->group_namelist[grpIdx])+" in " + fileName;
-        EXCEPTION1(InvalidDBTypeException, errmsg.c_str());
-    }
-}
-
-// ****************************************************************************
-//  Method: ADIOSFileObject::CloseGroup
-//
-//  Purpose:
-//      Close a group.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Mar  9 12:40:15 EST 2010
-//
-// ****************************************************************************
-
-void
-ADIOSFileObject::CloseGroup(int grpIdx)
-{
-    if (!gps)
-        return;
-    if (gps[grpIdx] != NULL)
-    {
-        int val = adios_gclose(gps[grpIdx]);
-        gps[grpIdx] = NULL;
-        if (val != 0)
-        {
-            std::string errmsg = "Error closing group "+std::string(fp->group_namelist[grpIdx])+" in " + fileName;
-            EXCEPTION1(InvalidDBTypeException, errmsg.c_str());
-        }
-    }
 }
 
 // ****************************************************************************
@@ -547,6 +523,29 @@ ADIOSFileObject::GetIntAttr(const std::string &nm, int &val)
 }
 
 // ****************************************************************************
+//  Method: ADIOSFileObject::GetDoubleAttr
+//
+//  Purpose:
+//      Return integer attribute
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Mar  9 12:40:15 EST 2010
+//
+// ****************************************************************************
+
+bool
+ADIOSFileObject::GetDoubleAttr(const std::string &nm, double &val)
+{
+    Open();
+    std::map<std::string, ADIOSAttr>::const_iterator a = attributes.find(nm);
+    if (a == attributes.end() || !a->second.IsDouble())
+        return false;
+
+    val = a->second.AsDouble();
+    return true;
+}
+
+// ****************************************************************************
 //  Method: ADIOSFileObject::GetStringAttr
 //
 //  Purpose:
@@ -569,6 +568,7 @@ ADIOSFileObject::GetStringAttr(const std::string &nm, std::string &val)
     return true;
 }
 
+#if 1
 // ****************************************************************************
 //  Method: ADIOSFileObject::ReadCoordinates
 //
@@ -585,6 +585,7 @@ ADIOSFileObject::ReadCoordinates(const std::string &nm,
                                  int ts,
                                  vtkPoints **pts)
 {
+    debug5<<"ADIOSFileObject::ReadCoordinates"<<endl;
     Open();
     
     varIter vi = variables.find(nm);
@@ -597,12 +598,66 @@ ADIOSFileObject::ReadCoordinates(const std::string &nm,
     
     *pts = ADIOSFileObject::AllocatePoints(v.type);
 
-    int ntuples = 1;
     uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
     
-    v.GetReadArrays(ts, start, count, &ntuples);
-    ntuples /= v.dim;
+    int sz;
+    v.GetReadArrays(ts, start, count, &sz);
+    int ntuples = sz/v.dim;
     (*pts)->SetNumberOfPoints(ntuples);
+    cout<<"pts: "<<ntuples<<" "<<v.dim<<endl;
+
+
+    //allocate read memory.
+    int nBytes = sz;
+    if (v.type == adios_real)
+        nBytes *= sizeof(float);
+    else if (v.type == adios_double)
+        nBytes *= sizeof(double);
+    else if (v.type == adios_integer)
+        nBytes *= sizeof(int);
+    
+    void *buff = new unsigned char[nBytes];
+    
+    ADIOS_SELECTION *sel;
+    sel = adios_selection_boundingbox(v.dim, start, count);
+    adios_schedule_read_byid(fp, sel, v.varIdx, ts, 1, buff);
+    int retval = adios_perform_reads(fp, 1);
+
+
+    float pt[3];
+    double *ptr = (double *)buff;
+    for (int i = 0; i < ntuples; i++)
+    {
+        pt[0] = ptr[i*v.dim + 0];
+        pt[1] = ptr[i*v.dim + 1];
+        if (v.dim == 3)
+            pt[2] = ptr[i*v.dim + 2];
+        else
+            pt[2] = 0.0;
+
+        (*pts)->SetPoint(i, pt);
+    }
+
+    return true;
+
+#if 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     void *data = (*pts)->GetVoidPointer(0), *data2 = NULL;
     void *readData = data;
@@ -618,14 +673,23 @@ ADIOSFileObject::ReadCoordinates(const std::string &nm,
         readData = data2;
     }
     
-    OpenGroup(v.groupIdx);
-    
     debug5<<"adios_read_var:"<<endl<<v<<endl;
-    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
-    if (retval > 0)
+    cout<<"adios_read_var:"<<endl<<v<<endl;
+    ADIOS_SELECTION *sel;
+    sel = adios_selection_boundingbox(v.dim, start, count);
+    adios_schedule_read_byid(fp, sel, v.varIdx, ts, 1, data);
+    int retval = adios_perform_reads(fp, 1);
+    cout<<"retval= "<<retval<<" data= "<<data<<endl;
+    if (retval == 0)
     {
+        cout<<__LINE__<<endl;
+        double *p = (double *)data;
+        for (int i = 0; i < 10; i++)
+            cout<<i<<" "<<p[i]<<endl;
+        cout<<__LINE__<<endl;
         if (readData != data)
         {
+            cout<<__LINE__<<endl;
             int i, j, n = ntuples*3;
             for (i=0, j=0; i < n; i += 3, j += v.dim)
             {
@@ -639,9 +703,10 @@ ADIOSFileObject::ReadCoordinates(const std::string &nm,
         }
     }
 
-    CloseGroup(v.groupIdx);    
     return (retval > 0);
+#endif
 }
+#endif
 
 // ****************************************************************************
 //  Method: ADIOSFileObject::ReadVariable
@@ -662,9 +727,11 @@ ADIOSFileObject::ReadCoordinates(const std::string &nm,
 bool
 ADIOSFileObject::ReadVariable(const std::string &nm,
                               int ts,
+                              int dom,
                               vtkDataArray **array)
 {
     debug5<<"ADIOSFileObject::ReadVariable("<<nm<<" time= "<<ts<<")"<<endl;
+    //cout<<"ADIOSFileObject::ReadVariable("<<nm<<" time= "<<ts<<")"<<endl;
     Open();
 
     varIter vi = variables.find(nm);
@@ -681,20 +748,24 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
     int ntuples = 1;
     uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
     v.GetReadArrays(ts, start, count, &ntuples);
-    
     (*array)->SetNumberOfTuples(ntuples);
+
     void *data = (*array)->GetVoidPointer(0);
 
     debug5<<"ARR: adios_read_var:"<<endl<<v<<endl;
-    OpenGroup(v.groupIdx);
+    ADIOS_SELECTION *sel;
+    //cout<<nm<<" "<<v.dim<<" ("<<start[0]<<" "<<start[1]<<" "<<start[2]<<" "<<start[3]<<") ("<<count[0]<<" "<<count[1]<<" "<<count[2]<<" "<<count[3]<<")"<<endl;
+    sel = adios_selection_boundingbox(v.dim, start, count);
+    adios_schedule_read_byid(fp, sel, v.varIdx, ts, 1, data);
+    int retval = adios_perform_reads(fp, 1);
 
-    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, data);
-        
-    CloseGroup(v.groupIdx);
+    /*
+    sel = adios_selection_writeblock(0);
+    cout<<"Write Block "<<sel->type<<" "<<sel->u.block.index<<" ["<<sel->u.bb.start[0]<<" "<<sel->u.bb.start[1]<<"]"<<endl;
+    */
 
-    return (retval > 0);
+    return (retval == 0);
 }
-
 
 // ****************************************************************************
 //  Method: ADIOSFileObject::ReadVariable
@@ -713,48 +784,16 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
 bool
 ADIOSFileObject::ReadVariable(const std::string &nm,
                               int ts,
+                              int dom,
                               vtkFloatArray **array)
 {
-    debug5<<"ADIOSFileObject::ReadVariable("<<nm<<" time= "<<ts<<")"<<endl;
-    Open();
-
-    varIter vi = variables.find(nm);
-    if (vi == variables.end())
-    {
-        debug5<<"Variable "<<nm<<" not found."<<endl;
+    vtkDataArray *arr = NULL;
+    if (!ReadVariable(nm, ts, dom, &arr))
         return false;
-    }
-    ADIOSVar v = vi->second;
-
-    int tupleSz = adios_type_size(v.type, NULL);
-    *array = vtkFloatArray::New();
-
-    int ntuples = 1;
-    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
-    v.GetReadArrays(ts, start, count, &ntuples);
     
-    (*array)->SetNumberOfTuples(ntuples);
-    float *data = (float *)(*array)->GetVoidPointer(0);
-    void *readData = (void *)data;
-
-    bool convertData = (v.type != adios_real);
-    if (convertData)
-        readData = malloc(ntuples*tupleSz);
-
-    debug5<<"ARR: adios_read_var:"<<endl<<v<<endl;
-    OpenGroup(v.groupIdx);
-
-    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
-    CloseGroup(v.groupIdx);
-
-    if (convertData)
-    {
-        if (retval > 0)
-            ConvertTo(data, ntuples, v.type, readData);
-        free(readData);
-    }
-
-    return (retval > 0);
+    *array = vtkFloatArray::SafeDownCast(arr);
+    arr->Delete();
+    return true;
 }
 
 // ****************************************************************************
@@ -872,9 +911,7 @@ ADIOSFileObject::AllocateArray(ADIOS_DATATYPES &t)
 static bool
 SupportedVariable(ADIOS_VARINFO *avi)
 {
-    if (/*(avi->ndim == 1 && avi->timedim >= 0) ||  // scalar with time*/
-        (avi->ndim > 3 && avi->timedim == -1) ||  // >3D array with no time
-        (avi->ndim > 4 && avi->timedim >= 0)  ||  // >3D array with time
+    if (avi->ndim > 3 ||
         avi->type == adios_long_double ||
         avi->type == adios_complex || 
         avi->type == adios_double_complex)
@@ -902,7 +939,9 @@ ADIOSVar::ADIOSVar()
     count[0] = count[1] = count[2] = 0;
     global[0] = global[1] = global[2] = 0;
     dim = 0;
-    type=adios_unknown; groupIdx=-1, varid=-1, timedim=-1;
+    type=adios_unknown;
+    varIdx=-1;
+    nTimeSteps = -1;
     extents[0] = extents[1] = 0.0;
 }
 
@@ -917,56 +956,54 @@ ADIOSVar::ADIOSVar()
 //
 // ****************************************************************************
 
-ADIOSVar::ADIOSVar(const std::string &nm, int grpIdx, ADIOS_VARINFO *avi)
+ADIOSVar::ADIOSVar(const std::string &nm, ADIOS_VARINFO *avi)
 {
-    name = nm;
+    if (nm[0] == '/')
+        name = &nm[1];
+    else
+        name = nm;
+    
     type = avi->type;
     double valMin = 0.0, valMax = 0.0;
 
-    if (avi->gmin && avi->gmax)
+    if (avi->statistics && avi->statistics->min && avi->statistics->max)
     {
         if (type == adios_integer)
         {
-            valMin = (double)(*((int*)avi->gmin));
-            valMax = (double)(*((int*)avi->gmax));
+            valMin = (double)(*((int*)avi->statistics->min));
+            valMax = (double)(*((int*)avi->statistics->max));
         }
         else if (type == adios_real)
         {
-            valMin = (double)(*((float*)avi->gmin));
-            valMax = (double)(*((float*)avi->gmax));
+            valMin = (double)(*((float*)avi->statistics->min));
+            valMax = (double)(*((float*)avi->statistics->max));
         }
         else if (type == adios_double)
         {
-            valMin = (double)(*((double*)avi->gmin));
-            valMax = (double)(*((double*)avi->gmax));
+            valMin = (double)(*((double*)avi->statistics->min));
+            valMax = (double)(*((double*)avi->statistics->max));
         }
     }
 
     extents[0] = valMin;
     extents[1] = valMax;
-    timedim = avi->timedim;
-    groupIdx = grpIdx;
-    varid = avi->varid;
-    if (avi->timedim == -1)
-        dim = avi->ndim;
-    else
-    {
-        if (avi->ndim == 1)
-            dim = avi->ndim;
-        else
-            dim = avi->ndim - 1;
-    }
+    varIdx = avi->varid;
+    nTimeSteps = avi->nsteps;
+    dim = avi->ndim;
 
     for (int i = 0; i < 3; i++)
     {
         start[i] = 0;
-        count[i] = 0;
+        count[i] = 1;
+        global[i] = 1;
     }
-    
-    int idx = (timedim == -1 ? 0 : 1);
-    if (dim == 1 && timedim == 0)
-        idx = 0;
-    
+    for (int i = 0; i < dim; i++)
+    {
+        count[i] = avi->dims[i];
+        global[i] = count[i];
+    }
+
+    /*    
     //ADIOS is ZYX.
     if (dim == 3)
     {
@@ -983,9 +1020,9 @@ ADIOSVar::ADIOSVar(const std::string &nm, int grpIdx, ADIOS_VARINFO *avi)
     {
         count[0] = avi->dims[0];
     }
-
     for (int i = 0; i < 3; i++)
         global[i] = count[i];
+    */
 }
 
 // ****************************************************************************
@@ -1003,10 +1040,34 @@ void
 ADIOSVar::GetReadArrays(int ts, uint64_t *s, uint64_t *c, int *ntuples)
 {
     *ntuples = 1;
-
     s[0] = s[1] = s[2] = s[3] = 0;
     c[0] = c[1] = c[2] = c[3] = 0;
 
+    if (nTimeSteps > 1)
+    {
+        s[0] = ts;
+        s[1] = start[0];
+        s[2] = start[1];
+        s[3] = start[2];
+        
+        c[0] = 1;
+        c[1] = count[0];
+        c[2] = 0;//count[1];
+        c[3] = 0;//count[2];
+
+        for (int i = 0; i < dim; i++)
+            *ntuples *= count[i];
+        return;
+    }
+
+    for (int i = 0; i < dim; i++)
+    {
+        s[i] = start[i];
+        c[i] = count[i];
+        *ntuples *= count[i];
+    }
+    
+    /*
     int idx = 0;
     if (timedim >= 0)
     {
@@ -1047,6 +1108,7 @@ ADIOSVar::GetReadArrays(int ts, uint64_t *s, uint64_t *c, int *ntuples)
         *ntuples *= (int)count[1];
         *ntuples *= (int)count[2];
     }
+    */
 }
 
 
