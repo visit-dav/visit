@@ -9,7 +9,7 @@
 ## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /Users/ghweber/devel/visit_3rdparty)
-SET(VISITARCH i386-apple-darwin12_gcc-4.2)
+SET(VISITARCH i386-apple-darwin13_gcc)
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/local/visit)
 SET(CMAKE_BUILD_TYPE Release CACHE STRING "")
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_FILTERS ON)
@@ -28,7 +28,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidd
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /opt/local/bin/mpic++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /opt/local/bin/openmpic++ TYPE FILEPATH)
 
 ##############################################################
 ##
