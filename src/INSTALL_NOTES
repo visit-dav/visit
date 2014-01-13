@@ -11,7 +11,7 @@ followed by the Unix installation instructions.
 Windows:
 ========
 
-1.  Copy the visit2.7.0.exe or visit2.7.0_x64.exe installer program to
+1.  Copy the visit2.7.1.exe or visit2.7.1_x64.exe installer program to
     your desktop.
 
 2.  Double click on the installer program icon to run the installer.
@@ -23,7 +23,7 @@ MacOS X:
 ========
 
 Downloads:
-* VisIt-2.7.0-x86_64-installer.dmg  : 64-bit Mac and runs on Mac 10.6 or later
+* VisIt-2.7.1-x86_64-installer.dmg  : 64-bit Mac and runs on Mac 10.6 or later
 
 1. Download the appropriate file and copy it to the desktop.
 
@@ -47,12 +47,12 @@ Unix (gzipped tar file):
     distribution directory or update an existing distribution.  This is
     handled automatically.
 
-        chmod 755 visit-install2_7_0
-        ./visit-install2_7_0 "version" "platform" "directory"
+        chmod 755 visit-install2_7_1
+        ./visit-install2_7_1 "version" "platform" "directory"
 
     where
 
-        "version" will be 2.7.0 for the current distribution.
+        "version" will be 2.7.1 for the current distribution.
 
         "platform" will be one of the following:  linux-x86_64-rhel5 or
         linux-x86_64-ubuntu11 depending on the machine.  The one you
@@ -63,12 +63,12 @@ Unix (gzipped tar file):
 
     For example
 
-        chmod 755 visit-install2_7_0
-        ./visit-install2_7_0 2.7.0 linux-x86_64 /usr/local/visit
+        chmod 755 visit-install2_7_1
+        ./visit-install2_7_1 2.7.1 linux-x86_64 /usr/local/visit
 
-    will install the linux-x86_64, 2.7.0 version of visit in the directory
+    will install the linux-x86_64, 2.7.1 version of visit in the directory
     "/usr/local/visit".  Note that you will need to have the file
-    "visit2_7_0.linux-x86_64.tar.gz" present in the current directory
+    "visit2_7_1.linux-x86_64.tar.gz" present in the current directory
     for this to function properly.
 
 2.  Add the bin directory below the installation directory
