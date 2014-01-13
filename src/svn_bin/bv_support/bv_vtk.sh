@@ -97,7 +97,7 @@ function bv_vtk_host_profile
     if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
     else
-            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
     fi
 }
 
