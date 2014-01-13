@@ -90,8 +90,8 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 
 # Use the VTK_DIR hint from the config-site .cmake file 
 
-IF(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0/VTKConfig.cmake)
-    SET(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0)
+IF(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/VTKConfig.cmake)
+    SET(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
 ENDIF()
 
 MESSAGE(STATUS "Checking for VTK in ${VTK_DIR}")
@@ -133,7 +133,7 @@ ENDIF()
 # if it issued a warning instead. Perhaps one day it will be fixed, and we can 
 # use this: find_package(VTK 6.0 REQUIRED ${REQ_VTK_MODS} OPTIONAL_COMPONENTS ${OPT_VTK_MODS} NO_MODULE PATHS ${VTK_DIR})
 
-find_package(VTK 6.0 REQUIRED NO_MODULE PATHS ${VTK_DIR})
+find_package(VTK ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} REQUIRED NO_MODULE PATHS ${VTK_DIR})
 
 # Ensure we have all the required modules:
 FOREACH(module ${REQ_VTK_MODS})

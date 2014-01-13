@@ -76,11 +76,11 @@ function bv_hdf4_host_profile
         >> $HOSTCONF
         if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg-${VTK_SHORT_VERSION} TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH}/lib vtkjpeg-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)" \
             >> $HOSTCONF
           else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg-${VTK_SHORT_VERSION} TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH}/lib vtkjpeg-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)" \
             >> $HOSTCONF
         fi
     fi

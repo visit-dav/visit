@@ -468,6 +468,31 @@ ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
+SET(VTK_MINIMUM_VERSION "6.0.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
+
+FUNCTION(SETUP_VTK_VERSION  ver)
+  IF(${ver} VERSION_LESS ${VTK_MINIMUM_VERSION})
+      MESSAGE(FATAL_ERROR "VTK version must be at least ${VTK_MINIMUM_VERSION}")
+  ENDIF()
+  STRING( REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+" "\\1" vmaj ${ver} )
+  STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" vmin ${ver} )
+  SET(VTK_VERSION "${ver}"  CACHE INTERNAL "")
+  SET(VTK_MAJOR_VERSION   "${vmaj}" CACHE INTERNAL "")
+  SET(VTK_MINOR_VERSION   "${vmin}" CACHE INTERNAL "")
+ENDFUNCTION()
+
+# Setup a default VTK version of 6.0.0.  Config-site files can override this
+IF(NOT VTK_VERSION)
+  IF(VISIT_VTK_VERSION)
+      IF(${VISIT_VTK_VERSION} VERSION_LESS ${VTK_MINIMUM_VERSION})
+          MESSAGE(FATAL_ERROR "VTK version must be at least ${VTK_MINIMUM_VERSION}")
+      ENDIF()
+      SETUP_VTK_VERSION(${VISIT_VTK_VERSION})
+  ELSE()
+      SETUP_VTK_VERSION(6.0.0)
+  ENDIF()
+ENDIF()
+
 #-----------------------------------------------------------------------------
 # Include this computer's config-site if one exists
 #-----------------------------------------------------------------------------
