@@ -198,7 +198,7 @@ function build_uintah
     fi
 
     #
-    mkdir $UINTAH_BUILD_DIR || error "Can't make UINTAH build dir."
+    mkdir $UINTAH_BUILD_DIR
     cd $UINTAH_BUILD_DIR || error "Can't cd to UINTAH build dir."
 
     info "Configuring UINTAH . . ."
