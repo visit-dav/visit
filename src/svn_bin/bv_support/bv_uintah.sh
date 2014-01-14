@@ -45,7 +45,9 @@ export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0beta"}
 export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
 export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.6"}
 export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"uintah-${UINTAH_VERSION}/optimized"}
-export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}/${UINTAH_FILE}"}
+#export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}/${UINTAH_FILE}"}
+export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/devbuilds/icse/uintah/${UINTAH_VERSION}/${UINTAH_FILE}"}
+
 export UINTAH_MD5_CHECKSUM=""
 export UINTAH_SHA256_CHECKSUM=""
 }
