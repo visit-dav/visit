@@ -158,6 +158,10 @@
 #    Eric Brugger, Fri Dec 20 12:18:17 PST 2013
 #    I added the MRTest reader.
 #
+#    Eric Brugger, Mon Jan 13 17:24:13 PST 2014
+#    I moved the AMRTest reader from the optional list of databases to
+#    build to the required list of databases to build.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -289,6 +293,7 @@ ENDIF(VISIT_STATIC)
 
 # These are our required plugins (no external dependencies)
 SET(REQUIRED_DATABASE_PLUGINS
+AMRTest
 ANALYZE
 ANSYS
 AUXFile
@@ -374,7 +379,6 @@ IF (NOT WIN32)
         LIST(APPEND REQUIRED_DATABASE_PLUGINS VCellMTMD SimV1 SimV1Writer)
     ENDIF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
     SET(OPTIONAL_DATABASE_PLUGINS
-        AMRTest
         Hex
         MRTest
         PICS_Tester
