@@ -29,31 +29,23 @@ function bv_uintah_depends_on
 {
     if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
         echo ""
-    else
-        local depends_on="szip"
-
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-           depends_on="$depends_on zlib"    
-        fi
-
-        echo $depends_on
     fi
 }
 
 function bv_uintah_initialize_vars
 {
     if [[ "$USE_SYSTEM_UINTAH" == "no" ]]; then
-        UINTAH_INSTALL_DIR="${VISITDIR}/uintah/$UINTAH_VERSION/${VISITARCH}"
+        UINTAH_INSTALL_DIR="${VISITDIR}/uintah/$UINTAH_VERSION/$VISITARCH"
     fi
 }
 
 function bv_uintah_info
 {
-export UINTAH_VERSION=${UINTAH_VERSION:-"1.5.0"}
-export UINTAH_FILE=${UINTAH_FILE:-"uintah-${UINTAH_VERSION}.tar.gz"}
-export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.8"}
-export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"uintah-${UINTAH_VERSION}"}
-#export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/ftp/UINTAH/prev-releases/uintah-${UINTAH_VERSION}/src"}
+export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0beta"}
+export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
+export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.6"}
+export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"uintah-${UINTAH_VERSION}/optimized"}
+export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}/${UINTAH_FILE}"}
 export UINTAH_MD5_CHECKSUM=""
 export UINTAH_SHA256_CHECKSUM=""
 }
@@ -86,33 +78,12 @@ function bv_uintah_host_profile
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" \
-            >> $HOSTCONF 
+            echo "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" >> $HOSTCONF 
+	    echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)"
         else
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR \${VISITHOME}/uintah/$UINTAH_VERSION/\${VISITARCH})" \
             >> $HOSTCONF 
-
-            if [[ "$DO_ZLIB" == "yes" ]] ; then
-               ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
-            else
-               ZLIB_LIBDEP="/usr/lib z"
-               #moving global patch to have limited effect
-               if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
-                ZLIB_LIBDEP="/usr/lib/x86_64-linux-gnu z"
-               fi
-            fi
-
-            if [[ "$DO_SZIP" == "yes" ]] ; then
-                echo \
-                "VISIT_OPTION_DEFAULT(VISIT_UINTAH_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz $ZLIB_LIBDEP TYPE STRING)" \
-                >> $HOSTCONF
-            else
-                echo \
-                "VISIT_OPTION_DEFAULT(VISIT_UINTAH_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
-                >> $HOSTCONF
-            fi
         fi
     fi
 }
@@ -142,6 +113,78 @@ function bv_uintah_dry_run
 
 function build_uintah
 {
+    PAR_INCLUDE_STRING=""
+    if [[ "$PAR_INCLUDE" != "" ]] ; then
+        PAR_INCLUDE_STRING=$PAR_INCLUDE
+    fi
+
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpicc" ]]; then
+            PAR_INCLUDE_STRING="-I/usr/include/"
+        elif [[ "$OPSYS" == "Linux" && "$PAR_COMPILER" == "mpixlc" ]]; then
+            PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
+        else
+            if [[ -z "$PAR_INCLUDE_STRING" ]]; then
+                PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`
+                if [[ $? != 0 ]] ; then
+                    PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
+                fi
+            fi
+        fi
+    fi
+
+    if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
+       warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Ice-T."
+       warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
+       warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
+       warn "Giving Up!"
+       return 1
+    fi
+
+    # Uintah's config doesn't take the compiler options, but rather the
+    # paths to the root, and then it tries to build all of the appropriate
+    # options itself.  Because we only have the former, we need to guess at the
+    # latter.
+    # Our current guess is to take the first substring in PAR_INCLUDE, assume
+    # it's the appropriate -I option, and use it with the "-I" removed.  This
+    # is certainly not ideal -- for example, it will break if the user's
+    # MPI setup requires multiple include directories.
+
+    # Search all of the -I directories and take the first one containing mpi.h
+    PAR_INCLUDE_DIR=""
+    for arg in $PAR_INCLUDE_STRING ; do
+        if [[ "$arg" != "${arg#-I}" ]] ; then
+            if test -e "${arg#-I}/mpi.h" ; then
+                PAR_INCLUDE_DIR=${arg#-I}
+                break
+            fi
+        fi
+    done
+    # If we did not get a valid include directory, take the first -I directory.
+    if test -z "${PAR_INCLUDE_DIR}"  ; then
+        for arg in $PAR_INCLUDE_STRING ; do
+            if [[ "$arg" != "${arg#-I}" ]] ; then
+                PAR_INCLUDE_DIR=${arg#-I}
+                break
+            fi
+        done
+    fi
+
+    if test -z "${PAR_INCLUDE_DIR}"  ; then
+        if test -n "${PAR_INCLUDE}" ; then
+            warn "This script believes you have defined PAR_INCLUDE as: $PAR_INCLUDE"
+            warn "However, to build Ice-T, this script expects to parse a -I/path/to/mpi out of PAR_INCLUDE"
+        fi
+        warn "Could not determine the MPI include information which is needed to compile IceT."
+        if test -n "${PAR_INCLUDE}" ; then
+            error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
+        else
+            error "You need to specify either PAR_COMPILER or PAR_INCLUDE variable.  On many "
+                  " systems, the output of \"mpicc -showme\" is good enough."
+            error ""
+        fi
+    fi
+
     #
     # Prepare build dir
     #
@@ -153,29 +196,16 @@ function build_uintah
     fi
 
     #
+    mkdir $UINTAH_BUILD_DIR || error "Can't make UINTAH build dir."
     cd $UINTAH_BUILD_DIR || error "Can't cd to UINTAH build dir."
-    if [[ $? != 0 ]]; then
-        warn "Patch failed, but continuing."
-    fi
+
     info "Configuring UINTAH . . ."
     cf_darwin=""
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-    else
-        export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-    fi
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
             cf_build_type="--disable-shared --enable-static"
         else
             cf_build_type="--enable-shared --disable-static"
     fi
-    cf_szip=""
-    if test "x${DO_SZIP}" = "xyes"; then
-        info "SZip requested.  Configuring UINTAH with SZip support."
-        sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
-        cf_szip="--with-szlib=${sz_dir}"
-    fi
-
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS=""
     else
@@ -185,16 +215,24 @@ function build_uintah
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     info "Invoking command to configure UINTAH"
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
-        ${cf_szip} ${cf_darwin}"
-    sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        ${cf_darwin} \
+        --enable-optimize="-O2" \
+        --enable-assertion-level=0
+        --enable-64bit
+        --with-mpi="${PAR_INCLUDE_DIR}/.." "
+    sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
-        ${cf_szip} ${cf_build_type}"
+        ${cf_build_type} \
+        --enable-optimize="-O2" \
+        --enable-assertion-level=0 \
+        --enable-64bit \
+        --with-mpi="${PAR_INCLUDE_DIR}/.." "
     if [[ $? != 0 ]] ; then
        warn "UINTAH configure failed.  Giving up"
        return 1
@@ -214,7 +252,19 @@ function build_uintah
     #
     info "Installing UINTAH . . ."
 
-    $MAKE install
+    mkdir $VISITDIR/uintah/ || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/ || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone/tools || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone/tools/uda2vis || error "Can't make UINTAH install dir."
+
+    cp lib/* $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib
+    cp ../src/Standalone/tools/uda2vis/udaData.h $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone/tools/uda2vis
+
+#    $MAKE install
     if [[ $? != 0 ]] ; then
        warn "UINTAH install failed.  Giving up"
        return 1
@@ -268,7 +318,7 @@ if [[ "$DO_UINTAH" == "yes" && "$USE_SYSTEM_UINTAH" == "no" ]] ; then
     if [[ $? == 0 ]] ; then
         info "Skipping UINTAH build.  UINTAH is already installed."
     else
-        info "Building UINTAH (~15 minutes)"
+        info "Building UINTAH (~10 minutes)"
         build_uintah
         if [[ $? != 0 ]] ; then
             error "Unable to build or install UINTAH.  Bailing out."
