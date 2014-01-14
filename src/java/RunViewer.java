@@ -74,6 +74,9 @@ import llnl.visit.AnnotationAttributes;
 //   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
 //   Changed to new ViewerProxy interface.
 //
+//   Kathleen Biagas, Tue Jan 14 08:45:32 MST 2014
+//   Updated usage: changed -vob to -dv, added -datapath.
+//
 // ****************************************************************************
 
 public class RunViewer
@@ -154,12 +157,13 @@ public class RunViewer
     {
         System.out.println("Options:");
         System.out.println("    -stay      Keeps the viewer around after it is done processing commands.");
-        System.out.println("    -vob       Runs the viewer located in /data_vobs/VisIt/bin.");
+        System.out.println("    -dv        Runs the viewer located in ../bin.");
         System.out.println("    -sync      Runs the viewer in synchronous mode. This is the default.");
         System.out.println("    -async     Runs the viewer in asynchronous mode.");
         System.out.println("    -verbose   Prints information to the console.");
         System.out.println("    -quiet     Prevents information from being printed to the console.");
         System.out.println("    -path dir  Sets the directory that is searched for the visit script.");
+        System.out.println("    -datapath dir  Sets the directory that is searched for the data files.");
         System.out.println("    -help      Displays options and exits program.");
     }
 
