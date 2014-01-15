@@ -770,6 +770,8 @@ def JSONImageTestResult(case_name, status,
 #   Brad Whitlock, Thu Nov  7 14:01:26 PST 2013
 #   Force width and height for the window.
 #
+#   Kathleen Biagas, Wed Jan 15 09:39:13 MST 2014
+#   Saved alternate SaveWindowAttributes for use in GetBackgroundImage
 # ----------------------------------------------------------------------------
 def Test(case_name, altSWA=0, alreadySaved=0):
     CheckInteractive(case_name)
@@ -777,6 +779,7 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     # we may need to use global for these guys
     #global maxds
     #global numskip
+    global savedAltSWA
 
     (cur, diff, base, altbase, modeSpecific) = GenFileNames(case_name, ".png")
 
@@ -784,7 +787,9 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     if alreadySaved == 0:
         if altSWA != 0:
             sa = altSWA
+            savedAltSWA = altSWA
         else:
+            savedAltSWA = 0
             sa = SaveWindowAttributes()
             sa.screenCapture=1
             # Force the active window to be the right size.
@@ -943,6 +948,9 @@ def HTMLImageTestResult(case_name,status,
 # ----------------------------------------------------------------------------
 # Function: GetBackgroundImage
 #
+# Modifications:
+#    Kathleen Biagas, Wed Jan 15 09:40:09 MST 2014
+#    Use alternate SaveWindowAttributes if available.
 # ----------------------------------------------------------------------------
 def GetBackgroundImage(file):
     """
@@ -995,10 +1003,13 @@ def GetBackgroundImage(file):
     # now save the background image
     oldSWA = SaveWindowAttributes()
     tmpSWA = SaveWindowAttributes()
+    if savedAltSWA == 0:
+        tmpSWA.screenCapture = 1
+    else:
+        tmpSWA = savedAltSWA
     tmpSWA.family   = 0
     tmpSWA.fileName = out_path("current",file + "_bg.png")
     tmpSWA.format   = tmpSWA.PNG
-    tmpSWA.screenCapture = 1
     SetSaveWindowAttributes(tmpSWA)
     SaveWindow()
     bkimage = Image.open(tmpSWA.fileName)
