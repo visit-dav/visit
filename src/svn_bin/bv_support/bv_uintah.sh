@@ -76,7 +76,7 @@ function bv_uintah_host_profile
     if [[ "$DO_UINTAH" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## UINTAH" >> $HOSTCONF
+        echo "## Uintah" >> $HOSTCONF
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
@@ -259,12 +259,12 @@ function build_uintah
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib || error "Can't make UINTAH install dir."
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include || error "Can't make UINTAH install dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone || error "Can't make UINTAH install dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone/tools || error "Can't make UINTAH install dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone/tools/uda2vis || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/StandAlone || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/StandAlone/tools || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/StandAlone/tools/uda2vis || error "Can't make UINTAH install dir."
 
     cp lib/* $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib
-    cp ../src/Standalone/tools/uda2vis/udaData.h $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/Standalone/tools/uda2vis
+    cp ../src/StandAlone/tools/uda2vis/udaData.h $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/StandAlone/tools/uda2vis
 
 #    $MAKE install
     if [[ $? != 0 ]] ; then
