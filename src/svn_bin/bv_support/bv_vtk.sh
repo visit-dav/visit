@@ -94,6 +94,7 @@ function bv_vtk_host_profile
     echo "## VTK" >> $HOSTCONF
     echo "##" >> $HOSTCONF
 
+    echo "SETUP_VTK_VERSION($VTK_VERSION)" >> $HOSTCONF
     if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
     else
