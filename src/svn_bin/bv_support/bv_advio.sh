@@ -58,7 +58,7 @@ function bv_advio_host_profile
         echo "## AdvIO" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR \${VISITHOME}/AdvIO/$ADVIO_VERSION/\${VISITARCH}/)"\
+        "VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR \${VISITHOME}/AdvIO/$ADVIO_VERSION/\${VISITARCH})"\
         >> $HOSTCONF
     fi
 
