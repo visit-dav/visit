@@ -11314,7 +11314,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     // the mesh has been re-mapped to all ucd elements. We use the cell
     // centered re-mapping, if any, to make it work.
     //
-    if (phzl->lo_offset != 0 || phzl->hi_offset != phzl->nzones-1)
+    if (phzl->nzones > 0 && (phzl->lo_offset != 0 || phzl->hi_offset != phzl->nzones-1))
     {
         //
         // Populate a zone-centered array of ghost zone values.
