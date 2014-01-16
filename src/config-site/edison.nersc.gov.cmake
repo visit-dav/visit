@@ -5,6 +5,8 @@
 ## system: Linux edison02 3.0.38-0.5-default #1 SMP Fri Aug 3 09:02:17 UTC 2012 (358029e) x86_64 x86_64 x86_64 GNU/Linux
 ## by: ghweber
 
+## FIXME: Update to VTK 6 and install VisIt 2.7 on Edison
+
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##

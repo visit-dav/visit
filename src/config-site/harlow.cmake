@@ -5,6 +5,8 @@
 ## system: Linux harlow 2.6.32-31-generic #61-Ubuntu SMP Fri Apr 8 18:25:51 UTC 2011 x86_64 GNU/Linux
 ## by: gweber
 
+## FIXME: Update to VTK 6 and install VisIt 2.7 on Carver
+
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
