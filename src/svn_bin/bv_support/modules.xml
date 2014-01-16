@@ -11,34 +11,33 @@
 
         <!-- optional libraries -->
         <optional>
-            <lib name="szip"/>
-            <lib name="hdf5"/>
-            <lib name="mili"/>
-            <lib name="icet"/>
-            <lib name="hdf4"/>
-            <lib name="netcdf"/>
-            <lib name="cgns"/>
-            <lib name="gdal"/>
-            <lib name="tcmalloc"/>
-            <lib name="boxlib"/>
-            <lib name="cfitsio"/>
-<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
-            <lib name="h5part"/>
-            <lib name="fastbit"/>
-            <lib name="ccmio"/>
-            <lib name="silo"/>
-            <lib name="itaps"/>
-            <lib name="advio"/>
-            <lib name="xdmf"/>
-            <lib name="mxml"/>
             <lib name="adios"/>
-            <lib name="pyside"/>
+            <lib name="advio"/>
+            <lib name="boxlib"/>
+            <lib name="ccmio"/>
+            <lib name="cfitsio"/>
+            <lib name="cgns"/>
+            <lib name="fastbit"/>
+            <lib name="gdal"/>
+            <lib name="h5part"/>
+            <lib name="hdf4"/>
+            <lib name="hdf5"/>
+            <lib name="icet"/>
+            <lib name="itaps"/>
+            <lib name="mili"/>
+<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="manta"/>
             <lib name="mpich"/>
-            <lib name="zlib"/>
+            <lib name="mxml"/>
+            <lib name="netcdf"/>
+            <lib name="pyside"/>
             <lib name="uintah"/>
+            <lib name="silo"/>
+            <lib name="szip"/>
+            <lib name="tcmalloc"/>
+            <lib name="xdmf"/>
+            <lib name="zlib"/>
         </optional>
-
 
         <!-- thirdparty flag -->
         <group name="required" comment="All required libraries">
@@ -50,34 +49,34 @@
         </group>
 
         <group name="optional" comment="All optional libraries">
-            <lib name="szip"/>
-            <lib name="hdf5"/>
-            <lib name="netcdf"/>
+            <lib name="adios"/>
+            <lib name="advio"/>
+            <lib name="boxlib"/>
+            <lib name="ccmio"/>
+            <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="gdal"/>
-            <lib name="boxlib"/>
-            <lib name="cfitsio"/>
-            <lib name="h5part"/>
             <lib name="fastbit"/>
-            <lib name="ccmio"/>
-            <lib name="silo"/>
-            <lib name="advio"/>
-            <lib name="xdmf"/>
-            <lib name="mxml"/>
-            <lib name="adios"/>
-            <lib name="pyside"/>
+            <lib name="hdf5"/>
+            <lib name="h5part"/>
             <lib name="manta"/>
             <lib name="mpich"/>
+            <lib name="mxml"/>
+            <lib name="netcdf"/>
+            <lib name="pyside"/>
+            <lib name="silo"/>
+            <lib name="szip"/>
+            <lib name="uintah"/>
+            <lib name="xdmf"/>
             <lib name="zlib"/>
         </group>
 
-
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
-            <lib name="no-qt" />
             <lib name="no-cmake"/>
-            <lib name="no-vtk"/>
             <lib name="no-python"/>
             <lib name="no-pyside"/>
+            <lib name="no-qt" />
+            <lib name="no-vtk"/>
         </group>
 
         <!-- all io libraries -->
@@ -96,6 +95,7 @@
             <lib name="netcdf"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="uintah"/>
             <lib name="xdmf"/>
         </group>
 
@@ -115,6 +115,7 @@
             <lib name="netcdf"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="uintah"/>
             <lib name="xdmf"/>
             <lib name="no-mesa"/>
             <lib name="no-qt"/>
@@ -134,12 +135,11 @@
         # Releasibility of these libs is not yet understood
         -->
         <group name="advanced" comment="Must be manually downloaded">
-            <lib name="mili"/>
-<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
-            <lib name="tcmalloc"/>
-            <lib name="itaps"/>
             <lib name="hdf4"/>
-            <lib name="uintah"/>
+            <lib name="itaps"/>
+<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
+            <lib name="mili"/>
+            <lib name="tcmalloc"/>
         </group>
     </license>
 
@@ -178,34 +178,37 @@
         </group>
 
         <group name="optional" comment="All optional libraries">
-            <lib name="szip"/>
-            <lib name="netcdf"/>
             <lib name="hdf5"/>
+            <lib name="netcdf"/>
+            <lib name="szip"/>
+            <lib name="uintah"/>
         </group>
 
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
-            <lib name="no-qt" />
             <lib name="no-cmake"/>
-            <lib name="no-vtk"/>
             <lib name="no-python"/>
+            <lib name="no-qt" />
+            <lib name="no-vtk"/>
         </group>
 
         <!-- nodbio flag -->
         <group name="dbio-only" comment="Disables EVERYTHING but I/O.">
-            <lib name="szip"/>
-            <lib name="netcdf"/>
             <lib name="hdf5"/>
+            <lib name="netcdf"/>
+            <lib name="szip"/>
+            <lib name="uintah"/>
             <lib name="no-mesa"/>
-            <lib name="no-qt"/>
             <lib name="no-python"/>
+            <lib name="no-qt"/>
         </group>
 
         <!-- all io libraries -->
         <group name="all-io" comment="Build all available I/O libraries">
-            <lib name="szip"/>
-            <lib name="netcdf"/>
             <lib name="hdf5"/>
+            <lib name="netcdf"/>
+            <lib name="szip"/>
+            <lib name="uintah"/>
         </group>
         <!-- #all the optional non io libraries -->
         <group name="nonio" comment="Build non I/O libraries">
