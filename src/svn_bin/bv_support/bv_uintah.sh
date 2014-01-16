@@ -136,7 +136,7 @@ function build_uintah
     fi
 
     if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
-       warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Ice-T."
+       warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Uintah."
        warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
        warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
        warn "Giving Up!"
@@ -175,9 +175,9 @@ function build_uintah
     if test -z "${PAR_INCLUDE_DIR}"  ; then
         if test -n "${PAR_INCLUDE}" ; then
             warn "This script believes you have defined PAR_INCLUDE as: $PAR_INCLUDE"
-            warn "However, to build Ice-T, this script expects to parse a -I/path/to/mpi out of PAR_INCLUDE"
+            warn "However, to build Uintah, this script expects to parse a -I/path/to/mpi out of PAR_INCLUDE"
         fi
-        warn "Could not determine the MPI include information which is needed to compile IceT."
+        warn "Could not determine the MPI include information which is needed to compile Uintah."
         if test -n "${PAR_INCLUDE}" ; then
             error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
         else
@@ -185,6 +185,19 @@ function build_uintah
                   " systems, the output of \"mpicc -showme\" is good enough."
             error ""
         fi
+    fi
+
+    if [[ "$FC_COMPILER" == "no" ]] ; then
+
+      if [[ "$OPSYS" != "Darwin" ]]; then
+        warn "Uintah may require fortran to be enabled. It does not appear that the --fortran "
+        warn "agrument was set. If Uintah fails to build try adding the --fortranargument"
+        FORTRANARGS=""
+#       return 1
+      fi
+
+    else
+        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
     fi
 
     #
@@ -207,11 +220,6 @@ function build_uintah
             cf_build_type="--disable-shared --enable-static"
         else
             cf_build_type="--enable-shared --disable-static"
-    fi
-    if [[ "$FC_COMPILER" == "no" ]] ; then
-        FORTRANARGS=""
-    else
-        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
     fi
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
