@@ -5,6 +5,8 @@
 ## system: Linux cvrsvc01 2.6.18-238.12.1.el5.nersc #1 SMP Mon Jul 11 16:15:58 PDT 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: ghweber
 
+## FIXME: Update to VTK 6 and install VisIt 2.7 on Carver
+
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
