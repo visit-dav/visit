@@ -67,11 +67,12 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_NERSC, self).__init__(launcher)
         # FIXME: HACK: Set up VisIt socket relay on MOM node for parallel engine by overriding settings in launcher class
-        launcher.loginnodeport = launcher.generalArgs.port
-        launcher.generalArgs.port = "$MOM_PORT"
-        launcher.loginnodehost = launcher.generalArgs.host
-        launcher.generalArgs.host = "$MOM_HOST"
-        launcher.generalArgs.noloopback = 1
+        if self.launcher.nersc_host != "carver":
+            launcher.loginnodeport = launcher.generalArgs.port
+            launcher.generalArgs.port = "$MOM_PORT"
+            launcher.loginnodehost = launcher.generalArgs.host
+            launcher.generalArgs.host = "$MOM_HOST"
+            launcher.generalArgs.noloopback = 1
 
     def CreateFilename(self, root):
         if  self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "grace" or self.launcher.nersc_host == "hopper":
