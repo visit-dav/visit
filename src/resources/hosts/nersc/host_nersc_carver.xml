@@ -2,7 +2,7 @@
 <Object name="MachineProfile">
     <Field name="hostNickname" type="string">"NERSC Carver"</Field>
     <Field name="host" type="string">carver.nersc.gov</Field>
-    <Field name="hostAliases" type="string"></Field>
+    <Field name="hostAliases" type="string">cvrsvc01 cvrsvc02 cvrsvc03 cvrsvc04 cvrsvc05 cvrsvc06 cvrsvc09 cvrsvc10 cvrsvc11 cvrsvc12 cvrsvc13 cvrsvc14 cvrsvc15 cvrsvc16 cvrsvc17 cvrsvc18 cvrsvc19 cvrsvc20 cvrsvc21 cvrsvc22 cvrsvc26 cvrsvc27 cvrsvc28</Field>
     <Field name="directory" type="string">/usr/common/graphics/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
