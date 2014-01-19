@@ -310,6 +310,7 @@ class IVP_API avtPICSFilter :
     virtual void              PurgeDomain( const int domain, const int timeStep );
 
     // Helper functions.
+    void                      CheckStagger(vtkDataSet *ds, bool &isEdge, bool &isFace);
     int                       DomainToRank(BlockIDType &domain);
     void                      ComputeDomainToRankMapping();
     bool                      OwnDomain(BlockIDType &domain);

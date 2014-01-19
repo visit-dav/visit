@@ -56,6 +56,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include "avtMasterSlaveICAlgorithm.h"
 #include "avtVariableCache.h"
 #include <math.h>
+#include <string.h>
 #include <visitstream.h>
 
 #include <vtkCellArray.h>
@@ -78,6 +79,8 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtCellLocatorClassic.h>
 #include <avtCellLocatorBIH.h>
 #include <avtCellLocatorRect.h>
+#include <avtCellLocatorRectFace.h>
+#include <avtCellLocatorRectEdge.h>
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDataset.h>
@@ -85,6 +88,8 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtIVPVTKField.h>
+#include <avtIVPVTKFaceField.h>
+#include <avtIVPVTKEdgeField.h>
 #include <avtIVPVTKOffsetField.h>
 #include <avtIVPVTKTimeVaryingField.h>
 #include <avtIVPDopri5.h>
@@ -1861,6 +1866,17 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
 {
     avtCellLocator_p locator;
 
+    bool isFace = false;
+    bool isEdge = false;
+    vtkDataArray* velData = ds->GetPointData()->GetVectors();
+
+    if (velData)
+        CheckStagger( ds, isEdge, isFace );
+
+    if (!velData)
+        velData = ds->GetCellData()->GetVectors();
+
+
     std::map<BlockIDType, avtCellLocator_p>::iterator it = 
         domainToCellLocatorMap.find( domain );
     
@@ -1870,7 +1886,21 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
 
         if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-            locator = new avtCellLocatorRect( ds );
+            if ( isFace ) 
+            {
+              debug5 << "avtPICSFilter::SetupLocator: creating rectilinear 'face' cell locator\n";
+                locator = new avtCellLocatorRectFace( ds );
+            }
+            else if ( isEdge ) 
+            {
+                debug5 << "avtPICSFilter::SetupLocator: creating rectilinear 'edge' cell locator\n";
+                locator = new avtCellLocatorRectEdge( ds );
+            }
+            else 
+            {
+                // nodal 
+                locator = new avtCellLocatorRect( ds );
+            }
         }
         else
         {
@@ -1949,11 +1979,15 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 {
     avtCellLocator_p locator = SetupLocator(domain, ds);
 
-    //vtkDoubleArray* offsetArray = (vtkDoubleArray*)ds->GetFieldData()->GetArray("nodeOffset");
-
     std::vector<avtVector> offsets(3);
     bool haveOffsets = false;
+    bool isFace = false;
+    bool isEdge = false;
     vtkDataArray* velData = ds->GetPointData()->GetVectors();
+
+    if (velData)
+      CheckStagger(ds, isEdge, isFace);
+
     if (!velData)
         velData = ds->GetCellData()->GetVectors();
     if (velData)
@@ -1968,6 +2002,9 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 
             if ((vals[0] != 0) || (vals[1] != 0) || (vals[2] != 0))
                 haveOffsets = true;
+
+            debug5 << "avtPICSFilter::GetFieldForDomain: field has offsets " 
+                   << vals[0] << vals[1] << vals[2] << std::endl;
         }
 
         if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_1()))
@@ -1991,6 +2028,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
             if ((vals[0] !=0) || (vals[1] !=0) || (vals[2] !=0))
                 haveOffsets = true;
         }
+          
     }
     
     if (doPathlines)
@@ -2030,6 +2068,18 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 
       else if( fieldType == PICS_FIELD_NIMROD )
          return new avtIVPNIMRODField(ds, *locator);
+
+      else if (isFace) {
+        debug5 <<"avtPICSFilter::GetFieldForDomain() - using 'face' field interpolator." <<std::endl;
+        avtIVPVTKFaceField* field = new avtIVPVTKFaceField(ds, *locator);
+        return field;
+      }
+
+      else if (isEdge) {
+        debug5 <<"avtPICSFilter::GetFieldForDomain() - using 'edge' field interpolator." <<std::endl;
+        avtIVPVTKEdgeField* field = new avtIVPVTKEdgeField(ds, *locator);
+        return field;
+      }
 
       else if (haveOffsets) {
         debug5 <<"avtPICSFilter::GetFieldForDomain() - using offset field interpolator." <<std::endl;
@@ -3385,4 +3435,43 @@ avtPICSFilter::PurgeDomain( const int domain, const int timeStep )
         it->second = NULL;
         domainToCellLocatorMap.erase( it );
     } 
+}
+
+// ****************************************************************************
+//  Method: avtPICSFilter::CheckStagger
+//
+//  Purpose:
+//      Determine if the attached vector field to a dataset is staggered.
+//
+//  Programmer: Alexander Pletzer
+//  Creation:   Tue Dec  3 19:31:02 MST 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtPICSFilter::CheckStagger( vtkDataSet *ds, bool &isEdge, bool &isFace )
+{
+    isFace = false;
+    isEdge = false;
+    // staggered data are always defined on the nodal sized mesh
+    vtkDataArray* velData = ds->GetPointData()->GetVectors();
+    if (velData)
+    {
+        vtkInformation* info = velData->GetInformation();
+        debug5 << "avtPICSFilter::CheckStagger: checking if vector field " 
+               << velData << " has STAGGER\n";
+        if (info->Has(avtVariableCache::STAGGER()))
+        {
+            const char* stagger = info->Get(avtVariableCache::STAGGER());
+            debug5 << "avtPICSFilter::CheckStagger: field has stagger " << stagger << std::endl;
+            if (strcmp(stagger, "face") == 0) {
+              isFace = true;
+            }
+            else if (strcmp(stagger, "edge") == 0) {
+              isEdge = true;
+            }
+        }
+    }
+
 }
