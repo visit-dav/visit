@@ -9,7 +9,7 @@
 * full copyright notice is contained in the file COPYRIGHT located at the root
 * of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
 *
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* Redistribution  and  use  in  source  and  binary forms,  with  or  without
 * modification, are permitted provided that the following conditions are met:
 *
 *  - Redistributions of  source code must  retain the above  copyright notice,
@@ -50,6 +50,8 @@
 #include <vector>
 
 #include <void_ref_ptr.h>
+
+#include <vtkInformationStringKey.h>
 
 class   avtCachableItem;
 class   vtkObject;
@@ -153,6 +155,10 @@ class DATABASE_API avtVariableCache
     static vtkInformationDoubleVectorKey* OFFSET_3_COMPONENT_0();
     static vtkInformationDoubleVectorKey* OFFSET_3_COMPONENT_1();
     static vtkInformationDoubleVectorKey* OFFSET_3_COMPONENT_2();
+
+    // VTK keys for transmitting face/edge stagger information
+    
+    static vtkInformationStringKey* STAGGER();
   
     vtkObject             *GetVTKObject(const char *name, const char *type,
                                         int ts, int domain, const char *mat);

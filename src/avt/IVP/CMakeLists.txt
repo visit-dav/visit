@@ -48,6 +48,8 @@ avtCellLocator.C
 avtCellLocatorClassic.C
 avtCellLocatorBIH.C
 avtCellLocatorRect.C
+avtCellLocatorRectFace.C
+avtCellLocatorRectEdge.C
 avtIntegralCurve.C
 avtIVPAdamsBashforth.C
 avtIVPDopri5.C
@@ -62,6 +64,8 @@ avtIVPNIMRODField.C
 avtIVPFlashField.C
 avtIVPVTKField.C
 avtIVPVTKOffsetField.C
+avtIVPVTKFaceField.C
+avtIVPVTKEdgeField.C
 avtIVPVTKTimeVaryingField.C
 avtLCSIC.C
 avtPoincareIC.C

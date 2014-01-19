@@ -161,6 +161,9 @@ avtVectorComposeExpression::GetVariableDimension(void)
 //    Mark C. Miller, Wed Feb 27 10:14:01 PST 2013
 //    Enhanced error message about not knowing how to compose 3 Vector for 2D
 //    domain to address confusion in creating color vectors.
+//
+//    Alexander Pletzer, Wed Dec  4 16:40:02 MST 2013
+//    Added support for face and edge data
 // ****************************************************************************
 vtkDataArray *
 avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
@@ -217,34 +220,55 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
         }
     }
 
-    // As we proceed to build the vector out of components,
-    // we make a list of offsets for each component 
-    // so that we can attach that list to the resulting vector dataset
-    // In the future, we need a generic way to merge vtkInformationObjects here
+    // Build the vector out of components. Face and edge vectors are expected
+    // to have a stagger for each component. 
+    bool isFace = true;
+    bool isEdge = true;
     std::vector<avtVector> offsets(3);
     vtkInformation* data1Info = data1->GetInformation();
-    if (data1Info->Has(avtVariableCache::OFFSET_3())) {
-      double* vals = data1Info->Get(avtVariableCache::OFFSET_3());
-      offsets[0].x = vals[0];
-      offsets[0].y = vals[1];
-      offsets[0].z = vals[2];
+    if ( data1Info->Has(avtVariableCache::STAGGER()) ) 
+    {
+        const char *stagger = data1Info->Get(avtVariableCache::STAGGER());
+        isFace &= (strcmp(stagger, "face") == 0);
+        isEdge &= (strcmp(stagger, "edge") == 0);
+    }
+    else if ( data1Info->Has(avtVariableCache::OFFSET_3()) ) 
+    {
+        double* vals = data1Info->Get(avtVariableCache::OFFSET_3());
+        offsets[0].x = vals[0];
+        offsets[0].y = vals[1];
+        offsets[0].z = vals[2];
     }
 
     vtkInformation* data2Info =data2->GetInformation();
-    if (data2Info->Has(avtVariableCache::OFFSET_3())) {
-      double* vals = data2Info->Get(avtVariableCache::OFFSET_3());
-      offsets[1].x = vals[0];
-      offsets[1].y = vals[1];
-      offsets[1].z = vals[2];
+    if ( data2Info->Has(avtVariableCache::STAGGER()) ) 
+    {
+        const char *stagger = data2Info->Get(avtVariableCache::STAGGER());
+        isFace &= (strcmp(stagger, "face") == 0);
+        isEdge &= (strcmp(stagger, "edge") == 0);
+    }
+    else if ( data2Info->Has(avtVariableCache::OFFSET_3()) ) 
+    {
+        double* vals = data2Info->Get(avtVariableCache::OFFSET_3());
+        offsets[1].x = vals[0];
+        offsets[1].y = vals[1];
+        offsets[1].z = vals[2];
     }
   
     if (numinputs == 3) {
       vtkInformation* data3Info = data3->GetInformation();
-      if (data3Info->Has(avtVariableCache::OFFSET_3())) {
-        double* vals = data3Info->Get(avtVariableCache::OFFSET_3());
-        offsets[2].x = vals[0];
-        offsets[2].y = vals[1];
-        offsets[2].z = vals[2];
+      if ( data3Info->Has(avtVariableCache::STAGGER()) ) 
+      {
+          const char *stagger = data3Info->Get(avtVariableCache::STAGGER());
+          isFace &= (strcmp(stagger, "face") == 0);
+          isEdge &= (strcmp(stagger, "edge") == 0);
+      }
+      else if ( data3Info->Has(avtVariableCache::OFFSET_3()) ) 
+      {
+          double* vals = data3Info->Get(avtVariableCache::OFFSET_3());
+          offsets[2].x = vals[0];
+          offsets[2].y = vals[1];
+          offsets[2].z = vals[2];
       }
     }
 
@@ -388,10 +412,17 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     }
 
     //If offset information existed on the input dataset, set it on the output
-    if ((offsets[0].x != 0) || (offsets[0].y != 0) || (offsets[0].z != 0) ||
+    vtkInformation* dvInfo = dv->GetInformation();
+    if (isFace) {
+      dvInfo->Set(avtVariableCache::STAGGER(), "face");
+    }
+    else if (isEdge) {
+      dvInfo->Set(avtVariableCache::STAGGER(), "edge");
+    }
+    else if ((offsets[0].x != 0) || (offsets[0].y != 0) || (offsets[0].z != 0) ||
         (offsets[1].x != 0) || (offsets[1].y != 0) || (offsets[1].z != 0) ||
         (offsets[2].x != 0) || (offsets[2].y != 0) || (offsets[2].z != 0)) {
-      vtkInformation* dvInfo = dv->GetInformation();
+      
       dvInfo->Set(avtVariableCache::OFFSET_3_COMPONENT_0(), offsets[0].x, offsets[0].y, offsets[0].z);
       dvInfo->Set(avtVariableCache::OFFSET_3_COMPONENT_1(), offsets[1].x, offsets[1].y, offsets[1].z);
       dvInfo->Set(avtVariableCache::OFFSET_3_COMPONENT_2(), offsets[2].x, offsets[2].y, offsets[2].z);

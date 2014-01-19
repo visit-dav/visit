@@ -44,6 +44,7 @@
 #include <vtkDataObject.h>
 #include <vtkInformation.h>
 #include <vtkInformationDoubleVectorKey.h>
+#include <vtkInformationStringKey.h>
 
 #include <avtFacelist.h>
 #include <avtMaterial.h>
@@ -73,6 +74,7 @@ vtkInformationKeyRestrictedMacro(avtVariableCache, OFFSET_3, DoubleVector, 3);
 vtkInformationKeyRestrictedMacro(avtVariableCache, OFFSET_3_COMPONENT_0, DoubleVector, 3);
 vtkInformationKeyRestrictedMacro(avtVariableCache, OFFSET_3_COMPONENT_1, DoubleVector, 3);
 vtkInformationKeyRestrictedMacro(avtVariableCache, OFFSET_3_COMPONENT_2, DoubleVector, 3);
+vtkInformationKeyMacro(avtVariableCache, STAGGER, String);
 
 // ****************************************************************************
 //  Method: avtVariableCache::DestructVTKObject 
