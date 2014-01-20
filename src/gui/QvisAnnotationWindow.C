@@ -2954,7 +2954,7 @@ QvisAnnotationWindow::axes3DTickLocationChanged(int index)
         annotationAtts->GetAxes3D().SetTickLocation(Axes3D::Inside);
     else if (index == 1)
         annotationAtts->GetAxes3D().SetTickLocation(Axes3D::Outside);
-    else if (index == 1)
+    else if (index == 2)
         annotationAtts->GetAxes3D().SetTickLocation(Axes3D::Both);
     annotationAtts->SelectAxes3D();
     SetUpdate(false);
