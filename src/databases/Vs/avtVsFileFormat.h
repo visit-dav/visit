@@ -20,8 +20,8 @@
 
 #include <vtkUnsignedCharArray.h>
 #include <vtkPoints.h>
-#include <VsH5Dataset.h>
-//#include <VsH5Reader.h>
+#include <VsDataset.h>
+//#include <VsReader.h>
 #include <avtSTMDFileFormat.h>
 #include <hdf5.h>
 #include <visit-hdf5.h>
@@ -42,7 +42,7 @@ class VsUniformMesh;
 class VsStructuredMesh;
 class VsRectilinearMesh;
 class VsRegistry;
-class VsH5Reader;
+class VsReader;
 
 /**
  * avtSTMDFileFormat is a base class for multi-domain, single-time
@@ -163,7 +163,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   std::string dataFileName;
 
   /** Pointer to the reader */
-  VsH5Reader* reader;
+  VsReader* reader;
 
   /** Ensure data has been read **/
   void LoadData();
@@ -236,7 +236,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   
   template <typename TYPE>
   void fillInMaskNodeArray(const std::vector<int>& gdims,
-                           VsH5Dataset *mask, bool maskIsFortranOrder,
+                           VsDataset *mask, bool maskIsFortranOrder,
                            vtkUnsignedCharArray *maskedNodes);
 
   template <typename TYPE>

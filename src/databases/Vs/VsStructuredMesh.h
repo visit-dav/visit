@@ -14,32 +14,32 @@
 #include "VsMesh.h"
 #include <hdf5.h>
 
-class VsH5Dataset;
+class VsDataset;
 
 class VsStructuredMesh: public VsMesh {
 public:
   virtual ~VsStructuredMesh();
   
-  virtual bool isStructuredMesh() { return true; }
-  virtual std::string getKind();
+  virtual bool isStructuredMesh() const { return true; }
+  virtual std::string getKind() const;
   
-  static VsStructuredMesh* buildStructuredMesh(VsH5Dataset* data);
+  static VsStructuredMesh* buildStructuredMesh(VsDataset* data);
 
-  virtual void getMeshDataDims(std::vector<int>& dims);
-  virtual void getNumMeshDims(std::vector<int>& dims);
+  virtual void getCellDims(std::vector<int>& dims) const;
+  virtual void getNodeDims(std::vector<int>& dims) const;
 
   /**
    * Get the mask variable name
    * @return name or empty string if no mask
    */
-  virtual std::string getMaskName();
+  virtual std::string getMaskName() const;
 
 private:
-  VsStructuredMesh(VsH5Dataset* data);
+  VsStructuredMesh(VsDataset* data);
   virtual bool initialize();
  
   /** name of the mask array (optional) */
-  VsH5Attribute* maskAtt;
+  VsAttribute* maskAtt;
 };
 
 #endif /* VSSTRUCTUREDMESH_H_ */

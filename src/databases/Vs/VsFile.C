@@ -1,27 +1,24 @@
 /*
- * VsH5File.cpp
+ * VsFile.cpp
  *
  *  Created on: Apr 27, 2010
  *      Author: mdurant
  */
 
-#include "VsH5File.h"
+#include "VsFile.h"
 #include "VsLog.h"
-#include "VsFilter.h"
 #include "hdf5.h"
-#include "visit-hdf5.h"
-#include "VsH5Dataset.h"
-#include "VsH5Group.h"
+#include "VsDataset.h"
+#include "VsGroup.h"
 #include "VsVariable.h"
 #include "VsVariableWithMesh.h"
 #include "VsRectilinearMesh.h"
 #include "VsUniformMesh.h"
 #include "VsUnstructuredMesh.h"
 #include "VsStructuredMesh.h"
-//#include <stdlib.h>
 
-VsH5File::VsH5File(VsRegistry* r, std::string name, hid_t id):
-  VsH5Object(r, NULL, name, id) {
+VsFile::VsFile(VsRegistry* r, std::string name, hid_t id):
+  VsObject(r, NULL, name, id) {
   fileName = name;
   VsLog::debugLog() <<"File name is: " <<name <<std::endl;
   
@@ -49,7 +46,7 @@ VsH5File::VsH5File(VsRegistry* r, std::string name, hid_t id):
   
 }
 
-VsH5File::~VsH5File() {
+VsFile::~VsFile() {
   //we clear all objects that were read from this file
   //so that we can close the file itself.
   //Note that this does not delete the registry object
@@ -70,7 +67,7 @@ VsH5File::~VsH5File() {
       //Don't print a warning for the file itself, we know it's still open.
       if (anobj != getId()) {
         H5I_type_t ot = H5Iget_type(anobj);
-        herr_t status = H5Iget_name(anobj, objName, 1024);
+        int status = H5Iget_name(anobj, objName, 1024);
         VsLog::debugLog() << "type = " << ot << ", name = " << objName <<", id = " <<anobj <<std::endl;;
       }
     }
@@ -83,11 +80,11 @@ VsH5File::~VsH5File() {
   H5Fclose(getId());
 }
 
-std::string VsH5File::getName() {
+std::string VsFile::getName() const {
   return "/";
 }
 
-void VsH5File::write() {
+void VsFile::write() const {
   VsLog::debugLog() <<"File: " <<fileName <<std::endl;  
 }
 

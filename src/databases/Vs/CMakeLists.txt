@@ -18,12 +18,6 @@ ${COMMON_SOURCES}
 avtVsFileFormat.C
 avtVsOptions.C
 VsFilter.C
-VsH5Attribute.C
-VsH5Dataset.C
-VsH5File.C
-VsH5Group.C
-VsH5Object.C
-VsH5Reader.C
 VsLog.C
 VsMDMesh.C
 VsMDVariable.C
@@ -38,6 +32,13 @@ VsVariable.C
 VsVariableWithMesh.C
 VsRegistry.C
 VsRegistryObject.C
+VsGroup.C
+VsObject.C
+VsDataset.C
+VsAttribute.C
+VsFile.C
+VsReader.C
+VsStaggeredField.C
 )
 
 SET(LIBE_SOURCES
@@ -46,12 +47,6 @@ ${COMMON_SOURCES}
 avtVsFileFormat.C
 avtVsOptions.C
 VsFilter.C
-VsH5Attribute.C
-VsH5Dataset.C
-VsH5File.C
-VsH5Group.C
-VsH5Object.C
-VsH5Reader.C
 VsLog.C
 VsMDMesh.C
 VsMDVariable.C
@@ -66,6 +61,12 @@ VsVariable.C
 VsVariableWithMesh.C
 VsRegistry.C
 VsRegistryObject.C
+VsGroup.C
+VsObject.C
+VsDataset.C
+VsAttribute.C
+VsFile.C
+VsReader.C
 )
 
 INCLUDE_DIRECTORIES(

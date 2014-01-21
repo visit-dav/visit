@@ -14,33 +14,33 @@
 #include "VsMesh.h"
 #include <hdf5.h>
 
-class VsH5Group;
+class VsGroup;
 
 class VsUniformMesh: public VsMesh {
 public:
   virtual ~VsUniformMesh();
-  hid_t getDataType();
+  hid_t getDataType() const;
   
-  virtual bool isUniformMesh() { return true; }
-  virtual std::string getKind();
+  virtual bool isUniformMesh() const { return true; }
+  virtual std::string getKind() const;
   
-  static VsUniformMesh* buildUniformMesh(VsH5Group* group);
+  static VsUniformMesh* buildUniformMesh(VsGroup* group);
 
-  herr_t getLowerBounds(std::vector<float>* fVals);
-  herr_t getUpperBounds(std::vector<float>* fVals);
-  herr_t getStartCell(std::vector<int>* startCell);
+  int getLowerBounds(std::vector<float>* fVals);
+  int getUpperBounds(std::vector<float>* fVals);
+  int getStartCell(std::vector<int>* startCell);
 
-  virtual void getMeshDataDims(std::vector<int>& dims);
-  virtual void getNumMeshDims(std::vector<int>& dims);
+  virtual void getCellDims(std::vector<int>& dims) const;
+  virtual void getNodeDims(std::vector<int>& dims) const;
   
 private:
   //required attributes
-  VsH5Attribute* numCellsAtt;
-  VsH5Attribute* lowerBoundsAtt;
-  VsH5Attribute* upperBoundsAtt;
-  VsH5Attribute* startCellAtt;
+  VsAttribute* numCellsAtt;
+  VsAttribute* lowerBoundsAtt;
+  VsAttribute* upperBoundsAtt;
+  VsAttribute* startCellAtt;
     
-  VsUniformMesh(VsH5Group* group);
+  VsUniformMesh(VsGroup* group);
   virtual bool initialize();
   
 };

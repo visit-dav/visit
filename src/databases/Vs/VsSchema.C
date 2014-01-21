@@ -1,6 +1,4 @@
 #include <hdf5.h>
-#include <visit-hdf5.h>
-#if HDF5_VERSION_GE(1,8,1)
 /**
  * @file  VsSchema.cpp
  *
@@ -36,6 +34,10 @@ std::string VsSchema::meshKey = "mesh";
 std::string VsSchema::vsVarsKey = "vsVars";
 std::string VsSchema::zonalCenteringKey = "zonal"; 
 std::string VsSchema::nodalCenteringKey = "nodal"; // Default
+
+// New to VsSchema 4.0
+std::string VsSchema::edgeCenteringKey = "edge";
+std::string VsSchema::faceCenteringKey = "face";
 
 // Index ordering...
 std::string VsSchema::compMajorCKey = "compMajorC"; //currently not supported
@@ -112,4 +114,3 @@ std::string VsSchema::timeGroupAtt = "vsTimeGroup";
 //Run info
 std::string VsSchema::runInfoKey = "runInfo";
 std::string VsSchema::softwareAtt = "vsSoftware";
-#endif

@@ -73,15 +73,15 @@
 #include "VsVariableWithMesh.h"
 #include "VsMesh.h"
 #include "VsMDMesh.h"
-#include "VsH5Dataset.h"
+#include "VsDataset.h"
 #include "VsRectilinearMesh.h"
 #include "VsUniformMesh.h"
 #include "VsUnstructuredMesh.h"
 #include "VsStructuredMesh.h"
-#include "VsH5Attribute.h"
+#include "VsAttribute.h"
 #include "VsLog.h"
 #include "VsRegistry.h"
-#include "VsH5Reader.h"
+#include "VsReader.h"
 #include "VsSchema.h"
 
 #define __CLASS__ "avtVsFileFormat::"
@@ -173,7 +173,7 @@ avtVsFileFormat::avtVsFileFormat(const char* filename,
       EXCEPTION1(InvalidDBTypeException, msg.str().c_str());
     }
 
-    //NOTE: We used to initialize the VsH5Reader object here
+    //NOTE: We used to initialize the VsReader object here
     //But now do it on demand in 'populateDatabaseMetaData'
     //To minimize I/O
 
@@ -585,7 +585,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
     // Read int data
     std::vector<int> numCells;
-    uniformMesh->getMeshDataDims(numCells); // Number of cells NOT nodes
+    uniformMesh->getCellDims(numCells);
 
     if (numCells.size() < 0) {
       std::ostringstream msg;
@@ -789,7 +789,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
     // Get dimensions
     std::vector<int> numNodes;
-    rectilinearMesh->getMeshDataDims(numNodes); // Number of nodes NOT cells
+    rectilinearMesh->getNodeDims(numNodes); // Number of nodes NOT cells
 
     if (numNodes.size() < 0) {
       std::ostringstream msg;
@@ -862,7 +862,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Loading data for axis " << i << std::endl;
-      VsH5Dataset* axisData = rectilinearMesh->getAxisDataset(i);
+      VsDataset* axisData = rectilinearMesh->getAxisDataset(i);
 
       if (axisData == NULL) {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -899,7 +899,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       // or in parallel mode read in all of te data. As for the grid
       // there is not that much data. When building the mesh the
       // correct nodes are used.
-      herr_t err = reader->getDataSet(axisData, dataPtr);
+      herr_t err = reader->getData(axisData, dataPtr);
 
       if (err < 0) {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -1107,7 +1107,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // the points So, look for the dataset with the same name as the
     // mesh
 
-    VsH5Dataset* pointsDataset =
+    VsDataset* pointsDataset =
       registry->getDataset(structuredMesh->getFullName());
 
     if (pointsDataset == NULL) {
@@ -1123,7 +1123,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                       << "Determining dimension of points array." << std::endl;
 
     std::vector<int> numNodes;
-    structuredMesh->getNumMeshDims(numNodes);  // Number of nodes NOT cells.
+    structuredMesh->getNodeDims(numNodes);
 
     if (numNodes.size() < 0) {
       std::ostringstream msg;
@@ -1235,12 +1235,12 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     herr_t err;
 
     if( haveDataSelections )
-      err = reader->getDataSet( pointsDataset, dataPtr,
-                                // -1 read all coordinate components
-                                structuredMesh->getIndexOrder(), -1,
-                                mins, &(gdims[0]), strides );
+      err = reader->getData( pointsDataset, dataPtr,
+                             // -1 read all coordinate components
+                             structuredMesh->getIndexOrder(), -1,
+                             mins, &(gdims[0]), strides );
     else
-      err = reader->getDataSet( pointsDataset, dataPtr );
+      err = reader->getData( pointsDataset, dataPtr );
 
     if (err < 0)
     {
@@ -1345,7 +1345,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                         << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Mask detected, name is " << maskName << std::endl;
       // To access the data
-      VsH5Dataset* mask = registry->getDataset(maskName);
+      VsDataset* mask = registry->getDataset(maskName);
       // To access the attributes
       VsVariable* maskVar = registry->getVariable(maskName);
       if (!mask || !maskVar) {
@@ -1591,20 +1591,20 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       
       for( int i=0; i<numSpatialDims; ++i )
       {
-        VsH5Dataset* pointDataset = unstructuredMesh->getPointsDataset(i);
+        VsDataset* pointDataset = unstructuredMesh->getPointsDataset(i);
 
         destMins[0] = i;
 
-        herr_t err = reader->getDataSet(pointDataset, dataPtr,
-                                        unstructuredMesh->getIndexOrder(),
-                                        -2,
-                                        &srcMins[0], &srcMaxs[0], &srcStrides[0],
-                                        1, &destSize[0],
-                                        &destMins[0], &destMaxs[0], &destStrides[0] );
+        herr_t err = reader->getData(pointDataset, dataPtr,
+                                     unstructuredMesh->getIndexOrder(),
+                                     -2,
+                                     &srcMins[0], &srcMaxs[0], &srcStrides[0],
+                                     1, &destSize[0],
+                                     &destMins[0], &destMaxs[0], &destStrides[0]);
 
         if (err < 0) {
           VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                            << "Call to getDataSet returned error: "
+                            << "Call to getDataset returned error: "
                             << err << "Returning NULL." << std::endl;
           return NULL;
         }
@@ -1646,7 +1646,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Using all-in-one method" << std::endl;
 
-      VsH5Dataset* pointsDataset = unstructuredMesh->getPointsDataset();
+      VsDataset* pointsDataset = unstructuredMesh->getPointsDataset();
 
       herr_t err;
       
@@ -1660,17 +1660,17 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         int srcMaxs[1] = {numNodes};
         int srcStrides[1] = {strides[0]};
 
-        err = reader->getDataSet( pointsDataset, dataPtr,
-                                  // -1 read all coordinate components
-                                  unstructuredMesh->getIndexOrder(), -1,
-                                  &(srcMins[0]), &(srcMaxs[0]), &(srcStrides[0]) );
+        err = reader->getData( pointsDataset, dataPtr,
+                               // -1 read all coordinate components
+                               unstructuredMesh->getIndexOrder(), -1,
+                               &(srcMins[0]), &(srcMaxs[0]), &(srcStrides[0]) );
       }
       else
-        err = reader->getDataSet(pointsDataset, dataPtr);
+        err = reader->getData(pointsDataset, dataPtr);
 
       if (err < 0) {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Call to getDataSet returned error: "
+                          << "Call to getDataset returned error: "
                           << err << "Returning NULL." << std::endl;
         return NULL;
       }
@@ -1721,7 +1721,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     }
 
     // Next, look for connectivity data
-    VsH5Dataset* connectivityMeta = 0;
+    VsDataset* connectivityMeta = 0;
 
     unsigned int numTopologicalDims;
     unsigned int haveConnectivityCount = 0;
@@ -1793,7 +1793,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                       << haveConnectivityCount
                       << std::endl;
     
-    VsH5Dataset* connectivityDataset =
+    VsDataset* connectivityDataset =
       registry->getDataset(connectivityDatasetName);
     
     std::vector<int> connectivityDims = connectivityMeta->getDims();
@@ -1880,17 +1880,17 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       int srcMaxs[1] = {numCells};
       int srcStrides[1] = {strides[0]};
       
-      err = reader->getDataSet( connectivityDataset, vertices,
-                                // -1 read all coordinate components
-                                unstructuredMesh->getIndexOrder(), -1,
-                                &(srcMins[0]), &(srcMaxs[0]), &(srcStrides[0]) );
+      err = reader->getData( connectivityDataset, vertices,
+                             // -1 read all coordinate components
+                             unstructuredMesh->getIndexOrder(), -1,
+                             &(srcMins[0]), &(srcMaxs[0]), &(srcStrides[0]) );
     }
     else
-      err = reader->getDataSet(connectivityDataset, vertices);
+      err = reader->getData(connectivityDataset, vertices);
     
     if (err < 0) {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Call to getDataSet returned error: " << err
+                        << "Call to getDataset returned error: " << err
                         << "Returning NULL." << std::endl;
       return NULL;
     }
@@ -1929,11 +1929,11 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     int* correctionList = NULL;
     int correctionListSize = 0;
     if (unstructuredMesh->hasNodeCorrectionData()) {
-      VsH5Dataset* correctionDataset = registry->getDataset(unstructuredMesh->getNodeCorrectionDatasetName());
+      VsDataset* correctionDataset = registry->getDataset(unstructuredMesh->getNodeCorrectionDatasetName());
       if (correctionDataset) {
         correctionListSize = correctionDataset->getLength();
         int* localToGlobalNodeMapping = new int[correctionListSize];
-        reader->getDataSet(correctionDataset, localToGlobalNodeMapping);
+        reader->getData(correctionDataset, localToGlobalNodeMapping);
 
         //Build up a list of which global ids are "taken" by more than one node
         //And when that happens, remember the local ids that need to be mapped to the original local id
@@ -2244,15 +2244,15 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 
       destMins[0] = i;
 
-      VsH5Dataset* variableDataset =
+      VsDataset* variableDataset =
         registry->getDataset(variableWithMesh->getFullName());
 
-      err = reader->getDataSet(variableDataset, dataPtr,
-                               variableWithMesh->getIndexOrder(),
-                               componentIndex,
-                               &srcMins[0], &srcMaxs[0], &srcStrides[0],
-                               1, &destSize[0],
-                               &destMins[0], &destMaxs[0], &destStrides[0] );
+      err = reader->getData(variableDataset, dataPtr,
+                            variableWithMesh->getIndexOrder(),
+                            componentIndex,
+                            &srcMins[0], &srcMaxs[0], &srcStrides[0],
+                            1, &destSize[0],
+                            &destMins[0], &destMaxs[0], &destStrides[0]);
 
       if (err < 0) {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -2522,7 +2522,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
     // Cross-reference against the number of points in the mesh
     int nPtsInOutput = nPts;
     std::vector<int> meshDims;
-    meshMeta->getMeshDataDims(meshDims);
+    meshMeta->getCellDims(meshDims);
     int nPtsInMesh = meshDims[0];
     if (varMeta->isZonal()) {
       if (nPts != (nPtsInMesh - 1)) {
@@ -2683,7 +2683,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     // these two variables:
     VsVariable* meta = NULL;
     VsVariableWithMesh* vmMeta = NULL;
-    VsH5Dataset* variableDataset = NULL;
+    VsDataset* variableDataset = NULL;
 
     // It could be an MD variable if so, retrieve the md metadata,
     // look up the "real" variable name using the domain number, and
@@ -2696,8 +2696,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
                         << "Found MD metadata for this name: "
                         << name << std::endl;
 
-      if (0 <= domain && domain < mdMeta->blocks.size()) {
-        meta = mdMeta->blocks[domain];
+      if (0 <= domain && domain < mdMeta->getNumBlocks()) {
+        meta = mdMeta->getBlock(domain);
         name = meta->getFullName();
 
         if( meta )
@@ -2761,16 +2761,31 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     bool hasOffset = false;
     std::vector<double> offset(3, 0);
     std::string indexOrder;
+    bool isEdge = false;
+    bool isFace = false;
 
     size_t numTopologicalDims;
 
     // VarWithMesh variable - Note that there is no mesh metadata for
     // VarWithMesh.
     if (vmMeta) {
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
+                        << __FUNCTION__ << "  " << __LINE__ 
+                        << " Variable with mesh\n";
       varDims = vmMeta->getDims();
       varType = vmMeta->getType();
 
       isZonal = true;
+      std::string centering = vmMeta->getCentering();
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
+                        << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << " Centering is " << centering << std::endl;
+      isEdge = (centering == "edge");
+      isFace = (centering == "face");
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
+                        << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << " Stagger: isFace = " << isFace 
+                        << " isEdge = " << isEdge << std::endl;
 
       indexOrder = vmMeta->getIndexOrder();
       isCompMajor  = vmMeta->isCompMajor();
@@ -2779,6 +2794,9 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
 
     else {
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
+                        << __FUNCTION__ << "  " << __LINE__ 
+                        << " Variable without mesh\n";
       varDims = meta->getDims();
       varType = meta->getType();
 
@@ -2787,6 +2805,18 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
       if (meta->isZonal())
         isZonal = true;
+      
+      if (meta->isEdge())
+        isEdge = true;
+
+      if (meta->isFace())
+        isFace = true;
+
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
+                        << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << " Stagger: isFace = " << isFace 
+                        << " isEdge = " << isEdge << std::endl;
+      
 
       if (meta->hasNodeOffset()) {
         hasOffset = true;
@@ -2814,7 +2844,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       }
 
       std::vector<int> meshDims;
-      meshMetaPtr->getMeshDataDims(meshDims);
+      meshMetaPtr->getCellDims(meshDims);
       numTopologicalDims = meshDims.size();
 
       // Structured and unstructured mesh dimension contain the
@@ -2928,9 +2958,9 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Entering VarWithMesh section." << std::endl;
 
-      herr_t err = reader->getDataSet(variableDataset, dataPtr,
-                                      indexOrder, componentIndex,
-                                      mins, &(vdims[0]), strides);
+      herr_t err = reader->getData(variableDataset, dataPtr,
+                                   indexOrder, componentIndex,
+                                   mins, &(vdims[0]), strides);
 
       if (err < 0) {
         VsLog::debugLog()
@@ -2957,11 +2987,11 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       herr_t err;
     
       if( haveDataSelections )
-        err = reader->getDataSet( variableDataset, dataPtr,
-                                  meta->getIndexOrder(), -2, // -2 no components
-                                  mins, &(vdims[0]), strides );
+        err = reader->getData( variableDataset, dataPtr,
+                               meta->getIndexOrder(), -2, // -2 no components
+                               mins, &(vdims[0]), strides );
       else
-        err = reader->getDataSet( variableDataset, dataPtr );
+        err = reader->getData( variableDataset, dataPtr );
 
       if (err < 0) {
         VsLog::debugLog()
@@ -3018,8 +3048,19 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       rv = vtkIntArray::New();
     }
 
-    //Attach offset information to array
-    if (hasOffset) {
+    if (isFace) {
+      vtkInformation* info = rv->GetInformation();
+      info->Set(avtVariableCache::STAGGER(), "face");
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        <<"Attaching 'face' stagger information to dataset: " <<requestedName <<std::endl;
+    }
+    else if (isEdge) {
+      vtkInformation* info = rv->GetInformation();
+      info->Set(avtVariableCache::STAGGER(), "edge");      
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        <<"Attaching 'edge' stagger information to dataset: " <<requestedName <<std::endl;
+    }
+    else if (hasOffset) {
       vtkInformation* info = rv->GetInformation();
       info->Set(avtVariableCache::OFFSET_3(), offset[0], offset[1], offset[2]);
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -3192,8 +3233,9 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       delete [] intDataPtr;
     }
 
-    VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Returning data." << std::endl;
+    VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
+                      << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning vtkDataArray " << rv << std::endl;
     return rv;
 }
 
@@ -3639,7 +3681,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         meshType = AVT_RECTILINEAR_MESH;
 
         // Add in the logical bounds of the mesh.
-        static_cast<VsUniformMesh*>(meta)->getNumMeshDims(dims);
+        static_cast<VsUniformMesh*>(meta)->getNodeDims(dims);
         for( int i=0; i<dims.size(); ++i )
         {
           bounds[i] = dims[i]; // Logical bounds are node centric.
@@ -3657,7 +3699,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         meshType = AVT_RECTILINEAR_MESH;
 
         // Add in the logical bounds of the mesh.
-        rectMesh->getNumMeshDims(dims);
+        rectMesh->getNodeDims(dims);
         for( int i=0; i<dims.size(); ++i )
         {
           bounds[i] = dims[i]; // Logical bounds are node centric.
@@ -3709,7 +3751,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         meshType = AVT_CURVILINEAR_MESH;
 
         // Add in the logical bounds of the mesh.
-        static_cast<VsRectilinearMesh*>(meta)->getNumMeshDims(dims);
+        static_cast<VsRectilinearMesh*>(meta)->getNodeDims(dims);
         for( int i=0; i<dims.size(); ++i )
         {
           bounds[i] = dims[i]; // Logical bounds are node centric.
@@ -4044,7 +4086,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 
       // add var components
       std::vector<int> dims;
-      vMeta->getMeshDataDims(dims);
+      vMeta->getCellDims(dims);
       if (dims.size() <= 0) {
         std::ostringstream msg;
         msg << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -4274,17 +4316,17 @@ void avtVsFileFormat::LoadData()
       return;
 
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Initializing VsH5Reader()" << std::endl;
+                      << "Initializing VsReader()" << std::endl;
 
     //Actually open the file & read metadata for the first time
 
     try {
-      reader = new VsH5Reader(dataFileName, registry);
+      reader = new VsReader(dataFileName, registry);
     }
     catch (std::invalid_argument& ex) {
         std::ostringstream msg;
         msg << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-            << " Error initializing VsH5Reader: " << ex.what();
+            << " Error initializing VsReader: " << ex.what();
       VsLog::debugLog() << msg.str() << std::endl;
       EXCEPTION1(InvalidDBTypeException, msg.str().c_str());
     }
@@ -4820,13 +4862,13 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
 template <typename TYPE>
 void
 avtVsFileFormat::fillInMaskNodeArray(const std::vector<int>& gdims,
-                                     VsH5Dataset *mask, 
+                                     VsDataset *mask, 
                                      bool maskIsFortranOrder,
                                      vtkUnsignedCharArray *maskedNodes) {
 
   int numPoints = gdims[0] * gdims[1] * gdims[2];
   std::vector<TYPE> maskArray(numPoints);
-  herr_t err = reader->getDataSet(mask, &maskArray[0]);
+  herr_t err = reader->getData(mask, &maskArray[0]);
   unsigned char* mp = maskedNodes->GetPointer(0);
   if (err < 0) {
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"

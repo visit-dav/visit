@@ -24,7 +24,7 @@ VsMDVariable::VsMDVariable(VsVariable* firstVar, VsMDMesh* mdMesh, std::string m
   numComponents = -1;
   
   //MD Var should have same number of blocks as MD Mesh
-  blocks.resize(mdMesh->blocks.size());
+  blocks.resize(mdMesh->getNumBlocks());
     
   registry->add(this);
 }
@@ -40,7 +40,7 @@ VsMDVariable::~VsMDVariable() {
 
 //we look for user-specified component names in each subordinate variable
 //we return the first one we find
-std::string VsMDVariable::getLabel(int componentIndex) {
+std::string VsMDVariable::getLabel(int componentIndex) const{
   std::string name;
   name.clear();
   for (unsigned int i = 0; i < blocks.size(); i++) {
@@ -52,8 +52,20 @@ std::string VsMDVariable::getLabel(int componentIndex) {
   return "";
 }
 
-bool VsMDVariable::isZonal() {
+bool VsMDVariable::isZonal() const {
   return (centering == VsSchema::zonalCenteringKey);
+}
+
+bool VsMDVariable::isNodal() const {
+  return (centering == VsSchema::nodalCenteringKey);
+}
+
+bool VsMDVariable::isEdge() const {
+  return (centering == VsSchema::edgeCenteringKey);
+}
+
+bool VsMDVariable::isFace() const {
+  return (centering == VsSchema::faceCenteringKey);
 }
 
 bool VsMDVariable::addBlock(VsVariable* newBlock) {
@@ -94,11 +106,11 @@ bool VsMDVariable::addBlock(VsVariable* newBlock) {
   return true;
 }
 
-unsigned int VsMDVariable::getNumBlocks() {
+size_t VsMDVariable::getNumBlocks() const {
   return blocks.size();
 }
 
-std::string VsMDVariable::getNameForBlock(unsigned int domain) {
+std::string VsMDVariable::getNameForBlock(size_t domain) const {
   if (domain >= blocks.size())
   return NULL;
 
@@ -106,7 +118,7 @@ std::string VsMDVariable::getNameForBlock(unsigned int domain) {
   return foundVar->getFullName();
 }
 
-VsVariable* VsMDVariable::getBlock(unsigned int domain) {
+VsVariable* VsMDVariable::getBlock(size_t domain) const {
   if (domain >= blocks.size())
   return NULL;
 
@@ -115,16 +127,16 @@ VsVariable* VsMDVariable::getBlock(unsigned int domain) {
 }
 
 // Get mesh name
-std::string VsMDVariable::getMesh() {
+std::string VsMDVariable::getMesh() const {
   return mesh;
 }
 
-std::string VsMDVariable::getCentering() {
+std::string VsMDVariable::getCentering() const {
   return centering;
 }
 
 // Get hdf5 type
-hid_t VsMDVariable::getType() {
+hid_t VsMDVariable::getType() const {
   if (!blocks.empty()) {
     return blocks[0]->getType();
   }
@@ -133,17 +145,17 @@ hid_t VsMDVariable::getType() {
 }
 
 // Get name
-std::string VsMDVariable::getName() {
+std::string VsMDVariable::getName() const {
   return name;
 }
 
 // Get full name
-std::string VsMDVariable::getFullName() {
+std::string VsMDVariable::getFullName() const {
   return makeCanonicalName(path, name);
 }
 
 // Write
-void VsMDVariable::write() {
+void VsMDVariable::write() const {
   VsLog::debugLog() <<"   MDVar: " <<getFullName() <<std::endl;
   for (unsigned int i = 0; i < blocks.size(); i++) {
     VsLog::debugLog() <<"   block #" <<i <<" = " <<blocks[i]->getFullName() <<std::endl;
@@ -154,7 +166,7 @@ void VsMDVariable::write() {
 }
 
 
-size_t VsMDVariable::getNumComps() {
+size_t VsMDVariable::getNumComps() const {
   VsLog::debugLog() << "VsMDVariable::getNumComps() - Entering for variable " <<getFullName() <<std::endl;
 
   if (numComponents == -1) {
@@ -196,7 +208,7 @@ void VsMDVariable::createComponents() {
   size_t numComps = getNumComps();
   if (numComps > 1) {
     for (size_t i = 0; i < numComps; i++) {
-      registry->registerComponent(getFullName(), (int)i, getLabel(i));
+      registry->registerComponent(getFullName(), i, getLabel(i));
     }
   }
 

@@ -25,24 +25,23 @@ class VsMDMesh : public VsRegistryObject {
 public:
   VsMDMesh(VsMesh* firstMesh, std::string mdMeshName);
   virtual ~VsMDMesh();
-  void write();
+  void write() const;
   bool addBlock(VsMesh* newBlock);
-  unsigned int getNumBlocks();
-  std::string getNameForBlock(unsigned int domain);
-  VsMesh* getBlock(unsigned int domain);
-  std::string getMeshKind();
-  bool isUniformMesh();
-  bool isRectilinearMesh();
-  bool isUnstructuredMesh();
-  bool isStructuredMesh();
-  int getNumSpatialDims();
-  std::string getFullName();
-  
+  size_t getNumBlocks() const;
+  std::string getNameForBlock(size_t domain) const;
+  VsMesh* getBlock(size_t domain) const;
+  std::string getMeshKind() const;
+  bool isUniformMesh() const;
+  bool isRectilinearMesh() const;
+  bool isUnstructuredMesh() const;
+  bool isStructuredMesh() const;
+  int getNumSpatialDims() const;
+  std::string getFullName() const;
+
+private:
   /** List of all subordinate blocks in this mesh
    * Order is important (block 0 = blocks[0], etc)*/
-  std::vector<VsMesh*> blocks;  //TODO make private
-private:
-
+  std::vector<VsMesh*> blocks;
 
   /** The kind of the mesh (e.g., structured, uniform, ... */
   std::string kind;

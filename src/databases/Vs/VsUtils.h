@@ -8,11 +8,9 @@
  */
 
 #include <hdf5.h>
-#include <visit-hdf5.h>
-#if HDF5_VERSION_GE(1, 8, 1)
 
-#ifndef VS_UTILS
-#define VS_UTILS
+#ifndef VS_UTILS_H
+#define VS_UTILS_H
 
 #include <string>
 #include <vector>
@@ -20,19 +18,26 @@
 // Get dimensions of a dataset or attribute
 //void getDims(hid_t id, bool isDataset, std::vector<int>& dims);
 
-// Create fully qualified name from an object name
-// This means strip the leading "/" if it exists
-std::string makeCanonicalName(std::string name);
+/**
+ * Create fully qualified name from an object name
+ * @param name object name
+ * @return object name without leading "/"
+ */
+std::string makeCanonicalName(const std::string& name);
 
-// Create fully qualified name from object path and name
-// i.e. path + "/" + name
-// Then strip the leading "/" if it exists
-std::string makeCanonicalName(std::string path, std::string name);
+/** 
+ * Create fully qualified name from object path and name,
+ * @param path
+ * @param name
+ * @return path + "/" + name (without leading "/")
+ */
+std::string makeCanonicalName(const std::string& path, 
+                              const std::string& name);
 
 // Compare two object names to a target name
-// Return the name that is "closest" to the target
-// If the two object names are identical, returns the first
-//std::string getClosestName(std::string name1, std::string name2, std::string target);
+// @return the name that is "closest" to the target
+// @note If the two object names are identical, will return the first
+//std::string getClosestName(const std::string& name1, const std::string& name2, const std::string& target);
 
 /**
  * Check data type
@@ -79,11 +84,16 @@ bool isUnsignedCharType(hid_t dataType);
 void printType(hid_t dataType);
 
 // Break a string into pieces
-void tokenize(std::string text, char separator, std::vector<std::string>& tokens);
+void tokenize(const std::string& text, 
+              char separator, std::vector<std::string>& tokens);
 
 
-void adjustSize_hsize_t(hsize_t* dims, unsigned int rank, std::vector<int> stride, int before, int after);
-void adjustSize_vector(std::vector<int>* dims, int rank, std::vector<int> stride, int before, int after);
-#endif
-#endif
+void adjustSize_hsize_t(hsize_t* dims, unsigned int rank, 
+                        const std::vector<int>& stride, 
+                        int before, int after);
+void adjustSize_vector(std::vector<int>* dims, int rank, 
+                       const std::vector<int>& stride, 
+                       int before, int after);
+
+#endif // VS_UTILS_H
 

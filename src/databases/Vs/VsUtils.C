@@ -1,6 +1,4 @@
 #include <hdf5.h>
-#include <visit-hdf5.h>
-#if HDF5_VERSION_GE(1,8,1)
 #include <VsUtils.h>
 #include <VsLog.h>
 
@@ -18,7 +16,7 @@ void getDims(hid_t id, bool isDataset, std::vector<int>& dims) {
   }
 }
 */
-std::string makeCanonicalName(std::string name) {
+std::string makeCanonicalName(const std::string& name) {
   std::string answer = name;
 
   //remove the leading slash(es) if it(they) exist(s)
@@ -29,7 +27,8 @@ std::string makeCanonicalName(std::string name) {
   return answer;
 }
 
-std::string makeCanonicalName(std::string path, std::string name) {
+std::string makeCanonicalName(const std::string& path, 
+                              const std::string& name) {
   std::string answer = name;
   //only prepend the path if it is not empty, and if "name" does not start with '/'
   if ((path.length() > 0) && (name.length() > 0) && (name[0] != '/')) {
@@ -198,7 +197,8 @@ void printType(hid_t dataType) {
 }*/
 
 // Break a string into pieces
-void tokenize(std::string text, char separator, std::vector<std::string>& tokens) {
+void tokenize(const std::string& text, 
+              char separator, std::vector<std::string>& tokens) {
   //start with a clean list of tokens
   tokens.clear();
   
@@ -228,7 +228,9 @@ void tokenize(std::string text, char separator, std::vector<std::string>& tokens
 }
 
 //Adjusts var dimensions stored in an array of hsize_t
-void adjustSize_hsize_t(hsize_t *dims, unsigned int rank, std::vector<int> stride, int before, int after) {
+void adjustSize_hsize_t(hsize_t *dims, unsigned int rank, 
+                        const std::vector<int>& stride, 
+                        int before, int after) {
   //apply transform to each dimension
   for (unsigned int i = 0; i < rank; i++) {
     dims[i] += before;
@@ -244,7 +246,9 @@ void adjustSize_hsize_t(hsize_t *dims, unsigned int rank, std::vector<int> strid
 }
 
 //Adjusts var dimensions stored in a vector int
-void adjustSize_vector(std::vector<int>* dims, int rank, std::vector<int> stride, int before, int after) {
+void adjustSize_vector(std::vector<int>* dims, int rank, 
+                       const std::vector<int>& stride, 
+                       int before, int after) {
   //apply transform to each dimension
   for (int i = 0; i < rank; i++) {
     (*dims)[i] += before;
@@ -258,4 +262,3 @@ void adjustSize_vector(std::vector<int>* dims, int rank, std::vector<int> stride
     (*dims)[i] += after;
   }
 }
-#endif

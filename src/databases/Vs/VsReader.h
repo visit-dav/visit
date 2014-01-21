@@ -1,7 +1,7 @@
 /**
- * @file  VsH5Reader.h
+ * @file  VsReader.h
  *
- * @class VsH5Reader
+ * @class VsReader
  *
  * @brief Interface for retrieving structure and data of an hdf5 file.
  * 
@@ -13,14 +13,10 @@
  */
 
 #include <hdf5.h>
-#include <visit-hdf5.h>
 
-#if HDF5_VERSION_GE(1, 8, 1)
+#ifndef VS_READER_H_
+#define VS_READER_H_
 
-#ifndef VS_H5_READER
-#define VS_H5_READER
-
-#include <VsFilter.h>
 #include <hdf5.h>
 #include <string>
 
@@ -29,31 +25,32 @@ class VsVariableWithMesh;
 class VsMDMesh;
 class VsMesh;
 class VsMDVariable;
-class VsH5File;
+class VsFile;
 class VsRegistry;
 class VsUnstructuredMesh;
 class VsStructuredMesh;
 class VsUniformMesh;
 class VsRectilinearMesh;
-
+class VsDataset;
 
 /**
- * VsH5Reader is a class for getting the vizschema metadata of objects
+ * VsReader is a class for getting the vizschema metadata of objects
  * in and HDF5 file and also being able to return such objects.
  */
-class VsH5Reader {
+class VsReader {
 
 public:
   /**
    * Constructor.
    * @param filename the name of the HDF5 file
+   * @param r Empty VsRegistry object
    */
-  VsH5Reader(const std::string& filename, VsRegistry* r);
+  VsReader(const std::string& filename, VsRegistry* r);
 
   /**
    * Destructor.
    */
-  ~VsH5Reader();
+  ~VsReader();
 
   /**
    * Get the values of the whole dataset.
@@ -72,33 +69,31 @@ public:
    * @param destCounts - optional, counts array, up to three dimension
    * @param destStrides - optional, stride array, up to three dimension
    **/
-  herr_t getDataSet( VsH5Dataset* dataset,
-                     void* data,
+  int getData( VsDataset* dataset,
+               void* data,
                      
-                     // Use these variables for adjusting
-                     // the read memory space.
-                     std::string indexOrder = std::string(""),
-                     int components = 0,
-                     int* srcMins = 0,
-                     int* srcCounts = 0,
-                     int* srcStrides = 0,
+               // Use these variables for adjusting
+               // the read memory space.
+               std::string indexOrder = std::string(""),
+               int components = 0,
+               int* srcMins = 0,
+               int* srcCounts = 0,
+               int* srcStrides = 0,
 
-                     // Use these variables for adjusting
-                     // the write memory space.
-                     int  mdims = 0,
-                     int* destSizes = 0,
-                     int* destMins = 0,
-                     int* destCounts = 0,
-                     int* destStrides = 0 ) const;    
+               // Use these variables for adjusting
+               // the write memory space.
+               int  mdims = 0,
+               int* destSizes = 0,
+               int* destMins = 0,
+               int* destCounts = 0,
+               int* destStrides = 0 ) const;    
 
 private:
-  VsH5File* fileData;
+  VsFile* fileData;
   
   static int numInstances;
   
   VsRegistry* registry;
 };
 
-#endif
-
-#endif
+#endif // VS_READER_H_

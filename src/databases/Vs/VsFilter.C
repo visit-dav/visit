@@ -1,13 +1,11 @@
 #include <hdf5.h>
-#include <visit-hdf5.h>
-#if HDF5_VERSION_GE(1,8,1)
 /**
  *
  * @file        VsFilter.cpp
  *
  * @brief       Implementation for inspecting an HDF5 file
  *
- * @version $Id: VsFilter.C 496 2009-08-05 22:57:22Z mdurant $
+ * @version $Id: VsFilter.cpp 2 2013-02-20 20:11:25Z sveta $
  *
  * Copyright &copy; 2007-2008, Tech-X Corporation
  * See LICENSE file for conditions of use.
@@ -21,63 +19,30 @@
 #include <hdf5.h>
 #include <stdlib.h>
 #include "VsLog.h"
-#include "VsH5File.h"
-#include "VsH5Object.h"
-#include "VsH5Dataset.h"
-#include "VsH5Attribute.h"
+#include "VsFile.h"
+#include "VsObject.h"
+#include "VsDataset.h"
+#include "VsAttribute.h"
 #include "VsRegistry.h"
 
-//
-// These routines detect whether the file looks like a certain flavor of
-// HDF5 file reader. If the flavor is detected, we throw an exception so
-// the proper reader can be used instead of Vs.
-//
-
-static bool IsTyphonIO(int fileId)
-{
-    //
-    //See if file is TyphonIO/TyphonIO[v0] format
-    //
-    hid_t tio_root = H5Gopen(fileId, "/", H5P_DEFAULT);
-    hid_t tio_version = H5Aopen_name(tio_root, "TIO_version_major");
-    if (tio_version >= 0)
-    {
-        H5Aclose(tio_version);
-        H5Gclose(tio_root);
-        VsLog::errorLog() <<"VsH5File::DetectTyphonIO(): Cannot be a Vs file because it looks like a TyphonIO file." << std::endl;
-        return true;
-    }
-    if (tio_root >= 0) H5Gclose(tio_root);
-    hid_t tio_info = H5Gopen(fileId, "/TyphonIO_FileInfo", H5P_DEFAULT);
-    if (tio_info >= 0)
-    {
-        H5Gclose(tio_info);
-        VsLog::errorLog() <<"VsH5File::DetectTyphonIO(): Cannot be a Vs file because it looks like a TyphonIO file." << std::endl;
-        return true;
-    }
-    return false;
-}
 struct RECURSION_DATA {
   VsRegistry* registry;
-  VsH5Object* parent;
+  VsObject* parent;
 };
 
-VsH5File* VsFilter::readFile(VsRegistry* registry, std::string fileName) {  
+VsFile* VsFilter::readFile(VsRegistry* registry, std::string fileName) {  
   hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fclose_degree(fapl, H5F_CLOSE_SEMI);
   hid_t fileId = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, fapl);
   H5Pclose(fapl);
   if (fileId < 0) {
-    VsLog::errorLog() << "VsH5File::readFile(): HDF5 error opening the file '"
+    VsLog::errorLog() << "VsFile::readFile(): HDF5 error opening the file '"
       << fileName << "'." << std::endl;
     return NULL;
   }
   
-  VsH5File* file = new VsH5File(registry, fileName, fileId);
-  
-  //Check to see if its a TyphonIO fileI
-  if (IsTyphonIO(fileId)) return NULL;
-  
+  VsFile* file = new VsFile(registry, fileName, fileId);
+ 
   RECURSION_DATA data;
   data.registry = registry;
   data.parent = NULL;
@@ -86,7 +51,7 @@ VsH5File* VsFilter::readFile(VsRegistry* registry, std::string fileName) {
   return file;
 }
 
-herr_t VsFilter::visitLinks(hid_t locId, const char* name,
+int VsFilter::visitLinks(hid_t locId, const char* name,
     const H5L_info_t *linfo, void* opdata) {
   VsLog::debugLog() <<"VsFilter::visitLinks() - looking at object " <<name <<std::endl;
   
@@ -196,9 +161,9 @@ herr_t VsFilter::visitLinks(hid_t locId, const char* name,
   return 0;
 }
 
-herr_t VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
+int VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
   RECURSION_DATA* data = static_cast< RECURSION_DATA* >(opdata);
-  VsH5Group* parent = static_cast< VsH5Group*> (data->parent);
+  VsGroup* parent = static_cast< VsGroup*> (data->parent);
   VsRegistry* registry = data->registry;
   
   VsLog::debugLog() << "VsFilter::visitGroup: node '" << name
@@ -214,7 +179,7 @@ herr_t VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
     return 0;
   }
   
-  VsH5Group* newGroup = new VsH5Group(registry, parent, name, groupId);
+  VsGroup* newGroup = new VsGroup(registry, parent, name, groupId);
   
   RECURSION_DATA nextLevelData;
   nextLevelData.registry = registry;
@@ -228,7 +193,7 @@ herr_t VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
   VsLog::debugLog() <<"VsFilter::visitGroup(): Recursing on children of group " <<newGroup->getFullName() <<std::endl;
   H5Literate(groupId, H5_INDEX_NAME, H5_ITER_INC, NULL, visitLinks, &nextLevelData);
 
-  // Not needed because the newly declared VsH5Group takes ownership of the id
+  // Not needed because the newly declared VsGroup takes ownership of the id
   // And will do the H5GClose when it is deleted
   // H5Gclose(groupId);
 
@@ -236,9 +201,9 @@ herr_t VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
   return 0;
 }
 
-herr_t VsFilter::visitDataset(hid_t locId, const char* name, void* opdata) {
+int VsFilter::visitDataset(hid_t locId, const char* name, void* opdata) {
   RECURSION_DATA* data = static_cast< RECURSION_DATA* >(opdata);
-  VsH5Group* parent = static_cast< VsH5Group*>(data->parent);
+  VsGroup* parent = static_cast< VsGroup*>(data->parent);
   VsRegistry* registry = data->registry;
 
   VsLog::debugLog() << "VsFilter::visitDataset: node '" << name
@@ -246,7 +211,7 @@ herr_t VsFilter::visitDataset(hid_t locId, const char* name, void* opdata) {
 
   hid_t datasetId = H5Dopen(locId, name, H5P_DEFAULT);
 
-  VsH5Dataset* newDataset = new VsH5Dataset(registry, parent, name, datasetId);
+  VsDataset* newDataset = new VsDataset(registry, parent, name, datasetId);
   
   //If unable to get a handle to the hdf5 object, we just drop the object
   //But return 0 to continue iterating over objects
@@ -267,10 +232,10 @@ herr_t VsFilter::visitDataset(hid_t locId, const char* name, void* opdata) {
   return 0;
 }
 
-herr_t VsFilter::visitAttrib(hid_t dId, const char* name,
+int VsFilter::visitAttrib(hid_t dId, const char* name,
     const H5A_info_t* ai, void* opdata) {
   RECURSION_DATA* data = static_cast< RECURSION_DATA* >(opdata);
-  VsH5Object* parent = data->parent;
+  VsObject* parent = data->parent;
 
   VsLog::debugLog() << "VsFilter::visitAttrib(...): getting attribute '" <<
     name << "'." << std::endl;
@@ -288,4 +253,3 @@ herr_t VsFilter::visitAttrib(hid_t dId, const char* name,
   return 0;
 }
 
-#endif

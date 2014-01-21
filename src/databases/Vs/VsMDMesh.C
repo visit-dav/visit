@@ -34,7 +34,7 @@ VsMDMesh::~VsMDMesh() {
   registry->remove(this);
 }
 
-void VsMDMesh::write()   {
+void VsMDMesh::write() const   {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << getFullName() << "  "
                     << "Kind: " << kind << "  "
@@ -74,16 +74,16 @@ bool VsMDMesh::addBlock(VsMesh* newBlock) {
   }
   
   blocks.push_back(newBlock);
-  newBlock->setMDMesh(this, (int)blocks.size() - 1);
+  newBlock->setMDMesh(this, blocks.size() - 1);
   
   return true;
 }
 
-unsigned int VsMDMesh::getNumBlocks()   {
+size_t VsMDMesh::getNumBlocks() const   {
   return blocks.size();
 }
 
-std::string VsMDMesh::getNameForBlock(unsigned int domain)   {
+std::string VsMDMesh::getNameForBlock(size_t domain) const   {
   if (domain >= blocks.size())
   return NULL;
 
@@ -91,7 +91,7 @@ std::string VsMDMesh::getNameForBlock(unsigned int domain)   {
   return foundMesh->getFullName();
 }
 
-VsMesh* VsMDMesh::getBlock(unsigned int domain)   {
+VsMesh* VsMDMesh::getBlock(size_t domain) const  {
   if (domain >= blocks.size())
   return NULL;
 
@@ -99,32 +99,32 @@ VsMesh* VsMDMesh::getBlock(unsigned int domain)   {
   return foundMesh;
 }
 
-std::string VsMDMesh::getMeshKind()   {
+std::string VsMDMesh::getMeshKind() const {
   return kind;
 }
 
-bool VsMDMesh::isUniformMesh()   {
+bool VsMDMesh::isUniformMesh() const  {
   return ((kind == VsSchema::Uniform::key) ||
           (kind == VsSchema::Uniform::key_deprecated));
 }
 
-bool VsMDMesh::isRectilinearMesh()   {
+bool VsMDMesh::isRectilinearMesh() const {
   return (kind == VsSchema::Rectilinear::key);
 }
 
-bool VsMDMesh::isUnstructuredMesh()   {
+bool VsMDMesh::isUnstructuredMesh() const {
   return (kind == VsSchema::Unstructured::key);
 }
 
-bool VsMDMesh::isStructuredMesh()   {
+bool VsMDMesh::isStructuredMesh() const {
   return (kind == VsSchema::structuredMeshKey);
 }
 
-int VsMDMesh::getNumSpatialDims()   {
+int VsMDMesh::getNumSpatialDims() const {
   return numSpatialDims;
 }
 
-std::string VsMDMesh::getFullName() {
+std::string VsMDMesh::getFullName() const {
   // Note: MD meshes do not have a path.  Their name is exactly what
   // is declared in the "vsMD" attribute This is because an MD mesh
   // may be made up of meshes in different paths, and we would have to

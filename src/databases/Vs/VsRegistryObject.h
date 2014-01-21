@@ -21,6 +21,7 @@ public:
   VsRegistryObject(VsRegistry* r);
   virtual ~VsRegistryObject();
   VsRegistry* getRegistry();
+  virtual void write() const = 0;
   
   VsRegistry* registry;
 };

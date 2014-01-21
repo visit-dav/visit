@@ -27,28 +27,31 @@ class VsMDVariable : public VsRegistryObject {
 public:
   VsMDVariable(VsVariable* firstVar, VsMDMesh* mdMesh, std::string mdVarName);
   virtual ~VsMDVariable();
-  std::string getLabel(int componentIndex);
-  bool isZonal();
+  std::string getLabel(int componentIndex) const;
+  bool isZonal() const;
+  bool isNodal() const;
+  bool isEdge() const;
+  bool isFace() const;
   bool addBlock(VsVariable* newBlock);
-  unsigned int getNumBlocks();
-  std::string getNameForBlock(unsigned int domain);
-  VsVariable* getBlock(unsigned int domain);   
-  std::string getMesh();
-  std::string getCentering();
-  hid_t getType();
-  std::string getName();
-  std::string getFullName();
-  void write();
+  size_t getNumBlocks() const;
+  std::string getNameForBlock(size_t domain) const;
+  VsVariable* getBlock(size_t domain) const;   
+  std::string getMesh() const;
+  std::string getCentering() const;
+  hid_t getType() const;
+  std::string getName() const;
+  std::string getFullName() const;
+  void write() const;
   
-  /** List of all subordinate blocks in this var
-   * Order is important (block 0 = blocks[0], etc)*/
-  std::vector<VsVariable*> blocks;  //TODO make private
-
   void createComponents();
-  size_t getNumComps();
+  size_t getNumComps() const;
   
 private:
-  int numComponents;
+  mutable int numComponents;
+
+  /** List of all subordinate blocks in this var
+  * Order is important (block 0 = blocks[0], etc)*/
+  std::vector<VsVariable*> blocks; 
   
   std::string name;
 

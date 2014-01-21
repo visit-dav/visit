@@ -6,9 +6,9 @@
  */
 
 #include "VsStructuredMesh.h"
-#include "VsH5Attribute.h"
+#include "VsAttribute.h"
 #include "VsSchema.h"
-#include "VsH5Dataset.h"
+#include "VsDataset.h"
 #include "VsLog.h"
 #include "VsUtils.h"
 
@@ -17,7 +17,7 @@
 #define __CLASS__ "VsStructuredMesh::"
 
 
-VsStructuredMesh::VsStructuredMesh(VsH5Dataset* data):VsMesh(data) {
+VsStructuredMesh::VsStructuredMesh(VsDataset* data):VsMesh(data) {
   maskAtt = NULL;
 }
 
@@ -26,7 +26,7 @@ VsStructuredMesh::~VsStructuredMesh() {
 }
 
 
-VsStructuredMesh* VsStructuredMesh::buildStructuredMesh(VsH5Dataset* dataset)
+VsStructuredMesh* VsStructuredMesh::buildStructuredMesh(VsDataset* dataset)
 {
   VsStructuredMesh* newMesh = new VsStructuredMesh(dataset);
   bool success = newMesh->initialize();
@@ -51,13 +51,13 @@ bool VsStructuredMesh::initialize()
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Entering" <<std::endl;
 
-  VsH5Dataset* dm = registry->getDataset(getFullName());
+  VsDataset* dm = registry->getDataset(getFullName());
 
   std::vector< int > dims = dm->getDims();
   
   // Determine num spatial dims. For a structured mesh, it is the size
   // of the last component of the dataset.
-  int index = ((VsH5Dataset*)h5Object)->getDims().size() - 1;
+  int index = ((VsDataset*)h5Object)->getDims().size() - 1;
 
   if (dims.empty())
   {
@@ -126,18 +126,18 @@ bool VsStructuredMesh::initialize()
 }
 
 
-std::string VsStructuredMesh::getKind() {
+std::string VsStructuredMesh::getKind() const {
   return VsSchema::structuredMeshKey;
 }
 
 
-void VsStructuredMesh::getMeshDataDims(std::vector<int>& dims)
+void VsStructuredMesh::getCellDims(std::vector<int>& dims) const
 {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Entering." << std::endl;
   
   // Read dataset's dims
-  VsH5Dataset* dm = registry->getDataset(getFullName());
+  VsDataset* dm = registry->getDataset(getFullName());
 
   if (!dm) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -174,9 +174,9 @@ void VsStructuredMesh::getMeshDataDims(std::vector<int>& dims)
 }
 
 
-void VsStructuredMesh::getNumMeshDims(std::vector<int>& dims)
+void VsStructuredMesh::getNodeDims(std::vector<int>& dims) const
 {
-  getMeshDataDims(dims);
+  getCellDims(dims);
 
   // Lop off the spatial dimension.
   if( dims.size() > 1 )
@@ -193,7 +193,7 @@ void VsStructuredMesh::getNumMeshDims(std::vector<int>& dims)
   }
 }
 
-std::string VsStructuredMesh::getMaskName()
+std::string VsStructuredMesh::getMaskName() const
 {
   if (!maskAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -202,7 +202,7 @@ std::string VsStructuredMesh::getMaskName()
   }
 
   std::string maskName;
-  herr_t err = maskAtt->getStringValue(&maskName);
+  int err = maskAtt->getStringValue(&maskName);
   if (err < 0) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Cannot get mask name from attribute, returning empty string." << std::endl;
