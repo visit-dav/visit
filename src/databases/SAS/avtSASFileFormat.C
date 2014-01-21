@@ -395,7 +395,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
 
     // Size is: fortran header/footer + 80 char title +
     //          fortran header/footer + assembly id, type, channel index offset, and x,y,z offset
-    int64_t iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
+    boost::int64_t iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
                                     sizeof(int)*2 + sizeof(int)*3 + sizeof(double)*3;
 
     LSEEK64(f, iAssemblyDiskLoc + domain*iAssemblyInstanceSize + sizeof(int)*3 + 80, SEEK_SET);
@@ -543,7 +543,7 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     // Size is: fortran header/footer + 80 char title +
     //          fortran header/footer + assembly id, type, channel index offset, and x,y,z offset
-    int64_t iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
+    boost::int64_t iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
                                     sizeof(int)*2 + sizeof(int)*3 + sizeof(double)*3;
     LSEEK64(f, iAssemblyDiskLoc + domain*iAssemblyInstanceSize + sizeof(int)*3 + 80, SEEK_SET);
 
@@ -575,7 +575,7 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (bReadingTemp)
         f = OPEN(dataFileName.c_str(), O_RDONLY | O_BINARY);
 
-    int64_t iTimeOffset = (int64_t)timestate * (int64_t)iTimeStepSize;
+    boost::int64_t iTimeOffset = (boost::int64_t)timestate * (boost::int64_t)iTimeStepSize;
     double *tmpData = new double[pType->nZVals-1];
 
     for (ii = 0; ii < pType->nChannels; ii++)
@@ -866,7 +866,7 @@ avtSASFileFormat::ReadTimeStepData()
 {
     int f = OPEN(dataFileName.c_str(), O_RDONLY | O_BINARY);
     
-    int64_t end = LSEEK64(f, 0, SEEK_END);
+    boost::int64_t end = LSEEK64(f, 0, SEEK_END);
     LSEEK64(f, 0, SEEK_SET);
 
     ReadInt(f);
@@ -888,7 +888,7 @@ avtSASFileFormat::ReadTimeStepData()
     }
 
     // Skip date/time strings, footer, and two lines of title data
-    int64_t startTimesteps = LSEEK64(f, 8+8+4+(sizeof(int)*2+80) * 2, SEEK_CUR );
+    boost::int64_t startTimesteps = LSEEK64(f, 8+8+4+(sizeof(int)*2+80) * 2, SEEK_CUR );
     iTimeStepSize = 0;
 
     int header = ReadInt(f);
@@ -949,9 +949,9 @@ avtSASFileFormat::ReadTimeStepData()
         eChannelOrder = UNSORTED_CHANNELS;
     }
 
-    int64_t iTotalTimestepSize = end - startTimesteps;
+    boost::int64_t iTotalTimestepSize = end - startTimesteps;
 
-    int64_t nTimesteps = iTotalTimestepSize / iTimeStepSize;
+    boost::int64_t nTimesteps = iTotalTimestepSize / iTimeStepSize;
 
     if (iTotalTimestepSize % iTimeStepSize != 0)
     {
