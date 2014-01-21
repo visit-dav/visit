@@ -21,55 +21,55 @@
 #include "VsRegistryObject.h"
 
 class VsMDMesh;
-class VsH5Dataset;
-class VsH5Group;
-class VsH5Attribute;
-class VsH5Object;
+class VsDataset;
+class VsGroup;
+class VsAttribute;
+class VsObject;
 
 class VsMesh : public VsRegistryObject {
 public:
   virtual ~VsMesh();
   
-  void write();
-  bool isFortranOrder();
-  bool isCompMinor();
-  bool isCompMajor();
+  void write() const;
+  bool isFortranOrder() const;
+  bool isCompMinor() const;
+  bool isCompMajor() const;
   
-  virtual bool isUniformMesh() { return false; }
-  virtual bool isRectilinearMesh() { return false; }
-  virtual bool isStructuredMesh() { return false; }
-  virtual bool isUnstructuredMesh() { return false; }
+  virtual bool isUniformMesh() const { return false; }
+  virtual bool isRectilinearMesh() const { return false; }
+  virtual bool isStructuredMesh() const { return false; }
+  virtual bool isUnstructuredMesh() const { return false; }
   
-  virtual std::string getShortName();
-  virtual std::string getPath();
+  virtual std::string getShortName() const;
+  virtual std::string getPath() const;
   
-  std::string getFullName();
-  void getStringAttribute(std::string attName, std::string* value);
-  std::string getIndexOrder();
-  virtual std::string getKind() = 0;
-  size_t getNumSpatialDims();
-  size_t getNumTopologicalDims();
+  std::string getFullName() const;
+  std::string getIndexOrder() const;
+  virtual std::string getKind() const = 0;
+  size_t getNumSpatialDims() const;
+  size_t getNumTopologicalDims() const;
 
-  VsH5Attribute* getAttribute(std::string name);
-  static VsMesh* buildObject(VsH5Dataset* dataset);
-  static VsMesh* buildObject(VsH5Group* group);
+  static VsMesh* buildObject(VsDataset* dataset);
+  static VsMesh* buildObject(VsGroup* group);
   
-  std::string getAxisLabel(unsigned int axis);
+  std::string getAxisLabel(size_t axis) const;
   
-  virtual void getMeshDataDims(std::vector<int>& dims) = 0;
+  virtual void getCellDims(std::vector<int>& dims) const = 0;
   
   void setMDMesh(VsMDMesh* mdMesh, int dNumber);
-  int getDomainNumber();
-  VsMDMesh* getMDMesh();
+  int getDomainNumber() const ;
+  VsMDMesh* getMDMesh() const ;
 
-  virtual bool hasTransform();
-  virtual std::string getTransformName();
-  virtual std::string getTransformedMeshName();
+  VsAttribute* getAttribute(std::string name) const;
+  virtual bool hasTransform() const;
+  virtual std::string getTransformName() const;
+  virtual std::string getTransformedMeshName() const;
   
 protected:
-  VsMesh(VsH5Object* object);
+  VsMesh(VsObject* object);
   virtual bool initialize() = 0;
   bool initializeRoot();
+  void getStringAttribute(std::string attName, std::string* value) const;
   
   /** The spatial dimensionality */
   size_t numSpatialDims;
@@ -84,7 +84,7 @@ protected:
   /** Index order (Fortran vs C style) */
   std::string indexOrder;
 
-  VsH5Object* h5Object;
+  VsObject* h5Object;
   
   /** Stuff for meshes that are subordinate blocks of MD Meshes**/
   int domainNumber;

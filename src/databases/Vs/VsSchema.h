@@ -7,9 +7,6 @@
  * Copyright &copy; 2008 by Tech-X Corporation
  */
 #include <hdf5.h>
-#include <visit-hdf5.h>
-#if HDF5_VERSION_GE(1, 8, 1)
-
 #ifndef VS_SCHEMA
 #define VS_SCHEMA
 
@@ -38,8 +35,10 @@ struct VsSchema {
   static std::string vsVarsKey;
   static std::string varWithMeshKey;
   static std::string meshKey;
-  static std::string zonalCenteringKey;
   static std::string nodalCenteringKey;// Default
+  static std::string edgeCenteringKey;
+  static std::string faceCenteringKey;
+  static std::string zonalCenteringKey;
   static std::string structuredMeshKey;
 
   // Index ordering...
@@ -119,6 +118,5 @@ struct VsSchema {
   static std::string softwareAtt;
 };
 
-#endif
 #endif
 

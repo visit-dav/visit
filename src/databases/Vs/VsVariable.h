@@ -13,77 +13,83 @@
 
 #include <hdf5.h>
 #include "VsRegistryObject.h"
+#include "VsGroup.h"
 
 #include <string>
 #include <vector>
 #include <map>
 
-class VsH5Attribute;
-class VsH5Dataset;
+class VsAttribute;
+class VsDataset;
 class VsMesh;
 
 class VsVariable : public VsRegistryObject {
 public:
   virtual ~VsVariable();
 
-  bool isZonal();
+  bool isZonal() const;
+  bool isNodal() const;
+  bool isEdge() const;
+  bool isFace() const;
 
-  bool isFortranOrder();
-  bool isCompMinor();
-  bool isCompMajor();
+  bool isFortranOrder() const;
+  bool isCompMinor() const;
+  bool isCompMajor() const;
 
-  std::vector<int> getDims();
+  std::vector<int> getDims() const;
   
   /** Get name of mesh that this variable belongs to. */
-  std::string getMeshName();
-  VsMesh* getMesh();
+  std::string getMeshName() const;
+  VsMesh* getMesh() const;
 
   /** Does this variable have a transformed version? */
-  bool hasTransform();
+  bool hasTransform() const;
 
   /** Get hdf5 type */
-  hid_t getType();
+  hid_t getType() const;
 
   /** Get length needed to store all elements in their format */
-  size_t getLength();
+  size_t getLength() const;
 
   /** Get short name */
-  std::string getShortName();
+  std::string getShortName() const;
 
   /** Get path */
-  std::string getPath();
+  std::string getPath() const;
   
   /** Get full name */
-  std::string getFullName();
+  std::string getFullName() const;
 
   /** Find attribute by name, or return NULL if not found */
-  VsH5Attribute* getAttribute(const std::string& name);
+  VsAttribute* getAttribute(const std::string& name) const;
 
-  std::string getStringAttribute(const std::string& name);
+  std::string getStringAttribute(const std::string& name) const;
+
+  /** Get user-specified name for a variable component. */
+  std::string getLabel(size_t i) const;
 
   /** Supply debugging output. */
-  virtual void write();
+  virtual void write() const;
   
   /** Get user-specified name for a variable component. */
-  std::string getLabel(unsigned int i);
+
+  std::string getCentering() const { return centering;} 
+  std::string getIndexOrder() const { return indexOrder; }
+  hid_t getId() const;
   
-  std::string getCentering() { return centering; }
-  std::string getIndexOrder() { return indexOrder; }
-  hid_t getId();
-  
-  VsH5Group* getTimeGroup() { return timeGroup; }
+  VsGroup* getTimeGroup() const { return timeGroup; }
   
   /** Public method to initialize object.
    * Returns NULL on error.*/
-  static VsVariable* buildObject(VsH5Dataset* dataset);
+  static VsVariable* buildObject(VsDataset* dataset);
  
   /** Get the transformed name */
-  std::string getFullTransformedName();
+  std::string getFullTransformedName() const;
 
   void createTransformedVariable();
 
   void createComponents();
-  size_t getNumComps();
+  size_t getNumComps() const;
 
   /**
    * Get the node offset 
@@ -98,7 +104,7 @@ public:
   bool hasNodeOffset() const;
 
 protected:
-  VsVariable(VsH5Dataset* data);
+  VsVariable(VsDataset* data);
   
   /** Private method to initialize object.
    * Returns false on error.*/
@@ -115,10 +121,10 @@ protected:
   std::string centering;
   
   /** Time group */
-  VsH5Group* timeGroup;
+  VsGroup* timeGroup;
 
   /** Dataset used to construct this object. */
-  VsH5Dataset* dataset;
+  VsDataset* dataset;
 
   /** User-specified names of the components of this variable. */
   std::vector<std::string> labelNames;
@@ -127,7 +133,7 @@ protected:
   std::string path;
 
   /** lower node offset array (optional) */
-  VsH5Attribute* nodeOffsetAtt;
+  VsAttribute* nodeOffsetAtt;
 
   /** node offsets with respect to base node */
   std::vector<double> nodeOffset;

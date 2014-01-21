@@ -6,9 +6,9 @@
  */
 
 #include "VsUniformMesh.h"
-#include "VsH5Attribute.h"
+#include "VsAttribute.h"
 #include "VsSchema.h"
-#include "VsH5Group.h"
+#include "VsGroup.h"
 #include "VsLog.h"
 #include "VsUtils.h"
 
@@ -17,7 +17,7 @@
 #define __CLASS__ "VsUniformMesh::"
 
 
-VsUniformMesh::VsUniformMesh(VsH5Group* group):VsMesh(group) {
+VsUniformMesh::VsUniformMesh(VsGroup* group):VsMesh(group) {
   numCellsAtt = NULL;
   startCellAtt = NULL;
   lowerBoundsAtt = NULL;
@@ -28,7 +28,7 @@ VsUniformMesh::VsUniformMesh(VsH5Group* group):VsMesh(group) {
 VsUniformMesh::~VsUniformMesh() {
 }
 
-VsUniformMesh* VsUniformMesh::buildUniformMesh(VsH5Group* group)
+VsUniformMesh* VsUniformMesh::buildUniformMesh(VsGroup* group)
 {
   VsUniformMesh* newMesh = new VsUniformMesh(group);
   bool success = newMesh->initialize();
@@ -80,7 +80,7 @@ bool VsUniformMesh::initialize()
 
   std::vector<int> dims;
 
-  herr_t err = numCellsAtt->getIntVectorValue(&dims);
+  int err = numCellsAtt->getIntVectorValue(&dims);
   if (!err) {
     numSpatialDims = dims.size();
   } else {
@@ -221,7 +221,7 @@ bool VsUniformMesh::initialize()
 }
 
 
-hid_t VsUniformMesh::getDataType()  {
+hid_t VsUniformMesh::getDataType() const {
 
   if (lowerBoundsAtt->getType() == H5T_NATIVE_DOUBLE)
     return H5T_NATIVE_DOUBLE;
@@ -233,15 +233,15 @@ hid_t VsUniformMesh::getDataType()  {
 }
 
 
-std::string VsUniformMesh::getKind() {
+std::string VsUniformMesh::getKind() const {
   return VsSchema::Uniform::key;
 }
 
 
-herr_t VsUniformMesh::getLowerBounds(std::vector<float>* fVals) {
+int VsUniformMesh::getLowerBounds(std::vector<float>* fVals) {
   hid_t type = lowerBoundsAtt->getType();
 
-  herr_t err = 0;
+  int err = 0;
   
   if (isDoubleType(type)) {
     std::vector<double> dVals;
@@ -267,10 +267,10 @@ herr_t VsUniformMesh::getLowerBounds(std::vector<float>* fVals) {
 }
 
 
-herr_t VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
+int VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
   hid_t type = upperBoundsAtt->getType();
 
-  herr_t err = 0;
+  int err = 0;
   if (isDoubleType(type)) {
     std::vector<double> dVals;
     err = upperBoundsAtt->getDoubleVectorValue(&dVals);
@@ -293,7 +293,7 @@ herr_t VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
 }
 
 
-herr_t VsUniformMesh::getStartCell(std::vector<int>* startCell) {
+int VsUniformMesh::getStartCell(std::vector<int>* startCell) {
   if (startCellAtt == NULL) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Mesh does not have optional attribute: "
@@ -301,7 +301,7 @@ herr_t VsUniformMesh::getStartCell(std::vector<int>* startCell) {
     return -1;
   }
   
-  herr_t err = startCellAtt->getIntVectorValue(startCell);
+  int err = startCellAtt->getIntVectorValue(startCell);
 
   if (err < 0) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -313,7 +313,7 @@ herr_t VsUniformMesh::getStartCell(std::vector<int>* startCell) {
 }
 
 
-void VsUniformMesh::getMeshDataDims(std::vector<int>& dims)
+void VsUniformMesh::getCellDims(std::vector<int>& dims) const
 {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Entering." <<  std::endl;
@@ -323,10 +323,10 @@ void VsUniformMesh::getMeshDataDims(std::vector<int>& dims)
 }
 
 
-void VsUniformMesh::getNumMeshDims(std::vector<int>& dims)
+void VsUniformMesh::getNodeDims(std::vector<int>& dims) const
 {
   // Get the number of cells
-  getMeshDataDims(dims);
+  getCellDims(dims);
 
   // The number of nodes will be one more than the number of cells;
   for (unsigned int i = 0; i < dims.size(); i++)

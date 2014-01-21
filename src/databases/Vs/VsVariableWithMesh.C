@@ -7,9 +7,9 @@
 
 #include "VsVariableWithMesh.h"
 #include "VsSchema.h"
-#include "VsH5Dataset.h"
+#include "VsDataset.h"
 #include "VsLog.h"
-#include "VsH5Attribute.h"
+#include "VsAttribute.h"
 #include "VsUtils.h"
 
 #include <string>
@@ -19,7 +19,7 @@
 #define __CLASS__ "VsStructuredMesh::"
 
 
-VsVariableWithMesh::VsVariableWithMesh(VsH5Dataset* data):
+VsVariableWithMesh::VsVariableWithMesh(VsDataset* data):
   VsRegistryObject(data->registry) {
   indexOrder = VsSchema::compMinorCKey;
   dataset = data;
@@ -32,37 +32,49 @@ VsVariableWithMesh::~VsVariableWithMesh() {
   registry->remove(this);
 }
 
-unsigned int VsVariableWithMesh::getNumSpatialDims() {
+size_t VsVariableWithMesh::getNumSpatialDims() const {
   return spatialIndices.size();
 }
 
-bool VsVariableWithMesh::isZonal() {
+bool VsVariableWithMesh::isZonal() const {
   return (centering == VsSchema::zonalCenteringKey);
 }
 
-bool VsVariableWithMesh::isCompMinor() {
+bool VsVariableWithMesh::isNodal() const {
+  return (centering == VsSchema::nodalCenteringKey);
+}
+
+bool VsVariableWithMesh::isEdge() const {
+  return (centering == VsSchema::edgeCenteringKey);
+}
+
+bool VsVariableWithMesh::isFace() const {
+  return (centering == VsSchema::faceCenteringKey);
+}
+
+bool VsVariableWithMesh::isCompMinor() const {
   return ((indexOrder == VsSchema::compMinorCKey) ||
       (indexOrder == VsSchema::compMinorFKey));
 }
 
-bool VsVariableWithMesh::isCompMajor() {
+bool VsVariableWithMesh::isCompMajor() const {
   return ((indexOrder == VsSchema::compMajorCKey) ||
       (indexOrder == VsSchema::compMajorFKey));
 }
 
-std::string VsVariableWithMesh::getFullTransformedName() {
+std::string VsVariableWithMesh::getFullTransformedName() const {
   return getFullName() + "_transform";
 }
 
-bool VsVariableWithMesh::hasTransform() {
+bool VsVariableWithMesh::hasTransform() const {
   return (!getTransformName().empty());
 }
 
-std::string VsVariableWithMesh::getTransformName() {
+std::string VsVariableWithMesh::getTransformName() const {
   //Look for the vsTransform attribute
   //and either retrieve the value or leave the name empty
   std::string transformName;
-  VsH5Attribute* transformNameAtt = getAttribute(VsSchema::transformKey);
+  VsAttribute* transformNameAtt = getAttribute(VsSchema::transformKey);
   if (transformNameAtt) {
     transformNameAtt->getStringValue(&transformName);
   }
@@ -80,10 +92,10 @@ std::string VsVariableWithMesh::getTransformName() {
   return transformName;
 }
 
-std::string VsVariableWithMesh::getTransformedMeshName() {
+std::string VsVariableWithMesh::getTransformedMeshName() const {
   //Look for the vsTransformName key
   std::string transformedMeshName;
-  VsH5Attribute* transformedMeshNameAtt = getAttribute(VsSchema::transformedMeshKey);
+  VsAttribute* transformedMeshNameAtt = getAttribute(VsSchema::transformedMeshKey);
   if (transformedMeshNameAtt) {
     transformedMeshNameAtt->getStringValue(&transformedMeshName);
     if (!transformedMeshName.empty()) {
@@ -119,24 +131,24 @@ void VsVariableWithMesh::createTransformedVariableAndMesh() {
 }
 
 // Get dims
-std::vector<int> VsVariableWithMesh::getDims()
+std::vector<int> VsVariableWithMesh::getDims() const
 {
   return dataset->getDims();
 }
 
-void VsVariableWithMesh::getMeshDataDims(std::vector<int>& dims)
+void VsVariableWithMesh::getCellDims(std::vector<int>& dims) const
 {
   dims = dataset->getDims();
 }
 
-void VsVariableWithMesh::getNumMeshDims(std::vector<int>& dims)
+void VsVariableWithMesh::getNodeDims(std::vector<int>& dims) const
 {
   dims.resize(1);
 
   dims[0] = getNumPoints();
 }
 
-unsigned int VsVariableWithMesh::getNumPoints()
+size_t VsVariableWithMesh::getNumPoints() const
 {
   if( isCompMinor() )
     return dataset->getDims()[0];
@@ -145,44 +157,44 @@ unsigned int VsVariableWithMesh::getNumPoints()
 }
 
 // Get hdf5 type
-hid_t VsVariableWithMesh::getType() {
+hid_t VsVariableWithMesh::getType() const {
   return dataset->getType();
 }
 
 // Get length needed to store all elements in their format
-size_t VsVariableWithMesh::getLength() {
+size_t VsVariableWithMesh::getLength() const {
   return dataset->getLength();
 }
 
 // Get name
-std::string VsVariableWithMesh::getShortName () {
+std::string VsVariableWithMesh::getShortName () const {
   return dataset->getShortName();
 }
 
-hid_t VsVariableWithMesh::getId() {
+hid_t VsVariableWithMesh::getId() const {
   return dataset->getId();
 }
 
 // Get path
-std::string VsVariableWithMesh::getPath() {
+std::string VsVariableWithMesh::getPath() const {
   return dataset->getPath();
 }
 
 // Get full name
-std::string VsVariableWithMesh::getFullName() {
+std::string VsVariableWithMesh::getFullName() const {
   return dataset->getFullName();
 }
 
 // Find attribute by name, or return NULL if not found
-VsH5Attribute* VsVariableWithMesh::getAttribute(const std::string& name) {
+VsAttribute* VsVariableWithMesh::getAttribute(const std::string& name) const {
   return dataset->getAttribute(name);
 }
 
-std::string VsVariableWithMesh::getStringAttribute(const std::string& name) {
+std::string VsVariableWithMesh::getStringAttribute(const std::string& name) const {
 
   std::string result("");
 
-  VsH5Attribute* foundAtt = getAttribute(name);
+  VsAttribute* foundAtt = getAttribute(name);
   if (foundAtt)
     foundAtt->getStringValue(&result);
 
@@ -190,15 +202,15 @@ std::string VsVariableWithMesh::getStringAttribute(const std::string& name) {
 }
 //retrieve a particular spatial dimension index from the list
 //returns -1 on failure
-int VsVariableWithMesh::getSpatialDim(size_t index) {
-  if ((index < 0) || (index > spatialIndices.size())) {
+int VsVariableWithMesh::getSpatialDim(size_t index) const {
+  if (index > spatialIndices.size()) {
     return -1;
   }
 
   return spatialIndices[index];
 }
 
-void VsVariableWithMesh::write() {
+void VsVariableWithMesh::write() const {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << getFullName() << "  "
                     << "indexOrder = " << indexOrder << "  "
@@ -227,14 +239,14 @@ bool VsVariableWithMesh::initialize() {
   //any errors
   bool numDimsSet = false;
   
-  VsH5Attribute* spatialIndicesAtt = getAttribute(VsSchema::spatialIndicesAtt);
+  VsAttribute* spatialIndicesAtt = getAttribute(VsSchema::spatialIndicesAtt);
   if (spatialIndicesAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "found spatialIndices, trying synergia style"
                       << std::endl;
 
     std::vector<int> in;
-    herr_t err = spatialIndicesAtt->getIntVectorValue(&in);
+    size_t err = spatialIndicesAtt->getIntVectorValue(&in);
     if (!err) {
       numDimsSet = true;
       this->spatialIndices = in;
@@ -245,11 +257,11 @@ bool VsVariableWithMesh::initialize() {
 
   //NOTE: We load indexOrder regardless of whether we're in synergia
   //style or not
-  VsH5Attribute* indexOrderAtt = getAttribute(VsSchema::indexOrderAtt);
+  VsAttribute* indexOrderAtt = getAttribute(VsSchema::indexOrderAtt);
   if (indexOrderAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "found indexOrder." << std::endl;
-    herr_t err = indexOrderAtt->getStringValue(&(this->indexOrder));
+    int err = indexOrderAtt->getStringValue(&(this->indexOrder));
     if (err < 0) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << getFullName()
@@ -270,7 +282,7 @@ bool VsVariableWithMesh::initialize() {
                         << "Looking for attribute: "
                         << VsSchema::numSpatialDimsAtt << std::endl;
 
-    VsH5Attribute* numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt);
+    VsAttribute* numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt);
     if (!numDimsAtt) {
 
       VsLog::warningLog()
@@ -284,7 +296,7 @@ bool VsVariableWithMesh::initialize() {
     }
     if (numDimsAtt) {
       std::vector<int> in;
-      herr_t err = numDimsAtt->getIntVectorValue(&in);
+      int err = numDimsAtt->getIntVectorValue(&in);
       if (err < 0) {
         VsLog::debugLog()
           << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -321,7 +333,7 @@ bool VsVariableWithMesh::initialize() {
   }
 
   //Get vsTimeGroup (optional attribute)
-  VsH5Attribute* timeGroupAtt = dataset->getAttribute(VsSchema::timeGroupAtt);
+  VsAttribute* timeGroupAtt = dataset->getAttribute(VsSchema::timeGroupAtt);
   if (timeGroupAtt) {
     std::string timeGroupName;
     timeGroupAtt->getStringValue(&timeGroupName);
@@ -330,7 +342,7 @@ bool VsVariableWithMesh::initialize() {
   
   //Get user-specified labels for components
   //labels is a comma-delimited list of strings
-  VsH5Attribute* componentNamesAtt = dataset->getAttribute(VsSchema::labelsAtt);
+  VsAttribute* componentNamesAtt = dataset->getAttribute(VsSchema::labelsAtt);
   if (componentNamesAtt) {
     std::string names;
     componentNamesAtt->getStringValue(&names);
@@ -342,15 +354,16 @@ bool VsVariableWithMesh::initialize() {
 }
 
 // Get user-specified component names
-std::string VsVariableWithMesh::getLabel (unsigned int i) {
-  if ((i >= 0) && (i < labelNames.size()) && !labelNames[i].empty()) {
+std::string VsVariableWithMesh::getLabel (size_t i) const {
+//  if ((i >= 0) && (i < labelNames.size()) && !labelNames[i].empty()) {
+  if ((i < labelNames.size()) && !labelNames[i].empty()) {
     return makeCanonicalName(getPath(), labelNames[i]);
   } 
 
   return "";
 }
 
-VsVariableWithMesh* VsVariableWithMesh::buildObject(VsH5Dataset* dataset) {
+VsVariableWithMesh* VsVariableWithMesh::buildObject(VsDataset* dataset) {
   VsVariableWithMesh* newVar = new VsVariableWithMesh(dataset);
   bool success = newVar->initialize();
   if (success) {
@@ -362,7 +375,7 @@ VsVariableWithMesh* VsVariableWithMesh::buildObject(VsH5Dataset* dataset) {
   return NULL;
 }
 
-size_t VsVariableWithMesh::getNumComps() {
+size_t VsVariableWithMesh::getNumComps() const {
   std::vector<int> dims = getDims();
   if (dims.size() <= 0) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -388,9 +401,9 @@ void VsVariableWithMesh::createComponents() {
   //But i'm going to leave it as-is for now...
   bool transformExists = hasTransform();
   for (size_t i = 0; i < numComps; ++i) {
-    registry->registerComponent(getFullName(), (int)i, getLabel(i));
+    registry->registerComponent(getFullName(), i, getLabel(i));
     if (transformExists) {
-      registry->registerComponent(getFullTransformedName(), (int)i, getLabel(i));
+      registry->registerComponent(getFullTransformedName(), i, getLabel(i));
     }
   }
 

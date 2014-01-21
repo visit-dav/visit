@@ -17,8 +17,8 @@
 #ifndef VSREGISTRY_H_
 #define VSREGISTRY_H_
 
-class VsH5Dataset;
-class VsH5Group;
+class VsDataset;
+class VsGroup;
 class VsMesh;
 class VsVariableWithMesh;
 class VsVariable;
@@ -38,24 +38,24 @@ public:
   void deleteAllObjects();
   
   //DATASETS
-  void add(VsH5Dataset* obj);
-  void remove(VsH5Dataset* obj);
-  VsH5Dataset* getDataset(const std::string& name);
+  void add(VsDataset* obj);
+  void remove(VsDataset* obj);
+  VsDataset* getDataset(const std::string& name);
   void deleteAllDatasets();
-  void writeAllDatasets();
+  void writeAllDatasets() const;
   int numDatasets();
   void buildDatasetObjects();
  
   //GROUPS
-  void add(VsH5Group* obj);
-  void remove(VsH5Group* obj);
-  VsH5Group* getGroup(const std::string& name);
+  void add(VsGroup* obj);
+  void remove(VsGroup* obj);
+  VsGroup* getGroup(const std::string& name);
   void deleteAllGroups();
-  void writeAllGroups();
+  void writeAllGroups() const;
   int numGroups();
   void buildGroupObjects();
-  void loadTime(VsH5Group* group);
-  void loadRunInfo(VsH5Group* group);
+  void loadTime(VsGroup* group);
+  void loadRunInfo(VsGroup* group);
   
   //MESHES
   void add(VsMesh* mesh);
@@ -63,14 +63,14 @@ public:
   VsMesh* getMesh(const std::string& name);
   void getAllMeshNames(std::vector<std::string>& names);
   void deleteAllMeshes();
-  void writeAllMeshes();  
+  void writeAllMeshes() const;  
   int numMeshes();
   
   //MD MESHES
   void add(VsMDMesh* var);
   void remove(VsMDMesh* var);
   void buildMDMeshes();
-  void writeAllMDMeshes();
+  void writeAllMDMeshes() const;
   VsMDMesh* getMDMesh(const std::string& name);
   VsMDMesh* getMDParentForMesh(const std::string& name);
   VsMesh* findSubordinateMDMesh(const std::string& name);
@@ -83,7 +83,7 @@ public:
   VsVariable* getVariable(const std::string& name);
   void getAllVariableNames(std::vector<std::string>& names);
   void deleteAllVariables();
-  void writeAllVariables();  
+  void writeAllVariables() const;  
   int numVariables();
 
   //VARIABLES WITH MESH
@@ -92,7 +92,7 @@ public:
   VsVariableWithMesh* getVariableWithMesh(const std::string& name);
   void getAllVariableWithMeshNames(std::vector<std::string>& names);
   void deleteAllVariablesWithMesh();
-  void writeAllVariablesWithMesh();  
+  void writeAllVariablesWithMesh() const;  
   int numVariablesWithMesh();
 
   // TRANSFORMED MESH NAMES
@@ -107,7 +107,7 @@ public:
   void add(VsMDVariable* var);
   void remove(VsMDVariable* var);
   void buildMDVars();
-  void writeAllMDVariables();
+  void writeAllMDVariables() const;
   VsMDVariable* getMDVariable(const std::string& name);
   void getAllMDVariableNames(std::vector<std::string>& names);
   int numMDVariables();
@@ -118,9 +118,9 @@ public:
   void buildTransformedVariables();
   
   //VsVars
-  void buildExpressions(VsH5Group* group);
+  void buildExpressions(VsGroup* group);
   void addExpression(const std::string& name, const std::string& value);
-  void writeAllExpressions();
+  void writeAllExpressions() const;
   std::map<std::string, std::string>* getAllExpressions();
   int numExpressions();
 
@@ -150,11 +150,11 @@ private:
    */
   bool deletingObjects;
   
-  std::map<std::string, VsH5Dataset*> allDatasets;
-  std::map<std::string, VsH5Dataset*> allDatasetsShort;
+  std::map<std::string, VsDataset*> allDatasets;
+  std::map<std::string, VsDataset*> allDatasetsShort;
 
-  std::map<std::string, VsH5Group*> allGroups;
-  std::map<std::string, VsH5Group*> allGroupsShort;
+  std::map<std::string, VsGroup*> allGroups;
+  std::map<std::string, VsGroup*> allGroupsShort;
 
   std::map<std::string, VsMesh*> allMeshes;
   std::map<std::string, VsMesh*> allMeshesShort;

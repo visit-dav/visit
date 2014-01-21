@@ -7,9 +7,9 @@
 
 #include "VsVariable.h"
 #include "VsSchema.h"
-#include "VsH5Dataset.h"
+#include "VsDataset.h"
 #include "VsLog.h"
-#include "VsH5Attribute.h"
+#include "VsAttribute.h"
 #include "VsMDVariable.h"
 #include "VsMDMesh.h"
 #include "VsUtils.h"
@@ -21,7 +21,7 @@
 
 #define __CLASS__ "VsVariable::"
 
-VsVariable::VsVariable(VsH5Dataset* data):
+VsVariable::VsVariable(VsDataset* data):
   VsRegistryObject(data->registry) {
   indexOrder = VsSchema::compMinorCKey; //default
   dataset = 0;
@@ -44,84 +44,98 @@ VsVariable::~VsVariable() {
   registry->remove(this);
 }
 
-bool VsVariable::isZonal() {
+bool VsVariable::isZonal() const {
   return (centering == VsSchema::zonalCenteringKey);
 }
 
-bool VsVariable::isFortranOrder() {
+bool VsVariable::isNodal() const {
+  return (centering == VsSchema::nodalCenteringKey);
+}
+
+bool VsVariable::isEdge() const {
+  return (centering == VsSchema::edgeCenteringKey);
+}
+
+bool VsVariable::isFace() const {
+  return (centering == VsSchema::faceCenteringKey);
+}
+
+bool VsVariable::isFortranOrder() const {
   return ((indexOrder == VsSchema::compMinorFKey) ||
           (indexOrder == VsSchema::compMajorFKey));
 }
 
-bool VsVariable::isCompMinor() {
+bool VsVariable::isCompMinor() const {
   return ((indexOrder == VsSchema::compMinorCKey) ||
           (indexOrder == VsSchema::compMinorFKey));
 }
 
-bool VsVariable::isCompMajor() {
+bool VsVariable::isCompMajor() const {
   return ((indexOrder == VsSchema::compMajorCKey) ||
           (indexOrder == VsSchema::compMajorFKey));
 }
 
 // Get dims
-std::vector<int> VsVariable::getDims() {
+std::vector<int> VsVariable::getDims() const {
   return dataset->getDims();
 }
 
 // Get mesh name
-std::string VsVariable::getMeshName() {
+std::string VsVariable::getMeshName() const {
   return meshName;
 }
 
-VsMesh* VsVariable::getMesh() {
+VsMesh* VsVariable::getMesh() const {
   return meshMeta;
 }
 
-bool VsVariable::hasTransform() {
+bool VsVariable::hasTransform() const {
   return meshMeta && meshMeta->hasTransform();
 }
 
 // Get hdf5 type
-hid_t VsVariable::getType() {
+hid_t VsVariable::getType() const {
   return dataset->getType();
 }
 
 // Get length needed to store all elements in their format
-size_t VsVariable::getLength() {
+size_t VsVariable::getLength() const {
   return dataset->getLength();
 }
 
 // Get name
-std::string VsVariable::getShortName () {
+std::string VsVariable::getShortName () const {
   return dataset->getShortName();
 }
 
-hid_t VsVariable::getId() {
+hid_t VsVariable::getId() const {
   return dataset->getId();
 }
 
 // Get path
-std::string VsVariable::getPath() {
+std::string VsVariable::getPath() const {
   return dataset->getPath();
 }
 
 // Get transformed name
-std::string VsVariable::getFullTransformedName() {
+std::string VsVariable::getFullTransformedName() const {
   return getFullName() + "_transform";
 }
 
 // Get full name
-std::string VsVariable::getFullName() {
+std::string VsVariable::getFullName() const {
   return dataset->getFullName();
 }
 
 // Find attribute by name, or return NULL if not found
-VsH5Attribute* VsVariable::getAttribute(const std::string& name) {
+VsAttribute* VsVariable::getAttribute(const std::string& name) const {
+  VsLog::debugLog() << "getatt " << name <<dataset->getAttribute(name) << std::endl;
   return dataset->getAttribute(name);
 }
 
-std::string VsVariable::getStringAttribute(const std::string& name) {
-  VsH5Attribute* foundAtt = getAttribute(name);
+std::string VsVariable::getStringAttribute(const std::string& name) const {
+  VsLog::debugLog() << "getstringatt " << name <<dataset->getAttribute(name) << std::endl;
+  VsAttribute* foundAtt = getAttribute(name);
   if (foundAtt == NULL)
     return "";
   std::string result = "";
@@ -129,7 +143,7 @@ std::string VsVariable::getStringAttribute(const std::string& name) {
   return result;
 }
 
-void VsVariable::write() {
+void VsVariable::write() const {
   VsLog::debugLog() << getFullName() <<std::endl;
   VsLog::debugLog() << "    indexOrder = " << indexOrder << std::endl;
   VsLog::debugLog() << "    centering = " << centering << std::endl;
@@ -142,15 +156,16 @@ void VsVariable::write() {
 }
 
 // Get user-specified component names
-std::string VsVariable::getLabel (unsigned int i) {
-  if ((i >= 0) && (i < labelNames.size()) && !labelNames[i].empty()) {
+std::string VsVariable::getLabel (size_t i) const {
+//  if ((i >= 0) && (i < labelNames.size()) && !labelNames[i].empty()) {
+  if ((i < labelNames.size()) && !labelNames[i].empty()) {
     return makeCanonicalName(getPath(), labelNames[i]);
   } 
 
   return "";
 }
 
-VsVariable* VsVariable::buildObject(VsH5Dataset* dataset) {
+VsVariable* VsVariable::buildObject(VsDataset* dataset) {
   VsVariable* newVar = new VsVariable(dataset);
   bool success = newVar->initialize();
   if (success) {
@@ -166,7 +181,8 @@ bool VsVariable::initialize() {
   VsLog::debugLog() <<"VsVariable::initialize() - Entering." <<std::endl;
   
   //Get the name of our mesh (required attribute)
-  VsH5Attribute* meshNameAtt = dataset->getAttribute(VsSchema::meshAtt);
+  VsAttribute* meshNameAtt = dataset->getAttribute(VsSchema::meshAtt);
+  VsLog::debugLog() <<"VsVariable:: meshNameAtt." <<std::endl;
   if (!meshNameAtt) {
     VsLog::errorLog() << "VsVariable::initialize(): error getting required attribute '" 
       <<VsSchema::meshAtt << "." << std::endl;
@@ -180,6 +196,7 @@ bool VsVariable::initialize() {
 
   //Does mesh exist?
   this->meshMeta = registry->getMesh(this->meshName);
+  VsLog::debugLog() <<"VsVariable:: meshMeta." <<std::endl;
   if (!this->meshMeta) {
     VsLog::errorLog() <<"VsVariable::initialize() - Unable to find mesh with name " <<this->meshName <<std::endl;
     VsLog::errorLog() <<"VsVariable::initialize(): returning failure" <<std::endl;
@@ -187,13 +204,16 @@ bool VsVariable::initialize() {
   }
 
   //Get indexOrder (optional attribute)
-  VsH5Attribute* indexOrderAtt = dataset->getAttribute(VsSchema::indexOrderAtt);
+  VsAttribute* indexOrderAtt = dataset->getAttribute(VsSchema::indexOrderAtt);
+  VsLog::debugLog() <<"VsVariable:: indexorder." <<std::endl;
   if (indexOrderAtt) {
     indexOrderAtt->getStringValue(&(this->indexOrder));
   }
 
   //Get vsTimeGroup (optional attribute)
-  VsH5Attribute* timeGroupAtt = dataset->getAttribute(VsSchema::timeGroupAtt);
+  VsLog::debugLog() <<"VsVariable:: timeGroupAtt: " <<VsSchema::timeGroupAtt<<std::endl;
+  VsAttribute* timeGroupAtt = dataset->getAttribute(VsSchema::timeGroupAtt);
+  VsLog::debugLog() <<"VsVariable:: timeGroupAtt: "<< timeGroupAtt <<std::endl;
   if (timeGroupAtt) {
     std::string timeGroupName;
     timeGroupAtt->getStringValue(&timeGroupName);
@@ -201,7 +221,7 @@ bool VsVariable::initialize() {
   }
   
   //Get centering (optional attribute)
-  VsH5Attribute* centeringAtt = dataset->getAttribute(VsSchema::centeringAtt);
+  VsAttribute* centeringAtt = dataset->getAttribute(VsSchema::centeringAtt);
   if (centeringAtt) {
     centeringAtt->getStringValue(&(this->centering));
   }
@@ -210,11 +230,11 @@ bool VsVariable::initialize() {
   if (this->nodeOffsetAtt) {
     std::vector<float> nodeOffsetFloat(3, 0);
     std::vector<int> nodeOffsetInt(3, 0);
-    herr_t err = this->nodeOffsetAtt->getDoubleVectorValue(&this->nodeOffset);
+    int err = this->nodeOffsetAtt->getDoubleVectorValue(&this->nodeOffset);
     if (err < 0) {
-      herr_t err2 = this->nodeOffsetAtt->getFloatVectorValue(&nodeOffsetFloat);
+      int err2 = this->nodeOffsetAtt->getFloatVectorValue(&nodeOffsetFloat);
       if (err2 < 0) {
-        herr_t err3 = this->nodeOffsetAtt->getIntVectorValue(&nodeOffsetInt);
+        int err3 = this->nodeOffsetAtt->getIntVectorValue(&nodeOffsetInt);
         if (err3 < 0) {
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Cannot get vector nodeOffset." << std::endl;
@@ -246,7 +266,7 @@ bool VsVariable::initialize() {
 
   //Get user-specified labels for components
   //labels is a comma-delimited list of strings
-  VsH5Attribute* componentNamesAtt = dataset->getAttribute(VsSchema::labelsAtt);
+  VsAttribute* componentNamesAtt = dataset->getAttribute(VsSchema::labelsAtt);
   if (componentNamesAtt) {
     std::string names;
     componentNamesAtt->getStringValue(&names);
@@ -257,14 +277,14 @@ bool VsVariable::initialize() {
   return true;
 }
 
-size_t VsVariable::getNumComps() {
+size_t VsVariable::getNumComps() const{
   VsLog::debugLog() << "VsVariable::getNumComps(): Entering." << std::endl;
   
   std::vector<int> dataDims = getDims();
 
   //load the mesh dimensions
   std::vector<int> meshDims;
-  meshMeta->getMeshDataDims(meshDims);
+  meshMeta->getCellDims(meshDims);
   
   //did we get a reasonable value?
   if (meshDims.empty()) {
@@ -328,28 +348,11 @@ size_t VsVariable::getNumComps() {
     res = 1;
     goto dimwarn;
   }
-
-  // ARS - do we really want this check??? The mesh and data dim check
-  // above should match. This allows a mesh and data to be of
-  // different sizes. Which can mess up the index select.
-  if (dataDims.size() == 1) 
-  {
+  if ((dataDims.size() == 1)
+      || ((dataDims.size() == 2) && (dataDims[0] == 1))) {
     res = 1;
     goto dimwarn;
   }
-    
-  // ARS - do we really want this check??? The mesh and data dim check
-  // above should match. Also this allows data which should be a
-  // component to slide through as a true scalar.
-  if(dataDims.size() == 2 &&
-     ((isCompMajor() && dataDims[0] == 1) ||
-      (!isCompMajor() && dataDims[1] == 1)) )
-  {
-    res = 1;
-    goto dimwarn;
-  }
-
-
   if (meshDims.size() != (dataDims.size() - 1) ) {
     VsLog::debugLog() << "VsVariable::getNumComps(): error - mesh '" << getMeshName() <<
     "' has dimensions of size, " << meshDims.size() << ", while dataset '" <<
@@ -360,10 +363,10 @@ size_t VsVariable::getNumComps() {
   }
   
   // check that each of mesh sizes are correct (for compMinor data here)
-  if (isCompMajor()) {
-    res = dataDims.front();
-  } else {
+  if (!isCompMajor()) {
     res = dataDims.back();
+  } else {
+    res = dataDims.front();
   }
   
 dimwarn:
@@ -402,9 +405,9 @@ void VsVariable::createComponents() {
   //I.E. instead of a singleton named "var_0", we just call it "var"
   if (numComps > 1) {
     for (size_t i = 0; i < numComps; ++i) {
-      registry->registerComponent(getFullName(), (int)i, getLabel(i));
+      registry->registerComponent(getFullName(), i, getLabel(i));
       if (transformExists) {
-        registry->registerComponent(getFullTransformedName(), (int)i, getLabel(i));
+        registry->registerComponent(getFullTransformedName(), i, getLabel(i));
       }
     }
   }

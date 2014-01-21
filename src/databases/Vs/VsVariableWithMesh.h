@@ -19,93 +19,96 @@
 #include <hdf5.h>
 #include <map>
 
-class VsH5Attribute;
-class VsH5Dataset;
+class VsAttribute;
+class VsDataset;
 
 class VsVariableWithMesh : public VsRegistryObject {
 public:
   virtual ~VsVariableWithMesh();
   
   /** Get the number of spatial dimensions */
-  unsigned int getNumSpatialDims();
+  size_t getNumSpatialDims() const;
 
   /** Retrieve a particular spatial dimension index from the list
     returns -1 on failure */
-  int getSpatialDim(size_t index);
+  int getSpatialDim(size_t index) const;
 
   /** Retrieve the entire list of spatial indices */
-  std::vector<int> getSpatialIndices();
+  std::vector<int> getSpatialIndices() const;
   
   /** Handles tranformation attributes for the "mesh" part of this object */
-  virtual bool hasTransform();
-  std::string getTransformName();
-  std::string getTransformedMeshName();
+  virtual bool hasTransform() const;
+  std::string getTransformName() const;
+  std::string getTransformedMeshName() const;
   
   /** Handles transformation attributes for the "variable" part of this object */
-  std::string getFullTransformedName();
+  std::string getFullTransformedName() const;
   void createTransformedVariableAndMesh();
   
   /** Supply debugging output */
-  void write();
+  void write() const;
   
-  bool isZonal();
-  bool isCompMinor();
-  bool isCompMajor();
+  bool isZonal() const;
+  bool isNodal() const;
+  bool isEdge() const;
+  bool isFace() const;
+  bool isCompMinor() const;
+  bool isCompMajor() const;
 
   /** Get dimensions of associated dataset. */
-  std::vector<int> getDims();
+  std::vector<int> getDims() const;
 
-  unsigned int getNumPoints();
+  size_t getNumPoints() const;
 
-  virtual void getMeshDataDims(std::vector<int>& dims);
-  virtual void getNumMeshDims(std::vector<int>& dims);
+  virtual void getCellDims(std::vector<int>& dims) const;
+  virtual void getNodeDims(std::vector<int>& dims) const;
 
   /** Get hdf5 type */
-  hid_t getType();
+  hid_t getType() const;
 
   /** Get length needed to store all elements in their format */
-  size_t getLength();
+  size_t getLength() const;
 
   /** Get short name */
-  std::string getShortName();
+  std::string getShortName() const;
 
   /** Get path */
-  std::string getPath();
+  std::string getPath() const;
   
   /** Get fully qualified name */
-  std::string getFullName();
+  std::string getFullName() const;
 
   /** Find attribute by name, or return NULL if not found. */
-  VsH5Attribute* getAttribute(const std::string& name);
+  VsAttribute* getAttribute(const std::string& name) const;
 
   /** Retrieve the value of the attribute with the given name */
-  std::string getStringAttribute(const std::string& name);
+  std::string getStringAttribute(const std::string& name) const;
 
   /** Retrieve the user-specified label for component number i */
-  std::string getLabel(unsigned int i);
+  std::string getLabel(size_t i) const;
   
   /** Get the centering string*/
-  std::string getCentering() { return centering; }
+  std::string getCentering() const { return centering; }
 
   /** Get the index order string */
-  std::string getIndexOrder() { return indexOrder; }
+  std::string getIndexOrder() const { return indexOrder; }
  
   /** Retrieve the hdf5 id of this object. */
-  hid_t getId();
+  hid_t getId() const;
   
   /** Public method to construct a VsVariableWithMesh object.
    * Returns NULL if an error is encountered.
    */
-  static VsVariableWithMesh* buildObject(VsH5Dataset* dataset);
+  static VsVariableWithMesh* buildObject(VsDataset* dataset);
 
   void createComponents();
-  size_t getNumComps();
+  size_t getNumComps() const;
   
-  VsH5Group* getTimeGroup() { return timeGroup; }
+  VsGroup* getTimeGroup() const { return timeGroup; }
 
 private:
   /** Private constructor */
-  VsVariableWithMesh(VsH5Dataset* dataset);
+  VsVariableWithMesh(VsDataset* dataset);
 
   /** Initializes the data members of the object.
    * Returns false if an error is found. */
@@ -118,10 +121,10 @@ private:
   std::string centering;
 
   /** Dataset object from which this object was created. */
-  VsH5Dataset* dataset;
+  VsDataset* dataset;
 
   /** Time group */
-  VsH5Group* timeGroup;
+  VsGroup* timeGroup;
 
   /** List of user-specified names for the components of this variable */
   std::vector<std::string> labelNames;

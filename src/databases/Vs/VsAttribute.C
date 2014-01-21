@@ -1,21 +1,21 @@
 /*
- * VsH5Attribute.cpp
+ * VsAttribute.cpp
  *
  *  Created on: Apr 28, 2010
  *      Author: mdurant
  */
 
-#include "VsH5Attribute.h"
+#include "VsAttribute.h"
 #include "VsLog.h"
 #include <hdf5.h>
   
-VsH5Attribute::VsH5Attribute(VsH5Object* parentObject, std::string attName, hid_t id):
-  VsH5Object(parentObject->registry, parentObject, attName, id) {
+VsAttribute::VsAttribute(VsObject* parentObject, std::string attName, hid_t id):
+  VsObject(parentObject->registry, parentObject, attName, id) {
   
   dataType = H5Aget_type(id);
 }
 
-VsH5Attribute::~VsH5Attribute() {
+VsAttribute::~VsAttribute() {
   hid_t id = getId();
   if (id != -1) {
     H5Aclose(id);
@@ -23,7 +23,7 @@ VsH5Attribute::~VsH5Attribute() {
   }
 }
 
-void VsH5Attribute::write() {
+void VsAttribute::write() const {
   std::string offset = "";
   for (int i = 0; i < getDepth(); ++i) {
     offset += "  ";
@@ -33,7 +33,7 @@ void VsH5Attribute::write() {
 }
 
 // Total length
-size_t VsH5Attribute::getLength() {
+size_t VsAttribute::getLength() const {
   size_t len = 1;
   for (size_t i = 0; i < dims.size(); ++i) {
     len *= dims[i];
@@ -41,14 +41,14 @@ size_t VsH5Attribute::getLength() {
   return len;
 }
 
-herr_t VsH5Attribute::getStringValue(std::string* val) {
+int VsAttribute::getStringValue(std::string* val) {
   hid_t atype = H5Aget_type(getId());
   H5T_class_t type = H5Tget_class(atype);
   hid_t aspace = H5Aget_space(getId());
   size_t rank = H5Sget_simple_extent_ndims(aspace);
   
   if (type != H5T_STRING) {
-    VsLog::warningLog() <<"VsH5Attribute::getStringValue() - Requested attribute " <<getShortName()
+    VsLog::warningLog() <<"VsAttribute::getStringValue() - Requested attribute " <<getShortName()
        <<" is not a string value." <<std::endl;
     val->clear();
     return -1;
@@ -56,7 +56,7 @@ herr_t VsH5Attribute::getStringValue(std::string* val) {
   
   //Yes, this is correct (rank != 0)
   if (rank != 0) {
-    VsLog::warningLog() <<"VsH5Attribute::getStringValue() - Requested attribute " <<getShortName()
+    VsLog::warningLog() <<"VsAttribute::getStringValue() - Requested attribute " <<getShortName()
            <<" is not a string value." <<std::endl;
     val->clear();
     return -1;
@@ -65,7 +65,7 @@ herr_t VsH5Attribute::getStringValue(std::string* val) {
   size_t len = H5Aget_storage_size(getId());
   val->resize(len);
   char* v = new char[len];
-  herr_t err = H5Aread(getId(), atype, v);
+  int err = H5Aread(getId(), atype, v);
   // JRC: is this right?
   // err = H5Aread(id, H5T_NATIVE_CHAR, v);
   for (size_t i = 0; i < len; ++i) {
@@ -74,7 +74,7 @@ herr_t VsH5Attribute::getStringValue(std::string* val) {
        //and uses the 5th character for the null terminator
        //In h5dump this shows up as a string "mesh" being declared as 5 characters
        //If dumped to a terminal, it prints like so: "mesh^@"
-       VsLog::warningLog() <<"VsH5Attribute::getStringValue() - Found null char inside string attribute: " <<getFullName() <<std::endl;
+       VsLog::warningLog() <<"VsAttribute::getStringValue() - Found null char inside string attribute: " <<getFullName() <<std::endl;
        val->resize(i);
        break;
      }
@@ -86,8 +86,8 @@ herr_t VsH5Attribute::getStringValue(std::string* val) {
 
 // JRC: This fat interface may not scale?  What about
 // scalar attributes?
-herr_t VsH5Attribute::getIntVectorValue(std::vector<int>* ivals) {
-  herr_t err;
+int VsAttribute::getIntVectorValue(std::vector<int>* ivals) {
+  int err;
   size_t npoints;
   hid_t atype = H5Aget_type(getId());
   H5T_class_t type = H5Tget_class(atype);
@@ -95,7 +95,7 @@ herr_t VsH5Attribute::getIntVectorValue(std::vector<int>* ivals) {
   size_t rank = H5Sget_simple_extent_ndims(aspace);
 
   if (type != H5T_INTEGER) {
-    VsLog::warningLog() <<"VsH5Attribute::getIntVectorValue() - Requested attribute " <<getShortName()
+    VsLog::warningLog() <<"VsAttribute::getIntVectorValue() - Requested attribute " <<getShortName()
         <<" is not an integer vector." <<std::endl;
      ivals->resize(0);
      return -1;
@@ -125,9 +125,9 @@ herr_t VsH5Attribute::getIntVectorValue(std::vector<int>* ivals) {
 
 // JRC: This fat interface may not scale?  What about
 // scalar attributes?
-herr_t VsH5Attribute::getFloatVectorValue(std::vector<float>* fvals) {
+int VsAttribute::getFloatVectorValue(std::vector<float>* fvals) {
 
-  herr_t err = 0;
+  int err = 0;
   size_t npoints;
   hid_t atype = H5Aget_type(getId());
   H5T_class_t type = H5Tget_class(atype);
@@ -135,7 +135,7 @@ herr_t VsH5Attribute::getFloatVectorValue(std::vector<float>* fvals) {
   size_t rank = H5Sget_simple_extent_ndims(aspace);
 
   if (type != H5T_FLOAT) {
-    VsLog::warningLog() <<"VsH5Attribute::getFloatVectorValue() - Requested attribute " <<getShortName()
+    VsLog::warningLog() <<"VsAttribute::getFloatVectorValue() - Requested attribute " <<getShortName()
          <<" is not a floating point vector." <<std::endl;
     fvals->resize(0);
     return -1;
@@ -164,8 +164,8 @@ herr_t VsH5Attribute::getFloatVectorValue(std::vector<float>* fvals) {
 
 // JRC: This fat interface may not scale?  What about
 // scalar attributes?
-herr_t VsH5Attribute::getDoubleVectorValue(std::vector<double>* dvals) {
-  herr_t err = 0;
+int VsAttribute::getDoubleVectorValue(std::vector<double>* dvals) {
+  int err = 0;
   size_t npoints;
   hid_t atype = H5Aget_type(getId());
   H5T_class_t type = H5Tget_class(atype);
@@ -173,7 +173,7 @@ herr_t VsH5Attribute::getDoubleVectorValue(std::vector<double>* dvals) {
   size_t rank = H5Sget_simple_extent_ndims(aspace);
 
   if (type != H5T_FLOAT) {
-    VsLog::warningLog() <<"VsH5Attribute::getDoubleVectorValue() - Requested attribute " <<getShortName()
+    VsLog::warningLog() <<"VsAttribute::getDoubleVectorValue() - Requested attribute " <<getShortName()
          <<" is not a floating point vector." <<std::endl;
     dvals->resize(0);
     return -1;

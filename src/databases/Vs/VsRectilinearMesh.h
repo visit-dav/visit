@@ -14,27 +14,27 @@
 #include "VsMesh.h"
 #include <hdf5.h>
 
-class VsH5Dataset;
-class VsH5Group;
+class VsDataset;
+class VsGroup;
 
 class VsRectilinearMesh: public VsMesh {
 public:
   virtual ~VsRectilinearMesh();
   
-  hid_t getDataType();
-  std::string getAxisDatasetName(int axisNumber);
-  VsH5Dataset* getAxisDataset(int axisNumber);
+  hid_t getDataType() const;
+  std::string getAxisDatasetName(int axisNumber) const;
+  VsDataset* getAxisDataset(int axisNumber) const;
 
-  virtual bool isRectilinearMesh() { return true; }
-  static VsRectilinearMesh* buildRectilinearMesh(VsH5Group* group);
+  virtual bool isRectilinearMesh() const { return true; }
+  static VsRectilinearMesh* buildRectilinearMesh(VsGroup* group);
   
-  virtual std::string getKind();
+  virtual std::string getKind() const;
 
-  virtual void getMeshDataDims(std::vector<int>& dims);
-  virtual void getNumMeshDims(std::vector<int>& dims);
+  virtual void getCellDims(std::vector<int>& dims) const;
+  virtual void getNodeDims(std::vector<int>& dims) const;
 
 private:
-  VsRectilinearMesh(VsH5Group* group);
+  VsRectilinearMesh(VsGroup* group);
   virtual bool initialize();
 };
 

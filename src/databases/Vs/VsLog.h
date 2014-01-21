@@ -19,12 +19,26 @@
 class VsLog {
 public:
   
+  /**
+   * Initialize logger
+   * @param d3 low level debug messages
+   * @param d4 medium level debug messages
+   * @param d5 fine grain debug messages
+   */
   static void initialize(std::ostream& d3, std::ostream& d4, std::ostream& d5) {
     if (singleton) {
       return;
     }
     
     singleton = new VsLog(d3, d4, d5);
+  }
+
+  /**
+   * finalize logger
+   */
+  static void finalize() {
+    if (singleton) delete singleton;
+    singleton = NULL;
   }
 
   static std::ostream& errorLog();
@@ -34,7 +48,7 @@ public:
 private:
   //Constructor & destructor are never called, this is a static-only class
   VsLog(std::ostream& d3, std::ostream& d4, std::ostream& d5);
-  ~VsLog();
+  ~VsLog() {};
   
   static VsLog* singleton;
     

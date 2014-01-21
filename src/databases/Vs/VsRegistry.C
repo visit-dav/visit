@@ -6,12 +6,12 @@
  */
 
 #include "VsRegistry.h"
-#include "VsH5Dataset.h"
-#include "VsH5Group.h"
+#include "VsDataset.h"
+#include "VsGroup.h"
 #include "VsMesh.h"
 #include "VsUtils.h"
 #include "VsLog.h"
-#include "VsH5Attribute.h"
+#include "VsAttribute.h"
 #include "VsSchema.h"
 #include "VsVariable.h"
 #include "VsVariableWithMesh.h"
@@ -46,10 +46,10 @@ void VsRegistry::deleteAllObjects() {
   deletingObjects = false;
 }
 
-/*********** VsH5Groups ***********/
-void VsRegistry::add(VsH5Group* group) {
+/*********** VsGroups ***********/
+void VsRegistry::add(VsGroup* group) {
   //check for duplicate long name
-  VsH5Group* found = this->getGroup(group->getFullName());
+  VsGroup* found = this->getGroup(group->getFullName());
   if (found) {
     VsLog::errorLog() <<"VsRegistry::add() - Group already exists with this long name: " <<group->getFullName() <<std::endl;
     return;
@@ -69,7 +69,7 @@ int VsRegistry::numGroups() {
   return allGroups.size();
 }
 
-void VsRegistry::remove(VsH5Group* group) {
+void VsRegistry::remove(VsGroup* group) {
   if (deletingObjects)
     return;
 
@@ -77,10 +77,10 @@ void VsRegistry::remove(VsH5Group* group) {
   allGroupsShort.erase(group->getShortName());
 }
 
-VsH5Group* VsRegistry::getGroup(const std::string& name) {
+VsGroup* VsRegistry::getGroup(const std::string& name) {
   std::string fullName = makeCanonicalName(name);
 
-  std::map<std::string, VsH5Group*>::iterator it = allGroups.find(fullName);
+  std::map<std::string, VsGroup*>::iterator it = allGroups.find(fullName);
   if (it != allGroups.end()) {
     return (*it).second;
   }
@@ -93,9 +93,9 @@ VsH5Group* VsRegistry::getGroup(const std::string& name) {
 }
 
 void VsRegistry::deleteAllGroups() {
-  for (std::map<std::string, VsH5Group*>::const_iterator it = allGroups.begin();
+  for (std::map<std::string, VsGroup*>::const_iterator it = allGroups.begin();
           it != allGroups.end(); it++) {
-        VsH5Group* group = it->second;
+        VsGroup* group = it->second;
         delete(group);
     }
 
@@ -103,27 +103,27 @@ void VsRegistry::deleteAllGroups() {
   allGroupsShort.clear();
 }
 
-void VsRegistry::writeAllGroups() {
-  VsLog::debugLog() <<"********** BEGIN VsH5Groups *********" <<std::endl;
+void VsRegistry::writeAllGroups() const {
+  VsLog::debugLog() <<"********** BEGIN VsGroups *********" <<std::endl;
   
-  for (std::map<std::string, VsH5Group*>::const_iterator it = allGroups.begin();
+  for (std::map<std::string, VsGroup*>::const_iterator it = allGroups.begin();
         it != allGroups.end(); it++) {
-      VsH5Group* group = it->second;
+      VsGroup* group = it->second;
       group->write();
   }
     
-  VsLog::debugLog() <<"********** END VsH5Groups *********" <<std::endl;
+  VsLog::debugLog() <<"********** END VsGroups *********" <<std::endl;
 }
 
 void VsRegistry::buildGroupObjects() {
   VsLog::debugLog() <<"VsRegistry::buildGroupObjects - Entering." <<std::endl;
-  for (std::map<std::string, VsH5Group*>::const_iterator it = allGroups.begin();
+  for (std::map<std::string, VsGroup*>::const_iterator it = allGroups.begin();
       it != allGroups.end(); it++) {
-    VsH5Group* group = it->second;
+    VsGroup* group = it->second;
     VsLog::debugLog() <<"VsRegistry::buildGroupObjects - Building object " <<group->getFullName() <<std::endl;
     
     //What is the declared type of this group?
-    VsH5Attribute* typeAtt = group->getAttribute(VsSchema::typeAtt);
+    VsAttribute* typeAtt = group->getAttribute(VsSchema::typeAtt);
     if (!typeAtt) {
       VsLog::warningLog() <<"VsRegistry::buildGroupObjects - unable to find attribute " <<VsSchema::typeAtt
         <<".  Skipping object " <<group->getFullName() <<std::endl;
@@ -149,7 +149,8 @@ void VsRegistry::buildGroupObjects() {
   VsLog::debugLog() <<"VsRegistry::buildGroupObjects - Returning." <<std::endl;
 }
 
-void VsRegistry::loadTime(VsH5Group* group) {
+void VsRegistry::loadTime(VsGroup* group) {
+  VsLog::debugLog() <<"VsRegistry::loadTime() - Group is NULL?" << "'" << group << "'" <<std::endl;
   if (!group) {
     VsLog::debugLog() <<"VsRegistry::loadTime() - Group is NULL?" <<std::endl;
     return;
@@ -157,10 +158,10 @@ void VsRegistry::loadTime(VsH5Group* group) {
   
   //try to load a value for "time"
   double foundTime = -1.0;
-  VsH5Attribute* timeAtt = group->getAttribute(VsSchema::timeAtt);
+  VsAttribute* timeAtt = group->getAttribute(VsSchema::timeAtt);
   if (timeAtt) {
     std::vector<float> in;
-    herr_t err = timeAtt->getFloatVectorValue(&in);
+    int err = timeAtt->getFloatVectorValue(&in);
     if (err < 0) {
       VsLog::debugLog() <<"VsRegistry::loadTime(): Error " <<err <<" while trying to load time attribute." <<std::endl;
     } else {
@@ -171,10 +172,10 @@ void VsRegistry::loadTime(VsH5Group* group) {
 
   //try to load a value for "cycle"
   int foundCycle = -1;
-  VsH5Attribute* cycleAtt = group->getAttribute(VsSchema::cycleAtt);
+  VsAttribute* cycleAtt = group->getAttribute(VsSchema::cycleAtt);
   if (cycleAtt) {
     std::vector<int> in;
-    herr_t err = cycleAtt->getIntVectorValue(&in);
+    int err = cycleAtt->getIntVectorValue(&in);
     if (err < 0) {
       VsLog::debugLog() <<"VsRegistry::loadTime(): Error " <<err <<" while trying to load cycle attribute." <<std::endl;
     } else {
@@ -199,7 +200,7 @@ void VsRegistry::loadTime(VsH5Group* group) {
   }
 }
 
-void VsRegistry::loadRunInfo(VsH5Group* group) {
+void VsRegistry::loadRunInfo(VsGroup* group) {
   if (!group) {
     VsLog::debugLog() <<"VsRegistry::loadRunInfo() - Group is NULL?" <<std::endl;
     return;
@@ -208,10 +209,10 @@ void VsRegistry::loadRunInfo(VsH5Group* group) {
   VsLog::debugLog() <<"VsRegistry::loadRunInfo() - not loading any information at this time." <<std::endl;
 }
 
-/*********** VsH5Datasets***********/
-void VsRegistry::add(VsH5Dataset* dataset) {
+/*********** VsDatasets***********/
+void VsRegistry::add(VsDataset* dataset) {
   //check for duplicate long name
-  VsH5Dataset* found = this->getDataset(dataset->getFullName());
+  VsDataset* found = this->getDataset(dataset->getFullName());
   if (found) {
     VsLog::errorLog() <<"VsRegistry::add() - Dataset already exists with this long name: " <<dataset->getFullName() <<std::endl;
     return;
@@ -231,7 +232,7 @@ int VsRegistry::numDatasets() {
   return allDatasets.size();
 }
 
-void VsRegistry::remove(VsH5Dataset* dataset) {
+void VsRegistry::remove(VsDataset* dataset) {
   if (deletingObjects)
     return;
 
@@ -239,10 +240,10 @@ void VsRegistry::remove(VsH5Dataset* dataset) {
   allDatasetsShort.erase(dataset->getShortName());
 }
 
-VsH5Dataset* VsRegistry::getDataset(const std::string& name) {
+VsDataset* VsRegistry::getDataset(const std::string& name) {
   std::string fullName = makeCanonicalName(name);
 
-  std::map<std::string, VsH5Dataset*>::iterator it = allDatasets.find(fullName);
+  std::map<std::string, VsDataset*>::iterator it = allDatasets.find(fullName);
   if (it != allDatasets.end()) {
     return (*it).second;
   }
@@ -255,9 +256,9 @@ VsH5Dataset* VsRegistry::getDataset(const std::string& name) {
 }
 
 void VsRegistry::deleteAllDatasets() {
-  for (std::map<std::string, VsH5Dataset*>::const_iterator it = allDatasets.begin();
+  for (std::map<std::string, VsDataset*>::const_iterator it = allDatasets.begin();
         it != allDatasets.end(); it++) {
-      VsH5Dataset* dataset = it->second;
+      VsDataset* dataset = it->second;
       delete(dataset);
   }
 
@@ -265,16 +266,16 @@ void VsRegistry::deleteAllDatasets() {
   allDatasetsShort.clear();
 }
 
-void VsRegistry::writeAllDatasets() {
-  VsLog::debugLog() <<"********** BEGIN VsH5Datasets *********" <<std::endl;
+void VsRegistry::writeAllDatasets() const {
+  VsLog::debugLog() <<"********** BEGIN VsDatasets *********" <<std::endl;
   
-  for (std::map<std::string, VsH5Dataset*>::const_iterator it = allDatasets.begin();
+  for (std::map<std::string, VsDataset*>::const_iterator it = allDatasets.begin();
         it != allDatasets.end(); it++) {
-      VsH5Dataset* dataset = it->second;
+      VsDataset* dataset = it->second;
       dataset->write();
   }
     
-  VsLog::debugLog() <<"********** END VsH5Datasets *********" <<std::endl;
+  VsLog::debugLog() <<"********** END VsDatasets *********" <<std::endl;
 }
 
 void VsRegistry::buildDatasetObjects() {
@@ -282,23 +283,23 @@ void VsRegistry::buildDatasetObjects() {
 
   //First pass just do meshes
   //But remember the variables for second pass
-  std::vector<VsH5Dataset*> varDatasets;
-  std::vector<VsH5Dataset*> varWithMeshDatasets;
-  for (std::map<std::string, VsH5Dataset*>::const_iterator it = allDatasets.begin();
+  std::vector<VsDataset*> varDatasets;
+  std::vector<VsDataset*> varWithMeshDatasets;
+  for (std::map<std::string, VsDataset*>::const_iterator it = allDatasets.begin();
      it != allDatasets.end(); it++)  {
-    VsH5Dataset* dataset = it->second;
+    VsDataset* dataset = it->second;
     VsLog::debugLog() <<"VsRegistry::buildDatasetObjects() - looking at dataset " <<dataset->getFullName() <<std::endl;
 
     //Try to determine the type of the object
     std::string type;    
-    VsH5Attribute* typeAtt = dataset->getAttribute(VsSchema::typeAtt);
+    VsAttribute* typeAtt = dataset->getAttribute(VsSchema::typeAtt);
     if (!typeAtt) {
       VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - unable to find attribute " <<VsSchema::typeAtt <<std::endl;
       
       //If the object contains the "vsMesh" attribute, then it is probably intended to be a variable
       //So continue with that assumption
       VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - Second chance - looking for attribute " <<VsSchema::meshAtt <<std::endl;
-      VsH5Attribute* meshAtt = dataset->getAttribute(VsSchema::meshAtt);
+      VsAttribute* meshAtt = dataset->getAttribute(VsSchema::meshAtt);
       if (meshAtt) {
         VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - Found attribute " <<VsSchema::meshAtt <<" assuming that this is a variable." <<std::endl;
         type = VsSchema::varKey;
@@ -326,10 +327,9 @@ void VsRegistry::buildDatasetObjects() {
   }
 
   //Second pass to do all variables
-  for (std::vector<VsH5Dataset*>::const_iterator it = varDatasets.begin();
+  for (std::vector<VsDataset*>::const_iterator it = varDatasets.begin();
        it != varDatasets.end(); it++)  {
-    VsH5Dataset* dataset = *it;
-    VsLog::debugLog() <<"VsRegistry::buildDatasetObjects() - looking at var dataset " <<dataset->getFullName() <<std::endl;
+    VsDataset* dataset = *it;
     
     VsVariable* var = VsVariable::buildObject(dataset);
     if (var && (var->getTimeGroup() != NULL)) {
@@ -338,9 +338,9 @@ void VsRegistry::buildDatasetObjects() {
   }
 
   //Second pass to do all variables with mesh
-  for (std::vector<VsH5Dataset*>::const_iterator it = varWithMeshDatasets.begin();
+  for (std::vector<VsDataset*>::const_iterator it = varWithMeshDatasets.begin();
        it != varWithMeshDatasets.end(); it++)  {
-    VsH5Dataset* dataset = *it;
+    VsDataset* dataset = *it;
     VsLog::debugLog() <<"VsRegistry::buildDatasetObjects() - looking at varWithMesh dataset " <<dataset->getFullName() <<std::endl;
     
     VsVariableWithMesh* var = VsVariableWithMesh::buildObject(dataset);
@@ -409,7 +409,7 @@ void VsRegistry::deleteAllMeshes() {
   allMeshesShort.clear();
 }
 
-void VsRegistry::writeAllMeshes() {
+void VsRegistry::writeAllMeshes() const {
   if (allMeshes.empty()) {
     VsLog::debugLog() <<"*********** NO MESHES ********" <<std::endl;
     return;
@@ -467,7 +467,7 @@ void VsRegistry::getAllMDMeshNames(std::vector<std::string>& names)  {
     names.push_back(it->first);
 }
 
-void VsRegistry::writeAllMDMeshes() {
+void VsRegistry::writeAllMDMeshes() const {
   if (allMDMeshes.empty()) {
     VsLog::debugLog() <<"*********** NO MDMESHES ********" <<std::endl;
     return;
@@ -493,8 +493,8 @@ VsMDMesh* VsRegistry::getMDParentForMesh(const std::string& name) {
   
   for (std::map<std::string, VsMDMesh*>::const_iterator it = allMDMeshes.begin(); it != allMDMeshes.end(); it++) {
     VsMDMesh* meshMeta = it->second;
-    for (unsigned int i = 0; i < meshMeta->blocks.size(); i++) {
-      if (fullName == makeCanonicalName(meshMeta->blocks[i]->getFullName())) {
+    for (unsigned int i = 0; i < meshMeta->getNumBlocks(); i++) {
+      if (fullName == makeCanonicalName(meshMeta->getBlock(i)->getFullName())) {
         VsLog::debugLog() << "VsMDMesh::getMDParentForMesh(" <<name <<"): Returning result." << std::endl;
         return meshMeta;
       }
@@ -508,10 +508,10 @@ VsMesh* VsRegistry::findSubordinateMDMesh(const std::string& name) {
   VsLog::debugLog() << "VsMDMesh::findSubordinateMDMesh(" <<name <<"): Entering." << std::endl;
   for (std::map<std::string, VsMDMesh*>::const_iterator it = allMDMeshes.begin(); it != allMDMeshes.end(); it++) {
     VsMDMesh* meshMeta = it->second;
-    for (unsigned int i = 0; i < meshMeta->blocks.size(); i++) {
-      if (meshMeta->blocks[i]->getFullName() == name) {
-        VsLog::debugLog() << "VsH5Reader::findSubordinateMDMesh(" <<name <<"): Returning result." << std::endl;
-        return meshMeta->blocks[i];
+    for (size_t i = 0; i < meshMeta->getNumBlocks(); i++) {
+      if (meshMeta->getBlock(i)->getFullName() == name) {
+        VsLog::debugLog() << "VsReader::findSubordinateMDMesh(" <<name <<"): Returning result." << std::endl;
+        return meshMeta->getBlock(i);
       }
     }
   }
@@ -531,7 +531,7 @@ void VsRegistry::buildMDMeshes() {
       VsLog::errorLog() <<"VsRegistry::buildMDMeshes() - mesh is NULL?" <<std::endl;
       continue;
     }
-    VsH5Attribute* mdMeshNameAttribute = mesh->getAttribute(VsSchema::mdAtt);
+    VsAttribute* mdMeshNameAttribute = mesh->getAttribute(VsSchema::mdAtt);
     std::string mdMeshName = "";
     if (mdMeshNameAttribute) {
       mdMeshNameAttribute->getStringValue(&mdMeshName);
@@ -653,7 +653,7 @@ void VsRegistry::deleteAllVariables() {
   allVariablesShort.clear();
 }
 
-void VsRegistry::writeAllVariables() {
+void VsRegistry::writeAllVariables() const {
   if (allVariables.empty()) {
     VsLog::debugLog() <<"*********** NO VSVARIABLES ********" <<std::endl;
     return;
@@ -711,7 +711,7 @@ void VsRegistry::getAllMDVariableNames(std::vector<std::string>& names)  {
     names.push_back(it->first);
 }
 
-void VsRegistry::writeAllMDVariables() {
+void VsRegistry::writeAllMDVariables() const {
   if (allMDVariables.empty()) {
     VsLog::debugLog() <<"*********** NO MDVARIABLES ********" <<std::endl;
     return;
@@ -738,7 +738,7 @@ void VsRegistry::buildMDVars() {
   for (it = allVariables.begin(); it != allVariables.end(); it++) {
     VsVariable* var = (*it).second;
     
-    VsH5Attribute* mdVarAtt = var->getAttribute(VsSchema::mdAtt);
+    VsAttribute* mdVarAtt = var->getAttribute(VsSchema::mdAtt);
     if (!mdVarAtt) {
       continue;
     }
@@ -784,10 +784,10 @@ VsVariable* VsRegistry::findSubordinateMDVar(const std::string& name) {
  VsLog::debugLog() << "VsRegistry::findSubordinateMDVar(" <<name <<"): Entering." << std::endl;
  for (std::map<std::string, VsMDVariable*>::const_iterator it = allMDVariables.begin(); it != allMDVariables.end(); it++) {
    VsMDVariable* varMeta = it->second;
-   for (unsigned int i = 0; i < varMeta->blocks.size(); i++) {
-     if (varMeta->blocks[i]->getFullName() == name) {
+   for (unsigned int i = 0; i < varMeta->getNumBlocks(); i++) {
+     if (varMeta->getBlock(i)->getFullName() == name) {
        VsLog::debugLog() << "VsRegistry::findSubordinateMDVar(" <<name <<"): Returning result." << std::endl;
-       return varMeta->blocks[i];
+       return varMeta->getBlock(i);
      }
    }
  }
@@ -852,7 +852,7 @@ void VsRegistry::deleteAllVariablesWithMesh() {
   allVariablesWithMeshShort.clear();
 }
 
-void VsRegistry::writeAllVariablesWithMesh() {
+void VsRegistry::writeAllVariablesWithMesh() const {
   if (allVariablesWithMesh.empty()) {
     VsLog::debugLog() <<"********** NO VsVariablesWithMesh *********" <<std::endl;
     return;
@@ -961,18 +961,18 @@ void VsRegistry::addExpression(const std::string& name,
  * The name of the attribute is the name of the expression
  * The value of the attribute is the value of the expression
  */
-void VsRegistry::buildExpressions(VsH5Group* group) {
+void VsRegistry::buildExpressions(VsGroup* group) {
   if (!group) {
     return;
   }
   VsLog::debugLog() <<"VsRegistry::buildExpressions() - Entering with group " <<group->getFullName() <<std::endl;
   
-  std::map<std::string, VsH5Attribute*>::const_iterator k;
-  for (k = group->getAllAttributes()->begin(); k != group->getAllAttributes()->end(); ++k) {
-    VsH5Attribute* att = (*k).second;
+  std::map<std::string, VsAttribute*>::const_iterator k;
+  for (k = group->getAllAttributes().begin(); k != group->getAllAttributes().end(); ++k) {
+    VsAttribute* att = (*k).second;
     if (att->getShortName() != VsSchema::typeAtt) {
       std::string s;
-      herr_t err = att->getStringValue(&s);
+      int err = att->getStringValue(&s);
       if (err == 0) {
         addExpression(att->getShortName(), s);
       }
@@ -981,7 +981,7 @@ void VsRegistry::buildExpressions(VsH5Group* group) {
   VsLog::debugLog() <<"VsRegistry::buildExpressions() exiting." <<std::endl;
 }
 
-void VsRegistry::writeAllExpressions() {
+void VsRegistry::writeAllExpressions() const {
   if (allExpressions.empty()) {
     VsLog::debugLog() <<"******** No Expressions *********" <<std::endl;
     return;
@@ -1056,11 +1056,11 @@ bool VsRegistry::registerComponentInfo(const std::string& componentName,
     std::string temp = foundPair.first;
     int tempIndex = foundPair.second;
     if ((varName != temp) || (componentNumber != tempIndex)) {
-      VsLog::debugLog() <<"ERROR VsH5Reader::registerComponentInfo() - " <<componentName <<" is already registered to component " <<temp <<" index " <<tempIndex <<std::endl;
+      VsLog::debugLog() <<"ERROR VsReader::registerComponentInfo() - " <<componentName <<" is already registered to component " <<temp <<" index " <<tempIndex <<std::endl;
       return false;
     } else {
-      VsLog::debugLog() <<"VsH5Reader::registerComponentInfo() - received duplicate registration for " <<varName <<" and index " <<componentNumber <<std::endl;
-      VsLog::debugLog() <<"VsH5Reader::registerComponentInfo() - but all info matches, so it should be ok" <<std::endl;
+      VsLog::debugLog() <<"VsReader::registerComponentInfo() - received duplicate registration for " <<varName <<" and index " <<componentNumber <<std::endl;
+      VsLog::debugLog() <<"VsReader::registerComponentInfo() - but all info matches, so it should be ok" <<std::endl;
       return true;
     }
   }
@@ -1077,7 +1077,7 @@ bool VsRegistry::registerComponentInfo(const std::string& componentName,
   //VsLog::debugLog() <<"newpair.second.first = " <<newPair.second.first <<std::endl;
   //VsLog::debugLog() <<"newpair.second.second = " <<newPair.second.second <<std::endl;
   
-  VsLog::debugLog() <<"VsH5Reader::registerComponentInfo(" <<componentName <<", " <<varName <<", " <<componentNumber <<") - registration succeeded." <<std::endl;
+  VsLog::debugLog() <<"VsReader::registerComponentInfo(" <<componentName <<", " <<varName <<", " <<componentNumber <<") - registration succeeded." <<std::endl;
   return true;
 }
 
@@ -1089,7 +1089,7 @@ void VsRegistry::getComponentInfo(const std::string& componentName,
   for (unsigned int i = 0; i < componentNames.size(); i++) {
     std::pair<std::string, NamePair > foundPair = componentNames[i];
     if (foundPair.first == componentName) {
-      VsLog::debugLog() <<"VsH5Reader::getComponentInfo(" <<componentName <<") - Found registered name, returning. " <<std::endl;
+      VsLog::debugLog() <<"VsReader::getComponentInfo(" <<componentName <<") - Found registered name, returning. " <<std::endl;
       namePair->first = foundPair.second.first;
       namePair->second = foundPair.second.second;
       return;
@@ -1106,12 +1106,12 @@ std::string VsRegistry::getComponentName(const std::string& varName,
     std::pair<std::string, NamePair > foundPair = componentNames[i];
     NamePair tempNamePair = foundPair.second;
     if ((tempNamePair.first == varName) && (tempNamePair.second == componentNumber)) {
-      VsLog::debugLog() <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - Found matching name & index, returning. " <<std::endl;
+      VsLog::debugLog() <<"VsReader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - Found matching name & index, returning. " <<std::endl;
       return foundPair.first;
     }
   }
 
-  VsLog::debugLog() <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - no match found." <<std::endl;
+  VsLog::debugLog() <<"VsReader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - no match found." <<std::endl;
   return "";
 }
 
@@ -1125,14 +1125,14 @@ void VsRegistry::getComponentInfo(const std::string& varName,
     std::pair<std::string, NamePair > foundPair = componentNames[i];
     tempNamePair = foundPair.second;
     if ((tempNamePair.first == varName) && (tempNamePair.second == componentNumber)) {
-      VsLog::debugLog() <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - Found matching name & index, returning. " <<std::endl;
+      VsLog::debugLog() <<"VsReader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - Found matching name & index, returning. " <<std::endl;
       namePair->first = tempNamePair.first;
       namePair->second = tempNamePair.second;
       return;
     }
   }
   
-  VsLog::debugLog() <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - no match found." <<std::endl;
+  VsLog::debugLog() <<"VsReader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - no match found." <<std::endl;
   
   namePair->first = "";
   namePair->second = -1;

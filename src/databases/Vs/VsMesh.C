@@ -6,13 +6,13 @@
  */
 
 #include "VsMesh.h"
-#include "VsH5Dataset.h"
-#include "VsH5Attribute.h"
+#include "VsDataset.h"
+#include "VsAttribute.h"
 #include "VsUnstructuredMesh.h"
 #include "VsStructuredMesh.h"
 #include "VsRectilinearMesh.h"
 #include "VsUniformMesh.h"
-#include "VsH5Group.h"
+#include "VsGroup.h"
 #include "VsSchema.h"
 #include "VsLog.h"
 #include "VsUtils.h"
@@ -21,7 +21,7 @@
 #define __CLASS__ "VsMesh::"
 
 
-VsMesh::VsMesh(VsH5Object* object):VsRegistryObject(object->registry) {
+VsMesh::VsMesh(VsObject* object):VsRegistryObject(object->registry) {
   numSpatialDims = -1;
   numTopologicalDims = -1;
   indexOrder = VsSchema::compMinorCKey;
@@ -44,7 +44,7 @@ VsMesh::~VsMesh() {
   registry->remove(this);
 }
 
-bool VsMesh::hasTransform() {
+bool VsMesh::hasTransform() const {
   std::string transformName = getTransformName();
   if ((transformName == VsSchema::zrphiTransformKey) && (numSpatialDims == 3)) {
     return true;
@@ -55,11 +55,11 @@ bool VsMesh::hasTransform() {
   return false;
 }
 
-std::string VsMesh::getTransformName() {
+std::string VsMesh::getTransformName() const {
   //Look for the vsTransform attribute
   //and either retrieve the value or leave the name empty
   std::string transformName;
-  VsH5Attribute* transformNameAtt = getAttribute(VsSchema::transformKey);
+  VsAttribute* transformNameAtt = getAttribute(VsSchema::transformKey);
   if (transformNameAtt) {
     transformNameAtt->getStringValue(&transformName);
   }
@@ -77,10 +77,10 @@ std::string VsMesh::getTransformName() {
   return transformName;
 }
 
-std::string VsMesh::getTransformedMeshName() {
+std::string VsMesh::getTransformedMeshName() const {
   //Look for the vsTransformName key
   std::string transformedMeshName;
-  VsH5Attribute* transformedMeshNameAtt = getAttribute(VsSchema::transformedMeshKey);
+  VsAttribute* transformedMeshNameAtt = getAttribute(VsSchema::transformedMeshKey);
   if (transformedMeshNameAtt) {
     transformedMeshNameAtt->getStringValue(&transformedMeshName);
     if (!transformedMeshName.empty()) {
@@ -100,22 +100,22 @@ std::string VsMesh::getTransformedMeshName() {
   return transformedMeshName;
 }
 
-bool VsMesh::isFortranOrder() {
+bool VsMesh::isFortranOrder() const {
   return ((indexOrder == VsSchema::compMinorFKey) ||
           (indexOrder == VsSchema::compMajorFKey));
 }
 
-bool VsMesh::isCompMinor() {
+bool VsMesh::isCompMinor() const {
   return ((indexOrder == VsSchema::compMinorCKey) ||
           (indexOrder == VsSchema::compMinorFKey));
 }
 
-bool VsMesh::isCompMajor() {
+bool VsMesh::isCompMajor() const {
   return ((indexOrder == VsSchema::compMajorCKey) ||
           (indexOrder == VsSchema::compMajorFKey));
 }
 
-void VsMesh::write() {
+void VsMesh::write() const {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << getFullName() << "  "
                     << "Kind: " << getKind() << "  "
@@ -124,27 +124,27 @@ void VsMesh::write() {
                     << "NumTopologicalDims: " << numTopologicalDims << std::endl;
 }
 
-size_t VsMesh::getNumSpatialDims() {
+size_t VsMesh::getNumSpatialDims() const {
   return numSpatialDims;
 }
 
-size_t VsMesh::getNumTopologicalDims() {
+size_t VsMesh::getNumTopologicalDims() const {
   return numTopologicalDims;
 }
 
-std::string VsMesh::getPath() {
+std::string VsMesh::getPath() const {
   return h5Object->getPath();
 }
 
-std::string VsMesh::getShortName() {
+std::string VsMesh::getShortName() const {
   return h5Object->getShortName();
 }
 
-std::string VsMesh::getFullName() {
+std::string VsMesh::getFullName() const {
   return h5Object->getFullName();
 }
 
-std::string VsMesh::getIndexOrder() {
+std::string VsMesh::getIndexOrder() const {
   return indexOrder;
 }
 
@@ -153,16 +153,16 @@ void VsMesh::setMDMesh(VsMDMesh* md, int dNumber) {
   domainNumber = dNumber;
 }
 
-int VsMesh::getDomainNumber() {
+int VsMesh::getDomainNumber() const {
   return domainNumber;
 }
 
-VsMDMesh* VsMesh::getMDMesh() {
+VsMDMesh* VsMesh::getMDMesh() const {
   return mdMesh;
 }
 
-void VsMesh::getStringAttribute(std::string attName, std::string* value) {
-  VsH5Attribute* att = getAttribute(attName);
+void VsMesh::getStringAttribute(std::string attName, std::string* value) const {
+  VsAttribute* att = getAttribute(attName);
   if (att) {
     att->getStringValue(value);
   } else {
@@ -170,11 +170,11 @@ void VsMesh::getStringAttribute(std::string attName, std::string* value) {
   }
 }
 
-VsH5Attribute* VsMesh::getAttribute(std::string name) {
+VsAttribute* VsMesh::getAttribute(std::string name) const {
   return h5Object->getAttribute(name);
 }
 
-VsMesh* VsMesh::buildObject(VsH5Dataset* dataset) {
+VsMesh* VsMesh::buildObject(VsDataset* dataset) {
   if (!dataset) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "dataset is null?  Returning null." << std::endl;
@@ -182,7 +182,7 @@ VsMesh* VsMesh::buildObject(VsH5Dataset* dataset) {
   }
   
   //What is the declared kind of this dataset?
-  VsH5Attribute* kindAtt = dataset->getAttribute(VsSchema::kindAtt);
+  VsAttribute* kindAtt = dataset->getAttribute(VsSchema::kindAtt);
   if (!kindAtt) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to find attribute " << VsSchema::kindAtt
@@ -206,7 +206,7 @@ VsMesh* VsMesh::buildObject(VsH5Dataset* dataset) {
   return NULL;
 }
 
-VsMesh* VsMesh::buildObject(VsH5Group* group) {
+VsMesh* VsMesh::buildObject(VsGroup* group) {
   if (!group) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Group is null?  Returning null." << std::endl;
@@ -214,7 +214,7 @@ VsMesh* VsMesh::buildObject(VsH5Group* group) {
   }
   
   //What is the declared kind of this group?
-  VsH5Attribute* kindAtt = group->getAttribute(VsSchema::kindAtt);
+  VsAttribute* kindAtt = group->getAttribute(VsSchema::kindAtt);
   if (!kindAtt) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to find attribute " << VsSchema::kindAtt
@@ -244,7 +244,6 @@ VsMesh* VsMesh::buildObject(VsH5Group* group) {
 }
 
 bool VsMesh::initializeRoot() {
-  //herr_t VsMesh::initialize(VsGMeta* gm, VsMeshMeta& mm) const {
   VsLog::debugLog() <<"VsMesh::initializeRoot() - Entering" << std::endl;
   
   if (!h5Object) {
@@ -256,13 +255,13 @@ bool VsMesh::initializeRoot() {
 
   //look for md mesh attribute
   //save for later
-  //VsH5Attribute* mdAtt = h5Object->getAttribute(VsSchema::mdAtt);
+  //VsAttribute* mdAtt = h5Object->getAttribute(VsSchema::mdAtt);
   //if (mdAtt) {
   //  mdAtt->getStringValue(&(this->mdName));
   //}
   
   //Get & validate Index Order
-  VsH5Attribute* indexOrderAtt =
+  VsAttribute* indexOrderAtt =
     h5Object->getAttribute(VsSchema::indexOrderAtt);
 
   if (indexOrderAtt) {
@@ -286,7 +285,7 @@ bool VsMesh::initializeRoot() {
   return true;
 }
 
-std::string VsMesh::getAxisLabel(unsigned int axis) {
+std::string VsMesh::getAxisLabel(size_t axis) const {
   std::string axisNames;
   this->getStringAttribute(VsSchema::axisLabelsAtt, &axisNames);
  
