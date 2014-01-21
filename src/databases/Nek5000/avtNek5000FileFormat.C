@@ -1806,7 +1806,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
     {
         boost::int64_t filepos;
         if (!bParFormat)
-            filepos = (boost::int64_t)iRealHeaderSize + ((int64_t)nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
+            filepos = (boost::int64_t)iRealHeaderSize + ((boost::int64_t)nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
         else
         {
             // This assumes uvw for all fields comes after the mesh as [block0: 216u 216v 216w]...
@@ -2046,7 +2046,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
     {
         boost::int64_t filepos;
         if (!bParFormat)
-            filepos = (boost::int64_t)iRealHeaderSize + (int64_t)(nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
+            filepos = (boost::int64_t)iRealHeaderSize + (boost::int64_t)(nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
         else
             //This assumes [block 0: 216u 216v 216w][block 1: 216u 216v 216w]...[block n: 216u 216v 216w]
             filepos = (boost::int64_t)iRealHeaderSize + 
@@ -2779,7 +2779,7 @@ avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
     {
         boost::int64_t iFileSizeWithoutMetaData = 136 
                 + sizeof(int)*aBlocksPerFile[ii] 
-                + ((boost::int64_t)nFloatsPerDomain)*sizeof(float)*((int64_t)aBlocksPerFile[ii]);
+                + ((boost::int64_t)nFloatsPerDomain)*sizeof(float)*((boost::int64_t)aBlocksPerFile[ii]);
 
         boost::int64_t iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
                     (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
@@ -3018,7 +3018,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
     {
         boost::int64_t iFileSizeWithoutMetaData = 136 
                 + sizeof(int)*aBlocksPerFile[ii] 
-                + ((boost::int64_t)nFloatsPerDomain)*sizeof(float)*((int64_t)aBlocksPerFile[ii]);
+                + ((boost::int64_t)nFloatsPerDomain)*sizeof(float)*((boost::int64_t)aBlocksPerFile[ii]);
 
         boost::int64_t iBBSize = 2*iDim * sizeof(float) * aBlocksPerFile[ii];
         boost::int64_t iDESize = 2 * sizeof(float) * aBlocksPerFile[ii] * numVars;
