@@ -68,6 +68,11 @@ class vtkUnstructuredGrid;
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to PopulateDatabaseMetaData satisfy new interface
+//
+//    Patrick Fragile, Tue Jan 21 16:54:45 PST 2014
+//    Added support for the new output style where the variables are in one
+//    file and the grid is in another.
+//
 // ****************************************************************************
 
 class avtCosmosPPFileFormat : public avtMTMDFileFormat
@@ -104,6 +109,7 @@ class avtCosmosPPFileFormat : public avtMTMDFileFormat
     std::vector<std::string>            vectorVarNames;
     std::vector<std::string>            proc_names;
     std::vector<std::string>            dump_names;
+    std::vector<std::string>            grid_dump_names;
 
     std::vector<std::vector<bool> >                   readDataset;
     std::vector<std::vector<vtkUnstructuredGrid *> >  dataset;
