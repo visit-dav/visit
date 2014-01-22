@@ -6,11 +6,6 @@
 ## by: allen
 
 ##
-## Enable verbose makefiles (show compiler & linker calls)
-##
-#SET(VISIT_VERBOSE_MAKEFILE TRUE)
-
-##
 ## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /Projects/VisIt/trunk/visit)
@@ -34,21 +29,6 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISITHOME}/mpich/3.0.1/${VISITARCH}/bi
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
-
-##
-## Install MPICH when building the package.
-##
-SET(VISIT_MPICH_INSTALL TRUE)
-
-##
-## When building the package make a dmg
-##
-SET(VISIT_CREATE_APPBUNDLE_PACKAGE TRUE)
-
-##
-## Install thirdpary libraries when building the package.
-##
-SET(VISIT_INSTALL_THIRD_PARTY TRUE)
 
 ##############################################################
 ##
@@ -165,3 +145,39 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/1.6.0beta/${VISITARCH}
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5  VTK_LIBRARY_DIRS vtklibxml2-6.0  TYPE STRING)
 
+##
+## GFortran
+##
+VISIT_OPTION_DEFAULT(VISIT_GFORTRAN_DIR /usr/local)
+
+
+
+##############################################################
+
+##
+## Enable verbose makefiles (show compiler & linker calls)
+##
+#SET(VISIT_VERBOSE_MAKEFILE TRUE)
+
+##
+## MPICH
+##
+VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.1/${VISITARCH})
+
+##
+## Install MPICH when building the package.
+##
+SET(VISIT_MPICH_INSTALL TRUE)
+VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)
+
+##
+## Install thirdpary libraries when building the package.
+##
+SET(VISIT_INSTALL_THIRD_PARTY TRUE)
+VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON TYPE BOOL)
+
+##
+## When building the package make a dmg
+##
+#SET(VISIT_CREATE_APPBUNDLE_PACKAGE TRUE)
+#VISIT_OPTION_DEFAULT(VISIT_CREATE_APPBUNDLE_PACKAGE ON TYPE BOOL)
