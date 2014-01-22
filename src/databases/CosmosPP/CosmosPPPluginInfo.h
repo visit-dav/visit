@@ -40,8 +40,8 @@
 //                               CosmosPPPluginInfo.h
 // ****************************************************************************
 
-#ifndef COSMOSPP_PLUGIN_INFO_H
-#define COSMOSPP_PLUGIN_INFO_H
+#ifndef CosmosPP_PLUGIN_INFO_H
+#define CosmosPP_PLUGIN_INFO_H
 #include <DatabasePluginInfo.h>
 #include <database_plugin_exports.h>
 

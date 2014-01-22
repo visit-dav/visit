@@ -102,6 +102,10 @@ typedef struct
 //    Hank Childs, Mon Jul 19 16:57:59 PDT 2004
 //    Initialize haveIssuedWarning.
 //
+//    Patrick Fragile, Tue Jan 21 16:58:33 PST 2014
+//    Added support for the new output style where the variables are in one
+//    file and the grid is in another.
+//
 // ****************************************************************************
 
 avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
@@ -147,6 +151,7 @@ avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
             cycles.resize(ntimesteps);
             times.resize(ntimesteps);
             dump_names.resize(ntimesteps);
+            grid_dump_names.resize(ntimesteps);
             debug1 << "Reading timesteps = " << ntimesteps << endl;
         }
         else if (key == "#DUMP_CYCLE_TIME_FILENAME")
@@ -172,6 +177,34 @@ avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
                 string tmp;
                 ReadString(ifile, tmp);
                 dump_names[i] = tmp;
+                grid_dump_names[i] = tmp;
+            }
+        }
+        else if (key == "#DUMP_CYCLE_TIME_DATAFILE_GRIDFILE")
+        {
+            if (ntimesteps <= 0)
+            {
+                EXCEPTION1(InvalidDBTypeException, "Must declare ntimesteps "
+                                                   "before timestep info.");    
+            }
+            for (i = 0 ; i < ntimesteps ; i++)
+            {
+                string dumpid;
+                ReadString(ifile, dumpid);
+
+                string c;
+                ReadString(ifile, c);
+                cycles[i] = atoi(c.c_str());
+
+                string t;
+                ReadString(ifile, t);
+                times[i] = atof(t.c_str());
+
+                string tmp;
+                ReadString(ifile, tmp);
+                dump_names[i] = tmp;
+                ReadString(ifile, tmp);
+                grid_dump_names[i] = tmp;
             }
         }
         else if (key == "#DIMENSIONS")
@@ -305,6 +338,10 @@ avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
 //    Kathleen Bonnell, Mon Jun 11 12:32:10 PDT 2007 
 //    Added H5*close for attr1, space_id, c_handle.
 //
+//    Patrick Fragile, Tue Jan 21 16:58:33 PST 2014
+//    Added support for the new output style where the variables are in one
+//    file and the grid is in another.
+//
 // ****************************************************************************
 
 void
@@ -318,7 +355,11 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     dataset[ts][dom] = vtkUnstructuredGrid::New();
 
     string filename = proc_names[dom] + string("/") + dump_names[ts];
-    hid_t file_handle = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    // H5F_CLOSE_SEMI must be added to the file access properties to avoid
+    // an error from VisIt when opening an HDF5 file.
+    hid_t file_access_properties = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(file_access_properties, H5F_CLOSE_SEMI);
+    hid_t file_handle = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_access_properties);
 
     int nodes_per_zone = 0;
     switch (rank)
@@ -335,8 +376,17 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     }
 
     // The last vector is the node position, which we count separately.
-    int num_comps = nscalars + (nvectors-1)*rank + nodes_per_zone*rank;
-
+    int num_comps;
+    if (dump_names[ts].compare(grid_dump_names[ts]) != 0)
+    {
+        //New style output - grid fns in one file, node positions in another
+        num_comps = nscalars + (nvectors-1)*rank;
+    }
+    else
+    {
+        //Old style output - everything in one file
+        num_comps = nscalars + (nvectors-1)*rank + nodes_per_zone*rank;
+    }
     // Figure out how big the array is, and from that determin how many zones
     // there are.
     int c_handle = H5Dopen(file_handle, "Cosmos++");
@@ -382,6 +432,27 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         dataset[ts][dom]->GetCellData()->AddArray(arr);
         arr->Delete();
     }
+    // If grid_dump_names is different from dump_names,
+    // then the grid output is in a different file from the grid functions.
+    if (dump_names[ts].compare(grid_dump_names[ts]) != 0)
+    {
+        // Clean up resources.
+        H5Sclose(space_id);
+        H5Dclose(c_handle);
+        H5Fclose(file_handle);
+        
+        filename = proc_names[dom] + string("/") + grid_dump_names[ts];
+        file_handle = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_access_properties);
+        c_handle = H5Dopen(file_handle, "Cosmos++");
+        //read a new dataset into all_vars, wiping out the old
+        //information
+        space_id = H5Dget_space(c_handle);
+        H5Dread(c_handle, H5T_NATIVE_FLOAT, H5S_ALL, space_id, H5P_DEFAULT,
+            all_vars);
+        //reset current to point at the begining of all_vars
+        //all_vars now only contains the mesh data.
+        current = all_vars;
+    }
 
     vtkPoints *pts = vtkPoints::New();
     int npts = nodes_per_zone*nzones;
@@ -399,7 +470,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         float x = current_tmp[0];
         bounds[0] = (x < bounds[0] ? x : bounds[0]);
         bounds[1] = (x > bounds[1] ? x : bounds[1]);
-        float y = current_tmp[0];
+        float y = current_tmp[1];
         bounds[2] = (y < bounds[2] ? y : bounds[2]);
         bounds[3] = (y > bounds[3] ? y : bounds[3]);
         if (rank == 3)
@@ -550,6 +621,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     delete [] all_vars;
 
     readDataset[ts][dom] = true;
+    //TODO: Read particles???
 }
 
 

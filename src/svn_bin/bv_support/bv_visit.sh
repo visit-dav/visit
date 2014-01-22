@@ -40,7 +40,7 @@ function bv_visit_info
     # release tag.
     ############################################################################
 
-    export VISIT_VERSION=${VISIT_VERSION:-"2.7.1"}
+    export VISIT_VERSION=${VISIT_VERSION:-"2.7.2"}
     
     ####
     # Trunk:

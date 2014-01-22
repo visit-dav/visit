@@ -114,7 +114,7 @@ do
    echo "The VisIt executable $property"            >> ../$output
    echo ""                                          >> ../$output
    $cmd INSTALL_NOTES                               >> ../$output
-   $cmd VisIt-$version-x86_64-installer.dmg         >> ../$output
+   $cmd VisIt-$version.dmg                          >> ../$output
    $cmd jvisit$version.tar.gz                       >> ../$output
    $cmd visit-install$version2                      >> ../$output
    $cmd visit${version}_x64.exe                     >> ../$output
