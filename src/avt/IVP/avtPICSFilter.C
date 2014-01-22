@@ -3243,12 +3243,12 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
             timeOffset = -1;
         if( pathlineCMFE == PICS_CONN_CMFE )
         {
-            SNPRINTF(defn, 1024, "conn_cmfe(<[%d]id:%s>, %s)",
+            SNPRINTF(defn, 1024, "conn_cmfe(<[%d]id:%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str());
         }
         else
         {
-            SNPRINTF(defn, 1024, "pos_cmfe(<[%d]id:%s>, %s, %s)",
+            SNPRINTF(defn, 1024, "pos_cmfe(<[%d]id:%s>, <%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str(),
                      pathlineName.c_str());
         }
