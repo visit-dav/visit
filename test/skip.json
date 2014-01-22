@@ -1,8 +1,6 @@
 { "skip_list":[
  {"mode":"serial","tests":[
                     {"category":"plots","file": "sl_termination.py"},
-                    {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
-                    {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"queries","file": "queriesOverTime.py","cases":["TimePick_MultiVar_03","TimePick_MultiVar_04"]},
                     {"category":"operators","file": "persistent_particles.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
@@ -50,8 +48,6 @@
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"plots","file": "sl_termination.py"},
-                    {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
-                    {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"queries","file": "queriesOverTime.py","cases":["TimePick_MultiVar_03","TimePick_MultiVar_04"]},
                     {"category":"operators","file": "persistent_particles.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
@@ -93,8 +89,6 @@
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"plots","file": "sl_termination.py"},
-                    {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
-                    {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"queries","file": "queriesOverTime.py","cases":["TimePick_MultiVar_03","TimePick_MultiVar_04"]},
                     {"category":"operators","file": "persistent_particles.py"},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
