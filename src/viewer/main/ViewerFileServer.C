@@ -1250,7 +1250,9 @@ ViewerFileServer::ExpandedFileName(const std::string &host,
 // Creation:   Wed Mar 31 10:00:43 PDT 2004
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Jan 23 10:55:41 MST 2014
+//   Return 'true' if we DON'T find the drive punctuation on Windows.
+//
 // ****************************************************************************
 
 bool
@@ -1260,7 +1262,7 @@ ViewerFileServer::ExpansionRequired(const std::string &filename) const
     {
 #if defined(_WIN32)
         // Look for some drive punctuation
-        if(filename.find(":\\") != std::string::npos)
+        if(filename.find(":\\") == std::string::npos)
             return true;
 #else
         // Make sure that we have an absolute path.
