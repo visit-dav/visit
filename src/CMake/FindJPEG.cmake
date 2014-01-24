@@ -38,6 +38,9 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed VISIT_MSVC_VERSION.
 #
+#   Kathleen Biagas, Thu Jan 23 15:21:59 MST 2014
+#   Allow for newer versions (no 'lib' in name).
+#
 #****************************************************************************/
 
 # Use the JPEG_DIR hint from the config-site .cmake file 
@@ -45,6 +48,13 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
+  SET(tmp_ignore_tpfail ${IGNORE_THIRD_PARTY_LIB_PROBLEMS})
+  SET(IGNORE_THIRD_PARTY_LIB_PROBLEMS true)
   SET_UP_THIRD_PARTY(JPEG lib include libjpeg)
+  IF (NOT JPEG_FOUND)
+      SET_UP_THIRD_PARTY(JPEG lib include jpeg)
+  ENDIF()
+  SET(IGNORE_THIRD_PARTY_LIB_PROBLEMS ${tmp_ignore_tpfail})
+  UNSET(tmp_ignore_tpfail)
 ENDIF (WIN32)
 

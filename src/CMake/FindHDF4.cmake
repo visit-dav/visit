@@ -38,6 +38,9 @@
 #   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
 #   Add xdrdll.  Remove 64-bit specific include.
 #
+#   Kathleen Biagas, Thu Jan 23 15:20:43 MST 2014
+#   Allow for lib names from newer HDF4 versions (no 'dll' in name).
+#
 #****************************************************************************/
 
 # Use the HDF4_DIR hint from the config-site .cmake file 
@@ -45,7 +48,14 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
+  SET(tmp_ignore_tpfail ${IGNORE_THIRD_PARTY_LIB_PROBLEMS}) 
+  SET(IGNORE_THIRD_PARTY_LIB_PROBLEMS true)
   SET_UP_THIRD_PARTY(HDF4 lib include hdfdll mfhdfdll xdrdll)
+  IF (NOT HDF4_FOUND)
+      SET_UP_THIRD_PARTY(HDF4 lib include hdf mfhdf xdr)
+  ENDIF()
+  SET(IGNORE_THIRD_PARTY_LIB_PROBLEMS ${tmp_ignore_tpfail})
+  UNSET(tmp_ignore_tpfail)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(HDF4 lib include mfhdf df)
 ENDIF (WIN32)
