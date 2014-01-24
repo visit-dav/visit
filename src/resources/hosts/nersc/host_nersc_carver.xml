@@ -25,8 +25,8 @@
         <Field name="partition" type="string">reg_xlmem</Field>
         <Field name="bankSet" type="bool">false</Field>
         <Field name="bank" type="string"></Field>
-        <Field name="timeLimitSet" type="bool">false</Field>
-        <Field name="timeLimit" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">01:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">qsub/mpirun</Field>
         <Field name="forceStatic" type="bool">true</Field>
@@ -61,8 +61,8 @@
         <Field name="partition" type="string">reg_xlmem</Field>
         <Field name="bankSet" type="bool">false</Field>
         <Field name="bank" type="string"></Field>
-        <Field name="timeLimitSet" type="bool">false</Field>
-        <Field name="timeLimit" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">01:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">qsub/mpirun</Field>
         <Field name="forceStatic" type="bool">true</Field>
@@ -97,8 +97,8 @@
         <Field name="partition" type="string">reg_xlmem</Field>
         <Field name="bankSet" type="bool">false</Field>
         <Field name="bank" type="string"></Field>
-        <Field name="timeLimitSet" type="bool">false</Field>
-        <Field name="timeLimit" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">01:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">qsub/mpirun</Field>
         <Field name="forceStatic" type="bool">true</Field>
@@ -133,8 +133,8 @@
         <Field name="partition" type="string">reg_xlmem</Field>
         <Field name="bankSet" type="bool">false</Field>
         <Field name="bank" type="string"></Field>
-        <Field name="timeLimitSet" type="bool">false</Field>
-        <Field name="timeLimit" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">01:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">qsub/mpirun</Field>
         <Field name="forceStatic" type="bool">true</Field>
