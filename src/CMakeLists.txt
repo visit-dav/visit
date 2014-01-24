@@ -720,7 +720,6 @@ VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include 
 VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
 VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
 VISIT_3RDPARTY_VAR(UINTAH_DIR   "Path containing the Uintah library's include and lib")
-VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
 VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
 
 #-----------------------------------------------------------------------------
@@ -2035,15 +2034,20 @@ IF(NOT WIN32)
 ELSE(NOT WIN32)
     SET(CMAKE_C_COMPILER_VERSION_MESSAGE " ${CMAKE_GENERATOR}")
     IF(MSVC)
-        INCLUDE(CMakeDetermineVSServicePack)
-        DetermineVSServicePack(my_service_pack)
-        IF(my_service_pack)
-            SET(CMAKE_C_COMPILER_VERSION_MESSAGE "${CMAKE_C_COMPILER_VERSION_MESSAGE} (${my_service_pack})")
-        ENDIF(my_service_pack)
-        SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${MSVC_VERSION}")
+        IF(CMAKE_VERSION VERSION_LESS "2.8.10")
+            INCLUDE(CMakeDetermineVSServicePack)
+            DetermineVSServicePack(my_service_pack)
+            IF(my_service_pack)
+                SET(CMAKE_C_COMPILER_VERSION_MESSAGE "${CMAKE_C_COMPILER_VERSION_MESSAGE} (${my_service_pack})")
+            ENDIF(my_service_pack)
+        ENDIF()
+        IF(CMAKE_CXX_COMPILER_VERSION)
+            SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${CMAKE_CXX_COMPILER_VERSION}")
+        ELSE()
+            SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${MSVC_VERSION}")
+        ENDIF()
         FILE(WRITE ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
-            "SET(CMAKE_GENERATOR \"${CMAKE_GENERATOR}\" CACHE INTERNAL \"\" FORCE)"
-        )
+            "SET(CMAKE_GENERATOR \"${CMAKE_GENERATOR}\" CACHE INTERNAL \"\" FORCE)")
         INSTALL(FILES ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
                 PERMISSIONS OWNER_READ OWNER_WRITE

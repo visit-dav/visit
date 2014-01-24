@@ -141,6 +141,7 @@
 #include <string>
 #include <vector>
 #ifdef _WIN32
+#include <functional>
 #include <direct.h>  // for _getcwd, _chdir
 #else
 #include <unistd.h>
