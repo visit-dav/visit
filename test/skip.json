@@ -1,7 +1,6 @@
 { "skip_list":[
  {"mode":"serial","tests":[
                     {"category":"plots","file": "sl_termination.py"},
-                    {"category":"queries","file": "queriesOverTime.py","cases":["TimePick_MultiVar_03","TimePick_MultiVar_04"]},
                     {"category":"operators","file": "persistent_particles.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"databases","file":"rect.py","cases":["rect_01","rect_02","rect_03","rect_04"]},
@@ -48,7 +47,6 @@
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"plots","file": "sl_termination.py"},
-                    {"category":"queries","file": "queriesOverTime.py","cases":["TimePick_MultiVar_03","TimePick_MultiVar_04"]},
                     {"category":"operators","file": "persistent_particles.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"databases","file":"rect.py","cases":["rect_01","rect_02","rect_03","rect_04"]},
@@ -89,7 +87,6 @@
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"plots","file": "sl_termination.py"},
-                    {"category":"queries","file": "queriesOverTime.py","cases":["TimePick_MultiVar_03","TimePick_MultiVar_04"]},
                     {"category":"operators","file": "persistent_particles.py"},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
                     {"category":"database","file": "silo.py","cases":["silo_04","silo_05"]},
