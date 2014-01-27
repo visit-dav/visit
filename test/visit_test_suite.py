@@ -657,6 +657,10 @@ def prepare_result_dirs(res_dir=None):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Kathleen Biagas, Mon Jan 27 13:02:45 MST 2014
+#    Change 'make test' to 'make testdata'.
 # ----------------------------------------------------------------------------
 def prepare_data_dir(data_dir):
     """
@@ -673,7 +677,7 @@ def prepare_data_dir(data_dir):
         else:
             cwd = os.getcwd()
             os.chdir(data_dir)
-            cmd = "make test"
+            cmd = "make testdata"
             sexe(cmd)
             os.chdir(cwd)
     else:
