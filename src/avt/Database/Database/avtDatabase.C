@@ -1103,14 +1103,14 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             if (string(selList[i]->GetType()) == "Multi Resolution Data Selection")
             {
                 avtMultiresSelection *sel= (avtMultiresSelection*)*(selList[i]);
-                double frustum[6];
-                sel->GetActualFrustum(frustum);
-                double cellSize = sel->GetActualCellSize();
+                double extents[6];
+                sel->GetActualExtents(extents);
+                double cellArea = sel->GetActualCellArea();
 
                 avtExtents multiresExtents(3);
-                multiresExtents.Set(frustum);
+                multiresExtents.Set(extents);
                 atts.SetMultiresExtents(&multiresExtents);
-                atts.SetMultiresCellSize(cellSize);
+                atts.SetMultiresCellSize(cellArea);
             }
         }
     }

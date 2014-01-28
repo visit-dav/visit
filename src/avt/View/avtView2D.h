@@ -83,9 +83,12 @@ class View2DAttributes;
 //    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
 //    Added xScale, yScale, havePerformedLogX, havePerformedLogY.
 //
-//    Eric, Brugger, Thu Oct 27 09:27:30 PDT 2011
+//    Eric Brugger, Thu Oct 27 09:27:30 PDT 2011
 //    Added windowValid to support adding a multi resolution display
 //    capability for AMR data.
+//
+//    Eric Brugger, Thu Jan 23 16:22:54 PST 2014
+//    Added GetCompositeProjectionTransformMatrix and CalculateExtentsAndArea.
 //
 // ****************************************************************************
 
@@ -122,6 +125,10 @@ struct AVTVIEW_API avtView2D
 
     void            SetFromView2DAttributes(const View2DAttributes *);
     void            SetToView2DAttributes(View2DAttributes *) const;
+
+    void            GetCompositeProjectionTransformMatrix(double *, double);
+
+    static void     CalculateExtentsAndArea(double *, double &, double *);
 
   protected:
     void            CheckAndCorrectWindow();

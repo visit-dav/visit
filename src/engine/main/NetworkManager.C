@@ -1136,58 +1136,66 @@ NetworkManager::StartNetwork(const std::string &format,
     VisWindow *visWin = viswinMap[windowID].viswin;
     if (visWin->GetMultiresolutionMode())
     {
-        // Get the 2D view area and frustum.
+        int size[2];
+        visWin->GetSize(size[0], size[1]);
+
+        // Get the 2D transform matrix, viewport, view area and extents.
+        double transform2D[16];
+        double viewport2D[6];
         double area2D;
-        double frustum2D[6];
-        const avtView2D view2D = visWin->GetView2D();
+        double extents2D[6];
+        avtView2D view2D = visWin->GetView2D();
         if (!view2D.windowValid)
         {
+            for (int i = 0; i < 16; i++)
+                transform2D[i] = DBL_MAX;
+            for (int i = 0; i < 6; i++)
+                viewport2D[i] = DBL_MAX;
             area2D = DBL_MAX;
-            frustum2D[0] = DBL_MAX;
-            frustum2D[1] = -DBL_MAX;
-            frustum2D[2] = DBL_MAX;
-            frustum2D[3] = -DBL_MAX;
+            for (int i = 0; i < 6; i++)
+                extents2D[i] = DBL_MAX;
         }
         else
         {
-            area2D = (view2D.window[1] - view2D.window[0]) *
-                     (view2D.window[3] - view2D.window[2]);
-            frustum2D[0] = view2D.window[0];
-            frustum2D[1] = view2D.window[1];
-            frustum2D[2] = view2D.window[2];
-            frustum2D[3] = view2D.window[3];
+            view2D.GetActualViewport(viewport2D, size[0], size[1]);
+            double ratioWindow = double(size[0]) / double(size[1]);
+            double ratioViewport = (viewport2D[1] - viewport2D[0]) /
+                                   (viewport2D[3] - viewport2D[2]);
+            double ratio = ratioWindow * ratioViewport;
+            view2D.GetCompositeProjectionTransformMatrix(transform2D, ratio);
+            view2D.CalculateExtentsAndArea(extents2D, area2D, transform2D);
         }
 
-        // Get the 3D view area and frustum.
+        // Get the 3D transform matrix, viewport, view area and extents.
+        double transform3D[16];
+        double viewport3D[6];
         double area3D;
-        double frustum3D[6];
-        const avtView3D view3D = visWin->GetView3D();
+        double extents3D[6];
+        avtView3D view3D = visWin->GetView3D();
         if (!view3D.windowValid)
         {
+            for (int i = 0; i < 16; i++)
+                transform3D[i] = DBL_MAX;
+            for (int i = 0; i < 6; i++)
+                viewport3D[i] = DBL_MAX;
             area3D = DBL_MAX;
-            frustum3D[0] = DBL_MAX;
-            frustum3D[1] = -DBL_MAX;
-            frustum3D[2] = DBL_MAX;
-            frustum3D[3] = -DBL_MAX;
-            frustum3D[4] = DBL_MAX;
-            frustum3D[5] = -DBL_MAX;
+            for (int i = 0; i < 6; i++)
+                extents3D[i] = DBL_MAX;
         }
         else
         {
-            int width, height;
-            visWin->GetSize(width, height);
-            double aspect = double(width) / double(height);
-            area3D = (view3D.parallelScale * view3D.parallelScale * aspect) /
-                     (view3D.imageZoom * view3D.imageZoom);
-            view3D.GetFrustum(frustum3D, aspect);
+            double ratio = double(size[0]) / double(size[1]);
+            view3D.GetCompositeProjectionTransformMatrix(transform3D, ratio);
+            view3D.CalculateExtentsAndArea(extents3D, area3D, transform3D);
         }
 
         // Get the cell size.
         double cellSize = visWin->GetMultiresolutionCellSize();
 
         // Add the multires filter.
-        avtMultiresFilter *f2 = new avtMultiresFilter(area2D, area3D,
-                                        frustum2D, frustum3D, cellSize);
+        avtMultiresFilter *f2 = new avtMultiresFilter(transform2D, transform3D,
+            viewport2D, viewport3D, size, area2D, area3D, extents2D, extents3D,
+            cellSize);
         filt = new NetnodeFilter(f2, "MultiresFilter");
         filt->GetInputNodes().push_back(input);
         workingNet->AddNode(filt);

@@ -77,7 +77,8 @@ class avtMultiresSelection;
 class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 {
   public:
-                           avtMultiresFilter(double, double,
+                           avtMultiresFilter(double *, double *, double *,
+                               double *, int *, double, double,
                                double *, double *, double);
     virtual               ~avtMultiresFilter();
 
@@ -86,14 +87,21 @@ class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 
   protected:
     int                    nDims;
+    double                 transform2D[16];
+    double                 transform3D[16];
+    double                 transform[16];
+    double                 viewport2D[6];
+    double                 viewport3D[6];
+    double                 viewport[6];
+    int                    windowSize[2];
     double                 viewArea2D;
     double                 viewArea3D;
     double                 viewArea;
-    double                 desiredFrustum2D[6];
-    double                 desiredFrustum3D[6];
-    double                 desiredFrustum[6];
-    double                 desiredCellSize;
-    double                 actualCellSize;
+    double                 desiredExtents2D[6];
+    double                 desiredExtents3D[6];
+    double                 desiredExtents[6];
+    double                 desiredCellArea;
+    double                 actualCellArea;
 
     int                    selID;
 

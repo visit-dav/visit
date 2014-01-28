@@ -52,6 +52,8 @@
 #include <avtMetaData.h>
 #include <avtMultiresSelection.h>
 #include <avtStructuredDomainNesting.h>
+#include <avtView2D.h>
+#include <avtView3D.h>
 #include <DebugStream.h>
 
 #include <InvalidFilesException.h>
@@ -84,17 +86,28 @@
 //
 // ****************************************************************************
 
-avtMultiresFilter::avtMultiresFilter(double area2D, double area3D,
-    double *frust2D, double *frust3D, double size)
+avtMultiresFilter::avtMultiresFilter(double *trans2D, double *trans3D,
+    double *vp2D, double *vp3D, int *size, double area2D, double area3D,
+    double *extents2D, double *extents3D, double area)
 {
     nDims = 3;
+    for (int i = 0; i < 16; i++)
+        transform2D[i] = trans2D[i];
+    for (int i = 0; i < 16; i++)
+        transform3D[i] = trans3D[i];
+    for (int i = 0; i < 6; i++)
+        viewport2D[i] = vp2D[i];
+    for (int i = 0; i < 6; i++)
+        viewport3D[i] = vp3D[i];
+    windowSize[0] = size[0];
+    windowSize[1] = size[1];
     viewArea2D = area2D;
     viewArea3D = area3D;
     for (int i = 0; i < 6; i++)
-        desiredFrustum2D[i] = frust2D[i];
+        desiredExtents2D[i] = extents2D[i];
     for (int i = 0; i < 6; i++)
-        desiredFrustum3D[i] = frust3D[i];
-    desiredCellSize = size;
+        desiredExtents3D[i] = extents3D[i];
+    desiredCellArea = area;
 
     selID = -1;
 }
@@ -161,10 +174,10 @@ avtMultiresFilter::Execute(void)
         // extents and cell size using the information from this class.
         //
         avtExtents multiresExtents(nDims);
-        multiresExtents.Set(desiredFrustum);
+        multiresExtents.Set(desiredExtents);
         dataAtts.SetMultiresExtents(&multiresExtents);
 
-        dataAtts.SetMultiresCellSize(actualCellSize);
+        dataAtts.SetMultiresCellSize(actualCellArea);
     }
 
     //
@@ -207,42 +220,64 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     nDims = dataAtts.GetSpatialDimension();
     if (nDims == 2)
     {
+        for (int i = 0; i < 16; i++)
+            transform[i] = transform2D[i];
+        for (int i = 0; i < 6; i++)
+            viewport[i] = viewport2D[i];
         viewArea = viewArea2D;
         for (int i = 0; i < 6; i++)
-            desiredFrustum[i] = desiredFrustum2D[i];
+            desiredExtents[i] = desiredExtents2D[i];
     }
     else
     {
+        for (int i = 0; i < 16; i++)
+            transform[i] = transform3D[i];
+        for (int i = 0; i < 6; i++)
+            viewport[i] = viewport3D[i];
         viewArea = viewArea3D;
         for (int i = 0; i < 6; i++)
-            desiredFrustum[i] = desiredFrustum3D[i];
+            desiredExtents[i] = desiredExtents3D[i];
     }
     double extents[6];
     dataAtts.GetOriginalSpatialExtents()->CopyTo(extents);
 
     //
-    // If the desired frustum is invalid, set it from the extents.
+    // Calculate the desired extents and view area.
     //
-    if (desiredFrustum[0] == DBL_MAX && desiredFrustum[1] == -DBL_MAX)
+    if (viewport[0] != DBL_MAX && viewport[1] != DBL_MAX)
     {
-        for (int i = 0; i < 6; i++)
-            desiredFrustum[i] = extents[i];
-    }
-
-    //
-    // If the view area is invalid, set it from the desiredFrustum
-    // or extents. Note that those may also be invalid so we need
-    // to check for validity before calculating the viewArea to
-    // avoid an arithmetic overflow.
-    //
-    if (viewArea == DBL_MAX)
-    {
+        //
+        // The transform is valid, calculate the desired extents and
+        // view area from them.
+        //
         if (nDims == 2)
         {
-            if (desiredFrustum[0] != DBL_MAX && desiredFrustum[1] != -DBL_MAX)
+            avtView2D::CalculateExtentsAndArea(desiredExtents, viewArea,
+                                            transform);
+        }
+        else
+        {
+            avtView3D::CalculateExtentsAndArea(desiredExtents, viewArea,
+                                            transform);
+        }
+    }
+    else
+    {
+        //
+        // The transform is invalid, set the desired extents and view area
+        // from the extents.  Note that the extents may also be invalid so
+        // we need to check for validity before calculating the viewArea to
+        // avoid an arithmetic overflow.
+        //
+        for (int i = 0; i < 6; i++)
+            desiredExtents[i] = extents[i];
+        viewArea = DBL_MAX;
+        if (nDims == 2)
+        {
+            if (extents[0] != DBL_MAX && extents[1] != -DBL_MAX)
             {
-                viewArea = (desiredFrustum[1] - desiredFrustum[0]) *
-                           (desiredFrustum[3] - desiredFrustum[2]);
+                viewArea = (extents[1] - extents[0]) *
+                           (extents[3] - extents[2]);
             }
         }
         else
@@ -280,9 +315,12 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     if (dbmd->GetFormatCanDoMultires())
     {
         avtMultiresSelection *selection = new avtMultiresSelection;
+        selection->SetCompositeProjectionTransformMatrix(transform);
+        selection->SetViewport(viewport);
+        selection->SetSize(windowSize);
         selection->SetViewArea(viewArea);
-        selection->SetDesiredFrustum(desiredFrustum);
-        selection->SetDesiredCellSize(desiredCellSize);
+        selection->SetDesiredExtents(desiredExtents);
+        selection->SetDesiredCellArea(desiredCellArea);
         selID = contract->GetDataRequest()->AddDataSelection(selection);
 
         return contract;
@@ -361,16 +399,16 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
             double min, max;
             min = double(logicalExtents[i]) * patchDx;
             max = (double(logicalExtents[i+3]) + 1.) * patchDx;
-            if (max < desiredFrustum[i*2] || min > desiredFrustum[i*2+1])
+            if (max < desiredExtents[i*2] || min > desiredExtents[i*2+1])
                 visible = false;
         }
         double patchSize = pow(patchVolume, 1. / double(nDims));
         double ratio = patchSize / viewSize;
-        if (visible && ratio < desiredCellSize)
+        if (visible && ratio < desiredCellArea)
         {
             maxPatchSize = patchSize > maxPatchSize ? patchSize : maxPatchSize;
         }
-        if (ratio < desiredCellSize)
+        if (ratio < desiredCellArea)
             visible = false;
 
         //
@@ -384,7 +422,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
             nVisible++;
         }
     }
-    actualCellSize = maxPatchSize;
+    actualCellArea = maxPatchSize;
 
     contract->GetDataRequest()->GetRestriction()->RestrictDomains(domain_list);
 

@@ -10034,7 +10034,7 @@ ViewerPlotList::PermitsLogViewScaling(WINDOW_MODE wm)
 //   
 //    Eric Brugger, Wed Jan  8 17:06:16 PST 2014
 //    I added a ViewArea to the multi resolution data selection since the
-//    view frustum was insufficient in 3d.
+//    view extents were insufficient in 3d.
 //
 // ****************************************************************************
 
@@ -10064,26 +10064,30 @@ ViewerPlotList::ShouldRefineData(double smallestCellSize) const
     }
 
     double viewArea;
-    double fustrum[6];
+    double extents[6];
+    double matrix[16];
     if (window->GetWindowMode() == WINMODE_2D)
     {
-        const avtView2D &view2D = window->GetView2D();
-        viewArea = (view2D.window[1] - view2D.window[0]) *
-                   (view2D.window[3] - view2D.window[2]);
-        fustrum[0] = view2D.window[0];
-        fustrum[1] = view2D.window[1];
-        fustrum[2] = view2D.window[2];
-        fustrum[3] = view2D.window[3];
+        avtView2D view2D = window->GetView2D();
+        int width, height;
+        window->GetSize(width, height);
+        double viewport[4];
+        view2D.GetActualViewport(viewport, width, height);
+        double ratioWindow = double(width) / double(height);
+        double ratioViewport = (viewport[1] - viewport[0]) /
+                               (viewport[3] - viewport[2]);
+        double ratio = ratioWindow * ratioViewport;
+        view2D.GetCompositeProjectionTransformMatrix(matrix, ratio);
+        view2D.CalculateExtentsAndArea(extents, viewArea, matrix);
     }
     else if (window->GetWindowMode() == WINMODE_3D)
     {
         const avtView3D &view3D = window->GetView3D();
         int width, height;
         window->GetSize(width, height);
-        double aspect = double(width) / double(height);
-        viewArea = (view3D.parallelScale * view3D.parallelScale * aspect) /
-                   (view3D.imageZoom * view3D.imageZoom);
-        view3D.GetFrustum(fustrum, aspect);
+        double ratio = double(width) / double(height);
+        view3D.GetCompositeProjectionTransformMatrix(matrix, ratio);
+        view3D.CalculateExtentsAndArea(extents, viewArea, matrix);
     }
     else
     {
@@ -10093,8 +10097,8 @@ ViewerPlotList::ShouldRefineData(double smallestCellSize) const
     bool refineData = false;
     for (int i = 0; i < nDims; i++)
     {
-        if (fustrum[i*2] < ext[i*2] ||
-            fustrum[i*2+1] > ext[i*2+1])
+        if (extents[i*2] < ext[i*2] ||
+            extents[i*2+1] > ext[i*2+1])
         {
             refineData = true;
         }

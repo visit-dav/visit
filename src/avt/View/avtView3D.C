@@ -44,6 +44,8 @@
 
 #include <math.h>
 
+#include <cmath>
+
 #include <avtViewInfo.h>
 #include <View3DAttributes.h>
 
@@ -529,23 +531,24 @@ avtView3D::SetToView3DAttributes(View3DAttributes *view3DAtts) const
 }
 
 // ****************************************************************************
-//  Method: avtView3D::GetFrustum
+//  Method: avtView3D::GetCompositeProjectionTransformMatrix
 //
 //  Purpose: 
-//    Returns the view frustum given the aspect ratio of the window width
-//    to height.
+//    Returns the composite projection transform matrix given the aspect
+//    ratio of the window width to height.
 //
 //  Arguments:
-//    frustum    : The returned frustum.
-//    aspect     : The aspect ratio of the window width to height.
+//    matrix     : The returned composite projection transform matrix.
+//    aspect     : The aspect ratio of window width to height.
 //
 //  Programmer: Eric Brugger
-//  Creation:   Thu Jan  2 15:05:55 PST 2014
+//  Creation:   Thu Jan 23 16:25:23 PST 2014
 //
 // ****************************************************************************
 
 void
-avtView3D::GetFrustum(double *frustum, double aspect) const
+avtView3D::GetCompositeProjectionTransformMatrix(double *matrix, double aspect)
+    const
 {
     //
     // Get the inverse of the composite projection transform matrix.
@@ -554,34 +557,63 @@ avtView3D::GetFrustum(double *frustum, double aspect) const
     SetViewInfoFromView(viewInfo);
     vtkCamera *vtkcam = vtkCamera::New();
     viewInfo.SetCameraFromView(vtkcam);
-    double matrix[4][4];
     vtkMatrix4x4::DeepCopy(
-        *matrix,
+        matrix,
         vtkcam->GetCompositeProjectionTransformMatrix(aspect, -1, +1));
-    vtkMatrix4x4::Invert(*matrix,*matrix);
+}
+
+// ****************************************************************************
+//  Method: avtView3D::CalculateExtentsAndArea
+//
+//  Purpose: 
+//    Calculate the 3d view extents and its area from the composite
+//    projection transform matrix.
+//
+//  Arguments:
+//    extents    : The returned extents.
+//    area       : The returned area.
+//    matrix     : The composite projection transform matrix.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Jan 23 16:25:23 PST 2014
+//
+// ****************************************************************************
+
+void
+avtView3D::CalculateExtentsAndArea(double *extents, double &area,
+    double *matrix)
+{
+    //
+    // Invert the matrix.
+    //
+    double matrix2[16];
+    vtkMatrix4x4::Invert(matrix, matrix2);
 
     //
-    // Transform the corners in normalized device coordinates to
-    // world coordinates.
+    // Transform the corners of the back plane, front plane and view plane
+    // in normalized device coordinates to world coordinates.
     //
-    double c[8][4];
-    c[0][0] = -1.; c[0][1] = -1.; c[0][2] = -1.; c[0][3] = 1.;
-    c[1][0] = +1.; c[1][1] = -1.; c[1][2] = -1.; c[1][3] = 1.;
-    c[2][0] = +1.; c[2][1] = +1.; c[2][2] = -1.; c[2][3] = 1.;
-    c[3][0] = -1.; c[3][1] = +1.; c[3][2] = -1.; c[3][3] = 1.;
-    c[4][0] = -1.; c[4][1] = -1.; c[4][2] = +1.; c[4][3] = 1.;
-    c[5][0] = +1.; c[5][1] = -1.; c[5][2] = +1.; c[5][3] = 1.;
-    c[6][0] = +1.; c[6][1] = +1.; c[6][2] = +1.; c[6][3] = 1.;
-    c[7][0] = -1.; c[7][1] = +1.; c[7][2] = +1.; c[7][3] = 1.;
-    for (int i = 0; i < 8; i++)
+    double c[12][4];
+    c[0][0]  = -1.; c[0][1]  = -1.; c[0][2]  = -1.; c[0][3]  = 1.;
+    c[1][0]  = +1.; c[1][1]  = -1.; c[1][2]  = -1.; c[1][3]  = 1.;
+    c[2][0]  = +1.; c[2][1]  = +1.; c[2][2]  = -1.; c[2][3]  = 1.;
+    c[3][0]  = -1.; c[3][1]  = +1.; c[3][2]  = -1.; c[3][3]  = 1.;
+    c[4][0]  = -1.; c[4][1]  = -1.; c[4][2]  = +1.; c[4][3]  = 1.;
+    c[5][0]  = +1.; c[5][1]  = -1.; c[5][2]  = +1.; c[5][3]  = 1.;
+    c[6][0]  = +1.; c[6][1]  = +1.; c[6][2]  = +1.; c[6][3]  = 1.;
+    c[7][0]  = -1.; c[7][1]  = +1.; c[7][2]  = +1.; c[7][3]  = 1.;
+    c[8][0]  = -1.; c[8][1]  = -1.; c[8][2]  =  0.; c[8][3]  = 1.;
+    c[9][0]  = +1.; c[9][1]  = -1.; c[9][2]  =  0.; c[9][3]  = 1.;
+    c[10][0] = +1.; c[10][1] = +1.; c[10][2] =  0.; c[10][3] = 1.;
+    c[11][0] = -1.; c[11][1] = +1.; c[11][2] =  0.; c[11][3] = 1.;
+    for (int i = 0; i < 12; i++)
     {
-        vtkMatrix4x4::MultiplyPoint(*matrix, c[i], c[i]);
+        vtkMatrix4x4::MultiplyPoint(matrix2, c[i], c[i]);
         c[i][0] /= c[i][3]; c[i][1] /= c[i][3]; c[i][2] /= c[i][3];
     }
 
     //
-    // Calculate the frustum (an AABB (axis aligned bounding box)) from
-    // the corners.
+    // Calculate the extents from the corners.
     //
     double xmin, xmax, ymin, ymax, zmin, zmax; 
     xmin = c[0][0]; xmax = c[0][0];
@@ -597,18 +629,30 @@ avtView3D::GetFrustum(double *frustum, double aspect) const
         zmax = std::max(zmax, c[i][2]);
     }
     
-    frustum[0] = xmin;
-    frustum[1] = xmax;
-    frustum[2] = ymin;
-    frustum[3] = ymax;
-    frustum[4] = zmin;
-    frustum[5] = zmax;
+    extents[0] = xmin;
+    extents[1] = xmax;
+    extents[2] = ymin;
+    extents[3] = ymax;
+    extents[4] = zmin;
+    extents[5] = zmax;
+
+    //
+    // Calculate the area from the corners of the view plane.
+    //
+    double v1[3], v2[3], v3[3];
+    v1[0] = c[11][0] - c[8][0];
+    v1[1] = c[11][1] - c[8][1];
+    v1[2] = c[11][2] - c[8][2];
+    v2[0] = c[9][0] - c[8][0];
+    v2[1] = c[9][1] - c[8][1];
+    v2[2] = c[9][2] - c[8][2];
+    v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
+    v3[1] = v1[2] * v2[0] - v1[0] * v2[2];
+    v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
+    area = std::sqrt(v3[0] * v3[0] + v3[1] * v3[1] + v3[2] * v3[2]);
+}
 
 #if 0
-    cerr << "frustum=" << frustum[0] << "," << frustum[1] << ","
-                       << frustum[2] << "," << frustum[3] << ","
-                       << frustum[4] << "," << frustum[5] << endl;
-
     //
     // Code that gets the plane equations of the 6 frustum planes.
     // I'm leaving it here in case I decide I later want to use
@@ -621,4 +665,3 @@ avtView3D::GetFrustum(double *frustum, double aspect) const
     vtkcam->GetFrustumPlanes(aspect, planes);
     vtkcam->Delete();
 #endif
-}

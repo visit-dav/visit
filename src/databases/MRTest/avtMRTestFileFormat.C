@@ -58,6 +58,8 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtMultiresSelection.h>
+#include <avtView2D.h>
+#include <avtView3D.h>
 
 #include <vector>
 
@@ -385,9 +387,13 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     //
     // Get the multi resolution data selection.
     //
+    double transformMatrix[16] = {DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX};
     double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
-    double frustum[6] = {meshXmin, meshXmax, meshYmin, meshYmax, 0., 0.};
-    double cellSize = .002;
+    double extents[6] = {meshXmin, meshXmax, meshYmin, meshYmax, 0., 0.};
+    double cellArea = .002;
 
     avtMultiresSelection *selection = NULL;
     for (int i = 0; i < selectionsList.size(); i++)
@@ -395,23 +401,16 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
         if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
         {
             selection = (avtMultiresSelection *) *(selectionsList[i]);
-            viewArea = selection->GetViewArea();
-            selection->GetDesiredFrustum(frustum);
-            cellSize = selection->GetDesiredCellSize();
+            selection->GetCompositeProjectionTransformMatrix(transformMatrix);
+            cellArea = selection->GetDesiredCellArea();
 
             (*selectionsApplied)[i] = true;
         }
     }
-    if (frustum[0] == DBL_MAX && frustum[1] == -DBL_MAX)
+    if (transformMatrix[0] != DBL_MAX && transformMatrix[1] != DBL_MAX &&
+        transformMatrix[2] != DBL_MAX && transformMatrix[3] != DBL_MAX)
     {
-        frustum[0] = meshXmin;
-        frustum[1] = meshXmax;
-        frustum[2] = meshYmin;
-        frustum[3] = meshYmax;
-    }
-    if (viewArea == DBL_MAX)
-    {
-        viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
+        avtView2D::CalculateExtentsAndArea(extents, viewArea, transformMatrix);
     }
 
     //
@@ -426,21 +425,21 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     double meshVolume = meshXRange * meshYRange;
     double meshSize = sqrt(meshVolume);
     double coarseSize = meshSize / coarseNx;
-    double cellSize2 = viewSize * cellSize;
+    double cellSize2 = viewSize * cellArea;
     int level = std::min(maxLevel2d,
         std::max(0, int(ceil(log(coarseSize / cellSize2) / log(2.)))));
 
     double tileXRange = meshXRange / pow(2., level); 
     double tileYRange = meshYRange / pow(2., level);
 
-    int iTile = std::max(0., floor((frustum[0] - meshXmin) / tileXRange));
+    int iTile = std::max(0., floor((extents[0] - meshXmin) / tileXRange));
     tileXmin = meshXmin + iTile * tileXRange;
-    iTile = std::min(pow(2., level), ceil((frustum[1] - meshXmin) / tileXRange));
+    iTile = std::min(pow(2., level), ceil((extents[1] - meshXmin) / tileXRange));
     tileXmax = meshXmin + iTile * tileXRange;
 
-    iTile = std::max(0., floor((frustum[2] - meshYmin) / tileYRange));
+    iTile = std::max(0., floor((extents[2] - meshYmin) / tileYRange));
     tileYmin = meshYmin + iTile * tileYRange;
-    iTile = std::min(pow(2., level), ceil((frustum[3] - meshYmin) / tileYRange));
+    iTile = std::min(pow(2., level), ceil((extents[3] - meshYmin) / tileYRange));
     tileYmax = meshYmin + iTile * tileYRange;
 
     //
@@ -491,20 +490,20 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     //
     if (selection != NULL)
     {
-        frustum[0] = tileXmin;
-        frustum[1] = tileXmax;
-        frustum[2] = tileYmin;
-        frustum[3] = tileYmax;
-        frustum[4] = 0.;
-        frustum[5] = 0.;
+        extents[0] = tileXmin;
+        extents[1] = tileXmax;
+        extents[2] = tileYmin;
+        extents[3] = tileYmax;
+        extents[4] = 0.;
+        extents[5] = 0.;
 
         double xDelta, yDelta;
         xDelta = (tileXmax - tileXmin) / nx;
         yDelta = (tileYmax - tileYmin) / ny;
 
-        cellSize = sqrt(xDelta * xDelta + yDelta * yDelta);
-        selection->SetActualFrustum(frustum);
-        selection->SetActualCellSize(cellSize);
+        cellArea = sqrt(xDelta * xDelta + yDelta * yDelta);
+        selection->SetActualExtents(extents);
+        selection->SetActualCellArea(cellArea);
     }
 }
 
@@ -542,10 +541,14 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     //
     // Get the multi resolution data selection.
     //
+    double transformMatrix[16] = {DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX};
     double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
-    double frustum[6] = {meshXmin, meshXmax, meshYmin, meshYmax,
+    double extents[6] = {meshXmin, meshXmax, meshYmin, meshYmax,
                          meshZmin, meshZmax};
-    double cellSize = .002;
+    double cellArea = .002;
 
     avtMultiresSelection *selection = NULL;
     for (int i = 0; i < selectionsList.size(); i++)
@@ -553,25 +556,16 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
         if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
         {
             selection = (avtMultiresSelection *) *(selectionsList[i]);
-            viewArea = selection->GetViewArea();
-            selection->GetDesiredFrustum(frustum);
-            cellSize = selection->GetDesiredCellSize();
+            selection->GetCompositeProjectionTransformMatrix(transformMatrix);
+            cellArea = selection->GetDesiredCellArea();
 
             (*selectionsApplied)[i] = true;
         }
     }
-    if (frustum[0] == DBL_MAX && frustum[1] == -DBL_MAX)
+    if (transformMatrix[0] != DBL_MAX && transformMatrix[1] != DBL_MAX &&
+        transformMatrix[2] != DBL_MAX && transformMatrix[3] != DBL_MAX)
     {
-        frustum[0] = meshXmin;
-        frustum[1] = meshXmax;
-        frustum[2] = meshYmin;
-        frustum[3] = meshYmax;
-        frustum[4] = meshZmin;
-        frustum[5] = meshZmax;
-    }
-    if (viewArea == DBL_MAX)
-    {
-        viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
+        avtView3D::CalculateExtentsAndArea(extents, viewArea, transformMatrix);
     }
 
     //
@@ -587,7 +581,7 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     double meshVolume = meshXRange * meshYRange * meshZRange;
     double meshSize = pow(meshVolume, 1. / 3.);
     double coarseSize = meshSize / coarseNx;
-    double cellSize2 = viewSize * cellSize;
+    double cellSize2 = viewSize * cellArea;
     int level = std::min(maxLevel3d,
         std::max(0, int(ceil(log(coarseSize / cellSize2) / log(2.)))));
 
@@ -595,19 +589,19 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     double tileYRange = meshYRange / pow(2., level);
     double tileZRange = meshZRange / pow(2., level);
 
-    int iTile = std::max(0., floor((frustum[0] - meshXmin) / tileXRange));
+    int iTile = std::max(0., floor((extents[0] - meshXmin) / tileXRange));
     tileXmin = meshXmin + iTile * tileXRange;
-    iTile = std::min(pow(2., level), ceil((frustum[1] - meshXmin) / tileXRange));
+    iTile = std::min(pow(2., level), ceil((extents[1] - meshXmin) / tileXRange));
     tileXmax = meshXmin + iTile * tileXRange;
 
-    iTile = std::max(0., floor((frustum[2] - meshYmin) / tileYRange));
+    iTile = std::max(0., floor((extents[2] - meshYmin) / tileYRange));
     tileYmin = meshYmin + iTile * tileYRange;
-    iTile = std::min(pow(2., level), ceil((frustum[3] - meshYmin) / tileYRange));
+    iTile = std::min(pow(2., level), ceil((extents[3] - meshYmin) / tileYRange));
     tileYmax = meshYmin + iTile * tileYRange;
 
-    iTile = std::max(0., floor((frustum[4] - meshZmin) / tileZRange));
+    iTile = std::max(0., floor((extents[4] - meshZmin) / tileZRange));
     tileZmin = meshZmin + iTile * tileZRange;
-    iTile = std::min(pow(2., level), ceil((frustum[5] - meshZmin) / tileZRange));
+    iTile = std::min(pow(2., level), ceil((extents[5] - meshZmin) / tileZRange));
     tileZmax = meshZmin + iTile * tileZRange;
 
     //
@@ -675,21 +669,21 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     //
     if (selection != NULL)
     {
-        frustum[0] = tileXmin;
-        frustum[1] = tileXmax;
-        frustum[2] = tileYmin;
-        frustum[3] = tileYmax;
-        frustum[4] = tileZmin;
-        frustum[5] = tileZmax;
+        extents[0] = tileXmin;
+        extents[1] = tileXmax;
+        extents[2] = tileYmin;
+        extents[3] = tileYmax;
+        extents[4] = tileZmin;
+        extents[5] = tileZmax;
 
         double xDelta, yDelta, zDelta;
         xDelta = (tileXmax - tileXmin) / nx;
         yDelta = (tileYmax - tileYmin) / ny;
         zDelta = (tileZmax - tileZmin) / nz;
 
-        cellSize = sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
-        selection->SetActualFrustum(frustum);
-        selection->SetActualCellSize(cellSize);
+        cellArea = sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
+        selection->SetActualExtents(extents);
+        selection->SetActualCellArea(cellArea);
     }
 }
 

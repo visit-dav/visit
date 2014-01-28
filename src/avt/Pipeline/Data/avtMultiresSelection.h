@@ -53,17 +53,16 @@
 //
 //  Purpose:
 //    Specify a data selection with a multi resolution representation
-//    consisting of a desired view frustum and a desired cell size. The
-//    data selection also contains the actual view frustum and cell size
-//    provided.
+//    that may be specified by one of two methods. The first is by specifying
+//    the composite projection transform matrix, the viewport, the window
+//    size and the desired cell size. The second is by specifying the desired
+//    extents, the view area and the desired cell size. The data selection
+//    also contains the actual data extents and cell area provided.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 20, 2013
 //
 //  Modifications:
-//    Eric Brugger, Wed Jan  8 16:41:12 PST 2014
-//    I added a ViewArea to the multi resolution data selection since the
-//    view frustum was insufficient in 3d.
 //
 // ****************************************************************************
 
@@ -77,29 +76,44 @@ class PIPELINE_API avtMultiresSelection : public avtDataSelection
                                 { return "Multi Resolution Data Selection"; }
     virtual std::string     DescriptionString(void);
 
+    void                    SetCompositeProjectionTransformMatrix(
+                                const double matrix[16]);
+    void                    GetCompositeProjectionTransformMatrix(
+                                double matrix[16]) const;
+    void                    SetViewport(const double viewport[6]);
+    void                    GetViewport(double viewport[6]) const;
+    void                    SetSize(const int size[2])
+                                { windowSize[0] = size[0];
+                                  windowSize[1] = size[1]; }
+    void                    GetSize(int size[2]) const
+                                { size[0] = windowSize[0];
+                                  size[1] = windowSize[1]; }
     void                    SetViewArea(double area)
                                 { viewArea = area; }
     double                  GetViewArea() const
                                 { return viewArea; }
-    void                    SetDesiredFrustum(const double frust[6]);
-    void                    GetDesiredFrustum(double frust[6]) const;
-    void                    SetActualFrustum(const double frust[6]);
-    void                    GetActualFrustum(double frust[6]) const;
-    void                    SetDesiredCellSize(double size)
-                                { desiredCellSize = size; }
-    double                  GetDesiredCellSize() const
-                                { return desiredCellSize; }
-    void                    SetActualCellSize(double size)
-                                { actualCellSize = size; }
-    double                  GetActualCellSize() const
-                                { return actualCellSize; }
+    void                    SetDesiredExtents(const double extents[6]);
+    void                    GetDesiredExtents(double extents[6]) const;
+    void                    SetActualExtents(const double extents[6]);
+    void                    GetActualExtents(double extents[6]) const;
+    void                    SetDesiredCellArea(double area)
+                                { desiredCellArea = area; }
+    double                  GetDesiredCellArea() const
+                                { return desiredCellArea; }
+    void                    SetActualCellArea(double area)
+                                { actualCellArea = area; }
+    double                  GetActualCellArea() const
+                                { return actualCellArea; }
 
   private:
+    double transformMatrix[16];
+    double viewport[6];
+    int    windowSize[2];
     double viewArea;
-    double desiredFrustum[6];
-    double actualFrustum[6];
-    double desiredCellSize;
-    double actualCellSize;
+    double desiredExtents[6];
+    double actualExtents[6];
+    double desiredCellArea;
+    double actualCellArea;
 };
 
 typedef ref_ptr<avtMultiresSelection> avtMultiresSelection_p;
