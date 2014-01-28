@@ -130,10 +130,10 @@ avtMRTestFileFormat::avtMRTestFileFormat(const char *fname)
 {
     filename = fname;
 
-    meshNx = 4096, meshNy = 4096; meshNz = 4096;
+    meshNx = 4096, meshNy = 4096; meshNz = 1024;
     meshXmin = 0., meshXmax = 4096., meshYmin = 0., meshYmax = 4096.;
-    meshZmin = 0., meshZmax = 4096.;
-    coarseNx = 64, coarseNy = 64; coarseNz = 64;
+    meshZmin = 0., meshZmax = 1024.;
+    coarseNx = 64, coarseNy = 64; coarseNz = 16;
     maxLevel2d = 18; maxLevel3d = 6;
 }
 
@@ -250,6 +250,8 @@ avtMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->SetFormatCanDoMultires(true);
 
     md->Add(new avtScalarMetaData("Mandelbrot", "Mesh", AVT_ZONECENT));
+
+    md->Add(new avtScalarMetaData("Mandelbrot3d", "Mesh3d", AVT_ZONECENT));
 }
 
 
@@ -317,44 +319,15 @@ avtMRTestFileFormat::GetMesh(int domain, const char *meshname)
 vtkDataArray *
 avtMRTestFileFormat::GetVar(int domain, const char *varname)
 {
-    //
-    // Determine the mesh starting location and size of each cell.
-    //
-    double tileXmin, tileXmax, tileYmin, tileYmax;
-    int nx, ny;
-
-    CalculateMesh2d(tileXmin, tileXmax, tileYmin, tileYmax, nx, ny);
-
-    double xStart, yStart;
-    double xDelta, yDelta;
-
-    xStart = 4. * (tileXmin - meshXmin) / (meshXmax - meshXmin);
-    yStart = 4. * (tileYmin - meshYmin) / (meshYmax - meshYmin);
-
-    xDelta = (tileXmax - tileXmin) / nx;
-    yDelta = (tileYmax - tileYmin) / ny;
-    xDelta = xDelta / ((meshXmax - meshXmin) / 4.);
-    yDelta = yDelta / ((meshYmax - meshYmin) / 4.);
-
-    //
-    // Create the variable.
-    //
-    vtkFloatArray *scalars = vtkFloatArray::New();
-    scalars->SetNumberOfTuples(nx*ny);
-    float *ptr = (float*)scalars->GetVoidPointer(0);
-    for (int i = 0; i < nx; i++)
+    if (strcmp(varname, "Mandelbrot") == 0)
     {
-        for (int j = 0; j < ny; j++)
-        {
-            double x = (xStart + (double(i) + 0.5) * xDelta) - 2.;
-            double y = (yStart + (double(j) + 0.5) * yDelta) - 2.;
-            ptr[j*nx+i] = mandelbrot(complex(x, y));
-        }
+        return GetVar2d();
     }
-
-    return scalars;
+    else
+    {
+        return GetVar3d();
+    }
 }
-
 
 // ****************************************************************************
 //  Method: avtMRTestFileFormat::CalculateMesh2d
@@ -423,8 +396,8 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     double meshYRange = meshYmax - meshYmin;
 
     double meshVolume = meshXRange * meshYRange;
-    double meshSize = sqrt(meshVolume);
-    double coarseSize = meshSize / coarseNx;
+    double coarseVolume = meshVolume / (coarseNx * coarseNy);
+    double coarseSize = sqrt(coarseVolume);
     double cellSize2 = viewSize * cellArea;
     int level = std::min(maxLevel2d,
         std::max(0, int(ceil(log(coarseSize / cellSize2) / log(2.)))));
@@ -579,8 +552,8 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     double meshZRange = meshZmax - meshZmin;
 
     double meshVolume = meshXRange * meshYRange * meshZRange;
-    double meshSize = pow(meshVolume, 1. / 3.);
-    double coarseSize = meshSize / coarseNx;
+    double coarseVolume = meshVolume / (coarseNx * coarseNy * coarseNz);
+    double coarseSize = pow(coarseVolume, 1. / 3.);
     double cellSize2 = viewSize * cellArea;
     int level = std::min(maxLevel3d,
         std::max(0, int(ceil(log(coarseSize / cellSize2) / log(2.)))));
@@ -833,4 +806,122 @@ avtMRTestFileFormat::GetMesh3d()
     zcoord->Delete();
 
     return rg;
+}
+
+
+// ****************************************************************************
+//  Method: avtMRTestFileFormat::GetVar2d
+//
+//  Purpose:
+//    Gets the 2d variable associated with this file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Tue Jan 28 09:30:10 PST 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtMRTestFileFormat::GetVar2d()
+{
+    //
+    // Determine the mesh starting location and size of each cell.
+    //
+    double tileXmin, tileXmax, tileYmin, tileYmax;
+    int nx, ny;
+
+    CalculateMesh2d(tileXmin, tileXmax, tileYmin, tileYmax, nx, ny);
+
+    double xStart, yStart;
+    double xDelta, yDelta;
+
+    xStart = 4. * (tileXmin - meshXmin) / (meshXmax - meshXmin);
+    yStart = 4. * (tileYmin - meshYmin) / (meshYmax - meshYmin);
+
+    xDelta = (tileXmax - tileXmin) / nx;
+    yDelta = (tileYmax - tileYmin) / ny;
+    xDelta = xDelta / ((meshXmax - meshXmin) / 4.);
+    yDelta = yDelta / ((meshYmax - meshYmin) / 4.);
+
+    //
+    // Create the variable.
+    //
+    vtkFloatArray *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfTuples(nx*ny);
+    float *ptr = (float*)scalars->GetVoidPointer(0);
+    for (int j = 0; j < ny; j++)
+    {
+        for (int i = 0; i < nx; i++)
+        {
+            double x = (xStart + (double(i) + 0.5) * xDelta) - 2.;
+            double y = (yStart + (double(j) + 0.5) * yDelta) - 2.;
+            ptr[j*nx+i] = mandelbrot(complex(x, y));
+        }
+    }
+
+    return scalars;
+}
+
+
+// ****************************************************************************
+//  Method: avtMRTestFileFormat::GetVar3d
+//
+//  Purpose:
+//    Gets the 3d variable associated with this file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Tue Jan 28 09:30:10 PST 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtMRTestFileFormat::GetVar3d()
+{
+    //
+    // Determine the mesh starting location and size of each cell.
+    //
+    double tileXmin, tileXmax, tileYmin, tileYmax, tileZmin, tileZmax;
+    int nx, ny, nz;
+
+    CalculateMesh3d(tileXmin, tileXmax, tileYmin, tileYmax, tileZmin, tileZmax,
+                    nx, ny, nz);
+
+    double xStart, yStart, zStart;
+    double xDelta, yDelta, zDelta;
+
+    xStart = 4. * (tileXmin - meshXmin) / (meshXmax - meshXmin);
+    yStart = 4. * (tileYmin - meshYmin) / (meshYmax - meshYmin);
+    zStart = 4. * (tileZmin - meshZmin) / (meshZmax - meshZmin);
+
+    xDelta = (tileXmax - tileXmin) / nx;
+    yDelta = (tileYmax - tileYmin) / ny;
+    zDelta = (tileZmax - tileZmin) / nz;
+    xDelta = xDelta / ((meshXmax - meshXmin) / 4.);
+    yDelta = yDelta / ((meshYmax - meshYmin) / 4.);
+    zDelta = zDelta / ((meshZmax - meshZmin) / 4.);
+
+    //
+    // Create the variable.
+    //
+    vtkFloatArray *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfTuples(nx*ny*nz);
+    float *ptr = (float*)scalars->GetVoidPointer(0);
+    int nxy = nx * ny;
+    for (int k = 0; k < nz; k++)
+    {
+        for (int j = 0; j < ny; j++)
+        {
+            for (int i = 0; i < nx; i++)
+            {
+                double x = (xStart + (double(i) + 0.5) * xDelta) - 2.;
+                double y = (yStart + (double(j) + 0.5) * yDelta) - 2.;
+                ptr[k*nxy+j*nx+i] = mandelbrot(complex(x, y));
+            }
+        }
+    }
+
+    return scalars;
 }

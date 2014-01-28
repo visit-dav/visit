@@ -102,6 +102,9 @@ class avtMRTestFileFormat : public avtSTMDFileFormat
 
     vtkDataSet            *GetMesh2d();
     vtkDataSet            *GetMesh3d();
+
+    vtkDataArray          *GetVar2d();
+    vtkDataArray          *GetVar3d();
 };
 
 
