@@ -87,6 +87,10 @@ class View3DAttributes;
 //    I added windowValid to support adding a multi resolution display
 //    capability.
 //
+//    Eric Brugger, Thu Jan 23 16:24:37 PST 2014
+//    I deleted GetFrustum. I added GetCompositeProjectionTransformMatrix
+//    and CalculateExtentsAndArea.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView3D
@@ -119,7 +123,10 @@ struct AVTVIEW_API avtView3D
     void            SetFromView3DAttributes(const View3DAttributes *);
     void            SetToView3DAttributes(View3DAttributes *) const;
 
-    void            GetFrustum(double *, double) const;
+    void            GetCompositeProjectionTransformMatrix(double *, double)
+                        const;
+
+    static void     CalculateExtentsAndArea(double *, double &, double *);
 };
 
 

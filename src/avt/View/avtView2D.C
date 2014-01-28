@@ -47,6 +47,9 @@
 #include <avtViewInfo.h>
 #include <View2DAttributes.h>
 
+#include <vtkCamera.h>
+#include <vtkMatrix4x4.h>
+
 // ****************************************************************************
 //  Method: avtView2D constructor
 //
@@ -660,4 +663,120 @@ avtView2D::CheckAndCorrectWindow()
         window[2] -= width / 2.;
         window[3] += width / 2.;
     }
+}
+
+// ****************************************************************************
+//  Method: avtView2D::GetCompositeProjectionTransformMatrix
+//
+//  Purpose: 
+//    Returns the composite projection transform matrix given the aspect
+//    ratio of the width to height.
+//
+//  Arguments:
+//    matrix     : The returned composite projection transform matrix.
+//    aspect     : The aspect ratio of width to height. This should be
+//                 the aspect ratio of the window multiplied by the
+//                 aspect ratio of the viewport.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Jan 23 16:23:26 PST 2014
+//
+// ****************************************************************************
+
+void
+avtView2D::GetCompositeProjectionTransformMatrix(double *matrix, double aspect)
+{
+    //
+    // The ratio of the sizes is the only thing that is relevent in the
+    // call to SetViewInfoFromView, so create a pair of sizes with the
+    // correct ratio.
+    //
+    int size[2];
+    size[0] = 100000000;
+    size[1] = 100000000. / aspect;
+
+    //
+    // Get the composite projection transform matrix.
+    //
+    avtViewInfo viewInfo;
+    SetViewInfoFromView(viewInfo, size);
+    vtkCamera *vtkcam = vtkCamera::New();
+    viewInfo.SetCameraFromView(vtkcam);
+    vtkMatrix4x4::DeepCopy(
+        matrix,
+        vtkcam->GetCompositeProjectionTransformMatrix(aspect, -1, +1));
+}
+
+// ****************************************************************************
+//  Method: avtView2D::CalculateExtentsAndArea
+//
+//  Purpose: 
+//    Calculate the 2d view extents and view area from the composite
+//    projection transform matrix.
+//
+//  Arguments:
+//    extents    : The returned extents.
+//    area       : The returned area.
+//    matrix     : The composite projection transform matrix.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Jan 23 16:23:26 PST 2014
+//
+// ****************************************************************************
+
+void
+avtView2D::CalculateExtentsAndArea(double *extents, double &area,
+    double *matrix)
+{
+    //
+    // Invert the matrix.
+    //
+    double matrix2[16];
+    vtkMatrix4x4::Invert(matrix, matrix2);
+
+    //
+    // Transform the corners in normalized device coordinates to
+    // world coordinates.
+    //
+    double c[8][4];
+    c[0][0] = -1.; c[0][1] = -1.; c[0][2] = -1.; c[0][3] = 1.;
+    c[1][0] = +1.; c[1][1] = -1.; c[1][2] = -1.; c[1][3] = 1.;
+    c[2][0] = +1.; c[2][1] = +1.; c[2][2] = -1.; c[2][3] = 1.;
+    c[3][0] = -1.; c[3][1] = +1.; c[3][2] = -1.; c[3][3] = 1.;
+    c[4][0] = -1.; c[4][1] = -1.; c[4][2] = +1.; c[4][3] = 1.;
+    c[5][0] = +1.; c[5][1] = -1.; c[5][2] = +1.; c[5][3] = 1.;
+    c[6][0] = +1.; c[6][1] = +1.; c[6][2] = +1.; c[6][3] = 1.;
+    c[7][0] = -1.; c[7][1] = +1.; c[7][2] = +1.; c[7][3] = 1.;
+    for (int i = 0; i < 8; i++)
+    {
+        vtkMatrix4x4::MultiplyPoint(matrix2, c[i], c[i]);
+        c[i][0] /= c[i][3]; c[i][1] /= c[i][3]; c[i][2] /= c[i][3];
+    }
+
+    //
+    // Calculate the extents from the corners.
+    //
+    double xmin, xmax, ymin, ymax, zmin, zmax;
+    xmin = c[0][0]; xmax = c[0][0];
+    ymin = c[0][1]; ymax = c[0][1];
+    zmin = c[0][2]; zmax = c[0][2];
+    for (int i = 1; i < 8; i++)
+    {
+        xmin = std::min(xmin, c[i][0]);
+        xmax = std::max(xmax, c[i][0]);
+        ymin = std::min(ymin, c[i][1]);
+        ymax = std::max(ymax, c[i][1]);
+        zmin = std::min(zmin, c[i][2]);
+        zmax = std::max(zmax, c[i][2]);
+    }
+
+    extents[0] = xmin;
+    extents[1] = xmax;
+    extents[2] = ymin;
+    extents[3] = ymax;
+    extents[4] = zmin;
+    extents[5] = zmax;
+
+    // Assumes 2D.
+    area = (xmax - xmin) * (ymax - ymin);
 }
