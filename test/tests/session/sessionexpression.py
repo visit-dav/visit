@@ -20,7 +20,7 @@
 
 TurnOnAllAnnotations()
 RestoreSessionWithDifferentSources(tests_path("session","sessionexpression.session"), 0,
-                                   ( silo_data_path("globe.silo"),
-                                     silo_data_path("wave.visit")))
+                                   ( silo_data_path("wave.visit"),
+                                     silo_data_path("globe.silo")))
 Test("sessionexpression00")
 Exit()
