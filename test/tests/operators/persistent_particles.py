@@ -8,7 +8,7 @@
 #
 # ----------------------------------------------------------------------------
 
-OpenDatabase(data_path("synergia_test_data/vis_particles_*.h5 database"),0, "Vs")
+OpenDatabase(data_path("synergia_test_data/vis_particles_* database"),0, "Vs")
 
 AddPlot("Pseudocolor", "particles_6")
 AddOperator("Threshold")
@@ -114,7 +114,7 @@ PseudocolorAtts.pointSizeVar = "default"
 PseudocolorAtts.pointSizePixels = 2
 PseudocolorAtts.lineStyle = PseudocolorAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
 PseudocolorAtts.lineWidth = 0
-PseudocolorAtts.opacityType = PseudocolorAtts.Explicit  # Explicit, ColorTable
+PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque
 SetPlotOptions(PseudocolorAtts)
 PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.legendFlag = 1
@@ -137,7 +137,7 @@ PseudocolorAtts.pointSizeVar = "default"
 PseudocolorAtts.pointSizePixels = 2
 PseudocolorAtts.lineStyle = PseudocolorAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
 PseudocolorAtts.lineWidth = 0
-PseudocolorAtts.opacityType = PseudocolorAtts.Explicit  # Explicit, ColorTable
+PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque
 SetPlotOptions(PseudocolorAtts)
 SetActivePlots((0, 1))
 SetActivePlots(0)
@@ -162,7 +162,7 @@ PseudocolorAtts.pointSizeVar = "default"
 PseudocolorAtts.pointSizePixels = 2
 PseudocolorAtts.lineStyle = PseudocolorAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
 PseudocolorAtts.lineWidth = 0
-PseudocolorAtts.opacityType = PseudocolorAtts.Explicit  # Explicit, ColorTable
+PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque
 SetPlotOptions(PseudocolorAtts)
 DrawPlots()
 Test("persistent_particles_06")
