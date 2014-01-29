@@ -323,6 +323,9 @@ VisWinPathTracker::GetSmartDirectory(const std::string &path)
 //    Kathleen Bonnell, Wed Feb 13 07:52:58 PST 2008 
 //    Call FindLastSlash, which searches for unix and windows style slashes.
 //
+//    Kathleen Biagas, Wed Jan 29 15:21:21 MST 2014
+//    Check size before taking substring.
+//
 // ****************************************************************************
 
 void
@@ -357,8 +360,12 @@ VisWinPathTracker::UpdatePaths()
         if( path_common == itr->second.GetPath())
             spath = itr->second.GetFileName();
         else
-            spath = itr->second.GetPath().substr(path_common_size+1);
-
+        {
+            if (path_common_size < itr->second.GetPath().size())
+                spath = itr->second.GetPath().substr(path_common_size+1);
+            else
+                spath = itr->second.GetPath();
+        }
 
         itr->second.SetSmartPath(spath);
     }
@@ -369,8 +376,13 @@ VisWinPathTracker::UpdatePaths()
         if( dir_common == itr->second.GetDirectory())
             sdir = dir_common.substr(FindLastSlash(dir_common)+1);
         else
-            sdir = itr->second.GetDirectory().substr(dir_common_size+1);
-        
+        {
+            if (dir_common_size < itr->second.GetDirectory().size())
+                sdir = itr->second.GetDirectory().substr(dir_common_size+1);
+            else
+                sdir = itr->second.GetDirectory();
+        }
+
         itr->second.SetSmartDirectory(sdir);
     }
 }
