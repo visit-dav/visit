@@ -2,7 +2,6 @@
  {"mode":"serial","tests":[
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
-                    {"category":"hybrid","file":"locus.py"},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file": "silo.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file": "silo_altdriver.py","cases":["silo_05","silo_06"]},
@@ -37,7 +36,6 @@
  {"mode":"parallel","tests":[
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
-                    {"category":"hybrid","file":"locus.py"},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"zipwrapper.py"},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
@@ -68,7 +66,6 @@
                     {"category":"database","file": "silo.py","cases":["silo_04","silo_05"]},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
-                    {"category":"hybrid","file":"locus.py"},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file": "silo.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file": "silo_altdriver.py","cases":["silo_05","silo_06"]},
