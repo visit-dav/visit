@@ -33,36 +33,48 @@
 # LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
 # OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
-#
-# Modifications:
-#
-#****************************************************************************/
+#*****************************************************************************
 
-cmake_minimum_required(VERSION 2.8)
+# helper functions for generating ctest compatible results
+# these are all of the tags I am aware of
 
-IF(WIN32)
-    PROJECT(VISIT_DATA)
-ENDIF(WIN32)
+def ctestReportDiff(imdiff, imtype=-1, os=None):
+    """write ctest tag for image difference value"""
+    tag = '<DartMeasurement name="ImageError" type="numeric/double"> %f </DartMeasurement>\n'%(imdiff)
+    if (imtype <= 0):
+        tag += '<DartMeasurement name="BaselineImage" type="text/string">Standard</DartMeasurement>'
+    else:
+       tag += '<DartMeasurement name="BaselineImage" type="numeric/integer"> %d </DartMeasurement>'%(imtype)
+    if os is not None:
+        os.write(tag)
+    return tag
 
-#-----------------------------------------------------------------------------
-# If this directory exists the root CMakeLists.txt adds this directory as a
-# subdirectory to the main VisIt project.
-#
-# Prevent users from running cmake directy in this directory.
-#-----------------------------------------------------------------------------
-IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-    MESSAGE(FATAL_ERROR "VisIt's \"test\" directory cannot be configured "
-                    "independently from the main \"src\" directory. Please "
-                    "run cmake on VisIt's \"src\" directory.")
-ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+def ctestReportDiffImages(testImage, diffImage, validImage, os=None):
+    """write ctest tags for images of a failed test"""
+    tag = '<DartMeasurementFile name="TestImage" type="image/png"> %s </DartMeasurementFile>\n'%(testImage)
+    tag += '<DartMeasurementFile name="DifferenceImage" type="image/png"> %s </DartMeasurementFile>\n'%(diffImage)
+    tag += '<DartMeasurementFile name="ValidImage" type="image/png"> %s </DartMeasurementFile>'%(validImage)
+    if os is not None:
+        os.write(tag)
+    return tag
 
+def ctestReportMissingBaseline(validImage, os=None):
+    """write ctest tags for test failed because of missing baseline"""
+    tag = '<DartMeasurement name="ImageNotFound" type="text/string"> %s </DartMeasurement>'%(validImage)
+    if os is not None:
+        os.write(tag)
+    return tag
 
-MESSAGE(STATUS "Configuring VisIt Testing Python Module")
+def ctestReportWallTime(wallTime, os=None):
+    """write ctest tag for timing"""
+    tag = '<DartMeasurement name="WallTime" type="numeric/double"> %f </DartMeasurement>'%(wallTime)
+    if os is not None:
+        os.write(tag)
+    return tag
 
-PYTHON_ADD_DISTUTILS_SETUP(visit_testing_py_setup
-                           site-packages
-                           setup.py)
-
-IF(BUILD_TESTING)
-    SUBDIRS(tests)
-ENDIF()
+def ctestReportCPUTime(cpuTime, os=None):
+    """write ctest tag for timing"""
+    tag = '<DartMeasurement name="CPUTime" type="numeric/double"> %f </DartMeasurement>'%(cpuTime)
+    if os is not None:
+        os.write(tag)
+    return tag

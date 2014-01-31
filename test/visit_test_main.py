@@ -74,6 +74,7 @@ except ImportError, err:
 sys.path.append(os.path.abspath(os.path.split(__visit_script_file__)[0]))
 
 from visit_test_common import *
+from visit_test_ctest import *
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -662,7 +663,8 @@ def HTMLAssertTestResult(case_name,status,assert_check,result,details):
 # ----------------------------------------------------------------------------
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
-                       tPixs, pPixs, dPixs, dpix, davg):
+                       tPixs, pPixs, dPixs, dpix, davg,
+                       cur, diff, base):
     """
     Log the result of an image based test.
     """
@@ -676,6 +678,8 @@ def LogImageTestResult(case_name,
     elif diffState == 'Unacceptable':
         status  = "failed"
         details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" % (tPixs, pPixs, dPixs, dpix, davg)
+        Log(ctestReportDiff(dPixs))
+        Log(ctestReportDiffImages(cur,diff,base))
     elif diffState == 'Skipped':
         status = "skipped"
     else:
@@ -820,7 +824,8 @@ def Test(case_name, altSWA=0, alreadySaved=0):
         TestEnv.results["numskip"]+= 1
 
     LogImageTestResult(case_name,diffState, modeSpecific,
-                       dpix, tPixs, pPixs, dPixs, davg)
+                       dpix, tPixs, pPixs, dPixs, davg,
+                       cur, diff, base)
 
     # update maxmimum diff state
     diffVals = {
@@ -1063,6 +1068,7 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
                 oldimg = oldimg.resize(size, Image.BICUBIC)
         else:
             Log("Warning: No baseline image: %s" % baseline)
+            Log(ctestReportMissingBaseline(baseline))
             oldimg = Image.open(test_module_path('nobaseline.pnm'))
             oldimg = oldimg.resize(size, Image.BICUBIC)
     except:

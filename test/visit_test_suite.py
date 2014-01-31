@@ -61,6 +61,7 @@ from optparse import OptionParser
 
 from visit_test_common import *
 from visit_test_reports import *
+from visit_test_ctest import *
 
 # ----------------------------------------------------------------------------
 #  Method: visit_root
@@ -383,7 +384,8 @@ def default_suite_options():
                       "retry":False,
                       "index":None,
                       "timeout":3600,
-                      "nprocs":nprocs_def}
+                      "nprocs":nprocs_def,
+                      "ctest":False}
     return opts_full_defs
 
 def finalize_options(opts):
@@ -568,6 +570,11 @@ def parse_args():
                       type=int,
                       default=defs["nprocs"],
                       help="number of tests to launch simultaneously [default =%d]" % defs["nprocs"])
+    parser.add_option("--ctest",
+                      default=defs["ctest"],
+                      action="store_true",
+                      help="generate ctest compatible output")
+
     # parse args
     opts, tests = parser.parse_args()
     # note: we want a dict b/c the values could be passed without using optparse
@@ -799,6 +806,8 @@ def main(opts,tests):
     json_index.finalize(etstamp,rtime)
     nskip   = len([ r.skip()  for r in results if r.skip() == True])
     Log("[Test suite run complete @ %s (wall time = %s)]" % (etstamp,rtime))
+    Log(ctestReportWallTime(etime-stime))
+    Log(ctestReportCPUTime(etime-stime))
     if nskip > 0:
         Log("-- %d files due to skip list." % nskip)
     if not error:
@@ -811,6 +820,11 @@ def main(opts,tests):
             Log("!! Test suite run finished with %d errors." % nerrors)
     if opts["cleanup"]:
         cleanup(opts["result_dir"],opts["cleanup_delay"])
+    if opts['ctest']:
+        if not error:
+            sys.exit(0)
+        else:
+            sys.exit(1)
     return pjoin(opts["result_dir"],"results.json")
 
 

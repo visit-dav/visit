@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-442911
 # All rights reserved.
@@ -34,35 +34,38 @@
 # OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #
-# Modifications:
-#
-#****************************************************************************/
+#*****************************************************************************
 
-cmake_minimum_required(VERSION 2.8)
+# template for adding VisIt's python test cases
+# takes a module name and a list of test names
+# constructs the test commands
+MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
+    SET(N_PY_TESTS)
+    LIST(LENGTH PY_TESTS N_PY_TESTS)
+    MESSAGE(STATUS "Configuring ${N_PY_TESTS} python tests for ${MODULE_NAME}")
+    FOREACH(PY_TEST ${PY_TESTS})
+        ADD_TEST(
+            NAME Test${MODULE_NAME}_${PY_TEST}
+            COMMAND python "${VISIT_TEST_DIR}/visit_test_suite.py"
+            --no-skiplist --no-data-check --ctest --cleanup-delay=1
+            --pixdiff=4 -v -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
+            -n 1 -e ${CMAKE_BINARY_DIR}/bin/visit
+            -o ${CMAKE_BINARY_DIR}/PyTestOutput
+            ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
+            )
+    ENDFOREACH()
+ENDMACRO()
 
-IF(WIN32)
-    PROJECT(VISIT_DATA)
-ENDIF(WIN32)
-
-#-----------------------------------------------------------------------------
-# If this directory exists the root CMakeLists.txt adds this directory as a
-# subdirectory to the main VisIt project.
-#
-# Prevent users from running cmake directy in this directory.
-#-----------------------------------------------------------------------------
-IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-    MESSAGE(FATAL_ERROR "VisIt's \"test\" directory cannot be configured "
-                    "independently from the main \"src\" directory. Please "
-                    "run cmake on VisIt's \"src\" directory.")
-ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-
-
-MESSAGE(STATUS "Configuring VisIt Testing Python Module")
-
-PYTHON_ADD_DISTUTILS_SETUP(visit_testing_py_setup
-                           site-packages
-                           setup.py)
-
-IF(BUILD_TESTING)
-    SUBDIRS(tests)
-ENDIF()
+SUBDIRS(
+    databases
+    faulttolerance
+    hybrid
+    #leaks
+    meshtype
+    operators
+    plots
+    queries
+    rendering
+    session
+    unit
+    )
