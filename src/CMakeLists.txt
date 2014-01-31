@@ -852,17 +852,42 @@ VISIT_INSTALLED_VERSION_ARCHIVES
 VISIT_INSTALLED_VERSION_INCLUDE
 )
 
-# Setup native regression testing
-# deafult to off until things are
-# settled down
-SET(BUILD_TESTING OFF CACHE BOOL "Build testing tree")
+# experimental!!
+# ctest/cdash testing support
+SET(BUILD_TESTING OFF CACHE BOOL "Enable ctest hooks into VisIt's regression suite")
 IF(BUILD_TESTING)
+    # enable native cmake testing
     INCLUDE(CTest)
     CONFIGURE_FILE(
         "${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake"
         @ONLY)
-    SUBDIRS(tests)
+    # notes:
+    # * visit test sources aren't in the source tree
+    # * and baseline images are currently with test sources
+    # * test data is generated from a set of programs
+    #   that need to be built, also not in the source tree,
+    #   but configured by this cmake lists file
+    SET(VISIT_TEST_DIR "${VISIT_SOURCE_DIR}/../test"
+        CACHE PATH "Path to VisIt's regression suite")
+    SET(VISIT_BASELINE_DIR "${VISIT_SOURCE_DIR}/../test/baseline"
+        CACHE PATH "Path to baseline images used by VisIt's regression suite")
+    SET(VISIT_DATA_DIR "${CMAKE_BINARY_DIR}/data"
+        CACHE PATH "Path to data used by VisIt's regression suite")
+    # make it obvous if we do not have any of these, as
+    # this will likely be a source of confusion for the
+    # uninitiated
+    IF ((NOT EXISTS VISIT_TEST_DIR) OR (NOT EXISTS VISIT_DATA_DIR)
+       OR (NOT EXISTS VISIT_BASELINE_DIR))
+        MESSAGE(ERROR
+           "CTest based testing requires a checkout of trunk/test and trunk/data")
+    ENDIF()
+    # add a phony target to be sure that data for tests is
+    # generated/updated during the build
+    ADD_CUSTOM_TARGET(testing ALL)
+    ADD_DEPENDENCIES(testing testdata)
+    # configure tests
+    SUBDIRS(${VISIT_TEST_DIR})
 ENDIF()
 
 MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
@@ -2344,15 +2369,20 @@ ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 #-----------------------------------------------------------------------------
 # Add the "test" directory if it exists
 #-----------------------------------------------------------------------------
-IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
-    IF(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../test
-                         ${CMAKE_CURRENT_BINARY_DIR}/test)
-    ELSE(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../test
-                         ${VISIT_SOURCE_DIR}/../test)
-    ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
-ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
+# I'm trying to make the new tetsing work hramoniously with the old testing
+# while it's evaluated. if the new testing were ever made permanent then
+# this code would be removed.
+IF (NOT BUILD_TESTING)
+    IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
+        IF(VISIT_OUT_OF_SOURCE_BUILD)
+            ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../test
+                             ${CMAKE_CURRENT_BINARY_DIR}/test)
+        ELSE(VISIT_OUT_OF_SOURCE_BUILD)
+            ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../test
+                             ${VISIT_SOURCE_DIR}/../test)
+        ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
+    ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
+ENDIF()
 
 
 #-----------------------------------------------------------------------------
