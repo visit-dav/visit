@@ -47,14 +47,46 @@ MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
         ADD_TEST(
             NAME Test${MODULE_NAME}_${PY_TEST}
             COMMAND python "${VISIT_TEST_DIR}/visit_test_suite.py"
-            --no-skiplist --no-data-check --ctest --cleanup-delay=1
-            --pixdiff=4 -v -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
-            -n 1 -e ${CMAKE_BINARY_DIR}/bin/visit
+            --no-skiplist --no-data-check --ctest -n 1
+            --cleanup-delay=1 --pixdiff=4 --lessverbose
+            -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
+            -e ${CMAKE_BINARY_DIR}/bin/visit
             -o ${CMAKE_BINARY_DIR}/PyTestOutput
             ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
             )
     ENDFOREACH()
 ENDMACRO()
+
+# macro for tests that depend on third party libraries
+# ie that built by build_visit
+MACRO(PY_3RDPARTY_TEST TESTLIST LIBNAME TESTNAME)
+    SET(LOCATOR "${LIBNAME}_FOUND")
+    IF(${LOCATOR})
+        #MESSAGE(STATUS "adding tests for ${LIBNAME}")
+        LIST(APPEND ${TESTLIST} ${TESTNAME} ${ARGN})
+    ENDIF()
+ENDMACRO()
+
+# like the preceeding macro, but supports multiple 3rd party
+# dependencies. has the following keywaord args: TESTLIST,
+# LIBNAMES, TESTNAMES
+FUNCTION(PY_3RDPARTIES_TEST)
+    SET(OPTS)
+    SET(VALS TESTLIST)
+    SET(MVALS LIBNAMES TESTNAMES)
+    CMAKE_PARSE_ARGUMENTS(PY3T "${OPTS}" "${VALS}" "${MVALS}" ${ARGN})
+    SET(LIBS_FOUND TRUE)
+    FOREACH(PY3T_LIBNAME PY3T_LIBNAMES)
+        SET(LOCATOR "${PY3T_LIBNAME}_FOUND")
+        IF(NOT ${LOCATOR})
+            SET(LIBS_FOUND FALSE)
+        ENDIF()
+    ENDFOREACH()
+    IF(LIBS_FOUND)
+        #MESSAGE(STATUS "adding tests for ${PY3T_LIBNAMES}")
+        LIST(APPEND ${PY3T_TESTLIST} ${PY3T_TESTNAMES} ${ARGN})
+    ENDIF()
+ENDFUNCTION()
 
 SUBDIRS(
     databases
@@ -67,5 +99,4 @@ SUBDIRS(
     queries
     rendering
     session
-    unit
-    )
+    unit)

@@ -36,31 +36,19 @@
 #
 #*****************************************************************************
 
-SET(PY_TESTS
-    box
-    cart_proj
-    clip
-    cracksclipper
-    defer_expr
-    displace
-    dual_mesh
-    elevate
-    ex_surf
-    indexselect
-    inverse_ghost_zone
-    isovolume
-    moveoperators
-    multires
-    onionpeel
-    operators
-    persistent_particles
-    reflect
-    resample
-    slice
-    threeslice
-    threshold
-    transform
-    tube
-    )
+SET(PY_TESTS cracksclipper multires tube)
+
+PY_3RDPARTY_TEST(PY_TESTS SILO
+    box clip defer_expr dual_mesh elevate ex_surf indexselect
+    isovolume moveoperators onionpeel operators reflect resample
+    slice threeslice threshold transform)
+
+PY_3RDPARTY_TEST(PY_TESTS NETCDF cart_proj)
+
+PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
+     LIBNAMES SILO BOXLIB
+     TESTNAMES displace inverse_ghost_zone)
+
+PY_3RDPARTY_TEST(PY_TESTS HDF5 persistent_particles)
 
 ADD_VISIT_PY_TESTS(Operators "${PY_TESTS}")

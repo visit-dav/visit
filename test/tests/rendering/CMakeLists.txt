@@ -36,30 +36,12 @@
 #
 #*****************************************************************************
 
-SET(PY_TESTS
-    annotation
-    axistitles
-    bigdata
-    colortexture
-    compositing
-    evalcubic
-    legends
-    lighting
-    offscreensave
-    renderpoints
-    saveformats
-    scalable2
-    scalable_c
-    scalable
-    shadows
-    specular
-    text2d
-    timeslider
-    transparency
-    tuvok
-    viewChange
-    view
-    volume
-    )
+SET(PY_TESTS)
+
+PY_3RDPARTY_TEST(PY_TESTS SILO
+    annotation axistitles bigdata colortexture compositing
+    evalcubic legends lighting offscreensave renderpoints
+    saveformats scalable2 scalable shadows specular text2d
+    timeslider transparency tuvok viewChange view volume)
 
 ADD_VISIT_PY_TESTS(Rendering "${PY_TESTS}")

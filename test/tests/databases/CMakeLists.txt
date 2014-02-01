@@ -37,75 +37,31 @@
 #*****************************************************************************
 
 SET(PY_TESTS
-    activesource
-    ANALYZE
-    ANSYS
-    bov
-    boxlib
-    Cale
-    CGNS
-    chgcar
-    Chombo
-    claw
-    closedatabase
-    correlation
-    curve
-    ddcMD
-    diff
-    empty_db
-    EnSight
-    exodus
-    export_db
-    FITS
-    flash
-    Fluent
-    GDAL
-    global_node_ids
-    h5part
-    history
-    image
-    imgvol
-    itaps
-    kulllite
-    lata
-    leos
-    metadata
-    mili
-    miranda
-    multi_format2
-    multi_format
-    NASTRAN
-    netcdf
-    oldsilo
-    OpenFOAM
-    overlink
-    PATRAN
-    pdbdatabase
-    pixie
-    ProteinDataBank
-    RAW
-    rect
-    reopen
-    sami
-    samrai
-    scale_mesh
-    shapefile
-    silo_altdriver
-    silo_datatypes
-    silo
-    singlemulti
-    tecplot
-    timesliders
-    unv
-    Velodyne
-    vista
-    vtk
-    wave_tv
-    xdmf
-    xform_precision
-    Xmdv
-    xyz
-    zipwrapper
-    )
+    ANALYZE ANSYS bov chgcar claw curve ddcMD diff Fluent
+    image imgvol itaps lata leos miranda NASTRAN OpenFOAM
+    overlink PATRAN RAW rect scale_mesh shapefile singlemulti
+    tecplot unv vtk Xmdv xyz zipwrapper)
+PY_3RDPARTY_TEST(PY_TESTS BOXLIB boxlib)
+PY_3RDPARTY_TEST(PY_TESTS CGNS CGNS)
+PY_3RDPARTY_TEST(PY_TESTS XDMF xdmf)
+PY_3RDPARTY_TEST(PY_TESTS NETCDF exodus netcdf)
+PY_3RDPARTY_TEST(PY_TESTS CFITSIO FITS)
+PY_3RDPARTY_TEST(PY_TESTS GDAL GDAL)
+PY_3RDPARTY_TEST(PY_TESTS MILI mili)
+PY_3RDPARTY_TEST(PY_TESTS H5PART h5part)
+PY_3RDPARTY_TEST(PY_TESTS SILO
+        activesource correlation Cale closedatabase empty_db
+        export_db global_node_ids history kulllite metadata
+        multi_format multi_format2 oldsilo pdbdatabase
+        ProteinDataBank reopen sami silo_altdriver
+        silo_datatypes silo timesliders xform_precision
+        wave_tv)
+IF(NOT WIN32)
+    PY_3RDPARTY_TEST(PY_TESTS SILO vista)
+ENDIF()
+PY_3RDPARTY_TEST(PY_TESTS HDF5 Chombo flash pixie samrai Velodyne)
+IF(TARGET vtkIOEnSight)
+    LIST(APPEND PY_TESTS EnSight)
+ENDIF()
 
 ADD_VISIT_PY_TESTS(Database "${PY_TESTS}")

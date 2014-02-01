@@ -37,27 +37,15 @@
 #*****************************************************************************
 
 SET(PY_TESTS
-    curve
-    label
-    mesh_c
-    mesh
-    multicolor
-    parcoords
-    pathlines
-    pics
-    ray_trace
-    scatter
-    singlecolor
-    sl_integration
-    sl_termination
-    streamline_geom
-    streamlines
-    subset
-    surface
-    tensor
-    truecolor
-    vector
-    volumePlot
-    )
+    pathlines pics truecolor)
+
+PY_3RDPARTY_TEST(PY_TESTS SILO
+    curve mesh multicolor parcoords ray_trace scatter
+    singlecolor sl_integration sl_termination streamline_geom
+    streamlines surface tensor vector volumePlot)
+
+PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
+    LIBNAMES SILO BOXLIB
+    TESTNAMES label subset)
 
 ADD_VISIT_PY_TESTS(Plots "${PY_TESTS}")

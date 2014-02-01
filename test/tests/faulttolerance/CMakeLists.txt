@@ -36,9 +36,6 @@
 #
 #*****************************************************************************
 
-SET(PY_TESTS
-    badfile.py
-    savewindow.py
-    )
-
+SET(PY_TESTS savewindow)
+PY_3RDPARTY_TEST(PY_TESTS SILO badfile)
 ADD_VISIT_PY_TESTS(FaultTolerance "${PY_TESTS}")
