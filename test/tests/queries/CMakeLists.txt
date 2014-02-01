@@ -36,32 +36,25 @@
 #
 #*****************************************************************************
 
-SET(PY_TESTS
-    avg_value
-    bestfitline
-    casetest
-    centroid
-    conncomp
-    curvature
-    database
-    hohlraum
-    kurtosis
-    l2norm
-    length
-    line_scan
-    pickarray
-    pickcleanzonesonly
-    pick
-    py_queries
-    py_query_script_00
-    py_query_script_01
-    queriesOverTime
-    queryMultiWindow
-    revolved_surface_area
-    scf
-    streamlineInfo
-    watertight
-    xrayimage
-    )
+SET(PY_TESTS kurtosis)
+
+PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
+    LIBNAMES SILO NETCDF
+    TESTNAMES conncomp)
+
+PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
+    LIBNAMES SILO BOXLIB
+    TESTNAMES pick)
+
+PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
+    LIBNAMES SILO MILI
+    TESTNAMES queriesOverTime)
+
+PY_3RDPARTY_TEST(PY_TESTS SILO
+    avg_value bestfitline casetest centroid curvature
+    database hohlraum l2norm length line_scan pickarray
+    pickcleanzonesonly py_queries queryMultiWindow
+    revolved_surface_area scf streamlineInfo watertight
+    xrayimage)
 
 ADD_VISIT_PY_TESTS(Queries "${PY_TESTS}")

@@ -36,19 +36,11 @@
 #
 #*****************************************************************************
 
-SET(PY_TESTS
-    colortable
-    correlationsession
-    legendproperties
-    rect3d-contour
-    restorewithsources
-    selection
-    sessionexpression
-    sessionview
-    simplekeyframe
-    textannot
-    view3d
-    wavecontour
-    )
+SET(PY_TESTS)
+
+PY_3RDPARTY_TEST(PY_TESTS SILO
+    colortable correlationsession legendproperties rect3d-contour
+    restorewithsources selection sessionexpression sessionview
+    simplekeyframe textannot view3d wavecontour)
 
 ADD_VISIT_PY_TESTS(Session "${PY_TESTS}")

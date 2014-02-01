@@ -36,14 +36,9 @@
 #
 #*****************************************************************************
 
-SET(PY_TESTS
-    arbpoly
-    csg
-    degen_mesh
-    emptydomains
-    globe
-    point
-    rect3d
-    )
+SET(PY_TESTS degen_mesh)
+
+PY_3RDPARTY_TEST(PY_TESTS SILO
+    arbpoly csg globe point emptydomains rect3d)
 
 ADD_VISIT_PY_TESTS(MeshType "${PY_TESTS}")
