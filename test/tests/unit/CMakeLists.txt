@@ -37,7 +37,7 @@
 #*****************************************************************************
 
 SET(PY_TESTS
-    embedded
+    #embedded
     launcher
     mrucache
     namescheme
