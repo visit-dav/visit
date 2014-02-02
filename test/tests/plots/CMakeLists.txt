@@ -37,7 +37,9 @@
 #*****************************************************************************
 
 SET(PY_TESTS
-    pathlines pics truecolor)
+    pathlines
+    #pics
+    truecolor)
 
 PY_3RDPARTY_TEST(PY_TESTS SILO
     curve mesh multicolor parcoords ray_trace scatter
