@@ -877,9 +877,9 @@ IF(BUILD_TESTING)
     # make it obvous if we do not have any of these, as
     # this will likely be a source of confusion for the
     # uninitiated
-    IF ((NOT EXISTS VISIT_TEST_DIR) OR (NOT EXISTS VISIT_DATA_DIR)
-       OR (NOT EXISTS VISIT_BASELINE_DIR))
-        MESSAGE(ERROR
+    IF ((NOT EXISTS ${VISIT_TEST_DIR}) OR (NOT EXISTS ${VISIT_BASELINE_DIR})
+       OR ((NOT EXISTS ${VISIT_DATA_DIR}) AND (NOT EXISTS "${VISIT_SOURCE_DIR}/../data")))
+        MESSAGE(FATAL_ERROR
            "CTest based testing requires a checkout of trunk/test and trunk/data")
     ENDIF()
     # add a phony target to be sure that data for tests is
