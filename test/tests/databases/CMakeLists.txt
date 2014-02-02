@@ -38,9 +38,9 @@
 
 SET(PY_TESTS
     ANALYZE ANSYS bov chgcar claw curve ddcMD diff Fluent
-    image imgvol itaps lata leos miranda NASTRAN OpenFOAM
-    overlink PATRAN RAW rect scale_mesh shapefile singlemulti
-    tecplot unv vtk Xmdv xyz zipwrapper)
+    image imgvol lata leos miranda NASTRAN OpenFOAM overlink
+    PATRAN RAW rect scale_mesh shapefile singlemulti tecplot
+    unv vtk Xmdv xyz zipwrapper)
 PY_3RDPARTY_TEST(PY_TESTS BOXLIB boxlib)
 PY_3RDPARTY_TEST(PY_TESTS CGNS CGNS)
 PY_3RDPARTY_TEST(PY_TESTS XDMF xdmf)
@@ -63,5 +63,7 @@ PY_3RDPARTY_TEST(PY_TESTS HDF5 Chombo flash pixie samrai Velodyne)
 IF(TARGET vtkIOEnSight)
     LIST(APPEND PY_TESTS EnSight)
 ENDIF()
-
+IF(ITAPS_DIRS)
+    LIST(APPEND PY_TESTS itaps)
+ENDIF()
 ADD_VISIT_PY_TESTS(Database "${PY_TESTS}")
