@@ -3,5 +3,8 @@
     <CXXFLAGS>
       ${VISIT_INCLUDE_DIR}/avt/View
     </CXXFLAGS>
+    <LIBS>
+      avtview
+    </LIBS>
     <FilePatterns> *.mrtest </FilePatterns>
   </Plugin>

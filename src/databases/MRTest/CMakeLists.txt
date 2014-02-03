@@ -50,6 +50,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
 )
 
+
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} )
 
 ADD_LIBRARY(IMRTestDatabase ${LIBI_SOURCES})
@@ -58,19 +59,19 @@ SET(INSTALLTARGETS IMRTestDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MMRTestDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MMRTestDatabase visitcommon avtdbatts avtdatabase_ser )
+    TARGET_LINK_LIBRARIES(MMRTestDatabase visitcommon avtdbatts avtdatabase_ser avtview )
     ADD_TARGET_DEFINITIONS(MMRTestDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MMRTestDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMRTestDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMRTestDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EMRTestDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser avtview )
 ADD_TARGET_DEFINITIONS(EMRTestDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMRTestDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMRTestDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMRTestDatabase_par visitcommon avtdatabase_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EMRTestDatabase_par visitcommon avtdatabase_par avtpipeline_par avtview )
     ADD_TARGET_DEFINITIONS(EMRTestDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMRTestDatabase_par)
 ENDIF(VISIT_PARALLEL)
