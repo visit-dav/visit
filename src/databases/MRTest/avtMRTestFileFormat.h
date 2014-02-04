@@ -47,6 +47,7 @@
 
 #include <vector>
 
+class avtMultiresSelection;
 
 // ****************************************************************************
 //  Class: avtMRTestFileFormat
@@ -93,6 +94,12 @@ class avtMRTestFileFormat : public avtSTMDFileFormat
 
     std::vector<avtDataSelection_p>  selectionsList;
     std::vector<bool>               *selectionsApplied;
+
+    avtMultiresSelection  *selection;
+    double                 transformMatrix[16];
+    double                 cellArea;
+
+    void                   GetSelection();
 
     void                   CalculateMesh2d(double &, double &,
                                double &, double &, int &, int &);

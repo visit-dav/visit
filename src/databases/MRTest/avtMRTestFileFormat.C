@@ -57,6 +57,7 @@
 #include <vtkRectilinearGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtParallel.h>
 #include <avtMultiresSelection.h>
 #include <avtView2D.h>
 #include <avtView3D.h>
@@ -130,10 +131,10 @@ avtMRTestFileFormat::avtMRTestFileFormat(const char *fname)
 {
     filename = fname;
 
-    meshNx = 4096, meshNy = 4096; meshNz = 1024;
+    meshNx = 4096, meshNy = 4096; meshNz = 512;
     meshXmin = 0., meshXmax = 4096., meshYmin = 0., meshYmax = 4096.;
-    meshZmin = 0., meshZmax = 1024.;
-    coarseNx = 64, coarseNy = 64; coarseNz = 16;
+    meshZmin = 0., meshZmax = 512.;
+    coarseNx = 64, coarseNy = 64; coarseNz = 8;
     maxLevel2d = 18; maxLevel3d = 6;
 }
 
@@ -252,6 +253,8 @@ avtMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->Add(new avtScalarMetaData("Mandelbrot", "Mesh", AVT_ZONECENT));
 
     md->Add(new avtScalarMetaData("Mandelbrot3d", "Mesh3d", AVT_ZONECENT));
+
+    md->SetFormatCanDoDomainDecomposition(true);
 }
 
 
@@ -282,6 +285,11 @@ avtMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtMRTestFileFormat::GetMesh(int domain, const char *meshname)
 {
+    GetSelection();
+
+    if (PAR_Rank() > 0)
+        return NULL;
+
     if (strcmp(meshname, "Mesh") == 0)
     {
         return GetMesh2d();
@@ -319,6 +327,11 @@ avtMRTestFileFormat::GetMesh(int domain, const char *meshname)
 vtkDataArray *
 avtMRTestFileFormat::GetVar(int domain, const char *varname)
 {
+    GetSelection();
+
+    if (PAR_Rank() > 0)
+        return NULL;
+
     if (strcmp(varname, "Mandelbrot") == 0)
     {
         return GetVar2d();
@@ -328,6 +341,45 @@ avtMRTestFileFormat::GetVar(int domain, const char *varname)
         return GetVar3d();
     }
 }
+ 
+
+// ****************************************************************************
+//  Method: avtMRTestFileFormat::GetSelection
+//
+//  Purpose:
+//    Get the multi resolution data selection.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Jan 30 09:45:05 PST 2014
+//
+// ****************************************************************************
+
+void
+avtMRTestFileFormat::GetSelection()
+{
+    //
+    // Get the multi resolution data selection. Set default values for the
+    // transform matrix and cell area in case there isn't a multi resolution
+    // data selection.
+    //
+    for (int i = 0; i < 16; i++)
+        transformMatrix[i] = DBL_MAX;
+    cellArea = .002;
+
+    selection = NULL;
+    for (int i = 0; i < selectionsList.size(); i++)
+    {
+        if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
+        {
+            selection = (avtMultiresSelection *) *(selectionsList[i]);
+            selection->GetCompositeProjectionTransformMatrix(transformMatrix);
+            cellArea = selection->GetDesiredCellArea();
+
+            (*selectionsApplied)[i] = true;
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtMRTestFileFormat::CalculateMesh2d
@@ -358,28 +410,10 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     double &tileYmin, double &tileYmax, int &nx, int &ny)
 {
     //
-    // Get the multi resolution data selection.
+    // Calculate the extents and view area.
     //
-    double transformMatrix[16] = {DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
-                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
-                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
-                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX};
-    double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
     double extents[6] = {meshXmin, meshXmax, meshYmin, meshYmax, 0., 0.};
-    double cellArea = .002;
-
-    avtMultiresSelection *selection = NULL;
-    for (int i = 0; i < selectionsList.size(); i++)
-    {
-        if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
-        {
-            selection = (avtMultiresSelection *) *(selectionsList[i]);
-            selection->GetCompositeProjectionTransformMatrix(transformMatrix);
-            cellArea = selection->GetDesiredCellArea();
-
-            (*selectionsApplied)[i] = true;
-        }
-    }
+    double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
     if (transformMatrix[0] != DBL_MAX && transformMatrix[1] != DBL_MAX &&
         transformMatrix[2] != DBL_MAX && transformMatrix[3] != DBL_MAX)
     {
@@ -463,10 +497,10 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     //
     if (selection != NULL)
     {
-        extents[0] = tileXmin;
-        extents[1] = tileXmax;
-        extents[2] = tileYmin;
-        extents[3] = tileYmax;
+        extents[0] = tileXmin > meshXmin ? tileXmin : -DBL_MAX;
+        extents[1] = tileXmax < meshXmax ? tileXmax : DBL_MAX;
+        extents[2] = tileYmin > meshYmin ? tileYmin : -DBL_MAX;
+        extents[3] = tileYmax < meshYmax ? tileYmax : DBL_MAX;
         extents[4] = 0.;
         extents[5] = 0.;
 
@@ -512,29 +546,11 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     int &nx, int &ny, int &nz)
 {
     //
-    // Get the multi resolution data selection.
+    // Calculate the extents and view area.
     //
-    double transformMatrix[16] = {DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
-                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
-                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
-                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX};
-    double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
     double extents[6] = {meshXmin, meshXmax, meshYmin, meshYmax,
                          meshZmin, meshZmax};
-    double cellArea = .002;
-
-    avtMultiresSelection *selection = NULL;
-    for (int i = 0; i < selectionsList.size(); i++)
-    {
-        if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
-        {
-            selection = (avtMultiresSelection *) *(selectionsList[i]);
-            selection->GetCompositeProjectionTransformMatrix(transformMatrix);
-            cellArea = selection->GetDesiredCellArea();
-
-            (*selectionsApplied)[i] = true;
-        }
-    }
+    double viewArea = (meshXmax - meshXmin) * (meshYmax - meshYmin);
     if (transformMatrix[0] != DBL_MAX && transformMatrix[1] != DBL_MAX &&
         transformMatrix[2] != DBL_MAX && transformMatrix[3] != DBL_MAX)
     {
@@ -642,12 +658,12 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     //
     if (selection != NULL)
     {
-        extents[0] = tileXmin;
-        extents[1] = tileXmax;
-        extents[2] = tileYmin;
-        extents[3] = tileYmax;
-        extents[4] = tileZmin;
-        extents[5] = tileZmax;
+        extents[0] = tileXmin > meshXmin ? tileXmin : -DBL_MAX;
+        extents[1] = tileXmax < meshXmax ? tileXmax : DBL_MAX;
+        extents[2] = tileYmin > meshYmin ? tileYmin : -DBL_MAX;
+        extents[3] = tileYmax < meshYmax ? tileYmax : DBL_MAX;
+        extents[4] = tileZmin > meshZmin ? tileZmin : -DBL_MAX;
+        extents[5] = tileZmax < meshZmax ? tileZmax : DBL_MAX;
 
         double xDelta, yDelta, zDelta;
         xDelta = (tileXmax - tileXmin) / nx;
