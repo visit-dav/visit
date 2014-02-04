@@ -3123,6 +3123,7 @@ ViewerWindowManager::SetView3DFromClient()
     view3d.shear[0] = view3DClientAtts->GetShear()[0];
     view3d.shear[1] = view3DClientAtts->GetShear()[1];
     view3d.shear[2] = view3DClientAtts->GetShear()[2];
+    view3d.windowValid = view3DClientAtts->GetWindowValid();
 
     //
     // Set the 3D view for the active viewer window.

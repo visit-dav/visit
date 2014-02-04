@@ -4534,7 +4534,7 @@ ViewerWindow::RecenterView3d(const double *limits)
     //
     // Mark the view as valid.
     //
-    view3D.windowValid = false;
+    view3D.windowValid = true;
 
     //
     // Update the view.
