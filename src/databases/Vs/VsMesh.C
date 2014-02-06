@@ -44,6 +44,16 @@ VsMesh::~VsMesh() {
   registry->remove(this);
 }
 
+bool VsMesh::isHighOrder() const {
+    VsAttribute* att = getAttribute(VsSchema::VsSubCellLocationsAtt);
+
+    if(att) {
+        return true;
+    }
+
+    return false;
+}
+
 bool VsMesh::hasTransform() const {
   std::string transformName = getTransformName();
   if ((transformName == VsSchema::zrphiTransformKey) && (numSpatialDims == 3)) {
@@ -313,4 +323,24 @@ std::string VsMesh::getAxisLabel(size_t axis) const {
   }
   
   return answer;
+}
+
+std::string VsMesh::getSubCellLocationsDatasetName() const {
+  std::string nodesName;
+  getStringAttribute(VsSchema::VsSubCellLocationsAtt, &nodesName);
+  if(!nodesName.empty()) {
+      return makeCanonicalName(getFullName(), nodesName);
+  }
+}
+
+
+VsDataset* VsMesh::getSubCellLocationsDataset() const  {
+  std::string nodesName = getSubCellLocationsDatasetName();
+  if (nodesName.empty()) {
+    return NULL;
+  }
+
+  VsDataset* answer = registry->getDataset(nodesName);
+
+  return answer; //could be NULL
 }
