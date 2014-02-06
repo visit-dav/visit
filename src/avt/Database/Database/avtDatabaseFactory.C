@@ -1141,13 +1141,22 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
 //    Tom Fogal, Sun May  3 15:33:55 MDT 2009
 //    Marked the functions static.
 //
+//    Kathleen Biagas, Thu Feb 6 13:24:01 PST 2014
+//    Test for file's existence on Windows. Throwing the exception here can
+//    prevent engine crashing elsewhere. (conn_cmfe test with bad_file.silo).
+//
 // ****************************************************************************
 
 #if defined(_WIN32)
 static void
 CheckPermissions(const char *filename)
 {
-   // nothing
+    VisItStat_t s;
+    int result = VisItStat(filename, &s);
+    if (result < 0)
+    {
+        EXCEPTION1(FileDoesNotExistException, filename);
+    }
 }
 
 #else
