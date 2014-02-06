@@ -660,6 +660,11 @@ def HTMLAssertTestResult(case_name,status,assert_check,result,details):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#   Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
+#   Only do ctest logging if ctest is enabled.
+#
 # ----------------------------------------------------------------------------
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
@@ -678,8 +683,9 @@ def LogImageTestResult(case_name,
     elif diffState == 'Unacceptable':
         status  = "failed"
         details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" % (tPixs, pPixs, dPixs, dpix, davg)
-        Log(ctestReportDiff(dPixs))
-        Log(ctestReportDiffImages(cur,diff,base))
+        if TestEnv.params["ctest"]:
+            Log(ctestReportDiff(dPixs))
+            Log(ctestReportDiffImages(cur,diff,base))
     elif diffState == 'Skipped':
         status = "skipped"
     else:
@@ -1044,6 +1050,10 @@ def GetBackgroundImage(file):
 #   Mark C. Miller, Tue Jul 20 19:27:09 PDT 2010
 #   Left in (commented out) line for color image stats. Will use in a later
 #   update to compute max channel difference.
+#
+#   Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
+#   Only do ctest logging if ctest is enabled.
+#
 # ----------------------------------------------------------------------------
 
 def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
@@ -1068,7 +1078,8 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
                 oldimg = oldimg.resize(size, Image.BICUBIC)
         else:
             Log("Warning: No baseline image: %s" % baseline)
-            Log(ctestReportMissingBaseline(baseline))
+            if TestEnv.params["ctest"]:
+                Log(ctestReportMissingBaseline(baseline))
             oldimg = Image.open(test_module_path('nobaseline.pnm'))
             oldimg = oldimg.resize(size, Image.BICUBIC)
     except:

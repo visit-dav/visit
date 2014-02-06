@@ -129,6 +129,9 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
 #    Brad Whitlock, Thu Nov  7 14:00:28 PST 2013
 #    Pass width and height to test.
 #
+#    Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
+#    Pass 'ctest' to test.
+#
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -206,6 +209,7 @@ def launch_visit_test(args):
     tparams["visit_bin"]      = opts["executable"]
     tparams["width"]          = opts["width"]
     tparams["height"]         = opts["height"]
+    tparams["ctest"]          = opts["ctest"]
     if not opts["no_skip"]:
         tparams["skip_file"]  = opts["skip_file"]
     skip  =  check_skip(opts["skip_list"],modes,test_cat,test_file)
@@ -771,6 +775,11 @@ def launch_tests(opts,tests):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#   Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
+#   Only do ctest logging if ctest is enabled.
+#
 # ----------------------------------------------------------------------------
 def main(opts,tests):
     """
@@ -806,8 +815,9 @@ def main(opts,tests):
     json_index.finalize(etstamp,rtime)
     nskip   = len([ r.skip()  for r in results if r.skip() == True])
     Log("[Test suite run complete @ %s (wall time = %s)]" % (etstamp,rtime))
-    Log(ctestReportWallTime(etime-stime))
-    Log(ctestReportCPUTime(etime-stime))
+    if opts['ctest']:
+        Log(ctestReportWallTime(etime-stime))
+        Log(ctestReportCPUTime(etime-stime))
     if nskip > 0:
         Log("-- %d files due to skip list." % nskip)
     if not error:
