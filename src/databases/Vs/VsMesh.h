@@ -49,6 +49,10 @@ public:
   size_t getNumSpatialDims() const;
   size_t getNumTopologicalDims() const;
 
+  virtual bool isHighOrder() const;
+  virtual std::string getSubCellLocationsDatasetName() const;
+  virtual VsDataset* getSubCellLocationsDataset() const;
+
   static VsMesh* buildObject(VsDataset* dataset);
   static VsMesh* buildObject(VsGroup* group);
   
@@ -64,13 +68,16 @@ public:
   virtual bool hasTransform() const;
   virtual std::string getTransformName() const;
   virtual std::string getTransformedMeshName() const;
-  
+
 protected:
   VsMesh(VsObject* object);
   virtual bool initialize() = 0;
   bool initializeRoot();
   void getStringAttribute(std::string attName, std::string* value) const;
   
+  /** Number of nodes per cell **/
+  size_t nodesPerCell;
+
   /** The spatial dimensionality */
   size_t numSpatialDims;
 

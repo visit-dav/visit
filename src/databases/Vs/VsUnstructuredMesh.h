@@ -21,18 +21,20 @@ class VsUnstructuredMesh: public VsMesh {
 public:
   virtual ~VsUnstructuredMesh();
   
-  size_t getNumPoints() const;
-  size_t getNumCells() const;
+  virtual size_t getNumPoints() const;
+  virtual size_t getNumCells() const;
 
   static VsUnstructuredMesh* buildUnstructuredMesh(VsGroup* group);
   
-  virtual bool isUnstructuredMesh() const { return true; }
-  virtual std::string getKind() const;
+  bool isUnstructuredMesh() const { return true; }
+  std::string getKind() const;
   
   //Tweak for Nautilus
   bool hasNodeCorrectionData() const;
   std::string getNodeCorrectionDatasetName() const;
   //end tweak
+
+  VsDataset* getCellInfo();
 
   bool usesSplitPoints() const;
   std::string getPointsDatasetName() const;
@@ -63,13 +65,18 @@ public:
   
   virtual void getCellDims(std::vector<int>& dims) const;
   
-private:
+protected:
   VsUnstructuredMesh(VsGroup* group);
+
   virtual bool initialize();
   size_t numPoints;
   size_t numCells;
   bool splitPoints;
   
+  std::vector<std::string> cellTypes;
+
+private:
+
 };
 
 #endif /* VSUNSTRUCTUREDMESH_H_ */

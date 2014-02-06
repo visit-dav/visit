@@ -31,6 +31,8 @@ struct VsSchema {
   static std::string spatialIndicesAtt;
   static std::string labelsAtt;
   static std::string axisLabelsAtt;
+  static std::string VsSubCellLocationsAtt;
+
   static std::string varKey;
   static std::string vsVarsKey;
   static std::string varWithMeshKey;
@@ -81,6 +83,7 @@ struct VsSchema {
 
   struct Unstructured {
     static std::string key;
+
     static std::string defaultPolygonsName; //polygons
     static std::string defaultPolyhedraName; //polyhedra
     static std::string defaultPointsName; //points

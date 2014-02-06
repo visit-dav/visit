@@ -23,6 +23,44 @@ VsUnstructuredMesh::VsUnstructuredMesh(VsGroup* group):VsMesh(group) {
 VsUnstructuredMesh::~VsUnstructuredMesh() {
 }
 
+/**
+ * Need to search through all possible cell types and figure out which one
+ * is being used.  Currently assumes only one cell type is being used.
+ */
+VsDataset* VsUnstructuredMesh::getCellInfo()
+{
+
+  VsDataset* connectivityMeta = 0;
+
+  // For now users can have only one connectivity dataset.
+  connectivityMeta = getLinesDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getPolygonsDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getTrianglesDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getQuadrilateralsDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getPolyhedraDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getTetrahedralsDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getPyramidsDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getPrismsDataset();
+  if(connectivityMeta!=NULL) return connectivityMeta;
+
+  connectivityMeta = getHexahedralsDataset();
+  return connectivityMeta;
+}
+
 //Tweak for Nautilus
 std::string VsUnstructuredMesh::getNodeCorrectionDatasetName() const {
   return makeCanonicalName(getFullName(), "localToGlobalNodeMapping");

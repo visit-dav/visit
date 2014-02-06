@@ -6,7 +6,7 @@
  *
  * @brief       Implementation reader of data for VSH5 schema
  *
- * @version $Id: VsReader.cpp 64 2013-04-24 21:09:55Z pletzer $
+ * @version $Id: VsReader.cpp 178 2014-01-31 22:33:46Z loverich $
  *
  * Copyright &copy; 2007-2008, Tech-X Corporation
  * See LICENSE file for conditions of use.

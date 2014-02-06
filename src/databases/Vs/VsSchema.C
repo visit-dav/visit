@@ -27,6 +27,7 @@ std::string VsSchema::numSpatialDimsAtt_deprecated = "numSpatialDims";
 std::string VsSchema::spatialIndicesAtt = "vsSpatialIndices";
 std::string VsSchema::labelsAtt = "vsLabels";
 std::string VsSchema::axisLabelsAtt = "vsAxisLabels";
+std::string VsSchema::VsSubCellLocationsAtt = "vsSubCellLocations";
 
 std::string VsSchema::varKey = "variable";
 std::string VsSchema::varWithMeshKey = "variableWithMesh";
