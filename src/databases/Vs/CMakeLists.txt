@@ -39,6 +39,7 @@ VsAttribute.C
 VsFile.C
 VsReader.C
 VsStaggeredField.C
+HighOrderUnstructuredData.C
 )
 
 SET(LIBE_SOURCES
@@ -67,6 +68,7 @@ VsDataset.C
 VsAttribute.C
 VsFile.C
 VsReader.C
+HighOrderUnstructuredData.C
 )
 
 INCLUDE_DIRECTORIES(

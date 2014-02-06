@@ -25,7 +25,7 @@
 HighOrderUnstructuredData::HighOrderUnstructuredData() {
 
     VsLog::initialize(DebugStream::Stream3(), DebugStream::Stream4(),
-                      DebugStream::Stream5());
+            DebugStream::Stream5());
 
     VsLog::debugLog() << CLASSFUNCLINE << "  " << "entering" << std::endl;
 

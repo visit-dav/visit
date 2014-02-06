@@ -312,7 +312,7 @@ size_t VsVariable::getNumComps() const{
   
   size_t res = 0;
   // For unstructured meshes
-  if (meshMeta->isUnstructuredMesh()) {
+  if (meshMeta->isUnstructuredMesh() ) {
     if ((meshDims.size() != 1) && (meshDims.size() != 2)) {
       VsLog::debugLog() << "VsVariable::getNumComps(): error: dataset '" << getFullName() <<
       "' does not have 1 or 2 dimensions.  Number of components unknown." <<
