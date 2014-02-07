@@ -248,13 +248,27 @@ avtMRTestFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     md->Add(mesh3d);
 
-    md->SetFormatCanDoMultires(true);
-
     md->Add(new avtScalarMetaData("Mandelbrot", "Mesh", AVT_ZONECENT));
 
     md->Add(new avtScalarMetaData("Mandelbrot3d", "Mesh3d", AVT_ZONECENT));
 
+    md->SetFormatCanDoMultires(true);
+
+    //
+    // Indicate that we can decompose the data in parallel.
+    //
     md->SetFormatCanDoDomainDecomposition(true);
+
+    //
+    // Providing cycles and times and saying they are accurate causes this
+    // routine to only get called once. Ideally it would be nice to say that
+    // we don't have times or cycles.
+    //
+    md->SetCycle(timestep, 0);
+    md->SetCycleIsAccurate(true, timestep);
+
+    md->SetTime(timestep, 0.);
+    md->SetTimeIsAccurate(true, timestep);
 }
 
 
