@@ -6,7 +6,6 @@
                     {"category":"databases","file": "silo.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file": "silo_altdriver.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file":"zipwrapper.py"},
-                    {"category":"queries","file":"conncomp.py"},
                     {"category":"databases","file":"claw.py","platform":"win"},
                     {"category":"databases","file":"itaps.py","platform":"win"},
                     {"category":"databases","file":"oldsilo.py","platform":"win"},
@@ -45,7 +44,6 @@
                     {"category":"rendering","file":"compositing.py"},
                     {"category":"session","file":"legendproperties.py","cases":["legendproperties00","legendproperties01"]},
                     {"category":"queries","file": "revolved_surface_area.py"},
-                    {"category":"queries","file":"conncomp.py"},
                     {"category":"databases","file":"silo.py","platform":"win","cases":["silo_26"]},
                     {"category":"databases","file":"silo.py","platform":"win","cases":["silo_36"]},
                     {"category":"databases","file":"silo.py","platform":"win","cases":["silo_37"]},
@@ -75,7 +73,6 @@
                     {"category":"operators" ,"file": "transform.py","cases":["ops_transform05"]},
                     {"category":"session","file":"correlationsession.py","cases":["correlationsession00"]},
                     {"category":"session","file":"legendproperties.py","cases":["legendpropeties00","legendproperties01"]},
-                    {"category":"queries","file": "revolved_surface_area.py"},
-                    {"category":"queries","file":"conncomp.py"}
+                    {"category":"queries","file": "revolved_surface_area.py"}
                     ]}
 ]}

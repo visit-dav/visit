@@ -17,6 +17,8 @@
 #    Cyrus Harrison, Wed Jun 15 14:21:10 PDT 2011
 #    Added tests for line meshes.
 #
+#    Kathleen Biagas, Fri Feb  7 08:00:38 PST 2014
+#    Changed sil selection for Exodus.
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("rect2d.silo"), 0)
@@ -123,7 +125,7 @@ OpenDatabase(data_path("exodus_test_data/balls.exodus"))
 AddPlot("Pseudocolor", "_ccl_test_3d")
 silr = SILRestriction()
 silr.TurnOnAll()
-for silSet in (24,25,26,43,44,45,62,63,64,81,82,83):
+for silSet in (5,6,7):
     silr.TurnOffSet(silSet)
 SetPlotSILRestriction(silr)
 
