@@ -1677,7 +1677,7 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
       } // furthest-triad
     else
       {
-      double e1[2], e2[2], e3[2];
+      double e1[3], e2[3], e3[3];
 
       // Find distance to origin
       d2Min = VTK_FLOAT_MAX;
@@ -1713,7 +1713,7 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
         }
 
       // find edge (connected to closest point) on opposite side
-      for ( i=0; i<2; i++)
+      for ( i=0; i<3; i++)
         {
         e1[i] = (pts[xIdx][i] - pts[idx][i]);
         e2[i] = (pts[yIdx][i] - pts[idx][i]);

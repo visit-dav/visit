@@ -321,7 +321,7 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVector &pt ) const
 
 
     {
-        double tmp1[2], pcoord[3], dist2, w[1024];
+        double tmp1[3], pcoord[3], dist2, w[1024];
         int subid;
 
         cell->EvaluatePosition( (double*)&pt.x, tmp1, subid, pcoord, dist2, w );
