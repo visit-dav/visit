@@ -15869,12 +15869,6 @@ visit_exec_client_method(void *data)
             VisItUnlockPythonInterpreter(myThreadState);
 
         PyGILState_STATE state = PyGILState_Ensure();
-        if(PyOS_ReadlineFunctionPointer || _PyOS_ReadlineTState)
-        {
-            PyOS_Readline(0,0,0);
-            PyOS_ReadlineFunctionPointer = NULL;
-            PyThreadState_Delete(_PyOS_ReadlineTState);
-        }
         PyRun_SimpleString("import sys; sys.exit(0)");
         PyGILState_Release(state);
     }
@@ -18551,7 +18545,6 @@ static void *
 visit_eventloop(void *)
 #endif
 {
-    bool viewerQuit = false;
     // This is the event loop for the messaging thread. If it needs to read
     // input from the viewer, it does so and executes the Notify method of
     // all subjects that changed.
@@ -18583,7 +18576,6 @@ visit_eventloop(void *)
                 // Indicate that there is no viewer.
                 //
                 noViewer = true;
-                viewerQuit = true;
 
 #ifndef POLLING_SYNCHRONIZE
                 SYNC_WAKE_MAIN_THREAD();
@@ -18598,20 +18590,6 @@ visit_eventloop(void *)
     }
 
     viewerBlockingRead = false;
-
-    /// HKTODO: should the python client quit if the viewer is killed?
-    if(viewerQuit)
-    {
-        PyGILState_STATE state = PyGILState_Ensure();
-        if(PyOS_ReadlineFunctionPointer || _PyOS_ReadlineTState)
-        {
-            PyOS_Readline(0,0,0);
-            PyOS_ReadlineFunctionPointer = NULL;
-            PyThreadState_Delete(_PyOS_ReadlineTState);
-        }
-        PyRun_SimpleString("import sys; sys.exit(0)");
-        PyGILState_Release(state);
-    }
 
     return NULL;
 }
