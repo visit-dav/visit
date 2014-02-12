@@ -63,13 +63,13 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-export VTK_FILE=${VTK_FILE:-"vtk-6.0.0.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"6.0.0"}
-export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.0"}
+export VTK_FILE=${VTK_FILE:-"VTK-6.1.0.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"6.1.0"}
+export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.1"}
 export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK6.0.0"}
+export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-6.1.0"}
 export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/6.0"}
+export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/6.1"}
 export VTK_MD5_CHECKSUM=""
 export VTK_SHA256_CHECKSUM=""
 }
