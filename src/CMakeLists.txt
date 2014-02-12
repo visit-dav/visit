@@ -481,7 +481,7 @@ FUNCTION(SETUP_VTK_VERSION  ver)
   SET(VTK_MINOR_VERSION   "${vmin}" CACHE INTERNAL "")
 ENDFUNCTION()
 
-# Setup a default VTK version of 6.0.0.  Config-site files can override this
+# Setup a default VTK version of 6.1.0.  Config-site files can override this
 IF(NOT VTK_VERSION)
   IF(VISIT_VTK_VERSION)
       IF(${VISIT_VTK_VERSION} VERSION_LESS ${VTK_MINIMUM_VERSION})
