@@ -5010,6 +5010,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Fixed error where domains[i] wasn't being used to get the correct 
 //    groupName, resulting in incorrect labels for the SIL selection.
 //
+//    Mark C. Miller, Tue Feb 11 19:35:08 PST 2014
+//    Fix size_t/int type mixing in loop completion expression causing loop
+//    body to be executed for empty vectors.
 // ****************************************************************************
 
 void
@@ -5204,7 +5207,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
             else
             {
                 int pos = grpOrigin;
-                for (int j = 0 ; j < groupIdsBasedOnRange.size()-1 ; j++)
+                for (int j = 0 ; j < (int) groupIdsBasedOnRange.size()-1 ; j++)
                 {
                     if (groupIdsBasedOnRange[j] <= domains[i] && domains[i] < groupIdsBasedOnRange[j+1])
                         break;
