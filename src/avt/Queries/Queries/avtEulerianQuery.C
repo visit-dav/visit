@@ -319,6 +319,10 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -380,9 +384,11 @@ avtEulerianQuery::PostExecute(void)
     char msgBuff[500];
     DomainToEulerMap::iterator iter;
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+    MapNode de;
     for (iter = domToEulerMap.begin(); iter != domToEulerMap.end(); iter++)
     {
         string domainName;
+        std::stringstream dns;
         GetInput()->GetQueryableSource()->GetDomainName(
             queryAtts.GetVariables()[0], queryAtts.GetTimeStep(), 
             (*iter).first, domainName);
@@ -390,17 +396,26 @@ avtEulerianQuery::PostExecute(void)
         {
             SNPRINTF(msgBuff, 500, "Eulerian for %s is %d\n", 
                      domainName.c_str(), (*iter).second);
+            dns << domainName;
         }
         else
         {
             SNPRINTF(msgBuff, 500, "Eulerian for domain %d is %d\n", 
                      (*iter).first + blockOrigin, (*iter).second);
+            dns << "domain " << (*iter).first+blockOrigin;
         }
+        de[dns.str()] = (*iter).second;
         msg += msgBuff;
     }
     if (msg.size() == 0)
         msg = "Eulerian could not compute.\n" ;
     SetResultMessage(msg);
+    if (de.GetNumEntries() > 0)
+    {
+        MapNode result_node;
+        result_node["eulerian"] = de;
+        SetXmlResult(result_node.ToXML());
+    }
 }
 
 

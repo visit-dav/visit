@@ -315,6 +315,9 @@ avtSummationQuery::PreExecute(void)
 //    Fix the case where sums.size can return zero, causing a crash when we
 //    index the first element in the empty vector.
 //
+//    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -366,6 +369,11 @@ avtSummationQuery::PostExecute(void)
     // get floating point format string 
     string floatFormat = queryAtts.GetFloatFormat();
 
+    MapNode result_node;
+    if (sums.size() == 1)
+        result_node[variableName] = sums[0];
+    else 
+        result_node[variableName] = sums;
     char buf[1024];
     string str;
     if (CalculateAverage())
@@ -387,6 +395,7 @@ avtSummationQuery::PostExecute(void)
     {
         SNPRINTF(buf, 1024, " %s%s", units.c_str(), unitsAppend.c_str());
         str += buf;
+        result_node["units"] = units+unitsAppend;
     }
     if (!qualifier.empty())
     {
@@ -401,6 +410,7 @@ avtSummationQuery::PostExecute(void)
     //
     SetResultMessage(str);
     SetResultValues(sums);
+    SetXmlResult(result_node.ToXML());
 }
 
 

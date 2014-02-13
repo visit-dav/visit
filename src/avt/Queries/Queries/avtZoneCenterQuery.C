@@ -178,6 +178,9 @@ avtZoneCenterQuery::GetDefaultInputParams(MapNode &params)
 //    Kathleen Biagas, Tue Jun 21 10:14:51 PDT 2011
 //    Domain, Element, useGlobalId retrieved in SetInputParams.
 //
+//    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -227,17 +230,35 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     if (success)
     {
         int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+
+        doubleVector c;
+        c.push_back(coord[0]);
+        c.push_back(coord[1]);
+        if (dim == 3)
+            c.push_back(coord[2]);
+        qA->SetResultsValue(c);
+
+        MapNode result_node;
+        result_node["center"] = c;
+ 
         if (singleDomain)
         {
             string global;
             if (useGlobalId)
+            {
                 global = "global";
+                result_node["global_zone"] = element;
+            }
+            else
+            {
+                result_node["zone"] = element;
+            }
             if (dim == 2)
             {
                 format = "The center of %s zone %d is (" + floatFormat + ", " 
                                                          + floatFormat + ").";
                 SNPRINTF(msg, 120, format.c_str(), 
-                         global.c_str(), element, coord[0], coord[1]);
+                         global.c_str(), element, c[0], c[1]);
             }
             else 
             {
@@ -246,7 +267,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
                                                          + floatFormat + ").";
                 SNPRINTF(msg, 120, format.c_str(), 
                          global.c_str(), element,
-                         coord[0], coord[1], coord[2]);
+                         c[0], c[1], c[2]);
             }
         }
         else
@@ -258,13 +279,15 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             int ts          = queryAtts.GetTimeStep();
             string var      = queryAtts.GetVariables()[0];
             src->GetDomainName(var, ts, dom, domainName);
+            result_node["zone"] = element;
+            result_node["domain"] = domainName;
             if (dim == 2)
             {
                 format = "The center of zone %d (%s) is (" + floatFormat + ", " 
                                                          + floatFormat + ").";
                 SNPRINTF(msg, 120, format.c_str(),
                          element, domainName.c_str(),
-                         coord[0], coord[1]);
+                         c[0], c[1]);
             }
             else 
             {
@@ -273,15 +296,10 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
                                                            + floatFormat + ").";
                 SNPRINTF(msg, 120, format.c_str(), 
                          element, domainName.c_str(),
-                         coord[0], coord[1], coord[2]);
+                         c[0], c[1], c[2]);
             }
         }
-  
-        doubleVector c;
-        c.push_back((double)coord[0]);
-        c.push_back((double)coord[1]);
-        c.push_back((double)coord[2]);
-        qA->SetResultsValue(c);
+        qA->SetXmlResult(result_node.ToXML());
     }
     else
     {

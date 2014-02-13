@@ -112,6 +112,9 @@ avtNumNodesQuery::GetDefaultInputParams(MapNode &params)
 //    Hank Childs, Sat Nov 21 13:25:42 PST 2009
 //    Add long long support.
 //
+//    Kathleen Biagas, Wed Feb 12 08:17:21 PST 2014
+//    Add xml results.
+//
 // ****************************************************************************
 
 void
@@ -151,6 +154,8 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
 
     SumLongLongArrayAcrossAllProcessors(totalNodes, tn, 2);
 
+    MapNode result_node;
+    result_node["num_nodes"] = (int)tn[0];
     if (OriginalData())
         SNPRINTF(msg, 200, "The original number of nodes is %ld.", tn[0]);
     else 
@@ -169,8 +174,9 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
         double results[2] = {(double) tn[0], (double) tn[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);
+        result_node["num_ghost_nodes"] = (int)tn[1];
     }
-
+    qA->SetXmlResult(result_node.ToXML());
     UpdateProgress(1, 0);
 }
 
