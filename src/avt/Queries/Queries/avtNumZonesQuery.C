@@ -122,6 +122,9 @@ avtNumZonesQuery::GetDefaultInputParams(MapNode &params)
 //    Hank Childs, Sat Nov 21 13:10:43 PST 2009
 //    Change counter to long long.
 //
+//    Kathleen Biagas, Wed Feb 12 09:07:34 PST 2014
+//    Add xml results.
+//
 // ****************************************************************************
 
 void
@@ -158,6 +161,9 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     VISIT_LONG_LONG tz[2] = {0, 0};
     SumLongLongArrayAcrossAllProcessors(totalZones, tz, 2);
 
+    MapNode result_node;
+    result_node["num_zones"] = (int)tz[0];
+ 
     if (OriginalData())
         SNPRINTF(msg, 200, "The original number of zones is %ld.", tz[0]);
     else 
@@ -175,7 +181,10 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
         double results[2] = {(double) tz[0], (double) tz[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);
+        result_node["num_ghost_zones"] = (int)tz[1];
     }
+    qA->SetXmlResult(result_node.ToXML());
+
     UpdateProgress(1, 0);
 }
 

@@ -328,6 +328,9 @@ avtCompactnessQuery::MidExecute(void)
 //    Hank Childs, Fri Oct  6 09:39:54 PDT 2006
 //    Made the compactness query return an array for Python.
 //
+//    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -398,6 +401,14 @@ avtCompactnessQuery::PostExecute(void)
     values.push_back(distBound_dv_vol);
     values.push_back(distOrigin_da);
 
+    MapNode result_node;
+    result_node["XSA"] = totalXSectArea;
+    result_node["VOL"] = totalRotVolume;
+    result_node["dist_bound_da_xsa"] = distBound_da_xsa;
+    result_node["dist_bound_da_vol"] = distBound_da_vol;
+    result_node["dist_bound_dv_xsa"] = distBound_dv_xsa;
+    result_node["dist_bound_dv_vol"] = distBound_dv_vol;
+    result_node["dist_origin_da"] = distOrigin_da;
 
     // If we have a density variable available
     if (!densityValid)
@@ -438,9 +449,15 @@ avtCompactnessQuery::PostExecute(void)
         values.push_back(centMassY);
         values.push_back(distBound_dv_den_vol);
         values.push_back(distCMass_dv_den_vol);
+        result_node["MASS"] = totalRotMass;
+        result_node["center_mass_x"] = centMassX;
+        result_node["center_mass_y"] = centMassY;
+        result_node["distBound_dv_den_vol"] = distBound_dv_den_vol;
+        result_node["distCMass_dv_den_vol"] = distCMass_dv_den_vol;
     }
 
     SetResultValues(values);
+    SetXmlResult(result_node.ToXML());
 }
 
 // ****************************************************************************

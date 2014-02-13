@@ -56,8 +56,8 @@ using std::string;
 // ****************************************************************************
 //  Method: avtNodeCoordsQuery constructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 10, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 10, 2004
 //
 //  Modifications:
 //    Kathleen Biagas, Tue Jun 21 10:21:52 PDT 2011
@@ -76,7 +76,7 @@ avtNodeCoordsQuery::avtNodeCoordsQuery() : avtDatasetQuery()
 // ****************************************************************************
 //  Method: avtNodeCoordsQuery destructor
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   June 10, 2004 
 //
 //  Modifications:
@@ -95,16 +95,16 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //  Arguments:
 //    params:   MapNode containing input.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   June 20, 2011 
+//  Programmer: Kathleen Biagas
+//  Creation:   June 20, 2011
 //
 //  Modifications:
 //    Kathleen Biagas, Mon Dec  3 17:32:31 PST 2012
-//    Remove 'domain' requirement.  Single-domain problems shouldn't need to 
+//    Remove 'domain' requirement.  Single-domain problems shouldn't need to
 //    have a domain specified.
 //
 //    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
-//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    Use newer MapNode methods that check for numeric entries and retrieves
 //    to specific type.
 //
 // ****************************************************************************
@@ -133,8 +133,8 @@ avtNodeCoordsQuery::SetInputParams(const MapNode &params)
 //  Arguments:
 //    params:   MapNode to store default input values.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   July 15, 2011 
+//  Programmer: Kathleen Biagas
+//  Creation:   July 15, 2011
 //
 // ****************************************************************************
 
@@ -151,7 +151,7 @@ avtNodeCoordsQuery::GetDefaultInputParams(MapNode &params)
 //  Method: avtNodeCoordsQuery::PerformQuery
 //
 //  Purpose:
-//    Perform the requested query. 
+//    Perform the requested query.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   June 10, 2004 
@@ -161,15 +161,15 @@ avtNodeCoordsQuery::GetDefaultInputParams(MapNode &params)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
-//    Kathleen Bonnell, Tue Jul  6 15:20:56 PDT 2004 
-//    Removed MPI calls, use GetFloatArrayToRootProc. 
+//    Kathleen Bonnell, Tue Jul  6 15:20:56 PDT 2004
+//    Removed MPI calls, use GetFloatArrayToRootProc.
 //
 //    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004 
 //    Moved code that actually finds zone center to FindLocalCenter and
 //    FindGlobalCenter. 
 //
-//    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004 
-//    Add 'global' to output string as necessary. 
+//    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004
+//    Add 'global' to output string as necessary.
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
@@ -183,6 +183,9 @@ avtNodeCoordsQuery::GetDefaultInputParams(MapNode &params)
 //    Kathleen Biagas, Mon Dec  3 17:34:56 PST 2012
 //    Remove use of nodeOrigin to set output message. Element is the correct
 //    id, nodeOrigin taken into acount in the 'Find???Coord' methods.
+//
+//    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
+//    Add Xml results.
 //
 // ****************************************************************************
 
@@ -202,7 +205,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     if (!useGlobalId)
     {
         intVector dlist;
-        avtDataRequest_p dataRequest = 
+        avtDataRequest_p dataRequest =
             GetInput()->GetOriginatingSource()->GetFullDataRequest();
         dataRequest->GetSIL().GetDomainList(dlist);
 
@@ -239,25 +242,42 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     if (success)
     {
         int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+        doubleVector c;
+        c.push_back((double)coord[0]);
+        c.push_back((double)coord[1]);
+        if (dim == 3)
+            c.push_back((double)coord[2]);
+        qA->SetResultsValue(c);
+
+        MapNode result_node;
+        result_node["coord"] = c;
+
         if (singleDomain)
         {
             string global;
             if (useGlobalId)
+            {
                 global = "global";
+                result_node["global_node"] = element;
+            }
+            else
+            {
+                result_node["node"] = element;
+            }
             if (dim == 2)
             {
-                format = "The coords of %s node %d are (" + floatFormat + ", " 
+                format = "The coords of %s node %d are (" + floatFormat + ", "
                                                           + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(), 
+                SNPRINTF(msg, 120, format.c_str(),
                          global.c_str(), element, coord[0], coord[1]);
             }
-            else 
+            else
             {
-                format = "The coords of %s node %d are (" + floatFormat + ", " 
-                                                          + floatFormat + ", " 
+                format = "The coords of %s node %d are (" + floatFormat + ", "
+                                                          + floatFormat + ", "
                                                           + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(), 
-                         global.c_str(), element, 
+                SNPRINTF(msg, 120, format.c_str(),
+                         global.c_str(), element,
                          coord[0], coord[1], coord[2]);
             }
         }
@@ -270,31 +290,28 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             string var      = qA->GetVariables()[0];
             string domainName;
             src->GetDomainName(var, ts, dom, domainName);
+            result_node["node"] = element;
+            result_node["domain"] = domainName;
             if (dim == 2)
             {
-                format = "The coords of node %d (%s) are (" + floatFormat +", " 
+                format = "The coords of node %d (%s) are (" + floatFormat +", "
                                                             + floatFormat +").";
-                SNPRINTF(msg, 120, format.c_str(), 
+                SNPRINTF(msg, 120, format.c_str(),
                          element, domainName.c_str(),
                          coord[0], coord[1]);
             }
-            else 
+            else
             {
-                format = "The coords of node %d (%s) are (" + floatFormat +", " 
-                                                            + floatFormat +", " 
+                format = "The coords of node %d (%s) are (" + floatFormat +", "
+                                                            + floatFormat +", "
                                                             + floatFormat +").";
 
-                SNPRINTF(msg, 120, format.c_str(), 
+                SNPRINTF(msg, 120, format.c_str(),
                          element, domainName.c_str(),
                          coord[0], coord[1], coord[2]);
             }
         }
-  
-        doubleVector c;
-        c.push_back((double)coord[0]);
-        c.push_back((double)coord[1]);
-        c.push_back((double)coord[2]);
-        qA->SetResultsValue(c);
+        qA->SetXmlResult(result_node.ToXML());
     }
     else
     {
@@ -330,13 +347,13 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 //    by queryAtts. 
 //
 //  Returns:
-//    true upon succesful location of node and determination of its 
+//    true upon succesful location of node and determination of its
 //    coordinates, false otherwise.
 //
 //  Arguments:
 //    coord     A place to store the coordinates of the node.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   December 16, 2004 (moved from method PerformQuery)
 //
 //  Modifications:
@@ -356,7 +373,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
     int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
     int dom         = domain  - blockOrigin;
-    int node        = element - nodeOrigin; 
+    int node        = element - nodeOrigin;
     int ts          = queryAtts.GetTimeStep();
     string var      = queryAtts.GetVariables()[0];
 
@@ -385,7 +402,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     if (domainUsed)
     {
-        for (int i = 0; i < dlist.size() && !success; ++i) 
+        for (int i = 0; i < dlist.size() && !success; ++i)
         {
             if (dlist[i] == dom)
             {
@@ -397,7 +414,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     {
         success = src->QueryCoords(var, dom, node, ts, coord, false, false);
     }
-    return success; 
+    return success;
 }
 
 
@@ -409,13 +426,13 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
 //    all domains.
 //
 //  Returns:
-//    true upon succesful location of node and determination of its 
+//    true upon succesful location of node and determination of its
 //    coordinates, false otherwise.
 //
 //  Arguments:
 //    coord     A place to store the coordinates of the node.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   December 16, 2004 
 //
 //  Modifications:
@@ -431,7 +448,7 @@ bool
 avtNodeCoordsQuery::FindGlobalCoord(double coord[3])
 {
     int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
-    int node        = element - nodeOrigin; 
+    int node        = element - nodeOrigin;
     int ts          = queryAtts.GetTimeStep();
     string var      = queryAtts.GetVariables()[0];
 
@@ -445,7 +462,7 @@ avtNodeCoordsQuery::FindGlobalCoord(double coord[3])
     bool success = false;
 
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
-    for (int i = 0; i < dlist.size() && !success; ++i) 
+    for (int i = 0; i < dlist.size() && !success; ++i)
     {
         success = src->QueryCoords(var, dlist[i], node, ts, coord, false, true);
     }

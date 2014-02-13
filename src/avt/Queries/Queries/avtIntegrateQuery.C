@@ -134,11 +134,18 @@ avtIntegrateQuery::CurveQuery(int n1, const float *x1, const float *y1)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 std::string
 avtIntegrateQuery::CreateMessage(double integral)
 {
+    MapNode result_node;
+    result_node["area_under_curve"] = integral;
+    SetXmlResult(result_node.ToXML());
+
     char msg[1024];
     std::string format =  "The area under the curve is " 
                          + queryAtts.GetFloatFormat() + ".";

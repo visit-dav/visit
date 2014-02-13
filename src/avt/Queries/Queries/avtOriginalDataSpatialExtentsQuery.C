@@ -130,6 +130,9 @@ avtOriginalDataSpatialExtentsQuery::ApplyFilters(avtDataObject_p inData)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string 
 //
+//    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -185,6 +188,10 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
         d.push_back(extents[i]);
     qA->SetResultsMessage(msg);
     qA->SetResultsValue(d);
+
+    MapNode result_node;
+    result_node["extents"] = d;
+    qA->SetXmlResult(result_node.ToXML());
 
     UpdateProgress(1, 0);
 }
