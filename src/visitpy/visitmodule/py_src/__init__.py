@@ -63,9 +63,33 @@ from evalfuncs import *
 from writescript import *
 
 try:
+    import PySide
     import pyside_hook
     import pyside_gui
     import pyside_support
+
+    class KeyPressEater(PySide.QtCore.QObject):
+        def eventFilter(self, obj, event):
+            if event.type() == PySide.QtCore.QEvent.KeyPress:
+                return True
+            elif event.type() == PySide.QtCore.QEvent.MouseButtonPress:
+                return True
+            elif event.type() == PySide.QtCore.QEvent.MouseButtonRelease:
+                return True
+            elif event.type() == PySide.QtCore.QEvent.MouseButtonDblClick:
+                return True
+            elif event.type() == PySide.QtCore.QEvent.MouseMove:
+                return True
+            else:
+                return PySide.QtCore.QObject.eventFilter(self, obj, event)
+
+    def __VisIt_PySide_Idle_Hook__():
+      a = KeyPressEater()
+      app = PySide.QtCore.QEventLoop();
+      PySide.QtCore.QCoreApplication.instance().installEventFilter(a)
+      app.processEvents(PySide.QtCore.QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents);
+      PySide.QtCore.QCoreApplication.instance().removeEventFilter(a)
+
     def IsPySideViewerEnabled(): return True
 except ImportError:
     def IsPySideViewerEnabled(): return False

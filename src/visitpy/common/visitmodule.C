@@ -18649,8 +18649,23 @@ Synchronize()
 
     // Return if the thread initialization failed.
     // or if viewer is embedded
-    if(!moduleUseThreads || viewerEmbedded)
+    if(!moduleUseThreads) {
         return 0;
+    }
+
+    if(viewerEmbedded) {
+        SyncAttributes *syncAtts = GetViewerState()->GetSyncAttributes();
+        syncAtts->SetSyncTag(syncCount);
+        syncAtts->Notify();
+        syncAtts->SetSyncTag(-1);
+
+        /// should only run once?
+        while(syncCount != syncAtts->GetSyncTag()) {
+            PyRun_SimpleString("visit.__VisIt_PySide_Idle_Hook__()");
+        }
+        syncCount++;
+        return 0;
+    }
 
     //
     // If the 2nd thread is not running, don't enter this method or we'll
