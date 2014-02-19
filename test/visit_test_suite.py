@@ -797,8 +797,8 @@ def main(opts,tests):
         ridx  = pjoin(opts["result_dir"],"results.json")
         tests = load_test_cases_from_index(opts["tests_dir"],ridx,True)
     elif len(tests) == 0:
-        tests = find_test_cases(opts["tests_dir"],opts["classes"])
-    tests = [ abs_path(t) for t in tests]
+        tests = find_test_cases(opts["tests_dir"],opts["classes"]) 
+    tests = [ abs_path(pjoin(opts["tests_dir"], "..",t)) for t in tests]
     prepare_result_dirs(opts["result_dir"])
     ststamp = timestamp(sep=":")
     stime   = time.time()
