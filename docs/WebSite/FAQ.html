@@ -301,34 +301,28 @@ function MM_initTimelines() { //v4.0
   <li> <a href="mailto:visit-developers@ornl.gov">visit-developers@ornl.gov</a> </li>
 </ul>
 <p>The first mailing list is a venue for discussion among the VisIt community at large and is for users to ask questions and post suggestions about various aspects of VisIt, in topics anywhere from getting the code running to saving movies. The second mailing list is a venue for discussion among the VisIt developer community and is for developers to ask questions and post suggestions about various aspects of VisIt, including build issues, writing plugins, and any other aspects of VisIt development. You must subscribe to these lists before you can send and receive e-mail from them. Go to the <a href="https://elist.ornl.gov/mailman/listinfo/visit-users">visit-users list page</a> to subscribe to the user list and go to <a href="https://elist.ornl.gov/mailman/listinfo/visit-developers">visit-developers list page</a> to subscribe to the developers list.  If you can't access these web pages, you can subscribe by sending a blank email to <a href="mailto:visit-users-subscribe@elist.ornl.gov">visit-users-subscribe@elist.ornl.gov</a> or  <a href="mailto:visit-developers-subscribe@elist.ornl.gov">visit-developers-subscribe@elist.ornl.gov</a>, respectively.</p>
-<p>If you are associated with SciDAC, GNEP or ASC, then you should send your questions to the appropriate closed mailing list:</p>
+<p>If you are associated with SciDAC, or ASC, then you should send your questions to the appropriate closed mailing list:</p>
 <ul>
   <li> <a href="mailto:visit-help-scidac@ornl.gov">visit-help-scidac@ornl.gov</a> </li>
-  <li> <a href="mailto:visit-help-gnep@ornl.gov">visit-help-gnep@ornl.gov</a> </li>
   <li> <a href="mailto:visit-help-asc@ornl.gov">visit-help-asc@ornl.gov</a> </li>
 </ul>
 <h2><a name="2"></a>2. What platforms does VisIt run on?</h2>
-<p> VisIt can run on a variety of platforms from PCs running Windows or Linux all the way up to supercomputers running AIX.<br>
+<p> VisIt can run on a variety of platforms from PC, Mac and Linux workstations all the way up to supercomputers running AIX.<br>
   The following operating systems are supported:</p>
 <ul>
-  <li> Windows XP, Vista, 7 </li>
-  <li> Linux (x86, x86_64, Itanium, Altix) </li>
-  <li> MacOS X 10.4 through 10.6 (PowerPC and Intel) </li>
-  <li> AIX 5.3</li>
+  <li> Windows XP, Vista, 7, 8 </li>
+  <li> Linux (x86, x86_64, Ubuntu) </li>
+  <li> MacOS X 10.4 and newer </li>
 </ul>
-<p>VisIt is known to work on other platforms as well but no binary distributions for these platforms are available due to machine retirements at LLNL.</p>
-<ul>
-  <li> SunOS 5.7</li>
-  <li> IRIX 6.5, IRIX64 6.5</li>
-  <li> Tru64 V5.1</li>
-</ul>
+<p>VisIt is known to work on many other platforms as well. Although we do not provide binary distributions for all these cases, it is very easy to build VisIt from sources using the build_visit script found <a href="https://wci.llnl.gov/codes/visit/source.html">here</a>.</p>
+
 <p class="small">[<a href="#top">Top</a>]</p>
 <h2><a name="3"></a>3. What is the optimal hardware and software combination for running VisIt?</h2>
-<p> VisIt should perform well on just about any Linux or Windows system as long as you follow these guidelines:</p>
+<p> VisIt should perform well on just about any Linux, Windows or Mac system as long as you follow these guidelines:</p>
 <ul>
   <li> You should have at least 1 gigabyte (GB) of memory for your system. The actual amount of memory you will need depends on the size of the dataset you will be visualizing, but having plenty of memory will ensure that you don&#8217;t suffer large performance degradations.</li>
   <li> You should make sure that you install the graphics driver provided by the vendor of your graphics card so that you can get full hardware-accelerated graphics rendering. The standard Linux distributions come with a generic driver that will work on all systems, but this will not give top performance. If you plan to use Linux and have not yet purchased a graphics card, you should check that the card you are considering purchasing has a driver optimized for Linux.</li>
-  <li> If you run VisIt on Windows, you must use Windows XP, Windows Vista, or Windows 7. </li>
+  <li> If you run VisIt on Windows, you must use Windows XP, Windows Vista, Windows 7 or 8. </li>
 </ul>
 <h2><a name="4"></a>4. How do I debug problems starting VisIt or opening files?</h2>
 <p> If you are having difficulty either starting VisIt and/or looking at some data files once VisIt is running, try some of the following...</p>
@@ -382,7 +376,7 @@ in the directory that VisIt was launched from.</p>
 <p>Also note that the VisIt binary distributions will most likely not work for running in parallel on your particular computer system. The most common reason is that the MPI version used to compile VisIt binaries is not compatible with your MPI and parallel launching mechanism. This is solved if you recompile VisIt from source on your computer. We have developed a script called <a href="source.html#build_visit" title="Build VisIt Script">build_visit</a> that automates much of this process for Linux and AIX platforms. </p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="12"></a>12. What data file formats can VisIt read?</h2>
-<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Finally, the <a href="http://www.visitusers.org/index.php?title=File_formats">File formats table at visitusers.org</a> is another good resource. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="https://wci.llnl.gov/codes/visit/2.0.0/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
+<p> VisIt can read over 120 scientific data formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Finally, the <a href="http://www.visitusers.org/index.php?title=File_formats">File formats table at visitusers.org</a> is another good resource. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="https://wci.llnl.gov/codes/visit/2.0.0/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
 <table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -697,10 +691,6 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
       <td width="65%" NOSAVE bgcolor="#9999CC" class="Section">Compiler</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">AIX 5.3</td>
-      <td bgcolor="#CCCCFF">xlC </td>
-    </tr>
-    <tr>
       <td bgcolor="#CCCCFF">Linux</td>
       <td bgcolor="#CCCCFF">g++ 4.0 or later</td>
     </tr>
@@ -715,7 +705,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
   </tbody>
 </table>
 <h2><a name="25"></a>25. Which license does VisIt use?</h2>
-<p>VisIt is released under the BSD license, which you can view on <a href="license.html" title="VisIt's BSD license" target="_blank">VisIt's license</a> page. </p>
+<p>VisIt is released under the BSD Open Source license, which you can view on <a href="license.html" title="VisIt's BSD license" target="_blank">VisIt's license</a> page. </p>
 <H2>
   <CENTER>
   </CENTER>
@@ -729,7 +719,7 @@ SIGABRT</em></p>
 <p>If you notice any runtime errors related to glibc because you're using a custom-built plugin with our binary distirbutions then you probably have a runtime library incompatibility. The best way to resolve this situation is to build VisIt on your platform using our build_visit script since it will automatically build VisIt. Once you've rebuilt VisIt using your C++ compiler, you should regenerate your plugin's Makefile using the your new VisIt's xml2makefile program. Once you have done that, rebuild your plugin to make it build against your new, natively built version of VisIt. </p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="28"></a>28. How do I get my HDF5 data into VisIt? </h2>
-<p> HDF5 is an array storage file format that supports a wide variety of data types and VisIt reads a lot of file formats from codes that use HDF5 as a storage layer. Unfortunately, VisIt cannot provide a plugin that can read all HDF5-based files because of the various conventions that codes invent when they store their files. VisIt's HDF5-enabled plugins are programmed to know about the conventions used to map array data from the file into meaningful constructs such as meshes with data. If you need to import HDF5 data into VisIt then you might be achieve satisfactory results if you choose <em>File-&gt;Open As...</em> and then open the file using the Pixie reader, which is VisIt's most generic HDF5 reader. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
+<p> HDF5 is an array storage file format that supports a wide variety of data types and VisIt reads a lot of file formats from codes that use HDF5 as a storage layer. Unfortunately, VisIt cannot provide a plugin that can read all HDF5-based files because of the various conventions that codes invent when they store their files. VisIt's HDF5-enabled plugins are programmed to know about the conventions used to map array data from the file into meaningful constructs such as meshes with data. See <a href="http://www.visitusers.org/index.php?title=VisIt_and_HDF5">this page</a> for a more detailed discussion of the issues. If you need to import HDF5 data into VisIt then you might be achieve satisfactory results if you choose <em>File-&gt;Open As...</em> and then open the file using the Pixie reader, which is VisIt's most generic HDF5 reader. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
 <h2><a name="29"></a>29. How do I get my NETCDF data into VisIt?</h2>
 <p> Like HDF5, NETCDF is just an array storage file format so the same problems tend to occur when you want to get NETCDF data into VisIt. However, VisIt's NETCDF reader will attempt to open NETCDF data with a variety of different readers that look for various simulation code conventions (CF support not implemented) and in the event that the file was not written using any discernable convention then a back up basic reader is used. The basic NETCDF reader exposes all of the arrays in the NETCDF file as data that can be plotted on rectilinear meshes corresponding to the size of each array. The common complaint is that the data looks okay but the mesh is not scaled accordingly. If this happens to you then VisIt is using its basic NETCDF reader, which does not support any conventions. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
 <h2><a name="30"></a>30. When I run VisIt on my Linux machine, I get a black screen. When I try displaying to it from a remote machine, though, everything works fine. Other OpenGL applications also seem to work, even when run locally. What is wrong?</h2>
@@ -739,7 +729,7 @@ SIGABRT</em></p>
 <p> There is nothing wrong and you may safely proceed with the installation.</p>
 <h2><a name="32"></a>32. Which libraries should I enable in
 <TT>build_visit</TT>?</h2>
-<p>In general: <I>as few as you can.</I><p>
+<p>In general: <I>as few as you can get away with.</I><p>
 <p>An overwhelming majority of the libraries that one can enable via
    <TT>build_visit</TT> are used for a single purpose: supporting a file reader
    ("database") to allow reading data of that type.  If you don't select a
