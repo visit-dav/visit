@@ -102,10 +102,6 @@ typedef struct
 //    Hank Childs, Mon Jul 19 16:57:59 PDT 2004
 //    Initialize haveIssuedWarning.
 //
-//    Patrick Fragile, Tue Jan 21 16:58:33 PST 2014
-//    Added support for the new output style where the variables are in one
-//    file and the grid is in another.
-//
 // ****************************************************************************
 
 avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
@@ -338,10 +334,6 @@ avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
 //    Kathleen Bonnell, Mon Jun 11 12:32:10 PDT 2007 
 //    Added H5*close for attr1, space_id, c_handle.
 //
-//    Patrick Fragile, Tue Jan 21 16:58:33 PST 2014
-//    Added support for the new output style where the variables are in one
-//    file and the grid is in another.
-//
 // ****************************************************************************
 
 void
@@ -436,6 +428,10 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     // then the grid output is in a different file from the grid functions.
     if (dump_names[ts].compare(grid_dump_names[ts]) != 0)
     {
+        delete [] all_vars;
+        num_comps = nodes_per_zone*rank;
+        all_vars  = new float[nzones*num_comps];
+
         // Clean up resources.
         H5Sclose(space_id);
         H5Dclose(c_handle);
