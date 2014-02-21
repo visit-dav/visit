@@ -1,5 +1,3 @@
-SETUP_VTK_VERSION("6.1.0")
-
 include(${VISIT_SOURCE_DIR}/config-site/windows.cmake)
 
 # disable some warnings
