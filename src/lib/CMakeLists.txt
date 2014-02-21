@@ -212,7 +212,7 @@ IF(VISIT_PYTHON_FILTERS)
         ADD_CUSTOM_TARGET(vtk_python_modules ALL)
         ADD_CUSTOM_COMMAND(TARGET vtk_python_modules POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${VISIT_VTK_DIR}/lib/site-packages/vtk
+                    ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk
                     ${VISIT_LIBRARY_DIR}/site-packages/vtk
             COMMAND ${CMAKE_COMMAND} -E copy
                     ${VTK_EGG_FILE}
