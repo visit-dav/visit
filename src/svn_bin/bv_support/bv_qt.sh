@@ -140,6 +140,7 @@ if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
             if [[ $USE_SYSTEM_QT == "yes" ]]; then
                 echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
                 echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
+                echo "SET(VISIT_QT_SKIP_INSTALL ON)" >> $HOSTCONF
             else
                 echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
             fi
