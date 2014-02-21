@@ -45,7 +45,6 @@ function python_set_vars_helper
   #remove any extra includes
   PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
   PYTHON_INCLUDE_DIR="$PYTHON_INCLUDE_PATH"
-  PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib"
   PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
   #remove all other libraries except for python..
   PYTHON_LIBRARY="${PYTHON_LIBRARY##-l*-l}"
@@ -57,6 +56,16 @@ function python_set_vars_helper
            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.dylib"
       else
            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.so"
+      fi
+  fi
+  PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib"
+  if [ ! -e "${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY}" ]
+  then
+      # some systems eg fedora use lib64...
+      PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib64"
+      if [ ! -e "${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY}" ]
+      then
+          error "python library was not found, cannot configure python"
       fi
   fi
   PYTHON_LIBRARY="${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY}"
@@ -147,6 +156,7 @@ function bv_python_host_profile
             echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY})" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(PYTHON_VERSION $PYTHON_COMPATIBILITY_VERSION)" >> $HOSTCONF
+            echo "SET(VISIT_PYTHON_SKIP_INSTALL ON)" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR \${VISITHOME}/python/$PYTHON_VERSION/\${VISITARCH})" \
 		>> $HOSTCONF
