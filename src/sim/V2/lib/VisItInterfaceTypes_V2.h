@@ -107,6 +107,7 @@ typedef enum {
 #define VISIT_OWNER_SIM                   0
 #define VISIT_OWNER_VISIT                 1
 #define VISIT_OWNER_COPY                  2
+#define VISIT_OWNER_VISIT_EX              3
 
 /* Cell Types */
 #define VISIT_CELL_BEAM                   0
@@ -211,7 +212,7 @@ typedef enum {
 #define VISIT_IMAGEFORMAT_PNG    2
 #define VISIT_IMAGEFORMAT_POVRAY 3
 #define VISIT_IMAGEFORMAT_PPM    4
-#define VISIT_IMAGEFORMAT_RGB    5 
+#define VISIT_IMAGEFORMAT_RGB    5
 #define VISIT_IMAGEFORMAT_TIFF   6
 
 #ifdef __cplusplus

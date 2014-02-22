@@ -37,7 +37,9 @@
 *****************************************************************************/
 
 #include <set>
+#include <sstream>
 #include <snprintf.h>
+using std::ostringstream;
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -76,6 +78,8 @@
 #include <simv2_RectilinearMesh.h>
 #include <simv2_UnstructuredMesh.h>
 #include <simv2_VariableData.h>
+#include <simv2_TypeTraits.hxx>
+#include <simv2_DeleteEventObserver.h>
 
 static const char *AVT_GHOST_ZONES_ARRAY = "avtGhostZones";
 static const char *AVT_GHOST_NODES_ARRAY = "avtGhostNodes";
@@ -421,6 +425,14 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 //   Brad Whitlock, Mon Nov 22 16:46:15 PST 2010
 //   Fix cut & paste error that caused z coordinates to be zero for doubles.
 //
+//   Burlen Loring, Fri Feb 21 13:44:36 PST 2014
+//   * fix bug where VTK was told to delete the data when he really should
+//     have saved it
+//   * enable zero-copy
+//   * template refactor
+//   * make error handling consistent(throw exceptions) because callers don't
+//     check for null return
+//
 // ****************************************************************************
 
 static vtkPoints *
@@ -428,250 +440,174 @@ SimV2_CreatePoints(int ndims, int coordMode,
     visit_handle x, visit_handle y, visit_handle z, visit_handle c,
     int additionalPoints)
 {
-    const char *mName  = "SimV2_CreatePoints: ";
     vtkPoints *points = NULL;
 
     if(coordMode == VISIT_COORD_MODE_SEPARATE)
     {
-        debug4 << mName << "VISIT_COORD_MODE_SEPARATE" << endl;
-
-        // Let's get the VariableData properties. The API guarantees that the
-        // arrays will have the same properties so we only get the data
-        // pointer as a unique value.
-        visit_handle cHandles[3];
-        cHandles[0] = x;
-        cHandles[1] = y;
-        cHandles[2] = z;
-        int owner, dataType, nComps, nTuples;
+        // get array's and properties, note: properties are guaranteed to
+        // be the same for all
+        visit_handle cHandles[3] = {x, y, z};
         void *data[3] = {0,0,0};
+        int owner, dataType, nComps, nTuples;
         for(int i = 0; i < ndims; ++i)
         {
             if(simv2_VariableData_getData(cHandles[i], owner, dataType,
                 nComps, nTuples, data[i]) == VISIT_ERROR)
             {
-                return NULL;
+                char coordName[3] = {'x', 'y', 'z'};
+                ostringstream oss;
+                oss << "Failed to get data for " << coordName[i];
+                EXCEPTION1(ImproperUseException, oss.str().c_str());
             }
         }
 
-        // We have all of the data. Assemble it.
+        // validate the data type.
+        if (!simV2_ValidFloatDataType(dataType))
+        {
+            EXCEPTION1(ImproperUseException,
+                "Coordinate arrays must be float or double.\n");
+        }
+
+        // Interleave the coordinate arrays as VTK requires.
         points = vtkPoints::New();
         if(ndims == 2)
         {
-            debug4 << mName << "ndims == 2" << endl;
+            switch (dataType)
+            {
+            simV2FloatTemplateMacro(
+                points->SetDataType(simV2_TT::vtkEnum);
+                points->SetNumberOfPoints(nTuples+additionalPoints);
+                simV2_TT::cppType *pPts = static_cast<simV2_TT::cppType*>(points->GetVoidPointer(0));
 
-            if(dataType == VISIT_DATATYPE_FLOAT)
-            {
-                debug4 << mName << "float data: nTuples=" << nTuples << endl;
-                points->SetNumberOfPoints(nTuples + additionalPoints);
-                float *dest = (float *)points->GetVoidPointer(0);
-                float *x_src = (float*)data[0];
-                float *y_src = (float*)data[1];
-                for(int i = 0; i < nTuples; ++i)
+                simV2_TT::cppType *pX = static_cast<simV2_TT::cppType*>(data[0]);
+                simV2_TT::cppType *pY = static_cast<simV2_TT::cppType*>(data[1]);
+
+                for(int i = 0; i < nTuples; ++i,pPts+=3)
                 {
-                    *dest++ = *x_src++;
-                    *dest++ = *y_src++;
-                    *dest++ = 0.f;
+                    pPts[0] = pX[i];
+                    pPts[1] = pY[i];
+                    pPts[2] = simV2_TT::cppType();
                 }
-            }
-            else if(dataType == VISIT_DATATYPE_DOUBLE)
-            {
-                debug4 << mName << "double data: nTuples=" << nTuples << endl;
-                points->SetDataTypeToDouble();
-                points->SetNumberOfPoints(nTuples + additionalPoints);
-                double *dest = (double *)points->GetVoidPointer(0);
-                double *x_src = (double*)data[0];
-                double *y_src = (double*)data[1];
-                for(int i = 0; i < nTuples; ++i)
-                {
-                    *dest++ = *x_src++;
-                    *dest++ = *y_src++;
-                    *dest++ = 0.;
-                }
-            }
-            else
-            {
-                points->Delete();
-                EXCEPTION1(ImproperUseException,
-                "Coordinate arrays must be float or double.\n");
+                );
             }
         }
         else
         {
-            debug4 << mName << "ndims == 3" << endl;
+            switch (dataType)
+            {
+            simV2FloatTemplateMacro(
+                points->SetDataType(simV2_TT::vtkEnum);
+                points->SetNumberOfPoints(nTuples+additionalPoints);
+                simV2_TT::cppType *pPts = static_cast<simV2_TT::cppType*>(points->GetVoidPointer(0));
 
-            if(dataType == VISIT_DATATYPE_FLOAT)
-            {
-                debug4 << mName << "float data: nTuples=" << nTuples << endl;
-                points->SetNumberOfPoints(nTuples + additionalPoints);
-                float *dest = (float *)points->GetVoidPointer(0);
-                float *x_src = (float*)data[0];
-                float *y_src = (float*)data[1];
-                float *z_src = (float*)data[2];
-                for(int i = 0; i < nTuples; ++i)
+                simV2_TT::cppType *pX = static_cast<simV2_TT::cppType*>(data[0]);
+                simV2_TT::cppType *pY = static_cast<simV2_TT::cppType*>(data[1]);
+                simV2_TT::cppType *pZ = static_cast<simV2_TT::cppType*>(data[2]);
+
+                for(int i = 0; i < nTuples; ++i,pPts+=3)
                 {
-                    *dest++ = *x_src++;
-                    *dest++ = *y_src++;
-                    *dest++ = *z_src++;
+                    pPts[0] = pX[i];
+                    pPts[1] = pY[i];
+                    pPts[2] = pZ[i];
                 }
-            }
-            else if(dataType == VISIT_DATATYPE_DOUBLE)
-            {
-                debug4 << mName << "float data: nTuples=" << nTuples << endl;
-                points->SetDataTypeToDouble();
-                points->SetNumberOfPoints(nTuples + additionalPoints);
-                double *dest = (double *)points->GetVoidPointer(0);
-                double *x_src = (double*)data[0];
-                double *y_src = (double*)data[1];
-                double *z_src = (double*)data[2];
-                for(int i = 0; i < nTuples; ++i)
-                {
-                    *dest++ = *x_src++;
-                    *dest++ = *y_src++;
-                    *dest++ = *z_src++;
-                }
-            }
-            else
-            {
-                points->Delete();
-                EXCEPTION1(ImproperUseException,
-                "Coordinate arrays must be float or double.\n");
+                );
             }
         }
     }
     else if(coordMode == VISIT_COORD_MODE_INTERLEAVED)
     {
-        debug4 << mName << "VISIT_COORD_MODE_INTERLEAVED" << endl;
-        points = vtkPoints::New();
-
         int owner, dataType, nComps, nTuples;
         void *data = NULL;
-        if(simv2_VariableData_getData(c, owner, dataType, nComps, nTuples, data) != VISIT_ERROR)
+        void (*callback)(void*) = NULL;
+        void *callbackData = NULL;
+
+        int ierr = simv2_VariableData_getDataEx(c, owner, dataType, nComps,
+                                     nTuples, data, callback, callbackData);
+
+        if (ierr == VISIT_ERROR)
         {
-            if(ndims == 2)
+            EXCEPTION1(ImproperUseException,
+                "Failed to get data for interleaved coordinates");
+            return NULL;
+        }
+
+        // validate the data type.
+        if (!simV2_ValidFloatDataType(dataType))
+        {
+            EXCEPTION1(ImproperUseException,
+                "Coordinate array must be float or double.\n");
+        }
+
+        points = vtkPoints::New();
+        if(ndims == 2)
+        {
+            // make it 3d and copy
+            switch (dataType)
             {
-                debug4 << mName << "ndims == 2" << endl;
+            simV2FloatTemplateMacro(
+                points->SetDataType(simV2_TT::vtkEnum);
+                points->SetNumberOfPoints(nTuples+additionalPoints);
+                simV2_TT::cppType *pPts = static_cast<simV2_TT::cppType*>(points->GetVoidPointer(0));
+                simV2_TT::cppType *pData = static_cast<simV2_TT::cppType*>(data);
 
-                // Copy the 2D data to 3D
-                if(dataType == VISIT_DATATYPE_FLOAT)
+                for(int i = 0; i < nTuples; ++i, pPts+=3, pData+=2)
                 {
-                    debug4 << mName << "float data: nTuples=" << nTuples << endl;
-
-                    points->SetNumberOfPoints(nTuples + additionalPoints);
-                    float *dest = (float *)points->GetVoidPointer(0);
-                    float *src = (float*)data;
-                    for(int i = 0; i < nTuples; ++i)
-                    {
-                        *dest++ = *src++;
-                        *dest++ = *src++;
-                        *dest++ = 0.f;
-                    }
+                    pPts[0] = pData[0];
+                    pPts[1] = pData[1];
+                    pPts[2] = simV2_TT::cppType();
                 }
-                else if(dataType == VISIT_DATATYPE_DOUBLE)
-                {
-                    debug4 << mName << "double data: nTuples=" << nTuples << endl;
+                );
+            }
+        }
+        else if ( (additionalPoints > 0) || (owner == VISIT_OWNER_COPY) )
+        {
+            // copy into vtk data array
+            switch (dataType)
+            {
+            simV2FloatTemplateMacro(
+                points->SetDataType(simV2_TT::vtkEnum);
+                points->SetNumberOfPoints(nTuples+additionalPoints);
+                memcpy(points->GetVoidPointer(0), data, 3*nTuples*sizeof(simV2_TT::cppType));
+                );
+            }
+        }
+        else
+        {
+            // zero-copy, VTK uses the pointer rather than making
+            // a copy. this is inherently risky, especially for VISIT_OWNER_SIM
+            // with VISIT_OWNER_VISIT_EX the sim is expected to hold a reference
+            // until his callback is invoked bt the vtk array delete event observer
+            switch (dataType)
+            {
+            simV2FloatTemplateMacro(
+                simV2_TT::vtkType *pts = simV2_TT::vtkType::New();
+                pts->SetNumberOfComponents(3);
 
-                    points->SetDataTypeToDouble();
-                    points->SetNumberOfPoints(nTuples + additionalPoints);
-                    double *dest = (double *)points->GetVoidPointer(0);
-                    double *src = (double*)data;
-                    for(int i = 0; i < nTuples; ++i)
-                    {
-                        *dest++ = *src++;
-                        *dest++ = *src++;
-                        *dest++ = 0.;
-                    }
+                if (owner == VISIT_OWNER_VISIT_EX)
+                {
+                    // we observe VTK data array's DeleteEvent and invoke the user
+                    // provided callback in repsonse. it's the callbacks duty to free
+                    // the memory.
+                    pts->SetArray(static_cast<simV2_TT::cppType*>(data), nTuples, 1);
+
+                    simV2_DeleteEventObserver *observer = simV2_DeleteEventObserver::New();
+                    observer->Observe(pts, callback, callbackData);
+                    // this is not a leak, the observer is Delete'd after it's invoked.
                 }
                 else
                 {
-                    points->Delete();
-                    EXCEPTION1(ImproperUseException,
-                    "Coordinate arrays must be float or double.\n");
+                    // VTK assumes ownership for VISIT_OWNER_VISIT. for VISIT_OWNER_SIM
+                    // the sim must ensure that data persists while VTK is using it
+                    pts->SetArray(static_cast<simV2_TT::cppType*>(data),
+                         nTuples, ((owner==VISIT_OWNER_VISIT)?0:1));
+
                 }
+                points->SetData(pts);
+                pts->Delete();
+                );
             }
-#ifdef ALLOW_WRAPPED_COORDINATES
-            else if(additionalPoints > 0)
-#else
-            else
-#endif
-            {
-                //
-                // Copy the 3D coordinates
-                //
-                debug4 << mName << "additionalPoints=" << additionalPoints << endl;
-
-                if(dataType == VISIT_DATATYPE_FLOAT)
-                {
-                    debug4 << mName << "float data: nTuples=" << nTuples << endl;
-                    points->SetNumberOfPoints(nTuples + additionalPoints);
-                    memcpy(points->GetVoidPointer(0), data, 3 * nTuples * sizeof(float));
-                }
-                else if(dataType == VISIT_DATATYPE_DOUBLE)
-                {
-                    debug4 << mName << "double data: nTuples=" << nTuples << endl;
-                    points->SetDataTypeToDouble();
-                    points->SetNumberOfPoints(nTuples + additionalPoints);
-                    memcpy(points->GetVoidPointer(0), data, 3 * nTuples * sizeof(double));
-                }
-                else
-                {
-                    points->Delete();
-                    EXCEPTION1(ImproperUseException,
-                    "Coordinate arrays must be float or double.\n");
-                }
-            }
-#ifdef ALLOW_WRAPPED_COORDINATES
-// Eh, this is probably too dangerous anyway...
-            else
-            {
-                //
-                // Try wrapping the simulation coordinates directly in VTK objects
-                //
-                debug4 << mName << "ndims == 3" << endl;
-
-                // Use the 3D data as-is. If VisIt owns the data, we steal
-                // the pointer from the VariableData so the VTK data array
-                // can own the data.
-                int canDelete = 0;
-                if(owner == VISIT_OWNER_VISIT)
-                {
-                    debug4 << mName << "stealing data from simv2" << endl;
-                    canDelete = 1;
-                    simv2_VariableData_nullData(c);
-                }
-
-                // NOTE: Since I'm wrapping the raw memory with a VTK data
-                // array, does it introduce these problems?
-                //   1. Possible memory free mismatch
-                //   2. VTK could be referencing simulation memory that isn't
-                //      as enduring as we think it is. The old code used to
-                //      always copy the data into vtkPoints, which is safer.
-
-                if(dataType == VISIT_DATATYPE_FLOAT)
-                {
-                    debug4 << mName << "wrapping float data: nTuples=" << nTuples << endl;
-                    vtkFloatArray *wrapper = vtkFloatArray::New();
-                    wrapper->SetNumberOfComponents(3);
-                    wrapper->SetArray((float *)data, nTuples, canDelete);
-                    points->SetData(wrapper);
-                    wrapper->Delete();
-                }
-                else if(dataType == VISIT_DATATYPE_DOUBLE)
-                {
-                    debug4 << mName << "wrapping double data: nTuples=" << nTuples << endl;
-                    vtkDoubleArray *wrapper = vtkDoubleArray::New();
-                    wrapper->SetNumberOfComponents(3);
-                    wrapper->SetArray((double *)data, nTuples, canDelete);
-                    points->SetData(wrapper);
-                    wrapper->Delete();
-                }
-                else
-                {
-                    points->Delete();
-                    EXCEPTION1(ImproperUseException,
-                    "Coordinate arrays must be float or double.\n");
-                }
-            }
-#endif
+            // give up our ownership, VTK will free the data
+            simv2_VariableData_nullData(c);
         }
     }
 
@@ -709,9 +645,7 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
     if (h == VISIT_INVALID_HANDLE)
         return NULL;
 
-    //
     // Obtain the mesh data from the opaque object.
-    //
     int ndims = 0, dims[3]={0,0,0}, coordMode = 0;
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
     visit_handle x,y,z,c;
@@ -722,24 +656,19 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
        simv2_CurvilinearMesh_getBaseIndex(h, baseIndex) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
-                   "Could not obtain mesh data using the provided handle.\n");
+            "Could not obtain mesh data using the provided handle.\n");
+        return NULL;
     }
 
-    //
     // Create the points.
-    //
     vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c, 0);
 
-    //
     // Create the VTK objects and connect them up.
-    //
     vtkStructuredGrid *sgrid   = vtkStructuredGrid::New();
     sgrid->SetPoints(points);
     points->Delete();
 
-    //
     // Tell the grid what its dimensions are and populate the points array.
-    //
     sgrid->SetDimensions(dims);
 
     bool doQuadGhosts = true;
@@ -751,12 +680,8 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
     }
     if(doQuadGhosts)
     {
-        GetQuadGhostZones(dims[0]*dims[1]*dims[2],
-                          ndims,
-                          dims,
-                          minRealIndex,
-                          maxRealIndex,
-                          sgrid);
+        GetQuadGhostZones(dims[0]*dims[1]*dims[2], ndims,
+                 dims, minRealIndex, maxRealIndex, sgrid);
     }
 
     visit_handle ghostNodes;
@@ -804,6 +729,9 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
 //   William T. Jones, Fri Jan 20 17:55:27 EDT 2012
 //   I added support for ghost nodes from an array.
 //
+//   Burlen Loring, Fri Feb 21 13:44:36 PST 2014
+//   * template refactor
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -812,9 +740,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     if (h == VISIT_INVALID_HANDLE)
         return NULL;
 
-    //
     // Obtain the mesh data from the opaque object.
-    //
     int ndims = 0;
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
     visit_handle x,y,z;
@@ -826,13 +752,8 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
             "Could not obtain mesh data using the provided handle.\n");
     }
 
-    //
     // Obtain the coordinate data from the opaque objects.
-    //
-    visit_handle cHandles[3];
-    cHandles[0] = x;
-    cHandles[1] = y;
-    cHandles[2] = z;
+    visit_handle cHandles[3] = {x, y, z};
     int owner[3]={0,0,0}, dataType[3]={0,0,0}, nComps[3]={1,1,1}, nTuples[3] = {0,0,1};
     void *data[3] = {0,0,0};
     for(int i = 0; i < ndims; ++i)
@@ -843,61 +764,49 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
             EXCEPTION1(ImproperUseException,
                 "Could not obtain mesh data using the provided handle.\n");
         }
+
+        // validate the data type.
+        if (!simV2_ValidFloatDataType(dataType[i]))
+        {
+            EXCEPTION1(ImproperUseException,
+                "Coordinate arrays must be float or double.\n");
+        }
     }
 
-    //
     // Create the VTK objects and connect them up.
-    //
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(nTuples);
 
-    //
     // Populate the coordinates.
-    //
     vtkDataArray *coords[3] = {0,0,0};
     for(int i = 0; i < 3; ++i)
     {
-        if(ndims == 2 && i == 2)
+        switch (dataType[i])
         {
-            // We don't really have a Z dimension in 2D but create one
-            // and make it the same as the others.
-            if(dataType[0] == VISIT_DATATYPE_FLOAT)
-                coords[i] = vtkFloatArray::New();
-            else
-                coords[i] = vtkDoubleArray::New();
-            coords[i]->SetNumberOfTuples(1);
-            coords[i]->SetComponent(0, 0, 0);
-        }
-        else if(dataType[i] == VISIT_DATATYPE_FLOAT)
-        {
-            coords[i] = vtkFloatArray::New();
-            coords[i]->SetNumberOfTuples(nTuples[i]);
-            memcpy(coords[i]->GetVoidPointer(0), data[i], nTuples[i] * sizeof(float));
-        }
-        else if(dataType[i] == VISIT_DATATYPE_DOUBLE)
-        {
-            coords[i] = vtkDoubleArray::New();
-            coords[i]->SetNumberOfTuples(nTuples[i]);
-            memcpy(coords[i]->GetVoidPointer(0), data[i], nTuples[i] * sizeof(double));
-        }
-        else
-        {
-            for(int j = 0; j < i; ++j)
+        simV2FloatTemplateMacro(
+            coords[i] = simV2_TT::vtkType::New();
+            if ((ndims == 2) && (i == 2))
             {
-                if(coords[i] != 0)
-                    coords[i]->Delete();
+                // make 3d for VTK
+                coords[i]->SetNumberOfTuples(1);
+                coords[i]->SetComponent(0, 0, 0);
             }
-            EXCEPTION1(ImproperUseException,
-                       "Coordinate arrays must be float or double.\n");
+            else
+            {
+                coords[i]->SetNumberOfTuples(nTuples[i]);
+                memcpy(coords[i]->GetVoidPointer(0), data[i],
+                        nTuples[i]*sizeof(simV2_TT::cppType));
+            }
+            );
         }
     }
 
     rgrid->SetXCoordinates(coords[0]);
-    coords[0]->Delete();
     rgrid->SetYCoordinates(coords[1]);
-    coords[1]->Delete();
     rgrid->SetZCoordinates(coords[2]);
-    coords[2]->Delete();
+    
+    for (int i=0; i<3; ++i) 
+        coords[i]->Delete();
 
     bool doQuadGhosts = true;
     visit_handle ghostCells;
@@ -1106,6 +1015,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
             fc[0] /= double(nPointsInFace);
             fc[1] /= double(nPointsInFace);
             fc[2] /= double(nPointsInFace);
+
             double n[3] = {0.,0.,0.};
             n[0] = center[0] - fc[0];
             n[1] = center[1] - fc[1];

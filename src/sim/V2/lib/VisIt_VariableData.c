@@ -53,7 +53,7 @@ int
 VisIt_VariableData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(VariableData_free,
-                    int, (visit_handle), 
+                    int, (visit_handle),
                     (obj));
 }
 
@@ -159,6 +159,24 @@ VisIt_VariableData_getDataL(visit_handle obj, int *owner, int *ncomps,
     VISIT_DYNAMIC_EXECUTE(VariableData_getData2,
                     int, (visit_handle,int*,int*,int*,int*,void**), 
                     (obj,owner,&dataType,ncomps,ntuples,(void **)ptr));
+}
+
+int
+VisIt_VariableData_setData(visit_handle obj, int owner, int dataType,
+     int ncomps, int ntuples, void *ptr)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableData_setData,
+                    int, (visit_handle,int,int,int,int,void*),
+                    (obj,owner,dataType,ncomps,ntuples,ptr));
+}
+
+int
+VisIt_VariableData_setDataEx(visit_handle obj, int owner, int dataType,
+     int ncomps, int ntuples, void *ptr, void(*callback)(void*), void *callbackData)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableData_setDataEx,
+                    int, (visit_handle,int,int,int,int,void*,void(*)(void*),void*),
+                    (obj,owner,dataType,ncomps,ntuples,ptr,callback,callbackData));
 }
 
 

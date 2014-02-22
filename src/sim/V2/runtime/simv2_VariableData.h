@@ -7,25 +7,36 @@
 extern "C"
 {
 #endif
-
 SIMV2_API int simv2_VariableData_alloc(visit_handle *h);
 SIMV2_API int simv2_VariableData_free(visit_handle h);
 SIMV2_API int simv2_VariableData_setData(visit_handle h, int owner, int dataType,
                                          int nComps, int nTuples, void *data);
 
-SIMV2_API int simv2_VariableData_getData2(visit_handle h, int *owner, 
+SIMV2_API int simv2_VariableData_getData2(visit_handle h, int *owner,
                                           int *dataType, int *nComps,
                                           int *nTuples, void **data);
 
+SIMV2_API int simv2_VariableData_setDataEx(visit_handle h, int owner,
+                                           int dataType, int nComps,
+                                           int nTuples, void *data,
+                                           void(*callback)(void*),
+                                           void *callbackData);
 #ifdef __cplusplus
 }
 #endif
 
-// These functions are only available in the runtime. 
-SIMV2_API int simv2_VariableData_getData(visit_handle h, int &owner, 
+// These functions are only available in the runtime.
+SIMV2_API int simv2_VariableData_getData(visit_handle h, int &owner,
                                          int &dataType, int &nComps,
                                          int &nTuples, void *&data);
 
 SIMV2_API int simv2_VariableData_nullData(visit_handle h);
 
+
+
+SIMV2_API int simv2_VariableData_getDataEx(visit_handle h, int &owner,
+                                           int &dataType, int &nComps,
+                                           int &nTuples, void *&data,
+                                           void(*&callback)(void*),
+                                           void *&callbackData);
 #endif

@@ -1,9 +1,10 @@
 #ifndef VISIT_DATA_INTERFACE_RUNTIME_P_H
 #define VISIT_DATA_INTERFACE_RUNTIME_P_H
 #include <stdlib.h>
+#include <cstddef>
 #include <VisItInterfaceTypes_V2.h>
 
-/* This file contains prototypes of functions that are used internally 
+/* This file contains prototypes of functions that are used internally
    in the data interface. These functions are never exposed beyond the
    runtime.
  */

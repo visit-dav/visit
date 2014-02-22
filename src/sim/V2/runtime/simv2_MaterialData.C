@@ -273,7 +273,7 @@ simv2_MaterialData_addMixedCell(visit_handle h, int cell,
             VisItError("An invalid volume fraction array was provided");
             return VISIT_ERROR;
         }
-        if(nmats < 1 || nmats > obj->matnos.size())
+        if(nmats < 1 || nmats > static_cast<int>(obj->matnos.size()))
         {
             VisItError("An invalid number of materials was provided");
             return VISIT_ERROR;
@@ -426,7 +426,7 @@ simv2_MaterialData_getMaterial(visit_handle h, int i,
 {
     VisIt_MaterialData *obj = GetObject(h);
     int retval = VISIT_ERROR;
-    if(obj != NULL && i >= 0 && i < obj->matnos.size())
+    if(obj != NULL && i >= 0 && i < static_cast<int>(obj->matnos.size()))
     {
         matno = obj->matnos[i];
         strncpy(matname, obj->matNames[i].c_str(), maxlen);

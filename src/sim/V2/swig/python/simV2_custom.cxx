@@ -35,8 +35,15 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <Python.h>
 #include <VisItInterfaceTypes_V2.h>
+#include <VisItControlInterface_V2.h>
+#include <VisIt_VariableData.h>
+//#define SIMV2_NUMPY_DEBUG
+
+extern "C" {
+
+#include <Python.h>
+#include <simV2_python_config.h>
 
 #define START_WRAPPER(T, V) \
     PyObject *func = NULL, *func_data = NULL, *ret = NULL; \
@@ -63,6 +70,8 @@
 #else
 #define DEBUG_PRINT(A) A
 #endif
+
+#include <stdio.h>
 
 /******************************************************************************/
 
@@ -300,7 +309,7 @@ pylibsim_visit_handle__pconstchar_pvoid(const char *arg0, void *cbdata)
     END_WRAPPER(visit_handle)
 }
 
-int 
+int
 pylibsim_int__pconstchar_pvoid(const char *arg0, void *cbdata)
 {
     START_WRAPPER(int, VISIT_ERROR)
@@ -318,165 +327,491 @@ pylibsim_int__pconstchar_pvoid(const char *arg0, void *cbdata)
 }
 
 /******************************************************************************/
-static int
-pylibsim_VisIt_VariableData_setDataEx(visit_handle obj, int nComps, int nTuples, 
-    void *seqv, double *d)
+static const char *getPyObjectType(PyObject *obj)
 {
-    int t, c, isTuple = 0;
-    double *dptr = NULL;
-    PyObject *seq = (PyObject *)seqv; /* The pointer was really to a PyObject. */
-    if(PyTuple_Check(seq))
-        isTuple = 1;
-    else if(!PyList_Check(seq)) 
-        return VISIT_ERROR;
-
-    dptr = d;
-    for(t = 0; t < nTuples; ++t)
+    const char *objType = "unknown";
+    const char *tmp = NULL;
+    PyObject *rep = NULL;
+    if (obj && (rep = PyObject_Repr(obj)) && (tmp = PyString_AsString(rep)))
     {
-        PyObject *item = NULL;
-        if(isTuple)
-            item = PyTuple_GetItem(seq, t);
-        else
-            item = PyList_GetItem(seq, t);
-
-        if(item == NULL)
-        {
-            return VISIT_ERROR;
-        }
-        else if(PyTuple_Check(item))
-        {
-            for(c = 0; c < nComps; ++c)
-            {
-                if(c < PyTuple_Size(item))
-                {
-                    PyObject *item2 = PyTuple_GET_ITEM(item, c);
-                    if(PyFloat_Check(item))
-                        *dptr++ = PyFloat_AsDouble(item);
-                    else if(PyInt_Check(item))
-                        *dptr++ = (double)PyInt_AsLong(item);
-                    else if(PyLong_Check(item))
-                        *dptr++ = (double)PyLong_AsLong(item);
-                    else
-                    {
-                        return VISIT_ERROR;
-                    } 
-                }
-                else
-                    *dptr++ = 0.;
-            }
-        }
-        else if(PyList_Check(item))
-        {
-            for(c = 0; c < nComps; ++c)
-            {
-                if(c < PyList_Size(item))
-                {
-                    PyObject *item2 = PyList_GET_ITEM(item, c);
-                    if(PyFloat_Check(item))
-                        *dptr++ = PyFloat_AsDouble(item);
-                    else if(PyInt_Check(item))
-                        *dptr++ = (double)PyInt_AsLong(item);
-                    else if(PyLong_Check(item))
-                        *dptr++ = (double)PyLong_AsLong(item);
-                    else
-                    {
-                        return VISIT_ERROR;
-                    } 
-                }
-                else
-                    *dptr++ = 0.;
-            }
-        }
-        else if(PyFloat_Check(item))
-        {
-            double val = PyFloat_AsDouble(item);
-            for(c = 0; c < nComps; ++c)
-            {
-                *dptr++ = val;
-            }
-        }
-        else if(PyInt_Check(item))
-        {
-            double val = (double)PyInt_AsLong(item);
-            for(c = 0; c < nComps; ++c)
-            {
-                *dptr++ = val;
-            }
-        }
-        else if(PyLong_Check(item))
-        {
-            double val = (double)PyLong_AsLong(item);
-            for(c = 0; c < nComps; ++c)
-            {
-                *dptr++ = val;
-            }
-        }
-        else
-        {
-            return VISIT_ERROR;
-        }
+        objType = tmp;
     }
-#if 0
-    printf("array = {");
-    c = nTuples * nComps;
-    for(t = 0; t < c; ++t)
-        printf("%lg, ", d[t]);
-    printf("}\n");
+    return objType;
+}
+
+}
+
+namespace pylibsim {
+
+#if defined(SIMV2_USE_NUMPY)
+template<typename T> class CppToNumpy {};
+template<> class CppToNumpy<float> { public: enum { Type = NPY_FLOAT }; };
+template<> class CppToNumpy<double> { public: enum { Type = NPY_DOUBLE }; };
+template<> class CppToNumpy<int> { public: enum { Type = NPY_INT }; };
+template<> class CppToNumpy<char> { public: enum { Type = NPY_BYTE }; };
+
+template<int C> class NumpyToCpp {};
+template<> class NumpyToCpp<NPY_FLOAT> { public: typedef float Type; };
+template<> class NumpyToCpp<NPY_DOUBLE> { public: typedef double Type; };
+template<> class NumpyToCpp<NPY_INT> { public: typedef int Type; };
+template<> class NumpyToCpp<NPY_BYTE> { public: typedef char Type; };
+
+/******************************************************************************/
+template <typename T>
+int getArrayPointer(
+      int nComps,
+      int nTuples,
+      PyObject *seq,
+      T *&data)
+{
+    // make some sanity checks that will prevent impropper
+    // use of the pointer.
+    if (!PyArray_Check(seq))
+    {
+        // not a numpy array
+        return -1;
+    }
+
+    PyArrayObject *ndarray = reinterpret_cast<PyArrayObject*>(seq);
+
+    if (PyArray_TYPE(ndarray) != CppToNumpy<T>::Type)
+    {
+        // internal datatype doesn't match X in setDataX call
+        return -2;
+    }
+
+    if (PyArray_SIZE(ndarray) != (nComps*nTuples))
+    {
+        // size is not as reported by the user
+        return -3;
+    }
+
+    if (!(PyArray_IS_C_CONTIGUOUS(ndarray) || PyArray_IS_F_CONTIGUOUS(ndarray)))
+    {
+        // the array is not contiguous
+        return -4;
+    }
+#if defined(SIMV2_NUMPY_DEBUG)
+    fprintf(stderr, "successfully got a point to the numpy array\n");
 #endif
-
-    return VISIT_OKAY;
-}
-
-int
-pylibsim_VisIt_VariableData_setData(visit_handle obj, int owner, int nComps, 
-    int nTuples, void *seqv)
-{
-    int ret = VISIT_ERROR;
-    double *d = (double *)malloc(sizeof(double) * nComps * nTuples);
-    if(d != NULL)
-    {
-        if(pylibsim_VisIt_VariableData_setDataEx(obj, nComps, nTuples, seqv, d) == VISIT_OKAY)
-        {
-            /* We will always let VisIt own the memory since we're creating a copy based
-             * on the data in the Python objects.
-             */
-            ret = VisIt_VariableData_setDataD(obj, VISIT_OWNER_VISIT, nComps, nTuples, d);
-        }
-        else
-            free(d);
-    }
-    return ret;
-}
-
-int
-pylibsim_VisIt_VariableData_setDataAsI(visit_handle obj, int owner, int nComps, 
-    int nTuples, void *seqv)
-{
-    int ret = VISIT_ERROR;
-    double *d = (double *)malloc(sizeof(double) * nComps * nTuples);
-    if(d != NULL)
-    {
-        if(pylibsim_VisIt_VariableData_setDataEx(obj, nComps, nTuples, seqv, d) == VISIT_OKAY)
-        {
-            int i, nvals, *ivals = NULL;
-            nvals = nComps * nTuples;
-            ivals = (int *)malloc(sizeof(int) * nvals);
-            for(i = 0; i < nvals; ++i)
-                ivals[i] = (int)d[i];
-
-            /* We will always let VisIt own the memory since we're creating a copy based
-             * on the data in the Python objects.
-             */
-            ret = VisIt_VariableData_setDataI(obj, VISIT_OWNER_VISIT, nComps, nTuples, ivals);
-        }
-        free(d);
-    }
-
-    return ret;
+    // success, safe to use the pointer
+    data = static_cast<T*>(PyArray_DATA(ndarray));
+    return 0;
 }
 
 /******************************************************************************/
+template<typename T, int C>
+T numpyIterDeref(PyArrayObject *it)
+{
+    return
+    static_cast<T>(*(static_cast<typename NumpyToCpp<C>::Type *>(PyArray_ITER_DATA(it))));
+}
 
+/******************************************************************************/
+template<typename T, int C>
+void numpyIterCopy(PyArrayObject *it, T *dptr)
+{
+    while (PyArray_ITER_NOTDONE(it))
+    {
+        *dptr = numpyIterDeref<T, CppToNumpy<T>::Type>(it);
+        PyArray_ITER_NEXT(it);
+        ++dptr;
+    }
+}
+
+/******************************************************************************/
+template <typename T>
+int copyArray(PyArrayObject *ndarray, T *dptr)
+{
+    int ierr = 0;
+    PyArrayObject *it = reinterpret_cast<PyArrayObject*>(
+            PyArray_IterNew(reinterpret_cast<PyObject*>(ndarray)));
+    PyArray_ITER_RESET(it);
+    switch (PyArray_TYPE(ndarray))
+    {
+    case NPY_FLOAT:
+        numpyIterCopy<T, NPY_FLOAT>(it, dptr);
+        break;
+
+    case NPY_DOUBLE:
+        numpyIterCopy<T, NPY_DOUBLE>(it, dptr);
+        break;
+
+    case NPY_INT:
+        numpyIterCopy<T, NPY_INT>(it, dptr);
+        break;
+
+    case NPY_BYTE:
+        numpyIterCopy<T, NPY_BYTE>(it, dptr);
+        break;
+
+    default:
+        ierr = -1;
+        PyErr_SetString(PyExc_TypeError, "copyArray : Unsupported type");
+    }
+    Py_DECREF(it);
+    return ierr;
+}
+#endif // end of numpy support
+
+/******************************************************************************/
+static int getSequenceSize(PyObject *obj, Py_ssize_t *seqSize)
+{
+    PyObject *seq = PySequence_Fast(obj, "getSequenceSize : Not a sequence");
+    if (!seq)
+    {
+        return -1;
+    }
+    Py_ssize_t n = PySequence_Size(seq);
+    for (Py_ssize_t i=0; i<n; ++i)
+    {
+        PyObject *o = PySequence_Fast_GET_ITEM(seq, i);
+        if (PySequence_Check(o))
+        {
+            if (getSequenceSize(o, seqSize))
+            {
+                return -2;
+            }
+        }
+        else
+        if (PyFloat_Check(o) || PyInt_Check(o) || PyLong_Check(o))
+        {
+            ++(*seqSize);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_TypeError, "getSequenceSize : Unsupported type");
+            return -3;
+        }
+    }
+    return 0;
+}
+
+
+/******************************************************************************/
+template <typename T>
+int copyObject(PyObject *obj, T *&dptr)
+{
+    if (PyFloat_Check(obj))
+    {
+        *dptr = static_cast<T>(PyFloat_AsDouble(obj));
+    }
+    else
+    if (PyInt_Check(obj))
+    {
+        *dptr = static_cast<T>(PyInt_AsLong(obj));
+    }
+    else
+    if (PyLong_Check(obj))
+    {
+        *dptr = static_cast<T>(PyLong_AsLong(obj));
+    }
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "copyObject : Unsupported type.");
+        return -1;
+    }
+    ++dptr;
+    return 0;
+}
+
+/******************************************************************************/
+template <typename T>
+int copySequence(PyObject *obj, T *&dptr)
+{
+    PyObject *seq = PySequence_Fast(obj, "copySequence : Not a sequence");
+    if (!seq)
+    {
+        return -1;
+    }
+    Py_ssize_t n = PySequence_Size(seq);
+    for (Py_ssize_t i=0; i<n; ++i)
+    {
+        PyObject *o = PySequence_Fast_GET_ITEM(seq, i);
+        if (PySequence_Check(o))
+        {
+            if (copySequence(o, dptr))
+            {
+                return -2;
+            }
+        }
+        else
+        if (copyObject(o, dptr))
+        {
+            return -3;
+        }
+    }
+    return 0;
+}
+
+/******************************************************************************/
+template <typename T>
+int copy(
+      int nComps,
+      int nTuples,
+      PyObject *seq,
+      T *&data)
+{
+    long long dataSize = nComps*nTuples;
+    data = (T *)malloc(sizeof(T)*dataSize);
+    if (data == NULL)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "copy : Malloc failed.");
+        return -1;
+    }
+    T *pData = data;
+
+#if defined(SIMV2_USE_NUMPY)
+    if (PyArray_Check(seq))
+    {
+        PyArrayObject *ndarray = reinterpret_cast<PyArrayObject*>(seq);
+        if (PyArray_SIZE(ndarray) != dataSize)
+        {
+            free(data);
+            PyErr_SetString(PyExc_RuntimeError, "copy : Array size not nComps*nTuples");
+            return -2;
+        }
+
+        if (copyArray(ndarray, pData))
+        {
+            free(data);
+            PyErr_SetString(PyExc_RuntimeError, "copy : Failed to the copy array");
+            return -3;
+        }
+#if defined(SIMV2_NUMPY_DEBUG)
+        fprintf(stderr, "Successfully coppied numpy array\n");
+#endif
+    }
+    else
+#endif
+    if (PySequence_Check(seq))
+    {
+        Py_ssize_t flatSize = 0;
+        if (getSequenceSize(seq, &flatSize))
+        {
+            free(data);
+            PyErr_SetString(PyExc_RuntimeError, "copy : Failed to get the sequence size");
+            return -4;
+        }
+
+        if (flatSize != dataSize)
+        {
+            free(data);
+            PyErr_SetString(PyExc_RuntimeError, "copy : Sequence size not nComps*nTuples");
+            return -5;
+        }
+
+        if (copySequence(seq, pData))
+        {
+            free(data);
+            PyErr_SetString(PyExc_RuntimeError, "copy : Failed to the copy sequence");
+            return -6;
+        }
+#if defined(SIMV2_NUMPY_DEBUG)
+        fprintf(stderr, "Successfully coppied python sequence\n");
+#endif
+    }
+    else
+    {
+        free(data);
+        PyErr_SetString(PyExc_TypeError, "copy : Not a sequence or array");
+        return -7;
+    }
+
+    // success
+    return 0;
+}
+
+/******************************************************************************/
+template <typename T>
+int getData(
+          int &owner, // in/out
+          int nComps,
+          int nTuples,
+          PyObject *&seq,
+          T *&data) // out
+{
+    data = NULL;
+#if defined(SIMV2_USE_NUMPY)
+    if (owner == VISIT_OWNER_COPY)
+    {
+        // always honor OWNER_COPY, it's the simulation's
+        // way of informing us that the data will disapear
+        // and we must copy it
+        if (copy<T>(nComps, nTuples, seq, data))
+        {
+            return -1;
+        }
+        // VisIt manages the copy with malloc/free
+        owner = VISIT_OWNER_VISIT;
+    }
+    else
+    {
+        // attempt zero-copy, if we can't manage it safely then
+        // fallback and make a copy of the data. In order to be
+        // able to use the pointer all of the following must be
+        // true:
+        //     1) the object must be a numpy ndarry array
+        //     2) the ndarray's type type must match X in the setDataX call
+        //     3) the ndarray's size must match nTups*nComps
+        //     4) the ndarray must have a contiguous internal represntation
+        // if any of those are false a copy is made below.
+        if (!getArrayPointer<T>(nComps, nTuples, seq, data))
+        {
+            // take a reference to the object preventing
+            // deletion while in use by VisIt
+#if defined(SIMV2_NUMPY_DEBUG)
+            fprintf(stderr, "Py_INCREF(%p)\n", seq);
+#endif
+            owner = VISIT_OWNER_VISIT_EX;
+            Py_INCREF(seq);
+        }
+        else
+        if (!copy<T>(nComps, nTuples, seq, data))
+        {
+            // VisIt manages the copy
+            owner = VISIT_OWNER_VISIT;
+        }
+        else
+        {
+            return -2;
+        }
+    }
+#else
+    // without numpy things are very simple: always make
+    // a copy of the data
+    if (copy<T>(nComps, nTuples, seq, data))
+    {
+        return -3;
+    }
+    // VisIt manages the copy
+    owner = VISIT_OWNER_VISIT;
+#endif
+    // success
+    return 0;
+}
+
+/******************************************************************************/
+void initialize()
+{
+#if defined(SIMV2_USE_NUMPY)
+    static bool initialized = false;
+    if (!initialized)
+    {
+        import_array();
+        initialized = true;
+    }
+#endif
+}
+
+/******************************************************************************/
+void pyarray_destructor(void *object)
+{
+#if defined(SIMV2_NUMPY_DEBUG)
+  fprintf(stderr,"Py_DECREF(%p)\n", object);
+#endif
+  PyObject *pyobj = static_cast<PyObject*>(object);
+  // release our reference to the object
+  //Py_CLEAR(pyobj);
+  Py_DECREF(pyobj);
+}
+
+/******************************************************************************/
+int setData(visit_handle obj,
+      int owner,
+      int dataType,
+      int nComps,
+      int nTuples,
+      PyObject *seq,
+      void *data)
+{
+    if (owner == VISIT_OWNER_VISIT_EX)
+    {
+        return VisIt_VariableData_setDataEx(obj, owner, dataType, nComps,
+                                 nTuples, data, pyarray_destructor, seq);
+    }
+    return VisIt_VariableData_setData(
+        obj, owner, dataType, nComps, nTuples, data);
+}
+
+};
+
+extern "C"
+{
+
+/******************************************************************************/
+int pylibsim_VisIt_VariableData_setDataAsD(
+          visit_handle obj,
+          int owner,
+          int nComps,
+          int nTuples,
+          PyObject *seq)
+{
+    pylibsim::initialize();
+    double *data = NULL;
+    if (pylibsim::getData<double>(owner, nComps, nTuples, seq, data))
+    {
+        return VISIT_ERROR;
+    }
+    return pylibsim::setData(
+        obj, owner, VISIT_DATATYPE_DOUBLE, nComps, nTuples, seq, data);
+}
+
+/******************************************************************************/
+int pylibsim_VisIt_VariableData_setDataAsF(
+          visit_handle obj,
+          int owner,
+          int nComps,
+          int nTuples,
+          PyObject *seq)
+{
+    pylibsim::initialize();
+    float *data = NULL;
+    if (pylibsim::getData<float>(owner, nComps, nTuples, seq, data))
+    {
+        return VISIT_ERROR;
+    }
+    return pylibsim::setData(
+        obj, owner, VISIT_DATATYPE_FLOAT, nComps, nTuples, seq, data);
+}
+
+/******************************************************************************/
+int pylibsim_VisIt_VariableData_setDataAsI(
+          visit_handle obj,
+          int owner,
+          int nComps,
+          int nTuples,
+          PyObject *seq)
+{
+    pylibsim::initialize();
+    int *data = NULL;
+    if (pylibsim::getData<int>(owner, nComps, nTuples, seq, data))
+    {
+        return VISIT_ERROR;
+    }
+    return pylibsim::setData(
+        obj, owner, VISIT_DATATYPE_INT, nComps, nTuples, seq, data);
+}
+
+/******************************************************************************/
+int pylibsim_VisIt_VariableData_setDataAsC(
+          visit_handle obj,
+          int owner,
+          int nComps,
+          int nTuples,
+          PyObject *seq)
+{
+    pylibsim::initialize();
+    char *data = NULL;
+    if (pylibsim::getData<char>(owner, nComps, nTuples, seq, data))
+    {
+        return VISIT_ERROR;
+    }
+    return pylibsim::setData(
+        obj, owner, VISIT_DATATYPE_CHAR, nComps, nTuples, seq, data);
+}
+
+/******************************************************************************/
 void
 pylibsim_VisItDisconnect(void)
 {
@@ -535,4 +870,6 @@ pylibsim_VisItDisconnect(void)
     DISCONNECT_CALLBACK2(VisItSetWriteVariable);
 
     VisItDisconnect();
+}
+
 }

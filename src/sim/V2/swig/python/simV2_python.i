@@ -13,17 +13,17 @@
 %typemap(in) void* {
     static PyObject *cb[2] = {NULL, NULL};
     if(cb[0] != NULL)
-        Py_DECREF(cb[0]); 
+        Py_DECREF(cb[0]);
     if(cb[1] != NULL)
-        Py_DECREF(cb[1]); 
+        Py_DECREF(cb[1]);
 
     cb[0] = (obj0 != Py_None) ? obj0 : NULL; /* kind of a hack (assumes void*cbdata will be 2nd arg. */
     cb[1] = ($input != Py_None) ? $input : NULL;
 
     if(cb[0] != NULL)
-        Py_INCREF(cb[0]); 
+        Py_INCREF(cb[0]);
     if(cb[1] != NULL)
-        Py_INCREF(cb[1]); 
+        Py_INCREF(cb[1]);
     $1 = (void*)cb;
 }
 
@@ -211,42 +211,15 @@ void pylibsim_invoke_VisItDisconnect(void)
 }
 %}
 
-%typemap(in) double * {
-    if(PyList_Check($input) != 1 && PyTuple_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not list or tuple");
-        return NULL;
-    }
-    $1 = (double *)$input; /* Stash the PyObject pointer. We'll use it as such later.*/
-}
-
-%typemap(in) float * {
-    if(PyList_Check($input) != 1 && PyTuple_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not list or tuple");
-        return NULL;
-    }
-    $1 = (float *)$input; /* Stash the PyObject pointer. We'll use it as such later.*/
-}
-
-/* These apply only to VariableData functions.*/
-%typemap(in) int *dataarray{
-    if(PyList_Check($input) != 1 && PyTuple_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not list or tuple");
-        return NULL;
-    }
-    $1 = (int *)$input;
-}
-
-%typemap(in) char * dataarray {
-    if(PyList_Check($input) != 1 && PyTuple_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not list or tuple");
-        return NULL;
-    }
-    $1 = (char *)$input;
-}
+/*
+ * we need to convert from python data structures to c
+ * arrays. intercept calls passing data arrays into
+ * VisIt to do so.
+ */
+%typemap(in) double *dataarray { $1 = (double *)$input; }
+%typemap(in) float *dataarray { $1 = (float *)$input; }
+%typemap(in) int *dataarray { $1 = (int *)$input; }
+%typemap(in) char *dataarray { $1 = (char *)$input; }
 
 %rename(VisIt_VariableData_setDataC) pylibsim_VisIt_VariableData_setDataC;
 %rename(VisIt_VariableData_setDataI) pylibsim_VisIt_VariableData_setDataI;
@@ -254,28 +227,30 @@ void pylibsim_invoke_VisItDisconnect(void)
 %rename(VisIt_VariableData_setDataD) pylibsim_VisIt_VariableData_setDataD;
 
 %inline %{
+
+int pylibsim_VisIt_VariableData_setDataAsC(visit_handle, int, int, int, PyObject*);
+int pylibsim_VisIt_VariableData_setDataAsI(visit_handle, int, int, int, PyObject*);
+int pylibsim_VisIt_VariableData_setDataAsF(visit_handle, int, int, int, PyObject*);
+int pylibsim_VisIt_VariableData_setDataAsD(visit_handle, int, int, int, PyObject*);
+
 int pylibsim_VisIt_VariableData_setDataC(visit_handle obj, int owner, int nComps, int nTuples, char *dataarray)
 {
-    extern int pylibsim_VisIt_VariableData_setData(visit_handle obj, int owner, int nComps, int nTuples, void *dataarray);
-    return pylibsim_VisIt_VariableData_setData(obj, owner, nComps, nTuples, (void*)dataarray);
+    return pylibsim_VisIt_VariableData_setDataAsC(obj, owner, nComps, nTuples, (PyObject*)dataarray);
 }
 
 int pylibsim_VisIt_VariableData_setDataI(visit_handle obj, int owner, int nComps, int nTuples, int *dataarray)
 {
-    extern int pylibsim_VisIt_VariableData_setDataAsI(visit_handle obj, int owner, int nComps, int nTuples, void *dataarray);
-    return pylibsim_VisIt_VariableData_setDataAsI(obj, owner, nComps, nTuples, (void*)dataarray);
+    return pylibsim_VisIt_VariableData_setDataAsI(obj, owner, nComps, nTuples, (PyObject*)dataarray);
 }
 
 int pylibsim_VisIt_VariableData_setDataF(visit_handle obj, int owner, int nComps, int nTuples, float *dataarray)
 {
-    extern int pylibsim_VisIt_VariableData_setData(visit_handle obj, int owner, int nComps, int nTuples, void *dataarray);
-    return pylibsim_VisIt_VariableData_setData(obj, owner, nComps, nTuples, (void*)dataarray);
+    return pylibsim_VisIt_VariableData_setDataAsF(obj, owner, nComps, nTuples, (PyObject*)dataarray);
 }
 
 int pylibsim_VisIt_VariableData_setDataD(visit_handle obj, int owner, int nComps, int nTuples, double *dataarray)
 {
-    extern int pylibsim_VisIt_VariableData_setData(visit_handle obj, int owner, int nComps, int nTuples, void *dataarray);
-    return pylibsim_VisIt_VariableData_setData(obj, owner, nComps, nTuples, (void*)dataarray);
+    return pylibsim_VisIt_VariableData_setDataAsD(obj, owner, nComps, nTuples, (PyObject*)dataarray);
 }
 %}
 
