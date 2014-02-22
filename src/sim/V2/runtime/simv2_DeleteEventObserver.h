@@ -35,35 +35,51 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef simV2_DeleteEventObserver_h
+#define simV2_DeleteEventObserver_h
 
-#ifndef VISIT_VARIABLE_DATA_H
-#define VISIT_VARIABLE_DATA_H
+#include <vtkCommand.h>
+#include <vtkDataArray.h>
 
-#ifdef __cplusplus
-extern "C"
+// help that invokes callback passed through the simV2
+// api when a VTK data array is deleted. This allows us
+// to hold a reference to the data while VTK needs it,
+// and release that reference when VTK is finished. Note:
+// after the callback is invoked, this class un-register's
+// itself so one should not explicitly Delete it.
+class simV2_DeleteEventObserver : public vtkCommand
 {
-#endif
+public:
+    static simV2_DeleteEventObserver *New()
+        { return new simV2_DeleteEventObserver; }
 
-int VisIt_VariableData_alloc(visit_handle*);
-int VisIt_VariableData_free(visit_handle);
-int VisIt_VariableData_setDataC(visit_handle obj, int owner, int nComps, int nTuples, char *);
-int VisIt_VariableData_setDataI(visit_handle obj, int owner, int nComps, int nTuples, int *);
-int VisIt_VariableData_setDataF(visit_handle obj, int owner, int nComps, int nTuples, float *);
-int VisIt_VariableData_setDataD(visit_handle obj, int owner, int nComps, int nTuples, double *);
-int VisIt_VariableData_setDataL(visit_handle obj, int owner, int nComps, int nTuples, long *);
+    // Install the observer on the DeleteEvent.
+    void Observe(vtkDataArray *object, void(*callback)(void*), void*callbackData)
+    {
+        this->Id = object->AddObserver(vtkCommand::DeleteEvent, this);
+        this->Callback = callback;
+        this->CallbackData = callbackData;
+    }
+ 
+    // invoke the callback, ignore the event, delete the observer
+    virtual void Execute(vtkObject *object, unsigned long, void *)
+    {
+        this->Callback(this->CallbackData);
+        object->RemoveObserver(this->Id);
+        this->UnRegister();
+    }
 
-int VisIt_VariableData_getData(visit_handle obj, int *owner, int *dataType, int *nComps, int *nTuples, void **);
-int VisIt_VariableData_getDataC(visit_handle obj, int *owner, int *nComps, int *nTuples, char **);
-int VisIt_VariableData_getDataI(visit_handle obj, int *owner, int *nComps, int *nTuples, int **);
-int VisIt_VariableData_getDataF(visit_handle obj, int *owner, int *nComps, int *nTuples, float **);
-int VisIt_VariableData_getDataD(visit_handle obj, int *owner, int *nComps, int *nTuples, double **);
-int VisIt_VariableData_getDataL(visit_handle obj, int *owner, int *nComps, int *nTuples, long **);
+protected:
+  simV2_DeleteEventObserver() : Id(0), Callback(NULL), CallbackData(NULL) {}
+  virtual ~simV2_DeleteEventObserver() {}
 
-int VisIt_VariableData_setData(visit_handle, int, int, int, int, void *);
-int VisIt_VariableData_setDataEx(visit_handle, int, int, int, int, void *, void(*)(void*), void *);
+  unsigned long Id;
+  void(* Callback)(void*);
+  void *CallbackData;
 
-#ifdef __cplusplus
-}
-#endif
+private:
+  void operator=(const simV2_DeleteEventObserver &); // not implemented
+  simV2_DeleteEventObserver(const simV2_DeleteEventObserver &); // not implemented
+};
 
 #endif

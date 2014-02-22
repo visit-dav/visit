@@ -34,49 +34,28 @@
 # OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #
-# Modifications:
-#  Cyrus Harrison, Thu May 12 15:46:45 PDT 2011
-#  Remove COMPONENT RUNTIME statement from INSTALL command to avoid
-#  cpack problems.
+#*****************************************************************************
+# FindNumpy
 #
-#  Eric BRugger, Wed Dec 26 15:33:28 PST 2012
-#  Link against symV2dyn instead of symV2.
+# Check if numpy is installed and configure c-api includes
 #
-#  Brad Whitlock, Fri May 17 13:42:43 PDT 2013
-#  Build in the libsim sources directly.
-#
-#****************************************************************************/
-
-INCLUDE_DIRECTORIES(
-    ${VISIT_SOURCE_DIR}/sim/V2/lib
-    ${VISIT_BINARY_DIR}/sim/V2/swig/python
-    ${VISIT_BINARY_DIR}/include
-    ${PYTHON_INCLUDE_PATH}
-    )
-
-FIND_PACKAGE(Numpy)
-SET(SIMV2_USE_NUMPY FALSE)
-IF (NUMPY_FOUND)
-    SET(SIMV2_USE_NUMPY TRUE)
-ENDIF()
-CONFIGURE_FILE(simV2_python_config.h.in simV2_python_config.h)
-
-PYTHON_ADD_MODULE(pysimV2
-    simV2_wrap.c
-    simV2_custom.cxx
-    ${LIBSIM_SOURCES}
-    )
-
-# We pick "pysimV2" as the target name because "simV2" is already taken by
-# libsimV2. We then reset its output name to _simV2 since that's what SWIG
-# wants us to call it.
-SET_TARGET_PROPERTIES(pysimV2 PROPERTIES PREFIX "" OUTPUT_NAME _simV2)
-TARGET_LINK_LIBRARIES(pysimV2 ${PYTHON_LIBRARIES})
-IF(NOT APPLE)
-    SET_TARGET_PROPERTIES(pysimV2 PROPERTIES INSTALL_RPATH "$ORIGIN")
-ENDIF(NOT APPLE)
-
-VISIT_INSTALL_TARGETS(pysimV2)
-INSTALL(FILES simV2.py
-    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-    )
+# This module defines
+#  NUMPY_FOUND, set TRUE if numpy and c-api are available
+#  NUMPY_INCLUDE_DIR, where to find c-api headers
+set(_TMP_PY_OUTPUT)
+set(_TMP_PY_RETURN)
+exec_program("${PYTHON_EXECUTABLE}"
+  ARGS "-c 'import numpy; print numpy.get_include()'"
+  OUTPUT_VARIABLE _TMP_PY_OUTPUT
+  RETURN_VALUE _TMP_PY_RETURN)
+set(NUMPY_INCLUDE_FOUND FALSE)
+if(NOT _TMP_PY_RETURN AND EXISTS "${_TMP_PY_OUTPUT}")
+  set(NUMPY_INCLUDE_FOUND TRUE)
+else()
+  set(_TMP_PY_OUTPUT)
+endif()
+set(NUMPY_INCLUDE_DIR "${_TMP_PY_OUTPUT}")
+#set(NUMPY_INCLUDE_DIR "${_TMP_PY_OUTPUT}" CACHE PATH "Numpy C API headers")
+#mark_as_advanced(NUMPY_INCLUDE_DIR)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(NUMPY DEFAULT_MSG NUMPY_INCLUDE_FOUND)

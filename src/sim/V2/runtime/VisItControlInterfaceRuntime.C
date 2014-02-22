@@ -307,15 +307,25 @@ void
 simv2_debug_logs(int level, const char *msg)
 {
     if(level == 1)
+    {
         debug1 << msg;
+    }
     else if(level == 2)
+    {
         debug2 << msg;
+    }
     else if(level == 3)
+    {
         debug3 << msg;
+    }
     else if(level == 4)
+    {
         debug4 << msg;
+    }
     else if(level == 5)
+    {
         debug5 << msg;
+    }
 }
 
 int
@@ -694,7 +704,7 @@ SetAttributeSubjectValues(AttributeSubject *atts,
 }
 
 int
-simv2_set_plot_options(void *e, int plotID, const char *fieldName, 
+simv2_set_plot_options(void * /*e*/, int plotID, const char *fieldName, 
     int fieldType, void *fieldVal, int fieldLen)
 {
     int status = VISIT_ERROR;
@@ -715,7 +725,7 @@ simv2_set_plot_options(void *e, int plotID, const char *fieldName,
 }
 
 int
-simv2_set_operator_options(void *e, int plotID, int operatorID, const char *fieldName, 
+simv2_set_operator_options(void * /*e*/, int plotID, int operatorID, const char *fieldName, 
     int fieldType, void *fieldVal, int fieldLen)
 {
     int status = VISIT_ERROR;
@@ -724,7 +734,7 @@ simv2_set_operator_options(void *e, int plotID, int operatorID, const char *fiel
         std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
         if(it != GetPlotInformation()->end() && fieldVal != NULL)
         {
-            if(operatorID >= 0 && operatorID < it->second.operators.size())
+            if(operatorID >= 0 && operatorID < static_cast<int>(it->second.operators.size()))
             {
                 status = SetAttributeSubjectValues(it->second.operators[operatorID].atts, 
                     std::string(fieldName), fieldType, fieldVal, fieldLen); 

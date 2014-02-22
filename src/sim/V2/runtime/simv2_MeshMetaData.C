@@ -478,7 +478,7 @@ simv2_MeshMetaData_getDomainName(visit_handle h, int i, char **val)
     }
     int retval = VISIT_ERROR;
     VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getDomainName");
-    if(obj != NULL && i >= 0 && i < obj->domainNames.size())
+    if(obj != NULL && i >= 0 && i < static_cast<int>(obj->domainNames.size()))
     {
         *val = (char *)malloc(obj->domainNames[i].size() + 1);
         strcpy(*val, obj->domainNames[i].c_str());
@@ -638,7 +638,7 @@ simv2_MeshMetaData_getGroupId(visit_handle h, int i, int *val)
 {
     int retval = VISIT_ERROR;
     VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getGroupId");
-    if(obj != NULL && i >= 0 && i < obj->groupIds.size())
+    if(obj != NULL && i >= 0 && i < static_cast<int>(obj->groupIds.size()))
     {
         *val = obj->groupIds[i];
         retval = VISIT_OKAY;

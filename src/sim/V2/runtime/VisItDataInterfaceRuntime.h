@@ -115,7 +115,7 @@ SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, visit_
 #define VISIT_CURVE_DATA        30
 
 #define VISIT_MATERIAL_DATA     40
-#define VISIT_SPECIES_DATA     50
+#define VISIT_SPECIES_DATA      50
 
 #define VISIT_SIMULATION_METADATA    100
 #define VISIT_MESHMETADATA           101

@@ -36,34 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef VISIT_VARIABLE_DATA_H
-#define VISIT_VARIABLE_DATA_H
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-int VisIt_VariableData_alloc(visit_handle*);
-int VisIt_VariableData_free(visit_handle);
-int VisIt_VariableData_setDataC(visit_handle obj, int owner, int nComps, int nTuples, char *);
-int VisIt_VariableData_setDataI(visit_handle obj, int owner, int nComps, int nTuples, int *);
-int VisIt_VariableData_setDataF(visit_handle obj, int owner, int nComps, int nTuples, float *);
-int VisIt_VariableData_setDataD(visit_handle obj, int owner, int nComps, int nTuples, double *);
-int VisIt_VariableData_setDataL(visit_handle obj, int owner, int nComps, int nTuples, long *);
-
-int VisIt_VariableData_getData(visit_handle obj, int *owner, int *dataType, int *nComps, int *nTuples, void **);
-int VisIt_VariableData_getDataC(visit_handle obj, int *owner, int *nComps, int *nTuples, char **);
-int VisIt_VariableData_getDataI(visit_handle obj, int *owner, int *nComps, int *nTuples, int **);
-int VisIt_VariableData_getDataF(visit_handle obj, int *owner, int *nComps, int *nTuples, float **);
-int VisIt_VariableData_getDataD(visit_handle obj, int *owner, int *nComps, int *nTuples, double **);
-int VisIt_VariableData_getDataL(visit_handle obj, int *owner, int *nComps, int *nTuples, long **);
-
-int VisIt_VariableData_setData(visit_handle, int, int, int, int, void *);
-int VisIt_VariableData_setDataEx(visit_handle, int, int, int, int, void *, void(*)(void*), void *);
-
-#ifdef __cplusplus
-}
-#endif
-
+#cmakedefine SIMV2_USE_NUMPY
+#if defined(SIMV2_USE_NUMPY)
+# define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+# include <numpy/arrayobject.h>
 #endif

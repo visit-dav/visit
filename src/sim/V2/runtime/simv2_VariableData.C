@@ -4,6 +4,8 @@
 #include "VisItDataInterfaceRuntimeP.h"
 
 #include "simv2_VariableData.h"
+#include "simv2_TypeTraits.hxx"
+#include <stdio.h>
 
 struct VisIt_VariableData : public VisIt_ObjectBase
 {
@@ -15,29 +17,36 @@ struct VisIt_VariableData : public VisIt_ObjectBase
     int nComponents;
     int nTuples;
     void *data;
+    void (*callback)(void *);
+    void *callbackData;
 };
 
 VisIt_VariableData::VisIt_VariableData() : VisIt_ObjectBase(VISIT_VARIABLE_DATA)
-{ 
+{
     owner = VISIT_OWNER_VISIT;
     dataType = VISIT_DATATYPE_FLOAT;
     nComponents = 1;
     nTuples = 0;
     data = NULL;
+    callback = NULL;
+    callbackData = NULL;
 }
 
 VisIt_VariableData::~VisIt_VariableData()
 {
-    if(owner == VISIT_OWNER_VISIT &&
-       data != NULL)
+    if ((owner == VISIT_OWNER_VISIT) && (data != NULL))
     {
         free(data);
     }
+    else
+    if ((owner == VISIT_OWNER_VISIT_EX) && (callback != NULL))
+    {
+        callback(callbackData);
+    }
 }
 
-
 static VisIt_VariableData *
-GetObject(visit_handle h, const char *fname)
+GetVariableDataObject(visit_handle h, const char *fname)
 {
     char tmp[100];
     VisIt_VariableData *obj = (VisIt_VariableData *)VisItGetPointer(h);
@@ -61,9 +70,11 @@ GetObject(visit_handle h, const char *fname)
     return obj;
 }
 
+
 /*******************************************************************************
- * Public functions, available to C 
+ * Public functions, available to C
  ******************************************************************************/
+
 int
 simv2_VariableData_alloc(visit_handle *h)
 {
@@ -74,7 +85,7 @@ simv2_VariableData_alloc(visit_handle *h)
 int
 simv2_VariableData_free(visit_handle h)
 {
-    VisIt_VariableData *obj = GetObject(h, "simv2_VariableData_free");
+    VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_free");
     int retval = VISIT_ERROR;
     if(obj != NULL)
     {
@@ -91,18 +102,15 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
 {
     if(owner != VISIT_OWNER_SIM &&
        owner != VISIT_OWNER_VISIT &&
+       owner != VISIT_OWNER_VISIT_EX &&
        owner != VISIT_OWNER_COPY)
     {
         VisItError("VariableData's owner must be set to VISIT_OWNER_SIM"
-            ", VISIT_SIM_VISIT, or VISIT_OWNER_COPY.");
+            ", VISIT_OWNER_VISIT, VISIT_OWNER_VISIT_EX, or VISIT_OWNER_COPY.");
         return VISIT_ERROR;
     }
 
-    if(dataType != VISIT_DATATYPE_CHAR &&
-       dataType != VISIT_DATATYPE_INT &&
-       dataType != VISIT_DATATYPE_FLOAT &&
-       dataType != VISIT_DATATYPE_DOUBLE &&
-       dataType != VISIT_DATATYPE_LONG)
+    if(!simV2_ValidDataType(dataType))
     {
         VisItError("VariableData's data type must be set to one of: "
             "VISIT_DATATYPE_CHAR, VISIT_DATATYPE_INT, VISIT_DATATYPE_FLOAT, "
@@ -132,45 +140,70 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
     void *realData = data;
     if(owner == VISIT_OWNER_COPY)
     {
-        size_t sz = 1;
-        if(dataType == VISIT_DATATYPE_CHAR)
-            sz = sizeof(char);
-        else if(dataType == VISIT_DATATYPE_INT)
-            sz = sizeof(int);
-        else if(dataType == VISIT_DATATYPE_LONG)
-            sz = sizeof(long);
-        else if(dataType == VISIT_DATATYPE_FLOAT)
-            sz = sizeof(float);
-        else
-            sz = sizeof(double);
-        sz *= nComps;
-        sz *= nTuples;
-        realData = malloc(sz);
-        if(realData != NULL)
+        switch (dataType)
         {
-            memcpy(realData, data, sz);
-            realOwner = VISIT_OWNER_VISIT;
-        }
-        else
-        {
-            VisItError("Could not allocate memory to copy data");
-            return VISIT_ERROR;
+        simV2TemplateMacro(
+            size_t sz = nComps*nTuples*sizeof(simV2_TT::cppType);
+            realData = malloc(sz);
+            if(realData != NULL)
+            {
+                memcpy(realData, data, sz);
+                realOwner = VISIT_OWNER_VISIT;
+            }
+            else
+            {
+                VisItError("Could not allocate memory to copy data");
+                return VISIT_ERROR;
+            }
+            );
         }
     }
 
     int retval = VISIT_ERROR;
-    VisIt_VariableData *obj = GetObject(h, "simv2_VariableData_setData");
+    VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_setData");
     if(obj != NULL)
     {
         obj->owner = realOwner;
-        obj->dataType = dataType; 
+        obj->dataType = dataType;
         obj->nComponents = nComps;
         obj->nTuples = nTuples;
         obj->data = realData;
-
+        if (owner != VISIT_OWNER_VISIT_EX)
+        {
+            obj->callback = NULL;
+            obj->callbackData = NULL;
+        }
         retval = VISIT_OKAY;
     }
     return retval;
+}
+
+int
+simv2_VariableData_setDataEx(visit_handle h, int owner, int dataType,
+            int nComps, int nTuples, void *data, void (*callback)(void*),
+            void *callbackData)
+{
+
+    if (owner == VISIT_OWNER_VISIT_EX)
+    {
+        if (callback == NULL)
+        {
+            VisItError("VISIT_OWNER_VISIT_EX specified "
+                       "but a callback was not provided.");
+            return VISIT_ERROR;
+        }
+
+        VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_setData");
+        if(obj == NULL)
+        {
+            VisItError("Failed to locate the object from the given handle.");
+            return VISIT_ERROR;
+        }
+
+        obj->callback = callback;
+        obj->callbackData = callbackData;
+        }
+    return simv2_VariableData_setData(h, owner, dataType, nComps, nTuples, data);
 }
 
 int
@@ -178,7 +211,7 @@ simv2_VariableData_getData2(visit_handle h, int *owner, int *dataType, int *nCom
     int *nTuples, void **data)
 {
     int retval = VISIT_ERROR;
-    VisIt_VariableData *obj = GetObject(h, "simv2_VariableData_getData");
+    VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_getData");
     if(obj != NULL)
     {
         if(obj->data == NULL)
@@ -207,7 +240,7 @@ simv2_VariableData_getData(visit_handle h, int &owner, int &dataType, int &nComp
     int &nTuples, void *&data)
 {
     int retval = VISIT_ERROR;
-    VisIt_VariableData *obj = GetObject(h, "simv2_VariableData_getData");
+    VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_getData");
     if(obj != NULL)
     {
         if(obj->data == NULL)
@@ -228,15 +261,45 @@ simv2_VariableData_getData(visit_handle h, int &owner, int &dataType, int &nComp
 }
 
 int
+simv2_VariableData_getDataEx(visit_handle h, int &owner, int &dataType, int &nComps,
+    int &nTuples, void *&data, void (*&callback)(void*), void *&callbackData)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_getDataEx");
+    if(obj != NULL)
+    {
+        if(obj->data == NULL)
+        {
+            VisItError("The data array does not contain any data");
+            return VISIT_ERROR;
+        }
+
+        owner = obj->owner;
+        dataType = obj->dataType;
+        nComps = obj->nComponents;
+        nTuples = obj->nTuples;
+        data = obj->data;
+        callback = obj->callback;
+        callbackData = obj->callbackData;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
 simv2_VariableData_nullData(visit_handle h)
 {
     int retval = VISIT_ERROR;
-    VisIt_VariableData *obj = GetObject(h, "simv2_VariableData_nullData");
+    VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_nullData");
     if(obj != NULL)
     {
         obj->data = NULL;
         obj->nTuples = 0;
         obj->nComponents = 0;
+        obj->callback = NULL;
+        obj->callbackData = NULL;
+
         retval = VISIT_OKAY;
     }
     return retval;

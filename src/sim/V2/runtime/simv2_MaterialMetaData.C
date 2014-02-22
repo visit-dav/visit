@@ -239,7 +239,7 @@ simv2_MaterialMetaData_getMaterialName(visit_handle h, int i, char **val)
     }
     int retval = VISIT_ERROR;
     VisIt_MaterialMetaData *obj = GetObject(h, "simv2_MaterialMetaData_getMaterialName");
-    if(obj != NULL && i >= 0 && i < obj->materialNames.size())
+    if(obj != NULL && i >= 0 && i < static_cast<int>(obj->materialNames.size()))
     {
         *val = (char *)malloc(obj->materialNames[i].size() + 1);
         strcpy(*val, obj->materialNames[i].c_str());
