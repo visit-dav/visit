@@ -1526,7 +1526,7 @@ avtStructuredDomainBoundaries::SetExtents(int domain, int e[6])
     if (domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
-                   "targetted domain more than number of domains");
+                   "targeted domain more than number of domains");
 
     wholeBoundary[domain].domain = domain;
     wholeBoundary[domain].SetExtents(e);
@@ -1569,7 +1569,7 @@ avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3],
     if (domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
-                   "targetted domain more than number of domains");
+                   "targeted domain more than number of domains");
 
     wholeBoundary[domain].AddNeighbor(d, mi, o, e, rr, ref_ratio, nr);
 }
@@ -1593,7 +1593,7 @@ avtStructuredDomainBoundaries::Finish(int domain)
     if (domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
-                   "targetted domain more than number of domains");
+                   "targeted domain more than number of domains");
 
     wholeBoundary[domain].Finish();
 }
@@ -3470,7 +3470,7 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
     if (domain >= levels.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
-                   "targetted domain more than number of domains");
+                   "targeted domain more than number of domains");
 
     levels[domain] = level;
     maxAMRLevel = (maxAMRLevel > level+1 ? maxAMRLevel : level+1);
@@ -3989,7 +3989,7 @@ avtStructuredDomainBoundaries::GetExtents(int domain, int e[6])
     if (domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
-                   "targetted domain more than number of domains");
+                   "targeted domain more than number of domains");
 
     e[0] = wholeBoundary[domain].oldnextents[0];
     e[1] = wholeBoundary[domain].oldnextents[1];
