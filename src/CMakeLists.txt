@@ -539,7 +539,6 @@ PROJECT(VISIT)
 #-----------------------------------------------------------------------------
 # Set extended platlform defs.
 #-----------------------------------------------------------------------------
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMake/)
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
 
 
