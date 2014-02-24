@@ -2576,16 +2576,20 @@ ELSE (NOT WIN32)
         #
         FILE(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
+        FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
-                    ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
+                    /DBIN_DIR=${CBD_NATIVE}
+                    /DCL_64=${CMAKE_CL_64}
+                    ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
+                    /DBIN_DIR=${CBD_NATIVE}
                     /DCL_64=${CMAKE_CL_64}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
@@ -2612,6 +2616,9 @@ ELSE (NOT WIN32)
         )
         ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
         SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
+        UNSET(VSD_NATIVE)
+        UNSET(CIP_NATIVE)
+        UNSET(CBD_NATIVE)
       ELSE(${MAKENSIS_FOUND})
         MESSAGE(FATAL_ERROR "NSIS installer package requested, but 'makensis' could not be found.")
       ENDIF(${MAKENSIS_FOUND})
