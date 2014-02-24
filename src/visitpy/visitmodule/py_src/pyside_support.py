@@ -61,7 +61,7 @@ try:
 except ImportError:
     pass
 
-__all__ = ["LaunchPyViewer","SetupTimer","GetRenderWindow","GetRenderWindowIds","GetUIWindow","GetPlotWindow","GetOperatorWindow", "GetOtherWindow", "GetOtherWindowNames"]
+__all__ = ["LaunchPyViewer","SetupTimer","GetRenderWindow","GetRenderWindowIds","GetUIWindow","GetPlotWindow","GetOperatorWindow", "GetOtherWindow", "GetOtherWindowNames", "GetTimeSliderWindow", "GetSourceManagerWindow", "GetPlotWindows", "GetOperatorWindows", "GetOtherWindows"]
 __pyside_viewer_instance__ = None
 
 # this is a function that polls for keyboard input,
@@ -139,8 +139,7 @@ def GetRenderWindow(i):
         inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetRenderWindow(i)
-    else:
-        return None
+    return None
 
 def GetRenderWindowIds():
     if using_pyside:
@@ -148,8 +147,7 @@ def GetRenderWindowIds():
         inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetRenderWindowIDs()
-    else:
-        return None
+    return None
 
 def GetUIWindow():
     if using_pyside:
@@ -157,8 +155,7 @@ def GetUIWindow():
         inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetUIWindow()
-    else:
-        return None
+    return None
 
 def GetPlotWindow(name):
     if using_pyside:
@@ -166,8 +163,7 @@ def GetPlotWindow(name):
         inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetPlotWindow(name)
-    else:
-        return None
+    return None
 
 def GetOperatorWindow(name):
     if using_pyside:
@@ -175,8 +171,7 @@ def GetOperatorWindow(name):
         inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetOperatorWindow(name)
-    else:
-        return None
+    return None
 
 def GetOtherWindow(name):
     if using_pyside:
@@ -184,8 +179,7 @@ def GetOtherWindow(name):
         inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetOtherWindow(name)
-    else:
-        return None
+    return None
 
 def GetOtherWindowNames():
     if using_pyside:
@@ -193,6 +187,45 @@ def GetOtherWindowNames():
         inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetOtherWindowNames()
-    else:
-        return None
+    return None
+
+def GetTimeSliderWindow():
+    if using_pyside:
+        # this will return None, unless properly inited
+        inst = GetPySideViewerInstance()
+        if not inst is None:
+            return inst.GetTimeSliderWindow()
+    return None
+
+def GetSourceManagerWindow():
+    if using_pyside:
+        # this will return None, unless properly inited
+        inst = GetPySideViewerInstance()
+        if not inst is None:
+            return inst.GetSourceManagerWindow()
+    return None
+
+def GetPlotWindows():
+    if using_pyside:
+        # this will return None, unless properly inited
+        inst = GetPySideViewerInstance()
+        if not inst is None:
+            return inst.GetPlotWindows()
+    return None
+
+def GetOperatorWindows():
+    if using_pyside:
+        # this will return None, unless properly inited
+        inst = GetPySideViewerInstance()
+        if not inst is None:
+            return inst.GetOperatorWindows()
+    return None
+
+def GetOtherWindows():
+    if using_pyside:
+        # this will return None, unless properly inited
+        inst = GetPySideViewerInstance()
+        if not inst is None:
+            return inst.GetOtherWindows()
+    return None
 
