@@ -52,6 +52,12 @@ public:
     QStringList GetOtherWindowNames();
     QMainWindow* GetOtherWindow(const QString& name);
 
+    QMainWindow* GetSourceManagerWindow();
+    QMainWindow* GetTimeSliderWindow();
+    QList<QMainWindow*> GetPlotWindows();
+    QList<QMainWindow*> GetOperatorWindows();
+    QList<QMainWindow*> GetOtherWindows();
+
     long GetViewerProxyPtr();
 
 };

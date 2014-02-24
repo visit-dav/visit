@@ -116,86 +116,95 @@ QvisGUIApplicationDerived::GetApp()
     return (QApplication*)mainApp; 
 }
 
+int QvisGUIApplicationDerived::GetPlotWindowSize()
+{
+    return plotWindows.size();
+}
+
 QMainWindow* QvisGUIApplicationDerived::GetPlotWindow(int index)
-    {
-        if(index >= plotWindows.size() || index < 0)
-            return NULL;
-
-        ActivatePlotWindow(index);
-        QMainWindow* win = ((QMainWindow*)plotWindows[index]);
-        win->hide();
-        win->move(QCursor::pos());
-
-        if(win->inherits("QvisPostableWindow"))
-        {
-            if(((QvisPostableWindow*)win)->posted())
-                ((QvisPostableWindow*)win)->unpost();
-        }
-
-        return win;
-    }
-
-    QMainWindow* QvisGUIApplicationDerived::GetPlotWindow(const QString& name)
-    {
-        PlotPluginManager* mgr = GetViewerProxy()->GetPlotPluginManager();
-        for(int i = 0; i < mgr->GetNEnabledPlugins(); ++i)
-        {
-            if(mgr->GetPluginName(mgr->GetEnabledID(i)) == name.toStdString())
-                return GetPlotWindow(i);
-        }
+{
+    if(index >= plotWindows.size() || index < 0)
         return NULL;
+
+    ActivatePlotWindow(index);
+    QMainWindow* win = ((QMainWindow*)plotWindows[index]);
+    win->hide();
+    win->move(QCursor::pos());
+
+    if(win->inherits("QvisPostableWindow"))
+    {
+        if(((QvisPostableWindow*)win)->posted())
+            ((QvisPostableWindow*)win)->unpost();
     }
 
-    QMainWindow* QvisGUIApplicationDerived::GetOperatorWindow(int index)
+    return win;
+}
+
+QMainWindow* QvisGUIApplicationDerived::GetPlotWindow(const QString& name)
+{
+    PlotPluginManager* mgr = GetViewerProxy()->GetPlotPluginManager();
+    for(int i = 0; i < mgr->GetNEnabledPlugins(); ++i)
     {
-        if(index >= operatorWindows.size() || index < 0)
-            return NULL;
-
-        ActivateOperatorWindow(index);
-
-        QMainWindow* win = (QMainWindow*)operatorWindows[index];
-        win->hide();
-        win->move(QCursor::pos());
-
-        if(win->inherits("QvisPostableWindow"))
-        {
-            if(((QvisPostableWindow*)win)->posted())
-                ((QvisPostableWindow*)win)->unpost();
-        }
-        return win;
+        if(mgr->GetPluginName(mgr->GetEnabledID(i)) == name.toStdString())
+            return GetPlotWindow(i);
     }
+    return NULL;
+}
 
-    QMainWindow* QvisGUIApplicationDerived::GetOperatorWindow(const QString& name)
-    {
-        OperatorPluginManager* mgr = GetViewerProxy()->GetOperatorPluginManager();
-        for(int i = 0; i < mgr->GetNEnabledPlugins(); ++i)
-        {
-            if(mgr->GetPluginName(mgr->GetEnabledID(i)) == name.toStdString())
-                return GetOperatorWindow(i);
-        }
+int QvisGUIApplicationDerived::GetOperatorWindowSize() {
+    return operatorWindows.size();
+}
+
+QMainWindow* QvisGUIApplicationDerived::GetOperatorWindow(int index)
+{
+    if(index >= operatorWindows.size() || index < 0)
         return NULL;
-    }
 
-    QMainWindow* QvisGUIApplicationDerived::GetOtherWindow(const QString& name)
+    ActivateOperatorWindow(index);
+
+    QMainWindow* win = (QMainWindow*)operatorWindows[index];
+    win->hide();
+    win->move(QCursor::pos());
+
+    if(win->inherits("QvisPostableWindow"))
     {
-        for(int i = 0; i < windowNames.size(); ++i)
+        if(((QvisPostableWindow*)win)->posted())
+            ((QvisPostableWindow*)win)->unpost();
+    }
+    return win;
+}
+
+QMainWindow* QvisGUIApplicationDerived::GetOperatorWindow(const QString& name)
+{
+    OperatorPluginManager* mgr = GetViewerProxy()->GetOperatorPluginManager();
+    for(int i = 0; i < mgr->GetNEnabledPlugins(); ++i)
+    {
+         if(mgr->GetPluginName(mgr->GetEnabledID(i)) == name.toStdString())
+            return GetOperatorWindow(i);
+    }
+    return NULL;
+}
+
+QMainWindow* QvisGUIApplicationDerived::GetOtherWindow(const QString& name)
+{
+    for(int i = 0; i < windowNames.size(); ++i)
+    {
+        if( windowNames[i] == name ) 
         {
-            if( windowNames[i] == name ) 
+            QvisGUIApplication::GetInitializedWindowPointer(i)->show();
+            QMainWindow* win = QvisGUIApplication::GetInitializedWindowPointer(i);
+            if(win->inherits("QvisPostableWindow"))
             {
-                QvisGUIApplication::GetInitializedWindowPointer(i)->show();
-                QMainWindow* win = QvisGUIApplication::GetInitializedWindowPointer(i);
-                if(win->inherits("QvisPostableWindow"))
-                {
-                    if(((QvisPostableWindow*)win)->posted())
-                        ((QvisPostableWindow*)win)->unpost();
-                }
-                win->move(QCursor::pos());
-                win->hide(); 
-                return win;
+                if(((QvisPostableWindow*)win)->posted())
+                    ((QvisPostableWindow*)win)->unpost();
             }
+            win->move(QCursor::pos());
+            win->hide(); 
+            return win;
         }
-        return NULL;
     }
+    return NULL;
+}
 
 QStringList 
 QvisGUIApplicationDerived::GetOtherWindowNames() 
@@ -324,6 +333,47 @@ QMainWindow*
 GUIWrapper::GetTimeSliderWindow()
 {
     return gui->GetTimeSliderWindow();
+}
+
+QList<QMainWindow*>
+GUIWrapper::GetPlotWindows() {
+
+    QList<QMainWindow*> plots;
+
+    int len = gui->GetPlotWindowSize();
+
+    for(int i = 0; i < len; ++i) {
+        plots.push_back(gui->GetPlotWindow(i));
+    }
+
+    return plots;
+}
+
+QList<QMainWindow*>
+GUIWrapper::GetOperatorWindows() {
+
+    QList<QMainWindow*> operators;
+
+    int len = gui->GetOperatorWindowSize();
+    for(int i = 0; i < len; ++i) {
+        operators.push_back(gui->GetOperatorWindow(i));
+    }
+
+    return operators;
+}
+
+QList<QMainWindow*>
+GUIWrapper::GetOtherWindows() {
+
+    QList<QMainWindow*> windowNames;
+
+    QStringList names = gui->GetOtherWindowNames();
+
+    foreach(const QString& name, names) {
+        windowNames.push_back(GetOtherWindow(name));
+    }
+
+    return windowNames;
 }
 
 long 
