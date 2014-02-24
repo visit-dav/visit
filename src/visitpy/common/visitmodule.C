@@ -1097,6 +1097,30 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
 }
 
 
+// ****************************************************************************
+// Function: ToggleSuppressQueryOutput_NoLogging
+//
+// Purpose:
+//   Helper method for toggling SuppressQueryOutput without it being logged.
+//   Used when query ouput suppression is a consequence of another action,
+//   like with Pick functions.
+//
+// Programmer: Kathleen Bigagas
+// Creation:   January 9, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ToggleSuppressQueryOutput_NoLogging(bool onoff)
+{
+    LogFile_IncreaseLevel();
+    GetViewerMethods()->SuppressQueryOutput(onoff);
+    Synchronize();
+    LogFile_DecreaseLevel();
+}
+
 
 //
 // Python callbacks for VisIt
@@ -8917,7 +8941,6 @@ STATIC PyObject *
 visit_GetQueryOutputObject(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-    NO_ARGUMENTS();
 
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     std::string xml_string = qa->GetXmlResult();
@@ -11313,12 +11336,24 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         params["vars"] = vars;
 
     debug3 << mn << " sending query params: " << params.ToXML() << endl;
+
+#if 0
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+#endif
+
     MUTEX_LOCK();
-    GetViewerMethods()->Query(params);
+        GetViewerMethods()->Query(params);
     MUTEX_UNLOCK();
+    Synchronize();
+
+#if 0
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+#endif
 
     // Return the success value.
-    return IntReturnValue(Synchronize());
+    return visit_GetQueryOutputObject(self, args);
 }
 
 
@@ -11411,12 +11446,23 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
         queryParams["query_name"] = std::string(queryName);
     }
 
+#if 0
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+#endif
+
     MUTEX_LOCK();
-    GetViewerMethods()->Query(queryParams);
+        GetViewerMethods()->Query(queryParams);
     MUTEX_UNLOCK();
+    Synchronize();
+
+#if 0
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+#endif
 
     // Return the success value.
-    return IntReturnValue(Synchronize());
+    return visit_GetQueryOutputObject(self, args);
 }
 
 
@@ -11734,29 +11780,6 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
-// ****************************************************************************
-// Function: ToggleSuppressQueryOutput_NoLogging
-//
-// Purpose:
-//   Helper method for toggling SuppressQueryOutput without it being logged.
-//   Used when query ouput suppression is a consequence of another action,
-//   like with Pick functions.
-//
-// Programmer: Kathleen Bigagas
-// Creation:   January 9, 2012
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ToggleSuppressQueryOutput_NoLogging(bool onoff)
-{
-    LogFile_IncreaseLevel();
-    GetViewerMethods()->SuppressQueryOutput(onoff);
-    Synchronize();
-    LogFile_DecreaseLevel();
-}
 
 // ****************************************************************************
 // Function: visit_SetQueryFloatFormat()

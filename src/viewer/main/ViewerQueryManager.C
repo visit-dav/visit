@@ -1096,6 +1096,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
+    queryClientAtts->SetXmlResult("");
     if (!queryTypes->QueryExists(qName, QueryList::DatabaseQuery))
     {
         // we've reset some values, notify clients
@@ -5345,6 +5346,9 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
         for (int i = 0 ; i < 2*dim ; i++)
             d.push_back(ext[i]);
         queryClientAtts->SetResultsValue(d);
+        MapNode result_node;
+        result_node["extents"] = d;
+        queryClientAtts->SetXmlResult(result_node.ToXML());
         delete [] ext;
         queryClientAtts->Notify();
         if (!suppressQueryOutput)
