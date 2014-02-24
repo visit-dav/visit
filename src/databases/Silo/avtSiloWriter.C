@@ -1441,7 +1441,7 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
 
     if (npointcells == nzones && npointcells == npts)
     {
-        DBPutPointmesh(dbfile, meshName.c_str(), dim, coords,
+        DBPutPointmesh(dbfile, meshName.c_str(), dim, (DB_DTPTR2) coords,
             npts, coordType, optlist);
     }
     else
@@ -1463,7 +1463,7 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         //
         // Now write the actual mesh.
         //
-        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), dim, NULL, coords, npts,
+        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), dim, NULL, (DB_DTPTR2) coords, npts,
                      nzones, "zonelist", NULL, coordType, optlist);
     }
     EndVar(dbfile, nlevels);
@@ -1580,7 +1580,7 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
     //
     int nlevels = 0;
     string meshName = BeginVar(dbfile, meshname, nlevels);
-    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, coords, dims, ndims,
+    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, (DB_DTPTR2) coords, dims, ndims,
                   coordType, DB_NONCOLLINEAR, optlist);
     EndVar(dbfile, nlevels);
 
@@ -1691,7 +1691,7 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
     //
     int nlevels = 0;
     string meshName = BeginVar(dbfile, meshname, nlevels);
-    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, vcoords, dims, ndims,
+    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, (DB_DTPTR2) vcoords, dims, ndims,
                   DB_DOUBLE, DB_COLLINEAR, optlist);
     EndVar(dbfile, nlevels);
 
@@ -1835,7 +1835,7 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
     string meshName = BeginVar(dbfile, meshname, nlevels);
     if (npointcells == nzones && npointcells == npts)
     {
-        DBPutPointmesh(dbfile, (char *) meshName.c_str(), ndims, coords,
+        DBPutPointmesh(dbfile, (char *) meshName.c_str(), ndims, (DB_DTPTR2) coords,
             npts, DB_FLOAT, optlist);
     }
     else
@@ -1855,7 +1855,7 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
         //
         // Now write the actual mesh.
         //
-        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), ndims, NULL, coords, npts,
+        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), ndims, NULL, (DB_DTPTR2) coords, npts,
                      nzones, "zonelist", NULL, coordType, optlist);
     }
     EndVar(dbfile, nlevels);
@@ -2076,12 +2076,12 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              if (isPointMesh && centering == DB_NODECENT)
                  DBPutPointvar1(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
-                          arr2->GetVoidPointer(0),
+                          (DB_DTPTR1) arr2->GetVoidPointer(0),
                           nTuples, GetSiloType(arr2), optlist); 
              else
                  DBPutUcdvar1(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
-                          arr2->GetVoidPointer(0), nTuples, NULL, 0,
+                          (DB_DTPTR1) arr2->GetVoidPointer(0), nTuples, NULL, 0,
                           GetSiloType(arr2), centering, optlist);
          }
          else
@@ -2110,11 +2110,11 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              if (isPointMesh && centering == DB_NODECENT)
                  DBPutPointvar(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
-                          ncomps, vars, nTuples, DB_DOUBLE, optlist);
+                          ncomps, (DB_DTPTR2) vars, nTuples, DB_DOUBLE, optlist);
              else
                  DBPutUcdvar(dbfile, (char *) varName.c_str(),
                          (char *) meshName.c_str(),
-                         ncomps, varnames, vars, nTuples, NULL, 0, DB_DOUBLE,
+                         ncomps, varnames, (DB_DTPTR2) vars, nTuples, NULL, 0, DB_DOUBLE,
                          centering, optlist);
 
              for (j = 0 ; j < ncomps ; j++)
@@ -2233,7 +2233,7 @@ avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
 
              DBPutQuadvar1(dbfile, (char *) varName.c_str(),
                            (char *) meshName.c_str(),
-                           arr->GetVoidPointer(0), dims, ndims, NULL,
+                           (DB_DTPTR1) arr->GetVoidPointer(0), dims, ndims, NULL,
                            0, GetSiloType(arr), centering, optlist);
          }
          else
@@ -2263,7 +2263,7 @@ avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
 
                  DBPutQuadvar(dbfile, (char *) varName.c_str(),
                               (char *) meshName.c_str(),
-                              ncomps, varnames, vars, dims, ndims, NULL, 0, 
+                              ncomps, varnames, (DB_DTPTR2) vars, dims, ndims, NULL, 0, 
                               DB_DOUBLE, centering, optlist);
 
                  for (j = 0 ; j < ncomps ; j++)
