@@ -2774,6 +2774,10 @@ class PythonFieldFactory
 //    Mark C. Miller, Wed Aug 26 10:55:31 PDT 2009
 //    Added support for a custom base class to support derived state objects.
 //    Added logic to count methods in method table without writing them.
+//
+//    Mark C. Miller, Mon Feb 24 12:17:15 PST 2014
+//    Added logic to clear python error after attempting and failing to
+//    _setattr in a custom base.
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -3081,6 +3085,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         {
             c << "    if (Py"<<baseClass<<"_setattr(self, name, args) != -1)" << Endl;
             c << "        return 0;" << Endl;
+            c << "    else" << Endl;
+            c << "        PyErr_Clear();" << Endl;
             c << Endl;
         }
         if(HasCode(mName, 0))
