@@ -60,6 +60,9 @@
 #  Brad Whitlock, Fri May 18 16:35:34 PST 2012
 #  Change the version file that we use.
 #
+#  Kathleen Biagas, Tue Feb 25 11:44:49 PST 2014
+#  Add visitpy/PyThresholdOpAttributes.
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -157,6 +160,7 @@ visitpy/PySelectionProperties.C
 visitpy/PySelectionSummary.C
 visitpy/PySelectionVariableSummary.C
 visitpy/PySelectionList.C
+visitpy/PyThresholdOpAttributes.C
 visitpy/PyView2DAttributes.C 
 visitpy/PyView3DAttributes.C 
 visitpy/PyViewAttributes.C 

@@ -76,79 +76,8 @@ PyThresholdAttributes_ToString(const ThresholdAttributes *atts, const char *pref
     std::string str; 
     char tmpStr[1000]; 
 
-    SNPRINTF(tmpStr, 1000, "%soutputMeshType = %d\n", prefix, atts->GetOutputMeshType());
-    str += tmpStr;
-    {   const stringVector &listedVarNames = atts->GetListedVarNames();
-        SNPRINTF(tmpStr, 1000, "%slistedVarNames = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < listedVarNames.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", listedVarNames[i].c_str());
-            str += tmpStr;
-            if(i < listedVarNames.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const intVector &zonePortions = atts->GetZonePortions();
-        SNPRINTF(tmpStr, 1000, "%szonePortions = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < zonePortions.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%d", zonePortions[i]);
-            str += tmpStr;
-            if(i < zonePortions.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const doubleVector &lowerBounds = atts->GetLowerBounds();
-        SNPRINTF(tmpStr, 1000, "%slowerBounds = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < lowerBounds.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", lowerBounds[i]);
-            str += tmpStr;
-            if(i < lowerBounds.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const doubleVector &upperBounds = atts->GetUpperBounds();
-        SNPRINTF(tmpStr, 1000, "%supperBounds = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < upperBounds.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", upperBounds[i]);
-            str += tmpStr;
-            if(i < upperBounds.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    SNPRINTF(tmpStr, 1000, "%sdefaultVarName = \"%s\"\n", prefix, atts->GetDefaultVarName().c_str());
-    str += tmpStr;
-    if(atts->GetDefaultVarIsScalar())
-        SNPRINTF(tmpStr, 1000, "%sdefaultVarIsScalar = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sdefaultVarIsScalar = 0\n", prefix);
-    str += tmpStr;
+    str = PyThresholdOpAttributes_ToString(atts, prefix);
+
     return str;
 }
 
@@ -161,336 +90,32 @@ ThresholdAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-/*static*/ PyObject *
-ThresholdAttributes_SetOutputMeshType(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the outputMeshType in the object.
-    obj->data->SetOutputMeshType((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_GetOutputMeshType(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOutputMeshType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_SetListedVarNames(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-
-    stringVector  &vec = obj->data->GetListedVarNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
-        }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the listedVarNames in the object as modified.
-    obj->data->SelectListedVarNames();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_GetListedVarNames(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the listedVarNames.
-    const stringVector &listedVarNames = obj->data->GetListedVarNames();
-    PyObject *retval = PyTuple_New(listedVarNames.size());
-    for(size_t i = 0; i < listedVarNames.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(listedVarNames[i].c_str()));
-    return retval;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_SetZonePortions(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-
-    intVector  &vec = obj->data->GetZonePortions();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the zonePortions in the object as modified.
-    obj->data->SelectZonePortions();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_GetZonePortions(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the zonePortions.
-    const intVector &zonePortions = obj->data->GetZonePortions();
-    PyObject *retval = PyTuple_New(zonePortions.size());
-    for(size_t i = 0; i < zonePortions.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(zonePortions[i])));
-    return retval;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_SetLowerBounds(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-
-    doubleVector  &vec = obj->data->GetLowerBounds();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the lowerBounds in the object as modified.
-    obj->data->SelectLowerBounds();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_GetLowerBounds(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the lowerBounds.
-    const doubleVector &lowerBounds = obj->data->GetLowerBounds();
-    PyObject *retval = PyTuple_New(lowerBounds.size());
-    for(size_t i = 0; i < lowerBounds.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(lowerBounds[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_SetUpperBounds(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-
-    doubleVector  &vec = obj->data->GetUpperBounds();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the upperBounds in the object as modified.
-    obj->data->SelectUpperBounds();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_GetUpperBounds(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the upperBounds.
-    const doubleVector &upperBounds = obj->data->GetUpperBounds();
-    PyObject *retval = PyTuple_New(upperBounds.size());
-    for(size_t i = 0; i < upperBounds.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(upperBounds[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_SetDefaultVarName(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the defaultVarName in the object.
-    obj->data->SetDefaultVarName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_GetDefaultVarName(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetDefaultVarName().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_SetDefaultVarIsScalar(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the defaultVarIsScalar in the object.
-    obj->data->SetDefaultVarIsScalar(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ThresholdAttributes_GetDefaultVarIsScalar(PyObject *self, PyObject *args)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetDefaultVarIsScalar()?1L:0L);
-    return retval;
-}
-
 
 
 PyMethodDef PyThresholdAttributes_methods[THRESHOLDATTRIBUTES_NMETH] = {
     {"Notify", ThresholdAttributes_Notify, METH_VARARGS},
-    {"SetOutputMeshType", ThresholdAttributes_SetOutputMeshType, METH_VARARGS},
-    {"GetOutputMeshType", ThresholdAttributes_GetOutputMeshType, METH_VARARGS},
-    {"SetListedVarNames", ThresholdAttributes_SetListedVarNames, METH_VARARGS},
-    {"GetListedVarNames", ThresholdAttributes_GetListedVarNames, METH_VARARGS},
-    {"SetZonePortions", ThresholdAttributes_SetZonePortions, METH_VARARGS},
-    {"GetZonePortions", ThresholdAttributes_GetZonePortions, METH_VARARGS},
-    {"SetLowerBounds", ThresholdAttributes_SetLowerBounds, METH_VARARGS},
-    {"GetLowerBounds", ThresholdAttributes_GetLowerBounds, METH_VARARGS},
-    {"SetUpperBounds", ThresholdAttributes_SetUpperBounds, METH_VARARGS},
-    {"GetUpperBounds", ThresholdAttributes_GetUpperBounds, METH_VARARGS},
-    {"SetDefaultVarName", ThresholdAttributes_SetDefaultVarName, METH_VARARGS},
-    {"GetDefaultVarName", ThresholdAttributes_GetDefaultVarName, METH_VARARGS},
-    {"SetDefaultVarIsScalar", ThresholdAttributes_SetDefaultVarIsScalar, METH_VARARGS},
-    {"GetDefaultVarIsScalar", ThresholdAttributes_GetDefaultVarIsScalar, METH_VARARGS},
     {NULL, NULL}
 };
+
+static void PyThresholdAttributes_ExtendSetGetMethodTable()
+{
+    static bool extended = false;
+    if (extended) return;
+    extended = true;
+
+    int i = 0;
+    while (PyThresholdAttributes_methods[i].ml_name)
+        i++;
+    int n = i;
+    while (PyThresholdOpAttributes_methods[i-n+1].ml_name)
+    {
+        PyThresholdAttributes_methods[i] = PyThresholdOpAttributes_methods[i-n+1];
+        i++;
+    }
+
+    PyMethodDef nullMethod = {NULL, NULL};
+    PyThresholdAttributes_methods[i] = nullMethod;
+}
 
 //
 // Type functions
@@ -517,20 +142,14 @@ ThresholdAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyThresholdAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "outputMeshType") == 0)
-        return ThresholdAttributes_GetOutputMeshType(self, NULL);
-    if(strcmp(name, "listedVarNames") == 0)
-        return ThresholdAttributes_GetListedVarNames(self, NULL);
-    if(strcmp(name, "zonePortions") == 0)
-        return ThresholdAttributes_GetZonePortions(self, NULL);
-    if(strcmp(name, "lowerBounds") == 0)
-        return ThresholdAttributes_GetLowerBounds(self, NULL);
-    if(strcmp(name, "upperBounds") == 0)
-        return ThresholdAttributes_GetUpperBounds(self, NULL);
-    if(strcmp(name, "defaultVarName") == 0)
-        return ThresholdAttributes_GetDefaultVarName(self, NULL);
-    if(strcmp(name, "defaultVarIsScalar") == 0)
-        return ThresholdAttributes_GetDefaultVarIsScalar(self, NULL);
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyThresholdOpAttributes_getattr(self, name);
+        if (retval) return retval;
+    }
+
+    PyThresholdAttributes_ExtendSetGetMethodTable();
 
     return Py_FindMethod(PyThresholdAttributes_methods, self, name);
 }
@@ -538,6 +157,11 @@ PyThresholdAttributes_getattr(PyObject *self, char *name)
 int
 PyThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
+    if (PyThresholdOpAttributes_setattr(self, name, args) != -1)
+        return 0;
+    else
+        PyErr_Clear();
+
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
     PyObject *tuple = PyTuple_New(1);
@@ -545,20 +169,6 @@ PyThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "outputMeshType") == 0)
-        obj = ThresholdAttributes_SetOutputMeshType(self, tuple);
-    else if(strcmp(name, "listedVarNames") == 0)
-        obj = ThresholdAttributes_SetListedVarNames(self, tuple);
-    else if(strcmp(name, "zonePortions") == 0)
-        obj = ThresholdAttributes_SetZonePortions(self, tuple);
-    else if(strcmp(name, "lowerBounds") == 0)
-        obj = ThresholdAttributes_SetLowerBounds(self, tuple);
-    else if(strcmp(name, "upperBounds") == 0)
-        obj = ThresholdAttributes_SetUpperBounds(self, tuple);
-    else if(strcmp(name, "defaultVarName") == 0)
-        obj = ThresholdAttributes_SetDefaultVarName(self, tuple);
-    else if(strcmp(name, "defaultVarIsScalar") == 0)
-        obj = ThresholdAttributes_SetDefaultVarIsScalar(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
