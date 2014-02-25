@@ -457,6 +457,8 @@ PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
     if (PyavtBaseVarMetaData_setattr(self, name, args) != -1)
         return 0;
+    else
+        PyErr_Clear();
 
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
