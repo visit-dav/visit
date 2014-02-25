@@ -36,30 +36,30 @@
 *
 *****************************************************************************/
 
-#ifndef PY_THRESHOLDATTRIBUTES_H
-#define PY_THRESHOLDATTRIBUTES_H
+#ifndef PY_THRESHOLDOPATTRIBUTES_H
+#define PY_THRESHOLDOPATTRIBUTES_H
 #include <Python.h>
-#include <ThresholdAttributes.h>
-#include <PyThresholdOpAttributes.h>
+#include <ThresholdOpAttributes.h>
+#include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-#define THRESHOLDATTRIBUTES_NMETH (THRESHOLDOPATTRIBUTES_NMETH+2)
-void           PyThresholdAttributes_StartUp(ThresholdAttributes *subj, void *data);
-void           PyThresholdAttributes_CloseDown();
-PyMethodDef *  PyThresholdAttributes_GetMethodTable(int *nMethods);
-bool           PyThresholdAttributes_Check(PyObject *obj);
-ThresholdAttributes *  PyThresholdAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyThresholdAttributes_New();
-PyObject *     PyThresholdAttributes_Wrap(const ThresholdAttributes *attr);
-void           PyThresholdAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyThresholdAttributes_SetDefaults(const ThresholdAttributes *atts);
-std::string    PyThresholdAttributes_GetLogString();
-std::string    PyThresholdAttributes_ToString(const ThresholdAttributes *, const char *);
-PyObject *     PyThresholdAttributes_getattr(PyObject *self, char *name);
-int            PyThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyThresholdAttributes_methods[THRESHOLDATTRIBUTES_NMETH];
+#define THRESHOLDOPATTRIBUTES_NMETH 16
+void VISITPY_API           PyThresholdOpAttributes_StartUp(ThresholdOpAttributes *subj, void *data);
+void VISITPY_API           PyThresholdOpAttributes_CloseDown();
+VISITPY_API PyMethodDef *  PyThresholdOpAttributes_GetMethodTable(int *nMethods);
+bool VISITPY_API           PyThresholdOpAttributes_Check(PyObject *obj);
+VISITPY_API ThresholdOpAttributes *  PyThresholdOpAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *     PyThresholdOpAttributes_New();
+VISITPY_API PyObject *     PyThresholdOpAttributes_Wrap(const ThresholdOpAttributes *attr);
+void VISITPY_API           PyThresholdOpAttributes_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyThresholdOpAttributes_SetDefaults(const ThresholdOpAttributes *atts);
+std::string VISITPY_API    PyThresholdOpAttributes_GetLogString();
+std::string VISITPY_API    PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *, const char *);
+VISITPY_API PyObject *     PyThresholdOpAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyThresholdOpAttributes_methods[THRESHOLDOPATTRIBUTES_NMETH];
 
 #endif
 
