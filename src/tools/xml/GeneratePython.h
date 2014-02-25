@@ -2778,6 +2778,10 @@ class PythonFieldFactory
 //    Mark C. Miller, Mon Feb 24 12:17:15 PST 2014
 //    Added logic to clear python error after attempting and failing to
 //    _setattr in a custom base.
+//
+//    Kathleen Biagas, Tue Feb 25 15:54:54 PST 2014
+//    We only need to use visitpy_api if the api needs exporting already.
+//
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -2830,7 +2834,9 @@ class PythonGeneratorAttribute : public GeneratorBase
         if (custombase)
             h << "#include <Py"<<baseClass<<".h>" << Endl;
         QString api(""); 
-        if(visitpy_api)
+        // only need visitpy_api if we are exporting the api in the first place
+        // (eg anyplace other than plugins, which don't define an export api).
+        if(!exportAPI.isEmpty() && visitpy_api)
         {
              h << "#include <visitpy_exports.h>" << Endl;
              api = "VISITPY_API ";
