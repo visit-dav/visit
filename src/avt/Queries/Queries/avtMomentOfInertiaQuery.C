@@ -187,6 +187,9 @@ avtMomentOfInertiaQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Mon Feb 24 15:53:41 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -222,6 +225,9 @@ avtMomentOfInertiaQuery::PostExecute(void)
     for (int i = 0 ; i < 9 ; i++)
         I_vec[i] = I_tmp[i];
     SetResultValues(I_vec);
+    MapNode result_node;
+    result_node["moment_of_inertia"] = I_vec;
+    SetXmlResult(result_node.ToXML());
 }
 
 // ****************************************************************************

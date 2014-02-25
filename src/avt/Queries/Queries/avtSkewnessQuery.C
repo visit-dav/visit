@@ -194,11 +194,18 @@ avtSkewnessQuery::CurveQuery(int n1, const float *x1, const float *y1)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Mon Feb 24 16:08:51 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 std::string
 avtSkewnessQuery::CreateMessage(double skewness)
 {
+    MapNode result_node;
+    result_node["skewness"] = skewness;
+    SetXmlResult(result_node.ToXML());
+
     char msg[1024];
     std::string format = "The skewness of the distribution is "
                     + queryAtts.GetFloatFormat() + ".";

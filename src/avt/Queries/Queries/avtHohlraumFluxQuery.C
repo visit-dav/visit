@@ -709,6 +709,9 @@ avtHohlraumFluxQuery::PreExecute()
 //    communications were MPI_Allreduce so MPI tried to make them succeed even
 //    though they were incompatible.
 //
+//    Kathleen Biagas, Mon Feb 24 16:05:24 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -739,18 +742,18 @@ avtHohlraumFluxQuery::PostExecute(void)
     double resultSum = 0.0;
     double resultSum2 = 0.0;
     double temperature = 0.0;
-        
+
     for (ii = 0 ; ii < numBins ; ii++)
     {
         result[ii] = accumBins[ii] / (double)numLines;
         resultSum  += result[ii];
-        
+
         if (binWidths.size() != 0)
             resultSum2 += result[ii] * binWidths[ii];
     }
     if (binWidths.size() != 0)
         temperature = pow( M_PI * resultSum2 / 1028000.0, 0.25 );
-    
+
     // Write all bins to an ultra file
     char name[256];
     if (PAR_Rank() == 0)
@@ -765,23 +768,24 @@ avtHohlraumFluxQuery::PostExecute(void)
             {
                 ifile.close();
                 ofstream ofile(name);
-                // I would like to stick all this in the file, but the whole thing is 
-                // interpreted as the variable name. -DJB
-                //ofile << "# Flux values in Eu / (ms*cm2*keV).  Sum is " << resultSum << ".";
+                // I would like to stick all this in the file, but the whole
+                // thing is interpreted as the variable name. -DJB
+                //ofile << "# Flux values in Eu / (ms*cm2*keV).  Sum is "
+                //      << resultSum << ".";
                 //if (binWidths.size() != 0)
                 //{
                 //    ofile << "Temperature is " << temperature << ".";
                 //}
                 //ofile << endl;
                 ofile << "# Hohlraum Flux" << endl;
-                
+
                 for (ii = 0 ; ii < numBins ; ii++)
                 {
                     ofile << ii << " " << setprecision(14) << result[ii] << endl;
                 }
                 ofile.close();
                 break;
-            } 
+            }
             else
             {
                 ifile.close();
@@ -790,11 +794,12 @@ avtHohlraumFluxQuery::PostExecute(void)
         }
     }
 
-   
+
     std::string msg    = "";
-    std::string format ="";
+    std::string format = "";
     std::string floatFormat = queryAtts.GetFloatFormat();
     char buf[512];
+    MapNode result_node;
         
     SNPRINTF(buf,512,"The hohlraum flux query over %d energy groups "
                  "was written to %s.\n", numBins, name);
@@ -802,23 +807,28 @@ avtHohlraumFluxQuery::PostExecute(void)
     format = "Sum is " + floatFormat + ".\n";
     SNPRINTF(buf,512,format.c_str(), resultSum);
     msg+=buf;
-    
+
+    result_node["Sum"] = resultSum;
+
     if (binWidths.size() != 0)
     {
         format = "Temperature is " + floatFormat + ".\n";
         SNPRINTF(buf,512,format.c_str(),temperature);
         msg+=buf;
+
+        result_node["Temperature"] = temperature;
     }
-    
+
+    result_node["Energy_group_values"] = result;
+
     msg += "Energy group values are: ";
    
     for (ii = 0 ; ii < numBins ; ii++)
     {
-       
         format = " " + floatFormat;
         SNPRINTF(buf,512, format.c_str(), result[ii]);
         msg+=buf;
-        
+
         if (ii < numBins-1)
             msg+=",";
     }
@@ -828,6 +838,7 @@ avtHohlraumFluxQuery::PostExecute(void)
         SetResultValue(temperature);
     else
         SetResultValue(resultSum);
+    SetXmlResult(result_node.ToXML());
 }
 
 
