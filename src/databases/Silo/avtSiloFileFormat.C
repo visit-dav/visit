@@ -4827,6 +4827,9 @@ avtSiloFileFormat::StoreMultimeshInfo(const char *const dirname,
 //    Don't set group information if we have already set it for an AMR
 //    dataset.
 //
+//    Mark C. Miller, Tue Feb 25 15:10:29 PST 2014
+//    Do the work that md->AddGroupInformation() would have done but make
+//    sure we do it *only* for the relevant meshes.
 // ****************************************************************************
 
 void
@@ -4856,8 +4859,18 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 
     if (!haveAmrGroupInfo && groupInfo.haveGroups)
     {
-        md->AddGroupInformation(groupInfo.numgroups, groupInfo.ndomains,
-                                groupInfo.ids);
+        for (int i = 0; i < md->GetNumMeshes(); i++)
+        {
+            int j;
+            bool namesMatch = false;
+            for (j = 0; j < (int) actualMeshName.size() && !namesMatch; j++)
+                namesMatch = md->GetMeshes(i).name == actualMeshName[j];
+            if (namesMatch && groupInfo.numgroups == blocksForMesh[j])
+            {
+                md->GetMeshes(i).numGroups = groupInfo.numgroups;
+                md->GetMeshes(i).groupIds = groupInfo.ids;
+            }
+        }
     }
 }
 
