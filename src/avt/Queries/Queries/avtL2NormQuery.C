@@ -149,11 +149,18 @@ avtL2NormQuery::CurveQuery(int n1, const float *x1, const float *y1)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Mon Feb 24 16:13:22 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 std::string
 avtL2NormQuery::CreateMessage(double l2norm)
 {
+    MapNode result_node;
+    result_node["L2Norm"] = l2norm;
+    SetXmlResult(result_node.ToXML());
+
     char msg[1024];
     std::string format = "The L2Norm is " + queryAtts.GetFloatFormat() + ".";
     SNPRINTF(msg,1024,format.c_str(), l2norm);

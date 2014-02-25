@@ -318,6 +318,9 @@ avtSummationQuery::PreExecute(void)
 //    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
 //    Add Xml results.
 //
+//    Kathleen Biagas, Mon Feb 24 15:37:33 PST 2014
+//    Use sumType instead of variableName for Xml results.
+//
 // ****************************************************************************
 
 void
@@ -371,9 +374,9 @@ avtSummationQuery::PostExecute(void)
 
     MapNode result_node;
     if (sums.size() == 1)
-        result_node[variableName] = sums[0];
+        result_node[sumType] = sums[0];
     else 
-        result_node[variableName] = sums;
+        result_node[sumType] = sums;
     char buf[1024];
     string str;
     if (CalculateAverage())
