@@ -1084,6 +1084,10 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Brad Whitlock, Mon Nov  5 12:04:27 PST 2012
 //    Check for NULL reader from the plot.
 //
+//    Kathleen Biagas, Wed Feb 26 10:42:44 PST 2014
+//    Make sure XMLResults are reset, add queryClientAtt->Notify for more
+//    error conditions.
+//
 // ****************************************************************************
 
 void
@@ -1107,6 +1111,8 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
     }
     if (!doTimeQuery && !queryTypes->RegularQueryAvailable(qName))
     {
+        // we've reset some values, notify clients
+        queryClientAtts->Notify();
         QString msg = tr("Regular (non-time) query is not available for %1.").
                       arg(qName.c_str());
         Error(msg);
@@ -1224,12 +1230,20 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
         plotIds.clear();
         plotIds.push_back(firstPlot);
         if (!VerifySingleInputQuery(plist, firstPlot, qName, vars, qa))
+        {
+            // we've reset some values, notify clients
+            queryClientAtts->Notify();
             return;
+        }
     }
     else
     {
         if (!VerifyMultipleInputQuery(plist, numInputs, qName, vars, qa))
+        {
+            // we've reset some values, notify clients
+            queryClientAtts->Notify();
             return;
+        }
     }
 
     //
@@ -5634,15 +5648,22 @@ ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
 //    Kathleen Biagas, Fri Jan 13 14:37:40 PST 2012
 //    Test for presense of query_name.
 //
+//    Kathleen Biagas, Wed Feb 26 10:44:01 PST 2014
+//    Clear prior query results and notify clients before early return.
+//
 // ****************************************************************************
 
 
 void
 ViewerQueryManager::Query(const MapNode &queryParams)
 {
+    queryClientAtts->SetResultsMessage("");
+    queryClientAtts->SetResultsValue(0.);
+    queryClientAtts->SetXmlResult("");
     if (!queryParams.HasEntry("query_name"))
     {
         debug3 << "VQM::Query, no query_name specified" << endl;
+        queryClientAtts->Notify();
         return;
     }
 
@@ -5650,6 +5671,7 @@ ViewerQueryManager::Query(const MapNode &queryParams)
     if (qName.empty())
     {
         debug3 << "VQM::Query, query_name should be a string." << endl;
+        queryClientAtts->Notify();
         return;
     }
 
@@ -5662,6 +5684,7 @@ ViewerQueryManager::Query(const MapNode &queryParams)
     {
         if (!EngineExistsForQuery(plist->GetPlot(plotIds[0])))
         {
+            queryClientAtts->Notify();
             return;
         }
     }
@@ -5696,6 +5719,7 @@ ViewerQueryManager::Query(const MapNode &queryParams)
     }
     else
     {
+        queryClientAtts->Notify();
         Error(tr("ViewerQueryManager could not determine query type."));
     }
 
