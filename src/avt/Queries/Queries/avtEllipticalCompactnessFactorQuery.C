@@ -260,6 +260,9 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Tue Feb 25 16:12:44 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -299,6 +302,17 @@ avtEllipticalCompactnessFactorQuery::PostExecute(void)
                        x_radius[biggest], y_radius[biggest], z_radius[biggest]);
     SetResultMessage(msg);
     SetResultValue(biggestVal / total_volume);
+    MapNode result_node;
+    result_node["biggest_x_radius"] = x_radius[biggest];
+    result_node["biggest_y_radius"] = y_radius[biggest];
+    result_node["biggest_z_radius"] = z_radius[biggest];
+    doubleVector ec(3);
+    ec[0] = ellipse_center[0];
+    ec[1] = ellipse_center[1];
+    ec[2] = ellipse_center[2];
+    result_node["centroid"] = ec;
+    result_node["elliptical_compactness_factor"] = biggestVal / total_volume;
+    SetXmlResult(result_node.ToXML());
 }
 
 

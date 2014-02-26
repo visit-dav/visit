@@ -135,6 +135,10 @@ avtIndividualChordLengthDistributionQuery::PreExecute(void)
 //    I changed the name of the curve in the ultra file to avoid using
 //    special characters.
 //
+//    Kathleen Biagas, Tue Feb 25 08:58:52 PST 2014
+//    Add XML results, and ResultValues, allowing them to be set even if
+//    output file could not be opened.
+//
 // ****************************************************************************
 
 void
@@ -192,9 +196,12 @@ avtIndividualChordLengthDistributionQuery::PostExecute(void)
         {
             sprintf(msg, "Unable to write out file containing distribution.");
             SetResultMessage(msg);
-            return;
         }
-        ofile << "# Chord length distribution - individual" << endl;
+        if (!ofile.fail())
+            ofile << "# Chord length distribution - individual" << endl;
+
+        MapNode result_node;
+        doubleVector curve;
 
         for (int i = 0 ; i < numBins ; i++)
         {
@@ -202,9 +209,19 @@ avtIndividualChordLengthDistributionQuery::PostExecute(void)
             double x2 = minLength + (i+1)*binWidth;
             double y = numChords[i] / totalArea; // Make it be a distribution ...
                                                  // the area under the curve: 1
-            ofile << x1 << " " << y << endl;
-            ofile << x2 << " " << y << endl;
+            curve.push_back(x1);
+            curve.push_back(y);
+            curve.push_back(x2);
+            curve.push_back(y);
+            if (!ofile.fail())
+            {
+                ofile << x1 << " " << y << endl;
+                ofile << x2 << " " << y << endl;
+            }
         }
+        result_node["chord_length_distribution_individual"] = curve;
+        SetXmlResult(result_node.ToXML());
+        SetResultValues(curve);
     }
 }
 

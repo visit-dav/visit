@@ -139,6 +139,11 @@ avtLineScanTransformQuery::PreExecute(void)
 //  Programmer: David Bremer
 //  Creation:   August 8, 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Feb 25 08:58:52 PST 2014
+//    Add XML results, and ResultValues, allowing them to be set even if
+//    output file could not be opened.
+//
 // ****************************************************************************
 
 void
@@ -183,16 +188,26 @@ avtLineScanTransformQuery::PostExecute(void)
         {
             sprintf(msg, "Unable to write out file containing distribution.");
             SetResultMessage(msg);
-            return;
         }
-        ofile << "# Line Scan Transform" << endl;
+        if (!ofile.fail())
+            ofile << "# Line Scan Transform" << endl;
+
+        MapNode result_node;
+        doubleVector curve;
+
         double binWidth = (maxLength-minLength) / (numBins-1);
         for (int i = 0 ; i < numBins ; i++)
         {
             double x = minLength + i*binWidth;
             double y = lengths[i] / (double)totalNumLineIntersections; 
-            ofile << x << " " << y << endl;
+            curve.push_back(x);
+            curve.push_back(y);
+            if (!ofile.fail())
+                ofile << x << " " << y << endl;
         }
+        result_node["line_scan_transform"] = curve;
+        SetXmlResult(result_node.ToXML());
+        SetResultValues(curve);
     }
 }
 

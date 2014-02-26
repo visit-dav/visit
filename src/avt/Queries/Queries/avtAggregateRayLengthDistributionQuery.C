@@ -140,6 +140,10 @@ avtAggregateRayLengthDistributionQuery::PreExecute(void)
 //    I changed the name of the curve in the ultra file to avoid using
 //    special characters.
 //
+//    Kathleen Biagas, Tue Feb 25 08:58:52 PST 2014
+//    Add XML results, and ResultValues, allowing them to be set even if
+//    output file could not be opened.
+//
 // ****************************************************************************
 
 void
@@ -197,9 +201,13 @@ avtAggregateRayLengthDistributionQuery::PostExecute(void)
         {
             sprintf(msg, "Unable to write out file containing distribution.");
             SetResultMessage(msg);
-            return;
         }
-        ofile << "# Ray length distribution - aggregate" << endl;
+        if (!ofile.fail())
+            ofile << "# Ray length distribution - aggregate" << endl;
+
+        MapNode result_node;
+        doubleVector curve;
+
         double binWidth = (maxLength) / numBins;
         for (int i = 0 ; i < numBins ; i++)
         {
@@ -207,9 +215,19 @@ avtAggregateRayLengthDistributionQuery::PostExecute(void)
             double x1 = (i)*binWidth;
             double x2 = (i+1)*binWidth;
             double y = (count[i]) / (totalCount*binWidth); 
-            ofile << x1 << " " << y << endl;
-            ofile << x2 << " " << y << endl;
+            curve.push_back(x1);
+            curve.push_back(y);
+            curve.push_back(x2);
+            curve.push_back(y);
+            if (!ofile.fail())
+            {
+                ofile << x1 << " " << y << endl;
+                ofile << x2 << " " << y << endl;
+            }
         }
+        result_node["ray_length_distribution_aggregate"] = curve;
+        SetXmlResult(result_node.ToXML());
+        SetResultValues(curve);
     }
 }
 
