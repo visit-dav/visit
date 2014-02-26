@@ -4861,11 +4861,11 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
     {
         for (int i = 0; i < md->GetNumMeshes(); i++)
         {
-            int j;
-            bool namesMatch = false;
-            for (j = 0; j < (int) actualMeshName.size() && !namesMatch; j++)
-                namesMatch = md->GetMeshes(i).name == actualMeshName[j];
-            if (namesMatch && groupInfo.numgroups == blocksForMesh[j])
+            bool nameAndBlockMatch = false;
+            for (int j = 0; j < (int) actualMeshName.size() && !nameAndBlockMatch; j++)
+                nameAndBlockMatch = md->GetMeshes(i).name == actualMeshName[j] &&
+                                    md->GetMeshes(i).numBlocks == groupInfo.ndomains;
+            if (nameAndBlockMatch)
             {
                 md->GetMeshes(i).numGroups = groupInfo.numgroups;
                 md->GetMeshes(i).groupIds = groupInfo.ids;
