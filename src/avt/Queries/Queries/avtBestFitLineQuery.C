@@ -148,6 +148,9 @@ avtBestFitLineQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Tue Feb 25 16:07:00 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -173,6 +176,7 @@ avtBestFitLineQuery::PostExecute(void)
     string floatFormat = queryAtts.GetFloatFormat();
     string format;
     char buf[1024];
+    MapNode result_node;
 
     if(dX == 0.)
     {
@@ -184,11 +188,18 @@ avtBestFitLineQuery::PostExecute(void)
                   + " with a correlation coefficient of: "+ floatFormat;
         SNPRINTF(buf, 1024, format.c_str(), x, r);
         s = std::string(buf);
+        result_node["X"] = x;
+        result_node["correlation_coefficient"] = r;
     }
     else
     {
         m =  dY / dX;
         b = (d[Y_SUM] - m * d[X_SUM]) / d[N_SUM];
+
+        MapNode slopeIntercept;
+        slopeIntercept["m"] = m;
+        slopeIntercept["b"] = b;
+        result_node["Y"] = slopeIntercept;
 
         double rtop = d[N_SUM] * d[XY_SUM] - d[X_SUM] * d[Y_SUM];
         double r0 = d[N_SUM] * d[X2_SUM] - d[X_SUM] * d[X_SUM];
@@ -220,10 +231,13 @@ avtBestFitLineQuery::PostExecute(void)
             format = "with a correlation coefficient of: " + floatFormat;
             SNPRINTF(buf, 1024, format.c_str(), r);
             s += buf;
+            result_node["correlation_coefficient"] = r;
         }
         else
+        {
             s += "with an undefined correlation coefficient.";
-
+            result_node["correlation_coefficient"] = string("undefined");
+        }
     }
   
     //
@@ -238,6 +252,7 @@ avtBestFitLineQuery::PostExecute(void)
     retval.push_back(b);
     retval.push_back(r);
     SetResultValues(retval);
+    SetXmlResult(result_node.ToXML());
 }
 
 

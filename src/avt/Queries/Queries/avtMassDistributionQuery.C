@@ -141,6 +141,10 @@ avtMassDistributionQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Tue Feb 25 08:58:52 PST 2014
+//    Add XML results, and ResultValues, allowing them to be set even if
+//    output file could not be opened.
+//
 // ****************************************************************************
 
 void
@@ -249,18 +253,32 @@ avtMassDistributionQuery::PostExecute(void)
         {
             sprintf(msg, "Unable to write out file containing distribution.");
             SetResultMessage(msg);
-            return;
         }
-        ofile << "# Mass distribution" << endl;
+        if (!ofile.fail())
+            ofile << "# Mass distribution" << endl;
+
+        MapNode result_node;
+        doubleVector curve;
+
         double binWidth = (maxLength-minLength) / numBins;
         for (int i = 0 ; i < numBins ; i++)
         {
             double x1 = minLength + (i)*binWidth;
             double x2 = minLength + (i+1)*binWidth;
             double y = (totalMass*mass[i]) / (totalMassFromLines*binWidth); 
-            ofile << x1 << " " << y << endl;
-            ofile << x2 << " " << y << endl;
+            curve.push_back(x1);
+            curve.push_back(y);
+            curve.push_back(x2);
+            curve.push_back(y);
+            if (!ofile.fail())
+            {
+                ofile << x1 << " " << y << endl;
+                ofile << x2 << " " << y << endl;
+            }
         }
+        result_node["mass_distribution"] = curve;
+        SetXmlResult(result_node.ToXML());
+        SetResultValues(curve);
     }
 }
 

@@ -194,6 +194,9 @@ avtSphericalCompactnessFactorQuery::MidExecute(void)
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Tue Feb 25 16:16:13 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -224,6 +227,15 @@ avtSphericalCompactnessFactorQuery::PostExecute(void)
                        radius);
     SetResultMessage(msg);
     SetResultValue(volume_inside / total_volume);
+    MapNode result_node;
+    result_node["radius"] = radius;
+    doubleVector sc(3);
+    sc[0] = sphere_center[0];
+    sc[1] = sphere_center[1];
+    sc[2] = sphere_center[2];
+    result_node["centroid"] = sc;
+    result_node["spherical_compactness_factor"] = volume_inside / total_volume;
+    SetXmlResult(result_node.ToXML());
 }
 
 
