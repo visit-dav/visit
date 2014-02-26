@@ -159,6 +159,8 @@ avtStreamlineInfoQuery::PreExecute()
 // Creation:    November  9, 2010
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Feb 26 10:22:56 PST 2014
+//    Add XML results.
 //
 // ****************************************************************************
 
@@ -207,29 +209,44 @@ avtStreamlineInfoQuery::PostExecute()
     std::string msg;
     char str[128];
     int i = 0, sz = slData.size();
-    int endOfLineIdx = 3;
-    
+
     int slIdx = 0;
+    MapNode result_node;
     while (i < sz)
     {
         sprintf(str, "Streamline %d: Seed %f %f %f Arclength %f\n", slIdx, slData[i], slData[i+1], slData[i+2], slData[i+3]);
+        MapNode sl_res_node;
+        doubleVector sl_res_seed;
+        sl_res_seed.push_back(slData[i]);
+        sl_res_seed.push_back(slData[i+1]);
+        sl_res_seed.push_back(slData[i+2]);
+        sl_res_node["seed"] = sl_res_seed;
+        sl_res_node["arclength"] = slData[i+3];
         i+=4;
         msg += str;
 
         if (dumpSteps)
         {
             int numSteps =  (int)slData[i++];
+            doubleVector sl_steps;
             for (int j = 0; j < numSteps; j++)
             {
                 sprintf(str, " %f %f %f \n", slData[i], slData[i+1], slData[i+2]);// slData[i+3], slData[i+4]);
+                sl_steps.push_back(slData[i]);
+                sl_steps.push_back(slData[i+1]);
+                sl_steps.push_back(slData[i+2]);
                 i+=5;
                 msg += str;
             }
+            sl_res_node["steps"] = sl_steps;
         }
+        sprintf(str, "streamline %d", slIdx);
+        result_node[str] = sl_res_node;
         slIdx++;
     }
-    
+
     SetResultMessage(msg.c_str());
+    SetXmlResult(result_node.ToXML());
 }
 
 // ****************************************************************************
