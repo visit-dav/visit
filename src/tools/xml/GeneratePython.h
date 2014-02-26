@@ -2789,13 +2789,11 @@ class PythonGeneratorAttribute : public GeneratorBase
 {
   public:
     std::vector<PythonGeneratorField*> fields;
-    bool visitpy_api;
   public:
     PythonGeneratorAttribute(const QString &n, const QString &p, const QString &f,
                            const QString &e, const QString &ei, const QString &bc)
         : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME, bc), fields()
     {
-        visitpy_api = true;
     }
 
     virtual ~PythonGeneratorAttribute()
@@ -2805,7 +2803,6 @@ class PythonGeneratorAttribute : public GeneratorBase
         fields.clear();
     }
 
-    void DisableVISITPY() { visitpy_api = false; }
 
     void PrintFunction(QTextStream &out, const QString &f)
     {
@@ -2836,7 +2833,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         QString api(""); 
         // only need visitpy_api if we are exporting the api in the first place
         // (eg anyplace other than plugins, which don't define an export api).
-        if(!exportAPI.isEmpty() && visitpy_api)
+        if(!exportAPI.isEmpty())
         {
              h << "#include <visitpy_exports.h>" << Endl;
              api = "VISITPY_API ";
@@ -3638,7 +3635,6 @@ class PythonGeneratorPlugin : public PluginBase
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< Endl;
         if (atts)
         {
-            atts->DisableVISITPY();
             atts->Print(out);
         }
     }
@@ -3647,7 +3643,6 @@ class PythonGeneratorPlugin : public PluginBase
     {
         if (atts)
         {
-            atts->DisableVISITPY();
             atts->WriteHeader(h);
         }
     }
