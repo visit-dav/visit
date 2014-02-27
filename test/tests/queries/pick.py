@@ -1159,6 +1159,11 @@ def PickSpecMix():
 
     AddPlot("Pseudocolor", "Species")
     DrawPlots()
+
+    v = GetView2D()
+    v.windowCoords = (0, 1, 0, 1)
+    SetView2D(v)
+
     vars = ("default")
     Pick(69, 137, vars)
     s = GetPickOutput()
@@ -1235,6 +1240,10 @@ def PickCurve():
     AddPlot("Curve", "parabolic")
     SetTimeSliderState(72)
     DrawPlots()
+
+    v = GetViewCurve()
+    v.rangeCoords = (0, 1)
+    SetViewCurve(v)
 
     pa = GetPickAttributes()
     pa.variables = ("default")
