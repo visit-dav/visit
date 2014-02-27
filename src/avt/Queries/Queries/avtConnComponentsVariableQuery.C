@@ -137,6 +137,9 @@ avtConnComponentsVariableQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
 //    Only set results on the root processor.
 //
+//    Kathleen Biagas, Wed Feb 26 11:38:10 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -162,9 +165,9 @@ avtConnComponentsVariableQuery::PostExecute(void)
 
         msg += buff;
 
-        std::string format  =  "Component %d Sum = (" 
+        std::string format  =  "Component %d Sum = ("
                                   + queryAtts.GetFloatFormat() +")\n";
-    
+
         for(int i=0;i<nComps;i++)
         {
             SNPRINTF(buff,1024,
@@ -179,6 +182,11 @@ avtConnComponentsVariableQuery::PostExecute(void)
         SetResultMessage(msg);
         // set output values
         SetResultValues(sumPerComp);
+        // set xml result
+        MapNode result_node;
+        result_node["connected_component_count"] = nComps;
+        result_node["sums"] = sumPerComp;
+        SetXmlResult(result_node.ToXML());
     }
 }
 

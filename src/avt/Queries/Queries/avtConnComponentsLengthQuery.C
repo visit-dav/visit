@@ -129,6 +129,8 @@ avtConnComponentsLengthQuery::PreExecute(void)
 //  Creation:   Wed Jun 15 13:09:43 PDT 2011
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Feb 26 12:00:54 PST 2014
+//    Add Xml results.
 //
 // ****************************************************************************
 
@@ -168,6 +170,10 @@ avtConnComponentsLengthQuery::PostExecute(void)
 
         SetResultMessage(msg);
         SetResultValues(lengthPerComp);
+        MapNode result_node;
+        result_node["connected_components_count"] = nComps;
+        result_node["lengths"] = lengthPerComp;
+        SetXmlResult(result_node.ToXML());
     }
 }
 
