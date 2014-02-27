@@ -166,6 +166,9 @@ avtConnComponentsWeightedVariableQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
 //    Only set results on the root processor.
 //
+//    Kathleen Biagas, Wed Feb 26 11:36:15 PST 2014
+//    Add xml results.
+//
 // ****************************************************************************
 
 void
@@ -192,16 +195,12 @@ avtConnComponentsWeightedVariableQuery::PostExecute(void)
 
         msg += buff;
 
-        std::string format  =  "Component %d Weighted Sum = (" 
+        std::string format  =  "Component %d Weighted Sum = ("
                               + queryAtts.GetFloatFormat() +")\n";
 
         for(int i=0;i<nComps;i++)
         {
-            SNPRINTF(buff,1024,
-                     format.c_str(),
-                     i,
-                    sumPerComp[i]);
-
+            SNPRINTF(buff,1024, format.c_str(), i, sumPerComp[i]);
             msg += buff;
         }
 
@@ -209,6 +208,11 @@ avtConnComponentsWeightedVariableQuery::PostExecute(void)
         SetResultMessage(msg);
         // set output values
         SetResultValues(sumPerComp);
+        // set Xml result
+        MapNode result_node;
+        result_node["connected_component_count"] = nComps;
+        result_node["weighted_sums"] = sumPerComp;
+        SetXmlResult(result_node.ToXML());
     }
 }
 

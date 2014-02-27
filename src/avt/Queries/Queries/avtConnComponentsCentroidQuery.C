@@ -147,6 +147,9 @@ avtConnComponentsCentroidQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
 //    Only set results on the root processor.
 //
+//    Kathleen Biagas, Wed Feb 26 12:03:51 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -214,12 +217,11 @@ avtConnComponentsCentroidQuery::PostExecute(void)
             result_vec[i*3 + 2] = zCentroidPerComp[i];
         }
 
-    
         std::string format  =  "Component %d [%d cells] Centroid = (" 
                             + queryAtts.GetFloatFormat()  +","
                             + queryAtts.GetFloatFormat()  +","
                             + queryAtts.GetFloatFormat()  +")\n";
-    
+
         // prepare the output message
         for(int i=0;i<nComps;i++)
         {
@@ -230,7 +232,6 @@ avtConnComponentsCentroidQuery::PostExecute(void)
                     xCentroidPerComp[i],
                     yCentroidPerComp[i],
                     zCentroidPerComp[i]);
-
             msg += buff;
         }
 
@@ -239,6 +240,13 @@ avtConnComponentsCentroidQuery::PostExecute(void)
 
         // set result values
         SetResultValues(result_vec);
+
+        // set xml result
+        MapNode result_node;
+        result_node["centroids"] = result_vec;
+        result_node["connected_component_count"] = nComps;
+        result_node["cell_counts"] = nCellsPerComp;
+        SetXmlResult(result_node.ToXML());
     }
 }
 

@@ -146,6 +146,9 @@ avtConnComponentsVolumeQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
 //    Only set results on the root processor.
 //
+//    Kathleen Biagas, Wed Feb 26 11:54:46 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -170,10 +173,10 @@ avtConnComponentsVolumeQuery::PostExecute(void)
         {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
-    
-        std::string format  =  "Component %d Volume = (" 
+
+        std::string format  =  "Component %d Volume = ("
                                   + queryAtts.GetFloatFormat() +")\n";
-    
+
         for(int i=0;i<nComps;i++)
         {
             SNPRINTF(buff,1024,
@@ -183,11 +186,16 @@ avtConnComponentsVolumeQuery::PostExecute(void)
 
             msg += buff;
         }
-    
+
         // set output message
         SetResultMessage(msg);
         // set output values
         SetResultValues(volPerComp);
+        // set Xml result
+        MapNode result_node;
+        result_node["connected_component_count"] = nComps;
+        result_node["volumes"] = volPerComp;
+        SetXmlResult(result_node.ToXML());
     }
 }
 

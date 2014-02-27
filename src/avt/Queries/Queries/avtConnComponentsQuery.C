@@ -129,6 +129,9 @@ avtConnComponentsQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
 //    Only set results on the root processor.
 //
+//    Kathleen Biagas, Wed Feb 26 12:23:31 PST 2014
+//    Add Xml results.
+//
 // ****************************************************************************
 
 void
@@ -151,6 +154,10 @@ avtConnComponentsQuery::PostExecute(void)
         SetResultMessage(msg);
         // set output value
         SetResultValue(nComps);
+        // set Xml result
+        MapNode result_node;
+        result_node["connected_component_count"] = nComps;
+        SetXmlResult(result_node.ToXML());
     }
 }
 
