@@ -181,6 +181,11 @@ Zoom3D::OnTimer(void)
 //    the left mouse button would result in the window being stuck in pan mode
 //    if the shift key was released before the left mouse button.
 //
+//    Eric Brugger, Fri Feb 28 14:51:50 PST 2014
+//    I disabled the mode where pressing the ctrl key and the left mouse
+//    button pans the image. The code is still there so that an equivalent
+//    mode can easily be added.
+//
 // ****************************************************************************
 
 void
@@ -192,7 +197,11 @@ Zoom3D::StartLeftButtonAction()
     // If ctrl is pushed, pan, otherwise zoom.  Save which one we did so we
     // can issue the proper "End.." statement when the button is released.
     //
+#if 0
     if (Interactor->GetControlKey())
+#else
+    if (false)
+#endif
     {
         StartBoundingBox();
         StartPan();
