@@ -5144,7 +5144,7 @@ const char *visit_Query_doc =
 "The Query function returns either a String (default), Value(s), or Object.\n"
 "The return type can be customized via calls to SetQueryOutputToXXX(), where\n"
 "'XXX' is 'String', 'Value', or 'Object'. For more information on these\n"
-"return types, see 'GetQueryOutput'.
+"return types, see 'GetQueryOutput'."
 "\n"
 "\n"
 "Description:\n"
