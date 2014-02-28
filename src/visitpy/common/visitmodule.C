@@ -469,6 +469,13 @@ typedef struct
 static std::map<std::string, AnnotationObjectRef> localObjectMap;
 
 static bool                  suppressQueryOutputState = false;
+
+static enum QueryOutputReturnType {
+    QueryString = 0,
+    QueryValue,
+    QueryObject
+} queryOutputReturnType = QueryString;
+
 // pickle related
 bool      pickleReady=false;
 PyObject *pickleDumps=NULL;
@@ -1096,6 +1103,30 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
     return dict;
 }
 
+
+// ****************************************************************************
+// Function: ToggleSuppressQueryOutput_NoLogging
+//
+// Purpose:
+//   Helper method for toggling SuppressQueryOutput without it being logged.
+//   Used when query ouput suppression is a consequence of another action,
+//   like with Pick functions.
+//
+// Programmer: Kathleen Bigagas
+// Creation:   January 9, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ToggleSuppressQueryOutput_NoLogging(bool onoff)
+{
+    LogFile_IncreaseLevel();
+    GetViewerMethods()->SuppressQueryOutput(onoff);
+    Synchronize();
+    LogFile_DecreaseLevel();
+}
 
 
 //
@@ -8824,7 +8855,6 @@ STATIC PyObject *
 visit_GetQueryOutputString(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-    NO_ARGUMENTS();
 
     std::string queryOut;
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
@@ -8853,7 +8883,6 @@ STATIC PyObject *
 visit_GetQueryOutputValue(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-    NO_ARGUMENTS();
 
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     doubleVector vals = qa->GetResultsValue();
@@ -8917,7 +8946,6 @@ STATIC PyObject *
 visit_GetQueryOutputObject(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-    NO_ARGUMENTS();
 
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     std::string xml_string = qa->GetXmlResult();
@@ -11035,6 +11063,10 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   E4ric Brugger, Mon May 14 10:51:24 PDT 2012
 //   I added the bov output type to the XRay Image query.
 //
+//   Kathleen Biagas, Thu Feb 27 15:17:45 PST 2014
+//   Change return type (Object/Value/String) based on user request from
+//   SetQueryOutputToxxx calls. Default is string.
+//
 // ****************************************************************************
 
 STATIC PyObject*
@@ -11313,12 +11345,32 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         params["vars"] = vars;
 
     debug3 << mn << " sending query params: " << params.ToXML() << endl;
-    MUTEX_LOCK();
-    GetViewerMethods()->Query(params);
-    MUTEX_UNLOCK();
 
-    // Return the success value.
-    return IntReturnValue(Synchronize());
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(params);
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
+    // Return the output.
+    PyObject *retval = NULL;
+    if (QueryObject == queryOutputReturnType)
+        retval = visit_GetQueryOutputObject(self, args);
+    else if (QueryValue == queryOutputReturnType)
+        retval = visit_GetQueryOutputValue(self, args);
+    else if (QueryString == queryOutputReturnType)
+        retval = visit_GetQueryOutputString(self, args);
+    else
+    {
+        retval = Py_None;
+        Py_INCREF(retval);
+    }
+    return retval;
 }
 
 
@@ -11336,6 +11388,10 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
 // Modifications:
 //   Kathleen Biagas, Wed Sep  7 12:46:24 PDT 2011
 //   Use VisItErrorFunc instead of cerr.
+//
+//   Kathleen Biagas, Thu Feb 27 15:17:45 PST 2014
+//   Change return type (Object/Value/String) based on user request from
+//   SetQueryOutputToxxx calls. Default is string.
 //
 // ****************************************************************************
 
@@ -11411,12 +11467,31 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
         queryParams["query_name"] = std::string(queryName);
     }
 
-    MUTEX_LOCK();
-    GetViewerMethods()->Query(queryParams);
-    MUTEX_UNLOCK();
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
 
-    // Return the success value.
-    return IntReturnValue(Synchronize());
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(queryParams);
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
+    // Return the output.
+    PyObject *retval  = NULL;
+    if (QueryObject == queryOutputReturnType)
+        retval = visit_GetQueryOutputObject(self, args);
+    else if (QueryValue == queryOutputReturnType)
+        retval = visit_GetQueryOutputValue(self, args);
+    else if (QueryString == queryOutputReturnType)
+        retval = visit_GetQueryOutputString(self, args);
+    else
+    {
+        retval = Py_None;
+        Py_INCREF(retval);
+    }
+    return retval;
 }
 
 
@@ -11734,29 +11809,82 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
+
 // ****************************************************************************
-// Function: ToggleSuppressQueryOutput_NoLogging
+// Function: visit_SetQueryOutputToObject
 //
 // Purpose:
-//   Helper method for toggling SuppressQueryOutput without it being logged.
-//   Used when query ouput suppression is a consequence of another action,
-//   like with Pick functions.
+//   Sets query return type to be the object(XML) form.
 //
-// Programmer: Kathleen Bigagas
-// Creation:   January 9, 2012
+// Programmer: Kathleen Biagas
+// Creation:   February 27, 2014 
 //
 // Modifications:
 //
 // ****************************************************************************
 
-void
-ToggleSuppressQueryOutput_NoLogging(bool onoff)
+STATIC PyObject *
+visit_SetQueryOutputToObject(PyObject *self, PyObject *args)
 {
-    LogFile_IncreaseLevel();
-    GetViewerMethods()->SuppressQueryOutput(onoff);
-    Synchronize();
-    LogFile_DecreaseLevel();
+    NO_ARGUMENTS();
+    if (queryOutputReturnType != QueryObject)
+    {
+        queryOutputReturnType = QueryObject;
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
 }
+
+// ****************************************************************************
+// Function: visit_SetQueryOutputToValue
+//
+// Purpose:
+//   Sets query return type to be the value form.
+//
+// Programmer: Kathleen Biagas
+// Creation:   February 27, 2014 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetQueryOutputToValue(PyObject *self, PyObject *args)
+{
+    NO_ARGUMENTS();
+    if (queryOutputReturnType != QueryValue)
+    {
+        queryOutputReturnType = QueryValue;
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
+// Function: visit_SetQueryOutputToString
+//
+// Purpose:
+//   Sets query return type to be the string form.
+//
+// Programmer: Kathleen Biagas
+// Creation:   February 27, 2014 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetQueryOutputToString(PyObject *self, PyObject *args)
+{
+    NO_ARGUMENTS();
+    if (queryOutputReturnType != QueryString)
+    {
+        queryOutputReturnType = QueryString;
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 // ****************************************************************************
 // Function: visit_SetQueryFloatFormat()
@@ -16961,6 +17089,9 @@ AddProxyMethods()
     AddMethod("ShowToolbars", visit_ShowToolbars, visit_ShowToolbars_doc);
     AddMethod("SuppressQueryOutputOn", visit_SuppressQueryOutputOn, visit_SuppressQueryOutput_doc);
     AddMethod("SuppressQueryOutputOff", visit_SuppressQueryOutputOff, visit_SuppressQueryOutput_doc);
+    AddMethod("SetQueryOutputToObject", visit_SetQueryOutputToObject, visit_SetQueryOutputToObject_doc);
+    AddMethod("SetQueryOutputToValue", visit_SetQueryOutputToValue, visit_SetQueryOutputToValue_doc);
+    AddMethod("SetQueryOutputToString", visit_SetQueryOutputToString, visit_SetQueryOutputToString_doc);
     AddMethod("SetQueryFloatFormat", visit_SetQueryFloatFormat, visit_SetQueryFloatFormat_doc);
     AddMethod("TimeSliderGetNStates", visit_TimeSliderGetNStates,
                                                visit_TimeSliderGetNStates_doc);

@@ -82,7 +82,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.8</font></b></p>
 <ul>
-  <li></li>
+  <li>All queries now provide Xml results.</li>
+  <li>Queries called from the CLI have been modified to always return a value. The type of returned object is user-settable, and consists of 3 options:
+  <ul>
+      <li>String (default): <i>Same as calling GetQueryOutputString()</i> </li>
+      <li>Value: <i>Same as calling GetQueryOutputValue()</i></li>
+      <li>Object: <i>Same as calling GetQueryOutputObject()</i></li>
+  </ul>
+    The options are chosen via new methods: <i>SetQueryOutputToString()</i>, <i>SetQueryOutputToValue()</i>, or <i>SetQueryOutputToObject()</i>.  The option remains valid for all queries during the current VisIt session, unless another call to <i>SetQueryOutputToXXX</i> is made. Calls to <i>GetQueryOutputXXX</i> can still be made, regardless of the query return type chosen.  <b>NOTE:</b> The old query output messages are hereby suppressed when making a Query via the CLI. 
+  </li>
   <li></li>
 </ul>
 
