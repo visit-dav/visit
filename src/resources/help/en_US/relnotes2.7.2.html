@@ -47,7 +47,7 @@ list of changes in release 2.6.</p>
 <ul>
 <li>The build_visit script was modified to build MPICH 3.0.4 instead of 3.0.1 so that MPICH would build on Red Hat Enterprise Linux 5 systems.</li>
 <li>The build_visit script was modified so that the MPICH library it builds is compatible with the Uintah library.</li>
-<li>The build system was modified to add -DMPI_NO_CPPBIND to the VISIT_PARALLEL_CFLAGS and VISIT_PARALLEL_CXXFLAGS so the the xdmf_writer samples can be built with OpenMPI.</li> 
+<li>The build system was modified to add -DMPI_NO_CPPBIND and -DMPICH_SKIP_MPICXX to VISIT_PARALLEL_CFLAGS and VISIT_PARALLEL_CXXFLAGS so that the xdmf_writer sample programs could be built with more versions of MPI.</li> 
 </ul>
 
 
