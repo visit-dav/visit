@@ -91,6 +91,12 @@ vtkVisItPolyDataNormals::vtkVisItPolyDataNormals()
 //    Eric Brugger, Thu Oct  2 16:08:56 PDT 2008
 //    Added code to not calculate the normals if they were already present.
 //
+//    Jeremy Meredith, Wed Mar  5 11:43:07 EST 2014
+//    I extended the non-splitting case (and the cell case) to support lines
+//    in 2D space, but not the splitting case.  We don't use the splitting
+//    case much, and this whole thing never even worked for lines before.
+//    Therefore, I fall back to the non-splitting case if we don't have polys.
+//
 // ****************************************************************************
 int
 vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
@@ -110,7 +116,7 @@ vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
         }
 
         // Point normals
-        if (Splitting)
+        if (Splitting && input->GetPolys()->GetNumberOfCells() > 0)
         {
             ExecutePointWithSplitting(input, output);
         }
@@ -172,23 +178,27 @@ vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
 //    Hank Childs, Thu Jun  5 15:00:05 PDT 2008
 //    Call ShallowCopy, not SetFieldData.
 //
+//    Jeremy Meredith, Wed Mar  5 11:45:35 EST 2014
+//    Added support for lines in assumed 2D space.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
   vtkPolyData *input, vtkPolyData *output)
-{
+{ 
     int i;
 
     // Get all the input and output objects we'll need to reference
     vtkCellArray *inCA  = input->GetPolys();
+    vtkCellArray *inCL  = input->GetLines();
     vtkPointData *inPD  = input->GetPointData();
     vtkCellData  *inCD  = input->GetCellData();
     vtkPoints    *inPts = input->GetPoints();
 
-    int nCells  = inCA->GetNumberOfCells();
-    int nOtherCells = input->GetVerts()->GetNumberOfCells() + 
-                      input->GetLines()->GetNumberOfCells();
-    int nTotalCells = nCells + nOtherCells;
+    int nPolys  = inCA->GetNumberOfCells();
+    int nLines  = inCL->GetNumberOfCells();
+    int nVerts  = input->GetVerts()->GetNumberOfCells();
+    int nTotalCells = nPolys + nLines + nVerts;
 
     int nPoints = input->GetNumberOfPoints();
 
@@ -232,10 +242,49 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     output->Allocate(inCA->GetNumberOfConnectivityEntries());
     outCD->CopyAllocate(inCD, nTotalCells);
 
-    vtkIdType *connPtr = inCA->GetPointer();
-    for (i = 0 ; i < nCells ; i++)
+    vtkIdType *connPtrL = inCL->GetPointer();
+    for (i = 0 ; i < nLines ; i++)
     {
-        outCD->CopyData(inCD, nOtherCells+i, nOtherCells+i);
+        outCD->CopyData(inCD, nVerts+i, nVerts+i);
+        int nVerts = *connPtrL++;
+        if (nVerts == 2)
+        {
+            output->InsertNextCell(VTK_LINE, 2,
+                                   connPtrL);
+        }
+        else
+        {
+            output->InsertNextCell(VTK_POLY_LINE, nVerts,
+                                   connPtrL);
+        }
+
+        double pt0[3], pt1[3];
+        inPts->GetPoint(connPtrL[0], pt0);
+        inPts->GetPoint(connPtrL[1], pt1);
+        double dx = pt1[0] - pt0[0];
+        double dy = pt1[1] - pt0[1];
+        // this gets normalized later
+        double normal[3];
+        normal[0] = dy;
+        normal[1] = -dx;
+        normal[2] = 0;
+
+        for (int j = 0 ; j < nVerts ; j++)
+        {
+            int p = connPtrL[j];
+            dnormals[p*3+0] += normal[0];
+            dnormals[p*3+1] += normal[1];
+            dnormals[p*3+2] += normal[2];
+        }
+
+        // Increment our connectivity pointer
+        connPtrL += nVerts;
+    }
+
+    vtkIdType *connPtr = inCA->GetPointer();
+    for (i = 0 ; i < nPolys ; i++)
+    {
+        outCD->CopyData(inCD, nVerts+nLines+i, nVerts+nLines+i);
         int nVerts = *connPtr++;
         if (nVerts == 3)
         {
@@ -302,12 +351,11 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     newNormals->Delete();
     delete [] dnormals;
 
-    // copy the original vertices and lines to the output
+    // copy the original vertices to the output
     output->SetVerts(input->GetVerts());
-    output->SetLines(input->GetLines());
 
-    // copy the data from the lines and vertices now.
-    for (i = 0 ; i < nOtherCells ; i++)
+    // copy the data from the vertices now.
+    for (i = 0 ; i < nVerts ; i++)
         outCD->CopyData(inCD, i, i);
 }
 
@@ -771,6 +819,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
 //    Make sure there is one normal for every primitive, not just one normal
 //    for every polygon.
 //
+//    Jeremy Meredith, Wed Mar  5 11:45:35 EST 2014
+//    Added support for lines in assumed 2D space.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
@@ -795,13 +846,47 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // The verts and lines come before the polys.  So add normals for them.
     int numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetVerts()->GetNumberOfCells();
-    numPrimitivesWithoutNormals += input->GetLines()->GetNumberOfCells();
     for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
         newNormalPtr[0] = 0.;
         newNormalPtr[1] = 0.;
         newNormalPtr[2] = 1.;
         newNormalPtr += 3;
+    }
+
+    vtkCellArray *inCL  = input->GetLines();
+    vtkIdType *connPtrL = inCL->GetPointer();
+    int nLines = inCL->GetNumberOfCells();
+    for (i = 0 ; i < nLines ; i++)
+    {
+        int nVerts = *connPtrL++;
+        vtkIdType *cell = connPtrL;
+
+        double v0[3], v1[3], v2[3];
+        double normal[3] = {0, 0, 1};
+        if (nVerts == 2)
+        {
+            inPts->GetPoint(cell[0], v0);
+            inPts->GetPoint(cell[1], v1);
+            double dx = v1[0] - v0[0];
+            double dy = v1[1] - v0[1];
+            double len = sqrt(dx*dx + dy*dy);
+            if (len != 0)
+            {
+                normal[0] = dy / len;
+                normal[1] = -dx / len;
+                normal[2] = 0;
+            }
+        }
+        newNormalPtr[0] = (float)(normal[0]);
+        newNormalPtr[1] = (float)(normal[1]);
+        newNormalPtr[2] = (float)(normal[2]);
+        newNormalPtr += 3;
+
+        //
+        // Step through connectivity
+        //
+        connPtrL += nVerts;
     }
 
     vtkCellArray *inCA  = input->GetPolys();
