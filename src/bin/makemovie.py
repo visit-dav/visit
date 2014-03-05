@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # All rights reserved.
 #
@@ -2312,7 +2312,7 @@ class MakeMovie(object):
             # Determine the name of the movie template base class's file.
             prefix = ""
             if os.name == "nt":
-                prefix = sys.executable[:-7]
+                prefix = sys.executable[:-7] + "resources" + self.slash
             else:
                 pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
                 if pos != -1:
