@@ -22,6 +22,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Matthew Wheeler, Thu Feb 06 12:00:00 GMT 2014
+#    Added two new AWE mesh quality tests
+#
 # ----------------------------------------------------------------------------
 
 
@@ -86,5 +89,38 @@ thres.listedVarNames = ("mesh_quality/skew")
 SetOperatorOptions(thres)
 DrawPlots()
 Test("mesh_quality_05")
+
+
+
+DeleteAllPlots()
+
+CloseDatabase(silo_data_path("ucd3d.silo"))
+CloseDatabase(silo_data_path("tire.silo"))
+
+# Add AWE Mesh-Quality tests
+
+OpenDatabase(silo_data_path("specmix_ucd.silo"))
+
+AddPlot("Mesh", "Mesh")
+AddPlot("Pseudocolor", "mesh_quality/min_corner_area")
+pc = PseudocolorAttributes()
+pc.invertColorTable = 1
+SetPlotOptions(pc)
+DrawPlots()
+Test("mesh_quality_06")
+
+DeleteAllPlots()
+
+AddPlot("Mesh", "Mesh")
+AddPlot("Pseudocolor", "mesh_quality/min_sin_corner")
+pc = PseudocolorAttributes()
+pc.invertColorTable = 1
+SetPlotOptions(pc)
+DrawPlots()
+Test("mesh_quality_07")
+
+DeleteAllPlots()
+
+CloseDatabase(silo_data_path("specmix_ucd.silo"))
 
 Exit()
