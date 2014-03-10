@@ -85,6 +85,7 @@ vtkVisItFeatureEdges.C
 vtkVisItGlyph3D.C
 vtkVisItInterpolatedVelocityField.C
 vtkVisItPolyDataNormals.C
+vtkVisItPolyDataNormals2D.C
 vtkVisItProbeFilter.C
 vtkVisItRectilinearGrid.C
 vtkVisItSTLWriter.C

@@ -144,6 +144,7 @@ General/avtDegreeExpression.C
 General/avtDistanceToBestFitLineExpression.C
 General/avtDivergenceExpression.C
 General/avtDominantMaterialExpression.C
+General/avtEdgeNormalExpression.C
 General/avtExpressionComponentMacro.C
 General/avtFindExternalExpression.C
 General/avtGeodesicVectorQuantizeExpression.C
