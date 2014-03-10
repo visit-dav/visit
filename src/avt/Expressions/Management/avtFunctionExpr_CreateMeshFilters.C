@@ -44,6 +44,7 @@
 #include <avtFindExternalExpression.h>
 #include <avtNeighborEvaluatorExpression.h>
 #include <avtSurfaceNormalExpression.h>
+#include <avtEdgeNormalExpression.h>
 #include <avtZoneTypeExpression.h>
 
 #include <string>
@@ -75,6 +76,9 @@
 //   Hank Childs, Fri Feb  4 14:00:21 PST 2011
 //   Add external_node and external_cell.
 //
+//   Jeremy Meredith, Mon Mar 10 14:35:18 EDT 2014
+//   Added edge normal expressions.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -90,6 +94,19 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
     else if (functionName == "cell_surface_normal")
     {
         avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
+        ff->DoPointNormals(false);
+        return ff;
+    }
+    else if (functionName == "edge_normal" || 
+        functionName == "point_edge_normal")
+    {
+        avtEdgeNormalExpression *ff = new avtEdgeNormalExpression;
+        ff->DoPointNormals(true);
+        return ff;
+    }
+    else if (functionName == "cell_edge_normal")
+    {
+        avtEdgeNormalExpression *ff = new avtEdgeNormalExpression;
         ff->DoPointNormals(false);
         return ff;
     }
