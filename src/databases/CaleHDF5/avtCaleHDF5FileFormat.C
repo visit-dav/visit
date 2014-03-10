@@ -436,6 +436,10 @@ avtCaleHDF5FileFormat::GetHDF5File()
 //  Programmer: Rob Managan
 //  Creation:   Thu Apr 21 15:29:31 PST 2011
 //
+// Modifications:
+//  Cyrus Harrison, Mon Mar 10 15:09:41 PDT 2014
+//  Apply material indexing fix from Rob Managan.
+//
 // ****************************************************************************
 
 void
@@ -759,6 +763,12 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             EXCEPTION1(InvalidDBTypeException,
                 "Corrupt dump; error reading material names.");
         }
+        // shift region names up one index to make room for the Phony region
+        for (int ir = nreg ; ir > 0 ; ir--)
+        {
+            strcpy(rname[ir].name, rname[ir-1].name);
+        }
+        
         strcpy(rname[0].name,"Phony");
 
         int nmats = nreg + 1;
@@ -1632,6 +1642,11 @@ avtCaleHDF5FileFormat::GetTime(void)
 //  Programmer: Rob Managan
 //  Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
+//
+// Modifications:
+//  Cyrus Harrison, Mon Mar 10 15:09:41 PDT 2014
+//  Apply material indexing fix from Rob Managan.
+//
 // ***************************************************************************
 
 void *
@@ -1705,6 +1720,11 @@ avtCaleHDF5FileFormat::GetAuxiliaryData(const char *var,
             trcname_str *rname = new trcname_str[nreg+1];
 
             hdf_err = ReadHDF_Entry(GetHDF5File(),"/ppa/rname",rname);
+            // shift region names up one index to make room for the Phony region
+            for (int ir = nreg ; ir > 0 ; ir--)
+            {
+                strcpy(rname[ir].name, rname[ir-1].name);
+            }
             strcpy(rname[0].name,"Phony");
 
             for ( i = 0 ; i < nmats ; i++ )
