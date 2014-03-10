@@ -1442,6 +1442,10 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
 //    Sean Ahern, Wed Jun 24 17:13:50 EDT 2009
 //    Renamed diagonal to diagonal_ratio.  Added max_diagonal and
 //    min_diagonal.
+//
+//    Matthew Wheeler, Mon 20 May 12:00:00 GMT 2013
+//    Added min_corner_area and min_sin_corner
+//
 // ****************************************************************************
 
 void
@@ -1491,7 +1495,7 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             continue;
 
         nmeshes_done++;
-        const int nPairs = 28;
+        const int nPairs = 30;
         // Static allocation?!  Really??!!
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
@@ -1522,6 +1526,9 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         exprs[25] = MQExprTopoPair("warpage", 2);
         exprs[26] = MQExprTopoPair("face_planarity", 3);
         exprs[27] = MQExprTopoPair("relative_face_planarity", 3);
+        exprs[28] = MQExprTopoPair("min_corner_area", 2);
+        exprs[29] = MQExprTopoPair("min_sin_corner", 2);
+        //exprs[30] = MQExprTopoPair("min_sin_corner_cw", 2);
 
         for (int j = 0 ; j < nPairs ; j++)
         {

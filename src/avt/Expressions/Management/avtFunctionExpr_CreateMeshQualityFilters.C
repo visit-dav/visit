@@ -37,6 +37,8 @@
 *****************************************************************************/
 #include <avtExprNode.h>
 #include <avtCornerAngle.h>
+#include <avtMinCornerArea.h>
+#include <avtMinSinCorner.h>
 #include <avtEdgeLength.h>
 #include <avtFacePlanarity.h>
 #include <avtNeighborExpression.h>
@@ -92,6 +94,9 @@
 //
 //    Hank Childs, Fri Feb  4 14:00:21 PST 2011
 //    Place external_node in misc.  It belongs better there.
+//
+//    Matthew Wheeler, Mon 20 May 12:00:00 GMT 2013
+//    Added min_corner_area and min_sin_corner expressions.
 //
 // ****************************************************************************
 
@@ -205,6 +210,25 @@ avtFunctionExpr::CreateMeshQualityFilters(const std::string &functionName) const
         avtFacePlanarity *fp = new avtFacePlanarity();
         fp->SetTakeRelative(true);
         return fp;
+    }
+
+    else if (functionName == "min_corner_area")
+    {
+        avtMinCornerArea *ca = new avtMinCornerArea();
+        ca->SetOrderCCW(true);
+        return ca;
+    }
+    else if (functionName == "min_sin_corner")
+    {
+        avtMinSinCorner *ca  = new avtMinSinCorner();
+        ca->SetOrderCCW(true);
+        return ca;
+    }
+    else if (functionName == "min_sin_corner_cw")
+    {
+        avtMinSinCorner *ca  = new avtMinSinCorner();
+        ca->SetOrderCCW(false);
+        return ca;
     }
 
     return f;
