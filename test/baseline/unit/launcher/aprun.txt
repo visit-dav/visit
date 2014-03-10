@@ -4,7 +4,7 @@ CASE: aprun
 INPUT: visit -engine -norun engine_par -l aprun -np 8 -nn 1 -host 127.0.0.1 -port 5600
 
 RESULTS:
-aprun -n 8 -N 1 $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
+aprun -n 8 -N 8 $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: aprun -totalview engine_par
@@ -12,7 +12,7 @@ CASE: aprun -totalview engine_par
 INPUT: visit -engine -norun engine_par -l aprun -np 8 -nn 1 -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-totalview aprun -a -dograb -n 8 -N 1 $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
+totalview aprun -a -dograb -n 8 -N 8 $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: aprun -valgrind engine_par
@@ -20,7 +20,7 @@ CASE: aprun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l aprun -np 8 -nn 1 -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-aprun -n 8 -N 1 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
+aprun -n 8 -N 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: aprun -strace engine_par
@@ -28,5 +28,5 @@ CASE: aprun -strace engine_par
 INPUT: visit -engine -norun engine_par -l aprun -np 8 -nn 1 -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-aprun -n 8 -N 1 strace -ttt -T $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
+aprun -n 8 -N 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -plugindir $HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -visithome $VISITDIR -visitarchhome $VISITDIR/ -dv -host $HOST -port 5600
 

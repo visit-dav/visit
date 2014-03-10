@@ -10,7 +10,7 @@ Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -n 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -n 8 -N 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -25,7 +25,7 @@ Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-totalview aprun -a -dograb -n 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+totalview aprun -a -dograb -n 8 -N 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -40,7 +40,7 @@ Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -n 8 -arg1 -arg2 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -n 8 -N 8 -arg1 -arg2 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -55,6 +55,6 @@ Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -n 8 -arg1 -arg2 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -n 8 -N 8 -arg1 -arg2 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
