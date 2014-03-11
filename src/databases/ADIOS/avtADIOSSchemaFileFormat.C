@@ -611,7 +611,7 @@ avtADIOSSchemaFileFormat::MakeUniformMesh(MESH_UNIFORM *m, int ts, int dom)
     {
         dims[0] = m->dimensions[2];
         dims[1] = m->dimensions[1];
-        dims[0] = m->dimensions[0];
+        dims[2] = m->dimensions[0];
         rg->SetXCoordinates(xyz[2]);
         rg->SetYCoordinates(xyz[1]);
         rg->SetZCoordinates(xyz[0]);
@@ -673,7 +673,7 @@ avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int d
     {
         dims[0] = m->dimensions[2];
         dims[1] = m->dimensions[1];
-        dims[0] = m->dimensions[0];
+        dims[2] = m->dimensions[0];
         rg->SetXCoordinates(xyz[2]);
         rg->SetYCoordinates(xyz[1]);
         rg->SetZCoordinates(xyz[0]);
