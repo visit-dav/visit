@@ -99,9 +99,9 @@ function bv_cmake_cmake_bin_dir
 
 function bv_cmake_info
 {
-export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.10.2.tar.gz"}
-export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.10.2"}
-export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.10.2"}
+export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.12.2.tar.gz"}
+export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.12.2"}
+export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.12.2"}
 export CMAKE_MD5_CHECKSUM="097278785da7182ec0aea8769d06860c"
 export CMAKE_SHA256_CHECKSUM=""
 }
