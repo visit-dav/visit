@@ -126,6 +126,9 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   Cyrus Harrison, Fri Feb  1 17:02:02 PST 2013
 #   Use mpiexe on OSX 10.6 and beyond.
 #
+#   David Camp, Tue Mar 11 10:17:48 PDT 2014
+#   Added the -ppn (process per node) option to the mpiexec.
+#
 ################################################################################
 
 class JobSubmitter_mpiexec(JobSubmitter):
@@ -149,6 +152,10 @@ class JobSubmitter_mpiexec(JobSubmitter):
             parcmd = parcmd + self.parallel.launchargs
         if self.parallel.np != None:
             parcmd = parcmd + ["-n", self.parallel.np]
+            nodes = self.parallel.nn
+            if nodes != None:
+                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+                parcmd = parcmd + ["-ppn", ppn]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
         if self.parallel.machinefile != None:
@@ -653,6 +660,8 @@ class JobSubmitter_yod(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   David Camp, Tue Mar 11 10:17:48 PDT 2014
+#   Added the -ppn (process per node) option to the mpirun and mpiexec.
 #
 ###############################################################################
 
@@ -694,6 +703,10 @@ class JobSubmitter_qsub(JobSubmitter):
             mpicmd = mpicmd + self.parallel.sublaunchargs
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-n", self.parallel.np]
+            nodes = self.parallel.nn
+            if nodes != None:
+                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+                mpicmd = mpicmd + ["-ppn", ppn]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable() + args
@@ -2219,6 +2232,11 @@ class MainLauncher(object):
     #   Cyrus Harrison, Tue Oct 22 11:35:37 PDT 2013
     #   Don't use mesa if  hw-accel is requested for the engine.
     #
+    #   David Camp, Tue Mar 11 10:17:48 PDT 2014
+    #   The osmesa option would fail to work because the osmesa path was at the 
+    #   end of the LD_LIBRARY_PATH and the code would load the system version. 
+    #   So I moved the osmesa path to the first path and everything works.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2328,8 +2346,7 @@ class MainLauncher(object):
             if ( (self.generalArgs.osmesa) or
                  (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
                  (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
-                SETENV("LD_LIBRARY_PATH", self.joinpaths([GETENV("LD_LIBRARY_PATH"),
-                                                         osmesa_gl_dir]))
+                SETENV("LD_LIBRARY_PATH", self.joinpaths([osmesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
                 SETENV("VISIT_MESA_LIB",osmesa_gl_lib)
         elif self.generalArgs.osmesa:
             self.error("Can't launch using osmesa. '-osmesa' specified, but the osmesa library is not available.")
