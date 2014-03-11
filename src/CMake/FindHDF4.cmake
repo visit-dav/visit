@@ -41,6 +41,9 @@
 #   Kathleen Biagas, Thu Jan 23 15:20:43 MST 2014
 #   Allow for lib names from newer HDF4 versions (no 'dll' in name).
 #
+#   Kathleen Biagas, Tue Mar 11 10:44:54 MST 2014
+#   Change how newer versions are handled.
+#
 #****************************************************************************/
 
 # Use the HDF4_DIR hint from the config-site .cmake file 
@@ -48,14 +51,11 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET(tmp_ignore_tpfail ${IGNORE_THIRD_PARTY_LIB_PROBLEMS}) 
-  SET(IGNORE_THIRD_PARTY_LIB_PROBLEMS true)
-  SET_UP_THIRD_PARTY(HDF4 lib include hdfdll mfhdfdll xdrdll)
-  IF (NOT HDF4_FOUND)
+  if(HDF4_LIBNAMES_AFFIX_DLL)
+      SET_UP_THIRD_PARTY(HDF4 lib include hdfdll mfhdfdll xdrdll)
+  else()
       SET_UP_THIRD_PARTY(HDF4 lib include hdf mfhdf xdr)
-  ENDIF()
-  SET(IGNORE_THIRD_PARTY_LIB_PROBLEMS ${tmp_ignore_tpfail})
-  UNSET(tmp_ignore_tpfail)
+  endif()
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(HDF4 lib include mfhdf df)
 ENDIF (WIN32)
