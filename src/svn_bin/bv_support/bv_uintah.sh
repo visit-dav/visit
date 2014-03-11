@@ -81,7 +81,7 @@ function bv_uintah_host_profile
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" >> $HOSTCONF 
-	    echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)"
+	    echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)" >> $HOSTCONF
         else
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR \${VISITHOME}/uintah/$UINTAH_VERSION/\${VISITARCH})" \
