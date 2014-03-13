@@ -11,7 +11,7 @@ followed by the Unix installation instructions.
 Windows:
 ========
 
-1.  Copy the visit2.7.2.exe or visit2.7.2_x64.exe installer program to
+1.  Download the visit2.7.2.exe or visit2.7.2_x64.exe installer program to
     your desktop.
 
 2.  Double click on the installer program icon to run the installer.
@@ -23,9 +23,8 @@ MacOS X:
 ========
 
 Downloads:
-* VisIt-2.7.2-x86_64-installer.dmg  : 64-bit Mac and runs on Mac 10.6 or later
 
-1. Download the appropriate file and copy it to the desktop.
+1. Download VisIt-2.7.2.dmg and copy it to the desktop.
 
 2. Double click on the file to open it. This will cause MacOS to mount the
    disk image and open it in Finder.
