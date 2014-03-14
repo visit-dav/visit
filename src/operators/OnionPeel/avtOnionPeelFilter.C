@@ -282,6 +282,11 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    specified as a global cell number and material interface reconstruction
 //    was applied.
 //
+//    Eric Brugger, Fri Mar 14 12:22:13 PDT 2014
+//    I corrected a bug with my fix to properly handle the case where the
+//    seed cell was specified as a global cell number and material interface
+//    reconstruction was applied.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -388,7 +393,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
                          in_ds, id[0], false);
                 origIds = in_ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
             }
-            if (origIds)
+            if (origIds && seed != -1)
             {
                 int nc = origIds->GetNumberOfComponents();
                 double *oi = new double[nc];
