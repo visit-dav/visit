@@ -124,8 +124,26 @@ function build_mpich
         mpich_opts="${mpich_opts} --enable-two-level-namespace"
     fi
 
-    issue_command env CXX="$CXX_COMPILER" CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"\
-                      ./configure ${mpich_opts} --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
+    #
+    # mpich will fail to build if we disable common blocks '-fno-common'
+    # Screen the flags vars to make sure we don't use this option for mpich
+    #
+
+    MPICH_CFLAGS=`echo $CFLAGS | sed -e 's/-fno-common//g'`
+    MPICH_C_OPT_FLAGS=`echo $C_OPT_FLAGS | sed -e 's/-fno-common//g'`
+    MPICH_CXXFLAGS=`echo $CXXFLAGS | sed -e 's/-fno-common//g'`
+    MPICH_CXX_OPT_FLAGS=`echo $CXX_OPT_FLAGS | sed -e 's/-fno-common//g'`
+
+    info "HERE $MPICH_CFLAGS"
+    info "HERE $MPICH_CXXFLAGS"
+    
+
+    issue_command env CXX="$CXX_COMPILER" \
+                      CC="$C_COMPILER" \
+                      CFLAGS="$MPICH_CFLAGS $MPICH_C_OPT_FLAGS" \
+                      CXXFLAGS="$MPICH_CXXFLAGS $MPICH_CXX_OPT_FLAGS"\
+                      ./configure ${mpich_opts} \
+                      --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
        warn "MPICH configure failed.  Giving up"
