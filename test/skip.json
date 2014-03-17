@@ -1,6 +1,5 @@
 { "skip_list":[
  {"mode":"serial","tests":[
-                    {"category":"unit","file":"launcher.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
                     {"category":"databases","file":"diff.py"},
@@ -34,7 +33,6 @@
                     {"category":"plots","file":"pathlines.py","platform":"win"}
                   ]},
  {"mode":"parallel","tests":[
-                    {"category":"unit","file":"launcher.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
                     {"category":"databases","file":"diff.py"},
@@ -62,7 +60,6 @@
                     {"category":"databases","file":"claw.py","platform":"win"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
-                    {"category":"unit","file":"launcher.py"},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
                     {"category":"database","file": "silo.py","cases":["silo_04","silo_05"]},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
