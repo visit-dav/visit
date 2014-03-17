@@ -37,11 +37,13 @@ list of changes in release 2.6.</p>
 <li>A small number of errors were fixed in the visit-install script. The "arl" and "asu" configurations are now supported with the "-c" option. The help text is now up-to-date and the configuration options are now listed in alphabetical order.</li>
 <li>The ADIOS reader was fixed so that it now properly reads 3D uniform and rectilinear meshes.</li>
 <li>A bug was fixed with a previous fix to the OnionPeel operater in VisIt 2.7.1 where it didn't properly handle the case where the seed cell was specified as a global cell number and material interface reconstruction was applied.</li>
+<li>A bug with material indexing related to phony materials in the CaleHDF5 database reader was resolved.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.7.2</font></b></p>
 <ul>
 <li>The Cosmos++ reader has been extended so that accepts either combined or separate grid and data files. When static meshes are used, a single grid dump can now be provided, regardless of the number of data dumps.</li>
+<li>Two new 2D quad mesh quality metrics (min_corner_area and min_sin_corner) were added.</li>
 </ul>
 
 <a name="Dev_changes"></a>
