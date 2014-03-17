@@ -6,7 +6,7 @@
 
 <!-- InstanceBeginEditable name="doctitle" -->
 
-<TITLE>VisIt Documentation Template</TITLE>
+<TITLE>VisIt 2.7.2 Release Notes</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <meta name="LLNLRandR" content="LLNL-WEB-651839">
 <meta name="review" content="March 2014">
@@ -410,65 +410,47 @@ function MM_initTimelines() { //v4.0
 
 <!-- InstanceBeginEditable name="body" -->
 
-<h1>VisIt's Licensing Agreement </h1>
+<h1>VisIt 2.7.2 Release Notes</h1>
 
-<p>VisIt is freely available  under the terms of the <a href="http://www.opensource.org/licenses/index.php" title="BSD license" target="_blank">BSD license</a> given below.</p><br>
+<p>Welcome to VisIt's release notes page. This page describes the important
+bug-fixes that were made to this release.</p>
 
+<p><b><font size="4">Configuration changes in version 2.7.2</font></b></p>
+<ul>
+<li>A launch profile was added to the host profile for LLNL's <i>max</i> system for using the pvis partition.</li>
+<li>A launch profile was added to the host profile for LLNL's <i>zin</i> system for using the pvis partition.</li>
+</ul>
 
+<p><b><font size="4">Bugs fixed in version 2.7.2</font></b></p>
+<ul>
+<li>Creating database correlations on Windows from the CLI, when databases are opened using relative paths, has been fixed.</li>
+<li>Session files with time varying data can be restored via the CLI with different sources and have their time sliders work correctly.</li>
+<li>An engine crash on Windows was fixed when cmfe expressions were passed an invalid filename.</li>
+<li>A bug was fixed where a plot got put in perpetual 'pending' state when NamedSelections' 'Automatially apply updated selections' was checked before the selection had been applied to a plot.</li>
+<li>VisIt's Annotation window has been fixed so that it is once again possible to select axis tick marks that are both inside and outside of the 3D bounding box.</li>
+<li>The silent uninstall option on Windows (/S from command-line) now works again.</li>
+<li>A problem with material selection in plots from files containing a mix of multi-block and single-block meshes at the same dir-level and also containing standard block grouping was corrected (<a href="https://visitbugs.ornl.gov/issues/866">ticket #866</a>) .</li>
+<li>The internallauncher was modified to correct a bug where the -N option was improperly set when using aprun to launch VisIt. Thanks Jean Favre for the fix.</li>
+<li>The 2D and 3D zoom interactors once again unzoom the image when pressing the Ctrl key and the left mouse button.</li>
+<li>Making movies with movie templates works again on Windows.</li>
+<li>A small number of errors were fixed in the visit-install script. The "arl" and "asu" configurations are now supported with the "-c" option. The help text is now up-to-date and the configuration options are now listed in alphabetical order.</li>
+<li>The ADIOS reader was fixed so that it now properly reads 3D uniform and rectilinear meshes.</li>
+<li>A bug was fixed with a previous fix to the OnionPeel operater in VisIt 2.7.1 where it didn't properly handle the case where the seed cell was specified as a global cell number and material interface reconstruction was applied.</li>
+<li>A bug with material indexing related to phony materials in the CaleHDF5 database reader was resolved.</li>
+</ul>
 
-<H2>
+<p><b><font size="4">Enhancements in version 2.7.2</font></b></p>
+<ul>
+<li>The Cosmos++ reader has been extended so that accepts either combined or separate grid and data files. When static meshes are used, a single grid dump can now be provided, regardless of the number of data dumps.</li>
+<li>Two new 2D quad mesh quality metrics (min_corner_area and min_sin_corner) were added.</li>
+</ul>
 
-<CENTER>Copyright (c) 2000 - 2014.</CENTER>
-
-<CENTER>Lawrence Livermore National Security, LLC.</CENTER>
-
-<CENTER>Produced at the Lawrence Livermore National Laboratory.</CENTER>
-
-<CENTER>LLNL-CODE-442911</CENTER>
-
-<CENTER>All rights reserved.</CENTER>
-
-</B></H2>
-
-<BR>
-
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-
-<UL>
-
-<LI>Redistributions of source code must retain the above copyright notice, this list of conditions and the disclaimer below.</LI>
-
-<LI>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the disclaimer (as noted below) in the documentation and/or other materials provided with the distribution.</LI>
-
-<LI>Neither the name of the LLNS/LLNL nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.</LI>
-
-</UL>
-
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY, LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
-
-<p>Additional BSD Notice<BR>
-
-  <BR>
-
-1. This notice is required to be provided under our contract with the U.S. Department of Energy (DOE). This work was produced at Lawrence Livermore National Laboratory under Contract No. DE-AC52-07NA27344 with the DOE.
-
-<BR>
-
-<BR>
-
-2. Neither the United States Government nor Lawrence Livermore National Security, LLC nor any of their employees, makes any warranty, express or implied, or assumes any liability or responsibility for the accuracy, completeness, or usefulness of any information, apparatus, product, or process disclosed, or represents that its use would not infringe privately-owned rights.
-
-<BR>
-
-<BR>
-
-3. Also, reference herein to any specific commercial products, process, or services by trade name, trademark, manufacturer or otherwise does not necessarily constitute or imply its endorsement, recommendation, or favoring by the United States Government or Lawrence Livermore National Security, LLC. The views and opinions of authors expressed herein do not necessarily state or reflect those of the United States Government or Lawrence Livermore National Security, LLC, and shall not be used for advertising or product endorsement purposes.
-
-</p>
-
-<br>
-
-</p>
+<p><b><font size="4">Changes for VisIt developers in version 2.7.2</font></b></p>
+<ul>
+<li>The build_visit script was modified to build MPICH 3.0.4 instead of 3.0.1 so that MPICH would build on Red Hat Enterprise Linux 5 systems.</li>
+<li>The build_visit script was modified so that the MPICH library it builds is compatible with the Uintah library.</li>
+<li>The build system was modified to add -DMPI_NO_CPPBIND and -DMPICH_SKIP_MPICXX to VISIT_PARALLEL_CFLAGS and VISIT_PARALLEL_CXXFLAGS so that the xdmf_writer sample programs could be built with more versions of MPI.</li> 
+</ul>
 
 <!-- InstanceEndEditable -->
 
@@ -623,4 +605,3 @@ function MM_initTimelines() { //v4.0
 </BODY>
 
 <!-- InstanceEnd --></HTML>
-
