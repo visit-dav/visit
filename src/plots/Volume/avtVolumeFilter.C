@@ -1178,6 +1178,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Simplify setup of log/skew variables for ease of reference in rest of
 //    volume plot.
 //
+//    Kathleen Biagas, Thu Mar 20 14:58:49 PDT 2014
+//    Surround var with '<>' when used in expression. (Log and Skew scaling).
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1215,11 +1218,11 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         {
             char m[16];
             SNPRINTF(m, 16, "%f", atts.GetColorVarMin());
-            SNPRINTF(exprDef, 128, "log10withmin(%s, %s)", var, m);
+            SNPRINTF(exprDef, 128, "log10withmin(<%s>, %s)", var, m);
         }
         else
         {
-            SNPRINTF(exprDef, 128, "log10(%s)", var);
+            SNPRINTF(exprDef, 128, "log10(<%s>)", var);
         }
         avtDataRequest_p nds = new avtDataRequest(exprName.c_str(),
                                ds->GetTimestep(), ds->GetRestriction());
@@ -1236,7 +1239,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     else // VolumeAttributes::Skew)
     {
         setupExpr = true;
-        SNPRINTF(exprDef, 128, "var_skew(%s, %f)", var,
+        SNPRINTF(exprDef, 128, "var_skew(<%s>, %f)", var,
                  atts.GetSkewFactor());
         avtDataRequest_p nds =
             new avtDataRequest(exprName.c_str(),
