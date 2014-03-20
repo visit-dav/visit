@@ -89,11 +89,13 @@
 #include <utility>
 #include <stdio.h>
 #include <snprintf.h>
+#include <sstream>
 
 using std::vector;
 using std::string;
 using std::map;
 using std::pair;
+using std::ostringstream;
 
 #include <ViewerEngineManager_macros.h>
 
@@ -3975,9 +3977,29 @@ ViewerEngineManager::SendSimulationCommand(const EngineKey &ek,
                                            const std::string &argument)
 {
     if (EngineExists(ek))
+    {
         engines[ek].proxy->GetEngineMethods()->ExecuteSimulationControlCommand(command, argument);
+    }
     else
+    {
+        ostringstream oss;
+        oss << "In ViewerEngineManager::SendSimulationCommand"
+               " failed to find the engine for key:" << endl
+            << "  ";
+        ek.Print(oss);
+        oss << endl
+            << "Known keys:" << endl;
+        EngineMap::iterator it = engines.begin();
+        EngineMap::iterator end = engines.end();
+        for (; it != end; ++it)
+          {
+          oss << "  ";
+          (*it).first.Print(oss);
+          oss << endl;
+          }
+        debug1 << oss.str() << endl;
         EXCEPTION0(NoEngineException);
+    }
 }
 
 // ****************************************************************************
