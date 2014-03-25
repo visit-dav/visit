@@ -8020,6 +8020,10 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
         SNPRINTF(tmp, 100, "%d", movieAtts->GetEndIndex());
         args.push_back(tmp);
     }
+
+    args.push_back("-frame");
+    SNPRINTF(tmp, 100, "%d", movieAtts->GetInitialFrameValue());
+    args.push_back(tmp);
 }
 
 // ****************************************************************************
@@ -8428,6 +8432,9 @@ QvisGUIApplication::SaveMovieMain()
 
             tmp.sprintf("%d", movieAtts->GetStride());
             code += "    movie.frameStep = " + tmp + "\n";
+
+            tmp.sprintf("%d", movieAtts->GetInitialFrameValue());
+            code += "    movie.initialFrameValue = " + tmp + "\n";
 
             // If we want e-mail notification, add that info here.
             if(movieAtts->GetSendEmailNotification())

@@ -141,6 +141,7 @@ void MovieAttributes::Init()
     startIndex = 0;
     endIndex = 1000000000;
     stride = 1;
+    initialFrameValue = 0;
 
     MovieAttributes::SelectAll();
 }
@@ -180,6 +181,7 @@ void MovieAttributes::Copy(const MovieAttributes &obj)
     startIndex = obj.startIndex;
     endIndex = obj.endIndex;
     stride = obj.stride;
+    initialFrameValue = obj.initialFrameValue;
 
     MovieAttributes::SelectAll();
 }
@@ -354,7 +356,8 @@ MovieAttributes::operator == (const MovieAttributes &obj) const
             (fps == obj.fps) &&
             (startIndex == obj.startIndex) &&
             (endIndex == obj.endIndex) &&
-            (stride == obj.stride));
+            (stride == obj.stride) &&
+            (initialFrameValue == obj.initialFrameValue));
 }
 
 // ****************************************************************************
@@ -516,6 +519,7 @@ MovieAttributes::SelectAll()
     Select(ID_startIndex,            (void *)&startIndex);
     Select(ID_endIndex,              (void *)&endIndex);
     Select(ID_stride,                (void *)&stride);
+    Select(ID_initialFrameValue,     (void *)&initialFrameValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -656,6 +660,12 @@ MovieAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("stride", stride));
     }
 
+    if(completeSave || !FieldsEqual(ID_initialFrameValue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("initialFrameValue", initialFrameValue));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -763,6 +773,8 @@ MovieAttributes::SetFromNode(DataNode *parentNode)
         SetEndIndex(node->AsInt());
     if((node = searchNode->GetNode("stride")) != 0)
         SetStride(node->AsInt());
+    if((node = searchNode->GetNode("initialFrameValue")) != 0)
+        SetInitialFrameValue(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -893,6 +905,13 @@ MovieAttributes::SetStride(int stride_)
 {
     stride = stride_;
     Select(ID_stride, (void *)&stride);
+}
+
+void
+MovieAttributes::SetInitialFrameValue(int initialFrameValue_)
+{
+    initialFrameValue = initialFrameValue_;
+    Select(ID_initialFrameValue, (void *)&initialFrameValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1067,6 +1086,12 @@ MovieAttributes::GetStride() const
     return stride;
 }
 
+int
+MovieAttributes::GetInitialFrameValue() const
+{
+    return initialFrameValue;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1173,6 +1198,7 @@ MovieAttributes::GetFieldName(int index) const
     case ID_startIndex:            return "startIndex";
     case ID_endIndex:              return "endIndex";
     case ID_stride:                return "stride";
+    case ID_initialFrameValue:     return "initialFrameValue";
     default:  return "invalid index";
     }
 }
@@ -1215,6 +1241,7 @@ MovieAttributes::GetFieldType(int index) const
     case ID_startIndex:            return FieldType_int;
     case ID_endIndex:              return FieldType_int;
     case ID_stride:                return FieldType_int;
+    case ID_initialFrameValue:     return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -1257,6 +1284,7 @@ MovieAttributes::GetFieldTypeName(int index) const
     case ID_startIndex:            return "int";
     case ID_endIndex:              return "int";
     case ID_stride:                return "int";
+    case ID_initialFrameValue:     return "int";
     default:  return "invalid index";
     }
 }
@@ -1373,6 +1401,11 @@ MovieAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (stride == obj.stride);
         }
         break;
+    case ID_initialFrameValue:
+        {  // new scope
+        retval = (initialFrameValue == obj.initialFrameValue);
+        }
+        break;
     default: retval = false;
     }
 
@@ -1450,4 +1483,3 @@ MovieAttributes::ValidateFormats(DataNode *searchNode)
     SET_MOVIE_DATA(scaleNode, scalesVec, SetDoubleVector, "scales");
     SET_MOVIE_DATA(csNode, useCurrentSizeVec, SetUnsignedCharVector, "useCurrentSize");
 }
-
