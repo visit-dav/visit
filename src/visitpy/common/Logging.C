@@ -1290,6 +1290,9 @@ static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
 //    Kathleen Biagas, Thu Jan 10 09:06:08 PST 2013
 //    Added some type checking.
 //
+//    Kathleen Biagas, Mon Mar 24 16:24:01 PDT 2014
+//    Log time_options for time picks.
+//
 //*****************************************************************************
 
 static std::string log_QueryRPC(ViewerRPC *rpc)
@@ -1345,11 +1348,28 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         for (size_t i = 0; i < paramNames.size(); ++i)
         {
             if ((paramNames[i] == "curve_plot_type" ||
-                 paramNames[i] == "preserve_coord") &&
+                 paramNames[i] == "preserve_coord" ||
+                 paramNames[i] == "time_options") &&
                 !timePick)
                continue;
 
-            if (paramNames[i] != "query_name" &&
+            // convert time_options from a dict to its constituent named args
+            if (paramNames[i] == "time_options")
+            {
+                MapNode *t_o = queryParams.GetEntry("time_options");
+                stringVector t_o_names;
+                t_o->GetEntryNames(t_o_names);
+                for (size_t j = 0; j < t_o->GetNumEntries(); ++j)
+                {
+                    if (numPrinted > 0)
+                        s += ", ";
+                    s += t_o_names[j];
+                    s += "=";
+                    s += t_o->GetEntry(t_o_names[j])->ConvertToString();
+                    numPrinted++;
+                }
+            }
+            else if (paramNames[i] != "query_name" &&
                 paramNames[i] != "query_type" &&
                 paramNames[i] != "pick_type" &&
                 paramNames[i] != "use_global_id" && 
