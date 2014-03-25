@@ -55,6 +55,9 @@
     <Field name="stride" label="stride" type="int">
       1
     </Field>
+    <Field name="initialFrameValue" label="initialFrameValue" type="int">
+      0
+    </Field>
     <Function name="ValidateFormats" user="true" member="true">
     </Function>
   </Attribute>

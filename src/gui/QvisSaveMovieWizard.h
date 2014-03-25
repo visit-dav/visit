@@ -182,6 +182,7 @@ private slots:
     void page10_startIndexChanged(const QString &s);
     void page10_endIndexChanged(const QString &s);
     void page10_strideChanged(int);
+    void page10_initialFrameValueChanged(const QString &s);
 
     void page11_processOutputDirectoryText(const QString &);
     void page11_selectOutputDirectory();
@@ -411,6 +412,8 @@ private:
     QLineEdit              *page10_endIndexLineEdit;
     QLabel                 *page10_strideLabel;
     QSpinBox               *page10_strideSpinBox;
+    QLabel                 *page10_initialFrameValueLabel;
+    QLineEdit              *page10_initialFrameValueLineEdit;
 
     // Choose filenames
     QWizardPage            *page11;
