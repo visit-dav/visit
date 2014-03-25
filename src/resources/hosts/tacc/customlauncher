@@ -18,7 +18,7 @@ class JobSubmitter_ibrun_TACC(JobSubmitter_ibrun):
         super(JobSubmitter_ibrun_TACC, self).__init__(launcher)
 
     def Executable(self):
-        return ["ibrun", "tacc_affinity"]
+        return ["ibrun", "tacc_xrun", "tacc_affinity"]
 
 ###############################################################################
 # Class: JobSubmitter_qsub_TACC
