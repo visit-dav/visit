@@ -1608,6 +1608,14 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     connect(page10_strideSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(page10_strideChanged(int)));
 
+    page10_initialFrameValueLabel = new QLabel(tr("Initial frame value"), page10);
+    gLayout->addWidget(page10_initialFrameValueLabel, 4, 0);
+
+    page10_initialFrameValueLineEdit = new QLineEdit(page10);
+    gLayout->addWidget(page10_initialFrameValueLineEdit, 4, 1);
+    connect(page10_initialFrameValueLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(page10_initialFrameValueChanged(const QString &)));
+
     // Add the page.
     setPage(Page_NumFrames, page10);
 }
@@ -2252,6 +2260,10 @@ QvisSaveMovieWizard::initializePage(int pageId)
         page10_strideSpinBox->blockSignals(true);
         page10_strideSpinBox->setValue(movieAtts->GetStride());
         page10_strideSpinBox->blockSignals(false);
+
+        page10_initialFrameValueLineEdit->blockSignals(true);
+        page10_initialFrameValueLineEdit->setText(QString("%1").arg(movieAtts->GetInitialFrameValue()));
+        page10_initialFrameValueLineEdit->blockSignals(false);
 
         page10_UpdateStartEndIndex();
         break;
@@ -4677,6 +4689,31 @@ QvisSaveMovieWizard::page11_processOutputDirectoryText(const QString &s)
     movieAtts->SetOutputDirectory(outDir);
     page11_UpdateButtons();
 }
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::page10_initialFrameValueChanged
+//
+// Purpose: 
+//   This is a Qt slot function invoked when any change occurs in the 
+//   start index field.
+//
+// Programmer: Dave Bremer
+// Creation:   Tue Oct  9 18:40:06 PDT 2007
+//
+// ****************************************************************************
+
+void
+QvisSaveMovieWizard::page10_initialFrameValueChanged(const QString &s)
+{
+    bool okay = true;
+    int newStartFrameValue = s.toInt(&okay);
+
+    if (okay)
+        movieAtts->SetInitialFrameValue(newStartFrameValue);
+    else
+        movieAtts->SetInitialFrameValue(0);
+}
+
 
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page11_selectOutputDirectory

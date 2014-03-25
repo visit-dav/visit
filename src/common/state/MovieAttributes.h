@@ -128,6 +128,7 @@ public:
     void SetStartIndex(int startIndex_);
     void SetEndIndex(int endIndex_);
     void SetStride(int stride_);
+    void SetInitialFrameValue(int initialFrameValue_);
 
     // Property getting methods
     GenerationMethodEnum     GetGenerationMethod() const;
@@ -158,6 +159,7 @@ public:
     int                      GetStartIndex() const;
     int                      GetEndIndex() const;
     int                      GetStride() const;
+    int                      GetInitialFrameValue() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -204,6 +206,7 @@ public:
         ID_startIndex,
         ID_endIndex,
         ID_stride,
+        ID_initialFrameValue,
         ID__LAST
     };
 
@@ -226,11 +229,12 @@ private:
     int                startIndex;
     int                endIndex;
     int                stride;
+    int                initialFrameValue;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MOVIEATTRIBUTES_TMFS "iisss*u*i*i*d*i*sbbsiiii"
+#define MOVIEATTRIBUTES_TMFS "iisss*u*i*i*d*i*sbbsiiiii"
 
 #endif

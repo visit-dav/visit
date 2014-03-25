@@ -60,7 +60,7 @@ import java.lang.Double;
 
 public class MovieAttributes extends AttributeSubject
 {
-    private static int MovieAttributes_numAdditionalAtts = 18;
+    private static int MovieAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int MOVIETYPEENUM_SIMPLE = 0;
@@ -93,6 +93,7 @@ public class MovieAttributes extends AttributeSubject
         startIndex = 0;
         endIndex = 1000000000;
         stride = 1;
+        initialFrameValue = 0;
     }
 
     public MovieAttributes(int nMoreFields)
@@ -117,6 +118,7 @@ public class MovieAttributes extends AttributeSubject
         startIndex = 0;
         endIndex = 1000000000;
         stride = 1;
+        initialFrameValue = 0;
     }
 
     public MovieAttributes(MovieAttributes obj)
@@ -173,6 +175,7 @@ public class MovieAttributes extends AttributeSubject
         startIndex = obj.startIndex;
         endIndex = obj.endIndex;
         stride = obj.stride;
+        initialFrameValue = obj.initialFrameValue;
 
         SelectAll();
     }
@@ -263,7 +266,8 @@ public class MovieAttributes extends AttributeSubject
                 (fps == obj.fps) &&
                 (startIndex == obj.startIndex) &&
                 (endIndex == obj.endIndex) &&
-                (stride == obj.stride));
+                (stride == obj.stride) &&
+                (initialFrameValue == obj.initialFrameValue));
     }
 
     // Property setting methods
@@ -375,6 +379,12 @@ public class MovieAttributes extends AttributeSubject
         Select(17);
     }
 
+    public void SetInitialFrameValue(int initialFrameValue_)
+    {
+        initialFrameValue = initialFrameValue_;
+        Select(18);
+    }
+
     // Property getting methods
     public int     GetGenerationMethod() { return generationMethod; }
     public int     GetMovieType() { return movieType; }
@@ -394,6 +404,7 @@ public class MovieAttributes extends AttributeSubject
     public int     GetStartIndex() { return startIndex; }
     public int     GetEndIndex() { return endIndex; }
     public int     GetStride() { return stride; }
+    public int     GetInitialFrameValue() { return initialFrameValue; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -434,6 +445,8 @@ public class MovieAttributes extends AttributeSubject
             buf.WriteInt(endIndex);
         if(WriteSelect(17, buf))
             buf.WriteInt(stride);
+        if(WriteSelect(18, buf))
+            buf.WriteInt(initialFrameValue);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -494,6 +507,9 @@ public class MovieAttributes extends AttributeSubject
         case 17:
             SetStride(buf.ReadInt());
             break;
+        case 18:
+            SetInitialFrameValue(buf.ReadInt());
+            break;
         }
     }
 
@@ -530,6 +546,7 @@ public class MovieAttributes extends AttributeSubject
         str = str + intToString("startIndex", startIndex, indent) + "\n";
         str = str + intToString("endIndex", endIndex, indent) + "\n";
         str = str + intToString("stride", stride, indent) + "\n";
+        str = str + intToString("initialFrameValue", initialFrameValue, indent) + "\n";
         return str;
     }
 
@@ -553,5 +570,6 @@ public class MovieAttributes extends AttributeSubject
     private int     startIndex;
     private int     endIndex;
     private int     stride;
+    private int     initialFrameValue;
 }
 

@@ -686,6 +686,7 @@ class MakeMovie(object):
         self.frameEnd = -1
         self.tmpDir = os.path.abspath(os.curdir)
         self.fps = 10
+        self.initialFrameValue = 0
         self.templateFile = ""
         self.usesTemplateFile = 0
         self.screenCaptureImages = 0
@@ -909,6 +910,8 @@ class MakeMovie(object):
         print "    -start frame       The frame that we want to start at."
         print ""
         print "    -end frame         The frame that we want to end at."
+        print ""
+        print "    -frame value       The initial value used in the name of the first frame."
         print ""
         print "    -output moviename  The output option lets you set the name of "
         print "                       your movie."
@@ -1390,6 +1393,19 @@ class MakeMovie(object):
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
+            elif(commandLine[i] == "-frame"):
+                if((i+1) < len(commandLine)):
+                    try:
+                        self.initialFrameValue = int(commandLine[i+1])
+                        if(self.initialFrameValue < 0):
+                            self.initialFrameValue = 0
+                    except ValueError:
+                        self.initialFrameValue = 0
+                        print "A bad value was provided for frame initial value. Using a value of 0."
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
             elif(commandLine[i] == "-output"):
                 if((i+1) < len(commandLine)):
                     outputName = commandLine[i+1]
@@ -1745,6 +1761,15 @@ class MakeMovie(object):
         # Save the frame in the required formats.
         retval = 1
         for format in self.movieFormats:
+
+            # Determine if any movie formats get encoded if so ignore the
+            # initialFrameValue
+            initialFrameValue = self.initialFrameValue
+
+            fmt = format[1]
+            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
+                initialFrameValue = 0
+
             # Stereo format
             stereo = format[4]
             ra = GetRenderingAttributes()
@@ -1767,7 +1792,7 @@ class MakeMovie(object):
 
             # Create a filename
             frameFormatString = format[0]
-            s.fileName = frameFormatString % index
+            s.fileName = frameFormatString % (initialFrameValue+index)
             self.Debug(5, "SaveImage: %s" % s.fileName)
 
             # Determine the format of the frame that VisIt needs to save.
@@ -2098,6 +2123,7 @@ class MakeMovie(object):
     #
     ###########################################################################
     def IterateAndSaveFrames(self):
+
         self.Debug(1, "IterateAndSaveFrames:")
 
         # Make sure that camera view mode is on so that if we have a
@@ -3135,5 +3161,3 @@ Message from \"visit -movie\" running on %s.\n\n""" % host
             for f in tmpfiles:
                 os.remove("%s%s%s" % (self.tmpDir, self.slash, f))
             os.rmdir(self.tmpDir)
-
-
