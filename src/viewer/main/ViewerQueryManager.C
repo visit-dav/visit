@@ -1084,6 +1084,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Brad Whitlock, Mon Nov  5 12:04:27 PST 2012
 //    Check for NULL reader from the plot.
 //
+//    Kathleen Biagas, Tue Mar 25 07:56:00 PDT 2014
+//    Check if 'vars' is a single string.
+//
 // ****************************************************************************
 
 void
@@ -1202,8 +1205,16 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
         vars = queryParams.GetEntry("vars")->AsStringVector();
         if (vars.empty())
         {
-            debug3 << "'vars' parameter for " << qName << " Query was "
-                   << "specified, but could not be parsed correctly." << endl;
+            std::string v = queryParams.GetEntry("vars")->AsString();
+            if (v.empty())
+            {
+                debug3 << "'vars' parameter for " << qName << " Query was "
+                       << "specified, but could not be parsed correctly." << endl;
+            }
+            else
+            {
+                vars.push_back(v);
+            }
         }
     }
 
@@ -1412,6 +1423,9 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 //    Cyrus Harrison, Wed Jan  9 14:42:26 PST 2013
 //    Use new ToDoubleVector and IsNumeric helpers from the Variant class.
 //
+//    Kathleen Biagas, Tue Mar 25 07:56:00 PDT 2014
+//    Check if 'vars' is a single string.
+//
 // ****************************************************************************
 
 void
@@ -1489,8 +1503,16 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
             vars = queryParams.GetEntry("vars")->AsStringVector();
             if (vars.empty())
             {
-                debug3 << "'vars' parameter for Lineout was specified, "
-                       << "but could not be parsed correctly." << endl;
+                std::string v = queryParams.GetEntry("vars")->AsString();
+                if (v.empty())
+                {
+                    debug3 << "'vars' parameter for Lineout was specified, "
+                           << "but could not be parsed correctly." << endl;
+                }
+                else
+                {
+                    vars.push_back(v);
+                }
             }
         }
         stringVector uniqueVars;
@@ -3335,6 +3357,9 @@ ViewerQueryManager::HandlePickCache()
 //    Ensure that Zone Center and Node Coords query performed when preserving
 //    coordinates for a time pick do not have 'do_time' set to true.
 //
+//    Kathleen Biagas, Tue Mar 25 07:56:00 PDT 2014
+//    Check if 'vars' is a single string.
+//
 // ****************************************************************************
 
 void
@@ -3350,10 +3375,18 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     if (queryParams.HasEntry("vars"))
     {
         vars = queryParams.GetEntry("vars")->AsStringVector();
-        if (queryParams.HasEntry("vars"))
+        if (vars.empty())
         {
-            debug3 << "'vars' parameter for Pick was specified, "
-                   << " but could not be parsed correctly." << endl;
+            std::string v = queryParams.GetEntry("vars")->AsString();
+            if (v.empty())
+            {
+                debug3 << "'vars' parameter for Pick was specified, "
+                       << " but could not be parsed correctly." << endl;
+            }
+            else
+            {
+                vars.push_back(v);
+            }
         }
     }
 
@@ -4523,6 +4556,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Kathleen Biagas, Wed Sep  7 16:20:32 PDT 2011
 //    Turn off the 'time' display in the legend for the time query window.
 //
+//    Kathleen Biagas, Tue Mar 25 07:56:00 PDT 2014
+//    Check if 'vars' is a single string.
+//
 // ***********************************************************************
 
 void
@@ -4567,8 +4603,23 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     if (qParams.HasEntry("vars"))
     {
         stringVector vars = qParams.GetEntry("vars")->AsStringVector();
-        if (vars.size() > 0)
+        if (vars.empty())
+        {
+            std::string v = qParams.GetEntry("vars")->AsString();
+            if (v.empty())
+            {
+                debug3 << "'vars' parameter for " << qName << " was specified,"
+                       << " but could not be parsed correctly." << endl;
+            }
+            else
+            {
+                qvarName = v;
+            }
+        }
+        else
+        {
             qvarName = vars[0];
+        }
     }
     //
     // For certain queries, if we are querying the plot's current variable,
