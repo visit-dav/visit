@@ -14,7 +14,7 @@
         <Field name="partitionSet" type="bool">true</Field>
         <Field name="partition" type="string">4-way</Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">bdivp</Field>
+        <Field name="bank" type="string">bbronze</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">msub</Field>
         <Field name="arguments" type="stringVector"> "-objectmode" "64" </Field>
@@ -25,7 +25,7 @@
         <Field name="partitionSet" type="bool">true</Field>
         <Field name="partition" type="string">16-way</Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">bdivp</Field>
+        <Field name="bank" type="string">bbronze</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">msub</Field>
         <Field name="arguments" type="stringVector"> "-objectmode" "64" </Field>
