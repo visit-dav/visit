@@ -50,8 +50,8 @@
 // ****************************************************************************
 // Method: PyMapNode_Wrap
 //
-// Purpose: 
-//   Converts a MapNode to a python dictonary. 
+// Purpose:
+//   Converts a MapNode to a python dictonary.
 //
 // Programmer: Cyrus Harrison
 // Creation:   Mon Dec 17 15:20:25 PST 2007
@@ -72,18 +72,18 @@ PyMapNode_Wrap(const MapNode &node)
         Py_INCREF(Py_None);
         return Py_None;
     }
-    
+
     // must be a variant, use variant helper
     if(node.Type() != MapNode::EMPTY_TYPE)
     {
         return PyVariant_Wrap(node);
     }
-    
+
     // we have a dict with map nodes as entries
     PyObject *dict = PyDict_New();
     stringVector entry_names;
-    node.GetEntryNames(entry_names);    
-    
+    node.GetEntryNames(entry_names);
+
     for(size_t i=0;i<entry_names.size();i++)
     {
         const MapNode *child_node = node.GetEntry(entry_names[i]);
@@ -93,10 +93,10 @@ PyMapNode_Wrap(const MapNode &node)
 #if (PY_MAJOR_VERSION < 2) || ((PY_MAJOR_VERSION == 2) && (PY_MINOR_VERSION < 5))
         char *str = new char[entry_names[i].length()+1];
         strcpy(str, entry_names[i].c_str());
-        PyDict_SetItemString(dict, str, child);   
+        PyDict_SetItemString(dict, str, child);
         delete [] str;
 #else
-        PyDict_SetItemString(dict, entry_names[i].c_str(), child);   
+        PyDict_SetItemString(dict, entry_names[i].c_str(), child);
 #endif
     }
 
@@ -107,15 +107,18 @@ PyMapNode_Wrap(const MapNode &node)
 // ****************************************************************************
 // Method: PyDict_To_MapNode
 //
-// Purpose: 
+// Purpose:
 //   Converts a python Dictionary to a MapNode.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   July 13, 2011 
+// Programmer: Kathleen Bonnell
+// Creation:   July 13, 2011
 //
 // Modifications:
 //   Kathleen Biagas, Wed Sep  7 11:56:23 PDT 2011
 //   Allow ints and doubles in same sequence.
+//
+//   Kathleen Biagas, Mon Mar 24 17:00:11 PDT 2014
+//   Parse Dict.
 //
 // ****************************************************************************
 
@@ -130,7 +133,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
     PyObject *key = NULL;
     PyObject *value = NULL;
 
-    while(PyDict_Next(obj, &pos, &key, &value)) 
+    while(PyDict_Next(obj, &pos, &key, &value))
     {
         std::string mkey;
         if (PyString_Check(key))
@@ -155,7 +158,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                          mval.push_back(PyFloat_AS_DOUBLE(item));
                      else if (PyInt_Check(item))
                          mval.push_back((double)PyInt_AS_LONG(item));
-                     else 
+                     else
                      {
                          debug3 << "PyDict_To_MapNode: tuples/lists must "
                                 << "contain same type." << endl;
@@ -174,7 +177,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                          nd++;
                      else if (PyInt_Check(item))
                          ni++;
-                     else 
+                     else
                          no++;
                  }
                  if (no != 0)
@@ -227,28 +230,34 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
             }
             else
             {
-                debug3 << "PyDict_To_MapNode: type " 
-                       << item->ob_type->tp_name 
+                debug3 << "PyDict_To_MapNode: type "
+                       << item->ob_type->tp_name
                        << " not currently implemented." << endl;
                 return false;
             }
         }
         else if (PyFloat_Check(value))
         {
-            mn[mkey] = (double) PyFloat_AS_DOUBLE(value); 
+            mn[mkey] = (double) PyFloat_AS_DOUBLE(value);
         }
         else if (PyInt_Check(value))
         {
-            mn[mkey] = (int) PyInt_AS_LONG(value); 
+            mn[mkey] = (int) PyInt_AS_LONG(value);
         }
         else if (PyString_Check(value))
         {
-            mn[mkey] = (std::string) PyString_AS_STRING(value); 
+            mn[mkey] = (std::string) PyString_AS_STRING(value);
+        }
+        else if (PyDict_Check(value))
+        {
+            MapNode tmp;
+            if (PyDict_To_MapNode(value, tmp))
+                mn[mkey] = tmp;
         }
         else
         {
-            debug3 << "PyDict_To_MapNode: type " 
-                   << value->ob_type->tp_name 
+            debug3 << "PyDict_To_MapNode: type "
+                   << value->ob_type->tp_name
                    << " not currently implemented." << endl;
             return false;
         }
