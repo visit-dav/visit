@@ -105,12 +105,11 @@ class VISWINDOW_API Zoom3D : public ZoomInteractor
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
 
-    bool                ctrlPushed;
+    bool                shiftPressed;
     bool                shouldSpin;
 
     void                EnableSpinMode(void);
     void                DisableSpinMode(void);
-
 };
 
 

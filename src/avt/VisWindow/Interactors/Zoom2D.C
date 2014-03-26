@@ -101,7 +101,7 @@ Zoom2D_SetLineProperties(vtkPolyData *guideLines,
 
 Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
-    ctrlPushed = false;
+    shiftPressed = false;
 
     guideLines       = vtkPolyData::New();
 
@@ -257,26 +257,26 @@ Zoom2D::OnTimer(void)
 void
 Zoom2D::StartLeftButtonAction()
 {
-    //
-    // If ctrl is pushed, pan, otherwise zoom.  Save which one we did so we
-    // can issue the proper "End.." statement when the button is released.
-    //
-#if 0
-    if (Interactor->GetControlKey())
-#else
-    if (false)
-#endif
+    // If shift is pressed, pan, otherwise rubber band zoom.  The pan
+    // action matches the Navigate2D/3D modes. Save which one we did so
+    // we can issue the proper "End.." statement when the button is
+    // released.
+    if (Interactor->GetShiftKey())
     {
         StartPan();
-        ctrlPushed = true;
+        shiftPressed = true;
     }
+
+    // NOTE: the shift and ctrl go into the rubberband zoom and affect
+    // whether one gets a rectangle (shift) or zooms out (ctrl). At
+    // this point the shift is intercepted above to pan which matches
+    // the Navigate2D/3D modes.
     else
     {
         int x, y;
         Interactor->GetEventPosition(x, y);
         StartZoom();
         StartRubberBand(x, y);
-        ctrlPushed = false;
     }
 }
 
@@ -320,9 +320,13 @@ Zoom2D::StartLeftButtonAction()
 void
 Zoom2D::EndLeftButtonAction()
 {
-    if (ctrlPushed)
+    // We must issue the proper end state for either pan or rotate
+    // depending on whether the shift or ctrl button was pushed.  The
+    // shift left mouse pan action matches the Navigate2D/3D modes.
+    if (shiftPressed)
     {
         EndPan();
+        shiftPressed = false;
     }
     else
     {
@@ -332,8 +336,6 @@ Zoom2D::EndLeftButtonAction()
     }
 
     IssueViewCallback();
-
-    ctrlPushed = false;
 }
 
 
@@ -364,17 +366,16 @@ Zoom2D::EndLeftButtonAction()
 void
 Zoom2D::AbortLeftButtonAction()
 {
-    if (ctrlPushed)
+    if (shiftPressed)
     {
         EndPan();
+        shiftPressed = false;
     }
     else
     {
         EndRubberBand();
         EndZoom();
     }
-
-    ctrlPushed = false;
 }
 
 

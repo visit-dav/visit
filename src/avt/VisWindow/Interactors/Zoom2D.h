@@ -128,7 +128,7 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
 
-    bool                ctrlPushed;
+    bool                shiftPressed;
 };
 
 

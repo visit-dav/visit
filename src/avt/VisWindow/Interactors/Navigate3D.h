@@ -108,7 +108,7 @@ class VISWINDOW_API Navigate3D : public VisitInteractor
     virtual void        OnMouseWheelBackward();
 
   protected:
-    bool                ctrlOrShiftPushed;
+    bool                ctrlOrShiftPressed;
     bool                shouldSpin;
 
     void                EnableSpinMode(void);
