@@ -64,7 +64,7 @@
 
 Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
-    ctrlPushed = false;
+    shiftPressed = false;
     shouldSpin = false;    
 }
 
@@ -193,27 +193,27 @@ Zoom3D::StartLeftButtonAction()
 {
     DisableSpinMode();
 
-    //
-    // If ctrl is pushed, pan, otherwise zoom.  Save which one we did so we
-    // can issue the proper "End.." statement when the button is released.
-    //
-#if 0
-    if (Interactor->GetControlKey())
-#else
-    if (false)
-#endif
+    // If shift is pressed, pan, otherwise rubber band zoom.  The pan
+    // action matches the Navigate2D/3D modes. Save which one we did so
+    // we can issue the proper "End.." statement when the button is
+    // released.
+    if (Interactor->GetShiftKey())
     {
         StartBoundingBox();
         StartPan();
-        ctrlPushed = true;
+        shiftPressed = true;
     }
+
+    // NOTE: the shift and ctrl go into the rubberband zoom and affect
+    // whether one gets a rectangle (shift) or zooms out (ctrl). At
+    // this point the shift is intercepted above to pan which matches
+    // the Navigate2D/3D modes.
     else
     {
         int x, y;
         Interactor->GetEventPosition(x, y);
         StartZoom();
         StartRubberBand(x, y);
-        ctrlPushed = false;
     }
 }
 
@@ -257,14 +257,14 @@ Zoom3D::StartLeftButtonAction()
 void
 Zoom3D::EndLeftButtonAction()
 {
-    //
-    // We must issue the proper end state for either pan or rotate depending
-    // on whether the shift or ctrl button was pushed.
-    //
-    if (ctrlPushed)
+    // We must issue the proper end state for either pan or rotate
+    // depending on whether the shift or ctrl button was pushed.  The
+    // shift left mouse pan action matches the Navigate2D/3D modes.
+    if (shiftPressed)
     {
         EndBoundingBox();
         EndPan();
+        shiftPressed = false;
     }
     else
     {
@@ -276,8 +276,6 @@ Zoom3D::EndLeftButtonAction()
     EnableSpinMode();
 
     IssueViewCallback();
-
-    ctrlPushed = false;
 }
 
 
@@ -305,10 +303,11 @@ Zoom3D::EndLeftButtonAction()
 void
 Zoom3D::AbortLeftButtonAction()
 {
-    if (ctrlPushed)
+    if (shiftPressed)
     {
         EndBoundingBox();
         EndPan();
+        shiftPressed = false;
     }
     else
     {
