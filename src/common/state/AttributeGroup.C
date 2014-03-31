@@ -84,7 +84,7 @@ static const unsigned char msgTypeVectorBool           = 0x1b;
 
 static const unsigned char msgTypeMapNode              = 0x1c;
 
-#if 0
+#if 1 /// enabled for remote vis work.
 // These are uesful for creating debugging output. Ordinarily, these
 // are not needed so they are ifdef'd out.
 static const char *typeNames[] = {
@@ -817,8 +817,12 @@ AttributeGroup::WriteAPI(JSONNode &map, int attrId, AttributeGroup::typeInfo &in
     case msgTypeVectorFloat:
     case msgTypeVectorDouble:
     case msgTypeVectorString:
-    case msgTypeMapNode:
-        map[name] = attrId;
+    case msgTypeMapNode: {
+        map[name] = JSONNode::JSONObject();
+        JSONNode::JSONObject& obj = map[name].GetJsonObject();
+        obj["attrId"] = attrId;
+        obj["type"] = typeNames[info.typeCode];
+        }
         break;
     case msgTypeAttributeGroup:
         {
@@ -827,52 +831,53 @@ AttributeGroup::WriteAPI(JSONNode &map, int attrId, AttributeGroup::typeInfo &in
            // sub-AttributeGroup onto the connection.
            AttributeGroup *aptr = (AttributeGroup *)(info.address);
 
-           map[name] = JSONNode::JSONArray();
-           JSONNode::JSONArray& array = map[name].GetArray();
+           map[name] = JSONNode::JSONObject();
+           JSONNode::JSONObject& obj = map[name].GetJsonObject();
+           obj["attrId"] = attrId;
+           obj["type"] = typeNames[info.typeCode];
 
            JSONNode child;
            aptr->WriteAPI(child);
-
-           array.push_back(attrId);
-           array.push_back(child);
+           obj["api"] = child;
         }
         break;
     case msgTypeListAttributeGroup:
+    case msgTypeVectorAttributeGroup:
         { // new scope
-          AttributeGroup **aptr = (AttributeGroup **)(info.address);
+          //AttributeGroup **aptr = (AttributeGroup **)(info.address);
 
-          map[name] = JSONNode::JSONArray();
+          map[name] = JSONNode::JSONObject();
+          JSONNode::JSONObject& obj = map[name].GetJsonObject();
+          obj["attrId"] = attrId;
+          obj["type"] = typeNames[info.typeCode];
 
-          JSONNode::JSONArray& array = map[name].GetArray();
-
-          array.push_back(attrId);
-          for(int i = 0; i < info.length; ++i, ++aptr)
-          {
-              JSONNode child;
-              if((*aptr) != 0)
-                  (*aptr)->WriteAPI(child);
-              array.push_back(child);
+          JSONNode child;
+          AttributeGroup* aptr = CreateSubAttributeGroup(attrId);
+          if(aptr) {
+            aptr->WriteAPI(child);
+            obj["api"] = child;
+            delete aptr; /// clear up new sub attribute group instance
           }
         }
         break;
-    case msgTypeVectorAttributeGroup:
-        { // new scope
-          AttributeGroupVector *va = (AttributeGroupVector *)(info.address);
-          AttributeGroupVector::iterator apos;
+//    case msgTypeVectorAttributeGroup:
+//        { // new scope
+//          AttributeGroupVector *va = (AttributeGroupVector *)(info.address);
+//          AttributeGroupVector::iterator apos;
 
-          map[name] = JSONNode::JSONArray();
+//          map[name] = JSONNode::JSONArray();
 
-          JSONNode::JSONArray& array = map[name].GetArray();
+//          JSONNode::JSONArray& array = map[name].GetArray();
 
-          // Write out the AttributeGroups
-          array.push_back(attrId);
-          for(apos = va->begin(); apos != va->end(); ++apos)
-          {
-              JSONNode child;
-              (*apos)->WriteAPI(child);
-              array.push_back(child);
-          }
-        }
+//          // Write out the AttributeGroups
+//          array.push_back(attrId);
+//          for(apos = va->begin(); apos != va->end(); ++apos)
+//          {
+//              JSONNode child;
+//              (*apos)->WriteAPI(child);
+//              array.push_back(child);
+//          }
+//        }
         break;
     case msgTypeNone:
     default:
@@ -950,51 +955,11 @@ AttributeGroup::WriteMetaData(JSONNode &map, int attrId, AttributeGroup::typeInf
         map[name] = MapNode::MapNodeType;
         break;
     case msgTypeAttributeGroup:
-        {
-           AttributeGroup *aptr = (AttributeGroup *)(info.address);
-
-           map[name] = JSONNode::JSONArray();
-           JSONNode::JSONArray& array = map[name].GetArray();
-
-           JSONNode child;
-           aptr->WriteMetaData(child);
-           array.push_back(child);
-        }
+        map[name] = AttributeGroup::AttributeGroupType;
         break;
     case msgTypeListAttributeGroup:
-        { // new scope
-          AttributeGroup **aptr = (AttributeGroup **)(info.address);
-
-          map[name] = JSONNode::JSONArray();
-
-          JSONNode::JSONArray& array = map[name].GetArray();
-
-          for(int i = 0; i < info.length; ++i, ++aptr)
-          {
-              JSONNode child;
-              if((*aptr) != 0)
-                  (*aptr)->WriteMetaData(child);
-              array.push_back(child);
-          }
-        }
-        break;
     case msgTypeVectorAttributeGroup:
-        { // new scope
-          AttributeGroupVector *va = (AttributeGroupVector *)(info.address);
-          AttributeGroupVector::iterator apos;
-
-          map[name] = JSONNode::JSONArray();
-
-          JSONNode::JSONArray& array = map[name].GetArray();
-
-          // Write out the AttributeGroups
-          for(apos = va->begin(); apos != va->end(); ++apos)
-          {
-              JSONNode child;
-              (*apos)->WriteMetaData(child);
-              array.push_back(child);
-          }
-        }
+        map[name] = AttributeGroup::AttributeGroupVectorType;
         break;
     case msgTypeNone:
     default:

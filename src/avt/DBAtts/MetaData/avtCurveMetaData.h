@@ -87,6 +87,13 @@ public:
     // Property selection methods
     virtual void SelectAll();
 
+
+    // Keyframing methods
+    virtual std::string               GetFieldName(int index) const;
+    virtual AttributeGroup::FieldType GetFieldType(int index) const;
+    virtual std::string               GetFieldTypeName(int index) const;
+    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
+
     // User-defined methods
     avtCurveMetaData(const std::string &n);
     avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE);

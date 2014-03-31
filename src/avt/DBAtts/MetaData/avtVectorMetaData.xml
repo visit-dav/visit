@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtVectorMetaData" purpose="Contains vector metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVectorMetaData.code" baseClass="avtVarMetaData">
+  <Attribute name="avtVectorMetaData" purpose="Contains vector metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVectorMetaData.code" baseClass="avtVarMetaData">
     <Field name="varDim" label="Variable dimension" type="int" access="public">
       0
     </Field>

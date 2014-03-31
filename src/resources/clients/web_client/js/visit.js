@@ -1,4 +1,9 @@
 
+/*
+    Each API variable has a few elements
+    "name" : { (req) "attrId" : attribute, "type" : attribute_type,
+               (opt) "api" : API, possibly ToolTips, etc..}}
+*/
 function AttributeSubject()
 {
     var callbackList = [];
@@ -23,16 +28,45 @@ function AttributeSubject()
         }
     }
 
+    this.update_internal_api = function(iapi, idata) {
+        api = { "api" : iapi };
+        data = { "contents" : idata };
+        id = -1;
+        typename = "";
+    }
+
     this.set = function(key, value) 
     {
         if(api["api"].hasOwnProperty(key)) {
-           var index = api["api"][key];         
+           var index = api["api"][key]["attrId"];         
            data["contents"][index] = value;
         }
     }
 
     this.get = function(key) {
-        var index = api["api"][key];
+        var index = api["api"][key]["attrId"];
+        var type = api["api"][key]["type"];
+
+        if(type.indexOf("AttributeGroup") >= 0) {
+            if(type.indexOf("List") >= 0|| type.indexOf("Vector") >= 0) {
+                var subjs = [];
+
+                for(var i = 0; i < data["contents"][index].length; ++i) {
+                    var subj = new AttributeSubject();
+                    subj.update_internal_api(api["api"][key]["api"], 
+                                             data["contents"][index][i]);
+                    subjs.push(subj);
+                }
+                return subjs;
+            } 
+            else {
+                var subj = new AttributeSubject();
+                subj.update_internal_api(api["api"][key]["api"], 
+                                         data["contents"][index]);
+                return subj;
+            }
+        }
+
         return data["contents"][index];
     }
 
@@ -51,6 +85,7 @@ function AttributeSubject()
     this.toString = function() {
         return JSON.stringify(api) + "\n" + JSON.stringify(data);
     }
+
     this.registerCallback = function(cb) {
         callbackList.push(cb);
     }

@@ -107,6 +107,13 @@ public:
     avtMatSpeciesMetaData &operator [] (int i);
     const avtMatSpeciesMetaData &operator [] (int i) const;
 
+
+    // Keyframing methods
+    virtual std::string               GetFieldName(int index) const;
+    virtual AttributeGroup::FieldType GetFieldType(int index) const;
+    virtual std::string               GetFieldTypeName(int index) const;
+    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
+
     // User-defined methods
     avtSpeciesMetaData(const std::string &n, const std::string &meshn, const std::string &matn, int nummat, const intVector &ns, const std::vector<stringVector> &sn);
     void Print(ostream &, int = 0) const;

@@ -89,3 +89,4 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
       out << "\t" << plotAttributes[i].c_str() << endl;
     out << endl;
 }
+
