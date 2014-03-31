@@ -147,6 +147,13 @@ public:
 protected:
     static std::string MissingData_ToString(int);
 public:
+
+    // Keyframing methods
+    virtual std::string               GetFieldName(int index) const;
+    virtual AttributeGroup::FieldType GetFieldType(int index) const;
+    virtual std::string               GetFieldTypeName(int index) const;
+    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
+
     // User-defined methods
     avtScalarMetaData(std::string, std::string, avtCentering);
     avtScalarMetaData(std::string, std::string, avtCentering, double, double);

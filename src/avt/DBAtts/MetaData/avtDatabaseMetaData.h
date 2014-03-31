@@ -314,6 +314,13 @@ public:
     avtDefaultPlotMetaData &GetDefaultPlots(int i);
     const avtDefaultPlotMetaData &GetDefaultPlots(int i) const;
 
+
+    // Keyframing methods
+    virtual std::string               GetFieldName(int index) const;
+    virtual AttributeGroup::FieldType GetFieldType(int index) const;
+    virtual std::string               GetFieldTypeName(int index) const;
+    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
+
     // User-defined methods
     void         SetTemporalExtents(double, double);
     void         SetCycle(int, int);

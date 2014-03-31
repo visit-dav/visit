@@ -66,6 +66,11 @@
 class STATE_API MapNode : public Variant
 {
   public:
+    enum {
+        MapNodeType = Variant::ID__LAST,
+        ID__LAST
+    } MapNodeTypeEnum;
+
     MapNode();
     MapNode(const MapNode&);
     MapNode(const XMLNode&,bool decodeString = true);
@@ -123,7 +128,6 @@ class STATE_API MapNode : public Variant
     void                 Write(Connection *conn) const;
     void                 Read(Connection &conn);
 
-    static int MapNodeType;
  private:
     virtual JSONNode ToJSONNodeData(bool encodeString) const;
     virtual JSONNode ToJSONNodeMetaData(bool id) const;

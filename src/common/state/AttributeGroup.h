@@ -151,6 +151,12 @@ public:
         FieldType_MapNode
     };
 
+    enum {
+        AttributeGroupType = MapNode::ID__LAST,
+        AttributeGroupListType,
+        AttributeGroupVectorType,
+        ID__LAST
+    } AttributeGroupEnumType;
     // This type is used only by code-generated state objects
     // which are themselves derived from other code-generated
     // state objects. We define this (silly) type to prevent

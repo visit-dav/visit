@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtArrayMetaData" purpose="Contains array metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtArrayMetaData.code" baseClass="avtVarMetaData">
+  <Attribute name="avtArrayMetaData" purpose="Contains array metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtArrayMetaData.code" baseClass="avtVarMetaData">
     <Field name="nVars" label="Number of variables" type="int" access="public">
       0
     </Field>

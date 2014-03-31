@@ -6,7 +6,7 @@
     <LIBS components="EPar">
       vtkGeovisCore
     </LIBS>
-    <Attribute name="CartographicProjectionAttributes" purpose="" persistent="true" keyframe="false" exportAPI="" exportInclude="">
+    <Attribute name="CartographicProjectionAttributes" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="ProjectionID">
         aitoff
         eck4

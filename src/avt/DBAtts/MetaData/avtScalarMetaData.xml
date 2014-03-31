@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtScalarMetaData" purpose="Contains scalar metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtScalarMetaData.code" baseClass="avtVarMetaData">
+  <Attribute name="avtScalarMetaData" purpose="Contains scalar metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtScalarMetaData.code" baseClass="avtVarMetaData">
     <Enum name="PartialCellModes">
       Include
       Exclude

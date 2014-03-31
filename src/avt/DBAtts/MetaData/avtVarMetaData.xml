@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtVarMetaData" purpose="Contains metadata attributes associated with all mesh variables" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVarMetaData.code" baseClass="avtBaseVarMetaData">
+  <Attribute name="avtVarMetaData" purpose="Contains metadata attributes associated with all mesh variables" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVarMetaData.code" baseClass="avtBaseVarMetaData">
     <Field name="centering" label="Variable centering" type="avtCentering" access="public">
       AVT_UNKNOWN_CENT
     </Field>

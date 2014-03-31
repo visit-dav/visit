@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtDatabaseMetaData" purpose="Contains database metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtDatabaseMetaData.code">
+  <Attribute name="avtDatabaseMetaData" purpose="Contains database metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtDatabaseMetaData.code">
     <Field name="hasTemporalExtents" label="Has temporal extents" type="bool">
       false
     </Field>

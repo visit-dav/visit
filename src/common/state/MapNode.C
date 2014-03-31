@@ -42,7 +42,6 @@
 #include <cstdlib>
 
 using namespace std;
-int MapNode::MapNodeType = Variant::STRING_VECTOR_TYPE + 1000;
 
 // ****************************************************************************
 //  Method:  MapNode::MapNode

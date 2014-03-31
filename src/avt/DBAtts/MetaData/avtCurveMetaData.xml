@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtCurveMetaData" purpose="Contains curve metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtCurveMetaData.code" baseClass="avtVarMetaData">
+  <Attribute name="avtCurveMetaData" purpose="Contains curve metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtCurveMetaData.code" baseClass="avtVarMetaData">
     <Field name="xUnits" label="X units" type="string" access="public">
     </Field>
     <Field name="xLabel" label="X label" type="string" access="public">

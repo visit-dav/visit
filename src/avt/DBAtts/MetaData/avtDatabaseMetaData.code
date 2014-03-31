@@ -161,6 +161,7 @@ avtDatabaseMetaData::SetFormatCanDoMultires(bool can)
     }
 
     formatCanDoMultires = can;
+    Select(ID_formatCanDoMultires, (void *)&formatCanDoMultires);
 }
 
 Function: SetCycle

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="SimulationUIValues" purpose="Contains UI values from a simulation." persistent="false" keyframe="false" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="SimulationUIValues" purpose="Contains UI values from a simulation." persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="host" label="host" type="string">
     </Field>
     <Field name="sim" label="sim" type="string">

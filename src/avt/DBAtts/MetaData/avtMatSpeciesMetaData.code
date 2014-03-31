@@ -25,3 +25,4 @@ avtMatSpeciesMetaData::avtMatSpeciesMetaData(int ns, const stringVector &sn)
     speciesNames  = sn;
     validVariable = true;
 }
+

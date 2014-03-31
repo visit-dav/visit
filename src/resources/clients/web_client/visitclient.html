@@ -229,14 +229,13 @@
                 var vars = obj.get("vars");
                 var supportedFormats = obj.get("supportedFormats");
 
-                //debug(vars[0][2]);
-                //debug(supportedFormats);
-
-                if(vars[0][2] === supportedFormats.indexOf("Image")) 
-                {
-                    var image  = "data:image/jpeg;base64,";
-                    image += vars[0][0];
-                    imageObj.src = image;
+                for(var i = 0; i < 1 /*vars.length*/; ++i) {
+                    if(vars[i].get("format") === supportedFormats.indexOf("Image")) 
+                    {
+                        var image  = "data:image/jpeg;base64,";
+                        image += vars[i].get("data");
+                        imageObj.src = image;
+                    }
                 }
             }
 

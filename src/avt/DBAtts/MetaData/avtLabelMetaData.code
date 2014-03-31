@@ -6,3 +6,4 @@ avtLabelMetaData::avtLabelMetaData(const std::string &n, const std::string &mn,
 {
     avtLabelMetaData::Init();
 }
+

@@ -112,6 +112,13 @@ public:
     bool              GetEnabled() const;
 
 
+    // Keyframing methods
+    virtual std::string               GetFieldName(int index) const;
+    virtual AttributeGroup::FieldType GetFieldType(int index) const;
+    virtual std::string               GetFieldTypeName(int index) const;
+    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
+
+
     // IDs that can be used to identify fields in case statements
     enum {
         ID_host = 0,
