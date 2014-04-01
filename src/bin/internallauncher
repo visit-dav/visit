@@ -2305,7 +2305,7 @@ class MainLauncher(object):
 
         # If we're using VisIt's Python, set PYTHONHOME
         visitlibdir_python = os.path.join(self.visitlibdir, "python")
-        if self.generalArgs.exe_name == "cli":
+        if (self.generalArgs.exe_name == "cli") and os.path.isdir(visitlibdir_python):
             SETENV("PYTHONHOME", visitlibdir_python)
 
         # Unset QT_PLUGIN_PATH
