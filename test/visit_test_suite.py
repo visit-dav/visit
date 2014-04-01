@@ -161,6 +161,7 @@ def launch_visit_test(args):
         rcmd += "-noconfig "
     rcmd += "-geometry %dx%d+32+32 " % (opts["width"],opts["height"])
     rcmd += " -s %s " % os.path.abspath(test_script)
+    rcmd += " -create-ghosts-for-t-intersections "
     modes_list = opts["modes"].split(",")
     if "dlb" in modes_list:
         rcmd += " -allowdynamic "
