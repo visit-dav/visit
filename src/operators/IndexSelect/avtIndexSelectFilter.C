@@ -1119,6 +1119,9 @@ avtIndexSelectFilter::ReleaseData(void)
 //    Hank Childs, Sat Mar  3 16:28:16 PST 2007
 //    Put in about data attributes that we removed ghost data.
 //
+//    Kathleen Biagas, Tue Apr  1 14:17:22 PDT 2014
+//    Invalidate zones.
+//
 // ****************************************************************************
 
 void
@@ -1140,6 +1143,11 @@ avtIndexSelectFilter::UpdateDataObjectInfo(void)
     //
     GetOutput()->GetInfo().GetAttributes().SetCanUseOrigZones(false);
     GetOutput()->GetInfo().GetAttributes().SetContainsGhostZones(AVT_NO_GHOSTS);
+
+    //
+    // Indicate zone numbering probably changed
+    //
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }
 
 
