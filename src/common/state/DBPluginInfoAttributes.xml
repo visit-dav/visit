@@ -10,6 +10,8 @@
     </Field>
     <Field name="typesFullNames" label="typesFullNames" type="stringVector">
     </Field>
+    <Field name="license" label="license" type="stringVector">
+    </Field>
     <Field name="host" label="host" type="string">
       ""
     </Field>

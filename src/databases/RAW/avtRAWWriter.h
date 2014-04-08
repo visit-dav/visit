@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -56,6 +56,9 @@
 //  Creation:   September 28, 2007
 //
 //  Modifications:
+//    Brad Whitlock, Mon Apr  7 15:35:03 PDT 2014
+//    Indicate that the format does not deal with materials.
+//    Work partially supported by DOE Grant SC0007548.
 //
 // ****************************************************************************
 
@@ -80,11 +83,7 @@ avtRAWWriter : public virtual avtDatabaseWriter
 
     virtual bool   SupportsTargetChunks(void) { return false; };
     virtual bool   SupportsTargetZones(void) { return false; };
-
-    // Doing material interface reconstruction does nothing for us. 
-    // So we may as well report that we can already do it, so the MIR
-    // doesn't execute unnecessarily.
-    virtual bool   CanHandleMaterials(void) { return true; };
+    virtual bool   CanHandleMaterials(void) { return false; };
 };
 
 #endif

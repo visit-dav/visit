@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -138,6 +138,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -4482,9 +4483,81 @@ NetworkManager::GetDataBinning(const char *name)
     return NULL;
 }
 
+// ****************************************************************************
+//  Method:  NetworkManager::ExportDatabases
+//
+//  Purpose:
+//      Exports a database.
+//
+//  Arguments:
+//    ids        The networks to use.
+//    atts       The export database attributes.
+//
+//  Note:        Work partially supported by DOE Grant SC0007548.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Jan 24 16:54:20 PST 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::ExportDatabases(const intVector &ids, ExportDBAttributes *atts)
+{
+    if(ids.size() > 1)
+    {
+        // FUTURE: Get the plugin info here, create the writer.
+
+        // FUTURE: Call writer->OpenFile here.
+
+        bool err = false;
+        std::string errMsg;
+        for(size_t i = 0; i < ids.size(); ++i)
+        {
+            // Rig up a temporary ExportDBAttributes where we change the filename a little.
+            ExportDBAttributes eAtts(*atts);
+            char suffix[20];
+            const std::string &f = eAtts.GetFilename();
+            std::string::size_type idx = f.rfind(".");
+            if(idx != std::string::npos)
+            {
+                std::string filename(f.substr(0, idx));
+                std::string ext(f.substr(idx, f.size() - idx));
+                SNPRINTF(suffix, 20, "_%02d", int(i));
+                eAtts.SetFilename(filename + suffix + ext);
+            }
+            else
+            {
+                SNPRINTF(suffix, 20, "_%02d", int(i));
+                eAtts.SetFilename(f + suffix);
+            }
+
+            TRY
+            {
+                ExportSingleDatabase(ids[i], &eAtts);
+            }
+            CATCH2(VisItException, e)
+            {
+                err = true;
+                errMsg = e.Message();
+            }
+            ENDTRY
+        }
+
+        // FUTURE: Call writer->CloseFile here.
+
+        if(err)
+        {
+            EXCEPTION1(VisItException, errMsg); // use RECONSTITUTE_EXCEPTION?
+        }
+    }
+    else if(!ids.empty())
+        ExportSingleDatabase(ids[0], atts);
+}
 
 // ****************************************************************************
-//  Method:  NetworkManager::ExportDatabase
+//  Method:  NetworkManager::ExportSingleDatabase
 //
 //  Purpose:
 //      Exports a database.
@@ -4511,10 +4584,19 @@ NetworkManager::GetDataBinning(const char *name)
 //    Brad Whitlock, Tue Jun 24 16:10:41 PDT 2008
 //    Changed how the database plugin manager is accessed.
 //
+//    Brad Whitlock, Tue Jan 21 15:29:31 PST 2014
+//    I added code to allow a plot to modify the contract and I passed the
+//    plot name to the writer so we have some more information.
+//
+//    Brad Whitlock, Fri Feb 28 16:27:47 PST 2014
+//    Reorder some exception handling, add some more in case bad stuff happens
+//    down in the writer.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
-NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
+NetworkManager::ExportSingleDatabase(int id, ExportDBAttributes *atts)
 {
     if (id >= networkCache.size())
     {
@@ -4550,6 +4632,10 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
         debug1 << "Could not find a valid input to export." << endl;
         EXCEPTION0(NoInputException);
     }
+    if (strcmp(dob->GetType(), "avtDataset") != 0)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
 
     const std::string &db_type = atts->GetDb_type_fullname();
     if (!GetDatabasePluginManager()->PluginAvailable(db_type))
@@ -4568,10 +4654,10 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
+
     DBOptionsAttributes opts = atts->GetOpts();
     info->SetWriteOptions(&opts);
     avtDatabaseWriter *wrtr = info->GetWriter();
-
     if (wrtr == NULL)
     {
         char msg[1024];
@@ -4580,32 +4666,42 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    if (strcmp(dob->GetType(), "avtDataset") != 0)
+    TRY
     {
-        EXCEPTION0(ImproperUseException);
+        std::string plotName(networkCache[id]->GetPlot()->GetName());
+        int time = networkCache[id]->GetTime();
+        ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDatabase();
+
+        // Set the contract to use for the export. Give the plot a chance to 
+        // enhance the contract as would be the case in a normal execute.
+        avtContract_p c = networkCache[id]->GetContract();
+        c = networkCache[id]->GetPlot()->ModifyContract(c);
+        wrtr->SetContractToUse(c);
+        wrtr->SetInput(dob);
+
+        std::string qualFilename;
+        if (atts->GetDirname() == "")
+            qualFilename = atts->GetFilename();
+        else
+            qualFilename = atts->GetDirname() + std::string(VISIT_SLASH_STRING)
+                         + atts->GetFilename();
+        bool doAll = false;
+        std::vector<std::string> vars = atts->GetVariables();
+        if (vars.size() == 1 && vars[0] == "<all>")
+        {
+            doAll = true;
+            vars.clear();
+        }
+
+        wrtr->Write(plotName, qualFilename, db->GetMetaData(time), vars, doAll);
+        delete wrtr;
     }
-
-    int time = networkCache[id]->GetTime();
-    ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDatabase();
-    wrtr->SetInput(dob);
-
-    wrtr->SetContractToUse(networkCache[id]->GetContract());
-    
-    std::string qualFilename;
-    if (atts->GetDirname() == "")
-        qualFilename = atts->GetFilename();
-    else
-        qualFilename = atts->GetDirname() + std::string(VISIT_SLASH_STRING)
-                     + atts->GetFilename();
-    bool doAll = false;
-    std::vector<std::string> vars = atts->GetVariables();
-    if (vars.size() == 1 && vars[0] == "<all>")
+    CATCH2(VisItException, e)
     {
-        doAll = true;
-        vars.clear();
+        delete wrtr;
+        RETHROW;
     }
-    wrtr->Write(qualFilename, db->GetMetaData(time), vars, doAll);
-    delete wrtr;
+    ENDTRY
 }
 
 

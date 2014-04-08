@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -79,6 +79,10 @@ class DBPluginInfoAttributes;
 //   Brad Whitlock, Wed Apr  9 11:57:54 PDT 2008
 //   QString for caption, shortName.
 //
+//   Brad Whitlock, Thu Mar 20 13:52:11 PDT 2014
+//   Improvements for delimiters and for showing licenses.
+//   Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 class GUI_API QvisExportDBWindow : public QvisPostableWindowSimpleObserver
@@ -100,6 +104,8 @@ protected:
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
+    QString Delimiter() const;
+    void UpdateVariablesList();
 protected slots:
     void variableProcessText();
     void processFilenameText();
@@ -109,9 +115,12 @@ protected slots:
     void exportButtonClicked();
     void addVariable(const QString &);
     void selectOutputDirectory();
+    void delimiterChanged(int);
 private:
     DBPluginInfoAttributes *dbPluginInfoAtts;
     ExportDBAttributes     *exportDBAtts;
+    int                     delimiter;
+    QStringList             licenseShown;
 
     QLineEdit           *filenameLineEdit;
     QLineEdit           *directoryNameLineEdit;

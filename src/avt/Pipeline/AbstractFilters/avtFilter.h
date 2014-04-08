@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -124,6 +124,11 @@ class     avtWebpage;
 //    Hank Childs, Tue Nov 30 20:38:36 PST 2010
 //    Add method SearchDataForSpatialExtents.
 //
+//    Brad Whitlock, Wed Mar 19 13:14:49 PDT 2014
+//    I added a callback mechanism that extends UpdateDataObjectInfo so that
+//    filter facades can correctly affect the output data object info.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -155,9 +160,19 @@ class PIPELINE_API avtFilter
     // are being used.
     virtual void                        RegisterNamedSelection(const std::string &) {;};
 
+    void                                SetUpdateDataObjectInfoCallback(
+                                            void (*updateDOI)(avtDataObject_p &input,
+                                                              avtDataObject_p &output,
+                                                              void *),
+                                            void *updateDOIData);
+
   protected:
     bool                                modified;
     bool                                inExecute;
+    void                               (*updateDOI)(avtDataObject_p &input,
+                                                    avtDataObject_p &output,
+                                                    void *);
+    void                               *updateDOIData;
 
     static int                          numInExecute;
     avtWebpage                         *webpage;

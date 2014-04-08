@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -128,6 +128,9 @@ avtExternalSurfaceFilter::Create()
 //    Hank Childs, Mon Sep 26 09:34:35 PDT 2005
 //    Add support for edge generation.
 //
+//    Brad Whitlock, Wed Mar 19 14:14:53 PDT 2014
+//    Add callbacks to the facade filters.
+//
 // ****************************************************************************
 
 void
@@ -139,11 +142,13 @@ avtExternalSurfaceFilter::SetAtts(const AttributeGroup *a)
         gz_and_ff = new avtGhostZoneAndFacelistFilter();
         gz_and_ff->SetUseFaceFilter(true);
         gz_and_ff->SetCreateEdgeListFor2DDatasets(atts.GetEdgesIn2D());
+        gz_and_ff->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
     }
     else
     {
         ff = new avtFacelistFilter();
         ff->SetCreateEdgeListFor2DDatasets(atts.GetEdgesIn2D());
+        ff->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
     }
 }
 
@@ -215,4 +220,27 @@ avtExternalSurfaceFilter::GetFacadedFilter(void) const
     if (atts.GetRemoveGhosts())
         return gz_and_ff;
     return ff;
+}
+
+// ****************************************************************************
+// Method: avtExternalSurfaceFilter::UpdateDataObjectInfoCB
+//
+// Purpose:
+//   Update the data object information.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 10:53:05 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtExternalSurfaceFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
+    avtDataObject_p &output, void *This)
+{
+    avtDataAttributes &outAtts = output->GetInfo().GetAttributes();
+    outAtts.AddFilterMetaData("ExternalSurface");
 }

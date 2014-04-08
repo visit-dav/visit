@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtIntegralCurveFilter.C                      //
+//                        avtIntegralCurveFilter.C                           //
 // ************************************************************************* //
 
 #include <avtIntegralCurveFilter.h>
@@ -416,6 +416,10 @@ avtIntegralCurveFilter::ModifyContract(avtContract_p in_contract)
 //    Hank Childs, Sat Jun  5 16:06:26 PDT 2010
 //    Call the new base class' (avtPICSFilter) method.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -458,6 +462,8 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 
     avtPluginFilter::UpdateDataObjectInfo();
     avtPICSFilter::UpdateDataObjectInfo();
+
+    out_atts.AddFilterMetaData("IntegralCurve");
 }
 
 

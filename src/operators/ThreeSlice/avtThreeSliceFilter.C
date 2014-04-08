@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -419,6 +419,10 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
 //    Set ZonesSplit.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -431,6 +435,10 @@ avtThreeSliceFilter::UpdateDataObjectInfo(void)
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
     outValidity.InvalidateZones();
     outValidity.ZonesSplit();
+
+    char params[100];
+    SNPRINTF(params, 100, "x=%lg, y=%lg, z=%lg", atts.GetX(), atts.GetY(), atts.GetZ());
+    outAtts.AddFilterMetaData("ThreeSlice", params);
 }
 
 

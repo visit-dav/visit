@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -760,6 +760,10 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 //    Kathleen Bonnell, Fri Apr 28 10:57:21 PDT 2006 
 //    Set OrigElementsRequiredForPick.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -768,6 +772,8 @@ avtClipFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
     GetOutput()->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
+
+    GetOutput()->GetInfo().GetAttributes().AddFilterMetaData("Clip");
 }
 
 

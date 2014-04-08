@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -95,7 +95,7 @@ class IVP_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
 {
   public:
                               avtStreamlinePolyDataFilter();
-    virtual                  ~avtStreamlinePolyDataFilter() {}
+    virtual                  ~avtStreamlinePolyDataFilter();
     static                    std::string colorvarArrayName;
     static                    std::string paramArrayName;
     static                    std::string opacityArrayName;
@@ -107,6 +107,8 @@ class IVP_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     void                      SetPhiScaling(bool flag, double pf) {
       phiScalingFlag = flag; phiScaling = pf;}
 
+    void SetExtractID(bool doIt, const std::string &name=std::string());
+
   protected:
     void                      CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &streamlines);
     float                     ComputeCorrelationDistance(int idx,  avtStateRecorderIntegralCurve *ic,
@@ -117,5 +119,7 @@ class IVP_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     int    coordinateSystem;
     bool   phiScalingFlag;
     double phiScaling;
+    bool        extractID;
+    std::string idArrayName;
 };
 #endif

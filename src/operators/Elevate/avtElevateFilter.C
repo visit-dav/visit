@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -107,8 +107,11 @@ avtElevateFilter::Create()
 //  Creation:   Sun Jan 30 13:31:28 PST 2005
 //
 //  Modifications:
-//      Sean Ahern, Tue Aug 14 11:47:14 EDT 2007
-//      Added the "zero" flag.
+//    Sean Ahern, Tue Aug 14 11:47:14 EDT 2007
+//    Added the "zero" flag.
+//
+//    Brad Whitlock, Wed Mar 19 14:14:53 PDT 2014
+//    Add callback to the facade filter.
 //
 // ****************************************************************************
 
@@ -137,6 +140,7 @@ avtElevateFilter::SetAtts(const AttributeGroup *a)
     sf_atts.SetGenerateNodalOutput(false);
 
     surface_filter = new avtSurfaceFilter(&sf_atts);
+    surface_filter->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
 }
 
 
@@ -192,4 +196,27 @@ const avtFilter *
 avtElevateFilter::GetFacadedFilter(void) const
 {
     return surface_filter;
+}
+
+// ****************************************************************************
+// Method: avtElevateFilter::UpdateDataObjectInfoCB
+//
+// Purpose:
+//   Update the data object information.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 10:53:05 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtElevateFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
+    avtDataObject_p &output, void *This)
+{
+    avtDataAttributes &outAtts = output->GetInfo().GetAttributes();
+    outAtts.AddFilterMetaData("Elevate");
 }

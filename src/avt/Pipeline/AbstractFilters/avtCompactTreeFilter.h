@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -85,6 +85,11 @@
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Brad Whitlock, Wed Mar  5 12:46:41 PST 2014
+//    I exposed a static Execute method that can compact the data object and
+//    return a data tree.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
@@ -118,6 +123,14 @@ class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
     void                  SetCompactDomainsMode(CompactDomainsMode mode, int threshold=-1)
                               { compactDomainMode = mode; compactDomainThreshold = threshold; }
 
+    static avtDataTree_p  Execute(avtDataObject_p    input, 
+                                  bool               executionDependsOnDLB,
+                                  bool               parallelMerge,
+                                  bool               skipCompact,
+                                  bool               createCleanPolyData,
+                                  double             tolerance,
+                                  CompactDomainsMode compactDomainMode,
+                                  int                compactDomainThreshold);
   protected:
     virtual void          Execute(void);
     bool                  executionDependsOnDLB;

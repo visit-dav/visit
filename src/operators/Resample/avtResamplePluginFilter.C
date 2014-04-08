@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -119,6 +119,9 @@ avtResamplePluginFilter::Create()
 //    Rename ResampleAtts to InternalResampleAtts, ResamplePluginAtts to
 //    just ResampleAtts.
 //
+//    Brad Whitlock, Wed Mar 19 14:14:53 PDT 2014
+//    Add callback to the facade filter.
+//
 // ****************************************************************************
 
 void
@@ -167,6 +170,7 @@ avtResamplePluginFilter::SetAtts(const AttributeGroup *a)
 
     res_atts.SetDistributedResample(atts.GetDistributedResample());
     resampler = new avtResampleFilter(&res_atts);
+    resampler->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
     if (atts.GetCellCenteredOutput())
         resampler->MakeOutputCellCentered(true);
 }
@@ -224,4 +228,32 @@ const avtFilter *
 avtResamplePluginFilter::GetFacadedFilter(void) const
 {
     return resampler;
+}
+
+// ****************************************************************************
+// Method: avtResamplePluginFilter::UpdateDataObjectInfoCB
+//
+// Purpose:
+//   Update the data object information.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 10:53:05 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtResamplePluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
+    avtDataObject_p &output, void *This)
+{
+    avtDataAttributes &outAtts = output->GetInfo().GetAttributes();
+    const ResampleAttributes &rs = ((const avtResamplePluginFilter *)This)->atts;
+
+    char params[200];
+    SNPRINTF(params, 200, "nx=%d ny=%d nz=%d", 
+             rs.GetSamplesX(), rs.GetSamplesY(), rs.GetSamplesZ());
+    outAtts.AddFilterMetaData("Resample", params);
 }

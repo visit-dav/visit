@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -561,8 +561,11 @@ class PIPELINE_API avtDataAttributes
 
     const PlotInfoAttributes &GetPlotInformation() const
                                    { return plotInfoAtts; };
-    void                      AddPlotInformation(const std::string &key,
+    void                     AddPlotInformation(const std::string &key,
                                                  const MapNode &info);
+    void                     AddFilterMetaData(const std::string &filterName,
+                                               const std::string &params = std::string());
+    bool                     GetFilterMetaData(stringVector &filterNames, stringVector &params) const;
 
     void                     DebugDump(avtWebpage *);
 

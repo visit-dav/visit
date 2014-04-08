@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -1772,6 +1772,11 @@ RPCExecutor<ConstructDataBinningRPC>::Execute(ConstructDataBinningRPC *rpc)
 //  Programmer:  Hank Childs
 //  Creation:    May 26, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Mon Apr  7 15:37:46 PDT 2014
+//    Support multiple plots.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 template<>
 void
@@ -1788,7 +1793,7 @@ RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
     TRY
     {
-        netmgr->ExportDatabase(rpc->GetID(), rpc->GetExportDBAtts());
+        netmgr->ExportDatabases(rpc->GetIDs(), rpc->GetExportDBAtts());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

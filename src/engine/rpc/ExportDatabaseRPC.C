@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -53,7 +53,7 @@
 //
 // ****************************************************************************
 
-ExportDatabaseRPC::ExportDatabaseRPC() : BlockingRPC("ia")
+ExportDatabaseRPC::ExportDatabaseRPC() : BlockingRPC("i*a"), ids(), exportDBAtts()
 {
 }
 
@@ -88,12 +88,16 @@ ExportDatabaseRPC::~ExportDatabaseRPC()
 //  Creation:   May 26, 2005
 //
 //  Modifications:
+//    Brad Whitlock, Fri Jan 24 16:40:22 PST 2014
+//    Allow more than one network.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
-ExportDatabaseRPC::operator()(const int id_, const ExportDBAttributes *atts)
+ExportDatabaseRPC::operator()(const intVector &ids_, const ExportDBAttributes *atts)
 {
-    SetID(id_);
+    SetIDs(ids_);
     SetExportDBAtts(atts);
 
     Execute();
@@ -115,13 +119,13 @@ ExportDatabaseRPC::operator()(const int id_, const ExportDBAttributes *atts)
 void
 ExportDatabaseRPC::SelectAll()
 {
-    Select(0, (void*)&id);
+    Select(0, (void*)&ids);
     Select(1, (void*)&exportDBAtts);
 }
 
 
 // ****************************************************************************
-//  Method: ExportDatabaseRPC::SetID
+//  Method: ExportDatabaseRPC::SetIDs
 //
 //  Purpose: 
 //    This sets the id parameter.
@@ -135,10 +139,10 @@ ExportDatabaseRPC::SelectAll()
 // ****************************************************************************
 
 void
-ExportDatabaseRPC::SetID(const int id_)
+ExportDatabaseRPC::SetIDs(const intVector &ids_)
 {
-    id = id_;
-    Select(0, (void*)&id);
+    ids = ids_;
+    Select(0, (void*)&ids);
 }
 
 
@@ -146,7 +150,7 @@ ExportDatabaseRPC::SetID(const int id_)
 //  Method: ExportDatabaseRPC::GetID
 //
 //  Purpose: 
-//    This returns network id.
+//    This returns network ids.
 //
 //  Arguments:
 //
@@ -155,10 +159,10 @@ ExportDatabaseRPC::SetID(const int id_)
 //
 // ****************************************************************************
 
-int
-ExportDatabaseRPC::GetID() const
+const intVector &
+ExportDatabaseRPC::GetIDs() const
 {
-    return id;
+    return ids;
 }
 
 // ****************************************************************************

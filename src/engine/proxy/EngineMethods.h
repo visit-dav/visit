@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -74,6 +74,25 @@ class ConstructDataBinningAttributes;
 class VisualCueList;
 class StatusAttributes;
 
+// ****************************************************************************
+//  Class: EngineMethods
+//
+//  Purpose:
+//      EngineMethods provides an interface to calling engine methods via RPCs.
+//
+//  Note: These methods were separated out from EngineProxy.
+//
+//  Programmer: Eric Brugger
+//  Creation:   July 26, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Mon Apr  7 15:40:13 PDT 2014
+//    I changed export database so it takes a vector of network ids.
+//    Work partially supported by DOE Grant SC0007548.
+//
+// ****************************************************************************
+
+
 class ENGINE_PROXY_API EngineMethods
 {
 public:
@@ -145,7 +164,7 @@ public:
     void                     Query(const std::vector<int> &,
                                    const QueryAttributes *,
                                    QueryAttributes &);
-    void                     ExportDatabase(int, const ExportDBAttributes *);
+    void                     ExportDatabases(const intVector &ids, const ExportDBAttributes *);
     void                     ConstructDataBinning(int, const ConstructDataBinningAttributes *);
 
     const SelectionSummary  &CreateNamedSelection(int id, const SelectionProperties &props);

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -89,8 +89,11 @@ class avtIsosurfaceFilter : virtual public avtPluginFilter,
     avtContourFilter      *cf;
     IsosurfaceAttributes   atts;
 
-    virtual avtFilter   *GetFacadedFilter();
-    virtual const avtFilter   *GetFacadedFilter() const;
+    virtual avtFilter       *GetFacadedFilter();
+    virtual const avtFilter *GetFacadedFilter() const;
+
+    static void UpdateDataObjectInfoCB(avtDataObject_p &input,
+                                       avtDataObject_p &output, void *);
 };
 
 

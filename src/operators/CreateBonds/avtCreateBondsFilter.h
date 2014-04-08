@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -103,6 +103,7 @@ class avtCreateBondsFilter : public avtPluginDataTreeIterator
     vtkDataSet           *ExecuteData_Slow(vtkPolyData*);
     virtual avtContract_p
                           ModifyContract(avtContract_p spec);
+    virtual void          UpdateDataObjectInfo(void);
 
     bool AtomBondDistances(int eA, int eB, double &dmin, double &dmax);
 };

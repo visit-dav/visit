@@ -1380,12 +1380,17 @@ EngineMethods::ConstructDataBinning(const int id, const ConstructDataBinningAttr
 //  Programmer:  Hank Childs
 //  Creation:    May 26, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jan 24 16:37:14 PST 2014
+//    Allow more than one network.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
-EngineMethods::ExportDatabase(const int id, const ExportDBAttributes *atts)
+EngineMethods::ExportDatabases(const intVector &ids, const ExportDBAttributes *atts)
 {
-    state->exportDatabaseRPC(id, atts);
+    state->exportDatabaseRPC(ids, atts);
     if (state->exportDatabaseRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(state->exportDatabaseRPC.GetExceptionType(),

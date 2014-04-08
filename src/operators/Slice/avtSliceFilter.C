@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -64,6 +64,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
+#include <avtPlane.h>
 #include <avtPlaneSelection.h>
 #include <avtSpatialBoxSelection.h>
 #include <avtOriginatingSource.h>
@@ -80,7 +81,6 @@
 using     std::vector;
 
 
-static bool   PlaneIntersectsCube(double plane[4], double bounds[6]);
 static void   FindCells(double *x, double *y, double *z,
                         int nx, int ny, int nz,
                         vtkIdType *clist, vtkIdType clistlen, vtkIdType &ncells,
@@ -192,6 +192,9 @@ avtSliceFilter::avtSliceFilter()
     cachedOrigin[0] = 0.;
     cachedOrigin[1] = 0.;
     cachedOrigin[2] = 0.;
+    cachedNormal[0] = 0.;
+    cachedNormal[1] = 0.;
+    cachedNormal[2] = 1.;
     doTransformVectors = true;
 }
 
@@ -1961,6 +1964,10 @@ avtSliceFilter::ReleaseData(void)
 //    Hank Childs, Thu Oct  9 11:01:14 PDT 2008
 //    Change the axis names for arbitrary slices.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -2048,7 +2055,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
         {
             double normal_mag = sqrt(normal[0]*normal[0] + 
                                     normal[1]*normal[1] + normal[2]*normal[2]);
-            double nn[3];
+            double nn[3] = {0., 0., 0.};
             if (normal_mag > 0.)
             {
                 nn[0] = normal[0] / normal_mag;
@@ -2056,7 +2063,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                 nn[2] = normal[2] / normal_mag;
             }
             double up_mag = sqrt(up[0]*up[0] + up[1]*up[1] + up[2]*up[2]);
-            double un[3];
+            double un[3] = {0., 0., 0.};
             if (up_mag > 0.)
             {
                 un[0] = up[0] / up_mag;
@@ -2067,7 +2074,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
             SNPRINTF(ylabel, 2048, "(%.2f,%.2f,%.2f)-Axis", un[0],un[1],un[2]);
             outAtts.SetYLabel(ylabel);
 
-            double cross[3];
+            double cross[3] = {0., 0., 0.};
             cross[0] = un[1]*nn[2] - un[2]*nn[1];
             cross[1] = un[2]*nn[0] - un[0]*nn[2];
             cross[2] = un[0]*nn[1] - un[1]*nn[0];
@@ -2084,6 +2091,127 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                                                             cross[2]);
             outAtts.SetXLabel(xlabel);
         }
+    }
+
+    // Add some metadata that we can use later.
+    char tmpstr[200];
+    double ox, oy, oz;
+    GetOrigin(ox, oy, oz);
+    SNPRINTF(tmpstr, 200, ", origin=%lg,%lg,%lg", ox, oy, oz);
+    std::string originStr(tmpstr);
+    if(atts.GetAxisType() == SliceAttributes::XAxis)
+    {
+        if(atts.GetOriginType() == SliceAttributes::Point)
+        {
+            SNPRINTF(tmpstr, 200, "X=%lg", atts.GetOriginPoint()[0]);
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Intercept)
+        {
+            SNPRINTF(tmpstr, 200, "X=%lg", atts.GetOriginIntercept());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Percent)
+        {
+            SNPRINTF(tmpstr, 200, "X percent=%lg", atts.GetOriginPercent());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Zone)
+        {
+            SNPRINTF(tmpstr, 200, "X domain=%d, zone=%d",
+                     atts.GetOriginZoneDomain(), atts.GetOriginZone());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Node)
+        {
+            SNPRINTF(tmpstr, 200, "X domain=%d, node=%d",
+                     atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
+        }
+        outAtts.AddFilterMetaData(std::string(tmpstr) + originStr);
+    }
+    else if(atts.GetAxisType() == SliceAttributes::YAxis)
+    {
+        if(atts.GetOriginType() == SliceAttributes::Point)
+        {
+            SNPRINTF(tmpstr, 200, "Y=%lg", atts.GetOriginPoint()[1]);
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Intercept)
+        {
+            SNPRINTF(tmpstr, 200, "Y=%lg", atts.GetOriginIntercept());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Percent)
+        {
+            SNPRINTF(tmpstr, 200, "Y percent=%lg", atts.GetOriginPercent());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Zone)
+        {
+            SNPRINTF(tmpstr, 200, "Y domain=%d, zone=%d",
+                     atts.GetOriginZoneDomain(), atts.GetOriginZone());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Node)
+        {
+            SNPRINTF(tmpstr, 200, "Y domain=%d, node=%d",
+                     atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
+        }
+        outAtts.AddFilterMetaData(std::string(tmpstr) + originStr);
+    }
+    else if(atts.GetAxisType() == SliceAttributes::ZAxis)
+    {
+        if(atts.GetOriginType() == SliceAttributes::Point)
+        {
+            SNPRINTF(tmpstr, 200, "Z=%lg", atts.GetOriginPoint()[2]);
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Intercept)
+        {
+            SNPRINTF(tmpstr, 200, "Z=%lg", atts.GetOriginIntercept());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Percent)
+        {
+            SNPRINTF(tmpstr, 200, "Z percent=%lg", atts.GetOriginPercent());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Zone)
+        {
+            SNPRINTF(tmpstr, 200, "Z domain=%d, zone=%d",
+                     atts.GetOriginZoneDomain(), atts.GetOriginZone());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Node)
+        {
+            SNPRINTF(tmpstr, 200, "Z domain=%d, node=%d",
+                     atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
+        }
+        outAtts.AddFilterMetaData(std::string(tmpstr) + originStr);
+    }
+    else if(atts.GetAxisType() == SliceAttributes::Arbitrary)
+    {
+        if(atts.GetOriginType() == SliceAttributes::Point)
+        {
+            SNPRINTF(tmpstr, 200, "origin=%lg,%lg,%lg",
+                     atts.GetOriginPoint()[0], atts.GetOriginPoint()[1], atts.GetOriginPoint()[2]);
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Intercept)
+        {
+            SNPRINTF(tmpstr, 200, "intercept=%lg", atts.GetOriginIntercept());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Percent)
+        {
+            SNPRINTF(tmpstr, 200, "percent=%lg", atts.GetOriginPercent());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Zone)
+        {
+            SNPRINTF(tmpstr, 200, "domain=%d, zone=%d",
+                     atts.GetOriginZoneDomain(), atts.GetOriginZone());
+        }
+        else if(atts.GetOriginType() == SliceAttributes::Node)
+        {
+            SNPRINTF(tmpstr, 200, "domain=%d, node=%d",
+                     atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
+        }
+
+        std::string s(tmpstr);
+        if(atts.GetOriginType() != SliceAttributes::Point)
+            s = s + originStr;
+        SNPRINTF(tmpstr, 200, ", normal=%lg,%lg,%lg",
+                     atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]);
+        outAtts.AddFilterMetaData("Slice", s + std::string(tmpstr));
+    }
+    else if(atts.GetAxisType() == SliceAttributes::ThetaPhi)
+    {
     }
 }
 
@@ -2560,52 +2688,6 @@ FindCells(double *x, double *y, double *z, int nx, int ny, int nz, vtkIdType *cl
         }
     }
 }
-
-
-// ****************************************************************************
-//  Function: PlaneIntersectsCube
-//
-//  Purpose:
-//      Determines if a plane intersects a cube.
-//
-//  Arguments:
-//      plane   The equation of a plane as (A,B,C,D).
-//      bounds  The bounds of a cube as (minx,maxx,miny,maxy,minz,maxz).
-//
-//  Returns:    True if the plane intersects the cube, false otherwise.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 5, 2002
-//
-// ****************************************************************************
-
-bool
-PlaneIntersectsCube(double plane[4], double bounds[6])
-{
-    bool has_low_point  = false;
-    bool has_high_point = false;
-    for (int i = 0 ; i < 8 ; i++)
-    {
-        double x = (i&1 ? bounds[1] : bounds[0]);
-        double y = (i&2 ? bounds[3] : bounds[2]);
-        double z = (i&4 ? bounds[5] : bounds[4]);
-        double val = plane[3] - plane[0]*x - plane[1]*y - plane[2]*z;
-
-        if (val == 0.)  // If we are on the plane, intersect
-            return true;
-
-        if (val < 0)
-            has_low_point = true;
-        else
-            has_high_point = true;
-
-        if (has_low_point && has_high_point)
-            return true;
-    }
-
-    return false;
-}
-
 
 // ****************************************************************************
 //  Method: avtSliceFilter::PostExecute

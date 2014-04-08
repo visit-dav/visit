@@ -1,6 +1,6 @@
 // ***************************************************************************
 //
-// Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+// Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 // Produced at the Lawrence Livermore National Laboratory
 // LLNL-CODE-442911
 // All rights reserved.
@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class DBPluginInfoAttributes extends AttributeSubject
 {
-    private static int DBPluginInfoAttributes_numAdditionalAtts = 6;
+    private static int DBPluginInfoAttributes_numAdditionalAtts = 7;
 
     public DBPluginInfoAttributes()
     {
@@ -69,6 +69,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
         dbReadOptions = new Vector();
         dbWriteOptions = new Vector();
         typesFullNames = new Vector();
+        license = new Vector();
         host = new String("");
     }
 
@@ -81,6 +82,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
         dbReadOptions = new Vector();
         dbWriteOptions = new Vector();
         typesFullNames = new Vector();
+        license = new Vector();
         host = new String("");
     }
 
@@ -119,6 +121,10 @@ public class DBPluginInfoAttributes extends AttributeSubject
         typesFullNames = new Vector(obj.typesFullNames.size());
         for(i = 0; i < obj.typesFullNames.size(); ++i)
             typesFullNames.addElement(new String((String)obj.typesFullNames.elementAt(i)));
+
+        license = new Vector(obj.license.size());
+        for(i = 0; i < obj.license.size(); ++i)
+            license.addElement(new String((String)obj.license.elementAt(i)));
 
         host = new String(obj.host);
 
@@ -184,12 +190,22 @@ public class DBPluginInfoAttributes extends AttributeSubject
             String typesFullNames2 = (String)obj.typesFullNames.elementAt(i);
             typesFullNames_equal = typesFullNames1.equals(typesFullNames2);
         }
+        // Compare the elements in the license vector.
+        boolean license_equal = (obj.license.size() == license.size());
+        for(i = 0; (i < license.size()) && license_equal; ++i)
+        {
+            // Make references to String from Object.
+            String license1 = (String)license.elementAt(i);
+            String license2 = (String)obj.license.elementAt(i);
+            license_equal = license1.equals(license2);
+        }
         // Create the return value
         return (types_equal &&
                 hasWriter_equal &&
                 dbReadOptions_equal &&
                 dbWriteOptions_equal &&
                 typesFullNames_equal &&
+                license_equal &&
                 (host.equals(obj.host)));
     }
 
@@ -212,10 +228,16 @@ public class DBPluginInfoAttributes extends AttributeSubject
         Select(4);
     }
 
+    public void SetLicense(Vector license_)
+    {
+        license = license_;
+        Select(5);
+    }
+
     public void SetHost(String host_)
     {
         host = host_;
-        Select(5);
+        Select(6);
     }
 
     // Property getting methods
@@ -224,6 +246,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
     public Vector GetDbReadOptions() { return dbReadOptions; }
     public Vector GetDbWriteOptions() { return dbWriteOptions; }
     public Vector GetTypesFullNames() { return typesFullNames; }
+    public Vector GetLicense() { return license; }
     public String GetHost() { return host; }
 
     // Write and read methods.
@@ -254,6 +277,8 @@ public class DBPluginInfoAttributes extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteStringVector(typesFullNames);
         if(WriteSelect(5, buf))
+            buf.WriteStringVector(license);
+        if(WriteSelect(6, buf))
             buf.WriteString(host);
     }
 
@@ -297,6 +322,9 @@ public class DBPluginInfoAttributes extends AttributeSubject
             SetTypesFullNames(buf.ReadStringVector());
             break;
         case 5:
+            SetLicense(buf.ReadStringVector());
+            break;
+        case 6:
             SetHost(buf.ReadString());
             break;
         }
@@ -328,6 +356,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
         }
         str = str + "}\n";
         str = str + stringVectorToString("typesFullNames", typesFullNames, indent) + "\n";
+        str = str + stringVectorToString("license", license, indent) + "\n";
         str = str + stringToString("host", host, indent) + "\n";
         return str;
     }
@@ -404,6 +433,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
     private Vector dbReadOptions; // vector of DBOptionsAttributes objects
     private Vector dbWriteOptions; // vector of DBOptionsAttributes objects
     private Vector typesFullNames; // vector of String objects
+    private Vector license; // vector of String objects
     private String host;
 }
 

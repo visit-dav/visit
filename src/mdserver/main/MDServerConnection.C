@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -937,6 +937,10 @@ MDServerConnection::GetCurrentSIL() const
 //   Brad Whitlock, Tue Jun 24 15:03:32 PDT 2008
 //   Get the database plugin manager from the parent app.
 //
+//   Brad Whitlock, Thu Mar 20 11:57:38 PDT 2014
+//   Add license.
+//   Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 DBPluginInfoAttributes *
@@ -951,6 +955,7 @@ MDServerConnection::GetDBPluginInfo()
     std::vector<std::string> types(nPlugins);
     std::vector<std::string> fullnames(nPlugins);
     std::vector<int>         hasWriter(nPlugins);
+    std::vector<std::string> license(nPlugins);
     for (int i = 0 ; i < manager->GetNEnabledPlugins() ; i++)
     {
         std::string fullname = manager->GetEnabledID(i);
@@ -971,10 +976,12 @@ MDServerConnection::GetDBPluginInfo()
             rv->AddDbWriteOptions(*a);
             delete a;
         }
+        license[i] = info->GetLicense();
     }
     rv->SetTypes(types);
     rv->SetTypesFullNames(fullnames);
     rv->SetHasWriter(hasWriter);
+    rv->SetLicense(license);
 
     return rv;
 }

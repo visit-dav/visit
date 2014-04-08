@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-442911
 # All rights reserved.
@@ -53,6 +53,9 @@
 #
 #   Cyrus Harrison, on Oct 28 14:39:05 PDT 2013
 #   Link vtkCommonDataModel (it contains the vtkDataSet types)
+#
+#   Brad Whitlock, Mon Apr  7 15:24:19 PDT 2014
+#   Link to visit_vtk.
 #
 #****************************************************************************/
 
@@ -236,6 +239,7 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
+${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${ZLIB_INCLUDE_DIR}
@@ -252,7 +256,7 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
     TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts 
-                                           lightweight_visit_vtk vtkCommonCore 
+                                           visit_vtk lightweight_visit_vtk vtkCommonCore 
                                            vtkCommonDataModel vtkFiltersGeometry 
                                            vtkRenderingOpenGL vtkRenderingFreeType 
                                            vtkRenderingFreeTypeOpenGL vtkInteractionStyle 
@@ -271,7 +275,7 @@ IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpipeline_par ${ALL_SOURCES})
 
         TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts 
-                                              lightweight_visit_vtk vtkCommonCore 
+                                              visit_vtk lightweight_visit_vtk vtkCommonCore 
                                               vtkCommonDataModel vtkFiltersGeometry 
                                               vtkRenderingOpenGL vtkRenderingFreeType 
                                               vtkRenderingFreeTypeOpenGL 

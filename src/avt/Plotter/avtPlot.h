@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -270,6 +270,10 @@ class     MapNode;
 //    Kathleen Biagas, Wed Feb 29 07:36:59 PST 2012
 //    Added GetExtraInfoForPick.
 //
+//    Brad Whitlock, Thu Sep 19 11:55:28 PDT 2013
+//    Added AugmentAtts and ModifyContract.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -302,6 +306,7 @@ class PLOTTER_API avtPlot
     virtual void               ReleaseData(void);
 
     virtual void               SetAtts(const AttributeGroup*) = 0;
+    virtual bool               AugmentAtts(AttributeGroup*);
 
     void                       SetDataExtents(const std::vector<double> &);
     virtual void               GetDataExtents(std::vector<double> &);
@@ -349,7 +354,7 @@ class PLOTTER_API avtPlot
     virtual bool               CompatibleWithCumulativeQuery() const { return true; }
   
     virtual const MapNode&     GetExtraInfoForPick(void);
-
+    virtual avtContract_p      ModifyContract(avtContract_p c0) { return EnhanceSpecification(c0); }
   protected:
     bool                       needsRecalculation;
     int                        index;

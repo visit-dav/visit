@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -116,6 +116,10 @@ class DatabasePluginManager;
 //    flag.  Made pure virtual so plugin developers will know to re-run info
 //    xml code generation tool.  Removed deprecated versions of this code.
 //
+//    Brad Whitlock, Thu Mar 20 14:11:30 PDT 2014
+//    Add a method to return license.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -146,6 +150,7 @@ class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePlugin
     virtual DBOptionsAttributes      *GetWriteOptions(void) const;
     virtual void                      SetReadOptions(DBOptionsAttributes *);
     virtual void                      SetWriteOptions(DBOptionsAttributes *);
+    virtual std::string               GetLicense() const { return std::string(); }
 
     void SetPluginManager(DatabasePluginManager *ptr);
     DatabasePluginManager *GetPluginManager() const;
