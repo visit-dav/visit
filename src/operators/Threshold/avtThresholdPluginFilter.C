@@ -207,16 +207,19 @@ avtThresholdPluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
     int nvars = (int)(t.GetListedVarNames().size());
     for(int i = 0; i < nvars; ++i)
     {
-        SNPRINTF(tmp, 200, "%lg < ", t.GetLowerBounds()[i]);
-        params += tmp;
-        if(t.GetListedVarNames()[i] == "default")
-            params += t.GetDefaultVarName();
-        else
-            params += t.GetListedVarNames()[i];
-        SNPRINTF(tmp, 200, " < %lg", t.GetUpperBounds()[i]);
-        params += tmp;
-        if(i < nvars-1)
-            params += ", ";
+        if(i < t.GetLowerBounds().size() && i < t.GetUpperBounds().size())
+        {
+            SNPRINTF(tmp, 200, "%lg < ", t.GetLowerBounds()[i]);
+            params += tmp;
+            if(t.GetListedVarNames()[i] == "default")
+                params += t.GetDefaultVarName();
+            else
+                params += t.GetListedVarNames()[i];
+            SNPRINTF(tmp, 200, " < %lg", t.GetUpperBounds()[i]);
+            params += tmp;
+            if(i < nvars-1)
+                params += ", ";
+        }
     }
     outAtts.AddFilterMetaData("Threshold", params);
 }
