@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -670,6 +670,10 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 //    Hank Childs, Mon Jul 16 17:22:00 PDT 2012
 //    Split logic for setting axis names and units into its own method.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -689,7 +693,9 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
         else 
             dataAtts.SetCentering(AVT_ZONECENT);
         SetAxisNamesAndUnits();
-   }
+    }
+
+    dataAtts.AddFilterMetaData("DataBinning");
 }
 
 

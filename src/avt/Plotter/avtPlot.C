@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -276,6 +276,26 @@ avtPlot::~avtPlot()
     }
 }
 
+// ****************************************************************************
+//  Method: avtPlot::AugmentAtts
+//
+//  Purpose:
+//    Give the plot a chance to modify its own plot attributes based on the
+//    results of executing the plot.
+//
+//  Note: Work partially supported by DOE Grant SC0007548.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Sep 19 11:57:14 PDT 2013
+//
+// ****************************************************************************
+
+bool
+avtPlot::AugmentAtts(AttributeGroup*)
+{
+    // No attributes were changed.
+    return false;
+}
 
 // ****************************************************************************
 //  Method: avtPlot::SetDataExtents

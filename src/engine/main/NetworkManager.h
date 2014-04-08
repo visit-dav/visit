@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -546,7 +546,7 @@ class ENGINE_MAIN_API NetworkManager
     void          PickForIntersection(const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
     std::string   GetQueryParameters(const std::string &qName);
-    void          ExportDatabase(const int, ExportDBAttributes *);
+    void          ExportDatabases(const intVector &, ExportDBAttributes *);
     void          ConstructDataBinning(const int, ConstructDataBinningAttributes *);
     avtDataBinning *GetDataBinning(const char *);
 
@@ -565,6 +565,7 @@ class ENGINE_MAIN_API NetworkManager
     static void   SetStereoEnabled();
 
  protected:
+    void               ExportSingleDatabase(int, ExportDBAttributes *);
 
     virtual avtImage_p RenderGeometry();
     void               RenderSetup(intVector& networkIds, bool getZBuffer,

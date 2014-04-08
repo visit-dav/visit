@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -115,6 +115,7 @@ void DBPluginInfoAttributes::Copy(const DBPluginInfoAttributes &obj)
     }
 
     typesFullNames = obj.typesFullNames;
+    license = obj.license;
     host = obj.host;
 
     DBPluginInfoAttributes::SelectAll();
@@ -303,6 +304,7 @@ DBPluginInfoAttributes::operator == (const DBPluginInfoAttributes &obj) const
             dbReadOptions_equal &&
             dbWriteOptions_equal &&
             (typesFullNames == obj.typesFullNames) &&
+            (license == obj.license) &&
             (host == obj.host));
 }
 
@@ -452,6 +454,7 @@ DBPluginInfoAttributes::SelectAll()
     Select(ID_dbReadOptions,  (void *)&dbReadOptions);
     Select(ID_dbWriteOptions, (void *)&dbWriteOptions);
     Select(ID_typesFullNames, (void *)&typesFullNames);
+    Select(ID_license,        (void *)&license);
     Select(ID_host,           (void *)&host);
 }
 
@@ -547,6 +550,12 @@ DBPluginInfoAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool
     {
         addToParent = true;
         node->AddNode(new DataNode("typesFullNames", typesFullNames));
+    }
+
+    if(completeSave || !FieldsEqual(ID_license, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("license", license));
     }
 
     if(completeSave || !FieldsEqual(ID_host, &defaultObject))
@@ -646,6 +655,8 @@ DBPluginInfoAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("typesFullNames")) != 0)
         SetTypesFullNames(node->AsStringVector());
+    if((node = searchNode->GetNode("license")) != 0)
+        SetLicense(node->AsStringVector());
     if((node = searchNode->GetNode("host")) != 0)
         SetHost(node->AsString());
 }
@@ -673,6 +684,13 @@ DBPluginInfoAttributes::SetTypesFullNames(const stringVector &typesFullNames_)
 {
     typesFullNames = typesFullNames_;
     Select(ID_typesFullNames, (void *)&typesFullNames);
+}
+
+void
+DBPluginInfoAttributes::SetLicense(const stringVector &license_)
+{
+    license = license_;
+    Select(ID_license, (void *)&license);
 }
 
 void
@@ -746,6 +764,18 @@ DBPluginInfoAttributes::GetTypesFullNames()
     return typesFullNames;
 }
 
+const stringVector &
+DBPluginInfoAttributes::GetLicense() const
+{
+    return license;
+}
+
+stringVector &
+DBPluginInfoAttributes::GetLicense()
+{
+    return license;
+}
+
 const std::string &
 DBPluginInfoAttributes::GetHost() const
 {
@@ -790,6 +820,12 @@ void
 DBPluginInfoAttributes::SelectTypesFullNames()
 {
     Select(ID_typesFullNames, (void *)&typesFullNames);
+}
+
+void
+DBPluginInfoAttributes::SelectLicense()
+{
+    Select(ID_license, (void *)&license);
 }
 
 void
@@ -1133,6 +1169,7 @@ DBPluginInfoAttributes::GetFieldName(int index) const
     case ID_dbReadOptions:  return "dbReadOptions";
     case ID_dbWriteOptions: return "dbWriteOptions";
     case ID_typesFullNames: return "typesFullNames";
+    case ID_license:        return "license";
     case ID_host:           return "host";
     default:  return "invalid index";
     }
@@ -1163,6 +1200,7 @@ DBPluginInfoAttributes::GetFieldType(int index) const
     case ID_dbReadOptions:  return FieldType_attVector;
     case ID_dbWriteOptions: return FieldType_attVector;
     case ID_typesFullNames: return FieldType_stringVector;
+    case ID_license:        return FieldType_stringVector;
     case ID_host:           return FieldType_string;
     default:  return FieldType_unknown;
     }
@@ -1193,6 +1231,7 @@ DBPluginInfoAttributes::GetFieldTypeName(int index) const
     case ID_dbReadOptions:  return "attVector";
     case ID_dbWriteOptions: return "attVector";
     case ID_typesFullNames: return "stringVector";
+    case ID_license:        return "stringVector";
     case ID_host:           return "string";
     default:  return "invalid index";
     }
@@ -1261,6 +1300,11 @@ DBPluginInfoAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_typesFullNames:
         {  // new scope
         retval = (typesFullNames == obj.typesFullNames);
+        }
+        break;
+    case ID_license:
+        {  // new scope
+        retval = (license == obj.license);
         }
         break;
     case ID_host:

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -89,6 +89,8 @@ avtFilter::avtFilter()
     modified    = true;
     inExecute   = false;
     webpage     = NULL;
+    updateDOI   = NULL;
+    updateDOIData = NULL;
 }
 
 
@@ -581,6 +583,10 @@ avtFilter::VerifyInput(void)
 //    Hank Childs, Tue Sep 10 09:08:51 PDT 2002
 //    Allow for NULL inputs.
 //
+//    Brad Whitlock, Wed Mar 19 13:55:05 PDT 2014
+//    Added a callback function.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -594,8 +600,43 @@ avtFilter::PassOnDataObjectInfo(void)
     }
 
     UpdateDataObjectInfo();
+
+    // Call a callback that can let other entities participate in the update.
+    if(updateDOI != NULL)
+    {
+        (*updateDOI)(input, output, updateDOIData);
+    }
 }
 
+// ****************************************************************************
+// Method: avtFilter::SetUpdateDataObjectInfoCallback
+//
+// Purpose:
+//   Sets a callback that will participate in UpdateDataObjectInfo.
+//
+// Arguments:
+//   cb     : The callback function.
+//   cbdata : Data that will be passed to the callback function.
+//
+// Returns:    
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 19 13:54:03 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtFilter::SetUpdateDataObjectInfoCallback(
+    void (*cb)(avtDataObject_p &input, avtDataObject_p &output, void *),
+    void *cbdata)
+{
+    updateDOI = cb;
+    updateDOIData = cbdata;
+}
 
 // ****************************************************************************
 //  Method: avtFilter::UpdateDataObjectInfo

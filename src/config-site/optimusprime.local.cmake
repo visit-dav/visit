@@ -1,14 +1,14 @@
-#/Users/bjw/Development/thirdparty_shared/2.7.0/cmake/2.8.10.2/i386-apple-darwin12_gcc-4.2/bin/cmake
+#/Users/bjw/Development/thirdparty_shared/2.8.0/cmake/2.8.10.2/i386-apple-darwin12_gcc-4.2/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Mon Aug 19 15:49:35 PDT 2013
+## created: Wed Feb 26 17:35:30 PST 2014
 ## system: Darwin optimusprime.local 12.2.0 Darwin Kernel Version 12.2.0: Sat Aug 25 00:48:52 PDT 2012; root:xnu-2050.18.24~1/RELEASE_X86_64 x86_64
 ## by: bjw
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /Users/bjw/Development/thirdparty_shared/2.7.0)
+SET(VISITHOME /Users/bjw/Development/thirdparty_shared/2.8.0)
 SET(VISITARCH i386-apple-darwin12_gcc-4.2)
 
 ## Compiler flags.
@@ -39,7 +39,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /Users/bjw/Development/thirdparty_shared/2.7.0/python/2.7.3/i386-apple-darwin12_gcc-4.2)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.5/${VISITARCH})
 
 ##
 ## Qt
@@ -49,9 +49,8 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 ##
 ## VTK
 ##
-SETUP_VTK_VERSION(6.0.0)
+SETUP_VTK_VERSION(6.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
-##
 
 ##
 ## SZIP
@@ -103,4 +102,5 @@ VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.9.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+
 

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -40,16 +40,19 @@
 
 #include <stdio.h> // for sscanf
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QGroupBox>
-#include <QWidget>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSlider>
+#include <QWidget>
 
 #include <QvisVariableButton.h>
 #include <DebugStream.h>
@@ -92,6 +95,7 @@ QvisExportDBWindow::QvisExportDBWindow(
 {
     exportDBAtts = NULL;
     dbPluginInfoAtts = NULL;
+    delimiter = 0;
 }
 
 // ****************************************************************************
@@ -196,6 +200,10 @@ QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon Feb 10 17:31:32 PST 2014
+//   Let the user pick the delimiter.
+//   Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -207,6 +215,7 @@ QvisExportDBWindow::CreateWindowContents()
     topLayout->addWidget(infoBox);
 
     QGridLayout *infoLayout = new QGridLayout(infoBox);
+    infoLayout->setMargin(5);
 
     filenameLineEdit = new QLineEdit(infoBox);
     connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
@@ -214,8 +223,6 @@ QvisExportDBWindow::CreateWindowContents()
     infoLayout->addWidget(filenameLabel, 1, 0);
     infoLayout->addWidget(filenameLineEdit, 1, 1);
 
-    
-    
     directoryNameLabel = new QLabel(tr("Directory name"), infoBox);
     
     QHBoxLayout *directoryLayout = new QHBoxLayout();
@@ -241,31 +248,47 @@ QvisExportDBWindow::CreateWindowContents()
 
     fileFormatComboBox = new QComboBox(infoBox);
     fileFormatComboBox->clear();
-  
+
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
     QLabel *formatLabel = new QLabel(tr("Export to"),infoBox);
-    infoLayout->addWidget(formatLabel, 4, 0);
-    infoLayout->addWidget(fileFormatComboBox, 4, 1);
+    infoLayout->addWidget(formatLabel, 3, 0);
+    infoLayout->addWidget(fileFormatComboBox, 3, 1);
 
-    varsButton = new QvisVariableButton(true, false, true, -1,infoBox);
-    varsButton->setText(tr("Variables"));
+    QGroupBox *varGroup = new QGroupBox(tr("Variables"), infoBox);
+    infoLayout->addWidget(varGroup, 4, 0, 1, 2);
+    QGridLayout *varLayout = new QGridLayout(varGroup);
+    varLayout->setMargin(5);
+    QButtonGroup *delimGroup = new QButtonGroup(0);
+    QRadioButton *rb0 = new QRadioButton(tr("Space"), varGroup);
+    QRadioButton *rb1 = new QRadioButton(tr("Comma"), varGroup);
+    delimGroup->addButton(rb0, 0);
+    delimGroup->addButton(rb1, 1);
+    varLayout->addWidget(new QLabel(tr("Delimiter"), varGroup), 0, 0);
+    varLayout->addWidget(rb0, 0, 1);
+    varLayout->addWidget(rb1, 0, 2);
+    rb0->setChecked(true);
+    connect(delimGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(delimiterChanged(int)));
+
+    varsButton = new QvisVariableButton(true, false, true, -1,varGroup);
+    varsButton->setText(tr("Add Variable"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));
-    infoLayout->addWidget(varsButton, 3, 0);
+    varLayout->addWidget(varsButton, 1, 0);
 
-    varsLineEdit = new QLineEdit(infoBox);
+    varsLineEdit = new QLineEdit(varGroup);
     varsLineEdit->setText("default");
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
-    infoLayout->addWidget(varsLineEdit, 3, 1);
+    varLayout->addWidget(varsLineEdit, 1, 1, 1, 2);
 
     // The export button.
     QHBoxLayout *exportButtonLayout = new QHBoxLayout();
     topLayout->addLayout(exportButtonLayout);
     //exportButtonLayout->setSpacing(5);
-    
+
     QPushButton *exportButton = new QPushButton(tr("Export"), central);
     connect(exportButton, SIGNAL(clicked()),
             this, SLOT(exportButtonClicked()));
@@ -371,9 +394,8 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
 
                 // This isn't so clean since we should not be doing things
                 // based on a plugin name but it's okay for now.
-                // Disable directories if the database type is "SimV1".
-                bool enableDir = fileFormatComboBox->currentText() != 
-                                 QString("SimV1");
+                // Disable directories if the database type is a simulation.
+                bool enableDir = !fileFormatComboBox->currentText().startsWith("SimV");
                 directoryNameLineEdit->setEnabled(enableDir);
                 directorySelectButton->setEnabled(enableDir);
                 directoryNameLabel->setEnabled(enableDir);
@@ -389,19 +411,58 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                                      exportDBAtts->GetDirname().c_str());
             break;
           case ExportDBAttributes::ID_variables:
-            {
-                stringVector vars = exportDBAtts->GetVariables();
-                std::string allVars;
-                for (int i = 0; i < vars.size(); i++)
-                {
-                   allVars += vars[i];
-                   allVars += " ";
-                }
-                varsLineEdit->setText(allVars.c_str());
-            }
+            UpdateVariablesList();
             break;
         }
     } // end for
+}
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::UpdateVariablesList
+//
+// Purpose:
+//   Set the var text from the list of variables that we'll export.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 20 13:49:09 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExportDBWindow::UpdateVariablesList()
+{
+    const stringVector &vars = exportDBAtts->GetVariables();
+    std::string allVars;
+    for (int i = 0; i < vars.size(); i++)
+    {
+        allVars += vars[i];
+        if(i < vars.size()-1)
+            allVars += Delimiter().toStdString();
+    }
+    varsLineEdit->setText(allVars.c_str());
+}
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::Delimiter
+//
+// Purpose:
+//   Return the delimiter string used to split the variable list.
+//
+// Returns:    The delimiter string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 20 13:48:35 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+QString
+QvisExportDBWindow::Delimiter() const
+{
+    return QString(delimiter == 0 ? " " : ",");
 }
 
 // ****************************************************************************
@@ -424,11 +485,13 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
-//
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Fixed problem with empty string from split propagating into the export
 //   vars.
 //   
+//   Brad Whitlock, Thu Mar 20 13:47:57 PDT 2014
+//   I added support for delimiters other than spaces.
+//   Work partially supported by DOE Grant SC0007548.
 //
 // ****************************************************************************
 
@@ -466,11 +529,11 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
         QString temp;
         stringVector vars;
         temp = varsLineEdit->displayText().simplified();
-        QStringList lst = temp.split(" ",QString::SkipEmptyParts);
+        QStringList lst = temp.split(Delimiter(),QString::SkipEmptyParts);
         
         QStringListIterator it(lst);
         while(it.hasNext())
-            vars.push_back(it.next().toStdString());
+            vars.push_back(it.next().simplified().toStdString());
 
         exportDBAtts->SetVariables(vars);
     }
@@ -632,15 +695,43 @@ QvisExportDBWindow::fileFormatChanged(int)
 // Creation:   May 25, 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 20 14:04:35 PDT 2014
+//   Show license text.
+//   Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
 QvisExportDBWindow::exportDB()
 {
     Apply();
+
+    // See if we can get a license string for the plugin.
+    QString license;
+    int ntypes = dbPluginInfoAtts->GetTypes().size();
+    for (int i = 0 ; i < ntypes ; i++)
+    {
+        if (dbPluginInfoAtts->GetTypes()[i] == exportDBAtts->GetDb_type())
+        {
+            license = QString(dbPluginInfoAtts->GetLicense()[i].c_str());
+            break;
+        }
+    }
+    // If we have a non-empty license string that we have not shown before,
+    // show the license.
+    if(!license.isEmpty())
+    {
+        QString dbType(exportDBAtts->GetDb_type().c_str());
+        if(licenseShown.indexOf(dbType) == -1)
+        {
+            QMessageBox::information(this, tr("%1 License").arg(dbType), license);
+            licenseShown.append(dbType);
+        }
+    }
+
     if(isVisible() && !posted())
         hide();
+
     GetViewerMethods()->ExportDatabase();
 }
 
@@ -714,7 +805,7 @@ QvisExportDBWindow::addVariable(const QString &var)
     // Add the new variable to the variable line edit.
     QString varString(varsLineEdit->displayText());
     if(varString.length() > 0)
-        varString += " ";
+        varString += Delimiter();
     varString += var;
     varsLineEdit->setText(varString);
 
@@ -768,4 +859,32 @@ QvisExportDBWindow::selectOutputDirectory()
         GetCurrentValues(1);
         Apply();
     }
+}
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::delimiterChanged
+//
+// Purpose:
+//   This is a Qt slot function that we call to update the variable list when
+//   the selected delimiter changes.
+//
+// Arguments:
+//   val  : The new delimiter index.
+//
+// Returns:    
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr  7 15:43:35 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExportDBWindow::delimiterChanged(int val)
+{
+    delimiter = val;
+    UpdateVariablesList();
 }

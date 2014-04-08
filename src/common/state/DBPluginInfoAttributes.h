@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -93,12 +93,14 @@ public:
     void SelectDbReadOptions();
     void SelectDbWriteOptions();
     void SelectTypesFullNames();
+    void SelectLicense();
     void SelectHost();
 
     // Property setting methods
     void SetTypes(const stringVector &types_);
     void SetHasWriter(const intVector &hasWriter_);
     void SetTypesFullNames(const stringVector &typesFullNames_);
+    void SetLicense(const stringVector &license_);
     void SetHost(const std::string &host_);
 
     // Property getting methods
@@ -112,6 +114,8 @@ public:
           AttributeGroupVector &GetDbWriteOptions();
     const stringVector &GetTypesFullNames() const;
           stringVector &GetTypesFullNames();
+    const stringVector &GetLicense() const;
+          stringVector &GetLicense();
     const std::string  &GetHost() const;
           std::string  &GetHost();
 
@@ -150,6 +154,7 @@ public:
         ID_dbReadOptions,
         ID_dbWriteOptions,
         ID_typesFullNames,
+        ID_license,
         ID_host,
         ID__LAST
     };
@@ -162,12 +167,13 @@ private:
     AttributeGroupVector dbReadOptions;
     AttributeGroupVector dbWriteOptions;
     stringVector         typesFullNames;
+    stringVector         license;
     std::string          host;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define DBPLUGININFOATTRIBUTES_TMFS "s*i*a*a*s*s"
+#define DBPLUGININFOATTRIBUTES_TMFS "s*i*a*a*s*s*s"
 
 #endif

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -122,7 +122,8 @@ avtThresholdPluginFilter::SetAtts(const AttributeGroup *a)
     }
 
     tf = new avtThresholdFilter();
-    tf->SetAtts(a);    
+    tf->SetAtts(a);
+    tf->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
 }
 
 
@@ -176,4 +177,46 @@ const avtFilter *
 avtThresholdPluginFilter::GetFacadedFilter(void) const
 {
     return tf;
+}
+
+// ****************************************************************************
+// Method: avtThresholdPluginFilter::UpdateDataObjectInfoCB
+//
+// Purpose:
+//   Update the data object information via a callback function.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 10:53:05 PDT 2014
+//
+// Modifications:
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
+// ****************************************************************************
+
+void
+avtThresholdPluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
+    avtDataObject_p &output, void *This)
+{
+    avtDataAttributes &outAtts = output->GetInfo().GetAttributes();
+    const ThresholdAttributes &t = ((const avtThresholdPluginFilter *)This)->atts;
+
+    char tmp[200];
+    std::string params;
+    int nvars = (int)(t.GetListedVarNames().size());
+    for(int i = 0; i < nvars; ++i)
+    {
+        SNPRINTF(tmp, 200, "%lg < ", t.GetLowerBounds()[i]);
+        params += tmp;
+        if(t.GetListedVarNames()[i] == "default")
+            params += t.GetDefaultVarName();
+        else
+            params += t.GetListedVarNames()[i];
+        SNPRINTF(tmp, 200, " < %lg", t.GetUpperBounds()[i]);
+        params += tmp;
+        if(i < nvars-1)
+            params += ", ";
+    }
+    outAtts.AddFilterMetaData("Threshold", params);
 }

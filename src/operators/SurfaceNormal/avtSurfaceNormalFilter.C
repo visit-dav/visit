@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -223,4 +223,26 @@ avtSurfaceNormalFilter::GetVariablesToEvaluate(std::vector<std::string> &list)
     list.push_back(fullname);
 }
 
+// ****************************************************************************
+// Method: avtSurfaceNormalFilter::UpdateDataObjectInfo
+//
+// Purpose:
+//   Update the data object information.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 10:53:05 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
+void
+avtSurfaceNormalFilter::UpdateDataObjectInfo(void)
+{
+    avtPluginFilter::UpdateDataObjectInfo();
+    avtDeferExpressionBaseFilter::UpdateDataObjectInfo();
+
+    GetOutput()->GetInfo().GetAttributes().AddFilterMetaData("SurfaceNormal");
+}

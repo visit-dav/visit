@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -3407,7 +3407,7 @@ ViewerEngineManager::SetExportDBAtts(ExportDBAttributes *e)
 
 
 // ****************************************************************************
-//  Method: ViewerEngineManager::ExportDatabase
+//  Method: ViewerEngineManager::ExportDatabases
 //
 //  Purpose:
 //      Exports a database.
@@ -3422,15 +3422,20 @@ ViewerEngineManager::SetExportDBAtts(ExportDBAttributes *e)
 //    Brad Whitlock, Tue Apr 29 14:48:11 PDT 2008
 //    Added tr()
 //
+//    Brad Whitlock, Fri Jan 24 16:34:24 PST 2014
+//    Allow exporting of multiple plots.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
+ViewerEngineManager::ExportDatabases(const EngineKey &ek, const intVector &ids)
 {
     ENGINE_PROXY_RPC_BEGIN("ExportDatabase");
     // If we're trying to export to a simulation but the data is not from
     // a simulation then issue an error message.
-    if(exportDBAtts->GetDb_type() == "SimV1" && !ek.IsSimulation())
+    if((exportDBAtts->GetDb_type() == "SimV1" || 
+        exportDBAtts->GetDb_type() == "SimV2") && !ek.IsSimulation())
     {
         Error(tr("VisIt can only export data to a simulation if the "
                  "data being exported originated in a simulation."));
@@ -3438,7 +3443,7 @@ ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
     }
     else
     {
-        engine->GetEngineMethods()->ExportDatabase(id, exportDBAtts);
+        engine->GetEngineMethods()->ExportDatabases(ids, exportDBAtts);
     }
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }

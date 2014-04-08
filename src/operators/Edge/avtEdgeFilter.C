@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -191,10 +191,17 @@ avtEdgeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    e.g. a translucent pseudocolor-edge plot (i.e. topodim==1) with a normal
 //    translucent pseudocolor plot results in lighting being disabled for both.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
+
 void
 avtEdgeFilter::UpdateDataObjectInfo(void)
 {
     //if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
     //    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
+
+    GetOutput()->GetInfo().GetAttributes().AddFilterMetaData("Edge");
 }

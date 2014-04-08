@@ -5820,6 +5820,10 @@ ViewerSubject::ConstructDataBinning()
 //   Brad Whitlock, Wed Apr 30 09:21:22 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri Jan 24 16:28:35 PST 2014
+//   Allow more than one plot to be exported.
+//   Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -5837,16 +5841,31 @@ ViewerSubject::ExportDatabase()
         Error(tr("To export a database, you must have an active plot.  No database was saved."));
         return;
     }
-    if (plotIDs.size() > 1)
-        Message(tr("Only one database can be exported at a time.  VisIt is exporting the first active plot."));
+    intVector networkIds;
+    EngineKey key;
+    for(size_t i = 0; i < plotIDs.size(); ++i)
+    {
+        ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
 
-    ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
-    const EngineKey   &engineKey = plot->GetEngineKey();
-    int networkId = plot->GetNetworkID();
+        const EngineKey   &engineKey = plot->GetEngineKey();
+        if(i == 0)
+            key = engineKey;
+        else
+        {
+            if(key != engineKey)
+            {
+                Error(tr("To export the database for multiple plots, all plots "
+                         "must be processed by the same compute engine."));
+                return;
+            }
+        }
+
+        networkIds.push_back(plot->GetNetworkID());
+    }
+
     TRY
     {
-        if (ViewerEngineManager::Instance()->ExportDatabase(engineKey, 
-                                                            networkId))
+        if (ViewerEngineManager::Instance()->ExportDatabases(key, networkIds))
         {
             Message(tr("Exported database"));
         }

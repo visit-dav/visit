@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -324,7 +324,7 @@ avtWebpage::AddTableEntry2(const char *a1, const char *a2)
 {
     const char *b1 = (a1 != NULL ? a1 : "");
     const char *b2 = (a2 != NULL ? a2 : "");
-    *ofile << "<tr><td>" << b1 << "</td><td>" << b2 << "</td>" << endl;
+    *ofile << "<tr><td>" << b1 << "</td><td>" << b2 << "</td></tr>" << endl;
 }
 
 
@@ -346,7 +346,7 @@ avtWebpage::AddTableEntry3(const char *a1, const char *a2, const char *a3)
     const char *b2 = (a2 != NULL ? a2 : "");
     const char *b3 = (a3 != NULL ? a3 : "");
     *ofile << "<tr><td>" << b1 << "</td><td>" << b2 << "</td><td>" << b3
-           << "</td>" << endl;
+           << "</td></tr>" << endl;
 }
 
 
@@ -370,7 +370,7 @@ avtWebpage::AddTableEntry4(const char *a1, const char *a2, const char *a3,
     const char *b3 = (a3 != NULL ? a3 : "");
     const char *b4 = (a4 != NULL ? a4 : "");
     *ofile << "<tr><td>" << b1 << "</td><td>" << b2 << "</td><td>" << b3
-           << "</td><td>" << b4 << "</td>" << endl;
+           << "</td><td>" << b4 << "</td></tr>" << endl;
 }
 
 
@@ -391,7 +391,7 @@ avtWebpage::AddTableHeader2(const char *a1, const char *a2)
     const char *b1 = (a1 != NULL ? a1 : "");
     const char *b2 = (a2 != NULL ? a2 : "");
     *ofile << "<tr><td><b><i>" << b1 << "</b></i></td><td><b><i>" 
-           << b2 << "</b></i></td>" << endl;
+           << b2 << "</b></i></td></tr>" << endl;
 }
 
 // ****************************************************************************
@@ -413,7 +413,7 @@ avtWebpage::AddTableHeader3(const char *a1, const char *a2, const char *a3)
     const char *b3 = (a3 != NULL ? a3 : "");
     *ofile << "<tr><td><b><i>" << b1 << "</b></i></td><td><b><i>" 
            << b2 << "</b></i></td><td><b><i>" << b3
-           << "</b></i></td>" << endl;
+           << "</b></i></td></tr>" << endl;
 }
 
 // ****************************************************************************
@@ -437,7 +437,7 @@ avtWebpage::AddTableHeader4(const char *a1, const char *a2, const char *a3,
     const char *b4 = (a4 != NULL ? a4 : "");
     *ofile << "<tr><td><b><i>" << b1 << "</b></i></td><td><b><i>" 
            << b2 << "</b></i></td><td><b><i>" << b3
-           << "</b></i></td><td><b><i>" <<  b4 << "</b></i></td>" << endl;
+           << "</b></i></td><td><b><i>" <<  b4 << "</b></i></td></tr>" << endl;
 }
 
 

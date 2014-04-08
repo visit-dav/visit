@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -111,6 +111,9 @@ avtLineoutPluginFilter::Create()
 //    Hank Childs, Fri Jan 25 09:59:29 PST 2008
 //    Remove ignoreGlobal, which was unused.
 //
+//    Brad Whitlock, Wed Mar 19 14:14:53 PDT 2014
+//    Add callback to the facade filter.
+//
 // ****************************************************************************
 
 void
@@ -131,6 +134,7 @@ avtLineoutPluginFilter::SetAtts(const AttributeGroup *a)
     lineouter->SetPoint2(atts.GetPoint2());
     lineouter->SetSamplingOn(atts.GetSamplingOn());
     lineouter->SetNumberOfSamplePoints(atts.GetNumberOfSamplePoints());
+    lineouter->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
 }
 
 
@@ -186,4 +190,33 @@ const avtFilter *
 avtLineoutPluginFilter::GetFacadedFilter(void) const
 {
     return lineouter;
+}
+
+// ****************************************************************************
+// Method: avtLineoutPluginFilter::UpdateDataObjectInfoCB
+//
+// Purpose:
+//   Update the data object information via a callback function.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 10:53:05 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtLineoutPluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
+    avtDataObject_p &output, void *This)
+{
+    avtDataAttributes &outAtts = output->GetInfo().GetAttributes();
+    const LineoutAttributes &lo = ((const avtLineoutPluginFilter *)This)->atts;
+
+    char params[400];
+    SNPRINTF(params, 400, "point1=%lg,%lg,%lg point2=%lg,%lg,%lg", 
+             lo.GetPoint1()[0],lo.GetPoint1()[1],lo.GetPoint1()[2],
+             lo.GetPoint2()[0],lo.GetPoint2()[1],lo.GetPoint2()[2]);
+    outAtts.AddFilterMetaData("Lineout", params);
 }

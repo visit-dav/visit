@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -51,6 +51,7 @@
 
 #include <BufferConnection.h>
 #include <PlotInfoAttributes.h>
+#include <StringHelpers.h>
 
 #include <BadIndexException.h>
 #include <ImproperUseException.h>
@@ -4964,6 +4965,114 @@ avtDataAttributes::AddPlotInformation(const std::string &key,
 }
 
 // ****************************************************************************
+// Method: avtDataAttributes::AddFilterMetaData
+//
+// Purpose: 
+//   Adds new filter information to the plot information.
+//
+// Arguments:
+//   md  : The metadata for the filter. E.g. slice plane, etc.
+//
+// Notes:      Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 09:48:19 PDT 2014
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtDataAttributes::AddFilterMetaData(const std::string &filterName,
+    const std::string &filterParams)
+{
+    const std::string key1("FilterNames");
+    const std::string key2("FilterParams");
+
+    // Add the filter name.
+    if(plotInfoAtts.GetData().HasEntry(key1))
+    {
+        MapNode *node = plotInfoAtts.GetData().GetEntry(key1);
+        if(node != NULL)
+        {
+            stringVector s(node->AsStringVector());
+            s.push_back(filterName);
+            plotInfoAtts.GetData()[key1] = s;
+        }
+    }
+    else
+    {
+        stringVector s;
+        s.push_back(filterName);
+        plotInfoAtts.GetData()[key1] = s;
+    }
+
+    // Add the filter params.
+    if(plotInfoAtts.GetData().HasEntry(key2))
+    {
+        MapNode *node = plotInfoAtts.GetData().GetEntry(key2);
+        if(node != NULL)
+        {
+            stringVector s(node->AsStringVector());
+            s.push_back(filterParams);
+            plotInfoAtts.GetData()[key2] = s;
+        }
+    }
+    else
+    {
+        stringVector s;
+        s.push_back(filterParams);
+        plotInfoAtts.GetData()[key2] = s;
+    }
+}
+
+// ****************************************************************************
+// Method: avtDataAttributes::GetFilterMetaData
+//
+// Purpose: 
+//   Get filter information from the plot information.
+//
+// Notes:      Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 09:48:19 PDT 2014
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtDataAttributes::GetFilterMetaData(stringVector &filterNames, 
+    stringVector &filterParams) const
+{
+    const std::string key1("FilterNames");
+    const std::string key2("FilterParams");
+
+    filterNames.clear();
+    filterParams.clear();
+
+    if(plotInfoAtts.GetData().HasEntry(key1))
+    {
+        const MapNode *node = plotInfoAtts.GetData().GetEntry(key1);
+        if(node != NULL)
+        {
+            filterNames = node->AsStringVector();
+        }
+    }
+    if(plotInfoAtts.GetData().HasEntry(key2))
+    {
+        const MapNode *node = plotInfoAtts.GetData().GetEntry(key2);
+        if(node != NULL)
+        {
+            filterParams = node->AsStringVector();
+        }
+    }
+
+    return !filterNames.empty() && 
+           (filterNames.size() == filterParams.size());
+}
+
+// ****************************************************************************
 //  Method: avtDataAttributes::DebugDump
 //
 //  Purpose:
@@ -5014,6 +5123,9 @@ avtDataAttributes::AddPlotInformation(const std::string &key,
 //    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
+//
+//    Brad Whitlock, Wed Mar 19 14:15:56 PDT 2014
+//    Print the plot information to the debug dump.
 //
 // ****************************************************************************
 
@@ -5298,6 +5410,17 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     {
         webpage->AddSubheading("--> No variables!");
     }
+
+    webpage->AddSubheading("Plot Information");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+    std::string data(GetPlotInformation().GetData().ToXML(false));
+    data = StringHelpers::Replace(data, " ", "&nbsp;");
+    data = StringHelpers::Replace(data, "<", "&lt;");
+    data = StringHelpers::Replace(data, ">", "&gt;");
+    data = StringHelpers::Replace(data, "\n", "<br>");
+    webpage->AddTableEntry2("data", data.c_str());
+    webpage->EndTable();
 }
 
 // ****************************************************************************

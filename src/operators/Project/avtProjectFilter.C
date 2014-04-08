@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -694,7 +694,12 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 //    Kathleen Biagas, Thu Aug 16 14:56:29 MST 2012
 //    Indicate points were transformed by this operator.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
+
 void
 avtProjectFilter::UpdateDataObjectInfo(void)
 {
@@ -746,6 +751,7 @@ avtProjectFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
     outAtts.SetCanUseInvTransform(false);
     outAtts.SetCanUseTransform(false);
+    outAtts.AddFilterMetaData("Project");
 }
 
 // ****************************************************************************

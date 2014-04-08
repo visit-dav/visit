@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -68,6 +68,9 @@
 //    Jeremy Meredith, Tue Apr 15 13:17:33 EDT 2008
 //    Added linear transform.
 //
+//    Brad Whitlock, Wed Mar 19 14:14:53 PDT 2014
+//    Add callbacks to the facade filters.
+//
 // ****************************************************************************
 
 avtTransformFilter::avtTransformFilter()
@@ -75,6 +78,12 @@ avtTransformFilter::avtTransformFilter()
     ltf = new avtLinearTransformFilter();
     stf = new avtSimilarityTransformFilter();
     csc = new avtCoordSystemConvert();
+
+    // Set a callback so the facaded filters can let this object make some 
+    // updates to its data object info.
+    ltf->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
+    stf->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
+    csc->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
 }
 
 
@@ -344,4 +353,51 @@ avtTransformFilter::GetFacadedFilter(void) const
         return csc;
     else
         return ltf;
+}
+
+// ****************************************************************************
+// Method: avtTransformFilter::UpdateDataObjectInfoCB
+//
+// Purpose:
+//   Update the data object information via a callback function.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 18 10:53:05 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtTransformFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
+    avtDataObject_p &output, void *This)
+{
+    avtDataAttributes &outAtts = output->GetInfo().GetAttributes();
+    const TransformAttributes &tf = ((const avtTransformFilter *)This)->atts;
+
+    char tmp[200];
+    std::string scale, translate, rotate;
+    if(tf.GetDoScale())
+    {
+        SNPRINTF(tmp, 200, "scale=%lg,%lg,%lg ", 
+                 tf.GetScaleX(), tf.GetScaleY(), tf.GetScaleZ());
+        scale = tmp;
+    }
+    if(tf.GetDoTranslate())
+    {
+        SNPRINTF(tmp, 200, "translate=%lg,%lg,%lg ", 
+                 tf.GetTranslateX(), tf.GetTranslateY(), tf.GetTranslateZ());
+        translate = tmp;
+    }
+    if(tf.GetDoRotate())
+    {
+        SNPRINTF(tmp, 200, "rotateOrigin=%lg,%lg,%lg rotateAxis=%lg,%lg,%lg rotateAmount=%lg", 
+                 tf.GetRotateOrigin()[0], tf.GetRotateOrigin()[1], tf.GetRotateOrigin()[2],
+                 tf.GetRotateAxis()[0], tf.GetRotateAxis()[1], tf.GetRotateAxis()[2],
+                 tf.GetRotateAmount());
+        rotate = tmp;
+    }
+    outAtts.AddFilterMetaData("Transform", scale + translate + rotate);
 }

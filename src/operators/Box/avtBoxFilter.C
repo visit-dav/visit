@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -872,6 +872,10 @@ avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Brad Whitlock, Mon Apr  7 15:55:02 PDT 2014
+//    Add filter metadata used in export.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -882,6 +886,7 @@ avtBoxFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateNodes();
 
     avtDataAttributes &a = GetOutput()->GetInfo().GetAttributes();
+    a.AddFilterMetaData("Box");
     avtExtents *exts = a.GetDesiredSpatialExtents();
     if (exts->GetDimension() != 3)
     {

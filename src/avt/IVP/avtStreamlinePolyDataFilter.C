@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -75,12 +75,51 @@ std::string avtStreamlinePolyDataFilter::scaleRadiusArrayName = "scaleRadius";
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+// Modifications:
+//   Brad Whitlock, Fri Feb 28 15:55:19 PST 2014
+//   Added extractID, idArrayName.
+//   Work partially supported by DOE Grant SC0007548.
+//
+// ****************************************************************************
 
-avtStreamlinePolyDataFilter::avtStreamlinePolyDataFilter():
-  coordinateSystem(0), phiScalingFlag( false ), phiScaling( 1.0 )
+avtStreamlinePolyDataFilter::avtStreamlinePolyDataFilter() : avtStreamlineFilter(),
+  coordinateSystem(0), phiScalingFlag( false ), phiScaling( 1.0 ),
+  extractID(false), idArrayName()
 {
 }
 
+avtStreamlinePolyDataFilter::~avtStreamlinePolyDataFilter()
+{
+}
+
+// ****************************************************************************
+// Method: avtStreamlinePolyDataFilter::SetExtractID
+//
+// Purpose:
+//   Sets whether we want the filter to extract the streamline id as an
+//   extra scalar.
+//
+// Arguments:
+//   doIt : True if we want the time as a scalar.
+//   name : The name of the array in which to store the time.
+//
+// Returns:    
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 27 14:25:51 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtStreamlinePolyDataFilter::SetExtractID(bool doIt, const std::string &name)
+{
+    idArrayName = name;
+    extractID = doIt;
+}
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurveOutput
@@ -141,6 +180,10 @@ avtStreamlinePolyDataFilter::avtStreamlinePolyDataFilter():
 //
 //   Dave Pugmire, Mon Feb 21 08:22:30 EST 2011
 //   Color by correlation distance.
+//
+//   Brad Whitlock, Thu Feb 27 14:25:05 PST 2014
+//   Extract time and ids as separate arrays if we want to.
+//   Work partially supported by DOE Grant SC0007548.
 //
 // ****************************************************************************
 
@@ -239,6 +282,8 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
     vtkFloatArray *scaleTubeRad = NULL;
     vtkFloatArray *thetas   = NULL;
     vtkFloatArray *opacity  = NULL;
+    vtkFloatArray *times = NULL;
+    vtkFloatArray *ids = NULL;
 
     lines->Allocate(numICs);
     points->Allocate(numPts);
@@ -279,6 +324,20 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         scaleTubeRad->Allocate(numPts);
         scaleTubeRad->SetName(scaleRadiusArrayName.c_str());
         pd->GetPointData()->AddArray(scaleTubeRad);
+    }
+    if(extractTime)
+    {
+        times = vtkFloatArray::New();
+        times->Allocate(numPts);
+        times->SetName(timeArrayName.c_str());
+        pd->GetPointData()->AddArray(times);
+    }
+    if(extractID)
+    {
+        ids = vtkFloatArray::New();
+        ids->Allocate(numPts);
+        ids->SetName(idArrayName.c_str());
+        pd->GetPointData()->AddArray(ids);
     }
 
     double correlationDistMinDistToUse = correlationDistanceMinDist;
@@ -401,14 +460,22 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
             }
             if (scaleTubeRad)
                 scaleTubeRad->InsertTuple1(pIdx, s.scalar2);
-            
+
+            // Extract time
+            if(times != NULL)
+                times->InsertTuple1(pIdx, s.time);
+
+            // Extract ids
+            if(ids != NULL)
+                ids->InsertTuple1(pIdx, ic->id);
+
             pIdx++;
         }
 
         lines->InsertNextCell(line);
         line->Delete();
     }
-    
+
     points->Delete();
     lines->Delete();
     scalars->Delete();
@@ -418,6 +485,10 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         thetas->Delete();
     if (opacity)
         opacity->Delete();
+    if(times != NULL)
+        times->Delete();
+    if(ids != NULL)
+        ids->Delete();
 
     vtkCleanPolyData *clean = vtkCleanPolyData::New();
     clean->ConvertLinesToPointsOff();

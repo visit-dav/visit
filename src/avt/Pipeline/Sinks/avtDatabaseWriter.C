@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -45,11 +45,30 @@
 #include <Expression.h>
 #include <ParsingExprList.h>
 
+#include <vtkAlgorithm.h>
+#include <vtkAppendPolyData.h>
+#include <vtkDataSet.h>
+#include <vtkGeometryFilter.h>
+#include <vtkDataSetWriter.h>
+#include <vtkPointData.h>
+#include <vtkPolyDataReader.h>
+#include <vtkPolyDataWriter.h>
+#include <vtkCharArray.h>
+#include <vtkPolyData.h>
+#include <vtkTriangleFilter.h>
+#include <vtkVisItPolyDataNormals.h>
+
+#include <avtCompactTreeFilter.h>
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
 
+#include <DebugStream.h>
 #include <NoInputException.h>
+
+#ifdef PARALLEL
+  #include <mpi.h>
+#endif
 
 #include <string>
 #include <vector>
@@ -171,7 +190,6 @@ avtDatabaseWriter::SetOutputZonal(bool val)
     return (shouldOutputZonal ? SupportsOutputZonal() : true);
 }
 
-
 // ****************************************************************************
 //  Method: avtDatabaseWriter::Write
 //
@@ -188,9 +206,447 @@ avtDatabaseWriter::Write(const std::string &filename,
                          const avtDatabaseMetaData *md)
 {
     std::vector<std::string> varlist;
-    Write(filename, md, varlist);
+    Write("", filename, md, varlist);
 }
 
+// ****************************************************************************
+// Method: avtDatabaseWriter::ApplyVariablessToContract
+//
+// Purpose:
+//   This method lets a writer change the contract in response to its variable
+//   needs.
+//
+// Arguments:
+//   c0       : The initial version of the contract.
+//   meshname : The name of the mesh for the pipeline.
+//   vars     : The variable names that are needed.
+//   changed  : Return a value indicating whether the contract changed due to
+//              calling this method.
+//
+// Returns:    A new version of the contract.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 14 16:05:50 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtContract_p
+avtDatabaseWriter::ApplyVariablesToContract(avtContract_p c0, 
+    const std::string &meshname, const std::vector<std::string> &vars,
+    bool &changed)
+{
+    avtContract_p c1 = new avtContract(c0);
+    avtDataRequest_p ds = c1->GetDataRequest();
+
+    for(size_t i = 0; i < vars.size(); ++i)
+    {
+        if(vars[i] == std::string(ds->GetVariable()) ||
+           ds->HasSecondaryVariable(vars[i].c_str()))
+        {
+            continue;
+        }
+
+        ds->AddSecondaryVariable(vars[i].c_str());
+        changed = true;
+    }
+
+    return c1;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::ApplyMaterialsToContract
+//
+// Purpose:
+//   This method lets a writer change the contract in response to its material
+//   needs.
+//
+// Arguments:
+//   c0       : The initial version of the contract.
+//   meshname : The name of the mesh for the pipeline.
+//   mats     : The material object names.
+//   changed  : Return a value indicating whether the contract changed due to
+//              calling this method.
+//
+// Returns:    A new version of the contract.
+//
+// Note:       This method the hasMaterialsInProblem and 
+//             mustGetMaterialsAdditionally flags. Subclasses will use this to
+//             make contract changes if they need to request materials, for
+//             example.
+//
+//             Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 14 16:05:50 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtContract_p
+avtDatabaseWriter::ApplyMaterialsToContract(avtContract_p c0, 
+    const std::string &meshname, const std::vector<std::string> &mats,
+    bool &changed)
+{
+    changed = false;
+    if(!mats.empty())
+    {
+        // The default behavior when there are materials is to just set these 
+        // flags for derived types:
+
+        // Tell the derived types that there are materials in the dataset.
+        hasMaterialsInProblem = true;
+
+        // Tell the derived types that we're not going to force MIR so they
+        // should get the avtMaterial themselves.
+        mustGetMaterialsAdditionally = true;
+    }
+    return c0;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::GetMaterials
+//
+// Purpose:
+//   Get the materials for pipeline's mesh.
+//
+// Arguments:
+//   needsExecute : True if we know that the pipeline will already need to be
+//                  executed again to get the data we need.
+//   meshname     : The name of the mesh whose materials we're considering.
+//   md           : The database metadata.
+//   materialList : The material list that we make.
+//
+// Returns:    
+//
+// Note:       This default method only gets the materials if we already know
+//             that the pipeline will re-execute. This preserves prior behavior
+//             while allowing certain file formats to disregard the needsExecute
+//             flag.
+//
+//
+//             Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 14 14:54:09 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatabaseWriter::GetMaterials(bool needsExecute, const std::string &meshname,
+    const avtDatabaseMetaData *md,
+    std::vector<std::string> &materialList)
+{
+    // If we know that the pipeline already requires a re-execute. Get the 
+    // material information while we're at it.
+    if(needsExecute)
+    {
+        // Add materials to the list.
+        for (int i = 0 ; i < md->GetNumMaterials() ; i++)
+        {
+            const avtMaterialMetaData *mat_md = md->GetMaterial(i);
+            if (md->MeshForVar(mat_md->name) == meshname)
+                materialList.push_back(mat_md->name);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::GetMeshName
+//
+// Purpose:
+//   Get the name of the pipeline's mesh.
+//
+// Arguments:
+//   md : The database metadata.
+//
+// Returns:    The name of the mesh.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 14 15:39:13 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+avtDatabaseWriter::GetMeshName(const avtDatabaseMetaData *md) const
+{
+    const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    std::string activeMeshName = atts.GetMeshname(); 
+    std::string meshname;
+    if (md->GetNumMeshes() > 0)
+    {
+        if (!activeMeshName.empty())
+            meshname = activeMeshName;
+        else
+            meshname = md->GetMesh(0)->name;
+    }
+    else if (md->GetNumCurves() > 0)
+        meshname = md->GetCurve(0)->name;
+    else
+        EXCEPTION1(ImproperUseException,
+                   "No meshes or curves appear to exist");
+    return meshname;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::GetVariables
+//
+// Purpose:
+//   Get the list of scalars and vectors that we will export.
+//
+// Arguments:
+//   meshname         : The name of the mesh whose variables can be used.
+//   md               : The database metadata.
+//   varlist          : The list of variables that we want to export. This can 
+//                      contain a list of user-specified variables or it can be
+//                      empty, which is part of requesting all variables.
+//   allVars          : True if we want to get all variables. If false then 
+//                      we pay more attention to varlist.
+//   allowExpressions : True if we want to allow expressions to be exported
+//                      when we make a variable list that includes more variables.
+//   defaultVars      : The list of variables to be substituted when we see the
+//                      "default" variable name.
+//   scalarList       : The list of scalars that we output.
+//   vectorList       : The list of vectors that we output.
+//
+// Returns: GETVARIABLES_ADD_NO_VARS        0: We collected variable names but
+//                                             they are not eligible for insertion
+//                                             into the contract.
+//          GETVARIABLES_ADD_VARS           1: We collected variable names and
+//                                             they are not eligible for insertion
+//                                             into the contract.
+//          GETVARIABLES_ADD_VARS_AND_CLEAR 2: We collected variable names and
+//                                             they are not eligible for insertion
+//                                             into the contract. We will also
+//                                             clear any variables that were
+//                                             already in the contract.
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 14 15:29:53 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+#define GETVARIABLES_ADD_NO_VARS        0
+#define GETVARIABLES_ADD_VARS           1
+#define GETVARIABLES_ADD_VARS_AND_CLEAR 2
+
+int
+avtDatabaseWriter::GetVariables(const std::string &meshname,
+    const avtDatabaseMetaData *md,
+    const std::vector<std::string> &varlist0, bool allVars, bool allowExpressions,
+    const std::vector<std::string> &defaultVars,
+    std::vector<std::string> &scalarList,
+    std::vector<std::string> &vectorList)
+{
+    int retval;
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+
+    std::vector<std::string> varlist(varlist0);
+
+    // See if the only variable in the list is "default". If so then
+    // there is no point to re-executing.
+    bool onlyDefault = varlist.size() == 1 && varlist[0] == "default";
+    if (allVars || (varlist.size() > 0 && !onlyDefault))
+    {
+        if (varlist.size() > 0)
+        {
+            // Any variable that we add to scalarList and vectorList will be eligible
+            // for addition to the contract. We will also clear secondary variables.
+            retval = GETVARIABLES_ADD_VARS_AND_CLEAR;
+
+            //
+            // Expand "default" to the proper set of variables.
+            //
+            std::vector<std::string> expandedVarList;
+            for (size_t j = 0 ; j < varlist.size() ; j++)
+            {
+                if (varlist[j] == "default")
+                {
+                    // Replace "default" with a list of variables.
+                    for(size_t i = 0; i < defaultVars.size(); ++i)
+                    {
+                        expandedVarList.push_back(defaultVars[i]);
+                    }
+                }
+                else
+                    expandedVarList.push_back(varlist[j]);
+            }
+            varlist = expandedVarList;
+
+            //
+            // Only process the variables that the user has requested. 
+            //
+            for (size_t j = 0 ; j < varlist.size() ; j++)
+            {
+                for (int i = 0 ; i < md->GetNumScalars() ; i++)
+                {
+                    const avtScalarMetaData *smd = md->GetScalar(i);
+                    if (smd->name == varlist[j])
+                       scalarList.push_back(smd->name);
+                }
+                for (int i = 0 ; i < md->GetNumVectors() ; i++)
+                {
+                    const avtVectorMetaData *vmd = md->GetVector(i);
+                    if (vmd->name == varlist[j])
+                       vectorList.push_back(vmd->name);
+                }
+                if (allowExpressions)
+                {
+                    ParsingExprList *pel = ParsingExprList::Instance();
+                    ExpressionList *el = pel->GetList();
+                    int index = 0;
+                    for (int i = 0 ; i < el->GetNumExpressions() ; i++)
+                    {
+                        const Expression &expr = el->GetExpressions(i);
+                        if (expr.GetName() == varlist[j])
+                        {
+                            bool canAdd = false;
+                            if (md->GetNumMeshes() == 1)
+                            {
+                                // only one mesh, so can safely assume that
+                                // the expression is defined on this mesh
+                                canAdd = true;
+                            }
+                            else if (varlist.size() == 1 &&
+                                    atts.GetVariableName() == varlist[j])
+                            {
+                                // expression is the active var, so must be 
+                                // defined on the active mesh
+                                canAdd = true;
+                            }
+                            else if ((index = varlist[j].find("mesh_quality") != std::string::npos) &&
+                                (varlist[j].find(meshname, index+12) != std::string::npos))
+                            {
+                                // expression is mesh_quality expression
+                                // defined on the active mesh
+                                canAdd = true;
+                            }
+                            if (canAdd)
+                            {
+                                Expression::ExprType type = expr.GetType();
+                                if (type == Expression::ScalarMeshVar)
+                                    scalarList.push_back(varlist[j]);
+                                else if (type == Expression::VectorMeshVar)
+                                    vectorList.push_back(varlist[j]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Any variable that we add to scalarList and vectorList will be eligible
+            // for addition to the contract.
+            retval = GETVARIABLES_ADD_VARS;
+
+            //
+            // We want to process all of the variables in the dataset, so dummy
+            // up the data specification to include every variable in the 
+            // dataset that pertains to the active mesh 
+            //
+            for (int i = 0 ; i < md->GetNumScalars() ; i++)
+            {
+                const avtScalarMetaData *smd = md->GetScalar(i);
+                if (md->MeshForVar(smd->name) == meshname)
+                {
+                    scalarList.push_back(smd->name);
+                }
+            }
+            for (int i = 0 ; i < md->GetNumVectors() ; i++)
+            {
+                const avtVectorMetaData *vmd = md->GetVector(i);
+                if (md->MeshForVar(vmd->name) == meshname)
+                {
+                    vectorList.push_back(vmd->name);
+                }
+            }
+    
+            if (allowExpressions)
+            {
+                int index = 0;
+                for (int i = 0 ; i < md->GetNumberOfExpressions() ; i++)
+                {
+                    const Expression *expr = md->GetExpression(i);
+                    if (expr->GetAutoExpression())
+                        continue;
+                    bool shouldAdd = false;
+                    bool canAdd = false;
+                    std::string varname = expr->GetName();
+                    //
+                    // We only want the expressions that correspond to the 
+                    // mesh we are operating on.  If there is more than one 
+                    // mesh, we don't really know unless the meshname is
+                    // encoded in the varname, as with mesh_quality 
+                    // expressions. So test for that condition.
+                    //
+                    if (md->GetNumMeshes() == 1)
+                    {
+                        // only 1 mesh so can safely assume this
+                        // expression is defined on this mesh
+                        canAdd = true;
+                    }
+                    else if ((index = varname.find("mesh_quality")) != std::string::npos &&
+                             varname.find(meshname, index+12) != std::string::npos)
+                    {
+                        // mesh_quality expression  
+                        // defined on the active mesh
+                        canAdd = true;
+                    }
+                    if (canAdd)
+                    {
+                        Expression::ExprType type = expr->GetType();
+                        if (type == Expression::ScalarMeshVar)
+                            scalarList.push_back(varname);
+                        else if (type == Expression::VectorMeshVar)
+                            vectorList.push_back(varname);
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        //
+        // In this case, the idea is that we're going to directly export the
+        // pipeline's data object, probably not forcing a pipeline update. As
+        // such, get the names of the variables already in the pipeline. Note 
+        // that the variables might include synthetic variables that were created
+        // by the pipeline and have no hope of being read from a re-execute. So,
+        // we're doing this pass to get the variables but they will not be added
+        // to any subsequent pipeline execution since we do not want to affect
+        // the pipeline in that way.
+        //
+        retval = GETVARIABLES_ADD_NO_VARS;
+
+        int nVars = atts.GetNumberOfVariables();
+        for (int i = 0 ; i < nVars ; i++)
+        {
+            const std::string &name = atts.GetVariableName(i);
+            int dim = atts.GetVariableDimension(name.c_str());
+            if (dim == 1)
+                scalarList.push_back(name);
+            else if (dim == 3)
+                vectorList.push_back(name);
+        }
+    }
+
+    return retval;
+}
 
 // ****************************************************************************
 //  Method: avtDatabaseWriter::Write
@@ -247,221 +703,98 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Jeremy Meredith, Wed Aug  6 18:07:45 EDT 2008
 //    Put extra parens to clarfy combined if-assignment statement.
 //
+//    Brad Whitlock, Tue Jan 21 15:31:11 PST 2014
+//    Pass the plot name.
+//
+//    Brad Whitlock, Fri Mar 14 15:26:59 PDT 2014
+//    I moved a lot of code to helper methods so we can override bits of the
+//    export process.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
-avtDatabaseWriter::Write(const std::string &filename,
+avtDatabaseWriter::Write(const std::string &plotName,
+                         const std::string &filename,
                          const avtDatabaseMetaData *md,
                          std::vector<std::string> &varlist, bool allVars)
 {
-    int  i, j;
-
+    const char *mName = "avtDatabaseWriter::Write";
     avtDataObject_p dob = GetInput();
     if (*dob == NULL)
         EXCEPTION0(NoInputException);
 
+    // Let the derived types decide whether the input data is suitable.
+    CheckCompatibility(plotName);
+
+    // Get the name of the mesh whose variables we're considering.
+    std::string meshname(GetMeshName(md));
+
+    // Get the contract.
+    avtContract_p spec;
+    if (*savedContract)
+        spec = savedContract;
+    else
+        spec = dob->GetOriginatingSource()->GetGeneralContract();
+    avtDataRequest_p ds = spec->GetDataRequest();
+
+    // Get an expansion of the default vars.
+    std::vector<std::string> dv = GetDefaultVariables(ds);
+
+    // Get the list of variables that we need to fulfill the export.
     std::vector<std::string> scalarList;
     std::vector<std::string> vectorList;
-    std::vector<std::string> materialList;
+    int varMode = GetVariables(meshname, md, varlist, allVars,
+                               !shouldNeverDoExpressions, dv, 
+                               scalarList, vectorList);
 
-    if (allVars || varlist.size() > 0)
+    bool needsExecute = false;
+
+    // Change the contract so it has what we need.
+    if(varMode == GETVARIABLES_ADD_VARS_AND_CLEAR)
     {
-        avtDataAttributes &atts = dob->GetInfo().GetAttributes();
-        std::string activeMeshName = atts.GetMeshname(); 
-        //
-        // We will need a pipeline specification to force an update. Get that 
-        // here.
-        //
-        avtOriginatingSource *src = dob->GetOriginatingSource();
-        avtContract_p spec;
-        if (*savedContract)
-            spec = savedContract;
-        else
-            spec = src->GetGeneralContract();
-        avtDataRequest_p ds = spec->GetDataRequest();
-        std::string meshname; 
-        if (md->GetNumMeshes() > 0)
-        {
-            if (!activeMeshName.empty())
-                meshname = activeMeshName;
-            else
-                meshname = md->GetMesh(0)->name;
-        }
-        else if (md->GetNumCurves() > 0)
-            meshname = md->GetCurve(0)->name;
-        else
-            EXCEPTION1(ImproperUseException,
-                       "No meshes or curves appear to exist");
+        ds->RemoveAllSecondaryVariables();
+        needsExecute = true;
+        debug5 << mName << "NEED TO CLEAR SECONDARY VARIABLES" << endl;
+    }
 
-        if (varlist.size() > 0)
-        {
-            //
-            // Only process the variables that the user has requested. 
-            //
-            for (j = 0 ; j < varlist.size() ; j++)
-            {
-                if (varlist[j] == "default")
-                    varlist[j] = ds->GetVariable();
+    // If the variables are eligible for insertion into the contract, insert
+    // them and see if that changes the contract.
+    if(varMode == GETVARIABLES_ADD_VARS_AND_CLEAR ||
+       varMode == GETVARIABLES_ADD_VARS)
+    {
+        bool scalarsCausedChange = false, vectorsCausedChange = false;
+        spec = ApplyVariablesToContract(spec, meshname, scalarList, scalarsCausedChange);
+        if(scalarsCausedChange)
+            debug5 << mName << "SCALARS CAUSED CHANGE TO PIPELINE" << endl;
 
-                for (i = 0 ; i < md->GetNumScalars() ; i++)
-                {
-                    const avtScalarMetaData *smd = md->GetScalar(i);
-                    if (smd->name == varlist[j])
-                       scalarList.push_back(smd->name);
-                }
-                for (i = 0 ; i < md->GetNumVectors() ; i++)
-                {
-                    const avtVectorMetaData *vmd = md->GetVector(i);
-                    if (vmd->name == varlist[j])
-                       vectorList.push_back(vmd->name);
-                }
-                if (!shouldNeverDoExpressions)
-                {
-                    ParsingExprList *pel = ParsingExprList::Instance();
-                    ExpressionList *el = pel->GetList();
-                    int index = 0;
-                    for (i = 0 ; i < el->GetNumExpressions() ; i++)
-                    {
-                        const Expression &expr = el->GetExpressions(i);
-                        if (expr.GetName() == varlist[j])
-                        {
-                            bool canAdd = false;
-                            if (md->GetNumMeshes() == 1)
-                            {
-                                // only one mesh, so can safely assume that
-                                // the expression is defined on this mesh
-                                canAdd = true;
-                            }
-                            else if (varlist.size() == 1 &&
-                                    atts.GetVariableName() == varlist[j])
-                            {
-                                // expression is the active var, so must be 
-                                // defined on the active mesh
-                                canAdd = true;
-                            }
-                            else if ((index = varlist[j].find("mesh_quality") != std::string::npos) &&
-                                (varlist[j].find(meshname, index+12) != std::string::npos))
-                            {
-                                // expression is mesh_quality expression
-                                // defined on the active mesh
-                                canAdd = true;
-                            }
-                            if (canAdd)
-                            {
-                                Expression::ExprType type = expr.GetType();
-                                if (type == Expression::ScalarMeshVar)
-                                    scalarList.push_back(varlist[j]);
-                                else if (type == Expression::VectorMeshVar)
-                                    vectorList.push_back(varlist[j]);
-                            }
-                        }
-                    }
-                }
-                ds->AddSecondaryVariable(varlist[j].c_str());
-            }
-        }
-        else
-        {
-            //
-            // We want to process all of the variables in the dataset, so dummy
-            // up the data specification to include every variable in the 
-            // dataset that pertains to the active mesh 
-            //
-            for (i = 0 ; i < md->GetNumScalars() ; i++)
-            {
-                const avtScalarMetaData *smd = md->GetScalar(i);
-                if (md->MeshForVar(smd->name) == meshname)
-                {
-                    ds->AddSecondaryVariable(smd->name.c_str());
-                    scalarList.push_back(smd->name);
-                }
-            }
-            for (i = 0 ; i < md->GetNumVectors() ; i++)
-            {
-                const avtVectorMetaData *vmd = md->GetVector(i);
-                if (md->MeshForVar(vmd->name) == meshname)
-                {
-                    ds->AddSecondaryVariable(vmd->name.c_str());
-                    vectorList.push_back(vmd->name);
-                }
-            }
-    
-            if (!shouldNeverDoExpressions)
-            {
-                int index = 0;
-                for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
-                {
-                    const Expression *expr = md->GetExpression(i);
-                    if (expr->GetAutoExpression())
-                        continue;
-                    bool shouldAdd = false;
-                    bool canAdd = false;
-                    std::string varname = expr->GetName();
-                    //
-                    // We only want the expressions that correspond to the 
-                    // mesh we are operating on.  If there is more than one 
-                    // mesh, we don't really know unless the meshname is
-                    // encoded in the varname, as with mesh_quality 
-                    // expressions. So test for that condition.
-                    //
-                    if (md->GetNumMeshes() == 1)
-                    {
-                        // only 1 mesh so can safely assume this
-                        // expression is defined on this mesh
-                        canAdd = true;
-                    }
-                    else if ((index = varname.find("mesh_quality")) != std::string::npos &&
-                             varname.find(meshname, index+12) != std::string::npos)
-                    {
-                        // mesh_quality expression  
-                        // defined on the active mesh
-                        canAdd = true;
-                    }
-                    if (canAdd)
-                    {
-                        Expression::ExprType type = expr->GetType();
-                        if (type == Expression::ScalarMeshVar)
-                        {
-                            shouldAdd = true;
-                            scalarList.push_back(varname);
-                        }
-                        else if (type == Expression::VectorMeshVar)
-                        {
-                            shouldAdd = true;
-                            vectorList.push_back(varname);
-                        }
-                    }
-                    if (shouldAdd)
-                        ds->AddSecondaryVariable(varname.c_str());
-                }
-            }
-        }
+        spec = ApplyVariablesToContract(spec, meshname, vectorList, vectorsCausedChange);
+        if(vectorsCausedChange)
+            debug5 << mName << "VECTORS CAUSED CHANGE TO PIPELINE" << endl;
 
-        for (i = 0 ; i < md->GetNumMaterials() ; i++)
-        {
-            const avtMaterialMetaData *mat_md = md->GetMaterial(i);
-            if (md->MeshForVar(mat_md->name) == meshname)
-            {
-                hasMaterialsInProblem = true;
-                mustGetMaterialsAdditionally = true;
-/* Doing this interface reconstruction almost always is the WRONG thing to do.
- * So remove this code until we decide to put it back in.
-                if (!shouldNeverDoMIR &&
-                    (shouldAlwaysDoMIR || !CanHandleMaterials()))
-                {
-                    ds->ForceMaterialInterfaceReconstructionOn();
-                    mustGetMaterialsAdditionally = false;
-                }
-                else
-                {
-                    mustGetMaterialsAdditionally = true;
-                }
- */
-                materialList.push_back(mat_md->name);
-            }
-        }
-    
-    
+        needsExecute |= (scalarsCausedChange || vectorsCausedChange);
+    }
+
+    // Get the materials if the format can support materials in some way.
+    std::vector<std::string> materialList;
+    if(CanHandleMaterials())
+    {
+        GetMaterials(needsExecute, meshname, md, materialList);
+
+        // Let materials contribute to the contract.
+        bool materialsCausedChange = false;
+        spec = ApplyMaterialsToContract(spec, meshname, materialList, materialsCausedChange);
+        if(materialsCausedChange)
+            debug5 << mName << "MATERIALS CAUSED CHANGE TO PIPELINE" << endl;
+
+        needsExecute |= materialsCausedChange;
+    }
+
+    // If the contract changed, re-execute.
+    if(needsExecute)
+    {
+        debug5 << mName << "THE PIPELINE MUST REEXECUTE" << endl;
+
         //
         // Actually force the read of the data.
         //
@@ -472,25 +805,34 @@ avtDatabaseWriter::Write(const std::string &filename,
         //
         dob->Update(spec);
     }
-    else
-    {
-        avtDataAttributes &atts = dob->GetInfo().GetAttributes();
-        int nVars = atts.GetNumberOfVariables();
-        for (int i = 0 ; i < nVars ; i++)
-        {
-            const std::string &name = atts.GetVariableName(i);
-            int dim = atts.GetVariableDimension(name.c_str());
-            if (dim == 1)
-                scalarList.push_back(name);
-            else if (dim == 3)
-                vectorList.push_back(name);
-        }
-    }
 
     //
-    // Get the data tree
+    // Determine the method of data combination.
     //
-    avtDataTree_p rootnode = GetInputDataTree();
+    CombineMode mode = GetCombineMode(plotName);
+
+    // Get the data tree.
+    avtDataTree_p rootnode;
+    if(mode == CombineLike || mode == CombineNoneGather)
+    {
+        bool skipCompact = mode == CombineNoneGather;
+
+        // Use the compact tree filter logic to combine like datasets.
+        rootnode = avtCompactTreeFilter::Execute(
+            GetInput(),
+            false, // executionDependsOnDLB
+            true,  // parallelMerge
+            skipCompact,
+            false, // createCleanPolyData,
+            0.,    // tolerance,
+            avtCompactTreeFilter::Never, // compactDomainMode,
+            0      // compactDomainThreshold
+            );
+    }
+    else
+    {
+        rootnode = GetInputDataTree();
+    }
 
     //
     // In parallel, we need to find a start chunk ID for this processor
@@ -519,38 +861,584 @@ avtDatabaseWriter::Write(const std::string &filename,
     // actual writing.  All of the remaining code is devoted to writing out
     // the file.
     //
-    OpenFile(filename, numTotalChunks);
-    WriteHeaders(md, scalarList, vectorList, materialList);
-
-    std::vector<avtDataTree_p> nodelist;
-    nodelist.push_back(rootnode);
-
-    //
-    // This 'for' loop is a bit tricky.  We are adding to the nodelist as we
-    // go, so nodelist.size() keeps going.  This is in lieu of recursion.
-    //
-    int chunkID = startIndex;
-    for (int cur_index = 0 ; cur_index < nodelist.size() ; cur_index++)
+    if(mode == CombineAll)
     {
-        avtDataTree_p dt = nodelist[cur_index];
-        if (*dt == NULL)
-            continue;
+#ifdef PARALLEL
+        if(PAR_Rank() == 0)
+        {
+#endif
+            OpenFile(filename, 1);
+            WriteHeaders(md, scalarList, vectorList, materialList);
+            BeginPlot(plotName);
+#ifdef PARALLEL
+        }
+#endif
+        // We turn all datasets to polydata and collect them all in a
+        // single dataset on rank 0.
+        vtkPolyData *pd = CreateSinglePolyData(rootnode);
 
-        int nc = dt->GetNChildren();
-        if (nc > 0)
-            for (int i = 0 ; i < nc ; i++)
-                nodelist.push_back(dt->GetChild(i));
+#ifdef PARALLEL
+        if(PAR_Rank() == 0)
+        {
+#endif
+            TRY
+            {
+                WriteChunk(pd, 0);
+            }
+            CATCH(VisItException)
+            {
+                if(pd != NULL)
+                    pd->Delete();
+                RETHROW;
+            }
+            ENDTRY
+
+            EndPlot(plotName);
+            CloseFile();
+#ifdef PARALLEL
+        }
+#endif
+
+        if(pd != NULL)
+            pd->Delete();
+    }
+    else if(mode == CombineLike || mode == CombineNoneGather)
+    {
+#ifdef PARALLEL
+        if(PAR_Rank() == 0)
+        {
+#endif
+            int nds = 0;
+            vtkDataSet **ds = rootnode->GetAllLeaves(nds);
+
+            OpenFile(filename, nds);
+            WriteHeaders(md, scalarList, vectorList, materialList);
+            BeginPlot(plotName);
+
+            for(int i = 0; i < nds; ++i)
+            {
+                std::vector<vtkPolyData *> pds;
+                TRY
+                {
+                    // If ds is not polydata, convert.
+                    pds = ConvertDatasetsIntoPolyData(&ds[i], 1);
+                    WriteChunk(pds[0], i);
+                    pds[0]->Delete();
+                }
+                CATCHALL
+                {
+                    delete [] ds;
+                    pds[0]->Delete();
+                    RETHROW;
+                }
+                ENDTRY
+            }
+
+            delete [] ds;
+            EndPlot(plotName);
+            CloseFile();
+#ifdef PARALLEL
+        }
+#endif
+    }
+    else // CombineNone
+    {
+        OpenFile(filename, numTotalChunks);
+        WriteHeaders(md, scalarList, vectorList, materialList);
+        BeginPlot(plotName);
+
+        //
+        // This 'for' loop is a bit tricky.  We are adding to the nodelist as we
+        // go, so nodelist.size() keeps going.  This is in lieu of recursion.
+        //
+        std::vector<avtDataTree_p> nodelist;
+        nodelist.push_back(rootnode);
+        int chunkID = startIndex;
+        for (int cur_index = 0 ; cur_index < nodelist.size() ; cur_index++)
+        {
+            avtDataTree_p dt = nodelist[cur_index];
+            if (*dt == NULL)
+                continue;
+
+            int nc = dt->GetNChildren();
+            if (nc > 0)
+                for (int i = 0 ; i < nc ; i++)
+                    nodelist.push_back(dt->GetChild(i));
+            else
+            {
+                vtkDataSet *in_ds = dt->GetDataRepresentation().GetDataVTK();
+                WriteChunk(in_ds, chunkID);
+                chunkID++;
+            }
+        }
+
+        EndPlot(plotName);
+        CloseFile();
+    }
+}
+
+//****************************************************************************
+// Method:  avtDatabaseWriter::GetCombineMode
+//
+// Purpose:
+//   Tells the writer if we're doing any combination of geometry.
+//
+// Returns: The type of geometry combination that we want for the specified
+//          plot.
+//
+// Note:    Work partially supported by DOE Grant SC0007548.
+//
+// Programmer:  Brad Whitlock
+// Creation:    Tue Jan 21 16:58:52 PST 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+avtDatabaseWriter::CombineMode
+avtDatabaseWriter::GetCombineMode(const std::string &) const
+{
+    return CombineNone;
+}
+
+//****************************************************************************
+// Method:  avtDatabaseWriter::CreateTrianglePolyData
+//
+// Purpose:
+//   Tells the reader whether we're creating triangle polydata.
+//
+// Returns: A flag indicating whether we're creating triangle polydata.
+//
+// Note:    Work partially supported by DOE Grant SC0007548.
+//
+// Programmer:  Brad Whitlock
+// Creation:    Tue Jan 21 16:58:52 PST 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtDatabaseWriter::CreateTrianglePolyData() const
+{
+    return false;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::CreateNormals
+//
+// Purpose:
+//   Tell the reader to create normals if they do not exist prior to writing
+//   out the data.
+//
+// Returns:    True if we want normals to be created for polydata.
+//
+// Note:       Normal creation only happens when the combine mode is CombineLike
+//             or CombineAll.
+//             Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar  5 15:45:09 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtDatabaseWriter::CreateNormals() const
+{
+    return false;
+}
+
+//****************************************************************************
+// Method:  avtDatabaseWriter::CreateSinglePolyData
+//
+// Purpose:
+//   Create a single polydata from all of the datasets, taking care of movement
+//   of data from other ranks to rank 0.
+//
+// Arguments:
+//   rootnode : The data tree that we're converting/combining.
+//
+// Returns: A single polydata object.
+//
+// Note:    Work partially supported by DOE Grant SC0007548.
+//
+// Programmer:  Brad Whitlock
+// Creation:    Tue Jan 21 16:58:52 PST 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkPolyData *
+avtDatabaseWriter::CreateSinglePolyData(avtDataTree_p root)
+{
+    vtkPolyData *combinedPD = NULL;
+
+    // Get all of the leaves.
+    int nds = 0;
+    vtkDataSet **ds = root->GetAllLeaves(nds);
+
+    // Convert all datasets into polydata.
+    std::vector<vtkPolyData *> pds = ConvertDatasetsIntoPolyData(ds, nds);
+
+    // Send the polydatas to rank 0.
+    std::vector<vtkPolyData *> allpds = SendPolyDataToRank0(pds);
+
+    // We do not need pds anymore.
+    for(size_t i = 0; i < pds.size(); ++i)
+        pds[i]->Delete();
+    pds.clear();
+
+    // Combine all of the poly datas into a single polydata.
+    vtkPolyData *pd = CombinePolyData(allpds);
+
+    // We do not need allpds anymore.
+    for(size_t i = 0; i < allpds.size(); ++i)
+        allpds[i]->Delete();
+    allpds.clear();
+
+    return pd;
+}
+
+//****************************************************************************
+// Method:  avtDatabaseWriter::ConvertDatasetsIntoPolyData
+//
+// Purpose:
+//   Convert a bunch of datasets into polydata.
+//
+// Arguments:
+//   ds  : An array of polydata objects.
+//   nds : The number of polydata objects.
+//
+// Note:    Work partially supported by DOE Grant SC0007548.
+//
+// Programmer:  Brad Whitlock
+// Creation:    Tue Jan 21 16:58:52 PST 2014
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar  5 16:00:55 PST 2014
+//   I added support for generating normals if they do not exist.
+//
+//****************************************************************************
+
+std::vector<vtkPolyData *>
+avtDatabaseWriter::ConvertDatasetsIntoPolyData(vtkDataSet **ds, int nds)
+{
+    std::vector<vtkPolyData *> pds;
+
+    for(int i = 0; i < nds; ++i)
+    {
+        vtkPolyData *pd = vtkPolyData::SafeDownCast(ds[i]);
+        if(pd == NULL)
+        {
+            vtkGeometryFilter *geom = vtkGeometryFilter::New();
+            vtkTriangleFilter *tri = vtkTriangleFilter::New();
+            geom->SetInputData(ds[i]);
+            if(CreateTrianglePolyData())
+            {
+                // Convert geom output polydata to triangles.
+                tri->SetInputConnection(geom->GetOutputPort());        
+                tri->Update();
+                pd = tri->GetOutput();
+                pd->Register(NULL);
+            }
+            else
+            {
+                // Use geom output polydata.
+                geom->Update();
+                pd = geom->GetOutput();
+                pd->Register(NULL);
+            }
+            geom->Delete();
+            tri->Delete();
+        }
+        else if(CreateTrianglePolyData())
+        {
+            // Convert existing polydata to triangles.
+            vtkTriangleFilter *tri = vtkTriangleFilter::New();
+            tri->SetInputData(pd);        
+            tri->Update();
+            pd = tri->GetOutput();
+            pd->Register(NULL);
+            tri->Delete();
+        }
         else
         {
-            vtkDataSet *in_ds = dt->GetDataRepresentation().GetDataVTK();
-            WriteChunk(in_ds, chunkID);
-            chunkID++;
+            // Take existing polydata as-is
+            pd->Register(NULL);
+        }
+
+        // Create point normals.
+        if(CreateNormals())
+        {
+            if(pd->GetPointData()->GetNormals() == NULL &&
+               pd->GetPointData()->GetArray("Normals") == NULL)
+            {
+                vtkVisItPolyDataNormals *pdn = vtkVisItPolyDataNormals::New();
+                pdn->SetNormalTypeToPoint();
+                pdn->SetInputData(pd);
+                pdn->Update();
+                pd->Delete();
+                pd = pdn->GetOutput();
+                pd->Register(NULL);
+                pdn->Delete();
+            }
+        }
+
+        pds.push_back(pd);
+    }
+
+    return pds;
+}
+
+//****************************************************************************
+// Method:  avtDatabaseWriter::CombinePolyData
+//
+// Purpose:
+//   Combine a vector of polydata objects into a single polydata.
+//
+// Note:    Work partially supported by DOE Grant SC0007548.
+//
+// Programmer:  Brad Whitlock
+// Creation:    Tue Jan 21 16:58:52 PST 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkPolyData *
+avtDatabaseWriter::CombinePolyData(const std::vector<vtkPolyData *> &pds)
+{
+    vtkPolyData *pd = NULL;
+    if(!pds.empty())
+    {
+        vtkAppendPolyData *f = vtkAppendPolyData::New();
+        for(size_t i = 0; i < pds.size(); ++i)
+            f->AddInputData(pds[i]);
+        f->Update();
+        pd = f->GetOutput();
+        pd->Register(NULL);
+        f->Delete();
+    }
+    return pd;
+}
+
+//****************************************************************************
+// Method:  avtDatabaseWriter::SendPolyDataToRank0
+//
+// Purpose:
+//   Move all the data to rank0
+//
+// Programmer:  Dave Pugmire
+// Creation:    April 15, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+std::vector<vtkPolyData *>
+avtDatabaseWriter::SendPolyDataToRank0(const std::vector<vtkPolyData *> &pds)
+{
+    std::vector<vtkPolyData *> outputpds;
+
+#ifdef PARALLEL
+    int *inA = new int[PAR_Size()], *outA = new int[PAR_Size()];
+    for (int i = 0; i < PAR_Size(); i++)
+        inA[i] = outA[i] = 0;
+
+    if (PAR_Rank() != 0)
+    {
+        vtkPolyDataWriter *writer = NULL;
+        int len = 0;
+        
+        if (pds.size() == 0)
+            len = 0;
+        else
+        {
+            vtkAppendPolyData *f = vtkAppendPolyData::New();
+
+            writer = vtkPolyDataWriter::New();
+            writer->WriteToOutputStringOn();
+            writer->SetFileTypeToBinary();
+            if (pds.size() == 1)
+                writer->SetInputData(pds[0]);
+            else
+            {
+                for(size_t i = 0; i < pds.size(); ++i)
+                    f->AddInputData(pds[i]);
+                
+                writer->SetInputConnection(f->GetOutputPort());
+            }
+            
+            writer->Write();
+            len = writer->GetOutputStringLength();
+            f->Delete();
+        }
+
+        // Send the lengths to rank 0.
+        inA[PAR_Rank()] = len;
+        MPI_Reduce(inA, outA, PAR_Size(), MPI_INT, MPI_SUM, 0, VISIT_MPI_COMM);
+
+        // Send the string to rank 0.
+        if (len > 0)
+        {
+            char *data = writer->GetOutputString();
+            MPI_Send(data, len, MPI_CHAR, 0, 0, VISIT_MPI_COMM);
+            writer->Delete();
+        }
+    }
+    else
+    {
+        // Copy pds into outputpds for rank 0's polydatas.
+        for(size_t i = 0; i < pds.size(); ++i)
+        {
+            pds[i]->Register(NULL);
+            outputpds.push_back(pds[i]);
+        }
+
+        // Get the string lengths from other ranks.
+        MPI_Reduce(inA, outA, PAR_Size(), MPI_INT, MPI_SUM, 0, VISIT_MPI_COMM);
+
+        // Get the strings from other ranks.
+        for (int i = 1; i < PAR_Size(); i++)
+        {
+            if (outA[i] > 0)
+            {
+                char *data = new char[outA[i]];
+                MPI_Status stat;
+                MPI_Recv(data, outA[i], MPI_CHAR, i, 0, VISIT_MPI_COMM, &stat);
+
+                vtkPolyDataReader *rdr = vtkPolyDataReader::New();
+                rdr->ReadFromInputStringOn();
+                vtkCharArray *charArray = vtkCharArray::New();
+                charArray->SetArray(data, outA[i], 1);
+                rdr->SetInputArray(charArray);
+                rdr->Update();
+                vtkPolyData *pd = rdr->GetOutput();
+                pd->Register(NULL);
+                outputpds.push_back(pd);
+
+                delete [] data;
+                rdr->Delete();
+                charArray->Delete();
+            }
         }
     }
 
-    CloseFile();
+    delete [] inA;
+    delete [] outA;
+#else
+    for(size_t i = 0; i < pds.size(); ++i)
+    {
+        pds[i]->Register(NULL);
+        outputpds.push_back(pds[i]);
+    }
+#endif
+
+    return outputpds;
 }
 
+// ****************************************************************************
+//  Method:  avtDatabaseWriter::GetDefaultVariables
+//
+//  Purpose:
+//    Use the data request to determine the variables to use for "default".
+//
+//  Arguments:
+//    ds : The data request.
+//
+//  Note:    Work partially supported by DOE Grant SC0007548.
+//
+//  Returns: A vector of variable names.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Tue Jan 21 15:50:40 PST 2014
+//
+// ****************************************************************************
+
+std::vector<std::string>
+avtDatabaseWriter::GetDefaultVariables(avtDataRequest_p ds)
+{
+    std::vector<std::string> vars;
+    vars.push_back(ds->GetVariable());
+    return vars;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::CheckCompatibility
+//
+// Purpose:
+//   Look at the plot type and the data attributes to determine whether we
+//   should even start exporting.
+//
+// Arguments:
+//   plotName : Then name of the plot type being exported.
+//
+// Returns:    
+//
+// Note:       Throw an exception if there is a problem that would prevent
+//             the writer from exporting the data.
+//             Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 17 16:12:27 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatabaseWriter::CheckCompatibility(const std::string &plotName)
+{
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::BeginPlot
+//
+// Purpose:
+//   This method is called just before data will be written using WriteChunk.
+//
+// Arguments:
+//   plotName : The name (type) of the plot being exported.
+//
+// Note:    Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar  5 13:25:36 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatabaseWriter::BeginPlot(const std::string &)
+{
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::EndPlot
+//
+// Purpose:
+//   This method is called just after all data from WriteChunk has been written.
+//
+// Arguments:
+//   plotName : The name (type) of the plot being exported.
+//
+// Note:    Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar  5 13:25:36 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatabaseWriter::EndPlot(const std::string &)
+{
+}
 
 // ****************************************************************************
 //  Method:  avtDatabaseWriter::SetContractToUse

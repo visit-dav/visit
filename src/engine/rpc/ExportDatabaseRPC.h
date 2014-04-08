@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -53,7 +53,13 @@
 //  Programmer:  Hank Childs 
 //  Creation:    May 26, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jan 24 16:37:14 PST 2014
+//    Allow more than one network.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
+
 class ENGINE_RPC_API ExportDatabaseRPC : public BlockingRPC
 {
   public:
@@ -63,22 +69,22 @@ class ENGINE_RPC_API ExportDatabaseRPC : public BlockingRPC
     virtual const std::string TypeName() const { return "ExportDatabaseRPC"; }
 
     // Invocation method
-    void operator()(const int, const ExportDBAttributes *);
+    void operator()(const intVector &, const ExportDBAttributes *);
 
     // Property selection methods
     virtual void SelectAll();
 
     // Property setting methods
-    void SetID(const int);
+    void SetIDs(const intVector &ids);
     void SetExportDBAtts(const ExportDBAttributes *);
 
     // Property getting methods
-    int                 GetID() const;
+    const intVector     &GetIDs() const;
     ExportDBAttributes *GetExportDBAtts();
 
 
   private:
-    int                  id;
+    intVector            ids;
     ExportDBAttributes   exportDBAtts; 
 };
 
