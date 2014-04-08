@@ -1,27 +1,15 @@
-#/home/brad/Development/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.6/bin/cmake
+#/home/brad/Development/thirdparty_shared/2.8.0/cmake/2.8.10.2/linux-x86_64_gcc-4.6/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Fri Jun  7 18:54:30 PDT 2013
-## system: Linux coruscant 3.2.0-26-generic #41-Ubuntu SMP Thu Jun 14 17:49:24 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+## created: Mon Apr  7 19:32:43 PDT 2014
+## system: Linux coruscant 3.2.0-51-generic #77-Ubuntu SMP Wed Jul 24 20:18:19 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brad
-##
-## ./build_visit --console --no-visit --thirdparty-path ~/Development/thirdparty_shared/2.7.0 --vtk --mesa --python --pyside --qt --silo --netcdf --hdf5 --szip --h5part --gdal --cgns --icet --parallel --makeflags -j12 --xdmf --hdf4
-##
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
+SET(VISITHOME /home/brad/Development/thirdparty_shared/2.8.0)
 SET(VISITARCH linux-x86_64_gcc-4.6)
-IF(VISIT_STATIC)
-    SET(VISITHOME /home/brad/Development/thirdparty_static/2.7.0)
-ELSE(VISIT_STATIC)
-    SET(VISITHOME /home/brad/Development/thirdparty_shared/2.7.0)
-
-    ##
-    ## PySide
-    ##
-    VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
-ENDIF(VISIT_STATIC)
 
 ## Compiler flags.
 ##
@@ -59,7 +47,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.3/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.5/${VISITARCH})
 
 ##
 ## Qt
@@ -69,7 +57,7 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 ##
 ## VTK
 ##
-SETUP_VTK_VERSION(6.0.0)
+SETUP_VTK_VERSION(6.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 
 ##
