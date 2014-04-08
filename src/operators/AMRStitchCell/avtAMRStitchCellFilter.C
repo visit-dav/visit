@@ -289,7 +289,7 @@ avtAMRStitchCellFilter::PreExecute(void)
         if (refRatio.size() != topologicalDimension)
             EXCEPTION1(ImproperUseException,
                     "Refinement ratio provided by database via domain nesting is invalid. "
-                    "Expected a vector of length three.");
+                    "Expected a vector of length equal to topological dataset dimension.");
 
         logicalDomainBoundingBox[l].resize(6);
         logicalDomainBoundingBox[l][0] = refRatio[0] * logicalDomainBoundingBox[l-1][0];

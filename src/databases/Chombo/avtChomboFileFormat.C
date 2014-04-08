@@ -930,7 +930,7 @@ avtChomboFileFormat::InitializeReader(void)
 
                 int rr_tmp;
                 H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp);
-                for (int d = 0; d<std::max(dimension, 3); ++d)
+                for (int d = 0; d<std::min(dimension, 3); ++d)
                     refinement_ratio[i].push_back(rr_tmp);
             }
             H5Aclose(rr_id);
@@ -1476,15 +1476,15 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     // Calculate what the refinement ratio is from one level to the next.
     //
-    std::vector<double> cs(std::max(dimension, 3));
+    std::vector<double> cs(std::min(dimension, 3));
     for (level = 0 ; level < num_levels ; level++)
     {
         if (level == 0)
-            dn->SetLevelRefinementRatios(level, std::vector<int>(std::max(dimension, 3), 1));
+            dn->SetLevelRefinementRatios(level, std::vector<int>(std::min(dimension, 3), 1));
         else
             dn->SetLevelRefinementRatios(level, refinement_ratio[level-1]);
 
-        for (int d=0; d < (std::max(dimension, 3)) ; ++d)
+        for (int d=0; d < (std::min(dimension, 3)) ; ++d)
             cs[d] = dx[level][d]*aspectRatio[d];
         dn->SetLevelCellSizes(level, cs);
     }
@@ -1493,12 +1493,12 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // This multiplier will be needed to find out if patches are nested.
     //
     std::vector< std::vector<int> > multiplier(num_levels);
-    for (int d = 0; d < std::max(dimension, 3); ++d)
+    for (int d = 0; d < std::min(dimension, 3); ++d)
         multiplier[num_levels-1].push_back(1);
     for (level = num_levels-2 ; level >= 0 ; level--)
     {
-        multiplier[level].resize(std::max(dimension, 3));
-        for (int d = 0; d < std::max(dimension, 3); ++d)
+        multiplier[level].resize(std::min(dimension, 3));
+        for (int d = 0; d < std::min(dimension, 3); ++d)
             multiplier[level][d] = multiplier[level+1][d]*refinement_ratio[level][d];
     }
     visitTimer->StopTimer(t1, "Setting up domain nesting: part 1");
