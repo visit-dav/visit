@@ -304,6 +304,20 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
     pd->GetPointData()->AddArray(params);
     pd->GetPointData()->AddArray(tangents);
 
+    if(extractTime)
+    {
+        times = vtkFloatArray::New();
+        times->Allocate(numPts);
+        times->SetName(timeArrayName.c_str());
+        pd->GetPointData()->AddArray(times);
+    }
+    if(extractID)
+    {
+        ids = vtkFloatArray::New();
+        ids->Allocate(numPts);
+        ids->SetName(idArrayName.c_str());
+        pd->GetPointData()->AddArray(ids);
+    }
     if (displayMethod == PICS_DISPLAY_RIBBONS)
     {
         thetas = vtkFloatArray::New();
@@ -324,20 +338,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         scaleTubeRad->Allocate(numPts);
         scaleTubeRad->SetName(scaleRadiusArrayName.c_str());
         pd->GetPointData()->AddArray(scaleTubeRad);
-    }
-    if(extractTime)
-    {
-        times = vtkFloatArray::New();
-        times->Allocate(numPts);
-        times->SetName(timeArrayName.c_str());
-        pd->GetPointData()->AddArray(times);
-    }
-    if(extractID)
-    {
-        ids = vtkFloatArray::New();
-        ids->Allocate(numPts);
-        ids->SetName(idArrayName.c_str());
-        pd->GetPointData()->AddArray(ids);
     }
 
     double correlationDistMinDistToUse = correlationDistanceMinDist;
