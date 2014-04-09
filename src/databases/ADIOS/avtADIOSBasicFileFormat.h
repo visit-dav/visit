@@ -52,7 +52,6 @@ class ADIOSFileObject;
 class avtFileFormatInterface;
 class vtkRectilinearGrid;
 
-
 // ****************************************************************************
 //  Class: avtADIOSBasicFileFormat
 //
@@ -92,7 +91,7 @@ class avtADIOSBasicFileFormat : public avtMTMDFileFormat
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
-        virtual void        GetCycles(std::vector<int> &);
+    virtual void        GetCycles(std::vector<int> &);
 
     virtual int            GetNTimesteps(void);
 
@@ -106,40 +105,61 @@ class avtADIOSBasicFileFormat : public avtMTMDFileFormat
   protected:
     ADIOSFileObject *fileObj;
     bool             initialized;
+    std::map<std::string, std::string> complexVarMap;
 
 
     void                   Initialize();
-    std::string            GenerateMeshName(const ADIOSVar &v);
-    void                   DoDomainDecomposition();
+    std::string            GenerateMeshName(const ADIOS_VARINFO *avi);
 
+    class block
+    {
+    public:
+        block() {start[0]=start[1]=start[2]=0; count[0]=count[1]=count[2]=0;}
+        block(int n, ADIOS_VARBLOCK &b)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                start[i] = b.start[i];
+                count[i] = b.count[i];
+            }
+            for (int i = n; i < 3; i++)
+                start[i] = count[i] = 0;
+        }
+        uint64_t start[3], count[3];
+    };
     class meshInfo
     {
       public:
-        meshInfo()
+        meshInfo() {dim=0; dims[0]=dims[1]=dims[2]=0;}
+        meshInfo(ADIOS_VARINFO *avi)
         {
-            start[0] = start[1] = start[2] = 0;
-            count[0] = count[1] = count[2] = 0;
-            global[0] = global[1] = global[2] = 0;
-            dim = 0;
+            dim = avi->ndim;
+            for (int i = 0; i < 3; i++)
+                if (i < dim) dims[i] = avi->dims[i];
+                else dims[i] = 0;
+            
+            for (int i = 0; i < avi->sum_nblocks; i++)
+                blocks.push_back(block(dim, avi->blockinfo[i]));
         }
         ~meshInfo() {}
 
         int dim;
-        uint64_t start[3], count[3], global[3];
-        std::string name;
+        uint64_t dims[3];
+        std::vector<block> blocks;
     };
 
     std::map<std::string, meshInfo> meshes;
 
-    vtkRectilinearGrid    *CreateUniformGrid(const uint64_t *start,
-                                             const uint64_t *count);
+    vtkRectilinearGrid    *CreateUniformGrid(meshInfo &mi, int ts, int dom);
     
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-    static void ComputeStartCount(uint64_t *globalDims,
-                                  int dim,
-                                  uint64_t *start,
-                                  uint64_t *count);
+
+
+    bool GetDomBounds(int nBlocks, int dim, uint64_t *dims, 
+                      uint64_t *sIn, uint64_t *cIn,
+                      uint64_t *sOut, uint64_t *cOut, bool *gFlags);
+    void AddGhostZones(vtkRectilinearGrid *grid, bool *g);
 };
 
 #endif

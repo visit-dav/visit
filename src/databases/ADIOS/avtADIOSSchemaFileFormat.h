@@ -71,6 +71,8 @@ class avtADIOSSchemaFileFormat : public avtMTMDFileFormat
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
+    static int NumberOfVertices(ADIOS_CELL_TYPE &ct);
+    static int GetCellType(ADIOS_CELL_TYPE &ct);
     
     avtADIOSSchemaFileFormat(const char *);
     virtual  ~avtADIOSSchemaFileFormat();
@@ -87,13 +89,12 @@ class avtADIOSSchemaFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
-    std::string filename;
     bool             initialized;
     void             Initialize();
 
     virtual void     PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-    ADIOS_FILE *fp;
+    ADIOSFileObject *fileObj;
     int numTimes;
     std::map<std::string, ADIOS_MESH *> meshes;
     std::map<std::string, ADIOS_VARINFO *> vars;
@@ -103,7 +104,5 @@ class avtADIOSSchemaFileFormat : public avtMTMDFileFormat
     vtkDataSet * MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int dom);
     vtkDataSet * MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom);
     vtkDataSet * MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int dom);
-
-    void ReadData(ADIOS_VARINFO *avi, int ts, void *data);
 };
 #endif

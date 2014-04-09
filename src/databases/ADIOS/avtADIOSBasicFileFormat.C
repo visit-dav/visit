@@ -46,7 +46,11 @@
 #include <avtADIOSBasicFileFormat.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkFloatArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <vtkIdList.h>
+#include <vtkCellData.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <avtDatabaseMetaData.h>
 #include <DBOptionsAttributes.h>
 #include <InvalidDBTypeException.h>
@@ -58,6 +62,8 @@
 #include <map>
 #include <string>
 #include <vector>
+
+using namespace std;
 
 // ****************************************************************************
 //  Method: avtEMSTDFileFormat::Identify
@@ -90,14 +96,16 @@ avtADIOSBasicFileFormat::Identify(const char *fname)
 // ****************************************************************************
 
 avtFileFormatInterface *
-avtADIOSBasicFileFormat::CreateInterface(const char *const *list,
+avtADIOSBasicFileFormat::CreateInterface(const char *const *llist,
                                          int nList,
                                          int nBlock)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
-        ffl[i] = new avtADIOSBasicFileFormat(list[i*nBlock]);
+    {
+        ffl[i] = new avtADIOSBasicFileFormat(llist[i*nBlock]);
+    }
     
     return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
@@ -146,7 +154,6 @@ avtADIOSBasicFileFormat::~avtADIOSBasicFileFormat()
 int
 avtADIOSBasicFileFormat::GetNTimesteps()
 {
-  cout<<"NSTEPS: "<<fileObj->NumTimeSteps()<<endl;
     return fileObj->NumTimeSteps();
 }
 
@@ -164,12 +171,10 @@ avtADIOSBasicFileFormat::GetNTimesteps()
 void
 avtADIOSBasicFileFormat::GetCycles(std::vector<int> &cycles)
 {
-  int nt = fileObj->NumTimeSteps();
-  cycles.resize(nt);
-  for (int i = 0; i < nt; i++)
+    int nt = fileObj->NumTimeSteps();
+    cycles.resize(nt);
+    for (int i = 0; i < nt; i++)
         cycles[i] = i;
-  
-  cout<<"cycles sz= "<<cycles.size()<<endl;
 }
 
 
@@ -215,16 +220,24 @@ avtADIOSBasicFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 {
     debug5<<"avtADIOSBasicFileFormat::PopulateDatabaseMetaData()"<<endl;
     Initialize();
-    md->SetFormatCanDoDomainDecomposition(true);
+    //md->SetFormatCanDoDomainDecomposition(true);
+
+    int nBlocks = 1;
+    std::map<std::string, meshInfo>::const_iterator m;
+    for (m = meshes.begin(); m != meshes.end(); m++)
+    {
+        int n = m->second.blocks.size();
+        if (n > nBlocks)
+            nBlocks = n;
+    }
     
     // Add 2D/3D mesh metadata
-    std::map<std::string, meshInfo>::const_iterator m;
     for (m = meshes.begin(); m != meshes.end(); m++)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = m->first;
         mesh->meshType = AVT_RECTILINEAR_MESH;
-        mesh->numBlocks = 1; // must be 1 for automatic decomposition.
+        mesh->numBlocks = nBlocks;
         mesh->blockOrigin = 0;
         mesh->spatialDimension = m->second.dim;
         mesh->topologicalDimension = m->second.dim;
@@ -237,10 +250,10 @@ avtADIOSBasicFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
     }
 
     // Add variables' metadata
-    std::map<std::string, ADIOSVar>::const_iterator v;
+    std::map<std::string, ADIOS_VARINFO*>::const_iterator v;
     for (v = fileObj->variables.begin(); v != fileObj->variables.end(); v++)
     {
-        if (v->second.dim == 1) 
+        if (v->second->ndim == 1)
         { 
             // define as a curve
             avtCurveMetaData *curve = new avtCurveMetaData;
@@ -257,18 +270,44 @@ avtADIOSBasicFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
         else
         {
             std::string meshName = GenerateMeshName(v->second);
-            avtScalarMetaData *smd = new avtScalarMetaData();
+    string originalName = v->first, name = v->first;
+            if (name[0] == '/')
+                name = string(&name[1]);
             
-            smd->name = v->first;
-            if (smd->name[0] == '/')
+            //Complex variables...
+            if (v->second->type == adios_complex ||
+                v->second->type == adios_double_complex)
             {
-                smd->originalName = smd->name;
-                smd->name = std::string(&smd->name[1]);
-            }
+                avtScalarMetaData *smd_r = new avtScalarMetaData();
 
-            smd->meshName = meshName;
-            smd->centering = AVT_NODECENT;
-            md->Add(smd);
+                smd_r->originalName = originalName + string("_real");
+                smd_r->name = name + string("_real");
+                smd_r->meshName = meshName;
+                smd_r->centering = AVT_ZONECENT;
+                md->Add(smd_r);
+
+                avtScalarMetaData *smd_i = new avtScalarMetaData();
+                smd_i->originalName = originalName + string("_imag");
+                smd_i->name = name + string("_imag");
+                smd_i->meshName = meshName;
+                smd_i->centering = AVT_ZONECENT;
+                md->Add(smd_i);
+
+                //name: psi_real
+                //orig: /psi_real
+                //map: /psi_real -> /psi
+                complexVarMap[smd_r->originalName] = v->first;
+                complexVarMap[smd_i->originalName] = v->first;
+            }
+            else
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData();
+                smd->name = name;
+                smd->originalName = originalName;
+                smd->meshName = meshName;
+                smd->centering = AVT_ZONECENT;
+                md->Add(smd);
+            }
             debug5 << "added metadata: var "<<v->first<<" on mesh "<<meshName<<endl;
         }
     }
@@ -297,39 +336,19 @@ avtADIOSBasicFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 vtkDataSet *
 avtADIOSBasicFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
-    debug1 << "avtADIOSBasicFileFormat::GetMesh " << meshname << endl;
-    cout << "avtADIOSBasicFileFormat::GetMesh " << meshname << " "<<domain<<" "<<timestate<<endl;
+    //debug1 << "avtADIOSBasicFileFormat::GetMesh " << meshname << endl;
     Initialize();
 
     // Look it up in the mesh table.
-    std::map<std::string,meshInfo>::const_iterator m = meshes.find(meshname);
+    std::map<std::string,meshInfo>::iterator m = meshes.find(meshname);
     if (m != meshes.end())
     {
         vtkRectilinearGrid *grid = NULL;
-        grid = CreateUniformGrid(m->second.start,
-                                 m->second.count);
-        grid->Register(NULL);
+        grid = CreateUniformGrid(m->second, timestate, domain);
+        if (grid)
+            grid->Register(NULL);
         return grid;
     }
-
-    //It might be a curve.
-    std::map<std::string, ADIOSVar>::const_iterator v = fileObj->variables.find(meshname);
-    if (v != fileObj->variables.end() && v->second.dim == 1)
-    {
-        vtkRectilinearGrid *grid = NULL;
-        grid = CreateUniformGrid(v->second.start,
-                                 v->second.count);
-        vtkDataArray *vals = NULL;
-        if (!fileObj->ReadVariable(meshname, timestate, 0, &vals))
-            EXCEPTION1(InvalidVariableException, meshname);
-        vals->SetName(meshname);
-        grid->GetPointData()->SetScalars(vals);
-        vals->Delete();
-        grid->Register(NULL);
-        return grid;
-    }
-    debug1<<meshname<<" not found"<<endl;
-    EXCEPTION1(InvalidVariableException, meshname);
 }
 
 
@@ -352,15 +371,52 @@ avtADIOSBasicFileFormat::GetMesh(int timestate, int domain, const char *meshname
 // ****************************************************************************
 
 vtkDataArray *
-avtADIOSBasicFileFormat::GetVar(int timestate, int domain, const char *varname)
+avtADIOSBasicFileFormat::GetVar(int timestate, int domain, const char *vn)
 {
+    string varname = vn;
     debug1 << "avtADIOSBasicFileFormat::GetVar " << varname << endl;
-    cout << "avtADIOSBasicFileFormat::GetVar " << varname << " "<<timestate<<" "<<domain<<endl;
     Initialize();
-    vtkDataArray *arr = NULL;
-    if (! fileObj->ReadVariable(varname, timestate, 0, &arr))
+
+    //See if we have a complex variable, and get the complex varname in the file.
+    map<string,string>::const_iterator ci = complexVarMap.find(varname);
+    if (ci != complexVarMap.end())
+        varname = ci->second;
+
+    std::map<std::string, ADIOS_VARINFO*>::iterator vi = fileObj->variables.find(varname);
+    if (vi == fileObj->variables.end())
         EXCEPTION1(InvalidVariableException, varname);
-        
+    
+    //Get the domain bounds.
+    ADIOS_VARINFO *avi = vi->second;
+    uint64_t s[3], c[3];
+    bool gFlags[6];
+    GetDomBounds(avi->sum_nblocks, avi->ndim, avi->dims,
+                 avi->blockinfo[domain].start, avi->blockinfo[domain].count,
+                 s, c, gFlags);
+
+    ADIOS_SELECTION *sel = adios_selection_boundingbox(avi->ndim, s, c);
+    
+    //Read the variable...
+    vtkDataArray *arr = NULL;
+    if (avi->type == adios_complex)
+    {
+        string nm = ci->first;
+        if (nm.substr(nm.length()-5, 5) == "_real")
+        {
+            if (!fileObj->ReadComplexRealData(nm, timestate, sel, &arr))
+                EXCEPTION1(InvalidVariableException, varname);
+        }
+        else if (nm.substr(nm.length()-5, 5) == "_imag")
+        {
+            if (!fileObj->ReadComplexImagData(nm, timestate, sel, &arr))
+                EXCEPTION1(InvalidVariableException, varname);
+        }
+    }
+    else
+        if (!fileObj->ReadScalarData(varname, timestate, sel, &arr))
+            EXCEPTION1(InvalidVariableException, varname);
+    adios_selection_delete(sel);
+    
     return arr;
 }
 
@@ -402,13 +458,13 @@ avtADIOSBasicFileFormat::GetVectorVar(int timestate, int domain, const char *var
 // ****************************************************************************
 
 std::string
-avtADIOSBasicFileFormat::GenerateMeshName(const ADIOSVar &v)
+avtADIOSBasicFileFormat::GenerateMeshName(const ADIOS_VARINFO *avi)
 {
     std::vector<int64_t> dimT, dims;
     std::string meshname = "mesh_";
 
-    for (int i=0; i<v.dim; i++)
-        dims.insert(dims.begin(), v.global[i]);
+    for (int i=0; i<avi->ndim; i++)
+        dims.insert(dims.begin(), avi->dims[i]);
 
     for (int i=0; i <dims.size(); i++)
     {
@@ -435,156 +491,26 @@ avtADIOSBasicFileFormat::GenerateMeshName(const ADIOSVar &v)
 void
 avtADIOSBasicFileFormat::Initialize()
 {
-  cout<<"INitialize()"<<endl;
-    if (! fileObj->Open())
+    if (!fileObj->Open())
         EXCEPTION0(ImproperUseException);
 
     if (initialized)
         return;
 
     //Create meshes for each variable.
-    std::map<std::string, ADIOSVar>::iterator vi;
+    std::map<std::string, ADIOS_VARINFO*>::iterator vi;
     for (vi = fileObj->variables.begin(); vi != fileObj->variables.end(); ++vi)
     {
-        ADIOSVar &v = (*vi).second;
-        
-        std::string meshname = GenerateMeshName(v);
-        
+        ADIOS_VARINFO *avi = vi->second;
+        std::string meshname = GenerateMeshName(avi);
+
         //Add mesh, if not found...
         if (meshes.find(meshname) == meshes.end())
-        {
-            meshInfo mi;
-            for (int i=0; i<3; i++)
-            {
-                mi.start[i] = v.start[i];
-                mi.count[i] = v.count[i];
-                mi.global[i] = v.global[i];
-            }
-            mi.dim = v.dim;
-            mi.name = meshname;
-            meshes[meshname] = mi;
-            
-            debug5<<"Add mesh "<<meshname<<" ["<<mi.count[0]<<" "<<mi.count[1]<<" "<<mi.count[2]<<"]"<<endl;
-        }
+            meshes[meshname] = meshInfo(avi);
     }
-    
-    DoDomainDecomposition();
     
     initialized = true;
 }
-
-// ****************************************************************************
-//  Method: avtADIOSBasicFileFormat::ComputeStartCount
-//
-//  Purpose:
-//      Figure out the start/count arrays for a given processor count.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Wed Feb 10 16:08:01 EST 2010
-//
-//  Modifications:
-//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
-//   Use uint64_t for start/count arrays.
-//
-// ****************************************************************************
-
-void
-avtADIOSBasicFileFormat::ComputeStartCount(uint64_t *globalDims,
-                                           int dim,
-                                           uint64_t *start,
-                                           uint64_t *count)
-{
-#if PARALLEL
-    int domCount[3] = {0, 0, 0};
-    int s[3] = {start[0],start[1],start[2]}, c[3] = {count[0],count[1],count[2]};
-    avtDatabase::ComputeRectilinearDecomposition(dim, PAR_Size(),
-                                                 globalDims[0], globalDims[1], globalDims[2],
-                                                 &domCount[0], &domCount[1], &domCount[2]);
-    
-    // Determine this processor's logical domain (e.g. domain ijk) indices
-    int domLogicalCoords[3] = {0, 0, 0};
-    avtDatabase::ComputeDomainLogicalCoords(dim, domCount, PAR_Rank(),
-                                            domLogicalCoords);
-    
-    // Compute domain bounds.
-    for (int i = 0; i < 3; i++)
-    {
-        avtDatabase::ComputeDomainBounds(globalDims[i], domCount[i], domLogicalCoords[i],
-                                         &(s[i]),
-                                         &(c[i]));
-        
-        c[i]++;
-        if (s[i]+c[i] >= globalDims[i])
-            c[i]--;
-        
-        start[i] = s[i];
-        count[i] = c[i];
-    }
-#endif
-}
-
-
-// ****************************************************************************
-//  Method: avtADIOSBasicFileFormat::DoDomainDecomposition
-//
-//  Purpose:
-//      Decompose across processor set.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Thu Sep 17 11:23:05 EDT 2009
-//
-//  Modifications:
-//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
-//   Use uint64_t for start/count arrays.
-//
-// ****************************************************************************
-
-void
-avtADIOSBasicFileFormat::DoDomainDecomposition()
-{
-    debug5<<"avtADIOSBasicFileFormat::DoDomainDecomposition()"<<endl;
-
-#ifdef PARALLEL
-    //Set the variables.
-    std::map<std::string, ADIOSVar>::iterator v;
-    for (v = fileObj->variables.begin(); v != fileObj->variables.end(); v++)
-    {
-        uint64_t globalDims[3], start[3], count[3];
-        
-        for (int i = 0; i < 3; i++)
-            globalDims[i] = v->second.global[i];
-
-        avtADIOSBasicFileFormat::ComputeStartCount(globalDims, v->second.dim, start, count);
-        
-        for (int i = 0; i < 3; i++)
-        {
-            v->second.start[i] = start[i];
-            v->second.count[i] = count[i];
-        }
-    }
-
-        //Set each mesh.v
-    std::map<std::string, meshInfo>::iterator m;
-    for (m = meshes.begin(); m != meshes.end(); m++)
-    {
-
-        uint64_t globalDims[3] = {1,1,1};
-        uint64_t start[3], count[3];
-        for (int i = 0; i < 3; i++)
-            globalDims[i] = m->second.global[i];
-
-        avtADIOSBasicFileFormat::ComputeStartCount(globalDims, m->second.dim, start, count);
-        
-        for (int i = 0; i < 3; i++)
-        {
-            m->second.start[i] = start[i];
-            m->second.count[i] = count[i];
-        }
-    }
-    
-#endif
-}
-
 
 // ****************************************************************************
 //  Method: avtADIOSBasicFileFormat::CreateUniformGrid
@@ -604,37 +530,179 @@ avtADIOSBasicFileFormat::DoDomainDecomposition()
 // ****************************************************************************
 
 vtkRectilinearGrid *
-avtADIOSBasicFileFormat::CreateUniformGrid(const uint64_t *start,
-                                           const uint64_t *count)
+avtADIOSBasicFileFormat::CreateUniformGrid(meshInfo &mi, int ts, int dom)
 {
+    if (dom > mi.blocks.size()-1)
+        return NULL;
+    
+    uint64_t sIn[3]={0,0,0}, cIn[3]={0,0,0}, dims[3]={1,1,1}, s[3], c[3];
+    bool g[6];
+    block &b = mi.blocks[dom];
+    for (int i = 0; i < 3; i++)
+        if (i < mi.dim)
+        {
+            sIn[i] = b.start[i];
+            cIn[i] = b.count[i];
+            dims[i] = mi.dims[i];
+        }
+    
+    //ADIOS is fortran ordering, so swap the mesh dims.
+    if (mi.dim == 2)
+    {
+        std::swap(sIn[0], sIn[1]);
+        std::swap(cIn[0], cIn[1]);
+        std::swap(dims[0], dims[1]);
+    }
+    else
+    {
+        std::swap(sIn[0], sIn[2]);
+        std::swap(cIn[0], cIn[2]);
+        std::swap(dims[0], dims[2]);
+    }
+
+    bool doGhosts = GetDomBounds(mi.blocks.size(), mi.dim, dims,
+                                 sIn, cIn, s, c, g);
     vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
     vtkFloatArray *coords[3] = {NULL,NULL,NULL};
 
-    int dims[3] = {1,1,1};
-    for (int i = 0; i<3; i++)
+    int d[3] = {1,1,1};
+    for (int i = 0; i < mi.dim; i++)
+        d[i] = c[i]+1;
+    grid->SetDimensions(d);
+
+    for (int i = 0; i < 3; i++)
     {
-        dims[i] = (int)count[i];
-
         coords[i] = vtkFloatArray::New();
-        coords[i]->SetNumberOfTuples(dims[i]);
-        float *data = (float *)coords[i]->GetVoidPointer(0);
-
-        int x = (int)start[i];
-
-        for (int j = 0; j < dims[i]; j++, x++)
-            data[j] = (float)x;
+        if (i < mi.dim)
+        {
+            coords[i]->SetNumberOfTuples(d[i]);
+            float *data = (float *)coords[i]->GetVoidPointer(0);
+            int x = s[i];
+            for (int j = 0; j < d[i]; j++, x++)
+                data[j] = (float)x;
+        }
+        else
+        {
+            coords[i]->SetNumberOfTuples(1);
+            coords[i]->SetTuple1(0, 0.0);
+        }
     }
-    grid->SetDimensions(dims);
     grid->SetXCoordinates(coords[0]);
     grid->SetYCoordinates(coords[1]);
     grid->SetZCoordinates(coords[2]);
-    
     for (int i = 0; i<3; i++)
         coords[i]->Delete();
 
-    debug1 <<"  create mesh: " << coords[0]->GetNumberOfTuples() << "x"
-           <<coords[1]->GetNumberOfTuples() << "x"
-           <<coords[2]->GetNumberOfTuples() << endl;
-
+    if (doGhosts)
+        AddGhostZones(grid, g);
     return grid;
+}
+
+//****************************************************************************
+// Method:  avtADIOSBasicFileFormat::GetDomBounds
+//
+// Purpose:
+//   Get start/count indices, including ghost values.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtADIOSBasicFileFormat::GetDomBounds(int nBlocks, int dim, uint64_t *dims,
+                                      uint64_t *sIn, uint64_t *cIn,
+                                      uint64_t *sOut, uint64_t *cOut, bool *gFlags)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        sOut[i] = 0;
+        cOut[i] = 0;
+        gFlags[i*2+0] = false;
+        gFlags[i*2+1] = false;
+        if (i < dim)
+        {
+            sOut[i] = sIn[i];
+            cOut[i] = cIn[i];//+1;
+        }
+    }
+
+    if (nBlocks == 1)
+        return false;
+    
+    for (int i = 0; i < dim; i++)
+    {
+        if (sOut[i] > 0)
+            gFlags[i*2 +0] = true;
+        if (sOut[i]+cOut[i] < dims[i])
+            gFlags[i*2+1] = true;
+        if (gFlags[i*2+0])
+        {
+            sOut[i]--;
+            cOut[i]++;
+        }
+        if (gFlags[i*2+1])
+            cOut[i]++;
+    }
+    
+    //cout<<"GDB: sI: "<<sIn[0]<<" "<<sIn[1]<<" cI: "<<cIn[0]<<" "<<cIn[1]<<" --> ("<<sOut[0]<<" "<<sOut[1]<<") ("<<cOut[0]<<" "<<cOut[1]<<")"<<endl;
+    
+    return true;
+}
+
+//****************************************************************************
+// Method:  avtADIOSBasicFileFormat::AddGhostZones
+//
+// Purpose:
+//   Add ghost zones to a rectilinear grid.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+void
+avtADIOSBasicFileFormat::AddGhostZones(vtkRectilinearGrid *grid, bool *g)
+{
+    //Add ghost zones.
+    int ncells = grid->GetNumberOfCells();
+    vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+    ghostCells->SetName("avtGhostZones");
+    ghostCells->SetNumberOfTuples(ncells);
+    unsigned char realVal = 0, ghostVal = 0;
+    avtGhostData::AddGhostZoneType(ghostVal,
+                                   DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+
+    int nNodes[3];
+    grid->GetDimensions(nNodes);
+    for (int i = 0; i < 3; i++)
+        if (nNodes[i] > 1)
+            nNodes[i]--;
+    
+    int index = 0;
+    for (int k = 0; k < nNodes[2]; k++)
+        for (int j = 0; j < nNodes[1]; j++)
+            for (int i = 0; i < nNodes[0]; i++)
+            {
+                if ((i == 0 && g[0*2 +0]) ||
+                    (j == 0 && g[1*2 +0]) ||
+                    (k == 0 && g[2*2 +0]) ||
+                    (i == nNodes[0]-1 && g[0*2 +1]) ||
+                    (j == nNodes[1]-1 && g[1*2 +1]) ||
+                    (k == nNodes[2]-1 && g[2*2 +1]))
+                {
+                    ghostCells->SetTuple1(index, ghostVal);
+                }
+                else
+                    ghostCells->SetTuple1(index, realVal);
+                index++;
+            }
+    
+    grid->GetCellData()->AddArray(ghostCells);
+    vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(grid->GetInformation(), 0);
+    ghostCells->Delete();
 }

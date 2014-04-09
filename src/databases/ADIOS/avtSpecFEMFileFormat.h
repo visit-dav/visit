@@ -73,7 +73,7 @@ class avtSpecFEMFileFormat : public avtMTMDFileFormat
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
-    static void        GenerateFileNames(const std::string &nm,
+    static bool        GenerateFileNames(const std::string &nm,
                                          std::string &meshNm, std::string &dataNm);
     static bool        IsMeshFile(ADIOSFileObject *);
     static bool        IsDataFile(ADIOSFileObject *);
@@ -90,21 +90,30 @@ class avtSpecFEMFileFormat : public avtMTMDFileFormat
 
     virtual vtkDataSet    *GetMesh(int, int, const char *);
     virtual vtkDataArray  *GetVar(int, int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, int, const char *) {return NULL;}
 
   protected:
     ADIOSFileObject *meshFile, *dataFile;
+    int ngllx, nglly, ngllz, numBlocks;
 
-    int ngllx, nglly, ngllz, nWriters, nRegions;
-    int nElems, nPts;
-    
+    std::vector<int> regions;    
     bool             initialized;
-    void             Initialize();
 
+    void             Initialize();
     virtual void     PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    vtkDataSet *     GetWholeMesh(int ts, int dom);
+    vtkDataSet *     GetRegionMesh(int ts, int dom, int region);
+    void             AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds, int ptOffset=0);
+
+    vtkDataArray *   GetVarRegion(std::string &nm, int ts, int dom);
+
 
     //std::map<std::string, std::string> variables;
     std::vector<std::string> variables;
     std::vector<std::pair<std::string, int> > domainVarPaths;
+
+    static int GetRegion(const std::string &str);
+    static std::string GetVariable(const std::string &str);
+    static int NUM_REGIONS;
 };
 #endif
