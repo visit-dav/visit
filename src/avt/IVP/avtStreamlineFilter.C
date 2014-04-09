@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -193,14 +193,9 @@ static float random_11()
 //   Dave Pugmire, Mon Feb 21 08:22:30 EST 2011
 //   Color by correlation distance.
 //
-//   Brad Whitlock, Thu Feb 27 14:25:05 PST 2014
-//   Initialize options for extracting time.
-//   Work partially supported by DOE Grant SC0007548.
-//
 // ****************************************************************************
 
-avtStreamlineFilter::avtStreamlineFilter() : avtPICSFilter(),
-    seedVelocity(0,0,0)
+avtStreamlineFilter::avtStreamlineFilter() : seedVelocity(0,0,0)
 {
     coloringMethod = PICS_COLOR_SPEED;
     displayMethod = PICS_DISPLAY_LINES;
@@ -227,9 +222,6 @@ avtStreamlineFilter::avtStreamlineFilter() : avtPICSFilter(),
     correlationDistanceAngTol = 0.0;
     correlationDistanceMinDist = 0.0;
     correlationDistanceDoBBox = false;
-
-    extractTime = false;
-    timeArrayName = "";
 }
 
 
@@ -282,44 +274,10 @@ avtStreamlineFilter::GetCommunicationPattern()
 }
 
 // ****************************************************************************
-// Method: avtStreamlineFilter::SetExtractTime
-//
-// Purpose:
-//   Sets whether we want the filter to extract the streamline time as an
-//   extra scalar.
-//
-// Arguments:
-//   doIt : True if we want the time as a scalar.
-//   name : The name of the array in which to store the time.
-//
-// Returns:    
-//
-// Note:       Work partially supported by DOE Grant SC0007548.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Feb 27 14:25:51 PST 2014
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetExtractTime(bool doIt, const std::string &name)
-{
-    timeArrayName = name;
-    extractTime = doIt;
-}
-
-// ****************************************************************************
 // Method:  avtStreamlineFilter::GenerateAttributeFields() const
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  5, 2010
-//
-// Modifications:
-//   Brad Whitlock, Thu Feb 27 15:42:06 PST 2014
-//   Extract time explicitly.
-//   Work partially supported by DOE Grant SC0007548.
 //
 // ****************************************************************************
 
@@ -371,9 +329,6 @@ avtStreamlineFilter::GenerateAttributeFields() const
     // tube radius scale scalar
     if (!scaleTubeRadiusVariable.empty())
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR2;
-
-    if (extractTime)
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
 
     return attr;
 }
@@ -1019,11 +974,6 @@ avtStreamlineFilter::PostExecute(void)
 //    Hank Childs, Sat Jun  5 16:06:26 PDT 2010
 //    Call the new base class' (avtPICSFilter) method.
 //
-//    Brad Whitlock, Fri Feb 28 12:00:51 PST 2014
-//    Add some hints about what coloring method was used and what colorVar
-//    might actually be.
-//    Work partially supported by DOE Grant SC0007548.
-//
 // ****************************************************************************
 
 void
@@ -1045,31 +995,6 @@ avtStreamlineFilter::UpdateDataObjectInfo(void)
         atts.SetActiveVariable("colorVar");
         atts.SetVariableDimension(1);
         atts.SetCentering(AVT_NODECENT);
-    }
-
-    switch(coloringMethod)
-    {
-    case PICS_COLOR_SOLID:
-        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_SOLID");
-        break;
-    case PICS_COLOR_SPEED:
-        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_SPEED");
-        break;
-    case PICS_COLOR_VORTICITY:
-        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_VORTICITY");
-        break;
-    case PICS_COLOR_ARCLENGTH:
-        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_ARCLENGTH");
-        break;
-    case PICS_COLOR_TIME:
-        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_TIME");
-        break;
-    case PICS_COLOR_ID:
-        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_ID");
-        break;
-    case PICS_COLOR_VARIABLE:
-        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_VARIABLE, colorVar=" + coloringVariable);
-        break;
     }
 }
 

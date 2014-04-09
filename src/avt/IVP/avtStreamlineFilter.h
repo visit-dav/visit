@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -225,10 +225,6 @@ class vtkAppendPolyData;
 //   Dave Pugmire, Fri Jan 14 11:10:44 EST 2011
 //   Set default communication pattern to RestoreSequenceAssembleUniformly.
 //
-//   Brad Whitlock, Thu Feb 27 14:22:38 PST 2014
-//   Add options to extract time, id.
-//   Work partially supported by DOE Grant SC0007548.
-//
 // ****************************************************************************
 
 class IVP_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -287,8 +283,6 @@ class IVP_API avtStreamlineFilter : virtual public avtPICSFilter
              correlationDistanceDoBBox = doBBox;
          }
 
-    void SetExtractTime(bool doIt, const std::string &name=std::string());
-
     void SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
     void SetOpacityVariable(const std::string &var);
     void SetScaleTubeRadiusVariable(const std::string &var);
@@ -342,9 +336,6 @@ class IVP_API avtStreamlineFilter : virtual public avtPICSFilter
     bool      issueWarningForStiffness;
     bool      issueWarningForCriticalPoints;
     double    criticalPointThreshold;
-
-    bool        extractTime;
-    std::string timeArrayName;
 
     avtVector seedVelocity;
 
