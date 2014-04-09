@@ -56,12 +56,16 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkTriangle.h>
 #include <sstream>
+#include <fstream>
 #include <VisItStreamUtil.h>
 
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
 
-using std::string;
+using namespace std;
+
+static vector<double>
+interpolate(int n, double *x, double *y, int ni, double *xi);
 
 // ****************************************************************************
 //  Method: avtEMSTDFileFormat::Identify
@@ -78,9 +82,7 @@ bool
 avtXGCFileFormat::Identify(const char *fname)
 {
     string str(fname);
-    if (str.find("xgc.3d") != string::npos ||
-        str.find("xgc.fieldp") != string::npos ||
-        str.find("xgc.fieldi") != string::npos)
+    if (str.find("xgc.3d") != string::npos)
     {
         return true;
     }
@@ -153,61 +155,19 @@ avtXGCFileFormat::CreateDiagName(const string &filename)
     return diagname;
 }
 
-// ****************************************************************************
-//  Method: avtEMSTDFileFormat::IsFieldPFile
-//
-//  Purpose:
-//      Determine if this a fieldp file.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Mar  9 12:40:15 EST 2010
-//
-// ****************************************************************************
-
-bool
-avtXGCFileFormat::IsFieldPFile(ADIOSFileObject *f)
+string
+avtXGCFileFormat::CreateSeparatrixName(const string &filename)
 {
-    if (f->Filename().find("xgc.fieldp") == string::npos)
-        return false;
+    string sepname = "";
     
-    std::string xpclass;
-    f->GetStringAttr("/XP_CLASS", xpclass);
-    if (xpclass != "Node_Data")
-        return false;
-    int val;
-    if (!f->GetIntAttr("/nnode_data", val))
-        return false;
-    if (!f->GetIntScalar("/nphiP1", val))
-        return false;
+    string::size_type i0 = filename.rfind("xgc.");
+    string::size_type i1 = filename.rfind(".bp");
     
-    return true;
-}
-
-// ****************************************************************************
-//  Method: avtEMSTDFileFormat::IsFieldIFile
-//
-//  Purpose:
-//      Determine if this a fieldi file.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Mar  9 12:40:15 EST 2010
-//
-// ****************************************************************************
-
-bool
-avtXGCFileFormat::IsFieldIFile(ADIOSFileObject *f)
-{
-    if (f->Filename().find("xgc.fieldi") == string::npos)
-        return false;
-
-    std::string xpclass;
-    f->GetStringAttr("/XP_CLASS", xpclass);
-    if (xpclass != "Node_Data")
-        return false;
-    int val;
-    if (!f->GetIntAttr("/nnode_data", val))
-        return false;    
-    return true;
+    if (i0 != string::npos && i1 != string::npos)
+    {
+        sepname = filename.substr(0,i0) + "sep.dat";
+    }
+    return sepname;
 }
 
 // ****************************************************************************
@@ -227,6 +187,7 @@ avtXGCFileFormat::avtXGCFileFormat(const char *nm)
     meshFile = NULL;
     diagFile = NULL;
     initialized = false;
+    haveSepMesh = false;
     numNodes = 0;
     numTris = 0;
     numPhi = 0;
@@ -283,7 +244,7 @@ avtXGCFileFormat::GetNTimesteps()
 // ****************************************************************************
 
 void
-avtXGCFileFormat::GetCycles(std::vector<int> &cycles)
+avtXGCFileFormat::GetCycles(vector<int> &cycles)
 {
     file->GetCycles(cycles);
 }
@@ -333,7 +294,6 @@ avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    //mesh->meshType = AVT_POINT_MESH;
     mesh->numBlocks = 1;
     mesh->blockOrigin = 0;
     mesh->spatialDimension = 3;
@@ -343,55 +303,37 @@ avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    AddMeshToMetaData(md, "sep_mesh", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
-    AddScalarVarToMetaData(md, "sep", "sep_mesh", AVT_NODECENT);
-
-
-    AddScalarVarToMetaData(md, "dpot", "mesh", AVT_NODECENT);
-    AddScalarVarToMetaData(md, "iden", "mesh", AVT_NODECENT);
-    AddScalarVarToMetaData(md, "eden", "mesh", AVT_NODECENT);
-    AddScalarVarToMetaData(md, "ddpotdt", "mesh", AVT_NODECENT);
-    //AddScalarVarToMetaData(md, "turbulence", "mesh", AVT_NODECENT);
-    
-    /*
-
-    int numVars = 0;
-    if (!file->GetIntAttr("/nnode", numVars))
-        EXCEPTION1(InvalidVariableException, "nnode");
-
-    //Add variables.
-    for (int i = 0; i < numVars; i++)
+    if (haveSepMesh)
     {
-        char str[512];
-        sprintf(str, "/node_data[%d]/labels", i);
-        std::string varLabel;
-        if (! file->GetStringAttr(str, varLabel))
+        AddMeshToMetaData(md, "sep_mesh", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
+        AddScalarVarToMetaData(md, "sep", "sep_mesh", AVT_NODECENT);
+    }
+
+    //Add pot0....
+    AddMeshToMetaData(md, "mesh2D", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
+    AddScalarVarToMetaData(md, "pot0", "mesh2D", AVT_NODECENT);
+
+    map<string, ADIOS_VARINFO*>::const_iterator it;
+    for (it = file->variables.begin(); it != file->variables.end(); it++)
+    {
+        ADIOS_VARINFO *avi = it->second;
+        if (avi->ndim == 1)
             continue;
-        
+
         avtScalarMetaData *smd = new avtScalarMetaData();
-        smd->name = varLabel;
         smd->meshName = "mesh";
-        smd->centering = AVT_NODECENT;
-
-        std::string unitLabel;
-        sprintf(str, "/node_data[%d]/units", i);
-        if (file->GetStringAttr(str, unitLabel))
+        smd->name = it->first;
+        if (smd->name[0] == '/')
         {
-            smd->hasUnits = true;
-            smd->units = unitLabel;
+            smd->originalName = smd->name;
+            smd->name = string(&smd->name[1]);
         }
-        
-        sprintf(str, "/node_data[%d]/values", i);
-        ADIOSFileObject::varIter vi = file->variables.find(str);
-        ADIOSVar v = vi->second;
-        
-        smd->hasDataExtents = true;
-        smd->minDataExtents = v.extents[0];
-        smd->maxDataExtents = v.extents[1];
-
+        smd->centering = AVT_NODECENT;
         md->Add(smd);
     }
-    */
+    
+    if (diagFile)
+        AddScalarVarToMetaData(md, "turbulence", "mesh", AVT_NODECENT);
 }
 
 
@@ -421,95 +363,46 @@ avtXGCFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     Initialize();
     if (!strcmp(meshname, "sep_mesh"))
         return GetSepMesh();
+    if (!strcmp(meshname, "mesh2D"))
+        return GetMesh2D(timestate, domain);
 
-    //Build the mesh.
-    meshFile->GetIntAttr("n_n", numNodes);
-    meshFile->GetIntAttr("n_t", numTris);
-    file->GetIntAttr("nphi", numPhi);
-    //Not being read in correctly.....
-    numNodes = 56980;
-    numTris = 112655;
-    numPhi = 32;
-    //cout<<meshFile->Filename()<<": NN, NT= "<<numNodes<<" "<<numTris<<" numPhi= "<<numPhi<<endl;
-
-    vtkPoints *pts = NULL;
-    meshFile->ReadCoordinates("coordinates/values", timestate, &pts);
+    vtkDataArray *buff = NULL;
+    meshFile->ReadScalarData("/coordinates/values", timestate, &buff);
+    
+    vtkPoints *pts = vtkPoints::New();
+    pts->SetNumberOfPoints(numNodes * numPhi);
     vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
     grid->SetPoints(pts);
 
     vtkDataArray *conn = NULL, *nextNode = NULL;
-    meshFile->ReadVariable("cell_set[0]/node_connect_list", timestate, 0, &conn);
-    meshFile->ReadVariable("nextnode", timestate, 0, &nextNode);
+    meshFile->ReadScalarData("/cell_set[0]/node_connect_list", timestate, 0, &conn);
+    meshFile->ReadScalarData("/nextnode", timestate, 0, &nextNode);
 
-    int *connPtr = (int *)(conn->GetVoidPointer(0));
-    int *nnPtr = (int *)(nextNode->GetVoidPointer(0));
-    vtkIdType tri[3];
-    for (int i = 0; i < numTris*3; i+=3)
-    {
-        tri[0] = connPtr[i];
-        tri[1] = connPtr[i+1];
-        tri[2] = connPtr[i+2];
-        grid->InsertNextCell(VTK_TRIANGLE, 3, tri);
-    }
-
-    //    numPhi = 1;
-    //    return grid;
-
-    pts->Delete();
-    //    numPhi = 3;
-
-    //Now, revolve it.
-    vtkUnstructuredGrid *grid2 = vtkUnstructuredGrid::New();
-    vtkPoints *pts2 = vtkPoints::New();
-    pts2->SetNumberOfPoints(numNodes * numPhi);
-    grid2->SetPoints(pts2);
-    float dPhi = 2.0*M_PI/(float)numPhi;
-
-    //dPhi = 0.25*M_PI/(float)numPhi;
-    
+    //Create the points.
+    double dPhi = 2.0*M_PI/(double)numPhi;
     for (int i = 0; i < numPhi; i++)
     {
-        //float phi = i*(2.0*M_PI/(float)(numPhi-2));
-        float phi = (float)i * dPhi;
+        double phi = (double)i * dPhi;
         phi = -phi;
         
         double pt[3];
         for (int p = 0; p < numNodes; p++)
         {
-            pts->GetPoint(p, pt);
-
-            float R = pt[0];
-            float Z = pt[1];
-
+            double R = buff->GetTuple1(p*2 +0);
+            double Z = buff->GetTuple1(p*2 +1);
+            
             pt[0] = R*cos(phi);
             pt[1] = R*sin(phi);
             pt[2] = Z;
-            pts2->SetPoint(p+i*numNodes, pt );
-            
-
-            /*
-            float r = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
-            
-            pt[0] = r*cos(phi);
-            pt[1] = pt[1];
-            pt[2] = r*sin(phi);
-            pts2->SetPoint(p+i*numNodes, pt );
-            */
+            pts->SetPoint(p+i*numNodes, pt);
         }
-        //cout<<i<<" "<<phi<<" "<<phi*360/(2.0*M_PI)<<endl;
     }
+    buff->Delete();
+    pts->Delete();
 
-    /*
-    vtkIdType v[1];
-    for (int i = 0; i < numPhi*numNodes; i++)
-    {
-        v[0] = i;
-        grid2->InsertNextCell(VTK_VERTEX, 1, v);
-    }
-    return grid2;
-    */
-
-
+    //Make the wedges.
+    int *connPtr = (int *)(conn->GetVoidPointer(0));
+    int *nnPtr = (int *)(nextNode->GetVoidPointer(0));
     vtkIdType wedge[6];
     for (int i = 0; i < numPhi; i++)
     {
@@ -529,136 +422,96 @@ avtXGCFileFormat::GetMesh(int timestate, int domain, const char *meshname)
             p1 = nnPtr[p1];
             p2 = nnPtr[p2];
 
+            //Connect back to the first plane.
             if (i == numPhi-1)
                 off = 0;
             
             wedge[3] = p0 + off;
             wedge[4] = p1 + off;
             wedge[5] = p2 + off;
-            //cout<<"["<<wedge[0]<<" "<<wedge[1]<<" "<<wedge[2]<<" "<<wedge[3]<<" "<<wedge[4]<<" "<<wedge[5]<<"]"<<endl;
-            grid2->InsertNextCell(VTK_WEDGE, 6, wedge);
+            grid->InsertNextCell(VTK_WEDGE, 6, wedge);
         }
     }
-    /*
-    nextNode->Delete();
-    pts2->Delete();
-    grid->Delete();
     conn->Delete();
-    */
-    return grid2;
+    nextNode->Delete();
+    return grid;
 }
 
-
-// ****************************************************************************
-//  Method: avtXGCFileFormat::GetVar
-//
-//  Purpose:
-//      Gets a scalar variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
-//      that is supported everywhere through VisIt.
-//
-//  Arguments:
-//      timestate  The index of the timestate.  If GetNTimesteps returned
-//                 'N' time steps, this is guaranteed to be between 0 and N-1.
-//      varname    The name of the variable requested.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Mar  9 12:40:15 EST 2010
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtXGCFileFormat::GetVar(int timestate, int domain, const char *varname)
+vtkDataSet *
+avtXGCFileFormat::GetMesh2D(int ts, int dom)
 {
-    debug1 << "avtXGCFileFormat::GetVar " << varname << endl;
+    vtkDataArray *buff = NULL;
+    meshFile->ReadScalarData("/coordinates/values", ts, &buff);
+    
+    vtkPoints *pts = vtkPoints::New();
+    pts->SetNumberOfPoints(numNodes);
+    vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
+    grid->SetPoints(pts);
 
-    Initialize();
-    vtkDataArray *arr = NULL;
+    vtkDataArray *conn = NULL;
+    meshFile->ReadScalarData("/cell_set[0]/node_connect_list", ts, 0, &conn);
 
-    if (!strcmp(varname, "turbulence"))
-        return GetTurbulence(timestate, domain);
-    if (!strcmp(varname, "sep"))
-        return GetSep();
-
-    std::map<std::string, std::string>::const_iterator s = labelToVar.find(varname);
-    if (s != labelToVar.end())
+    //Create the points.
+    double dPhi = 2.0*M_PI/(double)numPhi;
+    double phi = 0.0;
+    double pt[3];
+    for (int p = 0; p < numNodes; p++)
     {
-        if (! file->ReadVariable(s->second, timestate, 0, &arr))
-            EXCEPTION1(InvalidVariableException, s->second);
+        double R = buff->GetTuple1(p*2 +0);
+        double Z = buff->GetTuple1(p*2 +1);
+            
+        /*
+        pt[0] = R*cos(phi);
+        pt[1] = R*sin(phi);
+        pt[2] = Z;
+        */
+
+        pt[0] = R*cos(phi);
+        pt[2] = R*sin(phi);
+        pt[1] = Z;
+        pts->SetPoint(p, pt);
+    }
+    buff->Delete();
+    pts->Delete();
+
+    //Make the wedges.
+    int *connPtr = (int *)(conn->GetVoidPointer(0));
+    vtkIdType tri[3];
+    for (int p = 0; p < numTris*3; p+=3)
+    {
+        tri[0] = connPtr[p+0];
+        tri[1] = connPtr[p+1];
+        tri[2] = connPtr[p+2];
+        grid->InsertNextCell(VTK_TRIANGLE, 3, tri);
     }
     
-    /*
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-
-    vtkDataArray *arr2 = vtkFloatArray::New();
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-    cout<<"sz= "<<arr->GetNumberOfTuples()<<endl;
-    arr2->SetNumberOfTuples(56980);
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-    for (int i = 0; i < 56980; i++)
-        arr2->SetTuple1(i, arr->GetTuple1(i));
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-    return arr2;
-    */
-        
-    return arr;
+    conn->Delete();
+    return grid;
 }
 
-static std::vector<double>
-interpolate(std::vector<double> &x,
-            std::vector<double> &y,
-            double *xi, int ni)
-{
-    int n = x.size();
-    std::vector<double> yi(ni);
-    
-    for (int i = 0; i < ni; i++)
-    {
-        yi[i] = 0.0;
-        double val = xi[i];
-        if (val <= x[0])
-        {
-            yi[i] = y[0];
-            continue;
-        }
-        else if ( val >= x[n-1])
-        {
-            yi[i] = y[n-1];
-            continue;
-        }
-        for (int j = 0; j < n-1; j++)
-        {
-            if (val >= x[j] && val <= x[j+1])
-            {
-                double dy = y[j+1]-y[j];
-                double t = (xi[i]-x[j])/(x[j+1]-x[j]);
-                yi[i] = y[j] + t*dy;
-                break;
-            }
-        }
-    }
-
-    return yi;
-}
-
-static void 
-readTxtFile(std::string fname, std::vector<double> &arr)
-{
-    std::ifstream ifile(fname.c_str());
-    double v;
-    while (!ifile.fail())
-    {
-        ifile >> v;
-        arr.push_back(v);
-    }
-}
+//****************************************************************************
+// Method:  avtXGCFileFormat::GetSepMesh()
+//
+// Purpose:
+//   Create separatrix mesh.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
 vtkDataSet *
 avtXGCFileFormat::GetSepMesh()
 {
     vtkUnstructuredGrid *ds = vtkUnstructuredGrid::New();
 
-    std::ifstream ifile("sep.txt");
+    ifstream ifile(sepFileName.c_str());
+    if (!ifile.good())
+        return NULL;
+
+    //Read the separatrix.
     int n;
     ifile >> n;
     std::vector<double> R, Z;
@@ -672,7 +525,6 @@ avtXGCFileFormat::GetSepMesh()
         Z.push_back(v);
     }
 
-    numPhi = 32;
     int nPts = n *numPhi;
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(nPts);
@@ -708,71 +560,69 @@ avtXGCFileFormat::GetSepMesh()
             ds->InsertNextCell(VTK_QUAD, 4, quad);
         }
     }
-
-    pts->Delete();
-
-
-    //now do some tests....
-    if (0)
-    {
-        vtkCellLocator *loc = vtkCellLocator::New();
-        double p0[3] = {2.4, .2, .2};
-        double pt[3] = {10,0,0};
-        
-        vtkIdType cellId;
-        vtkGenericCell *cell = vtkGenericCell::New();
-        int subId;
-        double dist2, x[3], p[3], t;
-        loc->SetDataSet(ds);
-        loc->BuildLocator();
-        vtkPoints *iPoints = vtkPoints::New();
-        vtkIdList *iCells = vtkIdList::New();
-        /*
-        int numInters = loc->IntersectWithLine(p0, pt, 0.01, t, x, p, subId, cellId, cell);
-        cout<<"Num Inters: "<<numInters<<endl;
-        */
-        loc->FindCellsAlongLine(p0, pt, 0.0, iCells);
-        iCells->Print(cout);
-        
-        //loc->FindClosestPoint(pt, cp, cellID, id, dist2);
-        
-        //cout<<"Find: "<<dist2<<" "<<cellID<<" "<<id<<endl;
-        //cell->Print(cout);
-
-        /*
-        vtkPoints *points = vtkPoints::New();
-        vtkPolyData *pointsPD = vtkPolyData::New();
-
-        points->InsertNextPoint(pt);
-        
-        pointsPD->SetPoints(points);
-        vtkDataSetSurfaceFilter *srfF = vtkDataSetSurfaceFilter::New();
-        srfF->SetInputData(ds);
-        srfF->Update();
-        srfF->GetOutput()->Print(cout);
-        
-        vtkSelectEnclosedPoints *sel = vtkSelectEnclosedPoints::New();
-        sel->SetSurfaceData(srfF->GetOutput());
-        sel->SetInputData(pointsPD);
-        for (int i = 0; i < points->GetNumberOfPoints(); i++)
-        {
-            cout<<i<<" isInside= "<<sel->IsInside(i)<<endl;
-        }
-        */
-    }
     
+    pts->Delete();
     return ds;
 }
+
+
+// ****************************************************************************
+//  Method: avtXGCFileFormat::GetVar
+//
+//  Purpose:
+//      Gets a scalar variable associated with this file.  Although VTK has
+//      support for many different types, the best bet is vtkFloatArray, since
+//      that is supported everywhere through VisIt.
+//
+//  Arguments:
+//      timestate  The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//      varname    The name of the variable requested.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Mar  9 12:40:15 EST 2010
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtXGCFileFormat::GetVar(int timestate, int domain, const char *varname)
+{
+    debug1 << "avtXGCFileFormat::GetVar " << varname << endl;
+    Initialize();
+
+    if (!strcmp(varname, "turbulence"))
+        return GetTurbulence(timestate, domain);
+    if (!strcmp(varname, "sep"))
+        return GetSep();
+
+    vtkDataArray *var = NULL;
+    file->ReadScalarData(varname, timestate, &var);
+    return var;
+}
+
+//****************************************************************************
+// Method:  avtXGCFileFormat::GetSep
+//
+// Purpose:
+//   Get separatrix dummy variable.
+//
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
 
 vtkDataArray *
 avtXGCFileFormat::GetSep()
 {
-    vtkFloatArray *var = vtkFloatArray::New();
-
     vtkDataSet *ds = GetSepMesh();
     int nPts = ds->GetNumberOfPoints();
     ds->Delete();
 
+    vtkFloatArray *var = vtkFloatArray::New();
     var->SetNumberOfTuples(nPts);
     for (int i = 0; i < nPts; i++)
         var->SetTuple1(i, 0.0);
@@ -780,46 +630,63 @@ avtXGCFileFormat::GetSep()
     return var;
 }
 
+//****************************************************************************
+// Method:  avtXGCFileFormat::GetTurbulence
+//
+// Purpose:
+//   Calculate turbulence.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+
 vtkDataArray *
 avtXGCFileFormat::GetTurbulence(int ts, int dom)
 {
     vtkDataArray *pot0 = NULL, *potm0 = NULL, *eden = NULL, *dpot = NULL, *psi = NULL;
-    //vtkDataArray *dpsi = NULL, *temp = NULL, *dens = NULL;
-    vtkFloatArray *arr = vtkFloatArray::New();
 
-    file->ReadVariable("dpot", ts, 0, &dpot);
-    file->ReadVariable("pot0", ts, 0, &pot0);
-    file->ReadVariable("potm0", ts, 0, &potm0);
-    file->ReadVariable("eden", ts, 0, &eden);
-    meshFile->ReadVariable("psi", ts, 0, &psi);
+    file->ReadScalarData("/dpot", ts, &dpot);
+    file->ReadScalarData("/pot0", ts, &pot0);
+    file->ReadScalarData("/potm0", ts, &potm0);
+    file->ReadScalarData("/eden", ts, &eden);
+    meshFile->ReadScalarData("/psi", ts, &psi);
 
-    std::vector<double> psid, dens, temp1, temp2, temp;
-    readTxtFile("psi.txt", psid);
-    readTxtFile("dens.txt", dens);
-    readTxtFile("temp1.txt", temp1);
-    readTxtFile("temp2.txt", temp2);
-    temp.resize(temp1.size());
+    vtkDataArray *psid=NULL, *dens=NULL, *temp1=NULL, *temp2=NULL;
+    diagFile->ReadScalarData("/psi_mks", ts, &psid);
+    diagFile->ReadScalarData("/e_gc_density_avg", ts, &dens);
+    diagFile->ReadScalarData("/e_perp_temperature_avg", ts, &temp1);
+    diagFile->ReadScalarData("/e_parallel_mean_en_avg", ts, &temp2);
+
+    vector<double> temp(temp1->GetNumberOfTuples());
     for (int i = 0; i <temp.size(); i++)
-        temp[i] = (temp1[i]+temp2[i])/3.0 * 2.0;
+        temp[i] = 2.0*(temp1->GetTuple1(i)+temp2->GetTuple1(i)) / 3.0;
 
-    std::vector<double> te, de;
+    //Interpolate temperature onto psi.
+    int n = psid->GetNumberOfTuples();
+    int ni = psi->GetNumberOfTuples();
+    double *x = (double*)psid->GetVoidPointer(0);
+    double *y = &temp[0];
+    double *xi = (double*)psi->GetVoidPointer(0);
+    vector<double> te = interpolate(n, x, y, ni, xi);
 
-    cout<<"INTERPOLATE: "<<psid.size()<<" "<<psi->GetNumberOfTuples()<<endl;
-    te = interpolate(psid, temp, (double*)psi->GetVoidPointer(0), psi->GetNumberOfTuples());
-    de = interpolate(psid, dens, (double*)psi->GetVoidPointer(0), psi->GetNumberOfTuples());
+    //Interpolate density onto psi.
+    y = (double*)dens->GetVoidPointer(0);
+    vector<double> de = interpolate(n, x, y, ni, xi);
 
+    vtkFloatArray *arr = vtkFloatArray::New();
     int nTuples = eden->GetNumberOfTuples();
     arr->SetNumberOfTuples(nTuples);
 
-    std::vector<double> meanEden(numNodes);
-    for (int i = 0; i < numNodes; i++)
-        meanEden[i] = 0.0f;
+    vector<double> meanEden(numNodes, 0.0);
     for (int i = 0; i < numPhi; i++)
         for (int j = 0; j < numNodes; j++)
             meanEden[j] += eden->GetTuple1(i*numNodes + j);
     for (int i = 0; i < numNodes; i++)
         meanEden[i] /= (double)numPhi;
-
 
     for (int i = 0; i < numPhi; i++)
     {
@@ -833,21 +700,22 @@ avtXGCFileFormat::GetTurbulence(int ts, int dom)
             v2 = v2 / de[j];
 
             double val = v1+v2;
-            /*      
-            if (val > 1.0)
-                val = 10;
-            else if (val < -1.0)
-                val = -10;
-            else if (val > 0.0)
-                val = log10(val+0.00000001);
-            else if (val < 0.0)
-                val = -log10(-val+0.00000001);
-            */
             arr->SetTuple1(idx, val);
         }
     }
 
-    //compute std of arr.
+    pot0->Delete();
+    potm0->Delete();
+    eden->Delete();
+    dpot->Delete();
+    psi->Delete();
+    psid->Delete();
+    dens->Delete();
+    temp1->Delete();
+    temp2->Delete();
+    
+    /*
+    //Sanity check, compute the STD.
     double mean = 0.0;
     for (int i = 0; i < nTuples; i++)
         mean += arr->GetTuple1(i);
@@ -860,85 +728,10 @@ avtXGCFileFormat::GetTurbulence(int ts, int dom)
         variance += x*x;
     }
     double stnD = sqrt(variance/(double)nTuples);
-
     cout<<"stnD: "<<stnD<<endl;
-
-    pot0->Delete();
-    potm0->Delete();
-    eden->Delete();
-    dpot->Delete();
-    psi->Delete();
-    
-
-    return arr;
-
-
-
-
-
-
-#if 0
-
-
-
-    std::vector<double> potDiff(numNodes), meanEden(numNodes);
-    
-    // var = dpot - (potm0 - pot0)
-    for (int i = 0; i < numNodes; i++)
-        potDiff[i] = potm0->GetTuple1(i) - pot0->GetTuple1(i);
-
-    for (int i = 0; i < numPhi; i++)
-    {
-        for (int j = 0; j < numNodes; j++)
-        {
-            float v = dpot->GetTuple1(i*numNodes+j) - potDiff[j];
-            v /= te[j];
-            arr->SetTuple1(i*numNodes + j, v);
-        }
-    }
-
-
-    //var2 = eden - mean(eden)
-    for (int i = 0; i < numNodes; i++)
-        meanEden[i] = 0.0f;
-
-    for (int i = 0; i < numPhi; i++)
-    {
-        for (int j = 0; j < numNodes; j++)
-            meanEden[j] += eden->GetTuple1(i*numNodes + j);
-    }
-    
-    for (int i = 0; i < numNodes; i++)
-        meanEden[i] /= (double)numPhi;
-
-    for (int i = 0; i < numPhi; i++)
-    {
-        for (int j = 0; j < numNodes; j++)
-        {
-            float e = eden->GetTuple1(i*numNodes +j) - meanEden[j];
-            e = e / de[j];
-            eden->SetTuple1(i*numNodes+j, e);
-        }
-    }
-
-    for (int i = 0; i < numPhi; i++)
-    {
-        for (int j = 0; j < numNodes; j++)
-        {
-            float v = arr->GetTuple1(i*numNodes + j);
-            v = v + eden->GetTuple1(i*numNodes + j);
-            arr->SetTuple1(i*numNodes + j, v);
-        }
-    }
-
-    dpot->Delete();
-    pot0->Delete();
-    potm0->Delete();
-    eden->Delete();
-    psi->Delete();
+    */
     
     return arr;
-#endif
 }
 
 
@@ -992,32 +785,74 @@ avtXGCFileFormat::Initialize()
     meshFile->SetResetDimensionOrder();
     if (! meshFile->Open())
         EXCEPTION0(ImproperUseException);
-    diagFile = new ADIOSFileObject(avtXGCFileFormat::CreateDiagName(file->Filename()));
-    diagFile->SetResetDimensionOrder();
-    if (! diagFile->Open())
-        EXCEPTION0(ImproperUseException);
-
-    labelToVar["dpot"] = "dpot";
-    labelToVar["iden"] = "iden";
-    labelToVar["eden"] = "eden";
-    labelToVar["ddpotdt"] = "ddpotdt";
-
-    /*
-    //Create the label to variable mapping.
-    int numVars = 0;
-    if (!file->GetIntAttr("/nnode", numVars))
-        EXCEPTION1(InvalidVariableException, "nnode");
     
-    for (int i = 0; i < numVars; i++)
+    string diagNm = avtXGCFileFormat::CreateDiagName(file->Filename());
+    ifstream df(diagNm.c_str());
+    if (df.good())
     {
-        char var[512], label[512];
-        sprintf(var, "/node_data[%d]/values", i);
-        sprintf(label, "/node_data[%d]/labels", i);
-        std::string labelNm;
-        if (file->GetStringAttr(label, labelNm))
-            labelToVar[labelNm] = var;
+        diagFile = new ADIOSFileObject(diagNm);
+        diagFile->SetResetDimensionOrder();
+        if (! diagFile->Open())
+            EXCEPTION0(ImproperUseException);
     }
-    */
+
+    //See if we have a separtrix mesh file.
+    sepFileName = avtXGCFileFormat::CreateSeparatrixName(file->Filename());
+    ifstream f(sepFileName.c_str());
+    haveSepMesh = f.good();
+
+    //Read in mesh/plane info.
+    meshFile->GetScalar("/n_n", numNodes);
+    meshFile->GetScalar("/n_t", numTris);
+    if (!file->GetScalar("/nphi", numPhi))
+        file->GetScalar("nphi", numPhi);
     
     initialized = true;
+}
+
+//****************************************************************************
+// Method:  interpolate
+//
+// Purpose:
+//   calculate yi (from xi) based x and y.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+static vector<double>
+interpolate(int n, double *x, double *y, int ni, double *xi)
+{
+    vector<double> yi(ni);
+    
+    for (int i = 0; i < ni; i++)
+    {
+        yi[i] = 0.0;
+        double val = xi[i];
+        if (val <= x[0])
+        {
+            yi[i] = y[0];
+            continue;
+        }
+        else if ( val >= x[n-1])
+        {
+            yi[i] = y[n-1];
+            continue;
+        }
+        for (int j = 0; j < n-1; j++)
+        {
+            if (val >= x[j] && val <= x[j+1])
+            {
+                double dy = y[j+1]-y[j];
+                double t = (xi[i]-x[j])/(x[j+1]-x[j]);
+                yi[i] = y[j] + t*dy;
+                break;
+            }
+        }
+    }
+
+    return yi;
 }

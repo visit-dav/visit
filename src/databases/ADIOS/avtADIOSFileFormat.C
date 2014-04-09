@@ -74,19 +74,18 @@
 //  Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
 //  Added XGC reader.
 //
+//   Dave Pugmire, Wed Apr  9 13:39:04 EDT 2014
+//   Added specFM and schema readers.
+//
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
 ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
-
-    //ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock);
-    //ffi = avtXGCFileFormat::CreateInterface(list, nList, nBlock);
-    //ffi = avtADIOSSchemaFileFormat::CreateInterface(list, nList, nBlock);
-    //return ffi;
-
-    if(list != NULL || nList > 0)
+    
+    if (list != NULL || nList > 0)
     {
         // Determine the type of reader that we want to use.
         int flavor = -1;
@@ -132,9 +131,11 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
           case 1:
             ffi = avtXGCFileFormat::CreateInterface(list, nList, nBlock);
             break;
+            /*
           case 2:
             ffi = avtPixieFileFormat::CreateInterface(list, nList, nBlock);
             break;
+            */
           case 3:
             ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock);
             break;
