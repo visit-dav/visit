@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -974,6 +974,11 @@ avtStreamlineFilter::PostExecute(void)
 //    Hank Childs, Sat Jun  5 16:06:26 PDT 2010
 //    Call the new base class' (avtPICSFilter) method.
 //
+//    Brad Whitlock, Fri Feb 28 12:00:51 PST 2014
+//    Add some hints about what coloring method was used and what colorVar
+//    might actually be.
+//    Work partially supported by DOE Grant SC0007548.
+//
 // ****************************************************************************
 
 void
@@ -995,6 +1000,31 @@ avtStreamlineFilter::UpdateDataObjectInfo(void)
         atts.SetActiveVariable("colorVar");
         atts.SetVariableDimension(1);
         atts.SetCentering(AVT_NODECENT);
+    }
+
+    switch(coloringMethod)
+    {
+    case PICS_COLOR_SOLID:
+        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_SOLID");
+        break;
+    case PICS_COLOR_SPEED:
+        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_SPEED");
+        break;
+    case PICS_COLOR_VORTICITY:
+        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_VORTICITY");
+        break;
+    case PICS_COLOR_ARCLENGTH:
+        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_ARCLENGTH");
+        break;
+    case PICS_COLOR_TIME:
+        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_TIME");
+        break;
+    case PICS_COLOR_ID:
+        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_ID");
+        break;
+    case PICS_COLOR_VARIABLE:
+        atts.AddFilterMetaData("Streamline", "coloringMethod=PICS_COLOR_VARIABLE, colorVar=" + coloringVariable);
+        break;
     }
 }
 
