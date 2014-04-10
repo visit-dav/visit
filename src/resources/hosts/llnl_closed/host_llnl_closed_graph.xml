@@ -40,5 +40,5 @@
         <Field name="arguments" type="stringVector"> </Field>
         <Field name="parallel" type="bool">true</Field>
     </Object>
-    <Field name="activeProfile" type="int">2</Field>
+    <Field name="activeProfile" type="int">0</Field>
 </Object>
