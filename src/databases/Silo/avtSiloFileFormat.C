@@ -9379,6 +9379,16 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
 //    Mark C. Miller, Tue Jul 10 20:12:33 PDT 2012
 //    Made this a static function in the source file since it doesn't use
 //    any class members.
+//
+//    Mark C. Miller, Thu Apr 10 17:52:45 PDT 2014
+//    Fixed logic for updating inewzoneno. It was either incorrect to begin
+//    with or inconsistent with newer algorithm for decomposing an arbitrary
+//    polyhedron. The new algorithm decomposes a zone such that a given face
+//    of more than 4 nodes is 'stripped' into a sequence of quads only or 
+//    quads followed by a triangle. For example, an arb-poly face of 6 nodes
+//    is decomposed into 2 quads. A face of 7 nodes is decomposed into 2 quads
+//    and one triangle. A face of 8 nodes is decomposed into 3 quads. A face
+//    of 9 nodes is decomposed into 3 quads and a triangle.
 // ****************************************************************************
 
 static void
@@ -9458,9 +9468,9 @@ RemapFacelistForPolyhedronZones(DBfacelist *sfl, DBzonelist *szl)
                     const int nnodes = zonelist[izonelist];
                     izonelist += nnodes + 1;
                     if (nnodes < 5)
-                        inewzoneno++;
+                        inewzoneno++; // face is a single tri or quad
                     else
-                        inewzoneno += nnodes - 4 + 1;
+                        inewzoneno += (1 + (nnodes-4)/2 + (nnodes-4)%2); // face is 1+ quads & 0|1 tri
                 }
             }
         }
@@ -9832,10 +9842,10 @@ GetPHZonelistFaceId(int nnodes, const int *const nl,
         faceNodes.push_back(*(nl+i));
 
     // Two pass loop for forward and reverse node order over the face
-    vector<int> faceNodesF;
+    vector<int> faceNodesF = faceNodes;
     for (int pass = 0; pass < 2; pass++)
     {
-        vector<int> canonicalFaceNodes = faceNodes;
+        vector<int> canonicalFaceNodes = faceNodesF;
         if (pass == 1)
             reverse(canonicalFaceNodes.begin(), canonicalFaceNodes.end());
 
@@ -11005,6 +11015,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     //
     // Main loop over all zones in this phzl
     //
+    bool encounteredFullyArbitraryCase = false;
     int nthings = (phzl->nzones)?phzl->nzones:phzl->nfaces;
     for (int gz = 0; gz < nthings; gz++)
     {
@@ -11191,6 +11202,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             {
                 ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
+                encounteredFullyArbitraryCase = true;
             }
             else if (num3NodeFaces == 0 && num4NodeFaces == 0)
             {
@@ -11210,6 +11222,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 {
                     ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
                         cellReMap, nodeReMap);
+                    encounteredFullyArbitraryCase = true;
                 }
             }
             else if (fcnt == 4 && uniqnodes.size() == 4 &&
@@ -11494,12 +11507,14 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             {
                 ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
+                encounteredFullyArbitraryCase = true;
             }
         }
         else                            // Arbitrary
         {
             ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
                 cellReMap, nodeReMap);
+            encounteredFullyArbitraryCase = true;
         }
     } // end of loop over all zones
 
@@ -11529,7 +11544,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
         //
         vector<int> noremap;
         vector<int> *remap = &noremap;    
-        if (ugrid->GetNumberOfPoints() > um->nnodes)
+        if (encounteredFullyArbitraryCase)
             remap = cellReMap;
         DBucdvar tmp;
         tmp.centering = DB_ZONECENT;
@@ -11558,14 +11573,9 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
 
     //
     // Remove the avtOriginalCellNumbers array if we don't really
-    // need it. The indicator of that condtion is if new nodes were
-    // added to the ugrid object. That only happens for truly arbitrary
-    // polyhedra. In that case, the number of points in the ugrid
-    // object will be greater than the input DBucdmesh. In addition,
-    // if we didn't add any nodes, then we don't need to maintain
-    // any special cell-data or nodal-data remapping arrays.
+    // need it.
     //
-    if (ugrid->GetNumberOfPoints() <= um->nnodes)
+    if (!encounteredFullyArbitraryCase)
     {
         if (origCellNumbersAdded)
             ugrid->GetCellData()->RemoveArray("avtOriginalCellNumbers");
