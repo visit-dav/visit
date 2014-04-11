@@ -41,6 +41,7 @@
 #include <netcdf.h>
 
 #include <algorithm>
+#include <cmath>
 
 #include <avtDatabaseMetaData.h>
 #include <avtMTMDFileFormatInterface.h>
@@ -62,6 +63,9 @@
 #include <visit-config.h>
 
 #include <string.h>
+
+static int oneXGridDomainToSubgrid[4] = {0, 1, 0, 1};
+static int twoXGridDomainToSubgrid[6] = {0, 1, 0, 2, 1, 2};
 
 // ****************************************************************************
 // Method: avtBOUTFileFormat::Identify
@@ -458,6 +462,10 @@ avtBOUTFileFormat::GetTimes(doubleVector &t)
 //   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
 //   I added the ability to handle grids with two X points.
 //
+//   Eric Brugger, Fri Apr 11 10:33:08 PDT 2014
+//   I modified the creation of the diverter to include all of the lower
+//   diverter as well as create the upper diverter with a two X point grid.
+//
 // ****************************************************************************
 
 void
@@ -598,10 +606,17 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         1, 1, 0, 2, 2, AVT_CURVILINEAR_MESH);
     md->Add(mmd);
 
-    if (gridType != circularGrid)
+    if (gridType == oneXGrid)
     {
         mmd = new avtMeshMetaData(meshNameDiverter,
-            N_DIVERTER_SUB_MESHES * zperiod, 1, 1, 0, 3, 3,
+            N_DIVERTER_ONEX_SUB_MESHES * zperiod, 1, 1, 0, 3, 3,
+            AVT_CURVILINEAR_MESH);
+        md->Add(mmd);
+    }
+    else if (gridType == twoXGrid)
+    {
+        mmd = new avtMeshMetaData(meshNameDiverter,
+            N_DIVERTER_TWOX_SUB_MESHES * zperiod, 1, 1, 0, 3, 3,
             AVT_CURVILINEAR_MESH);
         md->Add(mmd);
     }
@@ -913,6 +928,10 @@ avtBOUTFileFormat::ReadMeshMetaData()
 //   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
 //   I added the ability to handle grids with two X points.
 //
+//   Eric Brugger, Fri Apr 11 12:51:32 PDT 2014
+//   I modified the reader to eliminate the grid above the upper X point
+//   when working with a grid with two X points.
+//
 // ****************************************************************************
 
 bool
@@ -1082,16 +1101,18 @@ avtBOUTFileFormat::ReadMesh()
         subgrid[2].jstart[0] = jyseps2_1 + (jyseps1_2 - jyseps2_1) / 2 + 1;
         subgrid[2].jend[0] = nyRaw;
 
-        subgrid[3].nb = 1;
+        subgrid[3].nb = 2;
         subgrid[3].istart = 0;
         subgrid[3].iend = ixseps1 + 1;
         subgrid[3].jstart[0] = jyseps1_1 + 1;
-        subgrid[3].jend[0] = jyseps2_1 + (jyseps1_2 - jyseps2_1) / 2 + 1;
+        subgrid[3].jend[0] = jyseps2_1 + 1;
+        subgrid[3].jstart[1] = jyseps1_2 + 1;
+        subgrid[3].jend[1] = jyseps1_2 + 2;
 
         subgrid[4].nb = 2;
         subgrid[4].istart = 0;
         subgrid[4].iend = ixseps1 + 1;
-        subgrid[4].jstart[0] = jyseps2_1 + (jyseps1_2 - jyseps2_1) / 2 + 1;
+        subgrid[4].jstart[0] = jyseps1_2 + 1;
         subgrid[4].jend[0] = jyseps2_2 + 1;
         subgrid[4].jstart[1] = jyseps1_1 + 1;
         subgrid[4].jend[1] = jyseps1_1 + 2;
@@ -1105,8 +1126,8 @@ avtBOUTFileFormat::ReadMesh()
         subgrid[5].jend[1] = jyseps2_2 - 1;
  
         subgrid[6].nb = 2;
-        subgrid[6].istart = 0;
-        subgrid[6].iend = 1;
+        subgrid[6].istart = ixseps1;
+        subgrid[6].iend = ixseps1 + 1;
         subgrid[6].jstart[0] = jyseps2_1;
         subgrid[6].jend[0] = jyseps2_1 + 2;
         subgrid[6].jstart[1] = jyseps1_2 + 1;
@@ -1145,22 +1166,18 @@ avtBOUTFileFormat::ReadMesh()
         subgrid[5].jnrep[0] = nyMax;
 
         nxMax = int(std::max(subgrid[1].jnrep[jyseps2_1],
-                             subgrid[2].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]));
-        nxMax = int(std::max(nxMax,
-                             subgrid[3].jnrep[jyseps2_1 - jyseps1_1 - 1]));
-        nxMax = int(std::max(nxMax,
-                             subgrid[4].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]));
+                             subgrid[2].jnrep[(jyseps1_2-jyseps2_1)/2-1]));
+        nyMax = subgrid[3].jnrep[subgrid[3].nyIn-2];
+
         subgrid[1].nyOut += (nxMax - subgrid[1].jnrep[jyseps2_1]);
         subgrid[1].jnrep[jyseps2_1] = nxMax;
-        subgrid[2].nyOut += (nxMax - subgrid[2].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]);
-        subgrid[2].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1] = nxMax;
-        subgrid[3].nyOut += (nxMax - subgrid[3].jnrep[jyseps2_1 - jyseps1_1 - 1]);
-        subgrid[3].jnrep[jyseps2_1 - jyseps1_1 - 1] = nxMax;
-        subgrid[4].nyOut += (nxMax - subgrid[4].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1]);
-        subgrid[4].jnrep[(jyseps1_2 - jyseps2_1) / 2 - 1] = nxMax;
+        subgrid[2].nyOut += (nxMax - subgrid[2].jnrep[(jyseps1_2-jyseps2_1)/2-1]);
+        subgrid[2].jnrep[(jyseps1_2-jyseps2_1)/2-1] = nxMax;
 
         subgrid[6].nxOut = nxMax + 1;
         subgrid[6].inrep[0] = nxMax;
+        subgrid[6].nyOut = nyMax + 1;
+        subgrid[6].jnrep[0] = nyMax;
     }
 
     meshRead = true;
@@ -1185,6 +1202,9 @@ avtBOUTFileFormat::ReadMesh()
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Fri Apr 11 10:33:08 PDT 2014
+//   I modified the creation of the diverter to include all of the lower
+//   diverter as well as create the upper diverter with a two X point grid.
 //   
 // ****************************************************************************
 
@@ -1195,8 +1215,17 @@ avtBOUTFileFormat::CreateDiverterMesh(Subgrid &grid, int domain,
     //
     // Calculate the block and subgrid indexes.
     //
-    int iblock = domain / N_DIVERTER_SUB_MESHES;
-    int isubgrid = domain % N_DIVERTER_SUB_MESHES;
+    int iblock, isubgrid;
+    if (gridType == oneXGrid)
+    {
+        iblock = domain / N_DIVERTER_ONEX_SUB_MESHES;
+        isubgrid = domain % N_DIVERTER_ONEX_SUB_MESHES;
+    }
+    else
+    {
+        iblock = domain / N_DIVERTER_TWOX_SUB_MESHES;
+        isubgrid = domain % N_DIVERTER_TWOX_SUB_MESHES;
+    }
 
     //
     // Set the dimensions
@@ -1215,7 +1244,7 @@ avtBOUTFileFormat::CreateDiverterMesh(Subgrid &grid, int domain,
     nxOut   = grid.nxOut;
 
     int jj;
-    if (isubgrid == 0)
+    if (isubgrid == 0 || isubgrid == 1 || isubgrid == 5)
         jj = 0;
     else
         jj = nyIn - 1;
@@ -1421,6 +1450,13 @@ avtBOUTFileFormat::CreateMesh(Subgrid &grid, int iblock, int ndims,
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Thu Apr 10 10:39:53 PDT 2014
+//   I modified the reader to set the variable to the absolute value of
+//   the variable on the diverter.
+//   
+//   Eric Brugger, Fri Apr 11 10:33:08 PDT 2014
+//   I modified the creation of the diverter to include all of the lower
+//   diverter as well as create the upper diverter with a two X point grid.
 //   
 // ****************************************************************************
 
@@ -1431,8 +1467,17 @@ avtBOUTFileFormat::CreateDiverterVar(Subgrid &grid, int domain, float *data,
     //
     // Calculate the block and subgrid indexes.
     //
-    int iblock = domain / N_DIVERTER_SUB_MESHES;
-    int isubgrid = domain % N_DIVERTER_SUB_MESHES;
+    int iblock, isubgrid;
+    if (gridType == oneXGrid)
+    {
+        iblock = domain / N_DIVERTER_ONEX_SUB_MESHES;
+        isubgrid = domain % N_DIVERTER_ONEX_SUB_MESHES;
+    }
+    else
+    {
+        iblock = domain / N_DIVERTER_TWOX_SUB_MESHES;
+        isubgrid = domain % N_DIVERTER_TWOX_SUB_MESHES;
+    }
 
     //
     // Set the dimensions
@@ -1453,7 +1498,7 @@ avtBOUTFileFormat::CreateDiverterVar(Subgrid &grid, int domain, float *data,
     int nyz = nyIn * nz;
 
     int jj;
-    if (isubgrid == 0)
+    if (isubgrid == 0 || isubgrid == 1 || isubgrid == 5)
         jj = 0;
     else
         jj = nyIn - 1;
@@ -1472,7 +1517,7 @@ avtBOUTFileFormat::CreateDiverterVar(Subgrid &grid, int domain, float *data,
             for (int ii = 0; ii < inrep[i] + 1; ++ii)
             {
                 int ivals = k * nxOut + ii + isum;
-                vals[ivals] = v + double(ii) * dv;
+                vals[ivals] = std::abs(v + double(ii) * dv);
             }
             isum += inrep[i];
         }
@@ -1630,6 +1675,10 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
 //   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
 //   I added the ability to handle grids with two X points.
 //
+//   Eric Brugger, Fri Apr 11 10:33:08 PDT 2014
+//   I modified the creation of the diverter to include all of the lower
+//   diverter as well as create the upper diverter with a two X point grid.
+//   
 // ****************************************************************************
 
 #if 0
@@ -1712,10 +1761,10 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
     {
         int isubgrid;
         if (gridType == oneXGrid)
-            isubgrid = 0;
+            isubgrid = oneXGridDomainToSubgrid[domain % N_DIVERTER_ONEX_SUB_MESHES];
         else
-            isubgrid = domain % N_DIVERTER_SUB_MESHES;
-        dims[0] = subgrid[DIVERTER_SUBGRID+isubgrid].nxOut;
+            isubgrid = twoXGridDomainToSubgrid[domain % N_DIVERTER_TWOX_SUB_MESHES];
+        dims[0] = subgrid[isubgrid].nxOut;
         dims[1] = nzOut;
         dims[2] = 1;
     }
@@ -1750,10 +1799,10 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
     {
         int isubgrid;
         if (gridType == oneXGrid)
-            isubgrid = 0;
+            isubgrid = oneXGridDomainToSubgrid[domain % N_DIVERTER_ONEX_SUB_MESHES];
         else
-            isubgrid = domain % N_DIVERTER_SUB_MESHES;
-        CreateDiverterMesh(subgrid[DIVERTER_SUBGRID+isubgrid],
+            isubgrid = twoXGridDomainToSubgrid[domain % N_DIVERTER_TWOX_SUB_MESHES];
+        CreateDiverterMesh(subgrid[isubgrid],
                            domain, zShift, pts);
     }
 
@@ -1787,6 +1836,10 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
 //   Eric Brugger, Tue Dec  3 10:23:53 PST 2013
 //   I added the ability to handle grids with two X points.
 //
+//   Eric Brugger, Fri Apr 11 10:33:08 PDT 2014
+//   I modified the creation of the diverter to include all of the lower
+//   diverter as well as create the upper diverter with a two X point grid.
+//   
 // ****************************************************************************
 
 vtkDataArray *
@@ -1848,15 +1901,16 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
     //
     // Calculate the block and subgrid indexes.
     //
-    int iblock, isubgrid;
+    int isubgrid;
     if (diverter_var)
     {
-        iblock = domain / N_DIVERTER_SUB_MESHES;
-        isubgrid = domain % N_DIVERTER_SUB_MESHES;
+        if (gridType == oneXGrid)
+            isubgrid = domain % N_DIVERTER_ONEX_SUB_MESHES;
+        else
+            isubgrid = domain % N_DIVERTER_TWOX_SUB_MESHES;
     }
     else
     {
-        iblock = domain / nSubMeshes;
         isubgrid = domain % nSubMeshes;
     }
 
@@ -1945,10 +1999,10 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
     {
         int isubgrid;
         if (gridType == oneXGrid)
-            isubgrid = 0;
+            isubgrid = oneXGridDomainToSubgrid[domain % N_DIVERTER_ONEX_SUB_MESHES];
         else
-            isubgrid = domain % N_DIVERTER_SUB_MESHES;
-        nValues2 = subgrid[DIVERTER_SUBGRID+isubgrid].nxOut * nzOut;
+            isubgrid = twoXGridDomainToSubgrid[domain % N_DIVERTER_TWOX_SUB_MESHES];
+        nValues2 = subgrid[isubgrid].nxOut * nzOut;
     }
     else
     {
@@ -1970,14 +2024,15 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
     {
         int isubgrid;
         if (gridType == oneXGrid)
-            isubgrid = 0;
+            isubgrid = oneXGridDomainToSubgrid[domain % N_DIVERTER_ONEX_SUB_MESHES];
         else
-            isubgrid = domain % N_DIVERTER_SUB_MESHES;
-        CreateDiverterVar(subgrid[DIVERTER_SUBGRID+isubgrid],
+            isubgrid = twoXGridDomainToSubgrid[domain % N_DIVERTER_TWOX_SUB_MESHES];
+        CreateDiverterVar(subgrid[isubgrid],
                           domain, data, vals);
     }
     else
     {
+        int iblock = domain / nSubMeshes;
         CreateVar(subgrid[isubgrid], iblock, varDim, data, vals);
     }
 
