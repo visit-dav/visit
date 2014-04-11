@@ -62,12 +62,16 @@ class avtFileFormatInterface;
 //   Eric Brugger, Tue Dec  3 10:20:02 PST 2013
 //   I added the ability to handle grids with two X points.
 //
+//   Eric Brugger, Fri Apr 11 10:32:26 PDT 2014
+//   I modified the display of the diverter to display all of the lower
+//   diverter and also display the upper diverter with a two X point grid.
+//
 // ****************************************************************************
 
 #define MAX_SUB_MESHES 7
 
-#define N_DIVERTER_SUB_MESHES 2
-#define DIVERTER_SUBGRID 1
+#define N_DIVERTER_ONEX_SUB_MESHES 4
+#define N_DIVERTER_TWOX_SUB_MESHES 6
 
 enum GridType {circularGrid, oneXGrid, twoXGrid};
 
