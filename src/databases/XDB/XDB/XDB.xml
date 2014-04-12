@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+  <Plugin name="XDB" type="database" label="XDB" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="true" hasoptions="false">
+    <CXXFLAGS>
+      ${VXDB_INCLUDE_DIR}
+      ${XDBLIB_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LIBS components="M">
+      ${VXDB_LIB_SER}
+      ${XDBLIB_LIB}
+    </LIBS>
+    <LIBS components="ESer">
+      ${VXDB_LIB_SER}
+      ${XDBLIB_LIB}
+    </LIBS>
+    <LIBS components="EPar">
+      ${VXDB_LIB_PAR}
+      ${XDBLIB_LIB}
+    </LIBS>
+    <LDFLAGS>
+      ${VXDB_LIBRARY_DIR}
+      ${XDBLIB_LIBRARY_DIR}
+    </LDFLAGS>
+    <FilePatterns>
+      *.xdb
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" codefile="XDB.code">
+      <Function name="XDBCommonPluginInfo::GetLicense" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

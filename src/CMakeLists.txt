@@ -666,6 +666,8 @@ OPTION(VISIT_USE_BOOST "Use system boost library." ON)
 
 OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
 
+OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
+
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
@@ -2586,7 +2588,7 @@ ELSE (NOT WIN32)
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
                     /DCL_64=${CMAKE_CL_64}
-                    ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
+                    ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}

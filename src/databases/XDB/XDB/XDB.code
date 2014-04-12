@@ -1,0 +1,20 @@
+Target: xml2info
+Function: XDBCommonPluginInfo::GetLicense
+Declaration: virtual std::string XDBCommonPluginInfo::GetLicense() const;
+Definition:
+// ****************************************************************************
+//  Method: XDBCommonPluginInfo::GetLicense
+//
+//  Purpose: Get the copyright for the library.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Apr  8 16:07:39 PDT 2014
+//
+// ****************************************************************************
+#include <avtXDBWriterInternal.h>
+
+std::string
+XDBCommonPluginInfo::GetLicense() const
+{
+    return avtXDBWriterInternal::GetCopyright();
+}

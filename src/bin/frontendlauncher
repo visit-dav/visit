@@ -142,8 +142,7 @@ if test -n "$visitpython"; then
 
     # Set up Python variables so the binary will look for modules in their new
     # home inside the VisIt installation instead of where Python was compiled.
-    if [[ -d "$visitdir/lib/python" ]]
-    then
+    if test -d "$visitdir/lib/python" ; then
         export PYTHONHOME="$visitdir/lib/python"
         unset PYTHONPATH
         export PYTHONPATH="$PYTHONHOME/lib/python$pyver:$PYTHONHOME/lib/python$pyver/lib-dynload"

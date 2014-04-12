@@ -1,6 +1,6 @@
 #****************************************************************************
 #
-# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-442911
 # All rights reserved.
@@ -158,6 +158,9 @@
 #    Eric Brugger, Fri Dec 20 12:18:17 PST 2013
 #    I added the MRTest reader.
 #
+#    Brad Whitlock, Tue Jan 14 17:20:42 PST 2014
+#    Add XDB plugin.
+#
 #    Eric Brugger, Mon Jan 13 17:24:13 PST 2014
 #    I moved the AMRTest reader from the optional list of databases to
 #    build to the required list of databases to build.
@@ -291,6 +294,13 @@ IF(VISIT_STATIC)
     SET(ALL_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} CACHE INTERNAL "List of all I/O libs")
 ENDIF(VISIT_STATIC)
 
+# If we're not building statically, add XDB -- if we enabled it.
+IF(NOT VISIT_STATIC)
+    IF(VISIT_ENABLE_XDB)
+        SET(XDBPLUGIN XDB)
+    ENDIF(VISIT_ENABLE_XDB)
+ENDIF(NOT VISIT_STATIC)
+
 # These are our required plugins (no external dependencies)
 SET(REQUIRED_DATABASE_PLUGINS
 AMRTest
@@ -353,6 +363,7 @@ Xmdv
 lata
 volimage
 unv
+${XDBPLUGIN}
 )
 
 IF(TARGET vtkIOEnSight)

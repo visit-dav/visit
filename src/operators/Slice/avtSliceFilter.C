@@ -2123,7 +2123,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
             SNPRINTF(tmpstr, 200, "X domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
-        outAtts.AddFilterMetaData(std::string(tmpstr) + originStr);
+        outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
     }
     else if(atts.GetAxisType() == SliceAttributes::YAxis)
     {
@@ -2149,7 +2149,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
             SNPRINTF(tmpstr, 200, "Y domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
-        outAtts.AddFilterMetaData(std::string(tmpstr) + originStr);
+        outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
     }
     else if(atts.GetAxisType() == SliceAttributes::ZAxis)
     {
@@ -2175,7 +2175,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
             SNPRINTF(tmpstr, 200, "Z domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
-        outAtts.AddFilterMetaData(std::string(tmpstr) + originStr);
+        outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
     }
     else if(atts.GetAxisType() == SliceAttributes::Arbitrary)
     {
