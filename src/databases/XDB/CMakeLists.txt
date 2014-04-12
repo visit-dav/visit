@@ -23,13 +23,13 @@ MACRO(INSTALL_XDB_LIBRARY libfile)
 ENDMACRO(INSTALL_XDB_LIBRARY)
 
 #
-# On Mac, we have to add back in VTK paths to the VXDB binaries so they will run 
-# properly in a development build.
+# On Mac, we have to add back in VTK and MPICH paths to the VXDB binaries 
+# so they will run properly in a development build.
 #
-MACRO(PATCH_VTK_PATHS target libfile)
+MACRO(PATCH_VTK_AND_MPICH_PATHS target libfile)
 IF(APPLE)
     ADD_CUSTOM_TARGET(${target} ALL
-        COMMAND ${CMAKE_COMMAND} -E echo "Fixing VTK paths in ${libfile}"
+        COMMAND ${CMAKE_COMMAND} -E echo "Fixing VTK and MPICH paths in ${libfile}"
         COMMAND install_name_tool -change @rpath/lib/libvtkCommonComputationalGeometry-6.1.dylib ${VTK_LIBRARY_DIRS}/libvtkCommonComputationalGeometry-6.1.dylib ${libfile}
         COMMAND install_name_tool -change @rpath/lib/libvtkCommonCore-6.1.dylib                  ${VTK_LIBRARY_DIRS}/libvtkCommonCore-6.1.dylib ${libfile}
         COMMAND install_name_tool -change @rpath/lib/libvtkCommonDataModel-6.1.dylib             ${VTK_LIBRARY_DIRS}/libvtkCommonDataModel-6.1.dylib ${libfile}
@@ -62,10 +62,14 @@ IF(APPLE)
         COMMAND install_name_tool -change @rpath/lib/libvtkjpeg-6.1.dylib                        ${VTK_LIBRARY_DIRS}/libvtkjpeg-6.1.dylib ${libfile}
         COMMAND install_name_tool -change @rpath/lib/libvtktiff-6.1.dylib                        ${VTK_LIBRARY_DIRS}/libvtktiff-6.1.dylib ${libfile}
         COMMAND install_name_tool -change @rpath/lib/libvtkzlib-6.1.dylib                        ${VTK_LIBRARY_DIRS}/libvtkzlib-6.1.dylib ${libfile}
+        COMMAND install_name_tool -change @rpath/lib/libpmpich.dylib                             ${VISIT_MPICH_DIR}/lib/libpmpich.dylib   ${libfile}
+        COMMAND install_name_tool -change @rpath/lib/libmpich.dylib                              ${VISIT_MPICH_DIR}/lib/libmpich.dylib   ${libfile}
+        COMMAND install_name_tool -change @rpath/lib/libopa.dylib                                ${VISIT_MPICH_DIR}/lib/libopa.dylib   ${libfile}
+        COMMAND install_name_tool -change @rpath/lib/libmpl.dylib                                ${VISIT_MPICH_DIR}/lib/libmpl.dylib   ${libfile}
     )
     ADD_DEPENDENCIES(${target} copy_vxdb_binaries_to_lib)
 ENDIF(APPLE)
-ENDMACRO(PATCH_VTK_PATHS)
+ENDMACRO(PATCH_VTK_AND_MPICH_PATHS)
 
 #
 # See if we have a supported platform with binaries.
@@ -136,14 +140,14 @@ IF(XDB_PLATFORM)
                 COMMAND ${CMAKE_COMMAND} -E copy ${VXDB_LIBRARY_DIR}/${LIBPREFIX}${VXDB_LIB_PAR}${VISIT_PLUGIN_EXTENSION} ${XDB_LIB_DEST}
             )
             # This is needed to make sure that the VXDB libraries work in a development build on APPLE.
-            PATCH_VTK_PATHS(patch_vtk_VXDB_ser ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_SER}${VISIT_PLUGIN_EXTENSION})
-            PATCH_VTK_PATHS(patch_vtk_VXDB_par ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_PAR}${VISIT_PLUGIN_EXTENSION})
+            PATCH_VTK_AND_MPICH_PATHS(patch_vtk_VXDB_ser ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_SER}${VISIT_PLUGIN_EXTENSION})
+            PATCH_VTK_AND_MPICH_PATHS(patch_vtk_VXDB_par ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_PAR}${VISIT_PLUGIN_EXTENSION})
         ELSE(VISIT_PARALLEL)
             ADD_CUSTOM_TARGET(copy_vxdb_binaries_to_lib ALL
                 COMMAND ${CMAKE_COMMAND} -E copy ${VXDB_LIBRARY_DIR}/${LIBPREFIX}${VXDB_LIB_SER}${VISIT_PLUGIN_EXTENSION} ${XDB_LIB_DEST}
             )
             # This is needed to make sure that the VXDB libraries work in a development build on APPLE.
-            PATCH_VTK_PATHS(patch_vtk_VXDB_ser ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_SER}${VISIT_PLUGIN_EXTENSION})
+            PATCH_VTK_AND_MPICH_PATHS(patch_vtk_VXDB_ser ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_SER}${VISIT_PLUGIN_EXTENSION})
         ENDIF(VISIT_PARALLEL)
     ENDIF(EXISTS ${VXDB_DIR})
 
