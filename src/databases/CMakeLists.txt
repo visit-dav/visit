@@ -357,6 +357,7 @@ VASP
 VTK
 WPPImage
 WavefrontOBJ
+WellLogs
 XSF
 XYZ
 Xmdv
