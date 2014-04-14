@@ -29,7 +29,7 @@
         <Field name="timeLimitSet" type="bool">false</Field>
         <Field name="timeLimit" type="string"></Field>
         <Field name="launchMethodSet" type="bool">true</Field>
-        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="launchMethod" type="string">mpirun</Field>
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
