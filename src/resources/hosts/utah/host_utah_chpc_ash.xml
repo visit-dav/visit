@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">"ash"</Field>
+    <Field name="hostNickname" type="string">"Utah CHPC Ash"</Field>
     <Field name="host" type="string">ash.chpc.utah.edu</Field>
     <Field name="userName" type="string"></Field>
     <Field name="hostAliases" type="string"></Field>
@@ -25,7 +25,7 @@
         <Field name="partitionSet" type="bool">false</Field>
         <Field name="partition" type="string"></Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">smithp-em</Field>
+        <Field name="bank" type="string">smithp-ash</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">04:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
