@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
     <Field name="hostNickname" type="string">"Utah CHPC Prism"</Field>
-    <Field name="host" type="string">prism.chpc.utah.edu</Field>
+    <Field name="host" type="string">prism.crsim.utah.edu</Field>
     <Field name="userName" type="string"></Field>
     <Field name="hostAliases" type="string"></Field>
-    <Field name="directory" type="string">/usr/local/visit</Field>
+    <Field name="directory" type="string">/usr/local/bin/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
