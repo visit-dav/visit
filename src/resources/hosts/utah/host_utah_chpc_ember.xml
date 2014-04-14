@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">"ember"</Field>
+    <Field name="hostNickname" type="string">"Utah CHPC Ember"</Field>
     <Field name="host" type="string">ember.chpc.utah.edu</Field>
     <Field name="userName" type="string"></Field>
     <Field name="hostAliases" type="string"></Field>
