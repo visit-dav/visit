@@ -610,7 +610,7 @@ avtStateRecorderIntegralCurve::SameCurve(avtIntegralCurve *ic)
 //  Method: avtStateRecorderIntegralCurve::Get
 //
 //  Purpose:
-//      QUick access to member values
+//      Quick access to member values
 //
 //  Programmer: Allen Sanderson
 //  Creation:   September 8, 2013
