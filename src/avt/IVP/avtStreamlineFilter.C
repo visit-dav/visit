@@ -77,12 +77,6 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtIntegralCurve.h>
-#include <avtIVPVTKField.h>
-#include <avtIVPVTKTimeVaryingField.h>
-#include <avtIVPDopri5.h>
-#include <avtIVPAdamsBashforth.h>
-#include <avtIVPM3DC1Integrator.h>
-#include <avtIVPM3DC1Field.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
