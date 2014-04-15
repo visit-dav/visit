@@ -30,7 +30,8 @@
                     {"category":"unit","file":"namescheme.py","platform":"win"},
                     {"category":"unit","file":"stringhelpers.py","platform":"win"},
                     {"category":"plots","file":"pics.py","platform":"win"},
-                    {"category":"plots","file":"pathlines.py","platform":"win"}
+                    {"category":"plots","file":"pathlines.py","platform":"win"},
+                    {"category":"plots","file":"pics.py"}
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
@@ -57,7 +58,8 @@
                     {"category":"databases","file":"oldsilo.py","platform":"win"},
                     {"category":"databases","file":"rect.py","platform":"win"},
                     {"category":"databases","file":"itaps.py","platform":"win"},
-                    {"category":"databases","file":"claw.py","platform":"win"}
+                    {"category":"databases","file":"claw.py","platform":"win"},
+                    {"category":"plots","file":"pics.py"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
@@ -73,6 +75,7 @@
                     {"category":"operators" ,"file": "transform.py","cases":["ops_transform05"]},
                     {"category":"session","file":"correlationsession.py","cases":["correlationsession00"]},
                     {"category":"session","file":"legendproperties.py","cases":["legendpropeties00","legendproperties01"]},
-                    {"category":"queries","file": "revolved_surface_area.py"}
+                    {"category":"queries","file": "revolved_surface_area.py"},
+                    {"category":"plots","file":"pics.py"}
                     ]}
 ]}
