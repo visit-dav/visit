@@ -103,12 +103,12 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     // avtIVPField interface
     virtual Result    operator()(const double& t,
                                  const avtVector &pt,
-                                 avtVector &retV) const;
+                                       avtVector &retV) const;
 
     virtual Result    operator()(const double& t,
                                  const avtVector &pt,
                                  const avtVector &vel,
-                                 avtVector &retV) const
+                                       avtVector &retV) const
     { return FAIL; }
 
     virtual avtVector ConvertToCartesian(const avtVector& pt) const;
@@ -144,7 +144,7 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     std::vector<std::string>         sclDataName;
     vtkDataArray*          sclData[2][256];
     bool                   sclCellBased[256];
-    double                 t0, t1;
+    double                 t0, t1, dt;
 
     mutable avtVector               lastPos;
     mutable vtkIdType               lastCell;
