@@ -152,6 +152,9 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Changed function to be thread safe. I remove the class variable rpfPD
 //    and rpfUG. Now I allocate the needed VTK object during execution.
 //
+//    Burlen Loring, Mon Apr 14 15:56:19 PDT 2014
+//    Don't take two references to the output
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -168,7 +171,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // copies of the data can really slow things down.
     //
     vtkDataSet *no_vars = in_ds;
-    bool needToDelete = false;
+    bool needToDeleteNoVars = false;
     bool needToRemoveAVar = true;
     for (int j = 0 ; (j < 2) && needToRemoveAVar ; j++)
     {
@@ -181,7 +184,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             // the arrays.
             no_vars = (vtkDataSet *) in_ds->NewInstance();
             no_vars->ShallowCopy(in_ds);
-            needToDelete = true;
+            needToDeleteNoVars = true;
         }
 
         if (!keepAVTandVTK)
@@ -292,6 +295,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     vtkDataSet *out_ds = NULL;  
+    bool needToDeleteOutDs = false;
     if (shouldTakeRelevantPoints)
     {
         vtkPolyData *out_pd = NULL;
@@ -314,6 +318,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                     rpfPD->Update();
                     rpfPD->Delete();
                     out_ds = (vtkDataSet*)out_pd;
+                    needToDeleteOutDs = true;
                     break;
                 }
     
@@ -326,6 +331,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                     rpfUG->Update();
                     rpfUG->Delete();
                     out_ds = (vtkDataSet*)out_ug;
+                    needToDeleteOutDs = true;
                     break;
                 }
     
@@ -344,7 +350,11 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
     if (out_ds != in_ds)
         ManageMemory(out_ds);
-    if (needToDelete)
+
+    if (needToDeleteOutDs)
+        out_ds->Delete();
+
+    if (needToDeleteNoVars)
         no_vars->Delete();
 
     return out_ds;
