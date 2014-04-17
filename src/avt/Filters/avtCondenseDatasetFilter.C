@@ -152,6 +152,9 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Changed function to be thread safe. I remove the class variable rpfPD
 //    and rpfUG. Now I allocate the needed VTK object during execution.
 //
+//    Burlen Loring, Mon Apr 14 15:56:19 PDT 2014
+//    Don't take two references to the output
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -343,7 +346,11 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     if (out_ds != in_ds)
+    {
         ManageMemory(out_ds);
+        out_ds->Delete();
+    }
+
     if (needToDelete)
         no_vars->Delete();
 
