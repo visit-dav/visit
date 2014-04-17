@@ -76,6 +76,10 @@
 //   Kathleen Bonnell, Thu Dec 12 15:12:36 PST 2002 
 //   Use RenderOverlay instead of RenderOpaqueGeometry, to match new VTK API. 
 //   
+//   Kathleen Biagas, Thu Apr 17 16:01:40 PDT 2014
+//   Fix interface to match vtk-6 requirements and prevent error messages in
+//   log files.
+//
 // ****************************************************************************
 
 class vtkHighlightActor2D : public vtkActor2D
@@ -89,8 +93,9 @@ public:
 
     // Description:
     // Draw the actor as per the vtkProp superclass' API.
-    virtual int RenderOpaqueGeometry(vtkViewport *viewport) { return 0; };
-    virtual int RenderTranslucentGeometry(vtkViewport *) {return 0; };
+    virtual int RenderOpaqueGeometry(vtkViewport *viewport) { return 0; }
+    virtual int RenderTranslucentPolygonalGeometry(vtkViewport *) { return 0; }
+    virtual int HasTranslucentPolygonalGeometry() { return 0; }
     virtual int RenderOverlay(vtkViewport *); 
 
     void SetToolPointer(VisitInteractiveTool **t);
