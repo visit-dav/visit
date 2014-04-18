@@ -76,15 +76,44 @@ Utils for processing ultra curves.
 # 
 #  Cyrus Harrison, Wed Mar  7 13:21:23 PST 2012
 #  Change numpy import style.
+#
+#  Cyrus Harrison, Thu Apr 17 16:04:18 PDT 2014
+#  Add numpy guards and helper that plots all the curves in a database.
+#
 #*****************************************************************************
 
 import sys
 import math
 
+using_numpy = False
+
 try:
-    import numpy as npy
+    import visit
 except:
     pass
+
+try:
+    import numpy as npy
+    using_numpy = True
+except:
+    pass
+
+from common import VisItException, require_visit
+
+@require_visit
+def plot(dbfile=None):
+    if not dbfile is None:
+        visit.OpenDatabase(dbfile)
+    else:
+        wi = visit.GetWindowInformation()
+        dbfile = wi.activeSource
+    md = visit.GetMetaData(dbfile)
+    ncrvs = md.GetNumCurves()
+    cnames = [md.GetCurves(i).name for i in xrange(ncrvs)]
+    cnames.sort()
+    for cname in cnames:
+        visit.AddPlot("Curve",cname)
+    visit.DrawPlots()
 
 class Sample:
     """
@@ -159,7 +188,7 @@ class Curve(object):
         else:
             # Check if samples is an ndarray, if so
             # convert to a list of Samples.
-            if isinstance(samples,npy.ndarray):
+            if using_numpy and isinstance(samples,npy.ndarray):
                 lshape = len(samples.shape)
                 if  lshape == 1:
                     r = samples.shape
@@ -169,7 +198,8 @@ class Curve(object):
                     samples = [ Sample(samples[i,0],samples[i,1]) for i in xrange(r)]
                 else:
                     # error
-                    pass
+                    msg = "Cannot convert ndarry w/ shape %s to Curve " % str(lshape)
+                    raise VisItException(msg)
             self.samples = samples
         self.__xmap = None
     def first(self):
@@ -216,6 +246,10 @@ class Curve(object):
         x_max = max([s.x for s in self.samples])
         y_max = max([s.y for s in self.samples])
         return [x_min,x_max,y_min,y_max]
+    def add_sample(self,x,y):
+        # this invalidates the xmap
+        self.__xmap = None
+        return self.samples.append(Sample(x,y))
     def get_sample(self,index):
         if index <0 or index >= len(self.samples):
             return None
@@ -230,7 +264,9 @@ class Curve(object):
         return None
     def ndarray(self):
         #assumes successful numpy import ...
-        return npy.array([[s.x,s.y] for s in self.samples])
+        if using_numpy:
+            return npy.array([[s.x,s.y] for s in self.samples])
+        return None
     def __get_y(self,x):
         """
         Helper to get a y value given x.
@@ -328,9 +364,12 @@ class Curve(object):
         if isinstance(data,Curve):
             for v in data.values():
                 fobj.write("%s %s\n" % (str(v[0]),str(v[1])))
-        elif isinstance(data,npy.ndarray):
+        elif using_numpy and isinstance(data,npy.ndarray):
             for i in range(data.shape[0]):
                 fobj.write("%s %s\n" % (str(data[i,0]),str(data[i,1])))
+        else: # error unknown data type
+            msg = "Cannot save curve w/ data object of type: %s" % repr(type(data))
+            raise VisItException(msg)
     @classmethod
     def load(cls,fname):
         """
@@ -358,7 +397,8 @@ class Curve(object):
             if curr.first() > curr.last():
                 curr.reverse_samples()
             curves.append(curr)
-        return curves
+        return curves 
+
 
 
 

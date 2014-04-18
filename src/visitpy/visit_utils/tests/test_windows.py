@@ -78,8 +78,7 @@ class TestWindow(unittest.TestCase):
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
     def cleanup_windows(self):
-        for win in WindowManager.registered_windows():
-            win.remove()
+        WindowManager.cleanup_windows()
         visit.CloseDatabase(db)
         visit.CloseComputeEngine()
     @visit_test

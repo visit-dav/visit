@@ -84,7 +84,10 @@ class WindowManager(object):
     @classmethod
     def registered_windows(cls):
         return cls.__windows.values()
-
+    @classmethod
+    def cleanup_windows(cls):
+        for win in cls.registered_windows():
+            win.remove()
 
 class Window(object):
     @require_visit
