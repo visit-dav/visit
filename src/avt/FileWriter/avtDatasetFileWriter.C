@@ -877,6 +877,9 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Kathleen Biagas, Fri Apr 18 13:24:32 MST 2014
+//    Ensure the Append filters are updated.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -932,6 +935,7 @@ avtDatasetFileWriter::GetSingleDataset(void)
         }
         else
         {
+            pmap.af->Update();
             rv = pmap.af->GetOutput();
         }
     }
@@ -943,12 +947,11 @@ avtDatasetFileWriter::GetSingleDataset(void)
         }
         else
         {
+            pmap.pf->Update();
             rv = pmap.pf->GetOutput();
         }
     }
     rv->Register(NULL);
-    // FIX_ME_VTK6.0, ESB, can we remove the update safely?
-    //rv->Update();
     pmap.af->Delete();
     pmap.pf->Delete();
     return rv;
