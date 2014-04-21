@@ -274,6 +274,9 @@ class     MapNode;
 //    Added AugmentAtts and ModifyContract.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Kathleen Biagas, Mon Apr 21 11:30:37 PDT 2014
+//    Removed no longer used CombinedExecute and protected Execute methods.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -289,9 +292,6 @@ class PLOTTER_API avtPlot
                                        const WindowAttributes*);
     avtActor_p                 Execute(avtDataObjectReader_p);
     avtActor_p                 Execute(avtDataObjectReader_p, avtDataObject_p dob);
-    avtActor_p                 CombinedExecute(avtDataObject_p,
-                                       avtContract_p,
-                                       const WindowAttributes*);
 
     virtual bool               PlotIsImageBased(void) { return false; };
     virtual int                GetNumberOfStagesForImageBasedPlot(
@@ -376,10 +376,6 @@ class PLOTTER_API avtPlot
     std::vector<double>        dataExtents;
     float                      cellCountMultiplierForSRThreshold;
 
-    avtDataObjectWriter_p      Execute(avtDataObject_p,
-                                       avtContract_p,
-                                       const WindowAttributes*,
-                                       bool combinedExecute);
     virtual avtDataObject_p    ApplyOperators(avtDataObject_p) = 0;
     virtual avtDataObject_p    ApplyRenderingTransformation(avtDataObject_p)=0;
     virtual void               CustomizeBehavior(void) = 0;
