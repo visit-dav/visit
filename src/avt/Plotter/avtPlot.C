@@ -473,24 +473,6 @@ avtPlot::SetVarUnits(const char *name)
     }
 }
 
-// ****************************************************************************
-//  Method: avtPlot::Execute
-//
-//  Purpose: Public wrapper for engine's execute method
-//
-//  Note: If you are trying to change the behavior of the Engine's execute
-//  method, this is NOT the place to do it. Modify the one just below this one
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   February 11, 2003
-//
-// ****************************************************************************
-avtDataObjectWriter_p
-avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
-                 const WindowAttributes *atts)
-{
-   return Execute(input, contract, atts, false);
-}
 
 // ****************************************************************************
 //  Method: avtPlot::Execute
@@ -588,18 +570,23 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
 //
 //    Hank Childs, Thu Aug 26 16:57:24 PDT 2010
 //    Explicitly state which variables should have 
+//
+//    Kathleen Biagas, Mon Apr 21 13:18:13 PDT 2014
+//    Remove no-longer used arg combinedExecute.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
 avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
-                 const WindowAttributes *atts, const bool combinedExecute)
+                 const WindowAttributes *atts)
 {
     std::string varName = contract->GetDataRequest()->GetVariable();
     SetVarName(varName.c_str());
 
     //
-    // We don't know that the varname is has extents.  It might be a mesh or a material.  But
-    // that won't hurt anything ... the extents calculation won't happen in that case any way.
+    // We don't know that the varname is has extents.  It might be a mesh or a
+    // material.  But that won't hurt anything ... the extents calculation 
+    // won't happen in that case any way.
     //
     contract->SetCalculateVariableExtents(varName, true);
 
@@ -634,12 +621,7 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
     avtDataObjectWriter_p writer = dob->InstantiateWriter();
     writer->SetInput(dob);
 
-    // if we're being called by the CombinedExecute method, don't actually
-    // do any work with the writer.
-    if (!combinedExecute)
-    {
-       writer->Execute(contract);
-    }
+    writer->Execute(contract);
 
     //
     // Try setting the plot's units based on the information in the dob.
@@ -964,32 +946,6 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     CustomizeMapper(info);
 
     return actor;
-}
-
-// ****************************************************************************
-//  Method: avtPlot::Execute
-//
-//  Purpose:
-//      Performs the engine AND viewer portions of execute for an avtPlot in
-//      succession but skipping some of the intermediary data serialization
-//      and copy steps.
-//
-//      This code is written to simply call the previously existing viewer
-//      and engine execute methods with some flags to skip some steps.
-//
-//  Returns:    An actor created from the data object input.
-//
-//  Programmer: Mark C. Miller
-//  Creation:   February 11. 2003  
-//
-// ****************************************************************************
-avtActor_p
-avtPlot::CombinedExecute(avtDataObject_p input, avtContract_p contract,
-                 const WindowAttributes *atts)
-{
-   avtDataObjectWriter_p writer = Execute(input, contract, atts, true);
-   writer->GetInput()->GetInfo().ParallelMerge(writer);
-   return Execute(NULL, writer->GetInput());
 }
 
 
