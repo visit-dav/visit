@@ -54,6 +54,10 @@
         Curves
         Surfaces
       </Enum>
+      <Enum name="PuncturePlotType">
+        Single
+        Double
+      </Enum>
       <Enum name="PuncturePlaneType">
         Poloidal
         Toroidal
@@ -118,6 +122,21 @@
       </Field>
       <Field name="maxPunctures" label="Maximum number of Punctures" type="int">
         500
+      </Field>
+      <Field name="puncturePlotType" label="Puncture Plot Type" type="enum" subtype="PuncturePlotType">
+        Single
+      </Field>
+      <Field name="maxSteps" label="Maximum number of steps" type="int">
+        1000
+      </Field>
+      <Field name="terminateByTime" label="Use the time criteria for termination" type="bool">
+        false
+      </Field>
+      <Field name="termTime" label="Time for Termination" type="double" enabler="terminateByTime:true">
+        10.000000
+      </Field>
+      <Field name="puncturePeriodTolerance" label="Puncture Period Tolerance" type="double">
+        .01
       </Field>
       <Field name="puncturePlane" label="Puncture Plane" type="enum" subtype="PuncturePlaneType">
         Poloidal
@@ -314,6 +333,9 @@
       </Field>
       <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
         0.000000
+      </Field>
+      <Field name="pathlinesPeriod" label="Pathlines Period" type="double">
+        0.0
       </Field>
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE

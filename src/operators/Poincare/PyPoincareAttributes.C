@@ -98,6 +98,32 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxPunctures = %d\n", prefix, atts->GetMaxPunctures());
     str += tmpStr;
+    const char *puncturePlotType_names = "Single, Double";
+    switch (atts->GetPuncturePlotType())
+    {
+      case PoincareAttributes::Single:
+          SNPRINTF(tmpStr, 1000, "%spuncturePlotType = %sSingle  # %s\n", prefix, prefix, puncturePlotType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Double:
+          SNPRINTF(tmpStr, 1000, "%spuncturePlotType = %sDouble  # %s\n", prefix, prefix, puncturePlotType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
+    str += tmpStr;
+    if(atts->GetTerminateByTime())
+        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spuncturePeriodTolerance = %g\n", prefix, atts->GetPuncturePeriodTolerance());
+    str += tmpStr;
     const char *puncturePlane_names = "Poloidal, Toroidal, Arbitrary";
     switch (atts->GetPuncturePlane())
     {
@@ -589,6 +615,8 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
@@ -735,6 +763,135 @@ PoincareAttributes_GetMaxPunctures(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxPunctures()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetPuncturePlotType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the puncturePlotType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetPuncturePlotType(PoincareAttributes::PuncturePlotType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid puncturePlotType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Single, Double.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPuncturePlotType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPuncturePlotType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetMaxSteps(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maxSteps in the object.
+    obj->data->SetMaxSteps((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetMaxSteps(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxSteps()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the terminateByTime in the object.
+    obj->data->SetTerminateByTime(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByTime()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetTermTime(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the termTime in the object.
+    obj->data->SetTermTime(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetTermTime(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTermTime());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetPuncturePeriodTolerance(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the puncturePeriodTolerance in the object.
+    obj->data->SetPuncturePeriodTolerance(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPuncturePeriodTolerance(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPuncturePeriodTolerance());
     return retval;
 }
 
@@ -2489,6 +2646,30 @@ PoincareAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *ar
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the pathlinesPeriod in the object.
+    obj->data->SetPathlinesPeriod(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -2629,6 +2810,16 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetMinPunctures", PoincareAttributes_GetMinPunctures, METH_VARARGS},
     {"SetMaxPunctures", PoincareAttributes_SetMaxPunctures, METH_VARARGS},
     {"GetMaxPunctures", PoincareAttributes_GetMaxPunctures, METH_VARARGS},
+    {"SetPuncturePlotType", PoincareAttributes_SetPuncturePlotType, METH_VARARGS},
+    {"GetPuncturePlotType", PoincareAttributes_GetPuncturePlotType, METH_VARARGS},
+    {"SetMaxSteps", PoincareAttributes_SetMaxSteps, METH_VARARGS},
+    {"GetMaxSteps", PoincareAttributes_GetMaxSteps, METH_VARARGS},
+    {"SetTerminateByTime", PoincareAttributes_SetTerminateByTime, METH_VARARGS},
+    {"GetTerminateByTime", PoincareAttributes_GetTerminateByTime, METH_VARARGS},
+    {"SetTermTime", PoincareAttributes_SetTermTime, METH_VARARGS},
+    {"GetTermTime", PoincareAttributes_GetTermTime, METH_VARARGS},
+    {"SetPuncturePeriodTolerance", PoincareAttributes_SetPuncturePeriodTolerance, METH_VARARGS},
+    {"GetPuncturePeriodTolerance", PoincareAttributes_GetPuncturePeriodTolerance, METH_VARARGS},
     {"SetPuncturePlane", PoincareAttributes_SetPuncturePlane, METH_VARARGS},
     {"GetPuncturePlane", PoincareAttributes_GetPuncturePlane, METH_VARARGS},
     {"SetSourceType", PoincareAttributes_SetSourceType, METH_VARARGS},
@@ -2751,6 +2942,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetPathlinesOverrideStartingTimeFlag", PoincareAttributes_GetPathlinesOverrideStartingTimeFlag, METH_VARARGS},
     {"SetPathlinesOverrideStartingTime", PoincareAttributes_SetPathlinesOverrideStartingTime, METH_VARARGS},
     {"GetPathlinesOverrideStartingTime", PoincareAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
+    {"SetPathlinesPeriod", PoincareAttributes_SetPathlinesPeriod, METH_VARARGS},
+    {"GetPathlinesPeriod", PoincareAttributes_GetPathlinesPeriod, METH_VARARGS},
     {"SetPathlinesCMFE", PoincareAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", PoincareAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetIssueTerminationWarnings", PoincareAttributes_SetIssueTerminationWarnings, METH_VARARGS},
@@ -2802,6 +2995,21 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetMinPunctures(self, NULL);
     if(strcmp(name, "maxPunctures") == 0)
         return PoincareAttributes_GetMaxPunctures(self, NULL);
+    if(strcmp(name, "puncturePlotType") == 0)
+        return PoincareAttributes_GetPuncturePlotType(self, NULL);
+    if(strcmp(name, "Single") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Single));
+    if(strcmp(name, "Double") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Double));
+
+    if(strcmp(name, "maxSteps") == 0)
+        return PoincareAttributes_GetMaxSteps(self, NULL);
+    if(strcmp(name, "terminateByTime") == 0)
+        return PoincareAttributes_GetTerminateByTime(self, NULL);
+    if(strcmp(name, "termTime") == 0)
+        return PoincareAttributes_GetTermTime(self, NULL);
+    if(strcmp(name, "puncturePeriodTolerance") == 0)
+        return PoincareAttributes_GetPuncturePeriodTolerance(self, NULL);
     if(strcmp(name, "puncturePlane") == 0)
         return PoincareAttributes_GetPuncturePlane(self, NULL);
     if(strcmp(name, "Poloidal") == 0)
@@ -3034,6 +3242,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetPathlinesOverrideStartingTimeFlag(self, NULL);
     if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         return PoincareAttributes_GetPathlinesOverrideStartingTime(self, NULL);
+    if(strcmp(name, "pathlinesPeriod") == 0)
+        return PoincareAttributes_GetPathlinesPeriod(self, NULL);
     if(strcmp(name, "pathlinesCMFE") == 0)
         return PoincareAttributes_GetPathlinesCMFE(self, NULL);
     if(strcmp(name, "CONN_CMFE") == 0)
@@ -3071,6 +3281,16 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetMinPunctures(self, tuple);
     else if(strcmp(name, "maxPunctures") == 0)
         obj = PoincareAttributes_SetMaxPunctures(self, tuple);
+    else if(strcmp(name, "puncturePlotType") == 0)
+        obj = PoincareAttributes_SetPuncturePlotType(self, tuple);
+    else if(strcmp(name, "maxSteps") == 0)
+        obj = PoincareAttributes_SetMaxSteps(self, tuple);
+    else if(strcmp(name, "terminateByTime") == 0)
+        obj = PoincareAttributes_SetTerminateByTime(self, tuple);
+    else if(strcmp(name, "termTime") == 0)
+        obj = PoincareAttributes_SetTermTime(self, tuple);
+    else if(strcmp(name, "puncturePeriodTolerance") == 0)
+        obj = PoincareAttributes_SetPuncturePeriodTolerance(self, tuple);
     else if(strcmp(name, "puncturePlane") == 0)
         obj = PoincareAttributes_SetPuncturePlane(self, tuple);
     else if(strcmp(name, "sourceType") == 0)
@@ -3193,6 +3413,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetPathlinesOverrideStartingTimeFlag(self, tuple);
     else if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         obj = PoincareAttributes_SetPathlinesOverrideStartingTime(self, tuple);
+    else if(strcmp(name, "pathlinesPeriod") == 0)
+        obj = PoincareAttributes_SetPathlinesPeriod(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = PoincareAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)

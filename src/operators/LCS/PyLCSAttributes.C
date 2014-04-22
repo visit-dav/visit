@@ -426,6 +426,8 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
@@ -1561,6 +1563,30 @@ LCSAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LCSAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the pathlinesPeriod in the object.
+    obj->data->SetPathlinesPeriod(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
+    return retval;
+}
+
+/*static*/ PyObject *
 LCSAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
@@ -1789,6 +1815,8 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetPathlinesOverrideStartingTimeFlag", LCSAttributes_GetPathlinesOverrideStartingTimeFlag, METH_VARARGS},
     {"SetPathlinesOverrideStartingTime", LCSAttributes_SetPathlinesOverrideStartingTime, METH_VARARGS},
     {"GetPathlinesOverrideStartingTime", LCSAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
+    {"SetPathlinesPeriod", LCSAttributes_SetPathlinesPeriod, METH_VARARGS},
+    {"GetPathlinesPeriod", LCSAttributes_GetPathlinesPeriod, METH_VARARGS},
     {"SetPathlinesCMFE", LCSAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", LCSAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetForceNodeCenteredData", LCSAttributes_SetForceNodeCenteredData, METH_VARARGS},
@@ -1984,6 +2012,8 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return LCSAttributes_GetPathlinesOverrideStartingTimeFlag(self, NULL);
     if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         return LCSAttributes_GetPathlinesOverrideStartingTime(self, NULL);
+    if(strcmp(name, "pathlinesPeriod") == 0)
+        return LCSAttributes_GetPathlinesPeriod(self, NULL);
     if(strcmp(name, "pathlinesCMFE") == 0)
         return LCSAttributes_GetPathlinesCMFE(self, NULL);
     if(strcmp(name, "CONN_CMFE") == 0)
@@ -2087,6 +2117,8 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetPathlinesOverrideStartingTimeFlag(self, tuple);
     else if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         obj = LCSAttributes_SetPathlinesOverrideStartingTime(self, tuple);
+    else if(strcmp(name, "pathlinesPeriod") == 0)
+        obj = LCSAttributes_SetPathlinesPeriod(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = LCSAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "forceNodeCenteredData") == 0)

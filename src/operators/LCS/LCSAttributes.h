@@ -197,6 +197,7 @@ public:
     void SetPathlines(bool pathlines_);
     void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
+    void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetForceNodeCenteredData(bool forceNodeCenteredData_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
@@ -245,6 +246,7 @@ public:
     bool         GetPathlines() const;
     bool         GetPathlinesOverrideStartingTimeFlag() const;
     double       GetPathlinesOverrideStartingTime() const;
+    double       GetPathlinesPeriod() const;
     PathlinesCMFE GetPathlinesCMFE() const;
     bool         GetForceNodeCenteredData() const;
     bool         GetIssueTerminationWarnings() const;
@@ -360,6 +362,7 @@ public:
         ID_pathlines,
         ID_pathlinesOverrideStartingTimeFlag,
         ID_pathlinesOverrideStartingTime,
+        ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_forceNodeCenteredData,
         ID_issueTerminationWarnings,
@@ -406,6 +409,7 @@ private:
     bool   pathlines;
     bool   pathlinesOverrideStartingTimeFlag;
     double pathlinesOverrideStartingTime;
+    double pathlinesPeriod;
     int    pathlinesCMFE;
     bool   forceNodeCenteredData;
     bool   issueTerminationWarnings;
@@ -417,6 +421,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiiiiibdbdbddbddiddidDibiiiibbdibbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiiiiibdbdbddbddiddidDibiiiibbddibbbbd"
 
 #endif

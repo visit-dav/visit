@@ -73,7 +73,6 @@ avtIVPNIMRODIntegrator::avtIVPNIMRODIntegrator()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    d = 0.0;
     numStep = 0;
     degenerate_iterations = 0;
     stiffness_eps = tol / 1000.0;
@@ -92,158 +91,6 @@ avtIVPNIMRODIntegrator::~avtIVPNIMRODIntegrator()
 {
 }
 
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::SetCurrentT
-//
-//  Purpose:
-//      Sets the current T.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-// ****************************************************************************
-
-void
-avtIVPNIMRODIntegrator::SetCurrentT(double newT)
-{
-    t = newT;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::GetCurrentT
-//
-//  Purpose:
-//      Gets the current T.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-// ****************************************************************************
-
-double 
-avtIVPNIMRODIntegrator::GetCurrentT() const 
-{
-    return t;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::SetCurrentY
-//
-//  Purpose:
-//      Sets the current Y.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-//  Modifications:
-//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
-//    Improved version of A-B solver that builds function history from
-//    initial RK4 steps.
-//
-// ****************************************************************************
-
-void
-avtIVPNIMRODIntegrator::SetCurrentY(const avtVector &newY)
-{
-    yCur = newY;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::GetCurrentY
-//
-//  Purpose:
-//      Gets the current Y.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-//  Modifications:
-//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
-//    Improved version of A-B solver that builds function history from
-//    initial RK4 steps.
-//
-// ****************************************************************************
-
-avtVector 
-avtIVPNIMRODIntegrator::GetCurrentY() const
-{
-    return yCur;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::SetNextStepSize
-//
-//  Purpose:
-//      Sets the step size for the next step.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-// ****************************************************************************
-
-void 
-avtIVPNIMRODIntegrator::SetNextStepSize(const double& newH)
-{
-    h = newH;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::GetNextStepSize
-//
-//  Purpose:
-//      Gets the step size for the next step.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-// ****************************************************************************
-
-double 
-avtIVPNIMRODIntegrator::GetNextStepSize() const
-{
-    return h;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::SetMaximumStepSize
-//
-//  Purpose:
-//      Sets the maximum step size for the next step.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-// ****************************************************************************
-
-void
-avtIVPNIMRODIntegrator::SetMaximumStepSize(const double& maxH)
-{
-    h_max = maxH;
-}
-
-// ****************************************************************************
-//  Method: avtIVPNIMRODIntegrator::GetMaximumStepSize
-//
-//  Purpose:
-//      Gets the maximum step size for the next step.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-// ****************************************************************************
-
-double
-avtIVPNIMRODIntegrator::GetMaximumStepSize() const
-{
-    return h_max;
-}
 
 // ****************************************************************************
 //  Method: avtIVPNIMRODIntegrator::SetMaximumDegenerateIterations
@@ -296,7 +143,6 @@ void
 avtIVPNIMRODIntegrator::Reset(const double& t_start, const avtVector& y_start)
 {
     t = t_start;
-    d = 0.0;
     numStep = 0;
 
     degenerate_iterations = 0;
@@ -797,7 +643,6 @@ avtIVPNIMRODIntegrator::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)
-        .Accept(d)
         .Accept(yCur)
         .Accept(ys[0])
         .Accept(ys[1]);

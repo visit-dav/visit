@@ -125,8 +125,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
                                         long ID);
 
     void SetTermination(int maxSteps, 
-    bool doDistance, double maxDistance, 
-    bool doTime, double maxTime);
+                        bool doDistance, double maxDistance, 
+                        bool doTime, double maxTime);
 
     void SetVelocitySource(const double *v);
 

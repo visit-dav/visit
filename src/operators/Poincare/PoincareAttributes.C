@@ -307,6 +307,43 @@ PoincareAttributes::ShowMeshType_FromString(const std::string &s, PoincareAttrib
 }
 
 //
+// Enum conversion methods for PoincareAttributes::PuncturePlotType
+//
+
+static const char *PuncturePlotType_strings[] = {
+"Single", "Double"};
+
+std::string
+PoincareAttributes::PuncturePlotType_ToString(PoincareAttributes::PuncturePlotType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return PuncturePlotType_strings[index];
+}
+
+std::string
+PoincareAttributes::PuncturePlotType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return PuncturePlotType_strings[index];
+}
+
+bool
+PoincareAttributes::PuncturePlotType_FromString(const std::string &s, PoincareAttributes::PuncturePlotType &val)
+{
+    val = PoincareAttributes::Single;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == PuncturePlotType_strings[i])
+        {
+            val = (PuncturePlotType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for PoincareAttributes::PuncturePlaneType
 //
 
@@ -631,6 +668,11 @@ void PoincareAttributes::Init()
     opacity = 1;
     minPunctures = 50;
     maxPunctures = 500;
+    puncturePlotType = Single;
+    maxSteps = 1000;
+    terminateByTime = false;
+    termTime = 10;
+    puncturePeriodTolerance = 0.01;
     puncturePlane = Poloidal;
     sourceType = SpecifiedPoint;
     pointSource[0] = 0;
@@ -698,6 +740,7 @@ void PoincareAttributes::Init()
     pathlines = false;
     pathlinesOverrideStartingTimeFlag = false;
     pathlinesOverrideStartingTime = 0;
+    pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     issueTerminationWarnings = true;
     issueStiffnessWarnings = true;
@@ -728,6 +771,11 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     opacity = obj.opacity;
     minPunctures = obj.minPunctures;
     maxPunctures = obj.maxPunctures;
+    puncturePlotType = obj.puncturePlotType;
+    maxSteps = obj.maxSteps;
+    terminateByTime = obj.terminateByTime;
+    termTime = obj.termTime;
+    puncturePeriodTolerance = obj.puncturePeriodTolerance;
     puncturePlane = obj.puncturePlane;
     sourceType = obj.sourceType;
     pointSource[0] = obj.pointSource[0];
@@ -801,6 +849,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     pathlines = obj.pathlines;
     pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
+    pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     issueTerminationWarnings = obj.issueTerminationWarnings;
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
@@ -989,6 +1038,11 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (opacity == obj.opacity) &&
             (minPunctures == obj.minPunctures) &&
             (maxPunctures == obj.maxPunctures) &&
+            (puncturePlotType == obj.puncturePlotType) &&
+            (maxSteps == obj.maxSteps) &&
+            (terminateByTime == obj.terminateByTime) &&
+            (termTime == obj.termTime) &&
+            (puncturePeriodTolerance == obj.puncturePeriodTolerance) &&
             (puncturePlane == obj.puncturePlane) &&
             (sourceType == obj.sourceType) &&
             pointSource_equal &&
@@ -1050,6 +1104,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (pathlines == obj.pathlines) &&
             (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
+            (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
@@ -1227,6 +1282,11 @@ PoincareAttributes::SelectAll()
     Select(ID_opacity,                           (void *)&opacity);
     Select(ID_minPunctures,                      (void *)&minPunctures);
     Select(ID_maxPunctures,                      (void *)&maxPunctures);
+    Select(ID_puncturePlotType,                  (void *)&puncturePlotType);
+    Select(ID_maxSteps,                          (void *)&maxSteps);
+    Select(ID_terminateByTime,                   (void *)&terminateByTime);
+    Select(ID_termTime,                          (void *)&termTime);
+    Select(ID_puncturePeriodTolerance,           (void *)&puncturePeriodTolerance);
     Select(ID_puncturePlane,                     (void *)&puncturePlane);
     Select(ID_sourceType,                        (void *)&sourceType);
     Select(ID_pointSource,                       (void *)pointSource, 3);
@@ -1288,6 +1348,7 @@ PoincareAttributes::SelectAll()
     Select(ID_pathlines,                         (void *)&pathlines);
     Select(ID_pathlinesOverrideStartingTimeFlag, (void *)&pathlinesOverrideStartingTimeFlag);
     Select(ID_pathlinesOverrideStartingTime,     (void *)&pathlinesOverrideStartingTime);
+    Select(ID_pathlinesPeriod,                   (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                     (void *)&pathlinesCMFE);
     Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
     Select(ID_issueStiffnessWarnings,            (void *)&issueStiffnessWarnings);
@@ -1347,6 +1408,36 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("maxPunctures", maxPunctures));
+    }
+
+    if(completeSave || !FieldsEqual(ID_puncturePlotType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("puncturePlotType", PuncturePlotType_ToString(puncturePlotType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxSteps, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxSteps", maxSteps));
+    }
+
+    if(completeSave || !FieldsEqual(ID_terminateByTime, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("terminateByTime", terminateByTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_termTime, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("termTime", termTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_puncturePeriodTolerance, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("puncturePeriodTolerance", puncturePeriodTolerance));
     }
 
     if(completeSave || !FieldsEqual(ID_puncturePlane, &defaultObject))
@@ -1717,6 +1808,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("pathlinesOverrideStartingTime", pathlinesOverrideStartingTime));
     }
 
+    if(completeSave || !FieldsEqual(ID_pathlinesPeriod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlinesPeriod", pathlinesPeriod));
+    }
+
     if(completeSave || !FieldsEqual(ID_pathlinesCMFE, &defaultObject))
     {
         addToParent = true;
@@ -1805,6 +1902,30 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetMinPunctures(node->AsInt());
     if((node = searchNode->GetNode("maxPunctures")) != 0)
         SetMaxPunctures(node->AsInt());
+    if((node = searchNode->GetNode("puncturePlotType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetPuncturePlotType(PuncturePlotType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            PuncturePlotType value;
+            if(PuncturePlotType_FromString(node->AsString(), value))
+                SetPuncturePlotType(value);
+        }
+    }
+    if((node = searchNode->GetNode("maxSteps")) != 0)
+        SetMaxSteps(node->AsInt());
+    if((node = searchNode->GetNode("terminateByTime")) != 0)
+        SetTerminateByTime(node->AsBool());
+    if((node = searchNode->GetNode("termTime")) != 0)
+        SetTermTime(node->AsDouble());
+    if((node = searchNode->GetNode("puncturePeriodTolerance")) != 0)
+        SetPuncturePeriodTolerance(node->AsDouble());
     if((node = searchNode->GetNode("puncturePlane")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2095,6 +2216,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetPathlinesOverrideStartingTimeFlag(node->AsBool());
     if((node = searchNode->GetNode("pathlinesOverrideStartingTime")) != 0)
         SetPathlinesOverrideStartingTime(node->AsDouble());
+    if((node = searchNode->GetNode("pathlinesPeriod")) != 0)
+        SetPathlinesPeriod(node->AsDouble());
     if((node = searchNode->GetNode("pathlinesCMFE")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2151,6 +2274,41 @@ PoincareAttributes::SetMaxPunctures(int maxPunctures_)
 {
     maxPunctures = maxPunctures_;
     Select(ID_maxPunctures, (void *)&maxPunctures);
+}
+
+void
+PoincareAttributes::SetPuncturePlotType(PoincareAttributes::PuncturePlotType puncturePlotType_)
+{
+    puncturePlotType = puncturePlotType_;
+    Select(ID_puncturePlotType, (void *)&puncturePlotType);
+}
+
+void
+PoincareAttributes::SetMaxSteps(int maxSteps_)
+{
+    maxSteps = maxSteps_;
+    Select(ID_maxSteps, (void *)&maxSteps);
+}
+
+void
+PoincareAttributes::SetTerminateByTime(bool terminateByTime_)
+{
+    terminateByTime = terminateByTime_;
+    Select(ID_terminateByTime, (void *)&terminateByTime);
+}
+
+void
+PoincareAttributes::SetTermTime(double termTime_)
+{
+    termTime = termTime_;
+    Select(ID_termTime, (void *)&termTime);
+}
+
+void
+PoincareAttributes::SetPuncturePeriodTolerance(double puncturePeriodTolerance_)
+{
+    puncturePeriodTolerance = puncturePeriodTolerance_;
+    Select(ID_puncturePeriodTolerance, (void *)&puncturePeriodTolerance);
 }
 
 void
@@ -2589,6 +2747,13 @@ PoincareAttributes::SetPathlinesOverrideStartingTime(double pathlinesOverrideSta
 }
 
 void
+PoincareAttributes::SetPathlinesPeriod(double pathlinesPeriod_)
+{
+    pathlinesPeriod = pathlinesPeriod_;
+    Select(ID_pathlinesPeriod, (void *)&pathlinesPeriod);
+}
+
+void
 PoincareAttributes::SetPathlinesCMFE(PoincareAttributes::PathlinesCMFE pathlinesCMFE_)
 {
     pathlinesCMFE = pathlinesCMFE_;
@@ -2649,6 +2814,36 @@ int
 PoincareAttributes::GetMaxPunctures() const
 {
     return maxPunctures;
+}
+
+PoincareAttributes::PuncturePlotType
+PoincareAttributes::GetPuncturePlotType() const
+{
+    return PuncturePlotType(puncturePlotType);
+}
+
+int
+PoincareAttributes::GetMaxSteps() const
+{
+    return maxSteps;
+}
+
+bool
+PoincareAttributes::GetTerminateByTime() const
+{
+    return terminateByTime;
+}
+
+double
+PoincareAttributes::GetTermTime() const
+{
+    return termTime;
+}
+
+double
+PoincareAttributes::GetPuncturePeriodTolerance() const
+{
+    return puncturePeriodTolerance;
 }
 
 PoincareAttributes::PuncturePlaneType
@@ -3059,6 +3254,12 @@ PoincareAttributes::GetPathlinesOverrideStartingTime() const
     return pathlinesOverrideStartingTime;
 }
 
+double
+PoincareAttributes::GetPathlinesPeriod() const
+{
+    return pathlinesPeriod;
+}
+
 PoincareAttributes::PathlinesCMFE
 PoincareAttributes::GetPathlinesCMFE() const
 {
@@ -3163,6 +3364,11 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_opacity:                           return "opacity";
     case ID_minPunctures:                      return "minPunctures";
     case ID_maxPunctures:                      return "maxPunctures";
+    case ID_puncturePlotType:                  return "puncturePlotType";
+    case ID_maxSteps:                          return "maxSteps";
+    case ID_terminateByTime:                   return "terminateByTime";
+    case ID_termTime:                          return "termTime";
+    case ID_puncturePeriodTolerance:           return "puncturePeriodTolerance";
     case ID_puncturePlane:                     return "puncturePlane";
     case ID_sourceType:                        return "sourceType";
     case ID_pointSource:                       return "pointSource";
@@ -3224,6 +3430,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_pathlines:                         return "pathlines";
     case ID_pathlinesOverrideStartingTimeFlag: return "pathlinesOverrideStartingTimeFlag";
     case ID_pathlinesOverrideStartingTime:     return "pathlinesOverrideStartingTime";
+    case ID_pathlinesPeriod:                   return "pathlinesPeriod";
     case ID_pathlinesCMFE:                     return "pathlinesCMFE";
     case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
     case ID_issueStiffnessWarnings:            return "issueStiffnessWarnings";
@@ -3257,6 +3464,11 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_opacity:                           return FieldType_opacity;
     case ID_minPunctures:                      return FieldType_int;
     case ID_maxPunctures:                      return FieldType_int;
+    case ID_puncturePlotType:                  return FieldType_enum;
+    case ID_maxSteps:                          return FieldType_int;
+    case ID_terminateByTime:                   return FieldType_bool;
+    case ID_termTime:                          return FieldType_double;
+    case ID_puncturePeriodTolerance:           return FieldType_double;
     case ID_puncturePlane:                     return FieldType_enum;
     case ID_sourceType:                        return FieldType_enum;
     case ID_pointSource:                       return FieldType_doubleArray;
@@ -3318,6 +3530,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_pathlines:                         return FieldType_bool;
     case ID_pathlinesOverrideStartingTimeFlag: return FieldType_bool;
     case ID_pathlinesOverrideStartingTime:     return FieldType_double;
+    case ID_pathlinesPeriod:                   return FieldType_double;
     case ID_pathlinesCMFE:                     return FieldType_enum;
     case ID_issueTerminationWarnings:          return FieldType_bool;
     case ID_issueStiffnessWarnings:            return FieldType_bool;
@@ -3351,6 +3564,11 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_opacity:                           return "opacity";
     case ID_minPunctures:                      return "int";
     case ID_maxPunctures:                      return "int";
+    case ID_puncturePlotType:                  return "enum";
+    case ID_maxSteps:                          return "int";
+    case ID_terminateByTime:                   return "bool";
+    case ID_termTime:                          return "double";
+    case ID_puncturePeriodTolerance:           return "double";
     case ID_puncturePlane:                     return "enum";
     case ID_sourceType:                        return "enum";
     case ID_pointSource:                       return "doubleArray";
@@ -3412,6 +3630,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_pathlines:                         return "bool";
     case ID_pathlinesOverrideStartingTimeFlag: return "bool";
     case ID_pathlinesOverrideStartingTime:     return "double";
+    case ID_pathlinesPeriod:                   return "double";
     case ID_pathlinesCMFE:                     return "enum";
     case ID_issueTerminationWarnings:          return "bool";
     case ID_issueStiffnessWarnings:            return "bool";
@@ -3461,6 +3680,31 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_maxPunctures:
         {  // new scope
         retval = (maxPunctures == obj.maxPunctures);
+        }
+        break;
+    case ID_puncturePlotType:
+        {  // new scope
+        retval = (puncturePlotType == obj.puncturePlotType);
+        }
+        break;
+    case ID_maxSteps:
+        {  // new scope
+        retval = (maxSteps == obj.maxSteps);
+        }
+        break;
+    case ID_terminateByTime:
+        {  // new scope
+        retval = (terminateByTime == obj.terminateByTime);
+        }
+        break;
+    case ID_termTime:
+        {  // new scope
+        retval = (termTime == obj.termTime);
+        }
+        break;
+    case ID_puncturePeriodTolerance:
+        {  // new scope
+        retval = (puncturePeriodTolerance == obj.puncturePeriodTolerance);
         }
         break;
     case ID_puncturePlane:
@@ -3786,6 +4030,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_pathlinesOverrideStartingTime:
         {  // new scope
         retval = (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime);
+        }
+        break;
+    case ID_pathlinesPeriod:
+        {  // new scope
+        retval = (pathlinesPeriod == obj.pathlinesPeriod);
         }
         break;
     case ID_pathlinesCMFE:

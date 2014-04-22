@@ -164,6 +164,10 @@ avtPICSFilter::avtPICSFilter()
     pathlineOverrideTime = false;
     seedTimeStep0 = 0;
     seedTime0 = 0.0;
+
+    period = 0;
+    rollover = false;
+
     icAlgo = NULL;
     emptyDataset = false;
 
@@ -318,6 +322,7 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
     ic->status.ClearSpatialBoundary();
     
     int timeStep = GetTimeStep(ic->CurrentTime());
+
     if (timeStep == -1)
     {
         ic->status.SetExitTemporalBoundary();
@@ -356,7 +361,9 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
         BlockIDType curr(doms[i], timeStep);
 
         if (skipBlk != NULL && curr == *skipBlk)
+        {
             continue;
+        }
         else if (BlockLoaded(curr))
         {
             if (ICInBlock(ic, curr))
@@ -365,10 +372,12 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
                 ic->blockList.push_back(curr);
                 blockLoaded = true;
                 break;
-    }
+            }
         }
         else
+        {
             ic->blockList.push_back(curr);
+        }
     }
 
     // No blocks, exited spatial boundary.
@@ -651,24 +660,52 @@ avtPICSFilter::LoadNextTimeSlice()
     ClearDomainToCellLocatorMap();
     EmptyQueue();  // Clear the avtDatasetOnDemandFilter data queue
 
-    if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+    if( period == 0 )
     {
+      if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+      {
+        // When going backwards can not use the first time slice.
         if ((curTimeSlice-1) <= 0)
             return false;
-    }
-    else
-    {
+      }
+      else
+      {
+        // When going forwards can not use the lasst time slice.
         if ((curTimeSlice+1) >= domainTimeIntervals.size())
             return false;
+      }
     }
+
+    rollover = false;
 
     // Reset the timeout for the next iteration.
     avtCallback::ResetTimeout(60*60);
     
     if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+    {
         curTimeSlice--;
+
+        // When going backwards can not use the first time slice.
+        if (period > 0 && curTimeSlice <= 0)
+        {
+            curTimeSlice = domainTimeIntervals.size();
+            rollover = true;
+        }
+    }
     else
+    {
         curTimeSlice++;
+
+        // When going forwards can not use the lasst time slice.
+        if ( period > 0 && curTimeSlice >= domainTimeIntervals.size())
+        {
+            curTimeSlice = 0;
+            rollover = true;
+        }
+    }
+
+    // std::cerr<< "LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<"  "<< period << std::endl;
+
 
     if (DebugStream::Level5())
         debug5<<"LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<endl;
@@ -791,8 +828,8 @@ avtPICSFilter::GetTimeStep(double t) const
         {
             if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             {
-                if (t > domainTimeIntervals[i][0] &&
-                    t <= (domainTimeIntervals[i][1]))
+                if (t >  domainTimeIntervals[i][0] &&
+                    t <= domainTimeIntervals[i][1])
                 {
                     return i+1;
                 }
@@ -800,7 +837,7 @@ avtPICSFilter::GetTimeStep(double t) const
             else
             {
                 if (t >= domainTimeIntervals[i][0] &&
-                    t < (domainTimeIntervals[i][1]))
+                    t <  domainTimeIntervals[i][1])
                 {
                     return i;
                 }
@@ -966,17 +1003,21 @@ avtPICSFilter::SetIntegrationType(int type)
 // ****************************************************************************
 
 void
-avtPICSFilter::SetPathlines(bool pathlines, bool overrideTime, double time0, int _pathlineCMFE)
+avtPICSFilter::SetPathlines(bool pathlines,
+                            bool overrideTime, double time0, double _period,
+                            int _pathlineCMFE)
 {
     doPathlines = pathlines;
     pathlineOverrideTime = overrideTime;
     seedTime0 = time0;
+    period = _period;
     pathlineCMFE = _pathlineCMFE;
+
     if (doPathlines && (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS))
     {
         EXCEPTION1(VisItException, "VisIt is not capable of doing pathlines "
                      "calculations both forwards and backwards.  Please contact "
-                     "a developer if you need this capability.");
+                     "a developer if this capability is needed.");
     }
 }
 
@@ -1075,7 +1116,7 @@ avtPICSFilter::SetIntegrationDirection(int dir)
     {
         EXCEPTION1(VisItException, "VisIt is not capable of doing pathlines "
                      "calculations both forwards and backwards.  Please contact "
-                     "a developer if you need this capability.");
+                     "a developer if this capability is needed.");
     }
 }
 
@@ -1243,24 +1284,57 @@ avtPICSFilter::Execute(void)
 
     if (doPathlines)
     {
+        // for (int i = 0; i < domainTimeIntervals.size(); i++)
+        // {
+        //     while (1)
+        //     {
+        //         icAlgo->Execute();
+                
+        //         if (ContinueExecute())
+        //             icAlgo->ResetIntegralCurvesForContinueExecute();
+        //         else
+        //             break;
+        //     }
+
+        //     if (icAlgo->CheckNextTimeStepNeeded(curTimeSlice) &&
+        //      LoadNextTimeSlice())
+        //     {
+        //         icAlgo->ActivateICsForNextTimeStep();
+                
+        //      if( rollover )
+        //        i = -1;
+        //     }
+        //     else
+        //     {
+        //         break;
+        //     }
+        // }
+
+      while (1)
+      {
         for (int i = 0; i < domainTimeIntervals.size(); i++)
         {
-            while (1)
-            {
-                icAlgo->Execute();
+            icAlgo->Execute();
                 
-                if (ContinueExecute())
-                    icAlgo->ResetIntegralCurvesForContinueExecute();
-                else
-                    break;
-            }
-            if (icAlgo->CheckNextTimeStepNeeded(curTimeSlice) && LoadNextTimeSlice())
+            if (icAlgo->CheckNextTimeStepNeeded(curTimeSlice) &&
+                LoadNextTimeSlice())
             {
                 icAlgo->ActivateICsForNextTimeStep();
+                
+                if( rollover )
+                  i = -1;
             }
             else
+            {
                 break;
+            }
         }
+
+        if (ContinueExecute())
+          icAlgo->ResetIntegralCurvesForContinueExecute();
+        else
+          break;
+      }
     }
     else
     {
@@ -1555,7 +1629,6 @@ avtPICSFilter::Initialize()
 void
 avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 {
-    numTimeSteps = 1;
     if (doPathlines)
     {
         std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
@@ -1569,18 +1642,77 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             avtCallback::IssueWarning("Pathlines - The time data does not appear to be accurate and valid. Will continue.");
         }
 
+        if (! pathlineOverrideTime)
+            seedTime0 = md->GetTimes()[currentTimeSliderIndex];
+
         int numTimes = md->GetTimes().size() - 1;
         if (numTimes == 0)
         {
             if (DebugStream::Level5())
-                debug5 << "Only 1 data set, you need 2 at least\n";
-            EXCEPTION1(VisItException, "Only 1 data set, you need 2 at least.");
+                debug5 << "Pathlines - Only one time slice in the data sett, two or more are needed\n";
+            EXCEPTION1(VisItException, "Pathlines - Only one time slice in the data sett, two or more are needed.");
         }
 
+        double interval = md->GetTimes()[1] - md->GetTimes()[0];
+
+        if( period > 0 )
+        {
+          // The base time will always be at the current time slice
+          if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+            baseTime = md->GetTimes()[currentTimeSliderIndex] - period;
+          else
+            baseTime = md->GetTimes()[currentTimeSliderIndex];
+
+          // std::cerr << baseTime << "  " << md->GetTimes()[0] << "  "
+          //        << md->GetTimes()[numTimes] << "  " << baseTime+period
+          //        << std::endl;
+
+          // Period checks make sure there are enough time slices
+          if( numTimes < 2 )
+          {
+            EXCEPTION1(VisItException, "Periodic Pathlines - cannot advect in time periodically because there are less than three time slices." );
+          }
+
+          if( baseTime                 < md->GetTimes()[0] ||
+              md->GetTimes()[numTimes] < baseTime+period )
+          {
+            EXCEPTION1(VisItException, "Periodic Pathlines - cannot advect in time because the specified period time is outside the time slices available" );
+          }
+
+          if( seedTime0 < baseTime || baseTime+period < seedTime0 )
+          {
+            EXCEPTION1(VisItException, "Periodic Pathlines - cannot advect in time because the specified time is outside of the time period specified." );
+          }
+
+          if( period < md->GetTimes()[2] - md->GetTimes()[0] )
+          {
+            EXCEPTION1(VisItException, "Periodic Pathlines - the period must be greater than twice the time slice interval.");
+          }
+
+          double intPart, fracPart = modf(period / interval, &intPart);
+
+          if( fracPart > DBL_EPSILON )
+          {
+            EXCEPTION1(VisItException, "Periodic Pathlines - the period must be an integer multiple of the time slice interval .");
+          }
+        }
+          
         if (DebugStream::Level5())
             debug5<<"Times: [";
+
+
         for (int i = 0; i < numTimes; i++)
         {
+            // Save only the needed intervals.
+            if( period )
+            {
+                if( baseTime > md->GetTimes()[i] )
+                    continue;
+
+                if( baseTime+period < md->GetTimes()[i+1] )
+                    break;
+            }
+
             vector<double> intv(2);
             intv[0] = md->GetTimes()[i];
             intv[1] = md->GetTimes()[i+1];
@@ -1592,34 +1724,34 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
                 EXCEPTION1(VisItException, "Pathlines - Found two adjacent steps that are not increasing or equal in time.");
             }
 
+            if (period && fabs((intv[1]-intv[0]) - interval) > DBL_EPSILON )
+            {
+                EXCEPTION1(VisItException, "Periodic Pathlines - Found two adjacent steps that do not have the same interval as the others.");
+            }
+
             domainTimeIntervals.push_back(intv);
         }
         if (DebugStream::Level5())
             debug5<<"]"<<endl;
         
-        numTimeSteps = (int)domainTimeIntervals.size();
-
-        if (! pathlineOverrideTime)
-            seedTime0 = md->GetTimes()[currentTimeSliderIndex];
-
         // Check if we have a restart.
         if( restart == -1 )
         {
             if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             {
-                if (seedTime0 ==  md->GetTimes()[0])
-                    EXCEPTION1(VisItException, "You cannot advect backward in time since the specified "
+                if (seedTime0 == md->GetTimes()[0])
+                    EXCEPTION1(VisItException, "Pathlines - cannot advect backward in time because the specified "
                                                "starting time is already at the beginning of the simulation time.  "
-                                               "The plot can successfully execute if you move to a later time "
-                                               "time step or if you override the pathline start time.");
+                                               "The plot can successfully execute by selecting a later time "
+                                               "time step or by overriding the pathline start time.");
             }
             else
             {
-                if (seedTime0 ==  md->GetTimes()[numTimes])
-                    EXCEPTION1(VisItException, "You cannot advect forward in time since the specified "
+                if (seedTime0 == md->GetTimes()[numTimes])
+                    EXCEPTION1(VisItException, "Pathlines - cannot advect forward in time since the specified "
                                                "starting time is already at the end of the simulation time.  "
-                                               "The plot can successfully execute if you move to an earlier time "
-                                               "time step or if you override the pathline start time.");
+                                               "The plot can successfully execute by selecting an earlier time "
+                                               "time step or by overriding the pathline start time.");
             }
 
             // No restart, so set seedTimeStep0.
@@ -2571,7 +2703,9 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
         ic->blockList.pop_front();
         vtkDataSet *ds = GetDomain(blk, pt);
         field = GetFieldForDomain(blk, ds);
-        if (field->IsInside(ic->CurrentTime(), ic->CurrentLocation()) == avtIVPField::OK)
+
+        if (field->IsInside(ic->CurrentTime(),
+                            ic->CurrentLocation()) == avtIVPField::OK)
         {
             haveBlock = true;
             break;
@@ -2720,7 +2854,11 @@ avtPICSFilter::PreExecute(void)
     }
 
     if( solver )
-      solver->convertToCartesian = convertToCartesian;
+    {
+      solver->SetPeriod( period );
+      solver->SetBaseTime( baseTime );
+      solver->SetToCartesian( convertToCartesian );
+    }
 }
 
 
@@ -3016,6 +3154,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
         if (integrationDirection == VTK_INTEGRATE_FORWARD)
         {
+            solver->SetDirection( avtIVPSolver::DIRECTION_FORWARD );
             avtIntegralCurve *ic =
                 CreateIntegralCurve(solver,
                                     avtIntegralCurve::DIRECTION_FORWARD,
@@ -3027,6 +3166,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         }
         else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
         {
+            solver->SetDirection( avtIVPSolver::DIRECTION_BACKWARD );
             avtIntegralCurve *ic =
                 CreateIntegralCurve(solver,
                                     avtIntegralCurve::DIRECTION_BACKWARD,
@@ -3038,6 +3178,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         }
         else if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
+            solver->SetDirection( avtIVPSolver::DIRECTION_FORWARD );
             avtIntegralCurve *ic0 =
                 CreateIntegralCurve(solver,
                                     avtIntegralCurve::DIRECTION_FORWARD,
@@ -3047,6 +3188,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             curves.push_back(ic0);
             seedPtIds.push_back(ic0->id);
             
+            solver->SetDirection( avtIVPSolver::DIRECTION_BACKWARD );
             avtIntegralCurve *ic1 =
                 CreateIntegralCurve(solver,
                                     avtIntegralCurve::DIRECTION_BACKWARD,
@@ -3473,5 +3615,4 @@ avtPICSFilter::CheckStagger( vtkDataSet *ds, bool &isEdge, bool &isFace )
             }
         }
     }
-
 }

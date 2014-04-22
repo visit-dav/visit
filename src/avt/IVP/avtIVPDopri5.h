@@ -97,16 +97,6 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     virtual Result   Step(avtIVPField* field, double t_max,
                           avtIVPStep* ivpstep = NULL);
 
-    virtual avtVector   GetCurrentY() const;
-    virtual double   GetCurrentT() const;
-
-    virtual void     SetCurrentY( const avtVector &newY );
-    virtual void     SetCurrentT( double newT );
-
-    virtual void     SetNextStepSize( const double& h );
-    virtual double   GetNextStepSize() const;
-    virtual void     SetMaximumStepSize( const double& h );
-
     virtual void     SetTolerances(const double& reltol, const double& abstol);
     
     virtual avtIVPDopri5* Clone() const { return new avtIVPDopri5( *this ); }
@@ -125,12 +115,7 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     double reltol;
     double abstol;
 
-    double h;
-    double h_max;
     double h_init;
-
-    double t;
-    double d;
 
     unsigned int n_accepted;
     unsigned int n_rejected;
@@ -142,7 +127,6 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     int iasti;
     int nonsti;
 
-    avtVector y;
     avtVector k1;
 };
 

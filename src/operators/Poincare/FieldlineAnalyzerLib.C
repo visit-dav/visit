@@ -2016,6 +2016,7 @@ FieldlineLib::getPunctures( std::vector< Point > &ptList,
 
 void
 FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
+                                      std::vector< double > &timeList,
                                       std::vector< Point > &poloidal_puncture_pts,
                                       std::vector< Point > &ridgeline_points,
                                       std::vector< double > &rotationalSums,
@@ -2038,13 +2039,14 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
   delta = 0.0;
 
   Point tmpPt, currPt = ptList[0], nextPt = ptList[1];
+  double tmpTime, currTime = timeList[0], nextTime = timeList[1];
   Vector planePt( 0, 0, 0 );
 
   if( verboseFlag )
   {
     std::cerr << "-----------------------------------------------------------------"
          << std::endl
-         << "Analyzing  " << ptList[0] << "  "
+         << "Analyzing  " << ptList[0] << "  " << timeList[0] << "  "
          << "with  " << ptList.size() << " fieldline points"
          << std::endl;
   }
@@ -2169,7 +2171,10 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
   for( unsigned int i=2; i<ptList.size(); ++i)
   {    
     currPt = nextPt;
+    currTime = nextTime;
+
     nextPt = ptList[i];
+    nextTime = timeList[i];
 
     if( maxZ < currPt.z )
     {
@@ -2207,10 +2212,35 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
         
         Point point = Point(currPt + dir * t);
 
-        if( totalPoloidalPuncturePts % (unsigned int) toroidalBase == 0 )
+        bool savePt = false;
+
+        // Double Poincare puncture test.
+        if( puncturePeriod )
+        {
+          double time = currTime + (nextTime-currTime) * t;
+
+          // Get the number of periods traversed.
+          double nPeriods = time / puncturePeriod;
+
+          // Get the factional part - should be close to zero for an
+          // even period.
+          double intPart, fracPart = modf(nPeriods, &intPart);
+
+          if( fracPart < puncturePeriodTolerance ||
+              1.0-puncturePeriodTolerance < fracPart )
+          {
+            savePt = true;
+          }
+        }
+        else
+          savePt = true;
+
+        
+        if( savePt &&
+            totalPoloidalPuncturePts % (unsigned int) toroidalBase == 0 )
         {
           poloidal_puncture_pts.push_back( point );
-
+          
           poloidalWindingCounts.push_back( fabs(rotationalSum) /
                                            (2.0 * M_PI) );
 
@@ -2221,7 +2251,7 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
 
           rotationalSums.push_back( fabs(rotationalSum) );
         }
-
+            
         ++totalPoloidalPuncturePts;
       }
     }
@@ -2680,6 +2710,7 @@ GetPeriodWindingPairs( std::vector< WindingPairStat > &baseWindingPairStats,
 
 void
 FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
+                                   std::vector< double > &timeList,
                                    FieldlineProperties &fi,
                                    unsigned int overrideToroidalWinding,
                                    unsigned int overridePoloidalWinding,
@@ -2732,6 +2763,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   OLineAxisFileName = OLineAxisFilename;
 
   getFieldlineBaseValues( ptList,
+                          timeList,
                           poloidal_puncture_pts,
                           ridgeline_points,
                           rotationalSums,
@@ -2808,13 +2840,13 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   if( verboseFlag )
   {
     std::cerr << "Limit Rotational Sum Safety Factor    "
-         << LRS_SafetyFactor << std::endl
-//          << "Average Rotational Sum Safety Factor         "
-//          << averageRotationalSum << std::endl
-         << "Least Square Rotational Sum Safety Factor    "
-         << LSRS_SafetyFactor << std::endl
+              << LRS_SafetyFactor << std::endl
+//            << "Average Rotational Sum Safety Factor         "
+//            << averageRotationalSum << std::endl
+              << "Least Square Rotational Sum Safety Factor    "
+              << LSRS_SafetyFactor << std::endl
 
-         << "Using safety factor " << safetyFactor << std::endl;
+              << "Using safety factor " << safetyFactor << std::endl;
   }
 
   // Start the analysis.

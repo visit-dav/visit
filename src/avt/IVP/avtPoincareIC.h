@@ -306,13 +306,15 @@ public:
 class IVP_API avtPoincareIC : public avtStateRecorderIntegralCurve
 {
 public:
-    avtPoincareIC(unsigned char mask, const avtIVPSolver* model, 
+    avtPoincareIC(int maxSteps, bool doTime, double maxTime,
+                  unsigned char mask, const avtIVPSolver* model, 
                   Direction dir, const double& t_start, 
                   const avtVector &p_start,
                   const avtVector &v_start,
                   int ID);
 
     void          SetIntersectionCriteria(vtkObject *obj, int);
+    void          SetPuncturePeriodCriteria(double, double);
 
     avtPoincareIC();
     virtual ~avtPoincareIC();
@@ -324,7 +326,8 @@ public:
     avtPoincareIC( const avtPoincareIC& );
     avtPoincareIC& operator=( const avtPoincareIC& );
     
-    bool         IntersectPlane(const avtVector &p0, const avtVector &p1);
+    bool         IntersectPlane(const avtVector &p0, const avtVector &p1,
+                                const double    &t0, const double    &t1);
 
   public:
     virtual bool CheckForTermination(avtIVPStep& step, avtIVPField *);
@@ -332,17 +335,34 @@ public:
     bool         TerminatedBecauseOfMaxIntersections(void) 
                             { return terminatedBecauseOfMaxIntersections; };
 
+    bool         TerminatedBecauseOfMaxSteps(void) 
+                            { return terminatedBecauseOfMaxSteps; };
+
     // Intersection points.
-    bool   intersectionsSet;
-    int    maxIntersections;
-    int    numIntersections;
+    unsigned int    numIntersections;
+    unsigned int    maxIntersections;
+
+  protected:
     double intersectPlaneEq[4]; // Typically the Y=0 plane i.e. 0, 1, 0
     bool   terminatedBecauseOfMaxIntersections;
+
+    bool             doTime;
+    double           maxTime;
+
+    unsigned int     numSteps;
+    unsigned int     maxSteps;
+    bool             terminatedBecauseOfMaxSteps;
+
+  public:
+    // Intersection period for the double Poncare section
+    double puncturePeriod;
+    double puncturePeriodTolerance;
 
     // These are the fieldline points as stripped out of the IC
     // proper.  They are stored here for convience so the analysis can
     // be done without schleping the whole integral curve around.
     std::vector<avtVector> points;
+    std::vector<double> times;
 
     // The fieldline properties as returned from the analysis library.
     FieldlineProperties properties;

@@ -191,7 +191,7 @@ class IVP_API avtPICSFilter :
     void SetFieldConstant(double val);
     void SetMaxStepLength(double len);
     void SetPathlines(bool pathlines, bool overrideTime,
-                      double time0, int _pathlineCMFE);
+                      double time0, double period, int _pathlineCMFE);
     void SetIntegrationType(int algo);
     void SetParallelizationAlgorithm(int algo, int maxCnt,
                                      int domainCache,
@@ -240,11 +240,14 @@ class IVP_API avtPICSFilter :
     double seedTime0;
     int    seedTimeStep0;
 
+    double period, baseTime;
+    bool   rollover;
+
     avtIntervalTree *intervalTree;
     bool             specifyPoint;
     avtIVPSolver *solver;
 
-    int numDomains, numTimeSteps, cacheQLen;
+    int numDomains, cacheQLen;
     std::vector<int> domainToRank;
     std::vector<vtkDataSet*>dataSets;
     std::map<BlockIDType, avtCellLocator_p> domainToCellLocatorMap;
@@ -339,5 +342,4 @@ class IVP_API avtPICSFilter :
 
     friend class avtICAlgorithm;
 };
-
 #endif

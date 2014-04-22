@@ -78,13 +78,12 @@ static inline double sign( const double& a, const double& b )
 //
 // ****************************************************************************
 
-avtIVPRK4::avtIVPRK4() : v(0,0,0)
+avtIVPRK4::avtIVPRK4()
 {
     // set (somewhat) reasonable defaults
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    d = 0.0;
     numStep = 0;
 
     order = 2; // Highest order ODE that the integrator can support.
@@ -103,203 +102,6 @@ avtIVPRK4::~avtIVPRK4()
 {
 }
 
-
-// ****************************************************************************
-//  Method: avtIVPRK4::GetCurrentY
-//
-//  Purpose:
-//      Gets the current Y.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
-//    Improved version of A-B solver that builds function history from
-//    initial RK4 steps.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-avtVector 
-avtIVPRK4::GetCurrentY() const
-{
-    return y;
-}
-
-// ****************************************************************************
-//  Method: avtIVPRK4::SetCurrentY
-//
-//  Purpose:
-//      Sets the current Y.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
-//    Improved version of A-B solver that builds function history from
-//    initial RK4 steps.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-void
-avtIVPRK4::SetCurrentY(const avtVector &newY)
-{
-    y = newY;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPRK4::GetCurrentV
-//
-//  Purpose:
-//      Gets the current V.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-avtVector 
-avtIVPRK4::GetCurrentV() const
-{
-    return v;
-}
-
-// ****************************************************************************
-//  Method: avtIVPRK4::SetCurrentV
-//
-//  Purpose:
-//      Sets the current V.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPRK4::SetCurrentV(const avtVector &newV)
-{
-    v = newV;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPRK4::GetCurrentT
-//
-//  Purpose:
-//      Gets the current T.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-double 
-avtIVPRK4::GetCurrentT() const 
-{
-    return t;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPRK4::SetCurrentT
-//
-//  Purpose:
-//      Sets the current T.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPRK4::SetCurrentT(double newT)
-{
-    t = newT;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPRK4::SetNextStepSize
-//
-//  Purpose:
-//      Sets the step size for the next step.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void 
-avtIVPRK4::SetNextStepSize(const double& _h)
-{
-    h = _h;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPRK4::GetNextStepSize
-//
-//  Purpose:
-//      Gets the step size for the next step.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-double 
-avtIVPRK4::GetNextStepSize() const
-{
-    return h;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPRK4::SetMaximumStepSize
-//
-//  Purpose:
-//      Sets the maximum step size for the next step.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPRK4::SetMaximumStepSize(const double& hMax)
-{
-    h_max = hMax;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPRK4::SetTolerances
-//
-//  Purpose:
-//      Sets the tolerance.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
-//    Add a tolerance and counter for handling stiffness detection.
-//
-// ****************************************************************************
-
-void
-avtIVPRK4::SetTolerances(const double& relt, const double& abst)
-{
-    tol = abst;
-}
 
 // ****************************************************************************
 //  Method: avtIVPRK4::Reset
@@ -339,15 +141,13 @@ avtIVPRK4::SetTolerances(const double& relt, const double& abst)
 
 void 
 avtIVPRK4::Reset(const double& t_start,
-                   const avtVector &y_start,
-                   const avtVector &v_start)
+                 const avtVector &y_start,
+                 const avtVector &v_start)
 {
     t = t_start;
-    d = 0.0;
     numStep = 0;
 
-    y = y_start;
-    v = avtVector( 0, 0, 0 );
+    yCur = y_start;
     h = h_max;
 }
 
@@ -390,62 +190,64 @@ avtIVPRK4::OnExitDomain()
 avtIVPSolver::Result 
 avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 {
-    const double direction = sign( 1.0, t_max - t );
+    double t_local = GetLocalTime();
+
+    const double direction = sign( 1.0, t_max - t_local );
     
     h = sign( h, direction );
     
     bool last = false;
 
     // do not run past integration end
-    if( (t + 1.01*h - t_max) * direction > 0.0 ) 
+    if( (t_local + 1.01*h - t_max) * direction > 0.0 ) 
     {
         last = true;
-        h = t_max - t;
+        h = t_max - t_local;
     }
 
     // stepsize underflow?
-    if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
+    if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
     //avtIVPSolver::Result res = avtIVPSolverResult::OK;
     avtIVPField::Result fieldResult;
 
     avtVector k1;
-    if ((fieldResult = (*field)(t, y, k1)) != avtIVPField::OK )
+    if ((fieldResult = (*field)(t_local, yCur, k1)) != avtIVPField::OK )
         return ConvertResult(fieldResult);
 
     avtVector k2;
-    if ((fieldResult = (*field)(t+0.5*h, y+0.5*h*k1, k2)) != avtIVPField::OK)
+    if ((fieldResult = (*field)(t_local+0.5*h, yCur+0.5*h*k1, k2)) != avtIVPField::OK)
         return ConvertResult(fieldResult);
     
     avtVector k3;
-    if ((fieldResult = (*field)(t+0.5*h, y+0.5*h*k2, k3)) != avtIVPField::OK)
+    if ((fieldResult = (*field)(t_local+0.5*h, yCur+0.5*h*k2, k3)) != avtIVPField::OK)
         return ConvertResult(fieldResult);
 
     avtVector k4;
-    if ((fieldResult = (*field)(t+h, y+h*k3, k4)) != avtIVPField::OK)
+    if ((fieldResult = (*field)(t_local+h, yCur+h*k3, k4)) != avtIVPField::OK)
         return ConvertResult(fieldResult);
 
-    avtVector ynew = y + h*(k1 + 2.0*k2 + 2.0*k3 + k4)/6.0;
+    avtVector yNew = yCur + h*(k1 + 2.0*k2 + 2.0*k3 + k4)/6.0;
 
     ivpstep->resize(2);
     
     if( convertToCartesian )
     {
-        (*ivpstep)[0] = field->ConvertToCartesian( y );
-        (*ivpstep)[1] = field->ConvertToCartesian( ynew );
+        (*ivpstep)[0] = field->ConvertToCartesian( yCur );
+        (*ivpstep)[1] = field->ConvertToCartesian( yNew );
     }
     else
     {
-        (*ivpstep)[0] = y;
-        (*ivpstep)[1] = ynew;
+        (*ivpstep)[0] = yCur;
+        (*ivpstep)[1] = yNew;
     }
     
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
     numStep++;
     
-    y = ynew;
+    yCur = yNew;
     t = t+h;
     
     // Reset the step size on sucessful step.
@@ -480,7 +282,5 @@ avtIVPRK4::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)
-        .Accept(d)
-        .Accept(y)
-        .Accept(v);
+        .Accept(yCur);
 }

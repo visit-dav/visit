@@ -924,9 +924,17 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(pathlineOverrideStartingTimeProcessText()));
     pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTime, 1, 2);
 
+    QLabel *pathlinePeriodLabel = new QLabel(tr("Period"), pathlineOptionsGrp);
+    pathlinePeriodLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    pathlineOptionsGrpLayout->addWidget(pathlinePeriodLabel, 1, 3);
+    pathlinePeriod = new QLineEdit(pathlineOptionsGrp);
+    connect(pathlinePeriod, SIGNAL(returnPressed()),
+            this, SLOT(pathlinePeriodProcessText()));
+    pathlineOptionsGrpLayout->addWidget(pathlinePeriod, 1, 4);
+
     QGroupBox *cmfeOptionsGrp = new QGroupBox(pathlineOptionsGrp);
     cmfeOptionsGrp->setTitle(tr("How to perform interpolation over time"));
-    pathlineOptionsGrpLayout->addWidget(cmfeOptionsGrp, 2, 0);
+    pathlineOptionsGrpLayout->addWidget(cmfeOptionsGrp, 2, 0, 2, 5);
 
     QGridLayout *cmfeOptionsGrpLayout = new QGridLayout(cmfeOptionsGrp);
     cmfeOptionsGrpLayout->setSpacing(10);
@@ -938,8 +946,8 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     posButton->setChecked(true);
     pathlineCMFEButtonGroup->addButton(connButton, 0);
     pathlineCMFEButtonGroup->addButton(posButton, 1);
-    cmfeOptionsGrpLayout->addWidget(connButton, 2, 0);
-    cmfeOptionsGrpLayout->addWidget(posButton, 3, 0);
+    cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
+    cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
 }
 
@@ -1502,6 +1510,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             if( pathlineOverrideStartingTimeFlag->isChecked() && ! icButtonGroup->button(1)->isChecked() )
                 pathlineOverrideStartingTimeFlag->setChecked(false);
             pathlineOverrideStartingTime->setEnabled(atts->GetPathlines() && atts->GetPathlinesOverrideStartingTimeFlag());
+            pathlinePeriod->setEnabled(atts->GetPathlines());
             pathlineCMFEButtonGroup->button(0)->setEnabled(atts->GetPathlines());
             pathlineCMFEButtonGroup->button(1)->setEnabled(atts->GetPathlines());
             icButtonGroup->blockSignals(false);
@@ -1515,6 +1524,10 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
         case IntegralCurveAttributes::ID_pathlinesOverrideStartingTime:
             temp.setNum(atts->GetPathlinesOverrideStartingTime(), 'g', 16);
             pathlineOverrideStartingTime->setText(temp);
+            break;
+        case IntegralCurveAttributes::ID_pathlinesPeriod:
+            temp.setNum(atts->GetPathlinesPeriod(), 'g', 16);
+            pathlinePeriod->setText(temp);
             break;
         case IntegralCurveAttributes::ID_pathlinesCMFE:
             pathlineCMFEButtonGroup->blockSignals(true);
@@ -2222,6 +2235,18 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("Pathlines Override Starting Time"),
                 DoubleToQString(atts->GetPathlinesOverrideStartingTime()));
             atts->SetPathlinesOverrideStartingTime(atts->GetPathlinesOverrideStartingTime());
+        }
+    }
+    if(which_widget == IntegralCurveAttributes::ID_pathlinesPeriod || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(pathlinePeriod, val))
+            atts->SetPathlinesPeriod(val);
+        else
+        {
+            ResettingError(tr("Pathlines Period"),
+                DoubleToQString(atts->GetPathlinesPeriod()));
+            atts->SetPathlinesPeriod(atts->GetPathlinesPeriod());
         }
     }
 
@@ -3118,6 +3143,13 @@ void
 QvisIntegralCurveWindow::pathlineOverrideStartingTimeProcessText()
 {
     GetCurrentValues(IntegralCurveAttributes::ID_pathlinesOverrideStartingTime);
+    Apply();
+}
+
+void
+QvisIntegralCurveWindow::pathlinePeriodProcessText()
+{
+    GetCurrentValues(IntegralCurveAttributes::ID_pathlinesPeriod);
     Apply();
 }
 

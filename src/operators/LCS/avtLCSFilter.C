@@ -181,6 +181,7 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
     SetPathlines(atts.GetPathlines(),
                  atts.GetPathlinesOverrideStartingTimeFlag(),
                  atts.GetPathlinesOverrideStartingTime(),
+                 atts.GetPathlinesPeriod(),
                  CMFEType);
 
     SetIntegrationDirection(atts.GetIntegrationDirection());

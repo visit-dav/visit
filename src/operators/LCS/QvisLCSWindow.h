@@ -144,6 +144,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     void icButtonGroupChanged(int val);
     void pathlineOverrideStartingTimeFlagChanged(bool val);
     void pathlineOverrideStartingTimeProcessText();
+    void pathlinePeriodProcessText();
     void pathlineCMFEButtonGroupChanged(int val);
 
     void issueWarningForMaxStepsChanged(bool);
@@ -208,6 +209,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     QButtonGroup *icButtonGroup;
     QCheckBox *pathlineOverrideStartingTimeFlag;
     QLineEdit *pathlineOverrideStartingTime;
+    QLineEdit *pathlinePeriod;
     QButtonGroup *pathlineCMFEButtonGroup;
 
     QCheckBox *issueWarningForMaxSteps;
@@ -216,7 +218,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     QLineEdit *criticalPointThreshold;
     QLabel    *criticalPointThresholdLabel;
 
-    LCSAttributes *LCSAtts;
+    LCSAttributes *atts;
 };
 
 #endif

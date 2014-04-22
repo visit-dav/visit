@@ -147,7 +147,7 @@ class avtICAlgorithm
 
     avtPICSFilter *picsFilter;
     std::list<avtIntegralCurve *> terminatedICs, activeICs, inactiveICs;
-    int                       numDomains, numTimeSteps, numSeedPoints;
+    int                       numDomains, numSeedPoints;
     virtual const char*       AlgoName() const = 0;
     
     //Helper accessor funcstions to the filter.

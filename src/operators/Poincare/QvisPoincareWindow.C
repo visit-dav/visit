@@ -391,43 +391,110 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturesLayout->setMargin(5);
     puncturesLayout->setSpacing(10);
 
+
+    QGroupBox *puncturesMinMaxGroup = new QGroupBox(central);
+    puncturesMinMaxGroup->setTitle(tr(""));
+    puncturesLayout->addWidget(puncturesMinMaxGroup, 0, 0);
+    QGridLayout *puncturesMinMaxLayout = new QGridLayout(puncturesMinMaxGroup);
+    puncturesMinMaxLayout->setMargin(5);
+    puncturesMinMaxLayout->setSpacing(10);
+
     minPuncturesLabel = new QLabel(tr("Minimum"), puncturesGroup);
-    puncturesLayout->addWidget(minPuncturesLabel, 0, 0);
+    puncturesMinMaxLayout->addWidget(minPuncturesLabel, 0, 0);
     minPunctures = new QSpinBox(central);
     minPunctures->setMinimum(1);
     minPunctures->setMaximum(10000);
     connect(minPunctures, SIGNAL(valueChanged(int)),
             this, SLOT(minPuncturesChanged(int)));
-    puncturesLayout->addWidget(minPunctures, 0, 1);
+    puncturesMinMaxLayout->addWidget(minPunctures, 0, 1, Qt::AlignLeft);
 
     maxPuncturesLabel = new QLabel(tr("Maximum"), puncturesGroup);
-    puncturesLayout->addWidget(maxPuncturesLabel, 0, 2);
+    puncturesMinMaxLayout->addWidget(maxPuncturesLabel, 0, 2);
     maxPunctures = new QSpinBox(central);
     maxPunctures->setMinimum(1);
     maxPunctures->setMaximum(10000);
     connect(maxPunctures, SIGNAL(valueChanged(int)),
             this, SLOT(maxPuncturesChanged(int)));
-    puncturesLayout->addWidget(maxPunctures, 0, 3);
+    puncturesMinMaxLayout->addWidget(maxPunctures, 0, 3, Qt::AlignLeft);
 
+
+    QGroupBox *puncturePlotGroup = new QGroupBox(central);
+    puncturePlotGroup->setTitle(tr(""));
+    puncturesLayout->addWidget(puncturePlotGroup, 2, 0);
+    QGridLayout *puncturePlotLayout = new QGridLayout(puncturePlotGroup);
+    puncturePlotLayout->setMargin(5);
+    puncturePlotLayout->setSpacing(10);
+
+    puncturePlotTypeLabel = new QLabel(tr("Puncture plot type"), central);
+    puncturePlotLayout->addWidget(puncturePlotTypeLabel, 1, 0);
+    puncturePlotType = new QWidget(central);
+    puncturePlotTypeButtonGroup= new QButtonGroup(puncturePlotType);
+    QHBoxLayout *puncturePlotTypeLayout = new QHBoxLayout(puncturePlotType);
+    puncturePlotTypeLayout->setMargin(0);
+    puncturePlotTypeLayout->setSpacing(10);
+    QRadioButton *puncturePlotTypeTypePoloidal =
+      new QRadioButton(tr("Single"), puncturePlotType);
+    puncturePlotTypeButtonGroup->addButton(puncturePlotTypeTypePoloidal,0);
+    puncturePlotTypeLayout->addWidget(puncturePlotTypeTypePoloidal);
+    QRadioButton *puncturePlotTypeTypeTorodial =
+      new QRadioButton(tr("Double"), puncturePlotType);
+    puncturePlotTypeButtonGroup->addButton(puncturePlotTypeTypeTorodial,1);
+    puncturePlotTypeLayout->addWidget(puncturePlotTypeTypeTorodial);
+    connect(puncturePlotTypeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(puncturePlotTypeChanged(int)));
+    puncturePlotLayout->addWidget(puncturePlotType, 1, 1);
+
+
+    // Create the puncture period tolerance text field.
+    puncturePeriodToleranceLabel = new QLabel(tr("Period tolerance"), puncturesGroup);
+    puncturePlotLayout->addWidget(puncturePeriodToleranceLabel, 1, 2, Qt::AlignRight);
+    puncturePeriodTolerance = new QLineEdit(puncturesGroup);
+    connect(puncturePeriodTolerance, SIGNAL(returnPressed()),
+            this, SLOT(puncturePeriodToleranceProcessText()));
+    puncturePlotLayout->addWidget(puncturePeriodTolerance, 1, 3);
+
+
+    QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), puncturesGroup);
+puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
+    maxSteps = new QLineEdit(central);
+    connect(maxSteps, SIGNAL(returnPressed()),
+            this, SLOT(maxStepsProcessText()));
+    puncturePlotLayout->addWidget(maxSteps, 2, 2);
+
+    limitMaxTime = new QCheckBox(tr("Limit maximum time elapsed for particles"), puncturesGroup);
+    connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
+    puncturePlotLayout->addWidget(limitMaxTime, 3, 0, 1, 2);
+    maxTime = new QLineEdit(central);
+    connect(maxTime, SIGNAL(returnPressed()), this, SLOT(maxTimeProcessText()));
+    puncturePlotLayout->addWidget(maxTime, 3, 2);
+
+
+    QGroupBox *puncturePlaneGroup = new QGroupBox(central);
+    puncturePlaneGroup->setTitle(tr(""));
+    puncturesLayout->addWidget(puncturePlaneGroup, 4, 0);
+    QGridLayout *puncturePlaneLayout = new QGridLayout(puncturePlaneGroup);
+    puncturePlaneLayout->setMargin(5);
+    puncturePlaneLayout->setSpacing(10);
 
     puncturePlaneLabel = new QLabel(tr("Puncture Plane"), central);
-    puncturesLayout->addWidget(puncturePlaneLabel, 1, 0);
+    puncturePlaneLayout->addWidget(puncturePlaneLabel, 1, 0);
     puncturePlane = new QWidget(central);
     puncturePlaneButtonGroup= new QButtonGroup(puncturePlane);
-    QHBoxLayout *puncturePlaneLayout = new QHBoxLayout(puncturePlane);
-    puncturePlaneLayout->setMargin(0);
-    puncturePlaneLayout->setSpacing(10);
+
+    QHBoxLayout *puncturePlaneTypeLayout = new QHBoxLayout(puncturePlane);
+    puncturePlaneTypeLayout->setMargin(0);
+    puncturePlaneTypeLayout->setSpacing(10);
     QRadioButton *puncturePlaneTypePoloidal =
       new QRadioButton(tr("Poloidal"), puncturePlane);
     puncturePlaneButtonGroup->addButton(puncturePlaneTypePoloidal,0);
-    puncturePlaneLayout->addWidget(puncturePlaneTypePoloidal);
+    puncturePlaneTypeLayout->addWidget(puncturePlaneTypePoloidal);
     QRadioButton *puncturePlaneTypeTorodial =
       new QRadioButton(tr("Toroidal"), puncturePlane);
     puncturePlaneButtonGroup->addButton(puncturePlaneTypeTorodial,1);
-    puncturePlaneLayout->addWidget(puncturePlaneTypeTorodial);
+    puncturePlaneTypeLayout->addWidget(puncturePlaneTypeTorodial);
     connect(puncturePlaneButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(puncturePlaneChanged(int)));
-    puncturesLayout->addWidget(puncturePlane, 1, 1, 1, 2);
+    puncturePlaneLayout->addWidget(puncturePlane, 1, 1);
 }
 
 // ****************************************************************************
@@ -835,9 +902,17 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(pathlineOverrideStartingTimeProcessText()));
     pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTime, 1, 2);
 
+    QLabel *pathlinePeriodLabel = new QLabel(tr("Period"), pathlineOptionsGrp);
+    pathlinePeriodLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    pathlineOptionsGrpLayout->addWidget(pathlinePeriodLabel, 1, 3);
+    pathlinePeriod = new QLineEdit(pathlineOptionsGrp);
+    connect(pathlinePeriod, SIGNAL(returnPressed()),
+            this, SLOT(pathlinePeriodProcessText()));
+    pathlineOptionsGrpLayout->addWidget(pathlinePeriod, 1, 4);
+
     QGroupBox *cmfeOptionsGrp = new QGroupBox(pathlineOptionsGrp);
     cmfeOptionsGrp->setTitle(tr("How to perform interpolation over time"));
-    pathlineOptionsGrpLayout->addWidget(cmfeOptionsGrp, 2, 0);
+    pathlineOptionsGrpLayout->addWidget(cmfeOptionsGrp, 2, 0, 2, 5);
 
     QGridLayout *cmfeOptionsGrpLayout = new QGridLayout(cmfeOptionsGrp);
     cmfeOptionsGrpLayout->setSpacing(10);
@@ -849,8 +924,8 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     posButton->setChecked(true);
     pathlineCMFEButtonGroup->addButton(connButton, 0);
     pathlineCMFEButtonGroup->addButton(posButton, 1);
-    cmfeOptionsGrpLayout->addWidget(connButton, 2, 0);
-    cmfeOptionsGrpLayout->addWidget(posButton, 3, 0);
+    cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
+    cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
 }
 
@@ -1012,6 +1087,45 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             maxPunctures->blockSignals(true);
             maxPunctures->setValue(atts->GetMaxPunctures());
             maxPunctures->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_puncturePlotType:
+            puncturePlotTypeButtonGroup->blockSignals(true);
+            if(puncturePlotTypeButtonGroup->button((int)atts->GetPuncturePlotType()) != 0)
+                puncturePlotTypeButtonGroup->button((int)atts->GetPuncturePlotType())->setChecked(true);
+            puncturePlotTypeButtonGroup->blockSignals(false);
+
+            if( (int) atts->GetPuncturePlotType() == PoincareAttributes::Single)
+            {
+              puncturePeriodTolerance->setEnabled(false);
+              maxSteps->setEnabled(false);
+              limitMaxTime->setEnabled(false);
+              maxTime->setEnabled(false);
+            }
+            else
+            {
+              puncturePeriodTolerance->setEnabled(true);
+              maxSteps->setEnabled(true);
+              limitMaxTime->setEnabled(true);
+              maxTime->setEnabled(atts->GetTerminateByTime());
+            }
+
+            break;
+          case PoincareAttributes::ID_puncturePeriodTolerance:
+            puncturePeriodTolerance->setText(DoubleToQString(atts->GetPuncturePeriodTolerance()));
+            break;
+          case PoincareAttributes::ID_maxSteps:
+            temp.setNum(atts->GetMaxSteps());
+            maxSteps->setText(temp);
+            break;
+          case PoincareAttributes::ID_terminateByTime:
+            limitMaxTime->blockSignals(true);
+            limitMaxTime->setChecked(atts->GetTerminateByTime());
+            limitMaxTime->blockSignals(false);
+            maxTime->setEnabled(atts->GetTerminateByTime());
+            break;
+          case PoincareAttributes::ID_termTime:
+            temp.setNum(atts->GetTermTime(), 'g', 16);
+            maxTime->setText(temp);
             break;
           case PoincareAttributes::ID_puncturePlane:
             puncturePlaneButtonGroup->blockSignals(true);
@@ -1388,6 +1502,7 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             if( pathlineOverrideStartingTimeFlag->isChecked() && ! icButtonGroup->button(1)->isChecked() )
                 pathlineOverrideStartingTimeFlag->setChecked(false);
             pathlineOverrideStartingTime->setEnabled(atts->GetPathlines() && atts->GetPathlinesOverrideStartingTimeFlag());
+            pathlinePeriod->setEnabled(atts->GetPathlines());
             pathlineCMFEButtonGroup->button(0)->setEnabled(atts->GetPathlines());
             pathlineCMFEButtonGroup->button(1)->setEnabled(atts->GetPathlines());
             icButtonGroup->blockSignals(false);
@@ -1401,6 +1516,10 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
         case PoincareAttributes::ID_pathlinesOverrideStartingTime:
             temp.setNum(atts->GetPathlinesOverrideStartingTime(), 'g', 16);
             pathlineOverrideStartingTime->setText(temp);
+            break;
+        case PoincareAttributes::ID_pathlinesPeriod:
+            temp.setNum(atts->GetPathlinesPeriod(), 'g', 16);
+            pathlinePeriod->setText(temp);
             break;
         case PoincareAttributes::ID_pathlinesCMFE:
             pathlineCMFEButtonGroup->blockSignals(true);
@@ -1582,6 +1701,46 @@ QvisPoincareWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do puncture period tolerance
+    if(which_widget == PoincareAttributes::ID_puncturePeriodTolerance || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(puncturePeriodTolerance, val))
+            atts->SetPuncturePeriodTolerance(val);
+        else
+        {
+            ResettingError(tr("Puncture Period Tolerance"),
+                DoubleToQString(atts->GetPuncturePeriodTolerance()));
+            atts->SetPuncturePeriodTolerance(atts->GetPuncturePeriodTolerance());
+        }
+    }
+
+    // Do termination
+    if(which_widget == PoincareAttributes::ID_maxSteps || doAll)
+    {
+        int val;
+        if(LineEditGetInt(maxSteps, val))
+            atts->SetMaxSteps(val);
+        else
+        {
+            ResettingError(tr("maxsteps"),
+                IntToQString(atts->GetMaxSteps()));
+            atts->SetMaxSteps(atts->GetMaxSteps());
+        }
+    }
+    if(which_widget == PoincareAttributes::ID_termTime || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxTime, val))
+            atts->SetTermTime(val);
+        else
+        {
+            ResettingError(tr("maxtime"),
+                DoubleToQString(atts->GetTermTime()));
+            atts->SetTermTime(atts->GetTermTime());
+        }
+    }
+
     // Do windingPairConfidence
     if(which_widget == PoincareAttributes::ID_windingPairConfidence || doAll)
     {
@@ -1651,6 +1810,18 @@ QvisPoincareWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("Pathlines Override Starting Time"),
                 DoubleToQString(atts->GetPathlinesOverrideStartingTime()));
             atts->SetPathlinesOverrideStartingTime(atts->GetPathlinesOverrideStartingTime());
+        }
+    }
+    if(which_widget == PoincareAttributes::ID_pathlinesPeriod || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(pathlinePeriod, val))
+            atts->SetPathlinesPeriod(val);
+        else
+        {
+            ResettingError(tr("Pathlines Period"),
+                DoubleToQString(atts->GetPathlinesPeriod()));
+            atts->SetPathlinesPeriod(atts->GetPathlinesPeriod());
         }
     }
 
@@ -1944,6 +2115,52 @@ void
 QvisPoincareWindow::maxPuncturesChanged(int val)
 {
     atts->SetMaxPunctures(val);
+    Apply();
+}
+
+
+void
+QvisPoincareWindow::puncturePlotTypeChanged(int val)
+{
+    if(val != atts->GetPuncturePlotType())
+    {
+        atts->SetPuncturePlotType(PoincareAttributes::PuncturePlotType(val));
+        Apply();
+    }
+}
+
+
+void
+QvisPoincareWindow::puncturePeriodToleranceProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_puncturePeriodTolerance);
+    Apply();
+}
+
+
+void
+QvisPoincareWindow::maxStepsProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_maxSteps);
+    Apply();
+}
+
+
+void
+QvisPoincareWindow::limitMaxTimeChanged(bool val)
+{
+    if(val != atts->GetTerminateByTime())
+    {
+        atts->SetTerminateByTime(val);
+        Apply();
+    }
+}
+
+
+void
+QvisPoincareWindow::maxTimeProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_termTime);
     Apply();
 }
 
@@ -2353,6 +2570,13 @@ void
 QvisPoincareWindow::pathlineOverrideStartingTimeProcessText()
 {
     GetCurrentValues(PoincareAttributes::ID_pathlinesOverrideStartingTime);
+    Apply();
+}
+
+void
+QvisPoincareWindow::pathlinePeriodProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_pathlinesPeriod);
     Apply();
 }
 

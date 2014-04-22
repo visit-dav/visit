@@ -253,6 +253,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
     double range[2];
     field->GetTimeRange(range);
 
+//    std::cerr << ivp->GetCurrentT() << std::endl;
+
     // Catch cases where the start position is outside the
     // domain of field; in this case, mark the curve 
     avtIVPField::Result fieldRes =
