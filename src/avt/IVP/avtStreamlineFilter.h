@@ -356,5 +356,4 @@ class IVP_API avtStreamlineFilter : virtual public avtPICSFilter
     virtual std::vector<avtVector> GetInitialVelocities(void);
     virtual CommunicationPattern   GetCommunicationPattern(void);
 };
-
 #endif

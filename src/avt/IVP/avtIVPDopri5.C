@@ -100,7 +100,6 @@ avtIVPDopri5::avtIVPDopri5()
      // set (somewhat) reasonable defaults
      reltol = 1e-8;
      abstol = 1e-6;
-     d = 0.0;
      
      h_max = 0.0;
      nonsti = 0;
@@ -128,7 +127,6 @@ avtIVPDopri5::avtIVPDopri5( const double& t_start, const avtVector& y_start )
     // set (somewhat) reasonable defaults
     reltol = 1e-8;
     abstol = 1e-6;
-    d = 0.0;
     h_max = 0.0;
 
     Reset(t_start, y_start);
@@ -183,145 +181,9 @@ avtIVPDopri5::Reset(const double& t_start,
     iasti  = 0;
     
     t = t_start;
-    d = 0.0;
     numStep = 0;
-    y = y_start;
+    yCur = y_start;
     k1 = avtVector(0,0,0);
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPDopri5::GetCurrentT
-//
-//  Purpose:
-//      Gets the current T.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-double 
-avtIVPDopri5::GetCurrentT() const 
-{
-    return t;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPDopri5::GetCurrentY
-//
-//  Purpose:
-//      Gets the current Y.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-//  Modifications:
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-avtVector 
-avtIVPDopri5::GetCurrentY() const
-{
-    return y;
-}
-
-// ****************************************************************************
-//  Method: avtIVPDopri5::SetCurrentY
-//
-//  Purpose:
-//      Sets the current Y.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-//  Modifications::
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-void
-avtIVPDopri5::SetCurrentY(const avtVector &newY)
-{
-    y = newY;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPDopri5::SetCurrentT
-//
-//  Purpose:
-//      Sets the current T.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPDopri5::SetCurrentT(double newT)
-{
-    t = newT;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPDopri5::SetNextStepSize
-//
-//  Purpose:
-//      Sets the step size for the next step.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-void 
-avtIVPDopri5::SetNextStepSize(const double& _h)
-{
-    h = _h;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPDopri5::GetNextStepSize
-//
-//  Purpose:
-//      Gets the step size for the next step.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-double 
-avtIVPDopri5::GetNextStepSize() const
-{
-    return h;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPDopri5::SetMaximumStepSize
-//
-//  Purpose:
-//      Sets the maximum step size for the next step.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPDopri5::SetMaximumStepSize(const double& h)
-{
-    h_max = h;
 }
 
 
@@ -375,9 +237,11 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
                                const double& h_max, 
                                const double& t_max)
 {
+    double t_local = GetLocalTime();
+
     // make a local copy since we may need to modify it
     double local_h_max = h_max;
-    double direction = sign(1.0, t_max - t);
+    double direction = sign(1.0, t_max - t_local);
         
     // loop until an estimate succeeds
     while( true )
@@ -390,10 +254,10 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 
         for(size_t i=0 ; i < 3; i++) 
         {
-            sk = abstol + reltol * std::abs(y[i]);
+            sk = abstol + reltol * std::abs(yCur[i]);
             sqr = k1[i] / sk;
             dnf += sqr * sqr;
-            sqr = y[i] / sk;
+            sqr = yCur[i] / sk;
             dny += sqr * sqr;
         }
 
@@ -406,8 +270,8 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
         h = sign( h, direction );
 
         // perform an explicit Euler step
-        avtVector k2, k3 = y + h * k1;
-        if ((*field)(t+h, k3, k2) != avtIVPField::OK)
+        avtVector k2, k3 = yCur + h * k1;
+        if ((*field)(t_local+h, k3, k2) != avtIVPField::OK)
         {
             // Somehow we couldn't evaluate one of the points we need for the
             // starting estimate. The above code adheres to the h_max that is
@@ -439,7 +303,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 
         for( size_t i=0; i < 3; i++) 
         {
-            sk = abstol + reltol * std::abs( y[i] );
+            sk = abstol + reltol * std::abs( yCur[i] );
             sqr = ( k2[i] - k1[i] ) / sk;
             der2 += sqr*sqr;
         }
@@ -520,20 +384,22 @@ avtIVPSolver::Result
 avtIVPDopri5::Step(avtIVPField* field, double t_max,
                    avtIVPStep* ivpstep) 
 {    
-    const double direction = sign( 1.0, t_max - t );
+    double t_local = GetLocalTime();
+
+    const double direction = sign( 1.0, t_max - t_local );
     avtIVPField::Result fieldResult;
 
     // compute maximum stepsize
     double local_h_max = h_max;
 
     if( local_h_max == 0.0 )
-        local_h_max = std::abs( t_max - t );
+        local_h_max = std::abs( t_max - t_local );
 
     // compute k1 to ensure first-same-as-last principle, 
     // maybe also needed for hinit())
     if( n_steps == 0 )
     {
-        if ((fieldResult = (*field)( t, y, k1 )) != avtIVPSolver::OK)
+        if ((fieldResult = (*field)( t_local, yCur, k1 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         n_eval++;
     }
@@ -577,43 +443,43 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             h = sign( h_max, h );
 
         // do not run past integration end
-        if( (t + 1.01*h - t_max) * direction > 0.0 ) 
+        if( (t_local + 1.01*h - t_max) * direction > 0.0 ) 
         {
             last = true;
-            h = t_max - t;
+            h = t_max - t_local;
         }
 
         n_steps++;
 
         if (DebugStream::Level5())
-            debug5 << "\tavtIVPDopri5::Step(): t = " << t << ", y = " << y 
+            debug5 << "\tavtIVPDopri5::Step(): t = " << t << ", y = " << yCur 
                    << ", h = " << h << ", t+h = " << t+h << '\n';
 
         avtVector k2, k3, k4, k5, k6, k7;
 
         // perform stages
-        y_new = y + h*a21*k1;
-        if ((fieldResult = (*field)( t+c2*h, y_new, k2 )) != avtIVPField::OK)
+        y_new = yCur + h*a21*k1;
+        if ((fieldResult = (*field)( t_local+c2*h, y_new, k2 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
-        y_new = y + h * ( a31*k1 + a32*k2 );
-        if ((fieldResult = (*field)( t+c3*h, y_new, k3 )) != avtIVPField::OK)
+        y_new = yCur + h * ( a31*k1 + a32*k2 );
+        if ((fieldResult = (*field)( t_local+c3*h, y_new, k3 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         
-        y_new = y + h * ( a41*k1 + a42*k2 + a43*k3 );
-        if ((fieldResult = (*field)( t+c4*h, y_new, k4 )) != avtIVPField::OK)
+        y_new = yCur + h * ( a41*k1 + a42*k2 + a43*k3 );
+        if ((fieldResult = (*field)( t_local+c4*h, y_new, k4 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         
-        y_new = y + h * ( a51*k1 + a52*k2 + a53*k3 + a54*k4 );
-        if ((fieldResult = (*field)( t+c5*h, y_new, k5 )) != avtIVPField::OK)
+        y_new = yCur + h * ( a51*k1 + a52*k2 + a53*k3 + a54*k4 );
+        if ((fieldResult = (*field)( t_local+c5*h, y_new, k5 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
-        y_stiff = y_new = y + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
-        if ((fieldResult = (*field)( t+h, y_new, k6 )) != avtIVPField::OK)
+        y_stiff = y_new = yCur + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
+        if ((fieldResult = (*field)( t_local+h, y_new, k6 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         
-        y_new = y + h * (a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6 );
-        if ((fieldResult = (*field)( t+h, y_new, k7 )) != avtIVPField::OK)
+        y_new = yCur + h * (a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6 );
+        if ((fieldResult = (*field)( t_local+h, y_new, k7 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
         n_eval += 6;
@@ -626,7 +492,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             
         for( size_t i=0; i<3; i++ ) 
         {
-            sk = abstol + reltol * std::max(std::abs(y[i]), std::abs(y_new[i]));
+            sk = abstol + reltol * std::max(std::abs(yCur[i]), std::abs(y_new[i]));
             sqr = ee[i]/sk;
             err += sqr*sqr;
         }
@@ -681,7 +547,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                     {
                         if (DebugStream::Level5())
                             debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
-                                   << t << ", problem seems stiff (y = " << y 
+                                   << t << ", problem seems stiff (y = " << yCur
                                    << ")\n";
                         return avtIVPSolver::STIFFNESS_DETECTED;
                     }
@@ -706,9 +572,9 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 
                 if( convertToCartesian )
                 {
-                  (*ivpstep)[0] = field->ConvertToCartesian( y );
-                  (*ivpstep)[1] = field->ConvertToCartesian( y + (h*k1/4.) );
-                  (*ivpstep)[2] = field->ConvertToCartesian( (y + y_new)/2 +
+                  (*ivpstep)[0] = field->ConvertToCartesian( yCur );
+                  (*ivpstep)[1] = field->ConvertToCartesian( yCur + (h*k1/4.) );
+                  (*ivpstep)[2] = field->ConvertToCartesian( (yCur + y_new)/2 +
                                                           h*( (d1+1)*k1 +
                                                               d3*k3 + d4*k4 +
                                                               d5*k5 + d6*k6 +
@@ -718,9 +584,9 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                 }
                 else
                 {
-                  (*ivpstep)[0] = y;
-                  (*ivpstep)[1] = y + (h*k1/4.);
-                  (*ivpstep)[2] = (y + y_new)/2 + h*( (d1+1)*k1 + d3*k3 + d4*k4 
+                  (*ivpstep)[0] = yCur;
+                  (*ivpstep)[1] = yCur + (h*k1/4.);
+                  (*ivpstep)[2] = (yCur + y_new)/2 + h*( (d1+1)*k1 + d3*k3 + d4*k4 
                                                       + d5*k5 + d6*k6 + (d7-1)*k7 )/6.;
                   (*ivpstep)[3] = y_new - h*k7/4;
                   (*ivpstep)[4] = y_new;
@@ -733,7 +599,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             // update internal state
             // first-same-as-last for k1
             k1 = k7;
-            y = y_new;
+            yCur = y_new;
 
             t = t+h;
             h = h_new;
@@ -781,7 +647,6 @@ avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h_max)
         .Accept(h_init)
         .Accept(t)
-        .Accept(d)
         .Accept(facold)
         .Accept(hlamb)
         .Accept(n_accepted)
@@ -790,6 +655,6 @@ avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(n_eval)
         .Accept(iasti)
         .Accept(nonsti)
-        .Accept(y)
+        .Accept(yCur)
         .Accept(k1);
 }

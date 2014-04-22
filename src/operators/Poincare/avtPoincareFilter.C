@@ -54,7 +54,6 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
-#include <vtkPlane.h>
 #include <vtkQuad.h>
 #include <vtkSlicer.h>
 #include <vtkSphereSource.h>
@@ -172,6 +171,11 @@ CreateVTKVertex(float val, double p[3])
 // ****************************************************************************
 
 avtPoincareFilter::avtPoincareFilter() :
+
+    puncturePlotType( 0 ),
+    puncturePeriod( 0 ),
+    puncturePeriodTolerance( 0 ),
+
     maximumToroidalWinding( 0 ),
     overrideToroidalWinding( 0 ),
     overridePoloidalWinding( 0 ),
@@ -215,7 +219,7 @@ avtPoincareFilter::avtPoincareFilter() :
 
     planes.resize(1);
     planes[0] = 0;
-    intersectObj = NULL;
+    intPlane = NULL;
     maxIntersections = 0;
 }
 
@@ -232,8 +236,8 @@ avtPoincareFilter::avtPoincareFilter() :
 
 avtPoincareFilter::~avtPoincareFilter()
 {
-    if (intersectObj)
-        intersectObj->Delete();
+    if (intPlane)
+        intPlane->Delete();
 }
 
 // ****************************************************************************
@@ -431,23 +435,24 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
     atts = *newAtts;
 
+    if( atts.GetPuncturePlotType() == PoincareAttributes::Double &&
+        ( atts.GetPathlines() == 0 || atts.GetPathlinesPeriod() == 0 ) )
+    {
+      EXCEPTION1(ImproperUseException, "Selected double Poincare plot but"
+                 "pathlines have not been selected or the period is zero.");
+    }
+
+    SetPuncturePlotType( atts.GetPuncturePlotType() );
+
     SetFieldType(atts.GetFieldType());
     SetFieldConstant(atts.GetFieldConstant());
 
     SetMaxPunctures(atts.GetMaxPunctures());
     
-    vtkPlane *intPlane = vtkPlane::New();
-    intPlane->SetOrigin( 0,0,0 );
-
-    if ( atts.GetPuncturePlane() == PoincareAttributes::Toroidal )
-        intPlane->SetNormal( 0,0,1 );
-    else if ( atts.GetPuncturePlane() == PoincareAttributes::Poloidal )
-        intPlane->SetNormal( 0,1,0 );
-    
     // Make the number of punctures 2x because the Poincare analysis
     // uses only the punctures in the same direction as the plane normal
     // while the integral curve uses the plane regardless of the normal.
-    SetIntersectionCriteria(intPlane, 2*atts.GetMinPunctures());
+    SetIntersectionCriteria();
     SetIntegrationDirection(0);
 
     switch (atts.GetSourceType())
@@ -501,7 +506,13 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     SetPathlines(atts.GetPathlines(),
                  atts.GetPathlinesOverrideStartingTimeFlag(),
                  atts.GetPathlinesOverrideStartingTime(),
+                 atts.GetPathlinesPeriod(),
                  CMFEType);
+
+
+    maxSteps = atts.GetMaxSteps();
+    doTime = atts.GetTerminateByTime();
+    maxTime = atts.GetTermTime();
 
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
@@ -518,6 +529,13 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     // Poincare specific attributes.
     SetPuncturePlane( atts.GetPuncturePlane() );
     SetAnalysis( atts.GetAnalysis() );
+
+    // This invokes the double Poincare plot when sampling the curve.
+    if( puncturePlotType == PoincareAttributes::Double )
+    {
+      SetPuncturePeriod(atts.GetPathlinesPeriod());
+      SetPuncturePeriodTolerance(atts.GetPuncturePeriodTolerance());
+    }
 
     SetMaximumToroidalWinding( atts.GetMaximumToroidalWinding() );
     SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
@@ -844,8 +862,8 @@ avtPoincareFilter::SetLineSource(const double *p0, const double *p1,
 avtIntegralCurve*
 avtPoincareFilter::CreateIntegralCurve(void)
 {
-    avtPoincareIC *fic = new avtPoincareIC();
-    return fic;
+    avtPoincareIC *ic = new avtPoincareIC();
+    return ic;
 }
 
 
@@ -876,13 +894,37 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
     // need at least these three attributes
     unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
 
-    avtPoincareIC *rv = new avtPoincareIC( attr, model, dir, 
-                                           t_start, p_start, v_start, ID );
+    if( puncturePlotType == PoincareAttributes::Double )
+      attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
 
-    if (intersectObj)
-        rv->SetIntersectionCriteria(intersectObj, maxIntersections);
+    double t_end;
 
-    return rv;
+    if (doPathlines)
+    {
+        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
+            t_end = seedTime0-maxTime;
+        else
+            t_end = seedTime0+maxTime;
+    }
+    else
+    {
+        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
+            t_end = -maxTime;
+        else
+            t_end = maxTime;
+    }
+    avtPoincareIC *ic =
+      new avtPoincareIC( maxSteps, doTime, t_end,
+                         attr, model, dir, t_start, p_start, v_start, ID );
+
+    if (intPlane)
+        ic->SetIntersectionCriteria(intPlane, maxIntersections);
+
+    // This invokes the double Poincare plot when sampling the curve.
+    if( puncturePlotType == PoincareAttributes::Double )
+        ic->SetPuncturePeriodCriteria(puncturePeriod, puncturePeriodTolerance);
+
+    return ic;
 }
 
 // ****************************************************************************
@@ -915,9 +957,16 @@ avtPoincareFilter::GetIntegralCurvePoints(std::vector<avtIntegralCurve *> &ics)
           // as an array and move them into a vector for easier
           // manipulation by the analysis code.
           poincare_ic->points.resize( poincare_ic->GetNumberOfSamples() );
+          poincare_ic->times.resize( poincare_ic->GetNumberOfSamples() );
 
           for( size_t p=start; p<stop; ++p )
+          {
             poincare_ic->points[p] = poincare_ic->GetSample( p ).position;
+            poincare_ic->times[p]  = poincare_ic->GetSample( p ).time;
+
+            // if( i %100 == 0 )
+            //   std::cerr << poincare_ic->times[p];
+          }
         }
 
         // If the analysis asked for more points but did not get any
@@ -990,7 +1039,7 @@ avtPoincareFilter::Execute()
 
           while( !feof(fp) )
           {
-            Point nextPt;
+            avtVector nextPt;
 
             if( fscanf( fp, "%lf %lf %lf", &nextPt.x, &nextPt.y, &nextPt.z ) != 3 &&
                 feof(fp) == 0)
@@ -1061,14 +1110,8 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         // if (numSamps > 1)
         //     numPts += numSamps;
 
-        // Calculated only with avtStreamlineIC
-        // if (ic->TerminatedBecauseOfMaxSteps())
-        // {
-        //     if (ic->SpeedAtTermination() <= criticalPointThreshold)
-        //         numCritPts++;
-        //     else
-        //         numEarlyTerminators++;
-        // }
+        if (ic->TerminatedBecauseOfMaxSteps())
+          numEarlyTerminators++;
 
         if (ic->EncounteredNumericalProblems())
             numStiff++;
@@ -1076,7 +1119,8 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
     char str[4096] = "";
 
-    if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
+    if( puncturePlotType == PoincareAttributes::Double &&
+        issueWarningForMaxStepsTermination)
     {
         SumIntAcrossAllProcessors(numEarlyTerminators);
         if (numEarlyTerminators > 0)
@@ -1648,7 +1692,7 @@ avtPoincareFilter::ContinueExecute()
           avtPoincareIC *_c = poincare_ic->c_IC;
           avtPoincareIC *seed = poincare_ic->src_seed_ic;
           
-          Vector xzplane(0,1,0);
+          avtVector xzplane(0,1,0);
           FieldlineLib fieldlib;
           std::vector<avtVector> xa_puncturePoints;
           std::vector<avtVector> xb_puncturePoints;
@@ -1913,7 +1957,7 @@ avtPoincareFilter::ContinueExecute()
           if (4 <= RATIONAL_DEBUG) std::cerr << "LINE " << __LINE__ << "  " 
                                         << "Done bracketing, found minimizing X0 ID: "<< poincare_ic->id 
                                         <<", finding minimum now" << std::endl;
-          Vector xzplane(0,1,0);
+          avtVector xzplane(0,1,0);
           FieldlineLib fieldlib;
           
           avtPoincareIC *seed = poincare_ic->src_seed_ic;
@@ -2363,6 +2407,13 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
     FieldlineLib FLlib;
     FLlib.verboseFlag = verboseFlag;
 
+    // This invokes the double Poincare plot when sampling the curve.
+    if( puncturePlotType == PoincareAttributes::Double )
+    {
+      FLlib.puncturePeriod = puncturePeriod;
+      FLlib.puncturePeriodTolerance = puncturePeriodTolerance;
+    }
+
     debug5 << "Classifying Fieldlines " << std::endl;
 
     bool analysisComplete = true;
@@ -2393,6 +2444,7 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         
         // Perform the fieldline analysis.
         FLlib.fieldlineProperties( poincare_ic->points,
+                                   poincare_ic->times,
                                    poincare_ic->properties,
                                    overrideToroidalWinding,
                                    overridePoloidalWinding,
@@ -2995,11 +3047,14 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         }
 
         // Get the direction of the fieldline toroidalWinding.
-        Point lastPt = poincare_ic->points[0];
-        Point currPt = poincare_ic->points[1];
+        avtVector lastPt = poincare_ic->points[0];
+        avtVector currPt = poincare_ic->points[1];
+
+        double lastTime = poincare_ic->times[0];
+        double currTime = poincare_ic->times[1];
         
         bool CCWfieldline = (atan2( lastPt.y, lastPt.x ) <
-                              atan2( currPt.y, currPt.x ));
+                             atan2( currPt.y, currPt.x ));
         
         double lastDist, currDist;
 
@@ -3016,129 +3071,163 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         
         for( unsigned int p=0; p<planes.size(); ++p ) 
         {
-            Vector planeN;
-            Vector planePt(0,0,0);
-            
-            if( puncturePlane == 0 ) // Poloidal Plane
+          avtVector planeN;
+          avtVector planePt(0,0,0);
+          
+          if( puncturePlane == 0 ) // Poloidal Plane
+          {
+            // Go through the planes in the same direction as the fieldline.
+            if( CCWfieldline )
             {
-              // Go through the planes in the same direction as the fieldline.
-              if( CCWfieldline )
-              {
-                planeN = Vector( cos(planes[p]),
-                                 sin(planes[p]),
-                                 0 );
-              }
-              else
-              {
-                planeN = Vector( cos(planes[planes.size()-1-p]),
-                                 sin(planes[planes.size()-1-p]),
-                                 0 );
-              }
+              planeN = avtVector( cos(planes[p]),
+                                  sin(planes[p]),
+                                  0 );
             }
-
-            else //if( puncturePlane == 1 ) // Toroidal Plane
+            else
             {
-              planeN = Vector( 0, 0, -1 );
+              planeN = avtVector( cos(planes[planes.size()-1-p]),
+                                  sin(planes[planes.size()-1-p]),
+                                  0 );
             }
+          }
+          
+          else //if( puncturePlane == 1 ) // Toroidal Plane
+          {
+            planeN = avtVector( 0, 0, -1 );
+          }
 
-            // Set up the plane equation.
-            double plane[4];
+          // Set up the plane equation.
+          double plane[4];
+          
+          plane[0] = planeN.x;
+          plane[1] = planeN.y;
+          plane[2] = planeN.z;
+          plane[3] = planePt.dot(planeN);
+          
+          puncturePts[p].resize( toroidalWinding );
+          int bin = 0;
+          
+          // So to get the winding groups consistant start examining
+          // the fieldline in the same place for each plane.
+          currPt = poincare_ic->points[startIndex];
+          currDist = planeN.dot( currPt ) - plane[3];
+          
+          currTime = poincare_ic->times[startIndex];
+          
+          for( unsigned int j=startIndex+1; j<poincare_ic->points.size(); ++j )
+          {
+            lastPt = currPt;
+            lastTime = currTime;
+
+            currPt = poincare_ic->points[j];
+            currTime = poincare_ic->times[j];
             
-            plane[0] = planeN.x;
-            plane[1] = planeN.y;
-            plane[2] = planeN.z;
-            plane[3] = planePt.dot(planeN);
+            lastDist = currDist;
+            currDist = Dot( planeN, currPt ) - plane[3];
             
-            puncturePts[p].resize( toroidalWinding );
-            int bin = 0;
-            
-            // So to get the winding groups consistant start examining
-            // the fieldline in the same place for each plane.
-            currPt = poincare_ic->points[startIndex];
-            currDist = planeN.dot( currPt ) - plane[3];
-            
-            for( unsigned int j=startIndex+1; j<poincare_ic->points.size(); ++j )
+            // First look at only points that intersect the plane.
+            if( SIGN(lastDist) != SIGN(currDist) ) 
             {
-                lastPt = currPt;
-                currPt = Vector(poincare_ic->points[j]);
+              avtVector dir(currPt-lastPt);
+              
+              double dot = Dot(planeN, dir); 
+              
+              // If the segment is in the same direction as the plane then
+              // find where it intersects the plane.
+              if( dot > 0.0 )
+              {
+                // In order to get the winding groups consistant start
+                // examining the fieldline in the same place for each
+                // plane so store the index of the first puncture
+                // point.
+                if( startIndex == 0 )
+                  startIndex = j - 1;
                 
-                lastDist = currDist;
-                currDist = Dot( planeN, currPt ) - plane[3];
+                avtVector w = lastPt - planePt;
                 
-                // First look at only points that intersect the plane.
-                if( SIGN(lastDist) != SIGN(currDist) ) 
+                double t = -Dot(planeN, w ) / dot;
+                
+                avtVector point = avtVector(lastPt + dir * t);
+                
+                bool savePt = false;
+                
+                // This invokes the double Poincare plot when sampling
+                // the curve.
+                if( puncturePlotType == PoincareAttributes::Double )
                 {
-                    Vector dir(currPt-lastPt);
-                    
-                    double dot = Dot(planeN, dir);
-                    
-                    // If the segment is in the same direction as the plane then
-                    // find where it intersects the plane.
-                    if( dot > 0.0 )
-                    {
-                        // In order to get the winding groups
-                        // consistant start examining the fieldline
-                        // in the same place for each plane so store
-                        // the index of the first puncture point.
-                        if( startIndex == 0 )
-                            startIndex = j - 1;
-                        
-                        Vector w = lastPt - planePt;
-                        
-                        double t = -Dot(planeN, w ) / dot;
-                        
-                        Point point = Point(lastPt + dir * t);
-                        
-                        puncturePts[p][bin].push_back( point );
-                        
-                        if( p == 0 && puncturePts[p][bin].size() > 1 )
-                        {
-                          int ic = puncturePts[p][bin].size()-2;
-
-                          double len = (puncturePts[p][bin][ic]-
-                                        puncturePts[p][bin][ic+1]).length();
+                  double time = lastTime + (currTime-lastTime) * t;
                   
-                          distancePts.push_back( Point( (float) distancePts.size()/50.0,
-                                                    0,
-                                                    len) );
-                        }
+                  // Get the number of periods traversed.
+                  double nPeriods = time / puncturePeriod;
+                  
+                  // Get the factional part - should be close
+                  // to zero for an even period.
+                  double intPart, fracPart = modf(nPeriods, &intPart);
 
-                        bin = (bin + 1) % toroidalWinding;
+                  if( fracPart < puncturePeriodTolerance ||
+                      1.0-puncturePeriodTolerance < fracPart )
+                    savePt = true;
 
-                    }
+                  // std::cerr << lastTime << "  " << currTime << "  "
+                  //        << time << "  " << nPeriods << "  "
+                  //        << intPart << "  " << fracPart << "  "
+                  //        << (savePt ? "save" : "")
+                  //        << std::endl;
                 }
-            }
+                else
+                  savePt = true;
 
-            if( p == 0 && islands )
-            {
-              int offset = nnodes;
-              
-              islandPts.resize( toroidalWinding );
-              
-              for( unsigned int j=0; j<toroidalWinding; ++j )
-              {
-                for( unsigned int k=offset; k<puncturePts[p][j].size(); ++k )
+                if( savePt )
                 {
-                  double len = (puncturePts[p][j][k-offset]-
-                                puncturePts[p][j][k]).length();
+                  puncturePts[p][bin].push_back( point );
                   
-                  islandPts[j].push_back( Point( (float) islandPts[j].size()/50.0,
-                                                 0,
+                  if( p == 0 && puncturePts[p][bin].size() > 1 )
+                  {
+                    int ic = puncturePts[p][bin].size()-2;
+                    
+                    double len = (puncturePts[p][bin][ic]-
+                                  puncturePts[p][bin][ic+1]).length();
+                     
+                    distancePts.push_back( avtVector( (float) distancePts.size()/50.0,
+                                                      0,
+                                                      len) );
+                  }
+
+                  bin = (bin + 1) % toroidalWinding;
+                }
+              }
+            }
+          }
+          
+          if( p == 0 && islands )
+          {
+            int offset = nnodes;
+            
+            islandPts.resize( toroidalWinding );
+            
+            for( unsigned int j=0; j<toroidalWinding; ++j )
+            {
+              for( unsigned int k=offset; k<puncturePts[p][j].size(); ++k )
+              {
+                double len = (puncturePts[p][j][k-offset]-
+                              puncturePts[p][j][k]).length();
+                
+                islandPts[j].push_back( avtVector( (float) islandPts[j].size()/50.0,
+                                                   0,
                                                  -1.5+(float)i*.1+len) );
-                  
-                }
+                
+              }
                 
 //              std::vector< pair< unsigned int, double > > stats;           
 //              FLlib.periodicityStats( islandPts[j], stats, 2 );
-              }
             }
+          }
         }
         
-
         // Get the ridgeline points. There is one point between each
         // Z plane puncture.
-        Vector planeN( 0, 0, 1 );
-        Vector planePt(0,0,0);
+        avtVector planeN( 0, 0, 1 );
+        avtVector planePt(0,0,0);
         
         // Set up the plane equation.
         double plane[4];
@@ -3160,12 +3249,17 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         currPt = poincare_ic->points[0];
         currDist = planeN.dot( currPt ) - plane[3];
             
+        currTime = poincare_ic->times[0];
+
         for( unsigned int j=startIndex+1;
              j<poincare_ic->points.size();
              ++j )
         {
           lastPt = currPt;
-          currPt = Vector(poincare_ic->points[j]);
+          lastTime = currTime;
+
+          currPt = avtVector(poincare_ic->points[j]);
+          currTime = poincare_ic->times[j];
           
           lastDist = currDist;
           currDist = Dot( planeN, currPt ) - plane[3];
@@ -3173,7 +3267,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           // First look at only points that intersect the plane.
           if( SIGN(lastDist) != SIGN(currDist) ) 
           {
-            Vector dir(currPt-lastPt);
+            avtVector dir(currPt-lastPt);
             
             double dot = Dot(planeN, dir);
             
@@ -3183,7 +3277,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             {
               if( haveFirstIntersection )
               {
-                ridgelinePts.push_back( Point( (float) ridgelinePts.size()/50.0,
+                ridgelinePts.push_back( avtVector( (float) ridgelinePts.size()/50.0,
                                                0,
                                                maxZ) );
               }
@@ -3596,11 +3690,12 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
       }
 
     if (problem)
-      {
-        if (2 <= RATIONAL_DEBUG)
-          cerr << "There is a problem with drawing a child!" << std::endl;
-        continue;
-      }
+    {
+      if (2 <= RATIONAL_DEBUG)
+        cerr << "There is a problem with drawing a child!" << std::endl;
+      continue;
+    }
+
     puncturePts.resize( planes.size() );
 
     problem = false;
@@ -3625,11 +3720,11 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
       avtPoincareIC *child_poincare_ic = children->at(j);
 
       // Get the direction of the fieldline toroidalWinding.
-      Point lastPt = child_poincare_ic->points[0];
-      Point currPt = child_poincare_ic->points[1];
+      avtVector lastPt = child_poincare_ic->points[0];
+      avtVector currPt = child_poincare_ic->points[1];
             
       bool CCWfieldline = (atan2( lastPt.y, lastPt.x ) <
-                            atan2( currPt.y, currPt.x ));
+                           atan2( currPt.y, currPt.x ));
             
       double lastDist, currDist;
             
@@ -3641,29 +3736,29 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
             
       for( unsigned int p=0; p<planes.size(); ++p ) 
       {
-        Vector planeN;
-        Vector planePt(0,0,0);
+        avtVector planeN;
+        avtVector planePt(0,0,0);
         
         if( puncturePlane == 0 ) // Poloidal Plane
         {
           // Go through the planes in the same direction as the fieldline.
           if( CCWfieldline )
           {
-            planeN = Vector( cos(planes[p]),
-                             sin(planes[p]),
-                             0 );
+            planeN = avtVector( cos(planes[p]),
+                                sin(planes[p]),
+                                0 );
           }
           else
           {
-            planeN = Vector( cos(planes[planes.size()-1-p]),
-                             sin(planes[planes.size()-1-p]),
-                             0 );
+            planeN = avtVector( cos(planes[planes.size()-1-p]),
+                                sin(planes[planes.size()-1-p]),
+                                0 );
           }
         }
         
         else //if( puncturePlane == 1 ) // Toroidal Plane
         {
-          planeN = Vector( 0, 0, -1 );
+          planeN = avtVector( 0, 0, -1 );
         }
         
         // Set up the plane equation.
@@ -3687,7 +3782,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
           //      cerr << "SIZE: " << child_poincare_ic->points.size() << ", " << k <<std::endl;
 
           lastPt = currPt;
-          currPt = Vector(child_poincare_ic->points[k]);
+          currPt = avtVector(child_poincare_ic->points[k]);
           
           lastDist = currDist;
           currDist = Dot( planeN, currPt ) - plane[3];
@@ -3696,7 +3791,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
           {
             //cerr << "Iterating Curve: "<<k<<", "<<startIndex<<std::endl;
 
-            Vector dir(currPt-lastPt);
+            avtVector dir(currPt-lastPt);
             
             double dot = Dot(planeN, dir);
             
@@ -3711,11 +3806,11 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
                if( startIndex == 0 )
                  startIndex = k - 1;
                             
-               Vector w = lastPt - planePt;
+               avtVector w = lastPt - planePt;
                             
                double t = -Dot(planeN, w ) / dot;
                             
-               Point point = Point(lastPt + dir * t);         
+               avtVector point = avtVector(lastPt + dir * t);         
                puncturePts[p][bin][j] = point;
 
                if (++bin >= toroidalWinding)             
@@ -4075,8 +4170,8 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
       {
         unsigned int nSegments = nnodes;
         
-        Vector intra = nodes[0][0][0] - nodes[0][0][nSegments];
-        Vector inter = nodes[0][0][0] - nodes[0][0][1];
+        avtVector intra = nodes[0][0][0] - nodes[0][0][nSegments];
+        avtVector inter = nodes[0][0][0] - nodes[0][0][1];
 
         int offset = Dot( intra, inter ) ? skip : -skip;
 
@@ -4178,8 +4273,8 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
       {
         // Determine if the winding group order matches the point
         // ordering. This is only needed when building surfaces.
-        Vector intra = nodes[0][   0][1] - nodes[0][0][0];
-        Vector inter = nodes[0][skip][0] - nodes[0][0][0];
+        avtVector intra = nodes[0][   0][1] - nodes[0][0][0];
+        avtVector inter = nodes[0][skip][0] - nodes[0][0][0];
 
         int offset;
 
@@ -4429,8 +4524,8 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
     
     // Determine if the winding group order matches the point
     // ordering. This is only needed when building surfaces.
-    Vector intra = nodes[0][   0][1] - nodes[0][0][0];
-    Vector inter = nodes[0][skip][0] - nodes[0][0][0];
+    avtVector intra = nodes[0][   0][1] - nodes[0][0][0];
+    avtVector inter = nodes[0][skip][0] - nodes[0][0][0];
 
     int offset = (Dot( intra, inter ) < 0 ) ? -skip : skip;
 
@@ -4618,7 +4713,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
-                                    std::vector < Point  > &nodes,
+                                    std::vector < avtVector > &nodes,
                                     unsigned int period,
                                     unsigned int nnodes,
                                     unsigned int islands,
@@ -4876,12 +4971,17 @@ avtPoincareFilter::drawPoints( avtDataTree *dt,
 // ****************************************************************************
 
 void
-avtPoincareFilter::SetIntersectionCriteria(vtkObject *obj, int mi)
+avtPoincareFilter::SetIntersectionCriteria()
 {
-    if (obj)
-    {
-        intersectObj = obj;
-        intersectObj->Register(NULL);
-    }
-    maxIntersections = mi;
+    intPlane = vtkPlane::New();
+    intPlane->SetOrigin( 0,0,0 );
+
+    if ( atts.GetPuncturePlane() == PoincareAttributes::Toroidal )
+        intPlane->SetNormal( 0,0,1 );
+    else if ( atts.GetPuncturePlane() == PoincareAttributes::Poloidal )
+        intPlane->SetNormal( 0,1,0 );
+
+    intPlane->Register(NULL);
+
+    maxIntersections = atts.GetMinPunctures();
 }

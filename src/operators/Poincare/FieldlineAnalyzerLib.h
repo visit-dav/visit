@@ -69,6 +69,15 @@ struct WindingPairStat {
 class FieldlineLib
 {
 public:
+
+  FieldlineLib()
+  {
+    verboseFlag = false;
+
+    puncturePeriod = 0;
+    puncturePeriodTolerance = 0;
+  };
+
   Point interpert( Point lastPt, Point currPt, double t );
 
   int ccw( Vector v0, Vector v1 );
@@ -164,6 +173,7 @@ public:
 
   void
   getFieldlineBaseValues( std::vector< Point > &ptList,
+                          std::vector< double > &timeList,
                           std::vector< Point > &poloidal_puncture_pts,
                           std::vector< Point > &ridgeline_points,
                           std::vector< double > &rotationalSums,
@@ -190,6 +200,7 @@ public:
 
   void
   fieldlineProperties( std::vector< Point > &ptList,
+                       std::vector< double > &timeList,
                        FieldlineProperties &properties,
                        unsigned int overrideToroidalWinding,
                        unsigned int overridePoloidalWinding,
@@ -261,6 +272,9 @@ public:
                 unsigned int island );
 
   bool verboseFlag;
+
+  double puncturePeriod;
+  double puncturePeriodTolerance;
 
 protected:
   std::vector< Point > OLineAxisPts;

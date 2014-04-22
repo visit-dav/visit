@@ -126,8 +126,14 @@ class QvisPoincareWindow : public QvisOperatorWindow
 
     void minPuncturesChanged(int val);
     void maxPuncturesChanged(int val);
-    void puncturePlaneChanged(int val);
 
+    void puncturePlotTypeChanged(int val);
+    void maxStepsProcessText();
+    void maxTimeProcessText();
+    void limitMaxTimeChanged(bool val);
+    void puncturePeriodToleranceProcessText();
+
+    void puncturePlaneChanged(int val);
 //    void coordinateButtonGroupChanged(int val);
 
     // Analysis
@@ -175,6 +181,7 @@ class QvisPoincareWindow : public QvisOperatorWindow
     void icButtonGroupChanged(int val);
     void pathlineOverrideStartingTimeFlagChanged(bool val);
     void pathlineOverrideStartingTimeProcessText();
+    void pathlinePeriodProcessText();
     void pathlineCMFEButtonGroupChanged(int val);
 
     void issueWarningForMaxStepsChanged(bool);
@@ -213,21 +220,26 @@ class QvisPoincareWindow : public QvisOperatorWindow
     QLineEdit *maxStepLength;
     QLabel    *maxStepLengthLabel;
     QLineEdit *maxTimeStep;
-    QLineEdit *maxSteps;
-    QCheckBox *limitMaxTime;
-    QLineEdit *maxTime;
-    QCheckBox *limitMaxDistance;
-    QLineEdit *maxDistance;
     QLineEdit *relTol;
     QLabel    *relTolLabel;
     QLineEdit *absTol;
     QComboBox *absTolSizeType;
     QLabel    *absTolLabel;
-    QLabel *minPuncturesLabel;
+    QLabel    *minPuncturesLabel;
     QSpinBox  *minPunctures;
-    QLabel *maxPuncturesLabel;
+    QLabel    *maxPuncturesLabel;
     QSpinBox  *maxPunctures;
-    QLabel       *puncturePlaneLabel;
+    QLabel    *puncturePlaneLabel;
+
+    QLabel       *puncturePlotTypeLabel;
+    QWidget      *puncturePlotType;
+    QButtonGroup *puncturePlotTypeButtonGroup;
+    QLineEdit *puncturePeriodTolerance;
+    QLabel    *puncturePeriodToleranceLabel;
+    QLineEdit *maxSteps;
+    QCheckBox *limitMaxTime;
+    QLineEdit *maxTime;
+
     QWidget      *puncturePlane;
     QButtonGroup *puncturePlaneButtonGroup;
 
@@ -301,6 +313,7 @@ class QvisPoincareWindow : public QvisOperatorWindow
     QButtonGroup *icButtonGroup;
     QCheckBox *pathlineOverrideStartingTimeFlag;
     QLineEdit *pathlineOverrideStartingTime;
+    QLineEdit *pathlinePeriod;
     QButtonGroup *pathlineCMFEButtonGroup;
 
     QCheckBox *issueWarningForMaxSteps;

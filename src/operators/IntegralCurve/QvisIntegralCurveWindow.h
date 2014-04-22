@@ -266,6 +266,7 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void icButtonGroupChanged(int val);
     void pathlineOverrideStartingTimeFlagChanged(bool val);
     void pathlineOverrideStartingTimeProcessText();
+    void pathlinePeriodProcessText();
     void pathlineCMFEButtonGroupChanged(int val);
 
     void issueWarningForMaxStepsChanged(bool);
@@ -375,6 +376,7 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     QButtonGroup *icButtonGroup;
     QCheckBox *pathlineOverrideStartingTimeFlag;
     QLineEdit *pathlineOverrideStartingTime;
+    QLineEdit *pathlinePeriod;
     QButtonGroup *pathlineCMFEButtonGroup;
 
     QCheckBox *issueWarningForMaxSteps;

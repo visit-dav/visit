@@ -75,19 +75,9 @@ class IVP_API avtIVPLeapfrog: public avtIVPSolver
                           avtIVPStep* ivpstep = NULL);
     virtual void    OnExitDomain();
 
-    virtual double    GetCurrentT() const;
-    virtual avtVector GetCurrentY() const;
     virtual avtVector GetCurrentV() const;
+    virtual void      SetCurrentV( const avtVector &newV );
 
-    virtual void     SetCurrentT( double newT );
-    virtual void     SetCurrentY( const avtVector &newY );
-    virtual void     SetCurrentV( const avtVector &newV );
-
-    virtual void     SetNextStepSize( const double& h );
-    virtual double   GetNextStepSize() const;
-    virtual void     SetMaximumStepSize( const double& hMax );
-
-    virtual void     SetTolerances(const double& reltol, const double& abstol);
     virtual avtIVPLeapfrog* Clone() const
     {
         return new avtIVPLeapfrog( *this );
@@ -97,14 +87,8 @@ class IVP_API avtIVPLeapfrog: public avtIVPSolver
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
-    void             UpdateHistory( const avtVector &yNew );
-
   private:
     int numStep;
-    double tol;
-    double h, h_max;
-    double t, d;
-    avtVector yCur;
     avtVector vCur;
 };
 

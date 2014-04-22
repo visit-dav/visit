@@ -219,6 +219,7 @@ public:
     void SetPathlines(bool pathlines_);
     void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
+    void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetDisplayGeometry(DisplayGeometry displayGeometry_);
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
@@ -297,6 +298,7 @@ public:
     bool               GetPathlines() const;
     bool               GetPathlinesOverrideStartingTimeFlag() const;
     double             GetPathlinesOverrideStartingTime() const;
+    double             GetPathlinesPeriod() const;
     PathlinesCMFE      GetPathlinesCMFE() const;
     DisplayGeometry    GetDisplayGeometry() const;
     CoordinateSystem   GetCoordinateSystem() const;
@@ -431,6 +433,7 @@ public:
         ID_pathlines,
         ID_pathlinesOverrideStartingTimeFlag,
         ID_pathlinesOverrideStartingTime,
+        ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_displayGeometry,
         ID_coordinateSystem,
@@ -500,6 +503,7 @@ private:
     bool         pathlines;
     bool         pathlinesOverrideStartingTimeFlag;
     double       pathlinesOverrideStartingTime;
+    double       pathlinesPeriod;
     int          pathlinesCMFE;
     int          displayGeometry;
     int          coordinateSystem;
@@ -529,6 +533,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbdiiibdbbdddbbiibbbbddddis"
+#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbddiiibdbbdddbbiibbbbddddis"
 
 #endif

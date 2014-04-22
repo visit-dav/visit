@@ -69,24 +69,13 @@ class IVP_API avtIVPNIMRODIntegrator: public avtIVPSolver
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
-    virtual Result   Step(avtIVPField* field, double t_max,
-                          avtIVPStep* ivpstep = NULL);
+    virtual Result Step(avtIVPField* field, double t_max,
+                        avtIVPStep* ivpstep = NULL);
 
-    virtual void    OnExitDomain();
-
-    virtual avtVector GetCurrentY() const;
-    virtual double GetCurrentT() const;
-    virtual double GetNextStepSize() const;
-    virtual double GetMaximumStepSize() const;
-
-    virtual void   SetCurrentY( const avtVector &newY );
-    virtual void   SetCurrentT( double newT );
-    virtual void   SetNextStepSize( const double& h );
-    virtual void   SetMaximumStepSize( const double& hMax );
-
-    virtual void   SetMaximumDegenerateIterations( const unsigned int& max );
+    virtual void   OnExitDomain();
 
     virtual void   SetTolerances(const double& reltol, const double& abstol);
+    virtual void   SetMaximumDegenerateIterations( const unsigned int& max );
 
     virtual avtIVPNIMRODIntegrator* Clone() const
     {
@@ -122,14 +111,9 @@ class IVP_API avtIVPNIMRODIntegrator: public avtIVPSolver
 
   private:
     int numStep;
-    double tol;
-    double h, h_max;
-    double t, d;
     unsigned int max_degenerate_iterations;
     unsigned int degenerate_iterations;
     double stiffness_eps;
-    avtVector yCur;
     avtVector ys[2];
 };
-
 #endif

@@ -515,6 +515,7 @@ void LCSAttributes::Init()
     pathlines = false;
     pathlinesOverrideStartingTimeFlag = false;
     pathlinesOverrideStartingTime = 0;
+    pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     forceNodeCenteredData = false;
     issueTerminationWarnings = true;
@@ -590,6 +591,7 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     pathlines = obj.pathlines;
     pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
+    pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     forceNodeCenteredData = obj.forceNodeCenteredData;
     issueTerminationWarnings = obj.issueTerminationWarnings;
@@ -809,6 +811,7 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (pathlines == obj.pathlines) &&
             (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
+            (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (forceNodeCenteredData == obj.forceNodeCenteredData) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
@@ -1008,6 +1011,7 @@ LCSAttributes::SelectAll()
     Select(ID_pathlines,                         (void *)&pathlines);
     Select(ID_pathlinesOverrideStartingTimeFlag, (void *)&pathlinesOverrideStartingTimeFlag);
     Select(ID_pathlinesOverrideStartingTime,     (void *)&pathlinesOverrideStartingTime);
+    Select(ID_pathlinesPeriod,                   (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                     (void *)&pathlinesCMFE);
     Select(ID_forceNodeCenteredData,             (void *)&forceNodeCenteredData);
     Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
@@ -1260,6 +1264,12 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("pathlinesOverrideStartingTime", pathlinesOverrideStartingTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pathlinesPeriod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlinesPeriod", pathlinesPeriod));
     }
 
     if(completeSave || !FieldsEqual(ID_pathlinesCMFE, &defaultObject))
@@ -1560,6 +1570,8 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
         SetPathlinesOverrideStartingTimeFlag(node->AsBool());
     if((node = searchNode->GetNode("pathlinesOverrideStartingTime")) != 0)
         SetPathlinesOverrideStartingTime(node->AsDouble());
+    if((node = searchNode->GetNode("pathlinesPeriod")) != 0)
+        SetPathlinesPeriod(node->AsDouble());
     if((node = searchNode->GetNode("pathlinesCMFE")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1853,6 +1865,13 @@ LCSAttributes::SetPathlinesOverrideStartingTime(double pathlinesOverrideStarting
 }
 
 void
+LCSAttributes::SetPathlinesPeriod(double pathlinesPeriod_)
+{
+    pathlinesPeriod = pathlinesPeriod_;
+    Select(ID_pathlinesPeriod, (void *)&pathlinesPeriod);
+}
+
+void
 LCSAttributes::SetPathlinesCMFE(LCSAttributes::PathlinesCMFE pathlinesCMFE_)
 {
     pathlinesCMFE = pathlinesCMFE_;
@@ -2138,6 +2157,12 @@ LCSAttributes::GetPathlinesOverrideStartingTime() const
     return pathlinesOverrideStartingTime;
 }
 
+double
+LCSAttributes::GetPathlinesPeriod() const
+{
+    return pathlinesPeriod;
+}
+
 LCSAttributes::PathlinesCMFE
 LCSAttributes::GetPathlinesCMFE() const
 {
@@ -2262,6 +2287,7 @@ LCSAttributes::GetFieldName(int index) const
     case ID_pathlines:                         return "pathlines";
     case ID_pathlinesOverrideStartingTimeFlag: return "pathlinesOverrideStartingTimeFlag";
     case ID_pathlinesOverrideStartingTime:     return "pathlinesOverrideStartingTime";
+    case ID_pathlinesPeriod:                   return "pathlinesPeriod";
     case ID_pathlinesCMFE:                     return "pathlinesCMFE";
     case ID_forceNodeCenteredData:             return "forceNodeCenteredData";
     case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
@@ -2328,6 +2354,7 @@ LCSAttributes::GetFieldType(int index) const
     case ID_pathlines:                         return FieldType_bool;
     case ID_pathlinesOverrideStartingTimeFlag: return FieldType_bool;
     case ID_pathlinesOverrideStartingTime:     return FieldType_double;
+    case ID_pathlinesPeriod:                   return FieldType_double;
     case ID_pathlinesCMFE:                     return FieldType_enum;
     case ID_forceNodeCenteredData:             return FieldType_bool;
     case ID_issueTerminationWarnings:          return FieldType_bool;
@@ -2394,6 +2421,7 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_pathlines:                         return "bool";
     case ID_pathlinesOverrideStartingTimeFlag: return "bool";
     case ID_pathlinesOverrideStartingTime:     return "double";
+    case ID_pathlinesPeriod:                   return "double";
     case ID_pathlinesCMFE:                     return "enum";
     case ID_forceNodeCenteredData:             return "bool";
     case ID_issueTerminationWarnings:          return "bool";
@@ -2624,6 +2652,11 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_pathlinesOverrideStartingTime:
         {  // new scope
         retval = (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime);
+        }
+        break;
+    case ID_pathlinesPeriod:
+        {  // new scope
+        retval = (pathlinesPeriod == obj.pathlinesPeriod);
         }
         break;
     case ID_pathlinesCMFE:

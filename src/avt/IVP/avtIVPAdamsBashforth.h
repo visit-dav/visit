@@ -97,21 +97,13 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
-    virtual Result   Step(avtIVPField* field, double t_max,
-                          avtIVPStep* ivpstep = NULL);
-    virtual void    OnExitDomain();
+    virtual Result Step(avtIVPField* field, double t_max,
+                        avtIVPStep* ivpstep = NULL);
 
-    virtual avtVector GetCurrentY() const;
-    virtual double   GetCurrentT() const;
+    virtual void   OnExitDomain();
 
-    virtual void     SetCurrentY( const avtVector &newY );
-    virtual void     SetCurrentT( double newT );
+    virtual void   SetTolerances(const double& reltol, const double& abstol);
 
-    virtual void     SetNextStepSize( const double& h );
-    virtual double   GetNextStepSize() const;
-    virtual void     SetMaximumStepSize( const double& hMax );
-
-    virtual void     SetTolerances(const double& reltol, const double& abstol);
     virtual avtIVPAdamsBashforth* Clone() const
     {
         return new avtIVPAdamsBashforth( *this );
@@ -121,24 +113,12 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
-    void             UpdateHistory( const avtVector &yNew );
-
-    Result           RK4Step(const avtIVPField* field,
-                             avtVector &yNew);
-    
-    Result           ABStep(const avtIVPField* field,
-                            avtVector &yNew);
-
   private:
+    int abStep, abNSteps;
     int numStep;
-    double tol;
-    double h, h_max;
-    double t, d;
     int degenerate_iterations;
     double stiffness_eps;
     avtVector history[ADAMS_BASHFORTH_NSTEPS];
     avtVector dhistory[ADAMS_BASHFORTH_NSTEPS];
-    avtVector yCur;
 };
-
 #endif

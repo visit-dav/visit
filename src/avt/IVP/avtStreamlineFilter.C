@@ -415,22 +415,25 @@ avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
 {
     unsigned char attr = GenerateAttributeFields();
 
-    double t = maxTime;
+    double t_end;
+
     if (doPathlines)
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t = seedTime0-maxTime;
+            t_end = seedTime0-maxTime;
         else
-            t = seedTime0+maxTime;
+            t_end = seedTime0+maxTime;
     }
     else
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t = -maxTime;
+            t_end = -maxTime;
+        else
+            t_end =  maxTime;
     }
 
     avtStateRecorderIntegralCurve *rv = 
-        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, t,
+        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, t_end,
                             attr, model, dir, t_start, p_start, v_start, ID);
 
     return rv;

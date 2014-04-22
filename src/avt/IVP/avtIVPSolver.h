@@ -433,6 +433,12 @@ class IVP_API avtIVPSolver
         UNSPECIFIED_ERROR,
     };
 
+    enum Direction
+    {
+        DIRECTION_FORWARD  = 0,
+        DIRECTION_BACKWARD = 1,
+    };
+
                     avtIVPSolver();
     virtual         ~avtIVPSolver() {};
 
@@ -445,18 +451,39 @@ class IVP_API avtIVPSolver
                          avtIVPStep* ivpstep = 0 ) = 0;
 
     virtual void    OnExitDomain() {}
-    virtual avtVector  GetCurrentY() const = 0;
-    virtual double  GetCurrentT() const = 0;
 
-    virtual void    SetCurrentY(const avtVector &newY) = 0;
-    virtual void    SetCurrentT(double newT) = 0;
+    virtual double GetCurrentT() const;
+    virtual void   SetCurrentT(double newT);
 
-    virtual void    SetNextStepSize(const double& h)  = 0;
-    virtual double  GetNextStepSize() const = 0;
-    virtual void    SetMaximumStepSize(const double& h) = 0;
+    virtual void      SetCurrentY(const avtVector &newY);
+    virtual avtVector GetCurrentY() const;
+
+    virtual void   SetNextStepSize(const double& h);
+    virtual double GetNextStepSize() const;
+
+    virtual void   SetMaximumStepSize(const double& h);
+    virtual double GetMaximumStepSize() const;
 
     virtual void    SetTolerances(const double& reltol, 
-                                  const double& abstol) = 0;
+                                  const double& abstol);
+
+    virtual unsigned int GetOrder() const;
+    virtual void         SetOrder(unsigned int o);
+
+    virtual bool GetToCartesian() const;
+    virtual void SetToCartesian(bool val);
+
+    virtual bool GetToCylindrical() const;
+    virtual void SetToCylindrical(bool val);
+
+    virtual void   SetPeriod(const double& p);
+    virtual double GetPeriod() const;
+
+    virtual void   SetBaseTime(const double& t);
+    virtual double GetBaseTime() const;
+
+    virtual void      SetDirection(const Direction& d);
+    virtual Direction GetDirection() const;
 
     // state management
     virtual void    GetState(avtIVPState&);
@@ -464,13 +491,39 @@ class IVP_API avtIVPSolver
             
     virtual avtIVPSolver* Clone() const = 0;
 
+protected:
+
     bool convertToCartesian;
     bool convertToCylindrical;
 
     unsigned int order;
 
+    avtVector yCur;
+    double t;
+    double h, h_max;
+    double tol;
+
+    double period;
+    double baseTime, maxTime;
+    Direction direction;
+
 protected:
-    virtual void    AcceptStateVisitor(avtIVPStateHelper& sv) = 0;
+    inline virtual double GetLocalTime()
+    {
+      double t_local = t;
+
+      if( period > 0 )
+      {
+        if( direction == DIRECTION_BACKWARD)
+          while (t_local <= baseTime) t_local += period;
+        else // if( direction == DIRECTION_FORWARD)
+          while (t_local >= maxTime) t_local -= period;
+      }
+
+      return t_local;
+    };
+
+    virtual void   AcceptStateVisitor(avtIVPStateHelper& sv) = 0;
     virtual Result ConvertResult(const avtIVPField::Result &res) const;
 };
 
@@ -498,5 +551,4 @@ inline std::ostream& operator<<( std::ostream& out,
         return out<<"UNKNOWN";
     }
 }
-
 #endif

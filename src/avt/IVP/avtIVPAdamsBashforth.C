@@ -49,9 +49,13 @@
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
-// constants for the A-B scheme.
-static const double bashforth[] = { 1901.0, -2774.0, 2616.0, -1274.0, 251.0 };
-static const double divisor = 1.0 / 720.0;
+// coefficients for the Adams-Bashforth scheme for up to five steps.
+static const double bashforth[ADAMS_BASHFORTH_NSTEPS][ADAMS_BASHFORTH_NSTEPS] =
+  {{    1.,          0.,        0.,        0.,        0. },
+   {    3./2.,      -1./2.,     0.,        0.,        0. },
+   {   23./12.,     -4./3.,     5./12.,    0.,        0. },
+   {   55./24.,    -59./24.,   37./24.,   -3./8.,     0. },
+   { 1901./720., -1387./360., 109./30., -637./360., 251./720. }};
 
 // helper function
 // returns a with the same sign as b
@@ -88,11 +92,13 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    d = 0.0;
     numStep = 0;
     degenerate_iterations = 0;
     stiffness_eps = tol / 1000.0;
+    abStep = 0;
+    abNSteps = 1;
 }
+
 
 // ****************************************************************************
 //  Method: avtIVPAdamsBashforth destructor
@@ -102,150 +108,8 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
 //
 // ****************************************************************************
 
-
 avtIVPAdamsBashforth::~avtIVPAdamsBashforth()
 {
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::GetCurrentT
-//
-//  Purpose:
-//      Gets the current T.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-double 
-avtIVPAdamsBashforth::GetCurrentT() const 
-{
-    return t;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::GetCurrentY
-//
-//  Purpose:
-//      Gets the current Y.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
-//    Improved version of A-B solver that builds function history from
-//    initial RK4 steps.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-avtVector 
-avtIVPAdamsBashforth::GetCurrentY() const
-{
-    return yCur;
-}
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::SetCurrentY
-//
-//  Purpose:
-//      Sets the current Y.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
-//    Improved version of A-B solver that builds function history from
-//    initial RK4 steps.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-void
-avtIVPAdamsBashforth::SetCurrentY(const avtVector &newY)
-{
-    yCur = newY;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::SetCurrentT
-//
-//  Purpose:
-//      Sets the current T.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPAdamsBashforth::SetCurrentT(double newT)
-{
-    t = newT;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::SetNextStepSize
-//
-//  Purpose:
-//      Sets the step size for the next step.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void 
-avtIVPAdamsBashforth::SetNextStepSize(const double& _h)
-{
-    h = _h;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::GetNextStepSize
-//
-//  Purpose:
-//      Gets the step size for the next step.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-double 
-avtIVPAdamsBashforth::GetNextStepSize() const
-{
-    return h;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::SetMaximumStepSize
-//
-//  Purpose:
-//      Sets the maximum step size for the next step.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPAdamsBashforth::SetMaximumStepSize(const double& hMax)
-{
-    h_max = hMax;
 }
 
 
@@ -313,12 +177,14 @@ avtIVPAdamsBashforth::Reset(const double& t_start,
                             const avtVector &v_start)
 {
     t = t_start;
-    d = 0.0;
     numStep = 0;
 
     degenerate_iterations = 0;
     yCur = y_start;
     h = h_max;
+
+    abStep = 0;
+    abNSteps = 1;
 }
 
 
@@ -346,86 +212,6 @@ avtIVPAdamsBashforth::OnExitDomain()
 {
 }
 
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::RK4Step
-//
-//  Purpose:
-//      Take a step and return the result.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Feb 24 2009
-//
-//  Modifications:
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-//    Hank Childs, Mon Mar 12 10:26:33 PDT 2012
-//    Integrate fix from Christoph Garth.
-//
-// ****************************************************************************
-
-avtIVPSolver::Result 
-avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
-                              avtVector &yNew )
-{
-    avtVector f[4];
-    avtIVPField::Result result;
-    
-    if ((result = (*field)(t, yCur,              f[0])) != avtIVPField::OK)
-        return ConvertResult(result);
-    
-    f[0] *= h;
-    if ((result = (*field)(t+0.5*h, yCur + f[0] * 0.5, f[1])) != avtIVPField::OK)
-        return ConvertResult(result);
-    
-    f[1] *= h;
-    if ((result = (*field)(t+0.5*h, yCur + f[1] * 0.5, f[2])) != avtIVPField::OK)
-        return ConvertResult(result);
-    
-    f[2] *= h;
-    if ((result = (*field)(t+h, yCur + f[2],       f[3])) != avtIVPField::OK)
-        return ConvertResult(result);
-    
-    f[3] *= h;
-    yNew = yCur + (f[0] + 2.0 * f[1] + 2.0 * f[2] + f[3]) * (1.0 / 6.0);
-    
-    return avtIVPSolver::OK;
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPAdamsBashforth::ABStep
-//
-//  Purpose:
-//      Take a step and return the result.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//
-//    Dave Pugmire, Tue Feb 24 14:35:38 EST 2009
-//    Remove moulton corrector code, use RK4 at startup, terminate on numSteps.
-//
-//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//    Bug fix in parallel communication of solver state.
-//
-// ****************************************************************************
-
-avtIVPSolver::Result 
-avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
-                             avtVector &yNew )
-{
-    // Calculate the predictor using the Adams-Bashforth formula
-    yNew = yCur;
-
-    for (size_t i = 0; i < ADAMS_BASHFORTH_NSTEPS; i++)
-        yNew += h*divisor*bashforth[i] * history[i];
-
-    return avtIVPSolver::OK;
-}
 
 // ****************************************************************************
 //  Method: avtIVPAdamsBashforth::Step
@@ -473,81 +259,77 @@ avtIVPSolver::Result
 avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
                            avtIVPStep* ivpstep)
 {
-    const double direction = sign( 1.0, t_max - t );
+    double t_local = GetLocalTime();
+
+    const double direction = sign( 1.0, t_max - t_local );
     
     h = sign( h, direction );
     
     bool last = false;
 
     // do not run past integration end
-    if( (t + 1.01*h - t_max) * direction > 0.0 ) 
+    if( (t_local + 1.01*h - t_max) * direction > 0.0 ) 
     {
         last = true;
-        h = t_max - t;
+        h = t_max - t_local;
     }
 
     // stepsize underflow?
-    if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
+    if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
-    avtIVPSolver::Result res;
     avtIVPField::Result fieldResult;
-    avtVector yNew = yCur;
+    avtVector yNew = yCur, vCur;
 
-    // Use a fourth-order Runga Kutta integration to seed the Adams-Bashforth.
-    if( numStep < ADAMS_BASHFORTH_NSTEPS )
+    // Get the first vector value for the history. 
+    if ((fieldResult = (*field)(t_local, yCur, vCur)) != avtIVPField::OK)
+      return ConvertResult(fieldResult);
+
+    // NOTE: DO NOT pass history[0] to the above as it gets a bogus
+    // value when calculating pathlines.
+    history[0] = vCur;
+
+    // Calculate the new postion using the Adams-Bashforth algorithm
+    for (size_t i = 0; i < abNSteps; ++i)
+        yNew += h * bashforth[abStep][i] * history[i];
+
+    // Increment the number of steps to be taken.
+    if( abNSteps < ADAMS_BASHFORTH_NSTEPS )
     {
-        // Save the first vector values in the history. 
-        if( numStep == 0 )
-        {
-            if ((fieldResult = (*field)(t, yCur, history[0])) != avtIVPField::OK)
-                return ConvertResult(fieldResult);
-        }
-         
-        res = RK4Step( field, yNew );
+      ++abStep;    // Index of the coefficents for the step order.
+      ++abNSteps;  // Number of steps to be taken
+    }
+
+    ivpstep->resize(2);
+
+    if( convertToCartesian )
+    {
+      (*ivpstep)[0] = field->ConvertToCartesian( yCur );
+      (*ivpstep)[1] = field->ConvertToCartesian( yNew );
     }
     else
-        res = ABStep( field, yNew );
-
-    if (res == OK)
     {
-        ivpstep->resize(2);
-
-        if( convertToCartesian )
-        {
-          (*ivpstep)[0] = field->ConvertToCartesian( yCur );
-          (*ivpstep)[1] = field->ConvertToCartesian( yNew );
-        }
-        else
-        {
-          (*ivpstep)[0] = yCur;
-          (*ivpstep)[1] = yNew;
-        }
-
-        ivpstep->t0 = t;
-        ivpstep->t1 = t + h;
-        numStep++;
-
-        // Update the history to save the last 5 vector values.
-        history[4] = history[3];
-        history[3] = history[2];
-        history[2] = history[1];
-        history[1] = history[0];
-        if ((fieldResult = (*field)(t, yNew, history[0])) != avtIVPField::OK)
-            return ConvertResult(fieldResult);
-
-        yCur = yNew;
-        t = t+h;
-
-        if( last )
-            res = avtIVPSolver::TERMINATE;
-
-        // Reset the step size on sucessful step.
-        h = h_max;
+      (*ivpstep)[0] = yCur;
+      (*ivpstep)[1] = yNew;
     }
+    
+    ivpstep->t0 = t;
+    ivpstep->t1 = t + h;
+    numStep++;
 
-    return res;
+    yCur = yNew;
+    t = t+h;
+
+    // Reset the step size on sucessful step.
+    h = h_max;
+
+    // Update the history to save the last N vector values.
+    for (size_t i = abStep; i>0; --i)
+      history[i] = history[i-1];
+
+    return (last ? avtIVPSolver::TERMINATE : avtIVPSolver::OK);
 }
+
 
 // ****************************************************************************
 //  Method: avtIVPAdamsBashforth::AcceptStateVisitor
@@ -577,7 +359,6 @@ avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)
-        .Accept(d)
         .Accept(yCur)
         .Accept(history[0])
         .Accept(history[1])

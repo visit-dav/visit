@@ -554,6 +554,7 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
     SetPathlines(atts.GetPathlines(),
                  atts.GetPathlinesOverrideStartingTimeFlag(),
                  atts.GetPathlinesOverrideStartingTime(),
+                 atts.GetPathlinesPeriod(),
                  CMFEType);
 
     SetIntegrationDirection(atts.GetIntegrationDirection());
@@ -822,8 +823,8 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
 
 void
 avtIntegralCurveFilter::SetTermination(int maxSteps_, bool doDistance_,
-                                    double maxDistance_,
-                                    bool doTime_, double maxTime_)
+                                       double maxDistance_,
+                                       bool doTime_, double maxTime_)
 {
     maxSteps = maxSteps_;
     doDistance = doDistance_;
@@ -896,25 +897,25 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
 {
     unsigned char attr = GenerateAttributeFields();
 
-    double t;
+    double t_end;
 
     if (doPathlines)
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t = seedTime0-maxTime;
+            t_end = seedTime0-maxTime;
         else
-            t = seedTime0+maxTime;
+            t_end = seedTime0+maxTime;
     }
     else
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t = -maxTime;
+            t_end = -maxTime;
         else
-            t = maxTime;
+            t_end = maxTime;
     }
 
     avtStateRecorderIntegralCurve *rv = 
-        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, t,
+        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, t_end,
                             attr, model, dir, t_start, p_start, v_start, ID);
 
     return rv;

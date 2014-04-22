@@ -516,6 +516,8 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
@@ -2025,6 +2027,30 @@ IntegralCurveAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObjec
 }
 
 /*static*/ PyObject *
+IntegralCurveAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the pathlinesPeriod in the object.
+    obj->data->SetPathlinesPeriod(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
+    return retval;
+}
+
+/*static*/ PyObject *
 IntegralCurveAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
@@ -2722,6 +2748,8 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetPathlinesOverrideStartingTimeFlag", IntegralCurveAttributes_GetPathlinesOverrideStartingTimeFlag, METH_VARARGS},
     {"SetPathlinesOverrideStartingTime", IntegralCurveAttributes_SetPathlinesOverrideStartingTime, METH_VARARGS},
     {"GetPathlinesOverrideStartingTime", IntegralCurveAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
+    {"SetPathlinesPeriod", IntegralCurveAttributes_SetPathlinesPeriod, METH_VARARGS},
+    {"GetPathlinesPeriod", IntegralCurveAttributes_GetPathlinesPeriod, METH_VARARGS},
     {"SetPathlinesCMFE", IntegralCurveAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", IntegralCurveAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetDisplayGeometry", IntegralCurveAttributes_SetDisplayGeometry, METH_VARARGS},
@@ -2967,6 +2995,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return IntegralCurveAttributes_GetPathlinesOverrideStartingTimeFlag(self, NULL);
     if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         return IntegralCurveAttributes_GetPathlinesOverrideStartingTime(self, NULL);
+    if(strcmp(name, "pathlinesPeriod") == 0)
+        return IntegralCurveAttributes_GetPathlinesPeriod(self, NULL);
     if(strcmp(name, "pathlinesCMFE") == 0)
         return IntegralCurveAttributes_GetPathlinesCMFE(self, NULL);
     if(strcmp(name, "CONN_CMFE") == 0)
@@ -3135,6 +3165,8 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetPathlinesOverrideStartingTimeFlag(self, tuple);
     else if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         obj = IntegralCurveAttributes_SetPathlinesOverrideStartingTime(self, tuple);
+    else if(strcmp(name, "pathlinesPeriod") == 0)
+        obj = IntegralCurveAttributes_SetPathlinesPeriod(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = IntegralCurveAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "displayGeometry") == 0)

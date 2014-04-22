@@ -56,8 +56,394 @@
 // ****************************************************************************
 
 avtIVPSolver::avtIVPSolver() : convertToCartesian(0), convertToCylindrical(0),
-                               order(1)
+                               order(1), tol(1e-8), h(1e-5), t(0.0), period(0)
 {
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetCurrentY
+//
+//  Purpose:
+//      Gets the current Y.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPSolver::GetCurrentY() const
+{
+    return yCur;
+}
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetCurrentY
+//
+//  Purpose:
+//      Sets the current Y.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetCurrentY(const avtVector &newY)
+{
+    yCur = newY;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetCurrentT
+//
+//  Purpose:
+//      Gets the current T.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+double 
+avtIVPSolver::GetCurrentT() const 
+{
+    double t_local = t;
+
+    if( period > 0 )
+    {
+      if( direction == DIRECTION_BACKWARD)
+        while (t_local <= baseTime) t_local += period;
+      else // if( direction == DIRECTION_FORWARD)
+        while (t_local >= maxTime) t_local -= period;
+    }
+
+    return t_local;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetCurrentT
+//
+//  Purpose:
+//      Sets the current T.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetCurrentT(double newT)
+{
+    t = newT;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetNextStepSize
+//
+//  Purpose:
+//      Sets the step size for the next step.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   October 24, 2009
+//
+// ****************************************************************************
+
+void 
+avtIVPSolver::SetNextStepSize(const double& newH)
+{
+    h = newH;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetNextStepSize
+//
+//  Purpose:
+//      Gets the step size for the next step.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   October 24, 2009
+//
+// ****************************************************************************
+
+double 
+avtIVPSolver::GetNextStepSize() const
+{
+    return h;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetMaximumStepSize
+//
+//  Purpose:
+//      Sets the maximum step size for the next step.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   October 24, 2009
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetMaximumStepSize(const double& maxH)
+{
+    h_max = maxH;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetMaximumStepSize
+//
+//  Purpose:
+//      Gets the maximum step size for the next step.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   October 24, 2009
+//
+// ****************************************************************************
+
+double
+avtIVPSolver::GetMaximumStepSize() const
+{
+    return h_max;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetTolerances
+//
+//  Purpose:
+//      Sets the tolerance.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetTolerances(const double& relt, const double& abst)
+{
+    tol = abst;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetOrder
+//
+//  Purpose:
+//      Gets the order
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+unsigned int
+avtIVPSolver::GetOrder() const
+{
+  return order;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetOrder
+//
+//  Purpose:
+//      Sets the order.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetOrder(unsigned int o)
+{
+    order = o;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetToCartesian
+//
+//  Purpose:
+//      Gets the ToCartesian
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+bool
+avtIVPSolver::GetToCartesian() const
+{
+  return convertToCartesian;;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetToCartesian
+//
+//  Purpose:
+//      Sets the ToCartesian.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetToCartesian(bool val)
+{
+    convertToCartesian = val;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetToCylindrical
+//
+//  Purpose:
+//      Gets the ToCylindrical
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+bool
+avtIVPSolver::GetToCylindrical() const
+{
+  return convertToCylindrical;;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetToCylindrical
+//
+//  Purpose:
+//      Sets the ToCylindrical.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetToCylindrical(bool val)
+{
+    convertToCylindrical = val;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetPeriod
+//
+//  Purpose:
+//      Gets the period.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+double 
+avtIVPSolver::GetPeriod() const
+{
+    return period;
+}
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetPeriod
+//
+//  Purpose:
+//      Sets the period.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetPeriod(const double &p)
+{
+    period = p;
+    maxTime = baseTime + period;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetBaseTime
+//
+//  Purpose:
+//      Gets the baseTime.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+double 
+avtIVPSolver::GetBaseTime() const
+{
+    return baseTime;
+}
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetBaseTime
+//
+//  Purpose:
+//      Sets the baseTime.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetBaseTime(const double &time)
+{
+    baseTime = time;
+    maxTime = baseTime + period;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetDirection
+//
+//  Purpose:
+//      Gets the direction.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+avtIVPSolver::Direction
+avtIVPSolver::GetDirection() const
+{
+    return direction;
+}
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetDirection
+//
+//  Purpose:
+//      Sets the direction.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2014
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetDirection(const Direction &d)
+{
+    direction = d;
 }
 
 

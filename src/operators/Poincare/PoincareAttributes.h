@@ -106,6 +106,11 @@ public:
         Curves,
         Surfaces
     };
+    enum PuncturePlotType
+    {
+        Single,
+        Double
+    };
     enum PuncturePlaneType
     {
         Poloidal,
@@ -206,6 +211,11 @@ public:
     void SetOpacity(double opacity_);
     void SetMinPunctures(int minPunctures_);
     void SetMaxPunctures(int maxPunctures_);
+    void SetPuncturePlotType(PuncturePlotType puncturePlotType_);
+    void SetMaxSteps(int maxSteps_);
+    void SetTerminateByTime(bool terminateByTime_);
+    void SetTermTime(double termTime_);
+    void SetPuncturePeriodTolerance(double puncturePeriodTolerance_);
     void SetPuncturePlane(PuncturePlaneType puncturePlane_);
     void SetSourceType(SourceType sourceType_);
     void SetPointSource(const double *pointSource_);
@@ -267,6 +277,7 @@ public:
     void SetPathlines(bool pathlines_);
     void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
+    void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
@@ -278,6 +289,11 @@ public:
     double               GetOpacity() const;
     int                  GetMinPunctures() const;
     int                  GetMaxPunctures() const;
+    PuncturePlotType     GetPuncturePlotType() const;
+    int                  GetMaxSteps() const;
+    bool                 GetTerminateByTime() const;
+    double               GetTermTime() const;
+    double               GetPuncturePeriodTolerance() const;
     PuncturePlaneType    GetPuncturePlane() const;
     SourceType           GetSourceType() const;
     const double         *GetPointSource() const;
@@ -346,6 +362,7 @@ public:
     bool                 GetPathlines() const;
     bool                 GetPathlinesOverrideStartingTimeFlag() const;
     double               GetPathlinesOverrideStartingTime() const;
+    double               GetPathlinesPeriod() const;
     PathlinesCMFE        GetPathlinesCMFE() const;
     bool                 GetIssueTerminationWarnings() const;
     bool                 GetIssueStiffnessWarnings() const;
@@ -391,6 +408,11 @@ public:
     static bool ShowMeshType_FromString(const std::string &, ShowMeshType &);
 protected:
     static std::string ShowMeshType_ToString(int);
+public:
+    static std::string PuncturePlotType_ToString(PuncturePlotType);
+    static bool PuncturePlotType_FromString(const std::string &, PuncturePlotType &);
+protected:
+    static std::string PuncturePlotType_ToString(int);
 public:
     static std::string PuncturePlaneType_ToString(PuncturePlaneType);
     static bool PuncturePlaneType_FromString(const std::string &, PuncturePlaneType &);
@@ -450,6 +472,11 @@ public:
         ID_opacity,
         ID_minPunctures,
         ID_maxPunctures,
+        ID_puncturePlotType,
+        ID_maxSteps,
+        ID_terminateByTime,
+        ID_termTime,
+        ID_puncturePeriodTolerance,
         ID_puncturePlane,
         ID_sourceType,
         ID_pointSource,
@@ -511,6 +538,7 @@ public:
         ID_pathlines,
         ID_pathlinesOverrideStartingTimeFlag,
         ID_pathlinesOverrideStartingTime,
+        ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_issueTerminationWarnings,
         ID_issueStiffnessWarnings,
@@ -524,6 +552,11 @@ private:
     double         opacity;
     int            minPunctures;
     int            maxPunctures;
+    int            puncturePlotType;
+    int            maxSteps;
+    bool           terminateByTime;
+    double         termTime;
+    double         puncturePeriodTolerance;
     int            puncturePlane;
     int            sourceType;
     double         pointSource[3];
@@ -585,6 +618,7 @@ private:
     bool           pathlines;
     bool           pathlinesOverrideStartingTimeFlag;
     double         pathlinesOverrideStartingTime;
+    double         pathlinesPeriod;
     int            pathlinesCMFE;
     bool           issueTerminationWarnings;
     bool           issueStiffnessWarnings;
@@ -595,6 +629,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiibdDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbbiiiibbdibbbd"
+#define POINCAREATTRIBUTES_TMFS "idiiiibddiiDDDiibdDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbbiiiibbddibbbd"
 
 #endif

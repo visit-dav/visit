@@ -515,6 +515,7 @@ void IntegralCurveAttributes::Init()
     pathlines = false;
     pathlinesOverrideStartingTimeFlag = false;
     pathlinesOverrideStartingTime = 0;
+    pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     displayGeometry = Lines;
     coordinateSystem = AsIs;
@@ -627,6 +628,7 @@ void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
     pathlines = obj.pathlines;
     pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
+    pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     displayGeometry = obj.displayGeometry;
     coordinateSystem = obj.coordinateSystem;
@@ -894,6 +896,7 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
             (pathlines == obj.pathlines) &&
             (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
+            (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (displayGeometry == obj.displayGeometry) &&
             (coordinateSystem == obj.coordinateSystem) &&
@@ -1215,6 +1218,7 @@ IntegralCurveAttributes::SelectAll()
     Select(ID_pathlines,                          (void *)&pathlines);
     Select(ID_pathlinesOverrideStartingTimeFlag,  (void *)&pathlinesOverrideStartingTimeFlag);
     Select(ID_pathlinesOverrideStartingTime,      (void *)&pathlinesOverrideStartingTime);
+    Select(ID_pathlinesPeriod,                    (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
     Select(ID_displayGeometry,                    (void *)&displayGeometry);
     Select(ID_coordinateSystem,                   (void *)&coordinateSystem);
@@ -1515,6 +1519,12 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     {
         addToParent = true;
         node->AddNode(new DataNode("pathlinesOverrideStartingTime", pathlinesOverrideStartingTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pathlinesPeriod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlinesPeriod", pathlinesPeriod));
     }
 
     if(completeSave || !FieldsEqual(ID_pathlinesCMFE, &defaultObject))
@@ -1877,6 +1887,8 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         SetPathlinesOverrideStartingTimeFlag(node->AsBool());
     if((node = searchNode->GetNode("pathlinesOverrideStartingTime")) != 0)
         SetPathlinesOverrideStartingTime(node->AsDouble());
+    if((node = searchNode->GetNode("pathlinesPeriod")) != 0)
+        SetPathlinesPeriod(node->AsDouble());
     if((node = searchNode->GetNode("pathlinesCMFE")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2289,6 +2301,13 @@ IntegralCurveAttributes::SetPathlinesOverrideStartingTime(double pathlinesOverri
 {
     pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
     Select(ID_pathlinesOverrideStartingTime, (void *)&pathlinesOverrideStartingTime);
+}
+
+void
+IntegralCurveAttributes::SetPathlinesPeriod(double pathlinesPeriod_)
+{
+    pathlinesPeriod = pathlinesPeriod_;
+    Select(ID_pathlinesPeriod, (void *)&pathlinesPeriod);
 }
 
 void
@@ -2775,6 +2794,12 @@ IntegralCurveAttributes::GetPathlinesOverrideStartingTime() const
     return pathlinesOverrideStartingTime;
 }
 
+double
+IntegralCurveAttributes::GetPathlinesPeriod() const
+{
+    return pathlinesPeriod;
+}
+
 IntegralCurveAttributes::PathlinesCMFE
 IntegralCurveAttributes::GetPathlinesCMFE() const
 {
@@ -3066,6 +3091,7 @@ IntegralCurveAttributes::GetFieldName(int index) const
     case ID_pathlines:                          return "pathlines";
     case ID_pathlinesOverrideStartingTimeFlag:  return "pathlinesOverrideStartingTimeFlag";
     case ID_pathlinesOverrideStartingTime:      return "pathlinesOverrideStartingTime";
+    case ID_pathlinesPeriod:                    return "pathlinesPeriod";
     case ID_pathlinesCMFE:                      return "pathlinesCMFE";
     case ID_displayGeometry:                    return "displayGeometry";
     case ID_coordinateSystem:                   return "coordinateSystem";
@@ -3155,6 +3181,7 @@ IntegralCurveAttributes::GetFieldType(int index) const
     case ID_pathlines:                          return FieldType_bool;
     case ID_pathlinesOverrideStartingTimeFlag:  return FieldType_bool;
     case ID_pathlinesOverrideStartingTime:      return FieldType_double;
+    case ID_pathlinesPeriod:                    return FieldType_double;
     case ID_pathlinesCMFE:                      return FieldType_enum;
     case ID_displayGeometry:                    return FieldType_enum;
     case ID_coordinateSystem:                   return FieldType_enum;
@@ -3244,6 +3271,7 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
     case ID_pathlines:                          return "bool";
     case ID_pathlinesOverrideStartingTimeFlag:  return "bool";
     case ID_pathlinesOverrideStartingTime:      return "double";
+    case ID_pathlinesPeriod:                    return "double";
     case ID_pathlinesCMFE:                      return "enum";
     case ID_displayGeometry:                    return "enum";
     case ID_coordinateSystem:                   return "enum";
@@ -3542,6 +3570,11 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_pathlinesOverrideStartingTime:
         {  // new scope
         retval = (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime);
+        }
+        break;
+    case ID_pathlinesPeriod:
+        {  // new scope
+        retval = (pathlinesPeriod == obj.pathlinesPeriod);
         }
         break;
     case ID_pathlinesCMFE:
@@ -3886,3 +3919,4 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
 
     return false;
 }
+
