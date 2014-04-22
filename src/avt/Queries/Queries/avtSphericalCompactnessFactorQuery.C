@@ -249,6 +249,10 @@ avtSphericalCompactnessFactorQuery::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   July 14, 2005
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Apr 22 07:54:11 MST 2014
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -268,7 +272,7 @@ avtSphericalCompactnessFactorQuery::Execute1(vtkDataSet *ds, const int dom)
         vtkCell *cell = ds->GetCell(i);
         double center[3];
         vtkVisItUtility::GetCellCenter(cell, center);
-        float volume = var->GetTuple1(i);
+        double volume = var->GetTuple1(i);
         volume = (volume < 0 ? -volume : volume);
         centroid[0] += volume*center[0];
         centroid[1] += volume*center[1];
@@ -288,6 +292,10 @@ avtSphericalCompactnessFactorQuery::Execute1(vtkDataSet *ds, const int dom)
 //  Programmer: Hank Childs
 //  Creation:   July 14, 2005
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Apr 22 07:54:11 MST 2014
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -300,7 +308,7 @@ avtSphericalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
     {
         EXCEPTION0(ImproperUseException);
     }
-    float rad_squared = radius*radius;
+    double rad_squared = radius*radius;
     for (int i = 0 ; i < nCells ; i++)
     {
         if (ghosts != NULL && ghosts->GetTuple1(i) != 0.)
@@ -308,12 +316,12 @@ avtSphericalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
         vtkCell *cell = ds->GetCell(i);
         double center[3];
         vtkVisItUtility::GetCellCenter(cell, center);
-        float dist = (center[0]-sphere_center[0])*(center[0]-sphere_center[0])
+        double dist = (center[0]-sphere_center[0])*(center[0]-sphere_center[0])
                    + (center[1]-sphere_center[1])*(center[1]-sphere_center[1])
                    + (center[2]-sphere_center[2])*(center[2]-sphere_center[2]);
         if (dist > rad_squared)
             continue;  // Not inside.
-        float volume = var->GetTuple1(i);
+        double volume = var->GetTuple1(i);
         volume = (volume < 0 ? -volume : volume);
         volume_inside += volume;
     }

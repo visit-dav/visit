@@ -123,6 +123,9 @@ avtEllipticalCompactnessFactorQuery::~avtEllipticalCompactnessFactorQuery()
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Kathleen Biagas, Tue Apr 22 07:51:19 MST 2014
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -134,12 +137,12 @@ avtEllipticalCompactnessFactorQuery::PreExecute(void)
         centroid[i] = 0.;
     total_volume = 0.;
 
-    bounds[0] = +FLT_MAX;
-    bounds[1] = -FLT_MAX;
-    bounds[2] = +FLT_MAX;
-    bounds[3] = -FLT_MAX;
-    bounds[4] = +FLT_MAX;
-    bounds[5] = -FLT_MAX;
+    bounds[0] = +DBL_MAX;
+    bounds[1] = -DBL_MAX;
+    bounds[2] = +DBL_MAX;
+    bounds[3] = -DBL_MAX;
+    bounds[4] = +DBL_MAX;
+    bounds[5] = -DBL_MAX;
 }
 
 
@@ -156,6 +159,9 @@ avtEllipticalCompactnessFactorQuery::PreExecute(void)
 //    Cyrus Harrison, Wed May 19 12:37:14 PDT 2010
 //    Fixed parallel bug: Extents need to be unified across all processors
 //    before trying to calculate the ellipsoid axes.
+//
+//    Kathleen Biagas, Tue Apr 22 07:51:19 MST 2014
+//    Use double instead of float.
 //
 // ****************************************************************************
 
@@ -196,33 +202,33 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
     //
     if (is2D)
     {
-        float Amax = ((bounds[1] - bounds[0]) / 2.)*1.5;
-        float Bmax = (bounds[3])*1.5;
-        float Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax));
+        double Amax = ((bounds[1] - bounds[0]) / 2.)*1.5;
+        double Bmax = (bounds[3])*1.5;
+        double Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax));
         for (int i = 0 ; i < numGuesses ; i++)
         {
-            y_radius[i] = Bmin + (Bmax-Bmin)*((float)i/(float)numGuesses);
+            y_radius[i] = Bmin + (Bmax-Bmin)*((double)i/(double)numGuesses);
             z_radius[i] = y_radius[i];
             x_radius[i] = total_volume*0.75 / (M_PI*y_radius[i]*z_radius[i]);
         }
     }
     else
     {
-        float Amax = ((bounds[1] - bounds[0]) / 2.)*1.5;
-        float Bmax = ((bounds[3] - bounds[2]) / 2.)*1.5;
-        float Cmax = ((bounds[5] - bounds[4]) / 2.)*1.5;
-        float Amin = sqrt(total_volume * 0.75 / (M_PI*Bmax*Cmax));
-        float Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Cmax));
-        float Cmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Bmax));
+        double Amax = ((bounds[1] - bounds[0]) / 2.)*1.5;
+        double Bmax = ((bounds[3] - bounds[2]) / 2.)*1.5;
+        double Cmax = ((bounds[5] - bounds[4]) / 2.)*1.5;
+        double Amin = sqrt(total_volume * 0.75 / (M_PI*Bmax*Cmax));
+        double Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Cmax));
+        double Cmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Bmax));
         // Get integer square root.
         int dims = (int) ceil(sqrt(numGuesses-0.1));
         for (int i = 0 ; i < dims ; i++)
         {
-            float A = Amin + (Amax-Amin)*((float)i/(float)dims);
+            double A = Amin + (Amax-Amin)*((double)i/(double)dims);
             for (int j = 0 ; j < dims ; j++)
             {
-                float B = Bmin + (Bmax-Bmin)*((float)j/(float)dims);
-                float C = total_volume*0.75 / (M_PI*A*B);
+                double B = Bmin + (Bmax-Bmin)*((double)j/(double)dims);
+                double C = total_volume*0.75 / (M_PI*A*B);
                 int index = i*dims+j;
                 x_radius[index] = A;
                 y_radius[index] = B;
@@ -326,6 +332,10 @@ avtEllipticalCompactnessFactorQuery::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   May 8, 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Apr 22 07:51:19 MST 2014
+//    Use double instead of float for volume.
+//
 // ****************************************************************************
 
 void
@@ -345,7 +355,7 @@ avtEllipticalCompactnessFactorQuery::Execute1(vtkDataSet *ds, const int dom)
         vtkCell *cell = ds->GetCell(i);
         double center[3];
         vtkVisItUtility::GetCellCenter(cell, center);
-        float volume = var->GetTuple1(i);
+        double volume = var->GetTuple1(i);
         volume = (volume < 0 ? -volume : volume);
         centroid[0] += volume*center[0];
         centroid[1] += volume*center[1];
@@ -371,6 +381,10 @@ avtEllipticalCompactnessFactorQuery::Execute1(vtkDataSet *ds, const int dom)
 //  Programmer: Hank Childs
 //  Creation:   May 8, 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Apr 22 07:51:19 MST 2014
+//    Use double instead of float for volume.
+//
 // ****************************************************************************
 
 void
@@ -383,7 +397,7 @@ avtEllipticalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
     {
         EXCEPTION0(ImproperUseException);
     }
-    float d[3];
+    double d[3];
     for (int i = 0 ; i < nCells ; i++)
     {
         if (ghosts != NULL && ghosts->GetTuple1(i) != 0.)
@@ -394,11 +408,11 @@ avtEllipticalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
         d[0] = center[0] - ellipse_center[0];
         d[1] = center[1] - ellipse_center[1];
         d[2] = center[2] - ellipse_center[2];
-        float volume = var->GetTuple1(i);
+        double volume = var->GetTuple1(i);
         volume = (volume < 0 ? -volume : volume);
         for (int j = 0 ; j < numGuesses ; j++)
         {
-            float dist = 0;
+            double dist = 0;
             dist += d[0]*d[0] / (x_radius[j]*x_radius[j]);
             dist += d[1]*d[1] / (y_radius[j]*y_radius[j]);
             dist += d[2]*d[2] / (z_radius[j]*z_radius[j]);

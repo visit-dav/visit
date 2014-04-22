@@ -78,6 +78,9 @@ class vtkCell;
 //    Kathleen Bonnell, Fri Sep  3 10:10:28 PDT 2004 
 //    Added VerifyInput. 
 //
+//    Kathleen Biagas, Tue Apr 22 07:45:21 MST 2014
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
@@ -94,8 +97,8 @@ class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
   protected:
     int                             numDomains;
 
-    std::vector<float>              xBound;
-    std::vector<float>              yBound;
+    std::vector<double>             xBound;
+    std::vector<double>             yBound;
 
     double                          totalXSectArea;
     double                          totalRotVolume;
@@ -121,9 +124,9 @@ class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
     virtual void                    PostExecute(void);
     virtual void                    VerifyInput(void);
 
-    static void                     Get2DCellCentroid(vtkCell*,float&,float&);
-    static float                    Get2DCellArea(vtkCell*);
-    static float                    Get2DTriangleArea(double*,double*,double*);
+    static void                     Get2DCellCentroid(vtkCell*,double&,double&);
+    static double                   Get2DCellArea(vtkCell*);
+    static double                   Get2DTriangleArea(double*,double*,double*);
 
 };
 
