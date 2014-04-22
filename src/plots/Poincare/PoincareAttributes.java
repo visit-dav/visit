@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 77;
+    private static int PoincareAttributes_numAdditionalAtts = 78;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -228,6 +228,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pathlines = false;
         pathlinesOverrideStartingTimeFlag = false;
         pathlinesOverrideStartingTime = 0;
+        pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         issueTerminationWarnings = true;
         issueStiffnessWarnings = true;
@@ -323,6 +324,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pathlines = false;
         pathlinesOverrideStartingTimeFlag = false;
         pathlinesOverrideStartingTime = 0;
+        pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         issueTerminationWarnings = true;
         issueStiffnessWarnings = true;
@@ -424,6 +426,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pathlines = obj.pathlines;
         pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
         pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
+        pathlinesPeriod = obj.pathlinesPeriod;
         pathlinesCMFE = obj.pathlinesCMFE;
         issueTerminationWarnings = obj.issueTerminationWarnings;
         issueStiffnessWarnings = obj.issueStiffnessWarnings;
@@ -540,6 +543,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (pathlines == obj.pathlines) &&
                 (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
                 (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
+                (pathlinesPeriod == obj.pathlinesPeriod) &&
                 (pathlinesCMFE == obj.pathlinesCMFE) &&
                 (issueTerminationWarnings == obj.issueTerminationWarnings) &&
                 (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
@@ -1023,34 +1027,40 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(71);
     }
 
+    public void SetPathlinesPeriod(double pathlinesPeriod_)
+    {
+        pathlinesPeriod = pathlinesPeriod_;
+        Select(72);
+    }
+
     public void SetPathlinesCMFE(int pathlinesCMFE_)
     {
         pathlinesCMFE = pathlinesCMFE_;
-        Select(72);
+        Select(73);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(73);
+        Select(74);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(74);
+        Select(75);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(75);
+        Select(76);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(76);
+        Select(77);
     }
 
     // Property getting methods
@@ -1126,6 +1136,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public boolean        GetPathlines() { return pathlines; }
     public boolean        GetPathlinesOverrideStartingTimeFlag() { return pathlinesOverrideStartingTimeFlag; }
     public double         GetPathlinesOverrideStartingTime() { return pathlinesOverrideStartingTime; }
+    public double         GetPathlinesPeriod() { return pathlinesPeriod; }
     public int            GetPathlinesCMFE() { return pathlinesCMFE; }
     public boolean        GetIssueTerminationWarnings() { return issueTerminationWarnings; }
     public boolean        GetIssueStiffnessWarnings() { return issueStiffnessWarnings; }
@@ -1280,14 +1291,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(71, buf))
             buf.WriteDouble(pathlinesOverrideStartingTime);
         if(WriteSelect(72, buf))
-            buf.WriteInt(pathlinesCMFE);
+            buf.WriteDouble(pathlinesPeriod);
         if(WriteSelect(73, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteInt(pathlinesCMFE);
         if(WriteSelect(74, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(75, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(76, buf))
+            buf.WriteBool(issueCriticalPointsWarnings);
+        if(WriteSelect(77, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -1513,18 +1526,21 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetPathlinesOverrideStartingTime(buf.ReadDouble());
             break;
         case 72:
-            SetPathlinesCMFE(buf.ReadInt());
+            SetPathlinesPeriod(buf.ReadDouble());
             break;
         case 73:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetPathlinesCMFE(buf.ReadInt());
             break;
         case 74:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 75:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 76:
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            break;
+        case 77:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -1737,6 +1753,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("pathlines", pathlines, indent) + "\n";
         str = str + boolToString("pathlinesOverrideStartingTimeFlag", pathlinesOverrideStartingTimeFlag, indent) + "\n";
         str = str + doubleToString("pathlinesOverrideStartingTime", pathlinesOverrideStartingTime, indent) + "\n";
+        str = str + doubleToString("pathlinesPeriod", pathlinesPeriod, indent) + "\n";
         str = str + indent + "pathlinesCMFE = ";
         if(pathlinesCMFE == PATHLINESCMFE_CONN_CMFE)
             str = str + "PATHLINESCMFE_CONN_CMFE";
@@ -1824,6 +1841,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private boolean        pathlines;
     private boolean        pathlinesOverrideStartingTimeFlag;
     private double         pathlinesOverrideStartingTime;
+    private double         pathlinesPeriod;
     private int            pathlinesCMFE;
     private boolean        issueTerminationWarnings;
     private boolean        issueStiffnessWarnings;

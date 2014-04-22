@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 105;
+    private static int StreamlineAttributes_numAdditionalAtts = 106;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -228,6 +228,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         pathlines = false;
         pathlinesOverrideStartingTimeFlag = false;
         pathlinesOverrideStartingTime = 0;
+        pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         coordinateSystem = COORDINATESYSTEM_ASIS;
         phiScalingFlag = false;
@@ -378,6 +379,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         pathlines = false;
         pathlinesOverrideStartingTimeFlag = false;
         pathlinesOverrideStartingTime = 0;
+        pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         coordinateSystem = COORDINATESYSTEM_ASIS;
         phiScalingFlag = false;
@@ -532,6 +534,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         pathlines = obj.pathlines;
         pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
         pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
+        pathlinesPeriod = obj.pathlinesPeriod;
         pathlinesCMFE = obj.pathlinesCMFE;
         coordinateSystem = obj.coordinateSystem;
         phiScalingFlag = obj.phiScalingFlag;
@@ -710,6 +713,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (pathlines == obj.pathlines) &&
                 (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
                 (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
+                (pathlinesPeriod == obj.pathlinesPeriod) &&
                 (pathlinesCMFE == obj.pathlinesCMFE) &&
                 (coordinateSystem == obj.coordinateSystem) &&
                 (phiScalingFlag == obj.phiScalingFlag) &&
@@ -1122,370 +1126,376 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(43);
     }
 
+    public void SetPathlinesPeriod(double pathlinesPeriod_)
+    {
+        pathlinesPeriod = pathlinesPeriod_;
+        Select(44);
+    }
+
     public void SetPathlinesCMFE(int pathlinesCMFE_)
     {
         pathlinesCMFE = pathlinesCMFE_;
-        Select(44);
+        Select(45);
     }
 
     public void SetCoordinateSystem(int coordinateSystem_)
     {
         coordinateSystem = coordinateSystem_;
-        Select(45);
+        Select(46);
     }
 
     public void SetPhiScalingFlag(boolean phiScalingFlag_)
     {
         phiScalingFlag = phiScalingFlag_;
-        Select(46);
+        Select(47);
     }
 
     public void SetPhiScaling(double phiScaling_)
     {
         phiScaling = phiScaling_;
-        Select(47);
+        Select(48);
     }
 
     public void SetColoringVariable(String coloringVariable_)
     {
         coloringVariable = coloringVariable_;
-        Select(48);
+        Select(49);
     }
 
     public void SetLegendMinFlag(boolean legendMinFlag_)
     {
         legendMinFlag = legendMinFlag_;
-        Select(49);
+        Select(50);
     }
 
     public void SetLegendMaxFlag(boolean legendMaxFlag_)
     {
         legendMaxFlag = legendMaxFlag_;
-        Select(50);
+        Select(51);
     }
 
     public void SetLegendMin(double legendMin_)
     {
         legendMin = legendMin_;
-        Select(51);
+        Select(52);
     }
 
     public void SetLegendMax(double legendMax_)
     {
         legendMax = legendMax_;
-        Select(52);
+        Select(53);
     }
 
     public void SetDisplayBegin(double displayBegin_)
     {
         displayBegin = displayBegin_;
-        Select(53);
+        Select(54);
     }
 
     public void SetDisplayEnd(double displayEnd_)
     {
         displayEnd = displayEnd_;
-        Select(54);
+        Select(55);
     }
 
     public void SetDisplayBeginFlag(boolean displayBeginFlag_)
     {
         displayBeginFlag = displayBeginFlag_;
-        Select(55);
+        Select(56);
     }
 
     public void SetDisplayEndFlag(boolean displayEndFlag_)
     {
         displayEndFlag = displayEndFlag_;
-        Select(56);
+        Select(57);
     }
 
     public void SetReferenceTypeForDisplay(int referenceTypeForDisplay_)
     {
         referenceTypeForDisplay = referenceTypeForDisplay_;
-        Select(57);
+        Select(58);
     }
 
     public void SetDisplayMethod(int displayMethod_)
     {
         displayMethod = displayMethod_;
-        Select(58);
+        Select(59);
     }
 
     public void SetTubeSizeType(int tubeSizeType_)
     {
         tubeSizeType = tubeSizeType_;
-        Select(59);
+        Select(60);
     }
 
     public void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_)
     {
         tubeRadiusAbsolute = tubeRadiusAbsolute_;
-        Select(60);
+        Select(61);
     }
 
     public void SetTubeRadiusBBox(double tubeRadiusBBox_)
     {
         tubeRadiusBBox = tubeRadiusBBox_;
-        Select(61);
+        Select(62);
     }
 
     public void SetRibbonWidthSizeType(int ribbonWidthSizeType_)
     {
         ribbonWidthSizeType = ribbonWidthSizeType_;
-        Select(62);
+        Select(63);
     }
 
     public void SetRibbonWidthAbsolute(double ribbonWidthAbsolute_)
     {
         ribbonWidthAbsolute = ribbonWidthAbsolute_;
-        Select(63);
+        Select(64);
     }
 
     public void SetRibbonWidthBBox(double ribbonWidthBBox_)
     {
         ribbonWidthBBox = ribbonWidthBBox_;
-        Select(64);
+        Select(65);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(65);
+        Select(66);
     }
 
     public void SetShowSeeds(boolean showSeeds_)
     {
         showSeeds = showSeeds_;
-        Select(66);
+        Select(67);
     }
 
     public void SetSeedRadiusSizeType(int seedRadiusSizeType_)
     {
         seedRadiusSizeType = seedRadiusSizeType_;
-        Select(67);
+        Select(68);
     }
 
     public void SetSeedRadiusAbsolute(double seedRadiusAbsolute_)
     {
         seedRadiusAbsolute = seedRadiusAbsolute_;
-        Select(68);
+        Select(69);
     }
 
     public void SetSeedRadiusBBox(double seedRadiusBBox_)
     {
         seedRadiusBBox = seedRadiusBBox_;
-        Select(69);
+        Select(70);
     }
 
     public void SetShowHeads(boolean showHeads_)
     {
         showHeads = showHeads_;
-        Select(70);
+        Select(71);
     }
 
     public void SetHeadDisplayType(int headDisplayType_)
     {
         headDisplayType = headDisplayType_;
-        Select(71);
+        Select(72);
     }
 
     public void SetHeadRadiusSizeType(int headRadiusSizeType_)
     {
         headRadiusSizeType = headRadiusSizeType_;
-        Select(72);
+        Select(73);
     }
 
     public void SetHeadRadiusAbsolute(double headRadiusAbsolute_)
     {
         headRadiusAbsolute = headRadiusAbsolute_;
-        Select(73);
+        Select(74);
     }
 
     public void SetHeadRadiusBBox(double headRadiusBBox_)
     {
         headRadiusBBox = headRadiusBBox_;
-        Select(74);
+        Select(75);
     }
 
     public void SetHeadHeightRatio(double headHeightRatio_)
     {
         headHeightRatio = headHeightRatio_;
-        Select(75);
+        Select(76);
     }
 
     public void SetOpacityType(int opacityType_)
     {
         opacityType = opacityType_;
-        Select(76);
+        Select(77);
     }
 
     public void SetOpacityVariable(String opacityVariable_)
     {
         opacityVariable = opacityVariable_;
-        Select(77);
+        Select(78);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(78);
+        Select(79);
     }
 
     public void SetOpacityVarMin(double opacityVarMin_)
     {
         opacityVarMin = opacityVarMin_;
-        Select(79);
+        Select(80);
     }
 
     public void SetOpacityVarMax(double opacityVarMax_)
     {
         opacityVarMax = opacityVarMax_;
-        Select(80);
+        Select(81);
     }
 
     public void SetOpacityVarMinFlag(boolean opacityVarMinFlag_)
     {
         opacityVarMinFlag = opacityVarMinFlag_;
-        Select(81);
+        Select(82);
     }
 
     public void SetOpacityVarMaxFlag(boolean opacityVarMaxFlag_)
     {
         opacityVarMaxFlag = opacityVarMaxFlag_;
-        Select(82);
+        Select(83);
     }
 
     public void SetTubeDisplayDensity(int tubeDisplayDensity_)
     {
         tubeDisplayDensity = tubeDisplayDensity_;
-        Select(83);
+        Select(84);
     }
 
     public void SetGeomDisplayQuality(int geomDisplayQuality_)
     {
         geomDisplayQuality = geomDisplayQuality_;
-        Select(84);
+        Select(85);
     }
 
     public void SetSampleDistance0(double sampleDistance0_)
     {
         sampleDistance0 = sampleDistance0_;
-        Select(85);
+        Select(86);
     }
 
     public void SetSampleDistance1(double sampleDistance1_)
     {
         sampleDistance1 = sampleDistance1_;
-        Select(86);
+        Select(87);
     }
 
     public void SetSampleDistance2(double sampleDistance2_)
     {
         sampleDistance2 = sampleDistance2_;
-        Select(87);
+        Select(88);
     }
 
     public void SetFillInterior(boolean fillInterior_)
     {
         fillInterior = fillInterior_;
-        Select(88);
+        Select(89);
     }
 
     public void SetRandomSamples(boolean randomSamples_)
     {
         randomSamples = randomSamples_;
-        Select(89);
+        Select(90);
     }
 
     public void SetRandomSeed(int randomSeed_)
     {
         randomSeed = randomSeed_;
-        Select(90);
+        Select(91);
     }
 
     public void SetNumberOfRandomSamples(int numberOfRandomSamples_)
     {
         numberOfRandomSamples = numberOfRandomSamples_;
-        Select(91);
+        Select(92);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(92);
+        Select(93);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(93);
+        Select(94);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(94);
+        Select(95);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(95);
+        Select(96);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(96);
+        Select(97);
     }
 
     public void SetVaryTubeRadius(int varyTubeRadius_)
     {
         varyTubeRadius = varyTubeRadius_;
-        Select(97);
+        Select(98);
     }
 
     public void SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_)
     {
         varyTubeRadiusFactor = varyTubeRadiusFactor_;
-        Select(98);
+        Select(99);
     }
 
     public void SetVaryTubeRadiusVariable(String varyTubeRadiusVariable_)
     {
         varyTubeRadiusVariable = varyTubeRadiusVariable_;
-        Select(99);
+        Select(100);
     }
 
     public void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
     {
         correlationDistanceAngTol = correlationDistanceAngTol_;
-        Select(100);
+        Select(101);
     }
 
     public void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
     {
         correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
-        Select(101);
+        Select(102);
     }
 
     public void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
     {
         correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
-        Select(102);
+        Select(103);
     }
 
     public void SetCorrelationDistanceMinDistType(int correlationDistanceMinDistType_)
     {
         correlationDistanceMinDistType = correlationDistanceMinDistType_;
-        Select(103);
+        Select(104);
     }
 
     public void SetSelection(String selection_)
     {
         selection = selection_;
-        Select(104);
+        Select(105);
     }
 
     // Property getting methods
@@ -1533,6 +1543,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public boolean        GetPathlines() { return pathlines; }
     public boolean        GetPathlinesOverrideStartingTimeFlag() { return pathlinesOverrideStartingTimeFlag; }
     public double         GetPathlinesOverrideStartingTime() { return pathlinesOverrideStartingTime; }
+    public double         GetPathlinesPeriod() { return pathlinesPeriod; }
     public int            GetPathlinesCMFE() { return pathlinesCMFE; }
     public int            GetCoordinateSystem() { return coordinateSystem; }
     public boolean        GetPhiScalingFlag() { return phiScalingFlag; }
@@ -1687,126 +1698,128 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(43, buf))
             buf.WriteDouble(pathlinesOverrideStartingTime);
         if(WriteSelect(44, buf))
-            buf.WriteInt(pathlinesCMFE);
+            buf.WriteDouble(pathlinesPeriod);
         if(WriteSelect(45, buf))
-            buf.WriteInt(coordinateSystem);
+            buf.WriteInt(pathlinesCMFE);
         if(WriteSelect(46, buf))
-            buf.WriteBool(phiScalingFlag);
+            buf.WriteInt(coordinateSystem);
         if(WriteSelect(47, buf))
-            buf.WriteDouble(phiScaling);
+            buf.WriteBool(phiScalingFlag);
         if(WriteSelect(48, buf))
-            buf.WriteString(coloringVariable);
+            buf.WriteDouble(phiScaling);
         if(WriteSelect(49, buf))
-            buf.WriteBool(legendMinFlag);
+            buf.WriteString(coloringVariable);
         if(WriteSelect(50, buf))
-            buf.WriteBool(legendMaxFlag);
+            buf.WriteBool(legendMinFlag);
         if(WriteSelect(51, buf))
-            buf.WriteDouble(legendMin);
+            buf.WriteBool(legendMaxFlag);
         if(WriteSelect(52, buf))
-            buf.WriteDouble(legendMax);
+            buf.WriteDouble(legendMin);
         if(WriteSelect(53, buf))
-            buf.WriteDouble(displayBegin);
+            buf.WriteDouble(legendMax);
         if(WriteSelect(54, buf))
-            buf.WriteDouble(displayEnd);
+            buf.WriteDouble(displayBegin);
         if(WriteSelect(55, buf))
-            buf.WriteBool(displayBeginFlag);
+            buf.WriteDouble(displayEnd);
         if(WriteSelect(56, buf))
-            buf.WriteBool(displayEndFlag);
+            buf.WriteBool(displayBeginFlag);
         if(WriteSelect(57, buf))
-            buf.WriteInt(referenceTypeForDisplay);
+            buf.WriteBool(displayEndFlag);
         if(WriteSelect(58, buf))
-            buf.WriteInt(displayMethod);
+            buf.WriteInt(referenceTypeForDisplay);
         if(WriteSelect(59, buf))
-            buf.WriteInt(tubeSizeType);
+            buf.WriteInt(displayMethod);
         if(WriteSelect(60, buf))
-            buf.WriteDouble(tubeRadiusAbsolute);
+            buf.WriteInt(tubeSizeType);
         if(WriteSelect(61, buf))
-            buf.WriteDouble(tubeRadiusBBox);
+            buf.WriteDouble(tubeRadiusAbsolute);
         if(WriteSelect(62, buf))
-            buf.WriteInt(ribbonWidthSizeType);
+            buf.WriteDouble(tubeRadiusBBox);
         if(WriteSelect(63, buf))
-            buf.WriteDouble(ribbonWidthAbsolute);
+            buf.WriteInt(ribbonWidthSizeType);
         if(WriteSelect(64, buf))
-            buf.WriteDouble(ribbonWidthBBox);
+            buf.WriteDouble(ribbonWidthAbsolute);
         if(WriteSelect(65, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteDouble(ribbonWidthBBox);
         if(WriteSelect(66, buf))
-            buf.WriteBool(showSeeds);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(67, buf))
-            buf.WriteInt(seedRadiusSizeType);
+            buf.WriteBool(showSeeds);
         if(WriteSelect(68, buf))
-            buf.WriteDouble(seedRadiusAbsolute);
+            buf.WriteInt(seedRadiusSizeType);
         if(WriteSelect(69, buf))
-            buf.WriteDouble(seedRadiusBBox);
+            buf.WriteDouble(seedRadiusAbsolute);
         if(WriteSelect(70, buf))
-            buf.WriteBool(showHeads);
+            buf.WriteDouble(seedRadiusBBox);
         if(WriteSelect(71, buf))
-            buf.WriteInt(headDisplayType);
+            buf.WriteBool(showHeads);
         if(WriteSelect(72, buf))
-            buf.WriteInt(headRadiusSizeType);
+            buf.WriteInt(headDisplayType);
         if(WriteSelect(73, buf))
-            buf.WriteDouble(headRadiusAbsolute);
+            buf.WriteInt(headRadiusSizeType);
         if(WriteSelect(74, buf))
-            buf.WriteDouble(headRadiusBBox);
+            buf.WriteDouble(headRadiusAbsolute);
         if(WriteSelect(75, buf))
-            buf.WriteDouble(headHeightRatio);
+            buf.WriteDouble(headRadiusBBox);
         if(WriteSelect(76, buf))
-            buf.WriteInt(opacityType);
+            buf.WriteDouble(headHeightRatio);
         if(WriteSelect(77, buf))
-            buf.WriteString(opacityVariable);
+            buf.WriteInt(opacityType);
         if(WriteSelect(78, buf))
-            buf.WriteDouble(opacity);
+            buf.WriteString(opacityVariable);
         if(WriteSelect(79, buf))
-            buf.WriteDouble(opacityVarMin);
+            buf.WriteDouble(opacity);
         if(WriteSelect(80, buf))
-            buf.WriteDouble(opacityVarMax);
+            buf.WriteDouble(opacityVarMin);
         if(WriteSelect(81, buf))
-            buf.WriteBool(opacityVarMinFlag);
+            buf.WriteDouble(opacityVarMax);
         if(WriteSelect(82, buf))
-            buf.WriteBool(opacityVarMaxFlag);
+            buf.WriteBool(opacityVarMinFlag);
         if(WriteSelect(83, buf))
-            buf.WriteInt(tubeDisplayDensity);
+            buf.WriteBool(opacityVarMaxFlag);
         if(WriteSelect(84, buf))
-            buf.WriteInt(geomDisplayQuality);
+            buf.WriteInt(tubeDisplayDensity);
         if(WriteSelect(85, buf))
-            buf.WriteDouble(sampleDistance0);
+            buf.WriteInt(geomDisplayQuality);
         if(WriteSelect(86, buf))
-            buf.WriteDouble(sampleDistance1);
+            buf.WriteDouble(sampleDistance0);
         if(WriteSelect(87, buf))
-            buf.WriteDouble(sampleDistance2);
+            buf.WriteDouble(sampleDistance1);
         if(WriteSelect(88, buf))
-            buf.WriteBool(fillInterior);
+            buf.WriteDouble(sampleDistance2);
         if(WriteSelect(89, buf))
-            buf.WriteBool(randomSamples);
+            buf.WriteBool(fillInterior);
         if(WriteSelect(90, buf))
-            buf.WriteInt(randomSeed);
+            buf.WriteBool(randomSamples);
         if(WriteSelect(91, buf))
-            buf.WriteInt(numberOfRandomSamples);
+            buf.WriteInt(randomSeed);
         if(WriteSelect(92, buf))
-            buf.WriteBool(forceNodeCenteredData);
+            buf.WriteInt(numberOfRandomSamples);
         if(WriteSelect(93, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(94, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(95, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(96, buf))
-            buf.WriteDouble(criticalPointThreshold);
+            buf.WriteBool(issueCriticalPointsWarnings);
         if(WriteSelect(97, buf))
-            buf.WriteInt(varyTubeRadius);
+            buf.WriteDouble(criticalPointThreshold);
         if(WriteSelect(98, buf))
-            buf.WriteDouble(varyTubeRadiusFactor);
+            buf.WriteInt(varyTubeRadius);
         if(WriteSelect(99, buf))
-            buf.WriteString(varyTubeRadiusVariable);
+            buf.WriteDouble(varyTubeRadiusFactor);
         if(WriteSelect(100, buf))
-            buf.WriteDouble(correlationDistanceAngTol);
+            buf.WriteString(varyTubeRadiusVariable);
         if(WriteSelect(101, buf))
-            buf.WriteDouble(correlationDistanceMinDistAbsolute);
+            buf.WriteDouble(correlationDistanceAngTol);
         if(WriteSelect(102, buf))
-            buf.WriteDouble(correlationDistanceMinDistBBox);
+            buf.WriteDouble(correlationDistanceMinDistAbsolute);
         if(WriteSelect(103, buf))
-            buf.WriteInt(correlationDistanceMinDistType);
+            buf.WriteDouble(correlationDistanceMinDistBBox);
         if(WriteSelect(104, buf))
+            buf.WriteInt(correlationDistanceMinDistType);
+        if(WriteSelect(105, buf))
             buf.WriteString(selection);
     }
 
@@ -1948,186 +1961,189 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             SetPathlinesOverrideStartingTime(buf.ReadDouble());
             break;
         case 44:
-            SetPathlinesCMFE(buf.ReadInt());
+            SetPathlinesPeriod(buf.ReadDouble());
             break;
         case 45:
-            SetCoordinateSystem(buf.ReadInt());
+            SetPathlinesCMFE(buf.ReadInt());
             break;
         case 46:
-            SetPhiScalingFlag(buf.ReadBool());
+            SetCoordinateSystem(buf.ReadInt());
             break;
         case 47:
-            SetPhiScaling(buf.ReadDouble());
+            SetPhiScalingFlag(buf.ReadBool());
             break;
         case 48:
-            SetColoringVariable(buf.ReadString());
+            SetPhiScaling(buf.ReadDouble());
             break;
         case 49:
-            SetLegendMinFlag(buf.ReadBool());
+            SetColoringVariable(buf.ReadString());
             break;
         case 50:
-            SetLegendMaxFlag(buf.ReadBool());
+            SetLegendMinFlag(buf.ReadBool());
             break;
         case 51:
-            SetLegendMin(buf.ReadDouble());
+            SetLegendMaxFlag(buf.ReadBool());
             break;
         case 52:
-            SetLegendMax(buf.ReadDouble());
+            SetLegendMin(buf.ReadDouble());
             break;
         case 53:
-            SetDisplayBegin(buf.ReadDouble());
+            SetLegendMax(buf.ReadDouble());
             break;
         case 54:
-            SetDisplayEnd(buf.ReadDouble());
+            SetDisplayBegin(buf.ReadDouble());
             break;
         case 55:
-            SetDisplayBeginFlag(buf.ReadBool());
+            SetDisplayEnd(buf.ReadDouble());
             break;
         case 56:
-            SetDisplayEndFlag(buf.ReadBool());
+            SetDisplayBeginFlag(buf.ReadBool());
             break;
         case 57:
-            SetReferenceTypeForDisplay(buf.ReadInt());
+            SetDisplayEndFlag(buf.ReadBool());
             break;
         case 58:
-            SetDisplayMethod(buf.ReadInt());
+            SetReferenceTypeForDisplay(buf.ReadInt());
             break;
         case 59:
-            SetTubeSizeType(buf.ReadInt());
+            SetDisplayMethod(buf.ReadInt());
             break;
         case 60:
-            SetTubeRadiusAbsolute(buf.ReadDouble());
+            SetTubeSizeType(buf.ReadInt());
             break;
         case 61:
-            SetTubeRadiusBBox(buf.ReadDouble());
+            SetTubeRadiusAbsolute(buf.ReadDouble());
             break;
         case 62:
-            SetRibbonWidthSizeType(buf.ReadInt());
+            SetTubeRadiusBBox(buf.ReadDouble());
             break;
         case 63:
-            SetRibbonWidthAbsolute(buf.ReadDouble());
+            SetRibbonWidthSizeType(buf.ReadInt());
             break;
         case 64:
-            SetRibbonWidthBBox(buf.ReadDouble());
+            SetRibbonWidthAbsolute(buf.ReadDouble());
             break;
         case 65:
-            SetLineWidth(buf.ReadInt());
+            SetRibbonWidthBBox(buf.ReadDouble());
             break;
         case 66:
-            SetShowSeeds(buf.ReadBool());
+            SetLineWidth(buf.ReadInt());
             break;
         case 67:
-            SetSeedRadiusSizeType(buf.ReadInt());
+            SetShowSeeds(buf.ReadBool());
             break;
         case 68:
-            SetSeedRadiusAbsolute(buf.ReadDouble());
+            SetSeedRadiusSizeType(buf.ReadInt());
             break;
         case 69:
-            SetSeedRadiusBBox(buf.ReadDouble());
+            SetSeedRadiusAbsolute(buf.ReadDouble());
             break;
         case 70:
-            SetShowHeads(buf.ReadBool());
+            SetSeedRadiusBBox(buf.ReadDouble());
             break;
         case 71:
-            SetHeadDisplayType(buf.ReadInt());
+            SetShowHeads(buf.ReadBool());
             break;
         case 72:
-            SetHeadRadiusSizeType(buf.ReadInt());
+            SetHeadDisplayType(buf.ReadInt());
             break;
         case 73:
-            SetHeadRadiusAbsolute(buf.ReadDouble());
+            SetHeadRadiusSizeType(buf.ReadInt());
             break;
         case 74:
-            SetHeadRadiusBBox(buf.ReadDouble());
+            SetHeadRadiusAbsolute(buf.ReadDouble());
             break;
         case 75:
-            SetHeadHeightRatio(buf.ReadDouble());
+            SetHeadRadiusBBox(buf.ReadDouble());
             break;
         case 76:
-            SetOpacityType(buf.ReadInt());
+            SetHeadHeightRatio(buf.ReadDouble());
             break;
         case 77:
-            SetOpacityVariable(buf.ReadString());
+            SetOpacityType(buf.ReadInt());
             break;
         case 78:
-            SetOpacity(buf.ReadDouble());
+            SetOpacityVariable(buf.ReadString());
             break;
         case 79:
-            SetOpacityVarMin(buf.ReadDouble());
+            SetOpacity(buf.ReadDouble());
             break;
         case 80:
-            SetOpacityVarMax(buf.ReadDouble());
+            SetOpacityVarMin(buf.ReadDouble());
             break;
         case 81:
-            SetOpacityVarMinFlag(buf.ReadBool());
+            SetOpacityVarMax(buf.ReadDouble());
             break;
         case 82:
-            SetOpacityVarMaxFlag(buf.ReadBool());
+            SetOpacityVarMinFlag(buf.ReadBool());
             break;
         case 83:
-            SetTubeDisplayDensity(buf.ReadInt());
+            SetOpacityVarMaxFlag(buf.ReadBool());
             break;
         case 84:
-            SetGeomDisplayQuality(buf.ReadInt());
+            SetTubeDisplayDensity(buf.ReadInt());
             break;
         case 85:
-            SetSampleDistance0(buf.ReadDouble());
+            SetGeomDisplayQuality(buf.ReadInt());
             break;
         case 86:
-            SetSampleDistance1(buf.ReadDouble());
+            SetSampleDistance0(buf.ReadDouble());
             break;
         case 87:
-            SetSampleDistance2(buf.ReadDouble());
+            SetSampleDistance1(buf.ReadDouble());
             break;
         case 88:
-            SetFillInterior(buf.ReadBool());
+            SetSampleDistance2(buf.ReadDouble());
             break;
         case 89:
-            SetRandomSamples(buf.ReadBool());
+            SetFillInterior(buf.ReadBool());
             break;
         case 90:
-            SetRandomSeed(buf.ReadInt());
+            SetRandomSamples(buf.ReadBool());
             break;
         case 91:
-            SetNumberOfRandomSamples(buf.ReadInt());
+            SetRandomSeed(buf.ReadInt());
             break;
         case 92:
-            SetForceNodeCenteredData(buf.ReadBool());
+            SetNumberOfRandomSamples(buf.ReadInt());
             break;
         case 93:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 94:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 95:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 96:
-            SetCriticalPointThreshold(buf.ReadDouble());
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
         case 97:
-            SetVaryTubeRadius(buf.ReadInt());
+            SetCriticalPointThreshold(buf.ReadDouble());
             break;
         case 98:
-            SetVaryTubeRadiusFactor(buf.ReadDouble());
+            SetVaryTubeRadius(buf.ReadInt());
             break;
         case 99:
-            SetVaryTubeRadiusVariable(buf.ReadString());
+            SetVaryTubeRadiusFactor(buf.ReadDouble());
             break;
         case 100:
-            SetCorrelationDistanceAngTol(buf.ReadDouble());
+            SetVaryTubeRadiusVariable(buf.ReadString());
             break;
         case 101:
-            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
+            SetCorrelationDistanceAngTol(buf.ReadDouble());
             break;
         case 102:
-            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
             break;
         case 103:
-            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
             break;
         case 104:
+            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            break;
+        case 105:
             SetSelection(buf.ReadString());
             break;
         }
@@ -2261,6 +2277,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("pathlines", pathlines, indent) + "\n";
         str = str + boolToString("pathlinesOverrideStartingTimeFlag", pathlinesOverrideStartingTimeFlag, indent) + "\n";
         str = str + doubleToString("pathlinesOverrideStartingTime", pathlinesOverrideStartingTime, indent) + "\n";
+        str = str + doubleToString("pathlinesPeriod", pathlinesPeriod, indent) + "\n";
         str = str + indent + "pathlinesCMFE = ";
         if(pathlinesCMFE == PATHLINESCMFE_CONN_CMFE)
             str = str + "PATHLINESCMFE_CONN_CMFE";
@@ -2450,6 +2467,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private boolean        pathlines;
     private boolean        pathlinesOverrideStartingTimeFlag;
     private double         pathlinesOverrideStartingTime;
+    private double         pathlinesPeriod;
     private int            pathlinesCMFE;
     private int            coordinateSystem;
     private boolean        phiScalingFlag;

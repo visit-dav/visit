@@ -125,6 +125,4 @@ class avtStreamlinePlot : public avtLineDataPlot
     void                        UpdateMapperAndLegend();
     void                        SetLighting(bool);
 };
-
-
 #endif

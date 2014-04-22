@@ -648,6 +648,8 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
@@ -2735,6 +2737,30 @@ PoincareAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *ar
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the pathlinesPeriod in the object.
+    obj->data->SetPathlinesPeriod(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -3011,6 +3037,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetPathlinesOverrideStartingTimeFlag", PoincareAttributes_GetPathlinesOverrideStartingTimeFlag, METH_VARARGS},
     {"SetPathlinesOverrideStartingTime", PoincareAttributes_SetPathlinesOverrideStartingTime, METH_VARARGS},
     {"GetPathlinesOverrideStartingTime", PoincareAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
+    {"SetPathlinesPeriod", PoincareAttributes_SetPathlinesPeriod, METH_VARARGS},
+    {"GetPathlinesPeriod", PoincareAttributes_GetPathlinesPeriod, METH_VARARGS},
     {"SetPathlinesCMFE", PoincareAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", PoincareAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetIssueTerminationWarnings", PoincareAttributes_SetIssueTerminationWarnings, METH_VARARGS},
@@ -3334,6 +3362,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetPathlinesOverrideStartingTimeFlag(self, NULL);
     if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         return PoincareAttributes_GetPathlinesOverrideStartingTime(self, NULL);
+    if(strcmp(name, "pathlinesPeriod") == 0)
+        return PoincareAttributes_GetPathlinesPeriod(self, NULL);
     if(strcmp(name, "pathlinesCMFE") == 0)
         return PoincareAttributes_GetPathlinesCMFE(self, NULL);
     if(strcmp(name, "CONN_CMFE") == 0)
@@ -3507,6 +3537,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetPathlinesOverrideStartingTimeFlag(self, tuple);
     else if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         obj = PoincareAttributes_SetPathlinesOverrideStartingTime(self, tuple);
+    else if(strcmp(name, "pathlinesPeriod") == 0)
+        obj = PoincareAttributes_SetPathlinesPeriod(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = PoincareAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
