@@ -704,6 +704,7 @@ void StreamlineAttributes::Init()
     pathlines = false;
     pathlinesOverrideStartingTimeFlag = false;
     pathlinesOverrideStartingTime = 0;
+    pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     coordinateSystem = AsIs;
     phiScalingFlag = false;
@@ -853,6 +854,7 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     pathlines = obj.pathlines;
     pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
+    pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     coordinateSystem = obj.coordinateSystem;
     phiScalingFlag = obj.phiScalingFlag;
@@ -1162,6 +1164,7 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (pathlines == obj.pathlines) &&
             (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
+            (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (coordinateSystem == obj.coordinateSystem) &&
             (phiScalingFlag == obj.phiScalingFlag) &&
@@ -1523,6 +1526,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_pathlines,                          (void *)&pathlines);
     Select(ID_pathlinesOverrideStartingTimeFlag,  (void *)&pathlinesOverrideStartingTimeFlag);
     Select(ID_pathlinesOverrideStartingTime,      (void *)&pathlinesOverrideStartingTime);
+    Select(ID_pathlinesPeriod,                    (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
     Select(ID_coordinateSystem,                   (void *)&coordinateSystem);
     Select(ID_phiScalingFlag,                     (void *)&phiScalingFlag);
@@ -1880,6 +1884,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("pathlinesOverrideStartingTime", pathlinesOverrideStartingTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pathlinesPeriod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlinesPeriod", pathlinesPeriod));
     }
 
     if(completeSave || !FieldsEqual(ID_pathlinesCMFE, &defaultObject))
@@ -2470,6 +2480,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetPathlinesOverrideStartingTimeFlag(node->AsBool());
     if((node = searchNode->GetNode("pathlinesOverrideStartingTime")) != 0)
         SetPathlinesOverrideStartingTime(node->AsDouble());
+    if((node = searchNode->GetNode("pathlinesPeriod")) != 0)
+        SetPathlinesPeriod(node->AsDouble());
     if((node = searchNode->GetNode("pathlinesCMFE")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -3103,6 +3115,13 @@ StreamlineAttributes::SetPathlinesOverrideStartingTime(double pathlinesOverrideS
 {
     pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
     Select(ID_pathlinesOverrideStartingTime, (void *)&pathlinesOverrideStartingTime);
+}
+
+void
+StreamlineAttributes::SetPathlinesPeriod(double pathlinesPeriod_)
+{
+    pathlinesPeriod = pathlinesPeriod_;
+    Select(ID_pathlinesPeriod, (void *)&pathlinesPeriod);
 }
 
 void
@@ -3872,6 +3891,12 @@ StreamlineAttributes::GetPathlinesOverrideStartingTime() const
     return pathlinesOverrideStartingTime;
 }
 
+double
+StreamlineAttributes::GetPathlinesPeriod() const
+{
+    return pathlinesPeriod;
+}
+
 StreamlineAttributes::PathlinesCMFE
 StreamlineAttributes::GetPathlinesCMFE() const
 {
@@ -4430,6 +4455,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_pathlines:                          return "pathlines";
     case ID_pathlinesOverrideStartingTimeFlag:  return "pathlinesOverrideStartingTimeFlag";
     case ID_pathlinesOverrideStartingTime:      return "pathlinesOverrideStartingTime";
+    case ID_pathlinesPeriod:                    return "pathlinesPeriod";
     case ID_pathlinesCMFE:                      return "pathlinesCMFE";
     case ID_coordinateSystem:                   return "coordinateSystem";
     case ID_phiScalingFlag:                     return "phiScalingFlag";
@@ -4559,6 +4585,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_pathlines:                          return FieldType_bool;
     case ID_pathlinesOverrideStartingTimeFlag:  return FieldType_bool;
     case ID_pathlinesOverrideStartingTime:      return FieldType_double;
+    case ID_pathlinesPeriod:                    return FieldType_double;
     case ID_pathlinesCMFE:                      return FieldType_enum;
     case ID_coordinateSystem:                   return FieldType_enum;
     case ID_phiScalingFlag:                     return FieldType_bool;
@@ -4688,6 +4715,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_pathlines:                          return "bool";
     case ID_pathlinesOverrideStartingTimeFlag:  return "bool";
     case ID_pathlinesOverrideStartingTime:      return "double";
+    case ID_pathlinesPeriod:                    return "double";
     case ID_pathlinesCMFE:                      return "enum";
     case ID_coordinateSystem:                   return "enum";
     case ID_phiScalingFlag:                     return "bool";
@@ -5038,6 +5066,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_pathlinesOverrideStartingTime:
         {  // new scope
         retval = (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime);
+        }
+        break;
+    case ID_pathlinesPeriod:
+        {  // new scope
+        retval = (pathlinesPeriod == obj.pathlinesPeriod);
         }
         break;
     case ID_pathlinesCMFE:

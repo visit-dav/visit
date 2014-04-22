@@ -505,6 +505,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetPathlines(atts.GetPathlines(),
                                    atts.GetPathlinesOverrideStartingTimeFlag(),
                                    atts.GetPathlinesOverrideStartingTime(),
+                                   atts.GetPathlinesPeriod(),
                                    CMFEType);
 
     streamlineFilter->SetIntegrationDirection(atts.GetIntegrationDirection());

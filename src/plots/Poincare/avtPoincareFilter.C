@@ -294,7 +294,8 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
     // need at least these three attributes
     unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
 
-    avtPoincareIC *rv = new avtPoincareIC( attr, model, dir, 
+    avtPoincareIC *rv = new avtPoincareIC( 0, false, 0,
+                                           attr, model, dir, 
                                            t_start, p_start, v_start, ID );
 
     if (intersectObj)

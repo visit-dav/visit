@@ -254,6 +254,7 @@ public:
     void SetPathlines(bool pathlines_);
     void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
+    void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
     void SetPhiScalingFlag(bool phiScalingFlag_);
@@ -373,6 +374,7 @@ public:
     bool                 GetPathlines() const;
     bool                 GetPathlinesOverrideStartingTimeFlag() const;
     double               GetPathlinesOverrideStartingTime() const;
+    double               GetPathlinesPeriod() const;
     PathlinesCMFE        GetPathlinesCMFE() const;
     CoordinateSystem     GetCoordinateSystem() const;
     bool                 GetPhiScalingFlag() const;
@@ -576,6 +578,7 @@ public:
         ID_pathlines,
         ID_pathlinesOverrideStartingTimeFlag,
         ID_pathlinesOverrideStartingTime,
+        ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_coordinateSystem,
         ID_phiScalingFlag,
@@ -685,6 +688,7 @@ private:
     bool           pathlines;
     bool           pathlinesOverrideStartingTimeFlag;
     double         pathlinesOverrideStartingTime;
+    double         pathlinesPeriod;
     int            pathlinesCMFE;
     int            coordinateSystem;
     bool           phiScalingFlag;
@@ -751,6 +755,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddidDiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddis"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddidDiiiiibbddiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddis"
 
 #endif

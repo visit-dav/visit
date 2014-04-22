@@ -517,6 +517,8 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
@@ -2379,6 +2381,30 @@ StreamlineAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *
 }
 
 /*static*/ PyObject *
+StreamlineAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the pathlinesPeriod in the object.
+    obj->data->SetPathlinesPeriod(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
+    return retval;
+}
+
+/*static*/ PyObject *
 StreamlineAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
@@ -4051,6 +4077,8 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetPathlinesOverrideStartingTimeFlag", StreamlineAttributes_GetPathlinesOverrideStartingTimeFlag, METH_VARARGS},
     {"SetPathlinesOverrideStartingTime", StreamlineAttributes_SetPathlinesOverrideStartingTime, METH_VARARGS},
     {"GetPathlinesOverrideStartingTime", StreamlineAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
+    {"SetPathlinesPeriod", StreamlineAttributes_SetPathlinesPeriod, METH_VARARGS},
+    {"GetPathlinesPeriod", StreamlineAttributes_GetPathlinesPeriod, METH_VARARGS},
     {"SetPathlinesCMFE", StreamlineAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", StreamlineAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetCoordinateSystem", StreamlineAttributes_SetCoordinateSystem, METH_VARARGS},
@@ -4370,6 +4398,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetPathlinesOverrideStartingTimeFlag(self, NULL);
     if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         return StreamlineAttributes_GetPathlinesOverrideStartingTime(self, NULL);
+    if(strcmp(name, "pathlinesPeriod") == 0)
+        return StreamlineAttributes_GetPathlinesPeriod(self, NULL);
     if(strcmp(name, "pathlinesCMFE") == 0)
         return StreamlineAttributes_GetPathlinesCMFE(self, NULL);
     if(strcmp(name, "CONN_CMFE") == 0)
@@ -4673,6 +4703,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetPathlinesOverrideStartingTimeFlag(self, tuple);
     else if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
         obj = StreamlineAttributes_SetPathlinesOverrideStartingTime(self, tuple);
+    else if(strcmp(name, "pathlinesPeriod") == 0)
+        obj = StreamlineAttributes_SetPathlinesPeriod(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = StreamlineAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "coordinateSystem") == 0)

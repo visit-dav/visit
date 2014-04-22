@@ -120,8 +120,6 @@ private:
     void                        SetLegendRanges(void);
     void                        SetPointGlyphSize();
 };
-
-
 #endif
 
 

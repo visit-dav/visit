@@ -336,6 +336,9 @@
       <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
         0.000000
       </Field>
+      <Field name="pathlinesPeriod" label="Pathlines Period" type="double">
+        0.0
+      </Field>
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
       </Field>

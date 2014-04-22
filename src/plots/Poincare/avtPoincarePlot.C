@@ -407,9 +407,10 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
                     ? PICS_CONN_CMFE : PICS_POS_CMFE);
 
     poincareFilter->SetPathlines(atts.GetPathlines(),
-                                   atts.GetPathlinesOverrideStartingTimeFlag(),
-                                   atts.GetPathlinesOverrideStartingTime(),
-                                   CMFEType);
+                                 atts.GetPathlinesOverrideStartingTimeFlag(),
+                                 atts.GetPathlinesOverrideStartingTime(),
+                                 atts.GetPathlinesPeriod(),
+                                 CMFEType);
 
     poincareFilter->IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     poincareFilter->IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
