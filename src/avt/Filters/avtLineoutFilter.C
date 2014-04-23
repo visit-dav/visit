@@ -812,8 +812,6 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 {
     vtkDataSetRemoveGhostCells *ghosts = vtkDataSetRemoveGhostCells::New();
     ghosts->SetInputData(in_ds);
-    // FIX_ME_VTK6.0, ksb, is this update necessary?
-    ghosts->Update();
 
     vtkLineoutFilter *filter = vtkLineoutFilter::New();
 
@@ -821,7 +819,6 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
     filter->SetPoint1(point1);
     filter->SetPoint2(point2);
     filter->SetNumberOfSamplePoints(numberOfSamplePoints);
-    // FIX_ME_VTK6.0, ESB, is this correct?
     vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(filter->GetInformation(), 0);
     filter->Update();
     vtkPolyData *outPolys = filter->GetOutput();

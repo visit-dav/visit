@@ -910,8 +910,7 @@ VisitPointTool::UpdateSphere()
     source->SetThetaResolution(15);
 
     vtkPolyDataNormals *pdn = vtkPolyDataNormals::New();
-    // FIX_ME_VTK6.0, ESB, should this be a AddInputConnection?
-    pdn->AddInputData(source->GetOutput());
+    pdn->SetInputConnection(source->GetOutputPort());
     pdn->Update();
     sphereData = pdn->GetOutput();
     sphereData->Register(NULL);

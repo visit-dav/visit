@@ -192,9 +192,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInde
         boundaryFilter->ColoringOff();
     
         boundaryFilter->SetInputConnection(geomFilter->GetOutputPort());
-        // FIX_ME_VTK6.0, ESB, is this correct?
         vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(boundaryFilter->GetInformation(), 2);
-        //boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
         boundaryFilter->Update();
 
         allLines = boundaryFilter->GetOutput();
