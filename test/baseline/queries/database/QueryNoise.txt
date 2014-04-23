@@ -13,12 +13,12 @@ The actual number of zones is 117649.
 
 For noise.silo(hgslice)
 Total cross sectional area (XSA): 400
-Total rotated (x=0) volume (VOL): 7.64728e-05
+Total rotated (x=0) volume (VOL): -7.40386e-12
 
 Distance to boundary WRT dA / XSA = 5.56917
-Distance to boundary WRT dA / VOL = 2.91302e+07
+Distance to boundary WRT dA / VOL = 2227.67
 Distance to boundary WRT dV / XSA = -100.807
-Distance to boundary WRT dV / VOL = -5.27285e+08
+Distance to boundary WRT dV / VOL = -40322.9
 Distance to origin   WRT dA       = 3060.28
 
 NOTE -- additional calculations are available if
