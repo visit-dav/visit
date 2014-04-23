@@ -10,6 +10,9 @@
  *
  ******************************************************************************/
 
+%include "typemaps.i"
+%apply double *OUTPUT { double *m_size, double *m_rss };
+
 %typemap(in) void* {
     static PyObject *cb[2] = {NULL, NULL};
     if(cb[0] != NULL)
