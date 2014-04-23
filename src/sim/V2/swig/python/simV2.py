@@ -336,8 +336,8 @@ def VisItInitializeRuntime():
   return _simV2.VisItInitializeRuntime()
 VisItInitializeRuntime = _simV2.VisItInitializeRuntime
 
-def VisItGetMemory(*args):
-  return _simV2.VisItGetMemory(*args)
+def VisItGetMemory():
+  return _simV2.VisItGetMemory()
 VisItGetMemory = _simV2.VisItGetMemory
 VISIT_INVALID_HANDLE = _simV2.VISIT_INVALID_HANDLE
 VISIT_ERROR = _simV2.VISIT_ERROR

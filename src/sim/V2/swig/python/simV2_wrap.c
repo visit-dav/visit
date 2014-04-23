@@ -3349,6 +3349,9 @@ int pylibsim_VisIt_MaterialData_addMaterial(visit_handle obj, const char *matNam
     return matno;
 }
 
+
+  #define SWIG_From_double   PyFloat_FromDouble 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -6164,27 +6167,29 @@ SWIGINTERN PyObject *_wrap_VisItGetMemory(PyObject *SWIGUNUSEDPARM(self), PyObje
   PyObject *resultobj = 0;
   double *arg1 = (double *) 0 ;
   double *arg2 = (double *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
+  double temp1 ;
+  int res1 = SWIG_TMPOBJ ;
+  double temp2 ;
+  int res2 = SWIG_TMPOBJ ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:VisItGetMemory",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItGetMemory" "', argument " "1"" of type '" "double *""'"); 
-  }
-  arg1 = (double *)(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisItGetMemory" "', argument " "2"" of type '" "double *""'"); 
-  }
-  arg2 = (double *)(argp2);
+  arg1 = &temp1;
+  arg2 = &temp2;
+  if (!PyArg_ParseTuple(args,(char *)":VisItGetMemory")) SWIG_fail;
   result = (int)VisItGetMemory(arg1,arg2);
   resultobj = SWIG_From_int((int)(result));
+  if (SWIG_IsTmpObj(res1)) {
+    resultobj = SWIG_Python_AppendOutput(resultobj, SWIG_From_double((*arg1)));
+  } else {
+    int new_flags = SWIG_IsNewObj(res1) ? (SWIG_POINTER_OWN |  0 ) :  0 ;
+    resultobj = SWIG_Python_AppendOutput(resultobj, SWIG_NewPointerObj((void*)(arg1), SWIGTYPE_p_double, new_flags));
+  }
+  if (SWIG_IsTmpObj(res2)) {
+    resultobj = SWIG_Python_AppendOutput(resultobj, SWIG_From_double((*arg2)));
+  } else {
+    int new_flags = SWIG_IsNewObj(res2) ? (SWIG_POINTER_OWN |  0 ) :  0 ;
+    resultobj = SWIG_Python_AppendOutput(resultobj, SWIG_NewPointerObj((void*)(arg2), SWIGTYPE_p_double, new_flags));
+  }
   return resultobj;
 fail:
   return NULL;
