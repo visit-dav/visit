@@ -52,6 +52,7 @@ class QSlider;
 class QvisVariableButton;
 class ExportDBAttributes;
 class DBPluginInfoAttributes;
+class PlotList;
 
 // ****************************************************************************
 // Class: QvisExportDBWindow
@@ -83,6 +84,9 @@ class DBPluginInfoAttributes;
 //   Improvements for delimiters and for showing licenses.
 //   Work partially supported by DOE Grant SC0007548.
 //
+//   Kathleen Biagas, Wed Apr 23 14:46:51 MST 2014
+//   Add plotList.
+//
 // ****************************************************************************
 
 class GUI_API QvisExportDBWindow : public QvisPostableWindowSimpleObserver
@@ -94,9 +98,11 @@ public:
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisExportDBWindow();
 
+    virtual void Update(Subject *TheChangedSubject);
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
     virtual void ConnectSubjects(ExportDBAttributes *edb,
-                                 DBPluginInfoAttributes *dbp);
+                                 DBPluginInfoAttributes *dbp,
+                                 PlotList *pl);
 public slots:
     virtual void apply();
 protected:
@@ -119,6 +125,9 @@ protected slots:
 private:
     DBPluginInfoAttributes *dbPluginInfoAtts;
     ExportDBAttributes     *exportDBAtts;
+    PlotList               *plotList;
+    bool                    localPlot;
+
     int                     delimiter;
     QStringList             licenseShown;
 
