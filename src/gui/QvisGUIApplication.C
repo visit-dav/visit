@@ -3394,6 +3394,9 @@ QvisGUIApplication::SetupWindows()
 //   Kathleen Biagas, Fri Aug 26 17:08:00 PDT 2011
 //   Connect PickWindow to PlotList.
 //
+//   Kathleen Biagas, Wed Apr 23 14:45:49 MST 2014
+//   Add PlotList to connected subjects for Export DB window.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -3608,7 +3611,8 @@ QvisGUIApplication::WindowFactory(int i)
          QvisExportDBWindow *expWin = new QvisExportDBWindow(windowNames[i],
                                      tr("Export Database"), mainWin->GetNotepad());
          expWin->ConnectSubjects(GetViewerState()->GetExportDBAttributes(),
-                                 GetViewerState()->GetDBPluginInfoAttributes());
+                                 GetViewerState()->GetDBPluginInfoAttributes(),
+                                 GetViewerState()->GetPlotList());
          win = expWin;
         }
         break;

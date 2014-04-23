@@ -59,6 +59,8 @@
 #include <DBPluginInfoAttributes.h>
 #include <ExportDBAttributes.h>
 #include <FileServerList.h>
+#include <Plot.h>
+#include <PlotList.h>
 #include <ViewerProxy.h>
 
 #include <QvisDBOptionsDialog.h>
@@ -86,6 +88,9 @@
 //    Brad Whitlock, Wed Apr  9 11:58:41 PDT 2008
 //    QString for caption, shortName.
 //
+//    Kathleen Biagas, Wed Apr 23 14:49:26 MST 2014
+//    Added plotList, localPlot.
+//
 // ****************************************************************************
 
 QvisExportDBWindow::QvisExportDBWindow(
@@ -96,6 +101,8 @@ QvisExportDBWindow::QvisExportDBWindow(
     exportDBAtts = NULL;
     dbPluginInfoAtts = NULL;
     delimiter = 0;
+    plotList = 0;
+    localPlot = true;
 }
 
 // ****************************************************************************
@@ -108,11 +115,15 @@ QvisExportDBWindow::QvisExportDBWindow(
 // Creation:   May 25, 2005
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Apr 23 14:49:26 MST 2014
+//    Added plotList.
+//
 // ****************************************************************************
 
 QvisExportDBWindow::~QvisExportDBWindow()
 {
+    if (plotList)
+        plotList->Detach(this);
 }
 
 // ****************************************************************************
@@ -125,18 +136,61 @@ QvisExportDBWindow::~QvisExportDBWindow()
 // Creation:   July 17, 2007
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Apr 23 14:49:26 MST 2014
+//    Added plotList.
+//
 // ****************************************************************************
 
 void
 QvisExportDBWindow::ConnectSubjects(ExportDBAttributes *edb,
-                                    DBPluginInfoAttributes *dbp)
+                                    DBPluginInfoAttributes *dbp,
+                                    PlotList *pl)
 {
     exportDBAtts = edb;
     exportDBAtts->Attach(this);
 
     dbPluginInfoAtts = dbp;
     dbPluginInfoAtts->Attach(this);
+
+    plotList = pl;
+    plotList->Attach(this);
+}
+
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::Update
+//
+// Purpose: 
+//   This function is called when a subject is updated.
+//
+// Arguments:
+//   TheChangedSubject : The subject being changed.
+//
+// Programmer: Kathleen Biagas
+// Creation:   April 23, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExportDBWindow::Update(Subject *TheChangedSubject)
+{
+    if (plotList != 0 &&
+        TheChangedSubject == plotList &&
+        plotList->GetNumPlots() > 0)
+    {
+        int sel = plotList->FirstSelectedIndex();
+        if (sel >=0)
+        {
+            QualifiedFilename dbName(plotList->GetPlots(sel).GetDatabaseName());
+            localPlot = (dbName.host == "localhost");
+             
+            bool enableDirSelect = fileFormatComboBox->currentText() !=
+                                 QString("SimV1");
+            directorySelectButton->setEnabled(localPlot && enableDirSelect);
+        }
+    }
 }
 
 
@@ -153,7 +207,9 @@ QvisExportDBWindow::ConnectSubjects(ExportDBAttributes *edb,
 // Creation:   July 17, 2007
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Apr 23 14:50:24 MST 2014
+//    Added plotList.
+//
 // ****************************************************************************
 
 void
@@ -163,6 +219,8 @@ QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
         exportDBAtts = 0;
     else if (TheRemovedSubject == dbPluginInfoAtts)
         dbPluginInfoAtts = 0;
+    else if (TheRemovedSubject == plotList)
+        plotList = 0;
 }
 
 
@@ -204,6 +262,9 @@ QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Let the user pick the delimiter.
 //   Work partially supported by DOE Grant SC0007548.
 //
+//   Kathleen Biagas, Wed Apr 23 15:31:45 PDT 2014
+//   Enable directorySelectButton based on host for active plot (if any).
+// 
 // ****************************************************************************
 
 void
@@ -300,6 +361,17 @@ QvisExportDBWindow::CreateWindowContents()
     // now that it has changed, in case anyone tries to export a database using
     // the first option (i.e. without changing it).
     fileFormatChanged(0);
+
+    if (plotList)
+    {
+        int sel = plotList->FirstSelectedIndex();
+        if (sel >=0)
+        {
+            QualifiedFilename dbName(plotList->GetPlots(sel).GetDatabaseName());
+            localPlot = (dbName.host == "localhost");
+            directorySelectButton->setEnabled(localPlot);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -334,6 +406,9 @@ QvisExportDBWindow::CreateWindowContents()
 //
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Wed Apr 23 14:50:24 MST 2014
+//   Make directorySelectButton also dependent upon the plot being local.
 //
 // ****************************************************************************
 
@@ -397,8 +472,8 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                 // Disable directories if the database type is a simulation.
                 bool enableDir = !fileFormatComboBox->currentText().startsWith("SimV");
                 directoryNameLineEdit->setEnabled(enableDir);
-                directorySelectButton->setEnabled(enableDir);
                 directoryNameLabel->setEnabled(enableDir);
+                directorySelectButton->setEnabled(enableDir && localPlot);
             }
             break;
           case ExportDBAttributes::ID_db_type_fullname:
