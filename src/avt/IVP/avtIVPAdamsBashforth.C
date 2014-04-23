@@ -50,7 +50,7 @@
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
 // coefficients for the Adams-Bashforth scheme for up to five steps.
-static const double bashforth[ADAMS_BASHFORTH_NSTEPS][ADAMS_BASHFORTH_NSTEPS] =
+static const double bashforth[5][5] = //[ADAMS_BASHFORTH_NSTEPS][ADAMS_BASHFORTH_NSTEPS] =
   {{    1.,          0.,        0.,        0.,        0. },
    {    3./2.,      -1./2.,     0.,        0.,        0. },
    {   23./12.,     -4./3.,     5./12.,    0.,        0. },
@@ -279,7 +279,7 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
     avtIVPField::Result fieldResult;
-    avtVector yNew = yCur, vCur;
+    avtVector yNew, vCur, vNew(0,0,0);
 
     // Get the first vector value for the history. 
     if ((fieldResult = (*field)(t_local, yCur, vCur)) != avtIVPField::OK)
@@ -289,9 +289,16 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     // value when calculating pathlines.
     history[0] = vCur;
 
-    // Calculate the new postion using the Adams-Bashforth algorithm
+    // Calculate the new velocity using the Adams-Bashforth algorithm
     for (size_t i = 0; i < abNSteps; ++i)
-        yNew += h * bashforth[abStep][i] * history[i];
+        vNew += bashforth[abStep][i] * history[i];
+
+    // Calculate the new position.
+    yNew = yCur + h * vNew;
+
+    // Update the history to save the last N vector values.
+    for (size_t i = abStep; i>0; --i)
+      history[i] = history[i-1];
 
     // Increment the number of steps to be taken.
     if( abNSteps < ADAMS_BASHFORTH_NSTEPS )
@@ -300,6 +307,7 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
       ++abNSteps;  // Number of steps to be taken
     }
 
+    // Convert and save the position.
     ivpstep->resize(2);
 
     if( convertToCartesian )
@@ -315,6 +323,8 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
+
+    // Update for the next step.
     numStep++;
 
     yCur = yNew;
@@ -322,10 +332,6 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
 
     // Reset the step size on sucessful step.
     h = h_max;
-
-    // Update the history to save the last N vector values.
-    for (size_t i = abStep; i>0; --i)
-      history[i] = history[i-1];
 
     return (last ? avtIVPSolver::TERMINATE : avtIVPSolver::OK);
 }

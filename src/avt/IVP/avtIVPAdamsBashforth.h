@@ -119,6 +119,6 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     int degenerate_iterations;
     double stiffness_eps;
     avtVector history[ADAMS_BASHFORTH_NSTEPS];
-    avtVector dhistory[ADAMS_BASHFORTH_NSTEPS];
+//    avtVector dhistory[ADAMS_BASHFORTH_NSTEPS];
 };
 #endif

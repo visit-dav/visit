@@ -264,9 +264,11 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     {
         if ((fieldResult = (*field)(t_local, yCur, vCur)) != avtIVPField::OK)
             return ConvertResult(fieldResult);
+
         yNew = yCur + h * vCur;     // New position
     }
     
+    // Convert and save the position.
     ivpstep->resize(2);
     
     if( convertToCartesian )
@@ -282,6 +284,8 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
+
+    // Update for the next step.
     numStep++;
     
     yCur = yNew;

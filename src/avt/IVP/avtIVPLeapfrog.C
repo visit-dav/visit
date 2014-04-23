@@ -218,20 +218,23 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
         avtVector aCur;
         if ((fieldResult = (*field)(t_local, yCur, vCur, aCur)) != avtIVPField::OK)
             return ConvertResult(fieldResult);
+
         if( numStep )
             vNew = vCur + aCur * h;      // New velocity
         else
             vNew = vCur + aCur * h/2.0;  // Initial velocity at half step
         
-        yNew = yCur + vNew * h;        // New position
+        yNew = yCur + vNew * h;          // New position
     }
     else  //if( field->GetOrder() == 1 )
     {
         if ((fieldResult = (*field)(t_local, yCur, vCur)) != avtIVPField::OK)
             return ConvertResult(fieldResult);
+
         yNew = yCur + vCur * h;     // New position
     }
     
+    // Convert and save the position.
     ivpstep->resize(2);
 
     if( convertToCartesian )
@@ -247,6 +250,8 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
+
+    // Update for the next step.
     numStep++;
     
     yCur = yNew;
