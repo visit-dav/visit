@@ -568,6 +568,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             // make interpolation polynomial
             if( ivpstep )
             {
+              // Convert and save the position.
                 ivpstep->resize(5);
 
                 if( convertToCartesian )
@@ -599,11 +600,15 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             // update internal state
             // first-same-as-last for k1
             k1 = k7;
-            yCur = y_new;
 
-            t = t+h;
-            h = h_new;
+            // Update for the next step.
             numStep++;
+
+            yCur = y_new;
+            t = t+h;
+
+            // Set the step size on sucessful step.
+            h = h_new;
 
             return last ? avtIVPSolver::TERMINATE : avtIVPSolver::OK;
         }
@@ -616,6 +621,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             if( n_accepted >= 1 ) 
                 n_rejected++;
 
+            // Update the step size to the new step size.
             h = h_new;
             
             if (DebugStream::Level5())

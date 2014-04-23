@@ -210,6 +210,7 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
 
     if( res == avtIVPSolver::OK )
     {
+      // Convert and save the position.
         ivpstep->resize( 2 );
 
         // The integration is done in cylindrical coordinates so

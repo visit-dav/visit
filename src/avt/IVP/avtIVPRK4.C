@@ -209,9 +209,9 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
-    //avtIVPSolver::Result res = avtIVPSolverResult::OK;
     avtIVPField::Result fieldResult;
 
+    // Compute the RK4 values.
     avtVector k1;
     if ((fieldResult = (*field)(t_local, yCur, k1)) != avtIVPField::OK )
         return ConvertResult(fieldResult);
@@ -228,8 +228,10 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     if ((fieldResult = (*field)(t_local+h, yCur+h*k3, k4)) != avtIVPField::OK)
         return ConvertResult(fieldResult);
 
+    // Calculate the new position.
     avtVector yNew = yCur + h*(k1 + 2.0*k2 + 2.0*k3 + k4)/6.0;
 
+    // Convert and save the position.
     ivpstep->resize(2);
     
     if( convertToCartesian )
@@ -245,6 +247,8 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
+
+    // Update for the next step.
     numStep++;
     
     yCur = yNew;
