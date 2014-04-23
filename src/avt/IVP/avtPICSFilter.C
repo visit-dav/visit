@@ -721,7 +721,7 @@ avtPICSFilter::LoadNextTimeSlice()
 
         // There is no reason the other MPI tasks need to be loading the same
         // time slices at the same time.  But that's what will happen
-        // if we don't set on demand streaming to "true", since
+        // if we don't set on demand streaming to "true", because
         // the database might do collective communication.
         new_contract->SetOnDemandStreaming(true);
     }
@@ -1567,7 +1567,8 @@ avtPICSFilter::Initialize()
     }
 
 #ifdef PARALLEL
-    // If not operating on demand, the method *has* to be parallel static domains.
+    // If not operating on demand, the method *has* to be parallel
+    // static domains.
     int actualMethod = method;
     if (actualMethod == PICS_VISIT_SELECTS)
         actualMethod = PICS_SERIAL; // "SERIAL" means parallelize over
@@ -1576,7 +1577,7 @@ avtPICSFilter::Initialize()
     if ( ! OperatingOnDemand() )
     {
         if (DebugStream::Level1())
-            debug1 << "Can only use parallel static domains because we can't operate on demand" << endl;
+            debug1 << "Not operating on demand, using parallel static domains instead." << endl;
         actualMethod = PICS_PARALLEL_OVER_DOMAINS;
     }
 
@@ -1584,16 +1585,17 @@ avtPICSFilter::Initialize()
     if (numDomains == 1)
     {
         if (DebugStream::Level1())
-            debug1 << "Forcing load-on-demand since there is only one domain." << endl;
+            debug1 << "Forcing load-on-demand because there is only one domain." << endl;
         actualMethod = PICS_SERIAL;
     }
 
     if ((method != PICS_VISIT_SELECTS) && (method != actualMethod))
     {
         char str[1024];
-        SNPRINTF(str, 1024, "Warning: you selected the algorithm \"%s\", but VisIt decided "
-                            "it could not use that algorithm and instead used \"%s\".\n",
-                         AlgorithmToString(method), AlgorithmToString(actualMethod));
+        SNPRINTF(str, 1024,
+                 "Warning: the selected algorithm \"%s\" could not be used, "
+                 "instead the following algorithm was used \"%s\".\n",
+                 AlgorithmToString(method), AlgorithmToString(actualMethod));
         avtCallback::IssueWarning(str);
     }
     method = actualMethod;
@@ -1748,7 +1750,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             else
             {
                 if (seedTime0 == md->GetTimes()[numTimes])
-                    EXCEPTION1(VisItException, "Pathlines - cannot advect forward in time since the specified "
+                    EXCEPTION1(VisItException, "Pathlines - cannot advect forward in time because the specified "
                                                "starting time is already at the end of the simulation time.  "
                                                "The plot can successfully execute by selecting an earlier time "
                                                "time step or by overriding the pathline start time.");
