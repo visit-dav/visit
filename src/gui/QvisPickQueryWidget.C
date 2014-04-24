@@ -205,6 +205,8 @@ QvisPickQueryWidget::~QvisPickQueryWidget()
 // Creation:   June 9, 2011 
 //
 // Modifications:
+//   Kathleen Biagas, Thu Apr 24 08:55:49 PDT 2014
+//   Update timePerserveType to match the current pickType.
 //
 // ****************************************************************************
 
@@ -229,6 +231,7 @@ QvisPickQueryWidget::UpdateControls()
          domainLabel->hide();
          element->setEnabled(false);
          element->hide();
+         timePreserveType->button(0)->setChecked(true);
          break;
        
       case 2: // Pick by domain/element
@@ -246,6 +249,7 @@ QvisPickQueryWidget::UpdateControls()
          domainLabel->show();
          element->setEnabled(true);
          element->show();
+         timePreserveType->button(1)->setChecked(true);
          break;
 
       case 3: // Pick by domain/element
@@ -263,6 +267,7 @@ QvisPickQueryWidget::UpdateControls()
          domainLabel->hide();
          element->setEnabled(true);
          element->show();
+         timePreserveType->button(1)->setChecked(true);
          break;
 
       default:
