@@ -1,2 +1,2 @@
 Streamline:  (VisItException)
-viewer: engine_par: You cannot advect forward in time since the specified starting time is already at the end of the simulation time.  The plot can successfully execute if you move to an earlier time time step or if you override the pathline start time.
+viewer: engine_par: Pathlines - cannot advect forward in time because the specified starting time is already at the end of the simulation time. The plot can successfully execute by selecting an earlier time time step or by overriding the pathline start time.
