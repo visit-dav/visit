@@ -99,6 +99,9 @@ vtkVolumeFromCSGVolume::vtkVolumeFromCSGVolume(int nPts, int ptSizeGuess)
 //  Creation:   July 23, 2012
 //
 //  Modifications:
+//    Eric Brugger, Thu Apr  3 08:31:24 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
 //    
 // ****************************************************************************
 
@@ -106,7 +109,7 @@ void
 vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
                                     vtkUnstructuredGrid *output,
                                     float *pts_ptr, int npts,
-                                    vector<FixedLengthBitField<64> > *tags)
+                                    vector<vtkCSGFixedLengthBitField> *tags)
 {
     vtkCellData  *outCD = output->GetCellData();
 
@@ -212,10 +215,10 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
     tags->clear();
     for (int i = 0 ; i < nshapes ; i++)
     {
-        vector<FixedLengthBitField<64> > *tagList = shapeTags[i];
+        vector<vtkCSGFixedLengthBitField> *tagList = shapeTags[i];
         for (int j = 0; j < tagList->size(); j++)
         {
-            if (tagList->operator[](j).TestBit(511) == false)
+            if (tagList->operator[](j).TestBit(VTK_CSG_MAX_BITS) == false)
                tags->push_back(tagList->operator[](j));
         }
     }
@@ -345,10 +348,13 @@ vtkVolumeFromCSGVolume::GetCell()
 //  Creation:   July 23, 2012
 //
 //  Modifications:
+//    Eric Brugger, Thu Apr  3 08:31:24 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
 //    
 // ****************************************************************************
 
-FixedLengthBitField<64>
+vtkCSGFixedLengthBitField
 vtkVolumeFromCSGVolume::GetTag()
 {
     return curTags->operator[](curShape);
@@ -443,13 +449,16 @@ vtkVolumeFromCSGVolume::SetTagBit(int tagBit)
 //  Creation:   July 23, 2012
 //
 //  Modifications:
+//    Eric Brugger, Thu Apr  3 08:31:24 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
 //    
 // ****************************************************************************
 
 void
 vtkVolumeFromCSGVolume::InvalidateCell()
 {
-    curTags->operator[](curShape).SetBit(511);
+    curTags->operator[](curShape).SetBit(VTK_CSG_MAX_BITS);
     SetId(-1);
 }
 

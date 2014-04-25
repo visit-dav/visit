@@ -107,17 +107,16 @@
 #define __vtkCSGGrid_h
 #include <visit_vtk_exports.h>
 
+#include <vtkCSGFixedLengthBitField.h>
+#include <vtkDataArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkDataSet.h>
+#include <vtkImplicitFunctionCollection.h>
+#include <vtkPlanes.h>
+#include <vtkStructuredData.h>
+
 #include <map>
 #include <vector>
-
-#include "vtkDataArray.h"
-#include "vtkIdTypeArray.h"
-#include "vtkDataSet.h"
-#include "vtkImplicitFunctionCollection.h"
-#include "vtkPlanes.h"
-#include "vtkStructuredData.h"
-
-#include <FixedLengthBitField.h>
 
 #include <float.h>
 
@@ -202,10 +201,9 @@ public:
   // A discretize method that returns the volumetric mesh, uniformally
   // sampled to a specific number of samples in x, y and z
   //
-  vtkUnstructuredGrid *GetMultiPassDiscretization(int specificZone = -1);
-
-  bool                 DiscretizeSpaceMultiPass(const double bnds[6],
-                                   const int dims[3], const int subRegion[6]);
+  vtkUnstructuredGrid *DiscretizeSpaceMultiPass(int specificZone,
+                                   const double bnds[6], const int dims[3],
+                                   const int subRegion[6]);
 
   vtkUnstructuredGrid *DiscretizeSpace(int specificZone = -1, double tol = 0.01,
                                    double minX = -10.0, double maxX = 10.0,
@@ -310,7 +308,12 @@ protected:
   vtkCSGGrid();
   ~vtkCSGGrid();
 
-    bool EvaluateRegionBits(int region, FixedLengthBitField<64> &bits);
+  bool DoMultiPassDiscretization(int specificZone,
+                                 const double bnds[6], const int dims[3],
+                                 const int subRegion[6]);
+
+  bool EvaluateRegionBits(int region, vtkCSGFixedLengthBitField &bits);
+  void GetRegionBounds(int reg, std::vector<int> &bounds);
 
   //
   // We put this in the protected part of the interface because
@@ -335,7 +338,7 @@ protected:
   // These are storage of the binary partition tree unstructured grid
   // and bitfield for the boundary tags for the multipass algorithm.
   vtkUnstructuredGrid *multipassProcessedGrid;
-  std::vector<FixedLengthBitField<64> > *multipassTags;
+  std::vector<vtkCSGFixedLengthBitField> *multipassTags;
 
 
 
@@ -345,6 +348,7 @@ protected:
   int *leftIds, *rightIds, *regTypeFlags;
   int numZones;
   int *gridZones;
+  int *zoneMap;
 private:
 
 

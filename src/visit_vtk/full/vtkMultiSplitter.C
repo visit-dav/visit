@@ -36,9 +36,11 @@
 *
 *****************************************************************************/
 
-#include "vtkMultiSplitter.h"
+#include <vtkMultiSplitter.h>
+
 #include <vtkAppendFilter.h>
 #include <vtkCellData.h>
+#include <vtkCSGFixedLengthBitField.h>
 #include <vtkFloatArray.h>
 #include <vtkImplicitFunction.h>
 #include <vtkInformation.h>
@@ -63,7 +65,6 @@
 #include <ClipCases.h>
 #include <vtkTriangulationTables.h>
 
-#include <FixedLengthBitField.h>
 #include <TimingsManager.h>
 
 vtkStandardNewMacro(vtkMultiSplitter);
@@ -128,11 +129,14 @@ vtkMultiSplitter::SetClipFunctions(double *bnds, int nBnds)
 //  Creation:    July 23, 2012
 //
 //  Modifications:
+//    Eric Brugger, Thu Apr  3 08:22:21 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
 //
 // ****************************************************************************
 
 void
-vtkMultiSplitter::SetTagBitField(std::vector<FixedLengthBitField<64> > *tags)
+vtkMultiSplitter::SetTagBitField(std::vector<vtkCSGFixedLengthBitField> *tags)
 {
     newTags = tags;
 }
@@ -147,6 +151,9 @@ vtkMultiSplitter::SetTagBitField(std::vector<FixedLengthBitField<64> > *tags)
 //  Creation:    July 23, 2012
 //
 //  Modifications:
+//    Eric Brugger, Thu Apr  3 08:22:21 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
 //
 // ****************************************************************************
 
@@ -207,7 +214,7 @@ vtkMultiSplitter::RequestData(
     int nx = dims[0];
     int ny = dims[1];
     int nz = dims[2];
-    FixedLengthBitField<64> bf_zero;
+    vtkCSGFixedLengthBitField bf_zero;
     for (int k = 0; k < dims[2] - 1; k++)
     {
         for (int j = 0; j < dims[1] - 1; j++)
@@ -232,7 +239,7 @@ vtkMultiSplitter::RequestData(
     //
     // Loop over the boundaries.
     //
-    debug1 << "vtkMutliSplitter: nBounds = " << nBounds;
+    debug1 << "vtkMultiSplitter: nBounds = " << nBounds;
     int outCases[9] = {0, 1, 3, 7, 15, 31, 63, 127, 255};
     vtkQuadric *clipFunction =  vtkQuadric::New();
     for (int iBnd = 0; iBnd < nBounds; iBnd++)
@@ -465,7 +472,7 @@ vtkMultiSplitter::RequestData(
                         }
                     }
 
-                    FixedLengthBitField<64> bf;
+                    vtkCSGFixedLengthBitField bf;
                     if (shapeType != ST_PNT)
                     {
                         bf = vfv.GetTag();

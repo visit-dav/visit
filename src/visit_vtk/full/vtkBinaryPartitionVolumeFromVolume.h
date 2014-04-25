@@ -44,8 +44,9 @@
 #define VTK_BINARY_PARTITION_VOLUME_FROM_VOLUME_H
 
 #include <visit_vtk_exports.h>
+
+#include <vtkCSGFixedLengthBitField.h>
 #include <vtkVolumeFromVolume.h>
-#include <FixedLengthBitField.h>
 
 #include <vector>
 
@@ -84,6 +85,10 @@ class vtkUnstructuredGrid;
 //   Increase the number of boundaries that can be handled by the mulit-pass
 //   CSG discretization from 128 to 512.
 //
+//   Eric Brugger, Wed Apr  2 12:19:49 PDT 2014
+//   I converted the class to use vtkCSGFixedLengthBitField instead of
+//   FixedLengthBitField.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVolume
@@ -98,14 +103,14 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
 
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
                                        vtkUnstructuredGrid *, vtkPoints *,
-                                       std::vector<FixedLengthBitField<64> > *oldTags,
-                                       std::vector<FixedLengthBitField<64> > *newTags,
+                                       std::vector<vtkCSGFixedLengthBitField> *oldTags,
+                                       std::vector<vtkCSGFixedLengthBitField> *newTags,
                                        int newTagBit);
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
                                        vtkUnstructuredGrid *, const int *,
                                        vtkDataArray *, vtkDataArray *, vtkDataArray *,
-                                       std::vector<FixedLengthBitField<64> > *oldTags,
-                                       std::vector<FixedLengthBitField<64> > *newTags,
+                                       std::vector<vtkCSGFixedLengthBitField> *oldTags,
+                                       std::vector<vtkCSGFixedLengthBitField> *newTags,
                                        int newTagBit);
 
     using vtkVolumeFromVolume::AddCentroidPoint;
@@ -173,8 +178,8 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
     std::vector<vtkIdType>   vertexTags;
     std::vector<vtkIdType>  *shapeTags[8];
 
-    void               ComputeTags(std::vector<FixedLengthBitField<64> > *oldTags,
-                                   std::vector<FixedLengthBitField<64> > *newTags,
+    void               ComputeTags(std::vector<vtkCSGFixedLengthBitField> *oldTags,
+                                   std::vector<vtkCSGFixedLengthBitField> *newTags,
                                    int newTagBit);
 };
 
