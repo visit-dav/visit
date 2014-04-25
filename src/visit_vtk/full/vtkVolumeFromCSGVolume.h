@@ -44,8 +44,9 @@
 #define VTK_VOLUME_FROM_CSG_VOLUME_H
 
 #include <visit_vtk_exports.h>
+
+#include <vtkCSGFixedLengthBitField.h>
 #include <vtkVolumeFromVolume.h>
-#include <FixedLengthBitField.h>
 
 #include <vector>
 
@@ -75,6 +76,9 @@ class vtkUnstructuredGrid;
 //  Creation:   July 23, 2012
 //
 //  Modifications:
+//    Eric Brugger, Thu Apr  3 08:30:17 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
 //
 // ****************************************************************************
 
@@ -89,58 +93,58 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     virtual          ~vtkVolumeFromCSGVolume() { ; };
 
     void              ConstructDataSet(vtkCellData *,
-                                       vtkUnstructuredGrid *, float *, int,
-                                       std::vector<FixedLengthBitField<64> > *newTags);
+                          vtkUnstructuredGrid *, float *, int,
+                          std::vector<vtkCSGFixedLengthBitField> *newTags);
 
     using vtkVolumeFromVolume::AddCentroidPoint;
     using vtkDataSetFromVolume::AddPoint;
 
     void           AddHex(int z, int v0, int v1, int v2, int v3,
                           int v4, int v5, int v6, int v7,
-                          FixedLengthBitField<64> &tag)
+                          vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddHex(z, v0, v1, v2, v3, v4, v5, v6, v7);
         hexTags.push_back(tag);
     }
         
     void           AddWedge(int z,int v0,int v1,int v2,int v3,int v4,int v5,
-                            FixedLengthBitField<64> &tag)
+                            vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddWedge(z, v0, v1, v2, v3, v4, v5);
         wedgeTags.push_back(tag);
     }
     void           AddPyramid(int z, int v0, int v1, int v2, int v3, int v4,
-                              FixedLengthBitField<64> &tag)
+                              vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddPyramid(z, v0, v1, v2, v3, v4); 
         pyramidTags.push_back(tag);
     }
     void           AddTet(int z, int v0, int v1, int v2, int v3,
-                          FixedLengthBitField<64> &tag)
+                          vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddTet(z, v0, v1, v2, v3);
         tetTags.push_back(tag);
     }
     void           AddQuad(int z, int v0, int v1, int v2, int v3,
-                           FixedLengthBitField<64> &tag)
+                           vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddQuad(z, v0, v1, v2, v3);
         quadTags.push_back(tag);
     }
     void           AddTri(int z, int v0, int v1, int v2,
-                          FixedLengthBitField<64> &tag)
+                          vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddTri(z, v0, v1, v2);
         triTags.push_back(tag);
     }
     void           AddLine(int z, int v0, int v1,
-                           FixedLengthBitField<64> &tag)
+                           vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddLine(z, v0, v1);
         lineTags.push_back(tag);
     }
     void           AddVertex(int z, int v0,
-                             FixedLengthBitField<64> &tag)
+                             vtkCSGFixedLengthBitField &tag)
     {
         vtkVolumeFromVolume::AddVertex(z, v0);
         vertexTags.push_back(tag);
@@ -151,7 +155,7 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     int                     GetNumberOfCells() const;
     void                    NextCell();
     const vtkIdType        *GetCell();
-    FixedLengthBitField<64> GetTag();
+    vtkCSGFixedLengthBitField GetTag();
     int                     GetCellSize() const;
     int                     GetCellVTKType() const;
     void                    SetId(int);
@@ -161,16 +165,16 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
     void                    UpdatePoints(std::vector<float> &);
 
   protected:
-    std::vector<FixedLengthBitField<64> >   hexTags;
-    std::vector<FixedLengthBitField<64> >   wedgeTags;
-    std::vector<FixedLengthBitField<64> >   pyramidTags;
-    std::vector<FixedLengthBitField<64> >   tetTags;
-    std::vector<FixedLengthBitField<64> >   quadTags;
-    std::vector<FixedLengthBitField<64> >   triTags;
-    std::vector<FixedLengthBitField<64> >   lineTags;
-    std::vector<FixedLengthBitField<64> >   vertexTags;
-    std::vector<FixedLengthBitField<64> >  *shapeTags[8];
-    std::vector<FixedLengthBitField<64> >  *curTags;
+    std::vector<vtkCSGFixedLengthBitField>   hexTags;
+    std::vector<vtkCSGFixedLengthBitField>   wedgeTags;
+    std::vector<vtkCSGFixedLengthBitField>   pyramidTags;
+    std::vector<vtkCSGFixedLengthBitField>   tetTags;
+    std::vector<vtkCSGFixedLengthBitField>   quadTags;
+    std::vector<vtkCSGFixedLengthBitField>   triTags;
+    std::vector<vtkCSGFixedLengthBitField>   lineTags;
+    std::vector<vtkCSGFixedLengthBitField>   vertexTags;
+    std::vector<vtkCSGFixedLengthBitField>  *shapeTags[8];
+    std::vector<vtkCSGFixedLengthBitField>  *curTags;
 
     int                     ishape;
     int                     shapeCnt[8];
