@@ -36,9 +36,12 @@
 *
 *****************************************************************************/
 
-#include "vtkVisItSplitter.h"
+#include <vtkVisItSplitter.h>
+
 #include <vtkAppendFilter.h>
+#include <vtkBinaryPartitionVolumeFromVolume.h>
 #include <vtkCellData.h>
+#include <vtkCSGFixedLengthBitField.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkImplicitFunction.h>
@@ -52,7 +55,6 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkBinaryPartitionVolumeFromVolume.h>
 
 #include <vtkAccessors.h>
 
@@ -66,7 +68,6 @@
 #include <ClipCases.h>
 #include <vtkTriangulationTables.h>
 
-#include <FixedLengthBitField.h>
 #include <TimingsManager.h>
 
 vtkStandardNewMacro(vtkVisItSplitter);
@@ -342,6 +343,10 @@ vtkVisItSplitter::SetClipFunction(vtkImplicitFunction *func)
 //    Increase the number of boundaries that can be handled by the mulit-pass
 //    CSG discretization from 128 to 512.
 //
+//    Eric Brugger, Thu Apr  3 08:27:15 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
+//
 // ****************************************************************************
 
 void
@@ -358,13 +363,13 @@ vtkVisItSplitter::SetInsideOut(bool io)
 
 
 void
-vtkVisItSplitter::SetOldTagBitField(std::vector<FixedLengthBitField<64> > *tags)
+vtkVisItSplitter::SetOldTagBitField(std::vector<vtkCSGFixedLengthBitField> *tags)
 {
     state.oldTags = tags;
 }
 
 void
-vtkVisItSplitter::SetNewTagBitField(std::vector<FixedLengthBitField<64> > *tags)
+vtkVisItSplitter::SetNewTagBitField(std::vector<vtkCSGFixedLengthBitField> *tags)
 {
     state.newTags = tags;
 }
@@ -491,6 +496,10 @@ private:
 //    Increase the number of boundaries that can be handled by the mulit-pass
 //    CSG discretization from 128 to 512.
 //   
+//    Eric Brugger, Thu Apr  3 08:27:15 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
+//
 // ****************************************************************************
 
 template <typename PointGetter>
@@ -513,8 +522,8 @@ public:
 
     void ConstructDataSet(vtkBinaryPartitionVolumeFromVolume &vfv,
                           vtkUnstructuredGrid *output,
-                          std::vector<FixedLengthBitField<64> > *oldTags,
-                          std::vector<FixedLengthBitField<64> > *newTags,
+                          std::vector<vtkCSGFixedLengthBitField> *oldTags,
+                          std::vector<vtkCSGFixedLengthBitField> *newTags,
                           int                  newTagBit)
     {
         vfv.ConstructDataSet(GetPointData(), GetCellData(),
@@ -621,6 +630,10 @@ private:
 //    Increase the number of boundaries that can be handled by the mulit-pass
 //    CSG discretization from 128 to 512.
 //   
+//    Eric Brugger, Thu Apr  3 08:27:15 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
+//
 // ****************************************************************************
 
 template <typename PointGetter>
@@ -661,8 +674,8 @@ public:
 
     void ConstructDataSet(vtkBinaryPartitionVolumeFromVolume &vfv,
                           vtkUnstructuredGrid *output,
-                          std::vector<FixedLengthBitField<64> > *oldTags,
-                          std::vector<FixedLengthBitField<64> > *newTags,
+                          std::vector<vtkCSGFixedLengthBitField> *oldTags,
+                          std::vector<vtkCSGFixedLengthBitField> *newTags,
                           int                  newTagBit)
     {
         vfv.ConstructDataSet(GetPointData(), GetCellData(),

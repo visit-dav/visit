@@ -2223,8 +2223,8 @@ vtkCSGGrid::DiscretizeSpace(
 //   out of region "reg".
 //
 // Arguments:
-//   reg        the region we're evaluating
-//   bits       the bits to test against
+//   reg        The region we're evaluating
+//   bits       The bits to test against
 //
 // Programmer:  Jeremy Meredith
 // Creation:    February 26, 2010
@@ -2234,21 +2234,26 @@ vtkCSGGrid::DiscretizeSpace(
 //   Increase the number of boundaries that can be handled by the mulit-pass
 //   CSG discretization from 128 to 512.
 //
+//   Eric Brugger, Thu Apr  3 08:39:35 PDT 2014
+//   I modified the multi-pass discretization of CSG meshes to process
+//   each domain independently if the number total number of boundary
+//   surfaces is above the internal limit. I converted the class to use
+//   vtkCSGFixedLengthBitField instead of FixedLengthBitField.
+//
 // ****************************************************************************
+
 bool
-vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<64> &bits)
+vtkCSGGrid::EvaluateRegionBits(int reg, vtkCSGFixedLengthBitField &bits)
 {
     int leftID  = leftIds[reg];
     int rightID = rightIds[reg];
-    bool leftBit  = bits.TestBit(leftID);
-    bool rightBit = bits.TestBit(rightID);
 
     switch (regTypeFlags[reg])
     {
       case DBCSG_INNER:
-        return leftBit;
+        return bits.TestBit(zoneMap[leftID]);
       case DBCSG_OUTER:
-        return ! leftBit;
+        return ! bits.TestBit(zoneMap[leftID]);
       case DBCSG_COMPLIMENT:
         return ! EvaluateRegionBits(leftID, bits);
       case DBCSG_UNION:
@@ -2266,19 +2271,69 @@ vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<64> &bits)
 }
 
 // ****************************************************************************
-// Method:  vtkCSGGrid::DiscretizeSpaceMultiPass
+// Method:  vtkCSGGrid::GetRegionBounds
 //
 // Purpose:
-//   Generates the discretization for the multi-pass approach.  This
-//   discretization is shared for all regions; it stores the in/out
-//   boundary flags as a bitfield for each cell, letting us simply
-//   threshold the pieces we want later.
+//   Create a list of all the bounds that are referenced by this region.
+//   The list may have duplicates.
+//
+// Arguments:
+//   reg        The region we're evaluating
+//   bounds     The bits to test against
+//
+// Programmer:  Eric Brugger
+// Creation:    April 3, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkCSGGrid::GetRegionBounds(int reg, std::vector<int> &bounds)
+{
+    int leftID  = leftIds[reg];
+    int rightID = rightIds[reg];
+
+    switch (regTypeFlags[reg])
+    {
+      case DBCSG_INNER:
+      case DBCSG_OUTER:
+        bounds.push_back(leftID);
+        break;
+      case DBCSG_COMPLIMENT:
+        GetRegionBounds(leftID, bounds);
+        break;
+      case DBCSG_UNION:
+      case DBCSG_INTERSECT:
+      case DBCSG_DIFF:
+        GetRegionBounds(leftID, bounds);
+        GetRegionBounds(rightID, bounds);
+        break;
+      case DBCSG_XFORM:
+      case DBCSG_SWEEP:
+      default:
+        break;
+    }
+}
+
+// ****************************************************************************
+// Method:  vtkCSGGrid::DoMultiPassDiscretize
+//
+// Purpose:
+//   Generates the discretization for the multi-pass approach. If the total
+//   number of boundaries is less than the limit in vtkCSGFixedLengthBitField
+//   then the discretization is shared for all regions and cached. Otherwise
+//   it is done individually for each region. It stores the in/out boundary
+//   flags as a bitfield for each cell, letting us simply threshold the
+//   pieces we want later.
 //
 // Returns:  true on success, false on failue
 //
 // Arguments:
-//   tol             the inverse of the number of starting cells in the rgrid
-//   min/maxX/Y/Z    the bounding box of the data set
+//   specificZone    The region of interest.
+//   bnds            The bounds of the mesh.
+//   dims            The dimensions of the mesh.
+//   subRegion       The region we are processing.
 //
 // Programmer:  Jeremy Meredith
 // Creation:    February 26, 2010
@@ -2295,20 +2350,81 @@ vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<64> &bits)
 //   rather than creating a new vtkDataSet after partitioning with each
 //   boundary.
 //
+//   Eric Brugger, Wed Apr  2 12:19:49 PDT 2014
+//   I modified the multi-pass discretization of CSG meshes to process
+//   each domain independently if the number total number of boundary
+//   surfaces is above the internal limit. I converted the class to use
+//   vtkCSGFixedLengthBitField instead of FixedLengthBitField.
+//
 // ****************************************************************************
+
 bool
-vtkCSGGrid::DiscretizeSpaceMultiPass(const double bnds[6], const int dims[3],
-                                     const int subRegion[6])
+vtkCSGGrid::DoMultiPassDiscretization(int specificZone,
+    const double bnds[6], const int dims[3], const int subRegion[6])
 {
-    if (numBoundaries > 512)
+    double *regionBounds = NULL;
+    int nRegionBounds = 0;
+    if (numBoundaries <= VTK_CSG_MAX_BITS)
     {
-        debug1 << "ERROR: We can't handle more than 512 boundaries yet.  "
-               << "This is a fixed limit in the code which can be adjusted.\n";
-        return false;
+        //
+        // Do all the grid boundaries at once. If we have the already
+        // processed the boundaries just return.
+        // 
+        if (multipassProcessedGrid != NULL)
+            return true;
+
+        regionBounds = gridBoundaries;
+        nRegionBounds = numBoundaries;
+    }
+    else
+    {
+        //
+        // Do the grid boundaries for just the specified region. If we have
+        // a grid it is from another region so we need to free it.
+        // 
+        if (multipassProcessedGrid != NULL)
+        {
+            multipassProcessedGrid->Delete();
+            multipassProcessedGrid = NULL;
+        }
+        if (multipassTags != NULL)
+        {
+            delete multipassTags;
+            multipassTags = NULL;
+        }
+
+        std::vector<int> bounds;
+        int zone = gridZones[specificZone];
+        GetRegionBounds(zone, bounds);
+        std::sort(bounds.begin(), bounds.end());
+
+        regionBounds = new double[10*bounds.size()];
+        int lastGridBound = -1;
+        int iRegionBounds = 0;
+        for (int i = 0; i < bounds.size(); i++)
+        {
+            if (bounds[i] != lastGridBound)
+            {
+                lastGridBound = bounds[i];
+                for (int j = 0; j < 10; j++)
+                    regionBounds[iRegionBounds+j] =
+                        gridBoundaries[lastGridBound*10+j];
+                iRegionBounds += 10;
+            }
+        }
+        nRegionBounds = iRegionBounds / 10;
     }
 
-    if (multipassProcessedGrid != NULL)
-        return true;
+    //
+    // Check that the number of boundaries isn't too large.
+    //
+    if (nRegionBounds > VTK_CSG_MAX_BITS)
+    {
+        debug1 << "ERROR: We can't handle more than " << VTK_CSG_MAX_BITS
+               << " boundaries. This is a fixed limit in the code which can"
+               << " be adjusted." << endl;
+        return false;
+    }
 
     //
     // set up a rectilinear grid
@@ -2407,11 +2523,11 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(const double bnds[6], const int dims[3],
     vtkUnstructuredGrid *output = NULL;
     vtkMultiSplitter *regClipper = vtkMultiSplitter::New();
 
-    multipassTags = new vector<FixedLengthBitField<64> >;
+    multipassTags = new vector<vtkCSGFixedLengthBitField>;
 
     regClipper->SetInputData(rgrid);
     regClipper->SetTagBitField(multipassTags);
-    regClipper->SetClipFunctions(gridBoundaries, numBoundaries);
+    regClipper->SetClipFunctions(regionBounds, nRegionBounds);
 
     regClipper->Update();
 
@@ -2422,6 +2538,9 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(const double bnds[6], const int dims[3],
     rgrid->Delete();
 
     multipassProcessedGrid = output;
+
+    if (regionBounds != gridBoundaries)
+        delete [] regionBounds;
 
     return true;
 }
@@ -2439,15 +2558,45 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(const double bnds[6], const int dims[3],
 // Programmer:  Jeremy Meredith
 // Creation:    February 26, 2010
 //
+// Modifications:
+//   Eric Brugger, Wed Apr  2 12:19:49 PDT 2014
+//   I modified the multi-pass discretization of CSG meshes to process
+//   each domain independently if the number total number of boundary
+//   surfaces is above the internal limit.
+//
 // ****************************************************************************
 vtkUnstructuredGrid *
-vtkCSGGrid::GetMultiPassDiscretization(int specificZone)
+vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
+    const double bnds[6], const int dims[3], const int subRegion[6])
 {
+    bool success = DoMultiPassDiscretization(specificZone,
+        bnds, dims, subRegion);
+
+    if (!success)
+        return NULL;
+
     vtkUnstructuredGrid *rv = multipassProcessedGrid;
     if (rv == NULL)
         return NULL;
 
     int zone = gridZones[specificZone];
+
+    zoneMap = new int[numBoundaries];
+
+    if (numBoundaries <= VTK_CSG_MAX_BITS)
+    {
+        for (int i = 0; i < numBoundaries; i++)
+            zoneMap[i] = i;
+    }
+    else
+    {
+        std::vector<int> bounds;
+        GetRegionBounds(zone, bounds);
+        std::sort(bounds.begin(), bounds.end());
+
+        for (int i = 0; i < bounds.size(); i++)
+            zoneMap[bounds[i]] = i;
+    }
 
     // Evaluate the cell tags against this region
     int ncells = rv->GetNumberOfCells();
@@ -2461,6 +2610,8 @@ vtkCSGGrid::GetMultiPassDiscretization(int specificZone)
         in->SetTuple1(i, InOut ? 1 : 0);
     }
     rv->GetCellData()->SetScalars(in);
+
+    delete [] zoneMap;
 
     // Threshold out the cells for this region
     vtkThreshold *threshold = vtkThreshold::New();

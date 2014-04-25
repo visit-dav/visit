@@ -36,66 +36,24 @@
 *
 *****************************************************************************/
 
-#ifndef VTK_MULTI_SPLITTER_H
-#define VTK_MULTI_SPLITTER_H
-#include <visit_vtk_exports.h>
+// .NAME vtkCSGGrid - A fixed length bit field for use by the CSG classes.
+// .SECTION Description
+// This class provides a pre-defined fixed length bit field of a constant
+// size to be used by all the CSG related classes
 
-#include "vtkCSGFixedLengthBitField.h"
-#include "vtkUnstructuredGridAlgorithm.h"
+#ifndef __vtkCSGFixedLengthBitField_h
+#define __vtkCSGFixedLengthBitField_h
 
-#include <vector>
+#include <FixedLengthBitField.h>
 
-class vtkImplicitFunction;
-class vtkUnstructuredGrid;
+// You must change both constants below when changing the length of the
+// bit field. The length in the typedef is in bytes, so the number of bits
+// is 8 times larger than the size. One of the bits is reserved for a validity
+// flag, so that leaves one less than 8 times the number of bytes to be
+// used for boundaries. This make VTK_CSG_MAX_BITS = 64 * 8 - 1.
 
-// ****************************************************************************
-//  Class:  vtkMultiSplitter
-//
-//  Purpose:
-//    Splits a rectilinear dataset using multiple implicit functions,
-//    tagging output cells as it splits, and later allowing extraction
-//    of various region sets as whole data sets.
-//
-//  Note: Copied largely from vtkVisItSplitter
-//
-//  Programmer:  Eric Brugger
-//  Creation:    July 23, 2012
-//
-//  Modifications:
-//    Eric Brugger, Thu Apr  3 08:20:06 PDT 2014
-//    I converted the class to use vtkCSGFixedLengthBitField instead of
-//    FixedLengthBitField.
-//
-// ****************************************************************************
+#define VTK_CSG_MAX_BITS 511
 
-class VISIT_VTK_API vtkMultiSplitter :
-  public vtkUnstructuredGridAlgorithm
-{
-  public:
-    vtkTypeMacro(vtkMultiSplitter,vtkUnstructuredGridAlgorithm);
-    void PrintSelf(ostream& os, vtkIndent indent);
-
-    static vtkMultiSplitter *New();
-
-    virtual void SetTagBitField(std::vector<vtkCSGFixedLengthBitField> *);
-    virtual void SetClipFunctions(double *, int);
-
-  protected:
-    vtkMultiSplitter();
-    ~vtkMultiSplitter();
-
-    virtual int RequestData(vtkInformation *,
-                            vtkInformationVector **,
-                            vtkInformationVector *);
-    virtual int FillInputPortInformation(int port, vtkInformation *info);
-
-  private:
-    double *bounds;
-    int    nBounds;
-    std::vector<vtkCSGFixedLengthBitField> *newTags;
-
-    vtkMultiSplitter(const vtkMultiSplitter&);  // Not implemented.
-    void operator=(const vtkMultiSplitter&);    // Not implemented.
-};
+typedef FixedLengthBitField<64> vtkCSGFixedLengthBitField;
 
 #endif

@@ -40,9 +40,8 @@
 #define VTK_VISIT_SPLITTER_H
 #include <visit_vtk_exports.h>
 
-#include "vtkUnstructuredGridAlgorithm.h"
-
-#include <FixedLengthBitField.h>
+#include <vtkCSGFixedLengthBitField.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 
 #include <vector>
 
@@ -67,6 +66,10 @@ class vtkUnstructuredGrid;
 //    Increase the number of boundaries that can be handled by the mulit-pass
 //    CSG discretization from 128 to 512.
 //
+//    Eric Brugger, Thu Apr  3 08:25:20 PDT 2014
+//    I converted the class to use vtkCSGFixedLengthBitField instead of
+//    FixedLengthBitField.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVisItSplitter :
@@ -83,8 +86,8 @@ class VISIT_VTK_API vtkVisItSplitter :
     virtual void SetClipScalars(vtkDataArray *, float);
     virtual void SetInsideOut(bool);
     virtual void SetUseZeroCrossings(bool);
-    virtual void SetOldTagBitField(std::vector<FixedLengthBitField<64> >*);
-    virtual void SetNewTagBitField(std::vector<FixedLengthBitField<64> > *);
+    virtual void SetOldTagBitField(std::vector<vtkCSGFixedLengthBitField> *);
+    virtual void SetNewTagBitField(std::vector<vtkCSGFixedLengthBitField> *);
     virtual void SetNewTagBit(int);
 
     void SetCellList(const vtkIdType *, vtkIdType);
@@ -110,8 +113,8 @@ class VISIT_VTK_API vtkVisItSplitter :
         bool                 useZeroCrossings;
 
         int                  newTagBit;
-        std::vector<FixedLengthBitField<64> > *newTags;
-        std::vector<FixedLengthBitField<64> > *oldTags;
+        std::vector<vtkCSGFixedLengthBitField> *newTags;
+        std::vector<vtkCSGFixedLengthBitField> *oldTags;
     };
 
   protected:
