@@ -1742,18 +1742,20 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             {
                 if (seedTime0 == md->GetTimes()[0])
-                    EXCEPTION1(VisItException, "Pathlines - cannot advect backward in time because the specified "
-                                               "starting time is already at the beginning of the simulation time.  "
-                                               "The plot can successfully execute by selecting a later time "
-                                               "time step or by overriding the pathline start time.");
+                    EXCEPTION1(VisItException,
+        "Pathlines - cannot advect backward in time because the specified "
+        "starting time is already at the beginning of the simulation time.  "
+        "The plot can successfully execute by selecting a later time "
+        "step or by overriding the pathline start time.");
             }
             else
             {
                 if (seedTime0 == md->GetTimes()[numTimes])
-                    EXCEPTION1(VisItException, "Pathlines - cannot advect forward in time because the specified "
-                                               "starting time is already at the end of the simulation time.  "
-                                               "The plot can successfully execute by selecting an earlier time "
-                                               "time step or by overriding the pathline start time.");
+                    EXCEPTION1(VisItException,
+        "Pathlines - cannot advect forward in time because the specified "
+        "starting time is already at the end of the simulation time.  "
+        "The plot can successfully execute by selecting an earlier time "
+        "step or by overriding the pathline start time.");
             }
 
             // No restart, so set seedTimeStep0.
