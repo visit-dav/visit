@@ -1,5 +1,2 @@
 Streamline:  (VisItException)
-viewer: engine_par: Pathlines - cannot advect backward in time because
-the specified starting time is already at the beginning of the
-simulation time. The plot can successfully execute by selecting a
-later time time step or by overriding the pathline start time.
+viewer: engine_par: Pathlines - cannot advect backward in time because the specified starting time is already at the beginning of the simulation time.  The plot can successfully execute by selecting a later time step or by overriding the pathline start time.
