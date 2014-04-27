@@ -101,8 +101,8 @@ ConvertSlashes(char *str)
 
 
 // size of MD/SIL caches
-int       avtDatabase::mdCacheSize         = 20;
-int       avtDatabase::silCacheSize        = 20;
+unsigned int avtDatabase::mdMaxCacheSize   = 20;
+unsigned int avtDatabase::silMaxCacheSize  = 20;
 
 bool      avtDatabase::onlyServeUpMetaData = false;
 
@@ -799,6 +799,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Eric Brugger, Fri Dec 20 11:44:53 PST 2013
 //    Set the multi resolution data selection information into the meta data.
 //
+//    Burlen Loring, Sun Apr 27 15:17:23 PDT 2014
+//    Cleanup -Wall warnings
+//
 // ****************************************************************************
 
 void
@@ -808,8 +811,6 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                           const vector<bool> &selectionsApplied,
                                           avtDataRequest_p spec)
 {
-    int   i;
-
     int timerHandle = visitTimer->StartTimer();
 
     avtDataAttributes &atts     = dob->GetInfo().GetAttributes();
@@ -914,7 +915,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     {
         const vector<CharStrRef> &secondaryVariables 
                                                = spec->GetSecondaryVariables();
-        for (i = 0 ; i < secondaryVariables.size() ; i++)
+        for (unsigned int i = 0 ; i < secondaryVariables.size() ; i++)
         {
             var_list.push_back(*(secondaryVariables[i]));
         }
@@ -924,7 +925,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     // Now iterate through our variable list and add information about each
     // variable as we go.
     //
-    for (i = 0 ; i < var_list.size() ; i++)
+    for (unsigned int i = 0 ; i < var_list.size() ; i++)
     {
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var_list[i]);
         if (smd != NULL)
@@ -1098,7 +1099,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     if (*spec != NULL)
     {
         vector<avtDataSelection_p> selList = spec->GetAllDataSelections();
-        for (int i = 0; i < selList.size(); i++)
+        for (unsigned int i = 0; i < selList.size(); i++)
         {
             if (string(selList[i]->GetType()) == "Multi Resolution Data Selection")
             {
@@ -1939,7 +1940,7 @@ avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
         avtDatabaseMetaData *thisMd;
         if (false == found)
         {
-            if (metadata.size() >= mdCacheSize)
+            if (metadata.size() >= mdMaxCacheSize)
             {
                 CachedMDEntry tmp = metadata.back(); 
                 metadata.pop_back();
@@ -2132,7 +2133,7 @@ avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
        // and read new sil
        if (false == found)
        {
-           if (sil.size() >= silCacheSize)
+           if (sil.size() >= silMaxCacheSize)
            {
                CachedSILEntry tmp = sil.back(); 
                sil.pop_back();
@@ -2157,12 +2158,28 @@ avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 24, 2004
 //
+//  Modifications:
+//
+//  Burlen Loring, Sun Apr 27 14:22:26 PDT 2014
+//  fixed leak: delete the cached data before clear'ing the list
+//
 // ****************************************************************************
 
 void
 avtDatabase::ClearMetaDataAndSILCache(void)
 {
+    std::list<CachedMDEntry>::iterator it2;
+    for (it2 = metadata.begin() ; it2 != metadata.end() ; ++it2)
+    {
+        delete (*it2).md;
+    }
     metadata.clear();
+
+    std::list<CachedSILEntry>::iterator it3;
+    for (it3 = sil.begin() ; it3 != sil.end() ; ++it3)
+    {
+        delete (*it3).sil;
+    }
     sil.clear();
 }
 
@@ -2521,6 +2538,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Hank Childs, Tue Dec 15 13:40:40 PST 2009
 //    Adapt to new SIL interface.
 //
+//    Burlen Loring, Sun Apr 27 15:17:23 PDT 2014
+//    Clean up -Wall warnings
+//
 // ****************************************************************************
 
 void               
@@ -2555,7 +2575,7 @@ avtDatabase::Query(PickAttributes *pa)
         string mesh = GetMetaData(ts)->MeshForVar(pa->GetActiveVariable());
         const vector<int> &wholes = sil->GetWholes();
         avtSILSet_p top = NULL;
-        for (int i = 0 ; i < wholes.size() ; i++)
+        for (unsigned int i = 0 ; i < wholes.size() ; i++)
         {
             avtSILSet_p candidate = sil->GetSILSet(wholes[i]);
             if (candidate->GetName() == mesh)
@@ -2569,7 +2589,7 @@ avtDatabase::Query(PickAttributes *pa)
         else
         {
             const vector<int> &mapsOut = top->GetMapsOut();
-            for (int j = 0; j < mapsOut.size() ; j++)
+            for (unsigned int j = 0; j < mapsOut.size() ; j++)
             {
                 int cIndex = mapsOut[j];
                 avtSILCollection_p collection = sil->GetSILCollection(cIndex);
@@ -2669,7 +2689,7 @@ avtDatabase::Query(PickAttributes *pa)
             pa->SetFulfilled(false);
             return;
         }
-        for (int j = 0; j < userVars.size(); j++)
+        for (unsigned int j = 0; j < userVars.size(); j++)
         {
             PickVarInfo varInfo;
             varInfo.SetVariableName(userVars[j]);
@@ -2683,7 +2703,7 @@ avtDatabase::Query(PickAttributes *pa)
               pa->GetShowMeshName());
     pa->SetMeshInfo(meshInfo);
 
-    for (int varNum = 0; varNum < userVars.size(); varNum++)
+    for (unsigned int varNum = 0; varNum < userVars.size(); varNum++)
     {
         vName = userVars[varNum];
         if (strcmp(vName.c_str(), "default") == 0)
@@ -2715,7 +2735,6 @@ avtDatabase::Query(PickAttributes *pa)
             }
         }
  
-        bool success = false;
         TRY
         {
             avtVarType varType;
@@ -2737,37 +2756,37 @@ avtDatabase::Query(PickAttributes *pa)
                                    pa->GetRealIncidentElements() : incEls);
             switch(varType)
             {
-                case AVT_SCALAR_VAR : success = 
+                case AVT_SCALAR_VAR :
                    QueryScalars(vName, foundDomain, foundEl, ts, incEls, 
                                 pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("scalar");
                    break; 
-                case AVT_VECTOR_VAR : success = 
+                case AVT_VECTOR_VAR :
                    QueryVectors(vName, foundDomain, foundEl, ts, incEls, 
                                 pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("vector");
                    break; 
-                case AVT_TENSOR_VAR : success = 
+                case AVT_TENSOR_VAR :
                    QueryTensors(vName, foundDomain, foundEl, ts, incEls, 
                                 pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("tensor");
                    break; 
-                case AVT_SYMMETRIC_TENSOR_VAR : success = 
+                case AVT_SYMMETRIC_TENSOR_VAR :
                    QuerySymmetricTensors(vName, foundDomain, foundEl, ts,
                                  incEls, pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("symm_tensor");
                    break; 
-                case AVT_ARRAY_VAR : success = 
+                case AVT_ARRAY_VAR :
                    QueryArrays(vName, foundDomain, foundEl, ts,
                                incEls, pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("array");
                    break; 
-                case AVT_MATERIAL : success = 
+                case AVT_MATERIAL :
                    QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
                                  pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("material");
                    break; 
-                case AVT_MATSPECIES : success = 
+                case AVT_MATSPECIES :
                    QuerySpecies(vName, foundDomain, matEl, ts, matIncEls, 
                                 pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("species");
@@ -2776,7 +2795,7 @@ avtDatabase::Query(PickAttributes *pa)
                    if (!pa->GetVarInfo(varNum).HasInfo())
                        pa->GetVarInfo(varNum).SetVariableType("mesh");
                    break; 
-                case AVT_LABEL_VAR : success = 
+                case AVT_LABEL_VAR :
                    QueryLabels(vName, foundDomain, foundEl, ts, incEls, 
                                 pa->GetVarInfo(varNum), zonePick);
                    pa->GetVarInfo(varNum).SetVariableType("label");
