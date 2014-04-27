@@ -303,6 +303,12 @@ typedef struct {
 //   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
 //   Added support for ensemble databases. (multiple time values)
 //
+//   Burlen Loring, Sun Apr 27 14:35:26 PDT 2014
+//   make copy constructor and assignment operator private since
+//   using the default implmentations would result in multiple
+//   delete's of raw pointers held stl containers. make names of
+//   variables used to limit cache sizes describe their purpose.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -407,8 +413,8 @@ class DATABASE_API avtDatabase
     std::string                            fileFormat;
     std::string                            fullDBName;
 
-    static int                             mdCacheSize;
-    static int                             silCacheSize;
+    static unsigned int                    mdMaxCacheSize;
+    static unsigned int                    silMaxCacheSize;
 
     bool                                  *invariantMetaData;
     bool                                  *invariantSIL;
@@ -517,7 +523,9 @@ class DATABASE_API avtDatabase
                                         const int, const bool, const int)
                                         { return -1; };
 
- 
+private:
+    avtDatabase(const avtDatabase &); // not implemented
+    void operator=(const avtDatabase &); //not implemented
 };
 
 
