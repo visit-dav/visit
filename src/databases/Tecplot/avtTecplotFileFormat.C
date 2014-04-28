@@ -746,13 +746,31 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
 //    Added support for cell-centered vars (through VARLOCATION).
 //    Renamed ParseNodes* to ParseArrays* to reflect this capability.
 //
+//    Jeremy Meredith, Mon Apr 28 17:06:07 EDT 2014
+//    Added support for copying connectivity from earlier ZONE instead
+//    of having explicit arrays on disk.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
-                                   const string &elemType)
+                                   const string &elemType, int connectivitycopy)
 {
     vtkPoints *points = ParseArraysBlock(numNodes,numElements);
-    vtkUnstructuredGrid *ugrid = ParseElements(numElements, elemType);
+    vtkUnstructuredGrid *ugrid = NULL;
+    if (connectivitycopy >= 0)
+    {
+        vtkDataSet *from = meshes[connectivitycopy];
+        vtkUnstructuredGrid *fromug = dynamic_cast<vtkUnstructuredGrid*>(from);
+        if (from->GetDataObjectType() != VTK_UNSTRUCTURED_GRID ||
+            fromug == NULL)
+            EXCEPTION1(InvalidFilesException, "CONNECTIVITYCOPY refered to non-FE ZONE");
+        ugrid = vtkUnstructuredGrid::New();
+        ugrid->ShallowCopy(fromug);
+    }
+    else
+    {
+        ugrid = ParseElements(numElements, elemType);
+    }
     ugrid->SetPoints(points);
     points->Delete();
 
@@ -793,13 +811,31 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
 //    Added support for cell-centered vars (through VARLOCATION).
 //    Renamed ParseNodes* to ParseArrays* to reflect this capability.
 //
+//    Jeremy Meredith, Mon Apr 28 17:06:07 EDT 2014
+//    Added support for copying connectivity from earlier ZONE instead
+//    of having explicit arrays on disk.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
-                                   const string &elemType)
+                                   const string &elemType, int connectivitycopy)
 {
     vtkPoints *points = ParseArraysPoint(numNodes,numElements);
-    vtkUnstructuredGrid *ugrid = ParseElements(numElements, elemType);
+    vtkUnstructuredGrid *ugrid = NULL;
+    if (connectivitycopy >= 0)
+    {
+        vtkDataSet *from = meshes[connectivitycopy];
+        vtkUnstructuredGrid *fromug = dynamic_cast<vtkUnstructuredGrid*>(from);
+        if (from->GetDataObjectType() != VTK_UNSTRUCTURED_GRID ||
+            fromug == NULL)
+            EXCEPTION1(InvalidFilesException, "CONNECTIVITYCOPY refered to non-FE ZONE");
+        ugrid = vtkUnstructuredGrid::New();
+        ugrid->ShallowCopy(fromug);
+    }
+    else
+    {
+        ugrid = ParseElements(numElements, elemType);
+    }
     ugrid->SetPoints(points);
     points->Delete();
 
@@ -1039,6 +1075,9 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Jeremy Meredith, Tue Oct 25 12:37:42 EDT 2011
 //    Allow user manual override of coordinate axis variables (via options).
 //
+//    Jeremy Meredith, Mon Apr 28 17:06:07 EDT 2014
+//    Added support for CONNECTIVITYSHAREZONE.  Also ignore "C" zone token.
+//
 // ****************************************************************************
 
 void
@@ -1070,6 +1109,7 @@ avtTecplotFileFormat::ReadFile()
             // it's a title
             GetNextToken(); // skip the equals sign
             title = GetNextToken();
+            debug5 << "Tecplot: parsed title as: '"<<title<<"'\n";
         }
         else if (tok == "GEOMETRY")
         {
@@ -1081,6 +1121,7 @@ avtTecplotFileFormat::ReadFile()
                 tok = GetNextToken();
             }
             got_next_token_already = true;
+            debug5 << "Tecplot: Skipped unsupported GEOMETRY token\n";
         }
         else if (tok == "TEXT")
         {
@@ -1092,6 +1133,7 @@ avtTecplotFileFormat::ReadFile()
                 tok = GetNextToken();
             }
             got_next_token_already = true;
+            debug5 << "Tecplot: Skipped unsupported TEXT token\n";
         }
         else if (tok == "$")
         {
@@ -1109,6 +1151,7 @@ avtTecplotFileFormat::ReadFile()
         }
         else if (tok == "VARIABLES")
         {
+            debug5 << "Tecplot: Parsing VARIABLES token\n";
             // keep track of values from previous pass through VARIABLES
             int old_numTotalVars = numTotalVars;
             numTotalVars = 0;
@@ -1152,11 +1195,13 @@ avtTecplotFileFormat::ReadFile()
                 }
 
                 variableNames.push_back(tok);
+                debug5 << "Tecplot:    got quoted variable name " << tok << "\n";
                 numTotalVars++;
                 tok = GetNextToken();
             }
             if (numTotalVars==0)
             {
+                debug5 << "Tecplot:    found no quoted variable names, assuming unquoted\n";
                 // If we didn't get any quoted variables, then
                 // it's probably just because they forgot to quote
                 // them.  Assume all we get are variables till EOL.
@@ -1186,6 +1231,7 @@ avtTecplotFileFormat::ReadFile()
                     }
 
                     variableNames.push_back(tok);
+                    debug5 << "Tecplot:    got unquoted variable name " << tok << "\n";
                     numTotalVars++;
                     if (next_char_eol)
                     {
@@ -1252,10 +1298,13 @@ avtTecplotFileFormat::ReadFile()
                 }
             }
 
+            debug5 << "Tecplot:    based on axis variables, spatial dim is " << spatialDimension << "\n";
+
             got_next_token_already = true;
         }
         else if (tok == "ZONE")
         {
+            debug5 << "Tecplot: starting ZONE\n";
             // Parse a zone!
             char untitledZoneTitle[40];
             sprintf(untitledZoneTitle, "zone%05d", currentZoneIndex);
@@ -1267,6 +1316,7 @@ avtTecplotFileFormat::ReadFile()
             int numNodes = 0;
             int numElements = 0;
             int numI = 1, numJ = 1, numK = 1;
+            int connectivitycopy = -1;
 
             tok = GetNextToken();
             while (!(tok != "T"  &&
@@ -1285,9 +1335,12 @@ avtTecplotFileFormat::ReadFile()
                      tok != "VARLOCATION"  &&
                      tok != "DT" &&
                      tok != "D" &&
+                     tok != "C" &&
                      tok != "STRANDID" &&
-                     tok != "VARSHARELIST"))
+                     tok != "VARSHARELIST" &&
+                     tok != "CONNECTIVITYSHAREZONE"))
             {
+                debug5 << "Tecplot:    got zone token " << tok << "\n";
                 if (tok == "T")
                 {
                     GetNextToken(); // skip the equals sign
@@ -1332,6 +1385,11 @@ avtTecplotFileFormat::ReadFile()
                 {
                     GetNextToken(); // skip the equals sign
                     format = GetNextToken();
+                }
+                else if (tok == "C")
+                {
+                    GetNextToken(); // skip the equals sign
+                    GetNextToken(); // skip the color
                 }
                 else if (tok == "SOLUTIONTIME")
                 {
@@ -1505,8 +1563,19 @@ avtTecplotFileFormat::ReadFile()
                     //{
                     //    unlike VARLOCATION, there is no simple version
                     //}
+                    debug5 << "Tecplot:   varshare: ";
+                    for (int i=0; i<numTotalVars; ++i)
+                        debug5 << variableShareMap[i] << " ";
+                    debug5 << endl;
+                }
+                else if (tok == "CONNECTIVITYSHAREZONE")
+                {
+                    GetNextToken(); // skip the equals sign
+                    string fromzone = GetNextToken(); 
+                    connectivitycopy = atoi(fromzone.c_str()) - 1; // change 1-origin to 0-origin
                 }
                 tok = GetNextToken();
+                debug5 << "Tecplot:    NEXT TOKEN: " << tok << "\n";
             }
             PushBackToken(tok);
 
@@ -1533,11 +1602,11 @@ avtTecplotFileFormat::ReadFile()
             zoneTitles.push_back(zoneTitle);
             if (format=="FEBLOCK")
             {
-                ParseFEBLOCK(numNodes, numElements, elemType);
+                ParseFEBLOCK(numNodes, numElements, elemType, connectivitycopy);
             }
             else if (format=="FEPOINT")
             {
-                ParseFEPOINT(numNodes, numElements, elemType);
+                ParseFEPOINT(numNodes, numElements, elemType, connectivitycopy);
             }
             else if (format=="BLOCK")
             {
@@ -1630,6 +1699,7 @@ avtTecplotFileFormat::ReadFile()
         }
         else
         {
+            debug5 << "Tecplot: unknown token " << tok << "\n";
             // UNKNOWN RECORD TYPE
             char msg[200];
             sprintf(msg, "The record type '%s' found in the file was unknown.",

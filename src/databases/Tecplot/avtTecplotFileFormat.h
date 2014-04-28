@@ -104,8 +104,8 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
   protected:
     std::string GetNextToken();
     void        ReadFile();
-    void        ParseFEBLOCK(int numNodes, int numElements,const std::string&);
-    void        ParseFEPOINT(int numNodes, int numElements,const std::string&);
+    void        ParseFEBLOCK(int numNodes, int numElements,const std::string&, int connectivitycopy);
+    void        ParseFEPOINT(int numNodes, int numElements,const std::string&, int connectivitycopy);
     void        ParseBLOCK(int numI, int numJ, int numK);
     void        ParsePOINT(int numI, int numJ, int numK);
     void        PushBackToken(const std::string&);
