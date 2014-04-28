@@ -924,6 +924,9 @@ AddCurveMetaData(avtDatabaseMetaData *md, visit_handle h)
 //
 // Modifications:
 //
+//   Burlen Loring, Mon Apr 28 14:54:13 PDT 2014
+//   fixed leak, delete the expression after adding it.
+//
 // ****************************************************************************
 
 void
@@ -960,6 +963,7 @@ AddExpressionMetaData(avtDatabaseMetaData *md, visit_handle h)
                     newexp->SetType(Expression::Unknown);
 
                 md->AddExpression(newexp);
+                delete newexp;
             }
             free(definition);
         }
