@@ -116,7 +116,19 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
                         # there are no specific cases
                             return True
     return False
-
+# ----------------------------------------------------------------------------
+#  Method: parse_test_specific_vargs
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Tues April 29, 2014
+# ----------------------------------------------------------------------------
+def parse_test_specific_vargs(test_file):
+    lines = [l.strip() for l in open(test_file).readlines()]
+    # check for pattern "# ... VARGS: {visit command line args}
+    vargs = [l[1:] for l in lines if len(l) > 0 and l[0] == "#" and l.count("VARGS:")  == 1]
+    vargs = " ".join(vargs)
+    vargs = vargs.replace("VARGS:","")
+    return vargs
 
 # ----------------------------------------------------------------------------
 #  Method: launch_visit_test
@@ -138,6 +150,8 @@ def launch_visit_test(args):
     test_base = os.path.splitext(test_file)[0]
     rcmd  =  opts["executable"] + " "
     rcmd +=  opts["vargs"] + " "
+    # check for vargs embedded in the test file header
+    rcmd +=  parse_test_specific_vargs(test) + " "
     rcmd +=  "-exec-timeout %d -idle-timeout %d " % (opts["limit"],opts["limit"])
     rcmd +=  "-numrestarts 0 "
     if not opts["interactive"]:
@@ -668,7 +682,7 @@ def prepare_data_dir(data_dir):
         else:
             cwd = os.getcwd()
             os.chdir(data_dir)
-            cmd = "make test"
+            cmd = "make testdata"
             sexe(cmd)
             os.chdir(cwd)
     else:
