@@ -1796,7 +1796,7 @@ class MainLauncher(object):
 
     def iscomponent(self, name):
         return name in self.componentNames
-
+    
     ############################################################################
     # Method: Initialize
     #
@@ -2138,6 +2138,92 @@ class MainLauncher(object):
                 self.parallelArgs.launch = "mpiexec"
             else:
                 self.parallelArgs.launch = "mpirun"
+
+    ############################################################################
+    # Method: SourceEnvScript
+    #
+    # Purpose: Capture environment changes from a shell script.
+    #
+    # Arguments:
+    #   shell_script_file     : The script to execute.
+    #
+    # Programmer: Cyrus Harrison
+    # Date: Tue Apr 29 13:14:51 PDT 2014
+    #
+    # Modifications:
+    #
+    ############################################################################
+    def SourceEnvScript(self,shell_script_file,all_pairs=False):
+        shell_script_file = os.path.abspath(shell_script_file)
+        p = subprocess.Popen(["-c", "source %s && env " % shell_script_file ],
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             shell=True )
+        env_lines = p.communicate()[0].split("\n")
+        # remove empty pairs
+        env_lines = [ e.strip() for e in env_lines if e.count("=") > 0]
+        # parse pairs
+        env_pairs = [ (e[:e.find("=")],e[e.find("=")+1:]) for e in env_lines]
+        for k,v in env_pairs:
+            # always set if all pairs is True, otherwise only
+            # set the pairs that were created as a result of the script.
+            if all_pairs or not k in os.environ.keys():
+                # add new env pair to os.environ
+                print k,v
+                SETENV(k,v)
+
+
+    ############################################################################
+    # Method: LoadEnvModule
+    #
+    # Purpose: Capture environment changes from an env module load.
+    #
+    # Arguments:
+    #   module_name     : The module to load.
+    #
+    # Programmer: Cyrus Harrison
+    # Date: Tue Apr 29 13:14:51 PDT 2014
+    #
+    # Modifications:
+    #
+    ############################################################################
+    def LoadEnvModule(self,module_name,all_pairs=False):
+        self.LoadEnvModules([module_name],all_pairs)
+    
+    ############################################################################
+    # Method: LoadEnvModules
+    #
+    # Purpose: Capture environment changes from an env module load(s).
+    #
+    # Arguments:
+    #   module_names     : List of module to load.
+    #
+    # Programmer: Cyrus Harrison
+    # Date: Tue Apr 29 13:14:51 PDT 2014
+    #
+    # Modifications:
+    #
+    ############################################################################
+    def LoadEnvModules(self,module_names,all_pairs=False):
+        script_src = "source /etc/profile.d/modules.sh "       
+        for mod_name in module_names:
+            script_src += " && module load " + mod_name
+        script_src += " && env "
+        p = subprocess.Popen(["-c", script_src],
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             shell=True )
+        env_lines = p.communicate()[0].split("\n")
+        # remove empty pairs
+        env_lines = [ e.strip() for e in env_lines if e.count("=") > 0]
+        # parse pairs
+        env_pairs = [ (e[:e.find("=")],e[e.find("=")+1:]) for e in env_lines]
+        for k,v in env_pairs:
+            # always set if all pairs is True, otherwise only
+            # set the pairs that were created as a result of the script.
+            if all_pairs or not k in os.environ.keys():
+                # add new env pair to os.environ
+                SETENV(k,v)
 
     ############################################################################
     # Method: Customize
