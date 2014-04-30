@@ -188,6 +188,7 @@ TimingsManager::TimingsManager()
     openedFile        = false;
     numCurrentTimings = 0;
     enabled           = false;
+    noForcedTiming    = false;
     withholdOutput    = false;
     neverOutput       = false;
     outputAllTimings  = false;
@@ -379,6 +380,26 @@ TimingsManager::Disable(void)
     enabled = false;
 }
 
+// ****************************************************************************
+//  Method: TimingsManager::NoForcedTiming
+//
+//  Purpose:
+//      Disables the timing manager for real. If the timer is just disabled by
+//      calling Disable then it can still be forced to accumulate timing data
+//      bloating our memory use which is undesirable in long runs where we
+//      won't use the timing data anyway.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Tue Apr 29 15:27:49 PDT 2014
+//
+// ****************************************************************************
+
+void
+TimingsManager::NoForcedTiming(bool v)
+{
+    noForcedTiming = v;
+}
+
 
 // ****************************************************************************
 //  Method: TimingsManager::WithholdOutput
@@ -501,8 +522,9 @@ TimingsManager::FindFirstUnusedEntry(void)
 int
 TimingsManager::StartTimer(bool forced)
 {
-    if (!enabled && !forced)
+    if (!enabled && (!forced || noForcedTiming))
         return -1;
+
     numCurrentTimings += 1;
     int rv = PlatformStartTimer();
     if (rv == usedEntry.size())
@@ -575,7 +597,7 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
 {
     double t = 0.;
 
-    if (enabled || forced)
+    if (enabled || (forced && !noForcedTiming))
     {
         if (index >= 0 && index < usedEntry.size())
             usedEntry[index] = false;

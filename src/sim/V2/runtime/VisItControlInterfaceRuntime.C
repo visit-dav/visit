@@ -113,8 +113,16 @@ void *simv2_get_engine()
 {
     // Make sure the timer is initialized. In visit this is normally
     // done in the main function but for the simulation it's done here.
-    if ( visitTimer == NULL)
-        TimingsManager::Initialize( "Simulation");
+    if (visitTimer == NULL)
+    {
+        TimingsManager::Initialize("Simulation");
+        // really disable the timer since we are very likely
+        // running in a resource constrained environment over
+        // a long time period
+        visitTimer->Disable();
+        visitTimer->NoForcedTiming();
+    }
+
     Engine *engine = Engine::Instance();
     engine->EnableSimulationPlugins();
     return (void*)engine;
@@ -234,6 +242,8 @@ void simv2_disconnect()
     TRY
     {
         Engine::DisconnectSimulation();
+        if (visitTimer)
+            TimingsManager::Finalize();
         DataCallbacksCleanup();
     }
     CATCHALL
