@@ -210,12 +210,20 @@ UpdatePlotAttsRPC::~UpdatePlotAttsRPC()
 //  Programmer:  Hank Childs
 //  Creation:    November 30, 2001
 //
+//  Modifications:
+//    Burlen Loring, Tue Apr 29 09:34:17 PDT 2014
+//    fix leaking AttributeSubject object
+//
 // ****************************************************************************
 void
 UpdatePlotAttsRPC::SetAtts(AttributeSubject *a)
 {
-//    if (atts)
-//        delete atts;
+    if (atts == a)
+        return;
+
+    if (atts)
+        delete atts;
+
     atts = a;
     Select(1, (void*)atts);
 }
