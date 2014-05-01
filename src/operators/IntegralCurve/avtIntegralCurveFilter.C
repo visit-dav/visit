@@ -2072,14 +2072,14 @@ avtIntegralCurveFilter::GetFieldForDomain(const BlockIDType& dom, vtkDataSet* ds
 //
 //  Modifications:
 //
+//   Dave Pugmire, Thu May  1 09:40:05 EDT 2014
+//   Fix that would case the filter to hang if one process had no ICs.
+//
 // ****************************************************************************
 
 void
 avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 {
-    if (ics.size() == 0)
-        return;
-
     int numICs = ics.size();
 //    int numPts = 0;
     int numEarlyTerminators = 0;
