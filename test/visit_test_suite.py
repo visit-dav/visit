@@ -199,6 +199,10 @@ def launch_visit_test(args):
             if len(modes) > 0:
                 modes +=","
             modes +="icet"
+        if "threading" in modes_list:
+            if len(modes) > 0:
+                modes +=","
+            modes +="threading"
     run_dir = pjoin(opts["result_dir"],"_run","_%s_%s" % (test_cat, test_base))
     # set opts vars
     tparams = {}
@@ -493,8 +497,8 @@ def parse_args():
                       default=defs["modes"],
                       help="specify mode in which to run tests"
                            " [choose from 'parallel','serial','scalable', "
-                           " 'dlb','hdf5', 'icet', and combinations such as"
-                           " 'scalable,parallel']")
+                           " 'dlb','hdf5', 'icet', 'threading', and "
+                           " combinations such as 'scalable,parallel']")
     parser.add_option("-c",
                       "--classes",
                       default=defs["classes"],
