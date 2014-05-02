@@ -66,6 +66,9 @@
 #    Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #    Removed VISIT_MSVC_VERSION from windows handling.
 #
+#    Kathleen Bonnell, Fri May 2 09:21:12 MST 2014
+#    Install a copy of browser for windows.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -81,7 +84,21 @@ IF (WIN32)
          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
     INSTALL(FILES ${SILO_DIR}/lib/silex.exe
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ WORLD_EXECUTE
+        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+        )
+  ENDIF()
+  IF(EXISTS ${SILO_DIR}/lib/browser.exe)
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+         ${SILO_DIR}/lib/browser.exe
+         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+    INSTALL(FILES ${SILO_DIR}/lib/browser.exe
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ WORLD_EXECUTE
         CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
         )
   ENDIF()
