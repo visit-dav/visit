@@ -114,7 +114,11 @@ class Pos;
 //    Cyrus Harrison, Fri Aug 14 15:22:43 PDT 2009
 //    Added helpers for processing numeric & string lists.
 //
+//    Kathleen Biagas, Thu May  1 17:13:28 PDT 2014
+//    Changed FloatConstExpr to double.
+//
 // ****************************************************************************
+
 class EXPR_API2 ExprNode : public ExprParseTreeNode
 {
   public:
@@ -157,14 +161,14 @@ class EXPR_API2 IntegerConstExpr : public ConstExpr
 class EXPR_API2 FloatConstExpr : public ConstExpr
 {
   public:
-    FloatConstExpr(const Pos &p, float v)
+    FloatConstExpr(const Pos &p, double v)
         : ExprNode(p), ConstExpr(p, ConstExpr::Float), value(v) {}
     virtual ~FloatConstExpr();
     virtual const std::string GetTypeName() { return "FloatConst"; }
     virtual void PrintNode(ostream &o);
-    float GetValue() { return value; }
+    double GetValue() { return value; }
   protected:
-    float value;
+    double value;
 };
 
 class EXPR_API2 StringConstExpr : public ConstExpr

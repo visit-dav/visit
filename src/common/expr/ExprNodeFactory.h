@@ -53,6 +53,9 @@
 //    base classes.  Made FunctionExpr and MachExpr use names
 //    instead of Identifier tokens.  These two changes were to
 //    remove Token references from the parse tree node classes.
+//
+//    Kathleen Biagas, Thu May  1 17:16:09 PDT 2014
+//    Changed FloatConstExpr to double.
 
 
 class EXPR_API ExprNodeFactory
@@ -66,7 +69,7 @@ public:
             { return new IntegerConstExpr(p, v); }
 
     virtual ConstExpr*
-        CreateFloatConstExpr(const Pos & p, float v)
+        CreateFloatConstExpr(const Pos & p, double v)
             { return new FloatConstExpr(p, v); }
 
     virtual ConstExpr*

@@ -67,6 +67,9 @@ class     vtkDataArray;
 //    Jeremy Meredith, Wed Feb 20 10:00:31 EST 2008
 //    Support either nodal or zonal values.
 //
+//    Kathleen Biagas, Thu May  1 17:18:30 PDT 2014
+//    Changed value to double.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConstantFunctionExpression
@@ -86,7 +89,7 @@ class EXPRESSION_API avtConstantFunctionExpression
     virtual int           NumVariableArguments(void) { return 2; }
   private:
     bool    nodal;
-    float   value;
+    double  value;
 };
 
 
