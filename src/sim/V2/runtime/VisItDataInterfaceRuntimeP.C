@@ -3,6 +3,10 @@
 
 #include <VisItDataInterfaceRuntimeP.h>
 
+#include <vector>
+#include <algorithm>
+
+
 VisIt_ObjectBase::VisIt_ObjectBase(int t) : object_type(t)
 {
 }
@@ -17,56 +21,57 @@ VisIt_ObjectBase::objectType() const
     return object_type;
 }
 
-static VisIt_ObjectBase **visit_pointers = NULL;
-static int  visit_pointers_size = 0;
+
+
+namespace {
+
+typedef std::vector<VisIt_ObjectBase*> VisItPointerVec;
+VisItPointerVec visit_pointers;
+
+};
 
 VisIt_ObjectBase *
 VisItGetPointer(visit_handle h)
 {
     VisIt_ObjectBase *retval = NULL;
-    if(visit_pointers != NULL && h >= 0 && h < visit_pointers_size)
+    if ((h >=0 ) && (h < visit_pointers.size()))
+    {
         retval = visit_pointers[h];
+    }
     return retval;
 }
 
 void
 VisItFreePointer(visit_handle h)
 {
-    if(visit_pointers != NULL && h >= 0 && h < visit_pointers_size)
+    if ((h >=0 ) && (h < visit_pointers.size()))
+    {
         visit_pointers[h] = NULL;
+    }
 }
 
 visit_handle
 VisItStorePointer(VisIt_ObjectBase *ptr)
 {
-    /* Allocate the pointers array if we haven't already */
-    if(visit_pointers == NULL)
+    visit_handle loc = VISIT_INVALID_HANDLE;
+
+    /* Look for a free slot in the pointers array
+     * if not just append the pointer at the end */
+    VisItPointerVec::iterator vstart = visit_pointers.end();
+    VisItPointerVec::iterator vend = visit_pointers.end();
+    VisItPointerVec::iterator vslot = std::find(vstart, vend, static_cast<VisIt_ObjectBase*>(0));
+    if (vslot != vend)
     {
-        visit_pointers_size = 100;
-        visit_pointers = (VisIt_ObjectBase **)(VisIt_ObjectBase*)calloc(visit_pointers_size, sizeof(VisIt_ObjectBase *));
+        *vslot = ptr;
+        loc = static_cast<visit_handle>(vslot-vstart);
+    }
+    else
+    {
+        loc = static_cast<visit_handle>(visit_pointers.size());
+        visit_pointers.push_back(ptr);
     }
 
-    /* Look for a free slot in the pointers array */
-    for(int i = 0; i < visit_pointers_size; ++i)
-    {
-        if(visit_pointers[i] == NULL)
-        {
-            visit_pointers[i] = ptr;
-            return i;
-        }
-    }
-
-    /* Grow the pointers array. */
-    VisIt_ObjectBase **new_visit_pointers = (VisIt_ObjectBase **)(VisIt_ObjectBase*)calloc(visit_pointers_size*2, sizeof(VisIt_ObjectBase *));
-    memcpy(new_visit_pointers, visit_pointers, visit_pointers_size*sizeof(VisIt_ObjectBase*));
-    free(visit_pointers);
-    visit_pointers = new_visit_pointers;
-    int h = visit_pointers_size;
-    visit_pointers_size = visit_pointers_size*2;
-
-    /* Store the pointer. */
-    visit_pointers[h] = ptr;
-    return h;    
+    return loc;
 }
 
 void
