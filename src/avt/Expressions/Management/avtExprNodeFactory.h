@@ -53,6 +53,9 @@
 //    base classes.  Made FunctionExpr and MachExpr use names
 //    instead of Identifier tokens.  These two changes were to
 //    remove Token references from the parse tree node classes.
+//
+//    Kathleen Biagas, Thu May  1 17:13:28 PDT 2014
+//    Changed FloatConstExpr to double.
 
 class EXPRESSION_API avtExprNodeFactory: public ExprNodeFactory
 {
@@ -64,7 +67,7 @@ public:
         CreateIntegerConstExpr(const Pos & p, int v);
 
     virtual ConstExpr*
-        CreateFloatConstExpr(const Pos & p, float v);
+        CreateFloatConstExpr(const Pos & p, double v);
 
     virtual ConstExpr*
         CreateStringConstExpr(const Pos & p, std::string v);
@@ -102,7 +105,7 @@ avtExprNodeFactory::CreateIntegerConstExpr(const Pos & p, int v)
 }
 
 inline ConstExpr*
-avtExprNodeFactory::CreateFloatConstExpr(const Pos & p, float v)
+avtExprNodeFactory::CreateFloatConstExpr(const Pos & p, double v)
 {
     return new avtFloatConstExpr(p, v);
 }

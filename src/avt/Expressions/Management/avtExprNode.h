@@ -61,6 +61,9 @@ class ExprPipelineState;
 //    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
 //    Reorder constructor initializers to be the correct order.
 //
+//    Kathleen Biagas, Thu May  1 17:11:14 PDT 2014
+//    Change avtFloatContExpr arg to double.
+//
 
 
 class EXPRESSION_API avtExprNode : public virtual ExprNode
@@ -83,7 +86,7 @@ class EXPRESSION_API avtFloatConstExpr
     : public avtExprNode, public FloatConstExpr
 {
   public:
-    avtFloatConstExpr(const Pos &p, float v)
+    avtFloatConstExpr(const Pos &p, double v)
         : ExprNode(p), avtExprNode(p), FloatConstExpr(p,v) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
