@@ -75,6 +75,7 @@ class QUERY_API avtQueryFactory
 
   private:
                                     avtQueryFactory();
+    static void                     DeleteInstance();
 
     static avtQueryFactory         *instance;
 };
