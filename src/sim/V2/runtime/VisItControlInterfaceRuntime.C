@@ -63,6 +63,10 @@
 #include <map>
 #include <vector>
 
+#include <vtkVisItUtility.h>
+#include <avtFileDescriptorManager.h>
+
+
 extern void DataCallbacksCleanup(void);
 
 //
@@ -242,8 +246,13 @@ void simv2_disconnect()
     TRY
     {
         Engine::DisconnectSimulation();
+
         if (visitTimer)
             TimingsManager::Finalize();
+
+        vtkVisItUtility::CleanupStaticVTKObjects();
+        avtFileDescriptorManager::DeleteInstance();
+
         DataCallbacksCleanup();
     }
     CATCHALL
