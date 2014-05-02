@@ -133,6 +133,7 @@ avtFileDescriptorManager::DeleteInstance(void)
     if (instance)
     {
         delete instance;
+        instance = 0;
     }
 }
 

@@ -1287,9 +1287,18 @@ void vtkVisItUtility::RegisterStaticVTKObject(vtkObject* obj)
 //  Creation:   September 27, 2011
 //
 //  Modifications:
+//
+//    Burlen Loring, Fri May  2 14:27:13 PDT 2014
+//    Set pointers to NULL after deletion to allow for libsim
+//    reconnections.
+//
 // ****************************************************************************
 namespace {
-  template <class T> static void DeleteVTK(T* t) { t->Delete(); }
+  template <class T> static void DeleteVTK(T* t)
+  {
+       t->Delete();
+       t = NULL;
+  }
 #ifndef NDEBUG
   template <class T> static void PrintVTK(T* t) {
     debug5 << "  obj: " << t->GetClassName() << "\n";

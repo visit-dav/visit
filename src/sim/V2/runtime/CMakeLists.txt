@@ -112,6 +112,7 @@ ${VISIT_SOURCE_DIR}/engine/main
 ${VISIT_SOURCE_DIR}/engine/proxy
 ${VISIT_SOURCE_DIR}/engine/rpc
 ${VISIT_SOURCE_DIR}/sim/V2/lib
+${VISIT_SOURCE_DIR}/visit_vtk/lightweight/
 )
 
 LINK_DIRECTORIES(
