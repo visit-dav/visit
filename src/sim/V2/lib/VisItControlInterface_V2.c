@@ -42,7 +42,6 @@
 #include "DeclareDataCallbacks.h"
 #include "SimUI.h"
 
-
 #ifdef _WIN32
 #if _MSC_VER < 1600
 #define _WIN32_WINNT 0x0502
@@ -1584,16 +1583,13 @@ LIBSIM_MESSAGE1("Error: %x", GetLastError());
 * Author: Cyrus Harrison
 *
 * Modifications:
+*   Burlen Loring, Sat May  3 10:52:13 PDT 2014
+*   fix bug, return a value. report if the env var is not found
 *
 *******************************************************************************/
 int Preload_OSMesaGL(void)
 {
-/* load library */
-#ifdef __APPLE__
-    const char *extension = "dylib";
-#else
-    const char *extension = "so";
-#endif
+    /* load library */
     void *gl_dl_handle = NULL;
     if(getenv("VISIT_MESA_LIB") != NULL)
     {
@@ -1604,8 +1600,12 @@ int Preload_OSMesaGL(void)
         {
             LIBSIM_MESSAGE1("dlopen error: %s", dlerror());
             LIBSIM_MESSAGE1("failed to preload osmesa from VISIT_MESA_LIB: %s",osmesa_lib_path);
+            return -1;
         }
+        return 0;
     }
+    LIBSIM_MESSAGE("Not preloading osmesa, VISIT_MESA_LIB was not set");
+    return -1;
 }
 
 static int LoadVisItLibrary_UNIX(void)
@@ -3799,25 +3799,22 @@ VisItAddPlot(const char *plotType, const char *var, int *plotID)
 
     if(plotType == NULL)
     {
-        LIBSIM_API_LEAVE1(VisItAddPlot,
-                         "VisItAddPlot: NULL was passed for the plot type.", 
-                          VISIT_ERROR);
+        LIBSIM_API_LEAVE0(VisItAddPlot,
+                         "VisItAddPlot: NULL was passed for the plot type.");
         return VISIT_ERROR;
     }
 
     if(var == NULL)
     {
-        LIBSIM_API_LEAVE1(VisItAddPlot,
-                         "VisItAddPlot: NULL was passed for the variable.", 
-                          VISIT_ERROR);
+        LIBSIM_API_LEAVE0(VisItAddPlot,
+                         "VisItAddPlot: NULL was passed for the variable.");
         return VISIT_ERROR;
     }
 
     if(plotID == NULL)
     {
-        LIBSIM_API_LEAVE1(VisItAddPlot,
-                         "VisItAddPlot: NULL was passed for the plotID pointer.", 
-                          VISIT_ERROR);
+        LIBSIM_API_LEAVE0(VisItAddPlot,
+                         "VisItAddPlot: NULL was passed for the plotID pointer.");
         return VISIT_ERROR;
     }
 
@@ -3863,17 +3860,15 @@ VisItAddOperator(int plotID, const char *operatorType, int *operatorID)
 
     if(operatorType == NULL)
     {
-        LIBSIM_API_LEAVE1(VisItAddOperator,
-                         "VisItAddOperator: NULL was passed for the operator type.", 
-                          VISIT_ERROR);
+        LIBSIM_API_LEAVE0(VisItAddOperator,
+                         "VisItAddOperator: NULL was passed for the operator type.");
         return VISIT_ERROR;
     }
 
     if(operatorID == NULL)
     {
-        LIBSIM_API_LEAVE1(VisItAddOperator,
-                         "VisItAddOperator: NULL was passed for the operatorID pointer.", 
-                          VISIT_ERROR);
+        LIBSIM_API_LEAVE0(VisItAddOperator,
+                         "VisItAddOperator: NULL was passed for the operatorID pointer.");
         return VISIT_ERROR;
     }
 

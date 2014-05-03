@@ -6,7 +6,6 @@
 #include <vector>
 #include <algorithm>
 
-
 VisIt_ObjectBase::VisIt_ObjectBase(int t) : object_type(t)
 {
 }
@@ -34,9 +33,10 @@ VisIt_ObjectBase *
 VisItGetPointer(visit_handle h)
 {
     VisIt_ObjectBase *retval = NULL;
-    if ((h >=0 ) && (h < visit_pointers.size()))
+    size_t i = static_cast<size_t>(h);
+    if (i < visit_pointers.size())
     {
-        retval = visit_pointers[h];
+        retval = visit_pointers[i];
     }
     return retval;
 }
@@ -44,9 +44,10 @@ VisItGetPointer(visit_handle h)
 void
 VisItFreePointer(visit_handle h)
 {
-    if ((h >=0 ) && (h < visit_pointers.size()))
+    size_t i = static_cast<size_t>(h);
+    if (i < visit_pointers.size())
     {
-        visit_pointers[h] = NULL;
+        visit_pointers[i] = NULL;
     }
 }
 

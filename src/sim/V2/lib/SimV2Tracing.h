@@ -53,6 +53,7 @@ void  simv2_end_trace_indent(void);
 #define LIBSIM_API_ENTER2(FUNC, FMT, A, B)
 #define LIBSIM_API_ENTER3(FUNC, FMT, A, B, C)
 #define LIBSIM_API_LEAVE(FUNC)               
+#define LIBSIM_API_LEAVE0(FUNC, FMT)
 #define LIBSIM_API_LEAVE1(FUNC, FMT, A)      
 #define LIBSIM_API_LEAVE2(FUNC, FMT, A, B)   
 #define LIBSIM_API_LEAVE3(FUNC, FMT, A, B, C)
@@ -101,6 +102,14 @@ void  simv2_end_trace_indent(void);
                                                   simv2_end_trace_indent(); \
                                                   fprintf(simv2_trace_file(), "%s ", #FUNC); \
                                                   fprintf(simv2_trace_file(), FMT, (A)); \
+                                                  fprintf(simv2_trace_file(), "\n");\
+                                                  fflush(simv2_trace_file()); \
+                                              }
+
+#define LIBSIM_API_LEAVE0(FUNC, FMT)          if(simv2_trace_file() != NULL) {\
+                                                  simv2_end_trace_indent(); \
+                                                  fprintf(simv2_trace_file(), "%s ", #FUNC); \
+                                                  fprintf(simv2_trace_file(), FMT); \
                                                   fprintf(simv2_trace_file(), "\n");\
                                                   fflush(simv2_trace_file()); \
                                               }
