@@ -40,6 +40,7 @@
 #include <VisItInterfaceTypes_V2.h>
 #include <VisItInterfaceTypes_V2P.h>
 
+#include <DebugStream.h>
 #include <Engine.h>
 #include <NetworkManager.h>
 #include <LostConnectionException.h>
@@ -147,7 +148,7 @@ int simv2_initialize(void *e, int argc, char *argv[])
         retval = 0;
     }
     ENDTRY
-    return 1;
+    return retval;
 }
 
 int simv2_connect_viewer(void *e, int argc, char *argv[])
@@ -179,8 +180,6 @@ int simv2_get_descriptor(void *e)
     Engine *engine = (Engine*)(e);
     return engine->GetInputSocket();
 }
-
-#include <DebugStream.h>
 
 int simv2_process_input(void *e)
 {
