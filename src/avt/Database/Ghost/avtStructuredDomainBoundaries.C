@@ -1241,6 +1241,10 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Jeremy Meredith, Tue May  6 14:39:03 EDT 2014
+//    Like other SetNew functions, don't worry about setting new data if
+//    the neighbor relationship is recipient.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1265,6 +1269,13 @@ BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
+        if (n1->neighbor_rel == RECIPIENT_NEIGHBOR)
+        {
+            // d2 is a recipient from d1.  Hence we don't need to copy
+            // anything, since we are setting up ghost data for d1.
+            continue;
+        }
+
         int mi = n1->match;
 
         if (!bndmatlist[d2][mi])
