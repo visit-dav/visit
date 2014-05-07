@@ -22,6 +22,7 @@ list of changes in release 2.7.</p>
 <li>The default bank was changed from "bdivp" to "bbronze" for all the hosts in the <i>LLNL closed network</i> configuration.</li>
 <li>The default launch profile was changed to "serial" for LLNL's <i>muir</i> and <i>graph</i> systems.</li>
 <li>The "parallel views" launch profile was replaced with the "parallel interactive pdebug" launch profile for LLNL's <i>muir</i> system.<li>
+<li>The VisIt installations that used the CHAOS operating system at LLNL were modified so that they use an older version of the NVIDIA driver that works properly with the desktop systems at LLNL.</li>
 </ul>
 
 <p><b><font size="4">Bugs fixed in version 2.7.3</font></b></p>
@@ -33,6 +34,7 @@ list of changes in release 2.7.</p>
 <li>Fixed host-profile creation on Windows to include full 'host.domain' as host Alias.</li>
 <li>Fixed a bug in the Chombo reader that prevented the AMRStitchCell operator to work on 2D datasets. Corrected an error message in AMRStitchCell operator.</li>
 <li>Fixed a bug in saving multiple lineout curves.</li>
+<li>The internal launcher was modified so that VisIt would work on systems where the OpenGL libraries were located in the LD_LIBRARY_PATH.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.7.3</font></b></p>

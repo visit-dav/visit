@@ -2297,6 +2297,11 @@ class MainLauncher(object):
     #   Cyrus Harrison, Tue Oct 22 11:35:37 PDT 2013
     #   Don't use mesa if  hw-accel is requested for the engine.
     #
+    #   David Camp, Tue Mar 11 10:17:48 PDT 2014
+    #   The osmesa option would fail to work because the osmesa path was at the
+    #   end of the LD_LIBRARY_PATH and the code would load the system version.
+    #   So I moved the osmesa path to the first path and everything works.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2406,8 +2411,7 @@ class MainLauncher(object):
             if ( (self.generalArgs.osmesa) or
                  (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
                  (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
-                SETENV("LD_LIBRARY_PATH", self.joinpaths([GETENV("LD_LIBRARY_PATH"),
-                                                         osmesa_gl_dir]))
+                SETENV("LD_LIBRARY_PATH", self.joinpaths([osmesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
                 SETENV("VISIT_MESA_LIB",osmesa_gl_lib)
         elif self.generalArgs.osmesa:
             self.error("Can't launch using osmesa. '-osmesa' specified, but the osmesa library is not available.")
