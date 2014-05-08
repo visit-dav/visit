@@ -1830,6 +1830,7 @@ static int LoadVisItLibrary(void)
         CONTROL_DLSYM(set_command_callback,       void,   (void*,void (*)(const char*,const char*,void*),void*));
         CONTROL_DLSYM(save_window,                int,    (void*,const char *,int,int,int));
         CONTROL_DLSYM(debug_logs,                 void,   (int,const char *));
+        CONTROL_DLSYM(set_mpicomm,                int,    (void *));
 
         CONTROL_DLSYM_OPTIONAL(add_plot,             int,    (void *, const char *, const char *, const char *, int *));
         CONTROL_DLSYM_OPTIONAL(add_operator,         int,    (void *, int, const char *, int *));
