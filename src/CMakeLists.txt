@@ -741,6 +741,7 @@ VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and
 VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
 VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include and lib")
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
+VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
@@ -1299,6 +1300,12 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
 
     # Configure ITAPS support -- it's treated specially.
     CONFIGURE_ITAPS()
+
+    # Configure mfem support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMFEM.cmake)
+    IF(MFEM_FOUND)
+        SET(HAVE_MFEM 1)
+    ENDIF(MFEM_FOUND)
 
     # Configure Mili support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
