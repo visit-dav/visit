@@ -24,6 +24,7 @@
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="itaps"/>
+            <lib name="mfem"/>
             <lib name="mili"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="manta"/>
