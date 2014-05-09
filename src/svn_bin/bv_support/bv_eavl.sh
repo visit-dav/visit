@@ -1,3 +1,4 @@
+
 function bv_eavl_initialize
 {
 export DO_EAVL="no"
@@ -104,8 +105,26 @@ function build_EAVL
     info "Configuring eavl . . ."
     cd $EAVL_BUILD_DIR || error "Can't cd to eavl build dir."
     
-    info ./configure --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
-    ./configure --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
+    #
+    # expedient hack: use VISIT_CUDA_TOOLKIT env var to select cuda
+    #
+    if test "x${VISIT_CUDA_TOOLKIT}" = "x"; then
+        export EAVL_CUDA_TOOLKIT_ARGS=""
+    else
+        export EAVL_CUDA_TOOLKIT_ARGS=" --with-cuda=\"$VISIT_CUDA_TOOLKIT\""
+    fi
+
+    info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+                     CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+                     CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+                     $EAVL_CUDA_TOOLKIT_ARGS \
+                     --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
+
+    ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+                     CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+                     CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+                     $EAVL_CUDA_TOOLKIT_ARGS \
+                     --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
 
     #
     # Build eavl
