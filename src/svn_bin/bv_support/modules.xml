@@ -17,6 +17,7 @@
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
+            <lib name="eavl"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
