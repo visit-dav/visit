@@ -733,6 +733,7 @@ VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include an
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
 VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
+VISIT_3RDPARTY_VAR(EAVL_DIR      "Path containing the eavl library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the Fastbit library's include and lib")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
@@ -1267,6 +1268,12 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
     IF(CGNS_FOUND)
         SET(HAVE_LIBCGNS 1)
     ENDIF(CGNS_FOUND)
+
+    # Configure eavl support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindEAVL.cmake)
+    IF(MFEM_FOUND)
+        SET(HAVE_EAVL 1)
+    ENDIF(MFEM_FOUND)
 
     # Configure Fastbit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
