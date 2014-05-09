@@ -114,17 +114,23 @@ function build_EAVL
         export EAVL_CUDA_TOOLKIT_ARGS=" --with-cuda=\"$VISIT_CUDA_TOOLKIT\""
     fi
 
-    info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-                     CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-                     CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-                     $EAVL_CUDA_TOOLKIT_ARGS \
+    #info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    #                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+    #                 CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+    #                 $EAVL_CUDA_TOOLKIT_ARGS \
+    #                 --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
+
+    #./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    #                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+    #                 CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+    #                 $EAVL_CUDA_TOOLKIT_ARGS \
+    #                 --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
+    # avoid passing flags for now
+    info ./configure $EAVL_CUDA_TOOLKIT_ARGS \
                      --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
 
-    ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-                     CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-                     CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-                     $EAVL_CUDA_TOOLKIT_ARGS \
-                     --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
+    ./configure $EAVL_CUDA_TOOLKIT_ARGS \
+                 --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
 
     #
     # Build eavl
