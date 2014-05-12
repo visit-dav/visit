@@ -11,130 +11,236 @@
  ******************************************************************************/
 
 %include "typemaps.i"
+
+/******************************************************************************
+ * used by: VisItGetMemory
+ ******************************************************************************/
 %apply double *OUTPUT { double *m_size, double *m_rss };
 
-%typemap(in) void* {
-    static PyObject *cb[2] = {NULL, NULL};
-    if(cb[0] != NULL)
-        Py_DECREF(cb[0]);
-    if(cb[1] != NULL)
-        Py_DECREF(cb[1]);
+/******************************************************************************
+ * some utility functions for use in our typemaps
+ ******************************************************************************/
+%fragment("util","header") {
 
-    cb[0] = (obj0 != Py_None) ? obj0 : NULL; /* kind of a hack (assumes void*cbdata will be 2nd arg. */
-    cb[1] = ($input != Py_None) ? $input : NULL;
-
-    if(cb[0] != NULL)
-        Py_INCREF(cb[0]);
-    if(cb[1] != NULL)
-        Py_INCREF(cb[1]);
-    $1 = (void*)cb;
-}
-
-/* For VisItSetBroadcastIntFunction*/
-%typemap(in) int (*)(int *, int) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
+/* assign with validation the given object */
+int assignCallback(simV2_PyObject &dest, PyObject *src)
+{
+    if (src == Py_None)
+    {
+        /* release the current dest */
+        dest.Reset();
+    }
+    else
+    if (PyCallable_Check(src) != 1)
     {
         PyErr_SetString(PyExc_ValueError, "not callable");
-        return NULL;
+        dest.Reset();
+        return -1;
     }
-    extern int  pylibsim_setbroadcastintfunction(int*,int);
-    extern void pylibsim_setbroadcastintfunction_data(void*);
-    pylibsim_setbroadcastintfunction_data((void *)$input);
-    $1 = pylibsim_setbroadcastintfunction;
-}
-
-/* For VisItSetBroadcastStringFunction*/
-%typemap(in) int (*)(char *, int, int) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
+    else
     {
-        PyErr_SetString(PyExc_ValueError, "not callable");
-        return NULL;
+        dest.SetObject(src);
     }
-    extern int  pylibsim_setbroadcaststringfunction(char *, int, int);
-    extern void pylibsim_setbroadcaststringfunction_data(void *);
-    pylibsim_setbroadcaststringfunction_data((void *)$input);
-    $1 = pylibsim_setbroadcaststringfunction;
+    return 0;
 }
 
-/* For VisItSetSlaveProcessCallback*/
-%typemap(in) void (*)(void) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
+}
+
+/******************************************************************************
+ the following three type maps follow similar pattern:
+    1) take a reference to and store the user provided callback object
+       in a global variable.
+    2) Give visit a pointer to an "invoker" function that when called
+       uses the Python C-API to call the user's python function.
+    these are cleared either by user passing None or calling VisItFinalize
+ ******************************************************************************/
+
+/******************************************************************************
+ * BroadcastIntFunction
+ ******************************************************************************/
+%typemap(in, fragment="util") (int (*bicb)(int *, int)) {
+    simV2_PyObject temp;
+    if (assignCallback(temp, $input))
     {
-        PyErr_SetString(PyExc_ValueError, "not callable");
+        pylibsim_setBroadcastIntCallback(NULL);
         return NULL;
     }
-    extern void pylibsim_setslaveprocesscallback(void);
-    extern void pylibsim_setslaveprocesscallback_data(void*);
-    pylibsim_setslaveprocesscallback_data((void *)$input);
-    $1 = pylibsim_setslaveprocesscallback;
+    pylibsim_setBroadcastIntCallback(temp);
+    $1 = pylibsim_invokeBroadcastIntCallback;
 }
 
-/* For VisItSetCommandCallback*/
-%typemap(in) void (*)(const char *, const char *, void *) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
+/******************************************************************************
+ * BroadcastStringFunction
+ ******************************************************************************/
+%typemap(in) (int (*bscb)(char *, int, int)) {
+    simV2_PyObject temp;
+    if (assignCallback(temp, $input))
     {
-        PyErr_SetString(PyExc_ValueError, "not callable");
+        pylibsim_setBroadcastStringCallback(NULL);
         return NULL;
     }
-    extern void pylibsim_void__pconstchar_pconstchar_pvoid(const char *, const char *, void *);
-    $1 = pylibsim_void__pconstchar_pconstchar_pvoid;
+    pylibsim_setBroadcastStringCallback(temp);
+    $1 = pylibsim_invokeBroadcastStringCallback;
 }
 
-/* For SetGetMetaData */
-%typemap(in) visit_handle (*)(void *) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
+/******************************************************************************
+ * SlaveProcessCallback
+ ******************************************************************************/
+%typemap(in) (void (*spcb)(void)) {
+    simV2_PyObject temp;
+    if (assignCallback(temp, $input))
     {
-        PyErr_SetString(PyExc_ValueError, "not callable");
+        pylibsim_setSlaveProcessCallback(NULL);
         return NULL;
     }
-    extern visit_handle pylibsim_visit_handle__pvoid(void *);
-    $1 = pylibsim_visit_handle__pvoid;
+    pylibsim_setSlaveProcessCallback(temp);
+    $1 = pylibsim_invokeSlaveProcessCallback;
 }
 
-/* For SetActivateTimestep*/
-%typemap(in) int (*)(void *) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not callable");
-        return NULL;
-    }
-    extern int pylibsim_int__pvoid(void *);
-    $1 = pylibsim_int__pvoid;
+/******************************************************************************
+ * typemap for callback's data
+
+    this is a bit tricky. we're going to package the python callback and its
+    data and pass into visit as a single object. we then insert an invoker
+    function that visit will call with this package. the invoker will
+    unpackage and invokes the python function passing the callback data
+    to it.
+
+    in libsim's set callback functions, the callback always directly
+    precedes the callback data. we're taking advantage of that order
+    by declaring a wrapper scope local variable which we can use to
+    pass the user's callback into the typemap that handles the callback
+    data. The latter typemap will then package them both into a single
+    object as described above.
+
+    our usage pattern is as follows
+    1) typemap for a callback (various function pointers) creates a local
+       validates and places the passed in object in it. gives visit a
+       pointer to the invoker function which has the same signature.
+    2) typemap for callback data (void *cbdataN) allocates a pair constructed
+       with the callback object (now in the local variable created in 1)
+       and the passed in object. The pair is saved in a global list
+       and delete'd when the engine disconnects.
+
+ ******************************************************************************/
+/* for when callback is the first argument */
+%typemap(in) (void *cbdata1) {
+    simV2_CallbackData *package = newCallbackData(callback1, $input);
+    $1 = static_cast<void*>(package);
+}
+/* same as above but for when callback is argument 2 */
+%typemap(in) (void *cbdata2) {
+    simV2_CallbackData *package = newCallbackData(callback2, $input);
+    $1 = static_cast<void*>(package);
 }
 
-/* For SetGetMesh, SetGetVariable,...*/
-%typemap(in) visit_handle (*)(int, const char *, void *) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not callable");
-        return NULL;
-    }
-    extern visit_handle pylibsim_visit_handle__int_pconstchar_pvoid(int, const char *, void *);
-    $1 = pylibsim_visit_handle__int_pconstchar_pvoid;
+/******************************************************************************
+ * used by: BroadcastIntFunction2
+ ******************************************************************************/
+%typemap(in, fragment="util") (int (*)(int *, int, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_i_F_pi_i_pv;
 }
 
-/**/
-%typemap(in) visit_handle (*)(const char *, void *) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not callable");
-        return NULL;
-    }
-    extern visit_handle pylibsim_visit_handle__pconstchar_pvoid(const char *, void *);
-    $1 = pylibsim_visit_handle__pconstchar_pvoid;
+/******************************************************************************
+ * used by: BroadcastStringFunction2
+ ******************************************************************************/
+%typemap(in, fragment="util") (int (*)(char *, int, int, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_i_F_pcc_i_i_pv;
 }
 
-/* For writing routines. */
-%typemap(in) int (*)(const char *, void *) {
-    if($input != Py_None && PyCallable_Check($input) != 1)
-    {
-        PyErr_SetString(PyExc_ValueError, "not callable");
-        return NULL;
-    }
-    extern int pylibsim_int__pconstchar_pvoid(const char *, void *);
-    $1 = pylibsim_int__pconstchar_pvoid;
+/******************************************************************************
+ * used by: SlaveProcess2
+ ******************************************************************************/
+%typemap(in, fragment="util") (void (*)(void*)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_v_F_pv;
 }
 
+/******************************************************************************
+ * used by: CommandCalllback
+ ******************************************************************************/
+%typemap(in, fragment="util", fragment="util") (void (*)(const char *, const char *, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_v_F_pcc_pcc_pv;
+}
+
+/******************************************************************************
+ * used by: GetMetaData
+ ******************************************************************************/
+%typemap(in, fragment="util") (visit_handle (*)(void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_h_F_pv;
+}
+
+/******************************************************************************
+ * used by: ActivateTimestep
+ ******************************************************************************/
+%typemap(in, fragment="util") (int (*)(void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_i_F_pv;
+}
+
+/******************************************************************************
+ * used by: GetMesh GetMaterial GetSpecies GetVariable GetMixedVariable callbacks
+ ******************************************************************************/
+%typemap(in, fragment="util") (visit_handle (*)(int, const char *, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_h_F_i_pcc_pv;
+}
+
+/******************************************************************************
+ * used by: GetCurve GetDomainList GetDomainBoundaries GetDomainNesting
+ ******************************************************************************/
+%typemap(in, fragment="util") (visit_handle (*)(const char *, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_h_F_pcc_pv;
+}
+
+/******************************************************************************
+ * used by : WriteBegin, WriteEnd
+ ******************************************************************************/
+%typemap(in, fragment="util") (int (*)(const char *, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_i_F_pcc_pv;
+}
+
+/******************************************************************************
+ * used by WriteMesh
+ ******************************************************************************/
+%typemap(in, fragment="util") (int (*cb)(const char *, int, int, visit_handle, visit_handle, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_i_F_pcc_i_i_h_h_pv;
+}
+
+/******************************************************************************
+ * used by: WriteVariable
+ ******************************************************************************/
+%typemap(in, fragment="util") (int (*cb)(const char *, const char *, int, visit_handle, visit_handle, void *)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_i_F_pcc_pcc_i_h_h_pv;
+}
+
+/******************************************************************************
+ * used by: UI_clicked
+ ******************************************************************************/
+%typemap(in, fragment="util") (void (*cb)(void*)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_v_F_pv;
+}
+
+/******************************************************************************
+ * used by: UI_stateChanged, UI_valueChanged
+ ******************************************************************************/
+%typemap(in, fragment="util") (void (*cb)(int,void*)) (simV2_PyObject callback) {
+    if (assignCallback(callback, $input)) { return NULL; }
+    $1 = pylibsim_invoke_v_F_i_pv;
+}
+
+
+/******************************************************************************
+ ******************************************************************************/
 #define ARRAY_ARGUMENT(T, T2, LEN, CONV) \
 %typemap(in) T [LEN] (T2 temp[LEN]) {\
   int i;\
@@ -209,10 +315,15 @@ WRAP_ALLOC(VisIt_VariableMetaData_alloc)
 %inline %{
 void pylibsim_invoke_VisItDisconnect(void)
 {
-    extern void pylibsim_VisItDisconnect(void);
     pylibsim_VisItDisconnect();
 }
 %}
+
+/* inject a finalize function for cleanup of various
+internal data that would otherwise be leaked */
+%inline{
+void VisItFinalize() { pylibsim_VisItFinalize(); }
+}
 
 /*
  * we need to convert from python data structures to c
@@ -230,11 +341,6 @@ void pylibsim_invoke_VisItDisconnect(void)
 %rename(VisIt_VariableData_setDataD) pylibsim_VisIt_VariableData_setDataD;
 
 %inline %{
-
-int pylibsim_VisIt_VariableData_setDataAsC(visit_handle, int, int, int, PyObject*);
-int pylibsim_VisIt_VariableData_setDataAsI(visit_handle, int, int, int, PyObject*);
-int pylibsim_VisIt_VariableData_setDataAsF(visit_handle, int, int, int, PyObject*);
-int pylibsim_VisIt_VariableData_setDataAsD(visit_handle, int, int, int, PyObject*);
 
 int pylibsim_VisIt_VariableData_setDataC(visit_handle obj, int owner, int nComps, int nTuples, char *dataarray)
 {

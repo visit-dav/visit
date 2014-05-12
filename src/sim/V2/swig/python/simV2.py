@@ -72,21 +72,9 @@ def VisItDisconnect():
   return _simV2.VisItDisconnect()
 VisItDisconnect = _simV2.VisItDisconnect
 
-def pylibsim_VisIt_VariableData_setDataAsC(*args):
-  return _simV2.pylibsim_VisIt_VariableData_setDataAsC(*args)
-pylibsim_VisIt_VariableData_setDataAsC = _simV2.pylibsim_VisIt_VariableData_setDataAsC
-
-def pylibsim_VisIt_VariableData_setDataAsI(*args):
-  return _simV2.pylibsim_VisIt_VariableData_setDataAsI(*args)
-pylibsim_VisIt_VariableData_setDataAsI = _simV2.pylibsim_VisIt_VariableData_setDataAsI
-
-def pylibsim_VisIt_VariableData_setDataAsF(*args):
-  return _simV2.pylibsim_VisIt_VariableData_setDataAsF(*args)
-pylibsim_VisIt_VariableData_setDataAsF = _simV2.pylibsim_VisIt_VariableData_setDataAsF
-
-def pylibsim_VisIt_VariableData_setDataAsD(*args):
-  return _simV2.pylibsim_VisIt_VariableData_setDataAsD(*args)
-pylibsim_VisIt_VariableData_setDataAsD = _simV2.pylibsim_VisIt_VariableData_setDataAsD
+def VisItFinalize():
+  return _simV2.VisItFinalize()
+VisItFinalize = _simV2.VisItFinalize
 
 def VisIt_VariableData_setDataC(*args):
   return _simV2.VisIt_VariableData_setDataC(*args)
