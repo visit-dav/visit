@@ -35,115 +35,145 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <VisItInterfaceTypes_V2.h>
+#include "simV2_custom.h"
+#include <simV2_python_config.h>
 #include <VisItControlInterface_V2.h>
 #include <VisIt_VariableData.h>
-//#define SIMV2_NUMPY_DEBUG
-
-extern "C" {
-
-#include <Python.h>
-#include <simV2_python_config.h>
-
-#define START_WRAPPER(T, V) \
-    PyObject *func = NULL, *func_data = NULL, *ret = NULL; \
-    T h = V; \
-    func = ((PyObject **)cbdata)[0]; \
-    func_data = ((PyObject **)cbdata)[1]; \
-    if(func_data == NULL) \
-        func_data = Py_None; \
-    if(PyErr_Occurred() == NULL && func != NULL) \
-    {
-
-#define END_WRAPPER(T)\
-        if(ret != NULL) \
-        { \
-            if(PyInt_Check(ret))\
-                h = (T)PyInt_AsLong(ret);\
-            Py_DECREF(ret); \
-        } \
-    } \
-    return h;
-
-#if 1
-#define DEBUG_PRINT(A) ;
-#else
-#define DEBUG_PRINT(A) A
-#endif
-
 #include <stdio.h>
+#include <algorithm>
+#include <functional>
 
-/******************************************************************************/
+// Also see the documentation in simV2_python.i
+// which describes the pattern's we use for handling
+// the python callbacks implemented here.
 
-static PyObject *pylibsim_setbroadcastintfunction_object = NULL;
+// helper
+template<typename T> static T *del(T *obj){ delete obj; return NULL; }
 
-int
-pylibsim_setbroadcastintfunction(int *arg0, int arg1)
+// A container for callback objects that need to have
+// their ref count decremented during a disconnect event
+// or during shutdown.
+class simV2_CallbackDataVector
+{
+public:
+    simV2_CallbackDataVector() {}
+    ~simV2_CallbackDataVector(){ Clear(); }
+    // allocate a new callback data and add to the vector
+    simV2_CallbackData *PushNewCallbackData(simV2_PyObject &callback, simV2_PyObject data)
+    {
+        simV2_CallbackData *cbd = new simV2_CallbackData(callback, data);
+        Push(cbd);
+        return cbd;
+    }
+    // add a callback
+    void Push(simV2_CallbackData* data) { Data.push_back(data); }
+    // delete all of the callback data.
+    void Clear()
+    {
+        std::for_each(Data.begin(), Data.end(), std::ptr_fun(del<simV2_CallbackData>));
+        Data.clear();
+    }
+private:
+    std::deque<simV2_CallbackData*> Data;
+private:
+    void operator=(const simV2_CallbackDataVector&); // not implemented
+    simV2_CallbackDataVector(const simV2_CallbackDataVector&); // not implemented
+};
+
+namespace {
+// internal instance for all managed callback data
+simV2_CallbackDataVector Callbacks;
+simV2_CallbackDataVector CommCallbacks;
+
+// internal API for releasing callback data
+// this will be called during the disconnect event
+void deleteCallbackData()
+{
+    Callbacks.Clear();
+}
+
+void deleteCommCallbackData()
+{
+    CommCallbacks.Clear();
+}
+
+};
+
+
+// public API for creating new pair of callback and its data
+// to be given to visit, when this data needs to be released
+// in response to disconnect event
+simV2_CallbackData *newCallbackData(simV2_PyObject &callback, simV2_PyObject data)
+{
+    return ::Callbacks.PushNewCallbackData(callback, data);
+}
+// public API for creating new pair of callback and its  data
+// to be given to visit, when this data needs to be released
+// during shutdown
+simV2_CallbackData *newCommCallbackData(simV2_PyObject &callback, simV2_PyObject data)
+{
+    return ::CommCallbacks.PushNewCallbackData(callback, data);
+}
+
+/******************************************************************************
+ * BroadcastInt callback invoker
+ ******************************************************************************/
+static simV2_PyObject broadcastIntCallback;
+
+void pylibsim_setBroadcastIntCallback(PyObject *cb)
+{ broadcastIntCallback.SetObject(cb); }
+
+int pylibsim_invokeBroadcastIntCallback(int *arg0, int arg1)
 {
     int retval = VISIT_ERROR;
-    PyObject *ret = NULL; 
-    if(pylibsim_setbroadcastintfunction_object != NULL) 
+    if (broadcastIntCallback)
     {
-        int i;
-        PyObject *tuple = NULL;
-        i = (arg1 == 0) ? *arg0 : 0;
-        tuple = PyTuple_New(2);
+        int i = (arg1 == 0) ? *arg0 : 0;
+        PyObject *tuple = PyTuple_New(2);
         PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)i));
         PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)arg1));
 
-DEBUG_PRINT( printf("pylibsim_setbroadcastintfunction: calling Python with (%d, %d)\n", i, arg1); )
-        ret = PyObject_Call(pylibsim_setbroadcastintfunction_object, tuple, NULL);
+        PyObject *ret = PyObject_Call(broadcastIntCallback, tuple, NULL);
 
         Py_DECREF(tuple);
+
         if(ret != NULL)
         {
             if(PyInt_Check(ret))
             {
                 /* Return the value in arg0. */
                 *arg0 = (int)PyInt_AsLong(ret);
-DEBUG_PRINT( printf("pylibsim_setbroadcastintfunction: callback returned: %d\n", *arg0); )
                 retval = VISIT_OKAY;
             }
-
             Py_DECREF(ret);
         }
     }
-
     return retval;
 }
 
-void
-pylibsim_setbroadcastintfunction_data(void *cbdata)
-{
-    PyObject *obj = (PyObject *)cbdata;
-    if(pylibsim_setbroadcastintfunction_object != NULL)
-        Py_DECREF(pylibsim_setbroadcastintfunction_object);
+/******************************************************************************
+ * BroadcastString callback invoker
+ ******************************************************************************/
+static simV2_PyObject broadcastStringCallback;
 
-    pylibsim_setbroadcastintfunction_object = obj;
-    Py_INCREF(obj);
-}
+void pylibsim_setBroadcastStringCallback(PyObject *cb)
+{ broadcastStringCallback.SetObject(cb); }
 
-/******************************************************************************/
-static PyObject *pylibsim_setbroadcaststringfunction_object = NULL;
-
-int  
-pylibsim_setbroadcaststringfunction(char *arg0, int arg1, int arg2)
+int
+pylibsim_invokeBroadcastStringCallback(char *arg0, int arg1, int arg2)
 {
     int retval = VISIT_ERROR;
-    PyObject *ret = NULL; 
-    if(pylibsim_setbroadcaststringfunction_object != NULL) 
+    if (broadcastStringCallback)
     {
         PyObject *tuple = PyTuple_New(3);
         PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg2 == 0 ? arg0 : ""));
         PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)arg1));
         PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)arg2));
 
-DEBUG_PRINT( printf("pylibsim_setbroadcaststringfunction: calling Python with (%s, %d, %d)\n", arg0, arg1, arg2); )
-
-        ret = PyObject_Call(pylibsim_setbroadcaststringfunction_object, tuple, NULL);
+        PyObject *ret = PyObject_Call(broadcastStringCallback, tuple, NULL);
 
         Py_DECREF(tuple);
-        if(ret != NULL)
+        if (ret != NULL)
         {
             if(PyString_Check(ret))
             {
@@ -151,9 +181,72 @@ DEBUG_PRINT( printf("pylibsim_setbroadcaststringfunction: calling Python with (%
                 strcpy(arg0, PyString_AsString(ret));
                 retval = VISIT_OKAY;
 
-DEBUG_PRINT( printf("pylibsim_setbroadcaststringfunction: callback returned: %s\n", arg0); )
             }
+            Py_DECREF(ret);
+        }
+    }
+    return retval;
+}
 
+/******************************************************************************
+ * SlaveProcess callback invoker
+ ******************************************************************************/
+static simV2_PyObject slaveProcessCallback;
+
+void pylibsim_setSlaveProcessCallback(PyObject *cb)
+{ slaveProcessCallback.SetObject(cb); }
+
+void pylibsim_invokeSlaveProcessCallback(void)
+{
+    if (slaveProcessCallback)
+    {
+        PyObject *tuple = PyTuple_New(0);
+
+        PyObject *ret = PyObject_Call(slaveProcessCallback, tuple, NULL);
+
+        Py_DECREF(tuple);
+
+        if (ret)
+        {
+            Py_DECREF(ret);
+        }
+    }
+}
+
+/******************************************************************************
+ * used by: BroadcastString2
+ ******************************************************************************/
+int
+pylibsim_invoke_i_F_pcc_i_i_pv(char *arg0, int arg1, int arg2, void *cbdata)
+{
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    int retval = VISIT_ERROR;
+
+    if (callback)
+    {
+        PyObject *tuple = PyTuple_New(4);
+        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg2 == 0 ? arg0 : ""));
+        PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)arg1));
+        PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)arg2));
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 3, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
+
+        Py_DECREF(tuple);
+        if (ret != NULL)
+        {
+            if(PyString_Check(ret))
+            {
+                /* Return the value in arg0. */
+                strcpy(arg0, PyString_AsString(ret));
+                retval = VISIT_OKAY;
+
+            }
             Py_DECREF(ret);
         }
     }
@@ -161,184 +254,410 @@ DEBUG_PRINT( printf("pylibsim_setbroadcaststringfunction: callback returned: %s\
     return retval;
 }
 
-void 
-pylibsim_setbroadcaststringfunction_data(void *cbdata)
+/******************************************************************************
+ * used by: BroadcastInt2
+ ******************************************************************************/
+int pylibsim_invoke_i_F_pi_i_pv(int *arg0, int arg1, void *cbdata)
 {
-    PyObject *obj = (PyObject *)cbdata;
-    if(pylibsim_setbroadcaststringfunction_object != NULL)
-        Py_DECREF(pylibsim_setbroadcaststringfunction_object);
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
 
-    pylibsim_setbroadcaststringfunction_object = obj;
-    Py_INCREF(obj);
-}
+    // invoke the user provided callback
+    int retval = VISIT_ERROR;
 
-/******************************************************************************/
-static PyObject *pylibsim_setslaveprocesscallback_object = NULL;
-
-void 
-pylibsim_setslaveprocesscallback(void)
-{
-    PyObject *ret = NULL; 
-    if(pylibsim_setslaveprocesscallback_object != NULL) 
+    if (callback)
     {
-        PyObject *tuple = PyTuple_New(0);
+        int i = (arg1 == 0) ? *arg0 : 0;
+        PyObject *tuple = PyTuple_New(3);
+        PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)i));
+        PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)arg1));
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 2, data);
 
-        ret = PyObject_Call(pylibsim_setslaveprocesscallback_object, tuple, NULL);
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
 
         Py_DECREF(tuple);
+
         if(ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                /* Return the value in arg0. */
+                *arg0 = (int)PyInt_AsLong(ret);
+                retval = VISIT_OKAY;
+            }
             Py_DECREF(ret);
+        }
+    }
+    return retval;
+}
+
+/******************************************************************************
+ * used by: SlaveProcess2
+ * used by: UI_clicked
+ ******************************************************************************/
+void pylibsim_invoke_v_F_pv(void *cbdata)
+{
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    if (callback)
+    {
+        PyObject *tuple = PyTuple_New(1);
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 2, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
+
+        Py_DECREF(tuple);
+
+        if (ret)
+        {
+            Py_DECREF(ret);
+        }
     }
 }
 
-void 
-pylibsim_setslaveprocesscallback_data(void *cbdata)
+/******************************************************************************
+ * used by: CommandCallback
+ ******************************************************************************/
+void
+pylibsim_invoke_v_F_pcc_pcc_pv(const char *arg0, const char *arg1, void *cbdata)
 {
-    PyObject *obj = (PyObject *)cbdata;
-    if(pylibsim_setslaveprocesscallback_object != NULL)
-        Py_DECREF(pylibsim_setslaveprocesscallback_object);
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
 
-    pylibsim_setslaveprocesscallback_object = obj;
-    Py_INCREF(obj);
-}
-
-/******************************************************************************/
-
-void 
-pylibsim_void__pconstchar_pconstchar_pvoid(const char *arg0, const char *arg1, void *cbdata)
-{
-    PyObject *func = NULL, *func_data = NULL, *ret = NULL; 
-    func = ((PyObject **)cbdata)[0]; 
-    func_data = ((PyObject **)cbdata)[1];
-    if(func_data == NULL)
-        func_data = Py_None;
-    if(PyErr_Occurred() == NULL && func != NULL) 
+    if (callback)
     {
-        int rc = Py_REFCNT(func_data);
         PyObject *tuple = PyTuple_New(3);
-        Py_INCREF(func_data);
         PyTuple_SET_ITEM(tuple, 0, PyString_FromString((arg0 != NULL) ? arg0 : ""));
         PyTuple_SET_ITEM(tuple, 1, PyString_FromString((arg1 != NULL) ? arg1 : ""));
-        PyTuple_SET_ITEM(tuple, 2, func_data);
 
-        ret = PyObject_Call(func, tuple, NULL);
+        Py_INCREF(data); // set item steals a reference
+        PyTuple_SET_ITEM(tuple, 2, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
 
         Py_DECREF(tuple);
-        while(Py_REFCNT(func_data) < rc)
-            Py_INCREF(func_data);
-        if(ret != NULL)
+
+        if (ret != NULL)
+        {
             Py_DECREF(ret);
+        }
     }
 }
 
-/******************************************************************************/
-visit_handle 
-pylibsim_visit_handle__pvoid(void *cbdata)
+/******************************************************************************
+ * used by: GetMetadata
+ ******************************************************************************/
+visit_handle pylibsim_invoke_h_F_pv(void *cbdata)
 {
-    START_WRAPPER(visit_handle, VISIT_INVALID_HANDLE)
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    visit_handle h = VISIT_INVALID_HANDLE;
+
+    if (callback)
     {
         PyObject *tuple = PyTuple_New(1);
-DEBUG_PRINT( printf("pylibsim_visit_handle__pvoid: 0: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
-        Py_INCREF(func_data);
-DEBUG_PRINT( printf("pylibsim_visit_handle__pvoid: 1: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
-        PyTuple_SET_ITEM(tuple, 0, func_data);
 
-        ret = PyObject_Call(func, tuple, NULL);
-DEBUG_PRINT( printf("pylibsim_visit_handle__pvoid: 2: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 0, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
 
         Py_DECREF(tuple);
-DEBUG_PRINT( printf("pylibsim_visit_handle__pvoid: 3: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
+
+        if (ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                h = static_cast<visit_handle>(PyInt_AsLong(ret));
+            }
+            Py_DECREF(ret);
+        }
     }
-    END_WRAPPER(visit_handle)
+
+    return h;
 }
 
-int 
-pylibsim_int__pvoid(void *cbdata)
+/******************************************************************************
+ * used by: ActivateTimestep
+ ******************************************************************************/
+int pylibsim_invoke_i_F_pv(void *cbdata)
 {
-    START_WRAPPER(int, VISIT_INVALID_HANDLE)
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    int h = VISIT_INVALID_HANDLE;
+
+    if (callback)
     {
         PyObject *tuple = PyTuple_New(1);
-        Py_INCREF(func_data);
-        PyTuple_SET_ITEM(tuple, 0, func_data);
 
-        ret = PyObject_Call(func, tuple, NULL);
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 0, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
 
         Py_DECREF(tuple);
+
+        if (ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                h = static_cast<int>(PyInt_AsLong(ret));
+            }
+            Py_DECREF(ret);
+        }
     }
-    END_WRAPPER(int)
+
+    return h;
 }
 
-/******************************************************************************/
-visit_handle 
-pylibsim_visit_handle__int_pconstchar_pvoid(int arg0, const char *arg1, void *cbdata)
+/******************************************************************************
+ * used by: GetMesh GetMaterial GetSpecies GetVariable GetMixedVariable
+ ******************************************************************************/
+visit_handle pylibsim_invoke_h_F_i_pcc_pv(int arg0, const char *arg1, void *cbdata)
 {
-    START_WRAPPER(visit_handle, VISIT_INVALID_HANDLE)
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    visit_handle h = VISIT_INVALID_HANDLE;
+
+    if (callback)
     {
         PyObject *tuple = PyTuple_New(3);
-DEBUG_PRINT( printf("pylibsim_visit_handle__int_pconstchar_pvoid: 0: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
-        Py_INCREF(func_data);
-DEBUG_PRINT( printf("pylibsim_visit_handle__int_pconstchar_pvoid: 1: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
+
         PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)arg0));
         PyTuple_SET_ITEM(tuple, 1, PyString_FromString(arg1));
-        PyTuple_SET_ITEM(tuple, 2, func_data);
 
-        ret = PyObject_Call(func, tuple, NULL);
-DEBUG_PRINT( printf("pylibsim_visit_handle__int_pconstchar_pvoid: 2: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 2, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
 
         Py_DECREF(tuple);
-DEBUG_PRINT( printf("pylibsim_visit_handle__int_pconstchar_pvoid: 3: func_data refct=%d\n", (int)Py_REFCNT(func_data)); )
+
+        if(ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                h = static_cast<visit_handle>(PyInt_AsLong(ret));
+            }
+            Py_DECREF(ret);
+        }
     }
-    END_WRAPPER(visit_handle)
+    return h;
 }
 
-/******************************************************************************/
-visit_handle 
-pylibsim_visit_handle__pconstchar_pvoid(const char *arg0, void *cbdata)
+
+/******************************************************************************
+ * used by: GetCurve GetDomainList GetDomainBoundaries GetDomainNesting
+ ******************************************************************************/
+visit_handle pylibsim_invoke_h_F_pcc_pv(const char *arg0, void *cbdata)
 {
-    START_WRAPPER(visit_handle, VISIT_INVALID_HANDLE)
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    visit_handle h = VISIT_INVALID_HANDLE;
+
+    if (callback)
     {
         PyObject *tuple = PyTuple_New(2);
-        Py_INCREF(func_data);
-        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
-        PyTuple_SET_ITEM(tuple, 1, func_data);
 
-        ret = PyObject_Call(func, tuple, NULL);
+        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 1, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
 
         Py_DECREF(tuple);
+
+        if(ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                h = static_cast<visit_handle>(PyInt_AsLong(ret));
+            }
+            Py_DECREF(ret);
+        }
     }
-    END_WRAPPER(visit_handle)
+
+    return h;
 }
 
-int
-pylibsim_int__pconstchar_pvoid(const char *arg0, void *cbdata)
+/******************************************************************************
+ * used by : WriteBegin, WriteEnd
+ ******************************************************************************/
+int pylibsim_invoke_i_F_pcc_pv(const char *arg0, void *cbdata)
 {
-    START_WRAPPER(int, VISIT_ERROR)
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    int ierr = VISIT_ERROR;
+
+    if (callback)
     {
         PyObject *tuple = PyTuple_New(2);
-        Py_INCREF(func_data);
-        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
-        PyTuple_SET_ITEM(tuple, 1, func_data);
 
-        ret = PyObject_Call(func, tuple, NULL);
+        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 1, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
 
         Py_DECREF(tuple);
+
+        if(ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                ierr = static_cast<int>(PyInt_AsLong(ret));
+            }
+            Py_DECREF(ret);
+        }
     }
-    END_WRAPPER(int)
+
+    return ierr;
 }
 
-/******************************************************************************/
-static const char *getPyObjectType(PyObject *obj)
+/******************************************************************************
+ * used by WriteMesh
+ ******************************************************************************/
+int pylibsim_invoke_i_F_pcc_i_i_h_h_pv(
+    const char *arg0, int arg1, int arg2, visit_handle arg3, visit_handle arg4,
+    void *cbdata)
 {
-    const char *objType = "unknown";
-    const char *tmp = NULL;
-    PyObject *rep = NULL;
-    if (obj && (rep = PyObject_Repr(obj)) && (tmp = PyString_AsString(rep)))
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    int ierr = VISIT_ERROR;
+
+    if (callback)
     {
-        objType = tmp;
+        PyObject *tuple = PyTuple_New(6);
+
+        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
+        PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)arg1));
+        PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)arg2));
+        PyTuple_SET_ITEM(tuple, 3, PyInt_FromLong((long)arg3));
+        PyTuple_SET_ITEM(tuple, 4, PyInt_FromLong((long)arg4));
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 5, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
+
+        Py_DECREF(tuple);
+
+        if(ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                ierr = static_cast<int>(PyInt_AsLong(ret));
+            }
+            Py_DECREF(ret);
+        }
     }
-    return objType;
+
+    return ierr;
 }
 
+/******************************************************************************
+ * used by: WriteVariable
+ ******************************************************************************/
+int pylibsim_invoke_i_F_pcc_pcc_i_h_h_pv(
+    const char *arg0, const char *arg1, int arg2, visit_handle arg3, visit_handle arg4,
+    void *cbdata)
+{
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    int ierr = VISIT_ERROR;
+
+    if (callback)
+    {
+        PyObject *tuple = PyTuple_New(6);
+
+        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
+        PyTuple_SET_ITEM(tuple, 1, PyString_FromString(arg1));
+        PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)arg2));
+        PyTuple_SET_ITEM(tuple, 3, PyInt_FromLong((long)arg3));
+        PyTuple_SET_ITEM(tuple, 4, PyInt_FromLong((long)arg4));
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 5, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
+
+        Py_DECREF(tuple);
+
+        if(ret != NULL)
+        {
+            if(PyInt_Check(ret))
+            {
+                ierr = static_cast<int>(PyInt_AsLong(ret));
+            }
+            Py_DECREF(ret);
+        }
+    }
+
+    return ierr;
+}
+
+
+/******************************************************************************
+ * used by: UI_stateChanged, UI_valueChanged
+ ******************************************************************************/
+void pylibsim_invoke_v_F_i_pv(int arg0, void *cbdata)
+{
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    if (callback)
+    {
+        PyObject *tuple = PyTuple_New(1);
+
+        PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)arg0));
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 1, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
+
+        Py_DECREF(tuple);
+
+        if(ret != NULL)
+        {
+            Py_DECREF(ret);
+        }
+    }
 }
 
 namespace pylibsim {
@@ -659,7 +978,10 @@ int getData(
         if (!getArrayPointer<T>(nComps, nTuples, seq, data))
         {
             // take a reference to the object preventing
-            // deletion while in use by VisIt
+            // deletion while in use by VisIt. Note that
+            // holding a reference does not ensure that
+            // the simulation won't modify the data while
+            // we still need it.
 #if defined(SIMV2_NUMPY_DEBUG)
             fprintf(stderr, "Py_INCREF(%p)\n", seq);
 #endif
@@ -736,9 +1058,6 @@ int setData(visit_handle obj,
 
 };
 
-extern "C"
-{
-
 /******************************************************************************/
 int pylibsim_VisIt_VariableData_setDataAsD(
           visit_handle obj,
@@ -812,64 +1131,19 @@ int pylibsim_VisIt_VariableData_setDataAsC(
 }
 
 /******************************************************************************/
-void
-pylibsim_VisItDisconnect(void)
+void pylibsim_VisItDisconnect(void)
 {
-    /* Call into the wrapped functions with arguments that tell them to
-     * release their reference counted callback data. We call into the 
-     * functions using the Python interpreter because we can't directly
-     * call the _wrap functions due to their placement in the sources.
-     */
-    char cmd[500];
-#define DISCONNECT_CALLBACK_EX(FUNC, ARGS) \
-    sprintf(cmd,\
-        "try:\n"\
-        "    libsimV2.%s(%s)\n"\
-        "except:\n"\
-        "    try:\n"\
-        "        %s(%s)\n"\
-        "    except:\n"\
-        "        pass\n",\
-        #FUNC, ARGS, #FUNC, ARGS);\
-    PyRun_SimpleString(cmd);
-
-#define DISCONNECT_CALLBACK1(FUNC) DISCONNECT_CALLBACK_EX(FUNC, "None")
-#define DISCONNECT_CALLBACK2(FUNC) DISCONNECT_CALLBACK_EX(FUNC, "None, None")
-
-    /*
-     * Note, we do not free the int and string broadcast functions since they are
-     * registered for the life of libsim. If we freed then the sim would have to
-     * register them when the sim reconnected. Sims typically only register the
-     * broadcast functions on startup so let's not require the user to reregister
-     * them.
-     */
-
-    /* Free these callbacks because they are associated with the engine handle,
-     * which is freed later. Reconnecting will reset these.
-     */
-    DISCONNECT_CALLBACK1(VisItSetSlaveProcessCallback);
-    DISCONNECT_CALLBACK2(VisItSetCommandCallback);
-
-    /*
-     * Free these data callbacks. Reconnecting will reset these.
-     */
-    DISCONNECT_CALLBACK2(VisItSetGetMetaData);
-    DISCONNECT_CALLBACK2(VisItSetGetMesh);
-    DISCONNECT_CALLBACK2(VisItSetGetMaterial);
-    DISCONNECT_CALLBACK2(VisItSetGetSpecies);
-    DISCONNECT_CALLBACK2(VisItSetGetVariable);
-    DISCONNECT_CALLBACK2(VisItSetGetMixedVariable);
-    DISCONNECT_CALLBACK2(VisItSetGetCurve);
-    DISCONNECT_CALLBACK2(VisItSetGetDomainList);
-    DISCONNECT_CALLBACK2(VisItSetGetDomainBoundaries);
-    DISCONNECT_CALLBACK2(VisItSetGetDomainNesting);
-
-    DISCONNECT_CALLBACK2(VisItSetWriteBegin);
-    DISCONNECT_CALLBACK2(VisItSetWriteEnd);
-    DISCONNECT_CALLBACK2(VisItSetWriteMesh);
-    DISCONNECT_CALLBACK2(VisItSetWriteVariable);
-
+    pylibsim_setSlaveProcessCallback(NULL);
+    deleteCallbackData();
     VisItDisconnect();
 }
 
+/******************************************************************************/
+void pylibsim_VisItFinalize(void)
+{
+    pylibsim_setBroadcastIntCallback(NULL);
+    pylibsim_setBroadcastStringCallback(NULL);
+    pylibsim_setSlaveProcessCallback(NULL);
+    deleteCallbackData();
+    deleteCommCallbackData();
 }

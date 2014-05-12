@@ -49,6 +49,7 @@
 
 INCLUDE_DIRECTORIES(
     ${VISIT_SOURCE_DIR}/sim/V2/lib
+    ${VISIT_SOURCE_DIR}/sim/V2/swig/python
     ${VISIT_BINARY_DIR}/sim/V2/swig/python
     ${VISIT_BINARY_DIR}/include
     ${PYTHON_INCLUDE_PATH}
@@ -64,8 +65,9 @@ ENDIF()
 CONFIGURE_FILE(simV2_python_config.h.in simV2_python_config.h)
 
 PYTHON_ADD_MODULE(pysimV2
-    simV2_wrap.c
+    simV2_wrap.cxx
     simV2_custom.cxx
+    simV2_PyObject.cxx
     ${LIBSIM_SOURCES}
     )
 

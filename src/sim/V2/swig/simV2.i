@@ -20,6 +20,8 @@
 #include <VisItDataInterface_V2.h>
 #include <stdio.h>
 #include <simV2_python_config.h>
+#include <simV2_PyObject.h>
+#include <simV2_custom.h>
 %}
 
 %init %{
