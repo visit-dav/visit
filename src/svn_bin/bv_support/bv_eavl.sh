@@ -109,12 +109,20 @@ function build_EAVL
     # expedient hack: use VISIT_CUDA_TOOLKIT env var to select cuda
     #
     if test "x${VISIT_CUDA_TOOLKIT}" = "x"; then
-        export EAVL_CUDA_TOOLKIT_ARGS=""
+        export EAVL_EXTRA_ARGS=""
     else
         export EAVL_CUDA_TOOLKIT_ARGS=" --with-cuda=$VISIT_CUDA_TOOLKIT"
     fi
 
-    #info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    if test "x${SYSTEM_VTK_DIR}" = "x"; then
+        export EAVL_VTK_ARGS=""
+    else
+        export EAVL_VTK_ARGS=" --with-vtk=$SYSTEM_VTK_DIR"
+    fi
+        
+VISIT_VTK_DIR
+    
+#info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     #                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
     #                 CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
     #                 $EAVL_CUDA_TOOLKIT_ARGS \
@@ -126,10 +134,10 @@ function build_EAVL
     #                 $EAVL_CUDA_TOOLKIT_ARGS \
     #                 --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
     # avoid passing flags for now
-    info ./configure $EAVL_CUDA_TOOLKIT_ARGS --with-openmp \
+    info ./configure $EAVL_CUDA_TOOLKIT_ARGS $EAVL_VTK_ARGS --with-openmp \
                      --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
 
-    ./configure $EAVL_CUDA_TOOLKIT_ARGS --with-openmp \
+    ./configure $EAVL_CUDA_TOOLKIT_ARGS $EAVL_VTK_ARGS --with-openmp \
                  --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
 
     #
