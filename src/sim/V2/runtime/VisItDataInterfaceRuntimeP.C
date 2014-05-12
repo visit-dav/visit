@@ -1,10 +1,9 @@
-#include <stdio.h>
-#include <string.h>
-
 #include <VisItDataInterfaceRuntimeP.h>
 
 #include <vector>
 #include <algorithm>
+#include <stdio.h>
+#include <string.h>
 
 VisIt_ObjectBase::VisIt_ObjectBase(int t) : object_type(t)
 {
@@ -58,7 +57,7 @@ VisItStorePointer(VisIt_ObjectBase *ptr)
 
     /* Look for a free slot in the pointers array
      * if not just append the pointer at the end */
-    VisItPointerVec::iterator vstart = visit_pointers.end();
+    VisItPointerVec::iterator vstart = visit_pointers.begin();
     VisItPointerVec::iterator vend = visit_pointers.end();
     VisItPointerVec::iterator vslot = std::find(vstart, vend, static_cast<VisIt_ObjectBase*>(0));
     if (vslot != vend)
