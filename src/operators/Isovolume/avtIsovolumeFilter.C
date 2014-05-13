@@ -316,6 +316,10 @@ inline void IsovolumeMinMax(double &min, double &max, Accessor access)
 //    Brad Whitlock, Sun Apr 22 01:21:10 PDT 2012
 //    I added double support.
 //
+//    Gunther H. Weber, Tue May 13 11:51:19 PDT 2014
+//    Check whether data set is empty before performing max clip to prevent
+//    crash in border case.
+//
 // ****************************************************************************
 
 vtkDataSet *
