@@ -368,7 +368,7 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkDataSet *out_ds = in_ds;
     if (doMinClip)
         out_ds = ExecuteSingleClip(out_ds, atts.GetLbound(), true);
-    if (doMaxClip)
+    if (out_ds->GetNumberOfCells() > 0 && doMaxClip)
         out_ds = ExecuteSingleClip(out_ds, atts.GetUbound(), false);
 
     //
