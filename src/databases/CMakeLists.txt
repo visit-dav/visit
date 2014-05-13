@@ -165,6 +165,11 @@
 #    I moved the AMRTest reader from the optional list of databases to
 #    build to the required list of databases to build.
 #
+#    Kathleen Biagas, Mon May 12 12:59:25 PDT 2014
+#    Prefer VISIT_SELECTED_DATABASE_PLUGINS if defined.  Test for existence of
+#    subdir before adding it.  Call VISIT_SELECTED_PLUGIN_ERROR macro if
+#    necessary.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -175,7 +180,7 @@ ENDIF(NOT WIN32)
 
 SET(THIRDPARTY_DEPENDENT_PLUGINS)
 
-MACRO(THIRDPARTY_DEPENDENT_PLUGINS libname targets)
+MACRO(CHECK_THIRDPARTY_DEPENDENT_PLUGINS libname targets)
     SET(alltargets ${targets})
     FOREACH (X ${ARGN})
        SET(alltargets ${alltargets} ${X})
@@ -197,16 +202,20 @@ MACRO(THIRDPARTY_DEPENDENT_PLUGINS libname targets)
                 ENDFOREACH(lib)
             ENDIF(${libs})
         ENDIF(VISIT_STATIC)
-        # Add each target individually so we can check if it is already in the list. It might
-        # be in the list already if it might depend on multiple libraries (H5PART, FASTBIT)
+        # Add each target individually so we can check if it is already in the
+        # list. It might be in the list already if it might depend on multiple
+        # libraries (H5PART, FASTBIT)
         FOREACH(target ${alltargets})
             LIST(FIND THIRDPARTY_DEPENDENT_PLUGINS ${target} findVar)
             IF(findVar EQUAL -1)
                 SET(THIRDPARTY_DEPENDENT_PLUGINS ${THIRDPARTY_DEPENDENT_PLUGINS} ${target})
             ENDIF(findVar EQUAL -1)
         ENDFOREACH(target)
+    ELSE(${libname2})
+        VISIT_SELECTED_PLUGIN_ERROR(DATABASE ${alltargets} " third party dependency not found: ${libname}")
     ENDIF(${libname2})
-ENDMACRO(THIRDPARTY_DEPENDENT_PLUGINS libname targets)
+    
+ENDMACRO(CHECK_THIRDPARTY_DEPENDENT_PLUGINS libname targets)
 
 # These are the various targets that are optional since they depend on 3rd-
 # party I/O libraries to be present. We pass the name of the 3rd party library
@@ -218,20 +227,20 @@ UNSET(TMP_THIRDPARTY_IO_LIB)
 
 # HDF5-related plugins (HDF5 comes last due to static link order)
 IF (NOT WIN32)
-    THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI Vista)
+    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI Vista)
+    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(FASTBIT  H5Part)
 ELSE (NOT WIN32)
-    THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI)
+    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI)
 ENDIF (NOT WIN32)
-THIRDPARTY_DEPENDENT_PLUGINS(CGNS     CGNS)
-THIRDPARTY_DEPENDENT_PLUGINS(FASTBIT  H5Part)
-THIRDPARTY_DEPENDENT_PLUGINS(H5PART   H5Part)
-THIRDPARTY_DEPENDENT_PLUGINS(NETCDF   NETCDF S3D Exodus )
-THIRDPARTY_DEPENDENT_PLUGINS(NETCDF_CXX  MFIXCDF)
-THIRDPARTY_DEPENDENT_PLUGINS(XDMF     Xdmf)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(CGNS     CGNS)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(H5PART   H5Part)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(NETCDF   NETCDF S3D Exodus )
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(NETCDF_CXX  MFIXCDF)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(XDMF     Xdmf)
 IF(NOT XDMF_FOUND)
     SET(XDMF_READER VisItXdmf)
 ENDIF(NOT XDMF_FOUND)
-THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(HDF5
 AMR
 BATL
 CaleHDF5
@@ -257,18 +266,18 @@ ${XDMF_READER}
 )
 
 # Non-HDF5-related plugins
-THIRDPARTY_DEPENDENT_PLUGINS(ADIOS    ADIOS)
-THIRDPARTY_DEPENDENT_PLUGINS(ADVIO    Adventure)
-THIRDPARTY_DEPENDENT_PLUGINS(BOXLIB   Boxlib2D Boxlib3D)
-THIRDPARTY_DEPENDENT_PLUGINS(CCMIO    CCM)
-THIRDPARTY_DEPENDENT_PLUGINS(CFITSIO  FITS)
-THIRDPARTY_DEPENDENT_PLUGINS(GDAL     GDAL)
-THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos ZeusMP)
-THIRDPARTY_DEPENDENT_PLUGINS(MDSPLUS  MDSplus)
-THIRDPARTY_DEPENDENT_PLUGINS(MILI     Mili)
-THIRDPARTY_DEPENDENT_PLUGINS(UINTAH   Uintah)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(ADIOS    ADIOS)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(ADVIO    Adventure)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(BOXLIB   Boxlib2D Boxlib3D)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(CCMIO    CCM)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(CFITSIO  FITS)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(GDAL     GDAL)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos ZeusMP)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(MDSPLUS  MDSplus)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(MILI     Mili)
+CHECK_THIRDPARTY_DEPENDENT_PLUGINS(UINTAH   Uintah)
 IF (WIN32)
-    THIRDPARTY_DEPENDENT_PLUGINS(ZLIB     VCellMTMD)
+    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(ZLIB     VCellMTMD)
 ENDIF (WIN32)
 
 # Add ITAPS
@@ -370,15 +379,25 @@ ${XDBPLUGIN}
 IF(TARGET vtkIOEnSight)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS EnSight)
 ELSE()
-    MESSAGE(STATUS "EnSight plugin requires vtkIOEnSight")
+    IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
+        VISIT_SELECTED_PLUGIN_ERROR(DATABASE "EnSight" "EnSight plugin requires vtkIOEnSight")
+    ELSE()
+        MESSAGE(STATUS "EnSight plugin requires vtkIOEnSight")
+    ENDIF()
 ENDIF(TARGET vtkIOEnSight)
 
-IF (Boost_USABLE_PARADIS AND NOT WIN32)
-    LIST(APPEND REQUIRED_DATABASE_PLUGINS
-        paraDIS
-        paraDIS_tecplot
-    )
-ENDIF (Boost_USABLE_PARADIS AND NOT WIN32)
+IF(NOT WIN32)
+    IF (Boost_USABLE_PARADIS)
+        LIST(APPEND REQUIRED_DATABASE_PLUGINS
+            paraDIS
+            paraDIS_tecplot
+        )
+    ELSE()
+        VISIT_SELECTED_PLUGIN_ERROR(DATABASE "paraDIS;paraDIS_tecplot" "Useable boost libraries not found.")
+    ENDIF()
+ELSE(NOT WIN32)
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "paraDIS;paraDIS_tecplot" "not currently buildable on Windows")
+ENDIF (NOT WIN32)
 
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
@@ -397,6 +416,8 @@ IF (NOT WIN32)
         Rect
         VLI
     )
+ELSE(NOT WIN32)
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI;SimV1;SimV1Writer" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 
@@ -408,19 +429,32 @@ PICS_Tester
 )
 
 # Select the plugins to build
-IF(VISIT_BUILD_ALL_PLUGINS)
+IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
+    SET(BUILD_PLUGINS ${VISIT_SELECTED_DATABASE_PLUGINS})
+ELSEIF(VISIT_BUILD_ALL_PLUGINS)
     SET(BUILD_PLUGINS ${REQUIRED_DATABASE_PLUGINS} ${THIRDPARTY_DEPENDENT_PLUGINS} ${OPTIONAL_DATABASE_PLUGINS})
-ELSE(VISIT_BUILD_ALL_PLUGINS)
+ELSE()
     IF(VISIT_BUILD_MINIMAL_PLUGINS)
         SET(BUILD_PLUGINS ${MINIMAL_DATABASE_PLUGINS})
     ELSE(VISIT_BUILD_MINIMAL_PLUGINS)
         SET(BUILD_PLUGINS ${REQUIRED_DATABASE_PLUGINS} ${THIRDPARTY_DEPENDENT_PLUGINS})
     ENDIF(VISIT_BUILD_MINIMAL_PLUGINS)
-ENDIF(VISIT_BUILD_ALL_PLUGINS)
+ENDIF()
 
 # Add the plugin directories
 FOREACH(db ${BUILD_PLUGINS})
-    ADD_SUBDIRECTORY(${db})
+    # EXISTS test requires full path
+    IF(EXISTS ${VISIT_SOURCE_DIR}/databases/${db})
+        ADD_SUBDIRECTORY(${db})
+    ELSE()
+        IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
+            Message(FATAL_ERROR "Selected  database (${db}) does not exist.")
+        ELSEIF(VISIT_STATIC)
+            # for code below, remove anything we aren't actually building
+            Message("${db} removed from build because it code does not exist")
+            LIST(REMOVE_ITEM BUILD_PLUGINS ${db})
+        ENDIF()
+    ENDIF()
 ENDFOREACH(db)
 
 # If we're building statically, make various main programs depend on plugins being built

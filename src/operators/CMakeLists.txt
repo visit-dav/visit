@@ -63,6 +63,11 @@
 #   Kathleen Biagas, Thu Oct 11 11:48:27 PDT 2012
 #   Make CartographicProjection dependent upon existence of GEOVIS vtk kit.
 #
+#   Kathleen Biagas, Mon May 12 12:59:25 PDT 2014
+#   Prefer VISIT_SELECTED_OPERATOR_PLUGINS if defined.  Test for existence of
+#   subdir before adding it.  Call VISIT_SELECTED_PLUGIN_ERROR macro if
+#   necessary.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -132,15 +137,23 @@ Tube
 ZoneDump
 )
 
-#adding programmable operator only if Python is available..
+#adding programmable operator only if Python is available.
 #IF(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)
+#  IF(NOT DEFINED VISIT_SELECTED_OPERATOR_PLUGINS)
 #    LIST(APPEND REQUIRED_OPERATOR_PLUGINS Script)
+#  ENDIF()
 #ENDIF(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)
 
 IF(TARGET vtkGeovisCore)
     LIST(APPEND REQUIRED_OPERATOR_PLUGINS CartographicProjection)
 ELSE()
-    MESSAGE(STATUS "CartographicProjection requires vtkGeovisCore")
+    IF(DEFINED VISIT_SELECTED_OPERATOR_PLUGINS)
+        VISIT_SELECTED_PLUGIN_ERROR(OPERATOR
+          "CartographicProjection"
+          "library vtkGeovisCore not found")
+    ELSE()
+        MESSAGE(STATUS "CartographicProjection requires vtkGeovisCore")
+    ENDIF()
 ENDIF()
 
 SET(OPTIONAL_OPERATOR_PLUGINS
@@ -159,30 +172,51 @@ Threshold
 )
 
 # Select the plugins to build
-IF(VISIT_BUILD_ALL_PLUGINS)
+IF(DEFINED VISIT_SELECTED_OPERATOR_PLUGINS)
+    SET(BUILD_PLUGINS ${VISIT_SELECTED_OPERATOR_PLUGINS})
+ELSEIF(VISIT_BUILD_ALL_PLUGINS)
     SET(BUILD_PLUGINS ${REQUIRED_OPERATOR_PLUGINS} ${OPTIONAL_OPERATOR_PLUGINS})
-ELSE(VISIT_BUILD_ALL_PLUGINS)
+ELSE()
     IF(VISIT_BUILD_MINIMAL_PLUGINS)
         SET(BUILD_PLUGINS ${MINIMAL_OPERATOR_PLUGINS})
     ELSE(VISIT_BUILD_MINIMAL_PLUGINS)
         SET(BUILD_PLUGINS ${REQUIRED_OPERATOR_PLUGINS})
     ENDIF(VISIT_BUILD_MINIMAL_PLUGINS)
-ENDIF(VISIT_BUILD_ALL_PLUGINS)
+ENDIF()
 
 IF(HAVE_LIB_R)
-  LIST(APPEND BUILD_PLUGINS ExtremeValueAnalysis)
-  LIST(APPEND BUILD_PLUGINS PeaksOverThreshold)
-  LIST(APPEND BUILD_PLUGINS ModelBasedClustering)
+  IF(NOT DEFINED VISIT_SELECTED_OPERATOR_PLUGINS)
+      LIST(APPEND BUILD_PLUGINS ExtremeValueAnalysis)
+      LIST(APPEND BUILD_PLUGINS PeaksOverThreshold)
+      LIST(APPEND BUILD_PLUGINS ModelBasedClustering)
+  ENDIF()
+ELSE(HAVE_LIB_R)
+  VISIT_SELECTED_PLUGIN_ERROR(OPERATOR 
+      "ExtremeValueAnalysis;PeaksOverThreshold;ModelBasedClustering"
+      "R library not found")
 ENDIF(HAVE_LIB_R)
 
 # Add the plugin directories
 FOREACH(operator ${BUILD_PLUGINS})
-    ADD_SUBDIRECTORY(${operator})
+    # (EXISTS test requires full path)
+    IF(EXISTS ${VISIT_SOURCE_DIR}/operators/${operator})
+        ADD_SUBDIRECTORY(${operator})
+    ELSE()
+        IF(DEFINED VISIT_SELECTED_OPERATOR_PLUGINS)
+            Message(FATAL_ERROR "Selected operator (${operator}) does not exist.")
+        ELSEIF(VISIT_STATIC)
+            # for code below, remove anything we aren't actually building
+            Message("${operator} removed from build because it does not exist")
+            LIST(REMOVE_ITEM BUILD_PLUGINS ${operator})
+        ENDIF()
+    ENDIF()
 ENDFOREACH(operator)
 
-# If we're building statically, make various main programs depend on plugins being built
+# If we're building statically, make various main programs depend on plugins
+# being built
 IF(VISIT_STATIC)
-    # Write a file containing the list of plugins such that we can include it into C++ code.
+    # Write a file containing the list of plugins such that we can include it
+    # into C++ code.
     FOREACH(operator ${BUILD_PLUGINS})
         SET(operatorCode "${operatorCode}PLUGIN_VERB(${operator})\n")
     ENDFOREACH(operator)
