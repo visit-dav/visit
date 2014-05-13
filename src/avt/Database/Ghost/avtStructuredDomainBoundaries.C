@@ -4037,6 +4037,9 @@ avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
          b[i] = false;
     for (size_t i = 0 ; i < wbi.neighbors.size() ; i++)
     {
+        if  (wbi.neighbors[i].refinement_rel != SAME_REFINEMENT_LEVEL)
+            continue;
+
         int neighbor = wbi.neighbors[i].domain;
 
         bool foundIt = false;
