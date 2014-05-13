@@ -126,6 +126,7 @@ enhancements and bug-fixes that were added to this release.</p>
   </li>
   <li>Filters have been improved so they add some filter metadata that at least contains the name of the operator that was applied. Text representations of the operator attributes can also be added to the filter metadata. Filter metadata can be used during database export to make meaningful names for the visualizations being exported.</li>
   <li>The database plugin API has been extended so that plugins can return license strings.</li>
+  <li>One can now specify which plugins VisIt should build via CMake variables VISIT_SELECTED_type_PLUGINS, where 'type' is one of: DATABASE, PLOT, OPERATOR.  Setting the var can be accomplished in the config-site file via a SET command: <pre>SET(VISIT_SELECTED_DATABASE_PLUGINS Silo VTK H5Part)</pre> or via the cmake command line with a ';' separated list: <pre>-DVISIT_SELECTED_DATABASE_PLUGINS:STRING="Silo;VTK;H5Part"</pre>If this is var is not set for a particular plugin type, then plugins are built according to normal rules.  <i>Spelling of the plugin must match its directory name.</i></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

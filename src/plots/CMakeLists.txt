@@ -35,6 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
+#    Kathleen Biagas, Mon May 12 12:59:25 PDT 2014
+#    Prefer VISIT_SELECTED_PLOT_PLUGINS if defined.  Test for existence of
+#    subdir before adding it.
 #
 #****************************************************************************/
 IF(NOT WIN32)
@@ -78,24 +81,39 @@ Pseudocolor
 )
 
 # Select the plugins to build
-IF(VISIT_BUILD_ALL_PLUGINS)
+IF(DEFINED VISIT_SELECTED_PLOT_PLUGINS)
+    SET(BUILD_PLUGINS ${VISIT_SELECTED_PLOT_PLUGINS})
+ELSEIF(VISIT_BUILD_ALL_PLUGINS)
     SET(BUILD_PLUGINS ${REQUIRED_PLOT_PLUGINS} ${OPTIONAL_PLOT_PLUGINS})
-ELSE(VISIT_BUILD_ALL_PLUGINS)
+ELSE()
     IF(VISIT_BUILD_MINIMAL_PLUGINS)
         SET(BUILD_PLUGINS ${MINIMAL_PLOT_PLUGINS})
     ELSE(VISIT_BUILD_MINIMAL_PLUGINS)
         SET(BUILD_PLUGINS ${REQUIRED_PLOT_PLUGINS})
     ENDIF(VISIT_BUILD_MINIMAL_PLUGINS)
-ENDIF(VISIT_BUILD_ALL_PLUGINS)
+ENDIF()
 
 # Add the plugin directories
 FOREACH(plot ${BUILD_PLUGINS})
-    ADD_SUBDIRECTORY(${plot})
+    # (EXISTS test requires full path)
+    IF(EXISTS ${VISIT_SOURCE_DIR}/plots/${plot})
+        ADD_SUBDIRECTORY(${plot})
+    ELSE()
+        IF(DEFINED VISIT_SELECTED_PLOT_PLUGINS)
+            Message(FATAL_ERROR "Selected plot (${plot}) does not exist.")
+        ELSEIF(VISIT_STATIC)
+            # for code below, remove anything we aren't actually building
+            Message("${plot} removed from build because it does not exist")
+            LIST(REMOVE_ITEM BUILD_PLUGINS ${plot})
+        ENDIF()
+    ENDIF()
 ENDFOREACH(plot)
 
-# If we're building statically, make various main programs depend on plugins being built
+# If we're building statically, make various main programs depend on plugins
+# being built
 IF(VISIT_STATIC)
-    # Write a file containing the list of plugins such that we can include it into C++ code.
+    # Write a file containing the list of plugins such that we can include it
+    # into C++ code.
     FOREACH(plot ${BUILD_PLUGINS})
         SET(plotCode "${plotCode}PLUGIN_VERB(${plot})\n")
     ENDFOREACH(plot)

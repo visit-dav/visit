@@ -374,6 +374,9 @@
 #    I added -DMPI_NO_CPPBIND to the VISIT_PARALLEL_CFLAGS and
 #    VISIT_PARALLEL_CXXFLAGS.
 #
+#    Kathleen Biagas, Mon May 12 12:58:02 PDT 2014
+#    Add VISIT_SELECTED_PLUGIN_ERROR macro.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -2331,6 +2334,17 @@ ENDFUNCTION(ADD_TARGET_COMPILE_FLAGS target)
 FUNCTION(ADD_TARGET_LINK_FLAGS target)
     ADD_TARGET_XXX_FLAGS(${target} LINK_FLAGS ${ARGN})
 ENDFUNCTION(ADD_TARGET_LINK_FLAGS target)
+
+macro(VISIT_SELECTED_PLUGIN_ERROR type plist msg)
+  if(DEFINED VISIT_SELECTED_${type}_PLUGINS)
+    foreach(plug ${plist})
+      list(FIND VISIT_SELECTED_${type}_PLUGINS ${plug} foundPlug)
+      if(NOT foundPlug EQUAL -1)
+        message(FATAL_ERROR "Cannot build selected plugin (${plug}): ${msg}")
+      endif()
+    endforeach()
+  endif()
+endmacro()
 
 IF(NOT VISIT_DBIO_ONLY)
    ADD_SUBDIRECTORY(plots)
