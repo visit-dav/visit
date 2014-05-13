@@ -53,6 +53,7 @@
 #include <avtArrayComposeExpression.h>
 #include <avtArrayComposeWithBinsExpression.h>
 #include <avtArrayDecomposeExpression.h>
+#include <avtArraySumExpression.h>
 #include <avtBinExpression.h>
 #include <avtBinaryAddExpression.h>
 #include <avtBinaryAndExpression.h>
@@ -491,6 +492,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Brad Whitlock, Wed Sep 12 17:15:18 PDT 2012
 //    Added bin expression.
 //
+//    Gunther H. Weber, Tue May 13 10:42:05 PDT 2014
+//    Added array_sum expression.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -526,6 +530,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtArrayComposeWithBinsExpression();
     if (functionName == "array_decompose")
         return new avtArrayDecomposeExpression();
+    if (functionName == "array_sum")
+        return new avtArraySumExpression();
     if (functionName == "localized_compactness")
         return new avtLocalizedCompactnessExpression();
     if (functionName == "recenter")

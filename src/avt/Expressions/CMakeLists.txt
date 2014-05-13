@@ -69,6 +69,9 @@
 #    Matthew Wheeler, Mon 20 May 12:00:00 GMT 2013
 #    Added avtMinCornerArea and avtMinSinCorner.C
 #
+#    Gunther H. Weber, Tue May 13 10:40:56 PDT 2014
+#    Added array_sum.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -132,6 +135,7 @@ General/avtApplyMapExpression.C
 General/avtArrayComposeExpression.C
 General/avtArrayComposeWithBinsExpression.C
 General/avtArrayDecomposeExpression.C
+General/avtArraySumExpression.C
 General/avtBinExpression.C
 General/avtColorComposeExpression.C
 General/avtConnComponentsExpression.C
