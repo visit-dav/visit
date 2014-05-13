@@ -1871,49 +1871,62 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             int nArrayComps = nodeCentered ? hiProbL[0] - lowProbL[0] + 2 : hiProbL[0] - lowProbL[0] + 1;
             AddArrayVarToMetaData(md, varnames[i], nArrayComps, mesh_name, nodeCentered ? AVT_NODECENT : AVT_ZONECENT);
-            int space_remaining = 4096;
-            char sum_expr[4096];
+            int buff_size = 4096;
+            char sum_expr_buffer[4096];
+
+            Expression sum_expr;
+            SNPRINTF(sum_expr_buffer, buff_size, "%s_sum", varnames[i].c_str());
+            sum_expr.SetName(sum_expr_buffer);
+            addedExpressionNames.push_back(sum_expr_buffer);
+            SNPRINTF(sum_expr_buffer, 1024, "array_sum(%s)", varnames[i].c_str());
+            sum_expr.SetDefinition(sum_expr_buffer);
+            sum_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&sum_expr);
+
+
+            int sum_expr_len = 0;
             bool error = false;
-            int ret = SNPRINTF(sum_expr, space_remaining, "array_decompose(%s, %d)", varnames[i].c_str(), 0);
-            if (ret < 0 || ret >= space_remaining)
-            {
-                debug1 << "Error creating sum expression!" << std::endl;
-                continue;
-            }
-            space_remaining -= ret;
-            char *sum_expr_loc = sum_expr + ret;
             for (int subComponentNo = 0; subComponentNo < nArrayComps; ++subComponentNo)
             {
                 char buffer[1024];
-                Expression vec;
+                Expression subcomponent_expr;
                 SNPRINTF(buffer, 1024, "%s/subcomponent_%d", varnames[i].c_str(), subComponentNo);
-                vec.SetName(buffer);
+                subcomponent_expr.SetName(buffer);
                 addedExpressionNames.push_back(buffer);
                 SNPRINTF(buffer, 1024, "array_decompose(%s, %d)", varnames[i].c_str(), subComponentNo);
-                vec.SetDefinition(buffer);
-                vec.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&vec);
+                subcomponent_expr.SetDefinition(buffer);
+                subcomponent_expr.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&subcomponent_expr);
 
-                ret = SNPRINTF(sum_expr_loc, space_remaining, " + array_decompose(%s, %d)", varnames[i].c_str(), subComponentNo);
+                int space_remaining = buff_size - sum_expr_len - 1;
+                int ret = SNPRINTF(sum_expr_buffer + sum_expr_len, space_remaining, "<%s/subcomponent_%d> + ", varnames[i].c_str(), subComponentNo);
                 if (ret < 0 || ret >= space_remaining)
                 {
                     debug1 << "Error creating sum expression!" << std::endl;
                     error = true;
                     break;
                 }
-                space_remaining -= ret;
-                sum_expr_loc += ret;
+                sum_expr_len += ret;
             }
+            if (sum_expr_len > 3)
+            {
+                sum_expr_buffer[sum_expr_len - 3] = '\0'; // Remove trailing " + "
+            }
+            else
+            {
+                debug1 << "Error creating sum expression!" << std::endl;
+                error = true;
+            }
+
             if (!error)
             {
-                Expression vec;
-                char buffer[1024];
-                SNPRINTF(buffer, 1024, "%s_sum", varnames[i].c_str());
-                vec.SetName(buffer);
-                addedExpressionNames.push_back(buffer);
-                vec.SetDefinition(sum_expr);
-                vec.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&vec);
+                Expression sum_expr;
+                sum_expr.SetDefinition(sum_expr_buffer);
+                SNPRINTF(sum_expr_buffer, buff_size, "%s_sum_discrete", varnames[i].c_str());
+                sum_expr.SetName(sum_expr_buffer);
+                addedExpressionNames.push_back(sum_expr_buffer);
+                sum_expr.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&sum_expr);
             }
         }
         else
@@ -3470,9 +3483,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
                 (hsize_t(hiK[patch]-lowK[patch])+2*numGhostK);
             int nL = nodeCentered ? (hsize_t(hiL[patch]-lowL[patch]+1)+2*numGhostL) :
                 (hsize_t(hiL[patch]-lowL[patch])+2*numGhostL);
-            //for (int bla = 0; bla < amt; ++bla) tmp[bla] = double((bla/(nI*nJ))%nK);
-            //std::cout << "Reading box " << patch << " [ " << lowI[patch] << ", " << hiI[patch] << ", " << lowJ[patch] << ", " << hiJ[patch] << ", " << lowK[patch] << ", " << hiK[patch] <<  ", " << lowL[patch] << ", " << hiL[patch] << "] is " << representativeBox[patch] << std::endl;
-            //std::cout << "sz: " << sz << " nTuples: " << nI*nJ*nK << " nL:" << nL << " nComp:" << farr->GetNumberOfComponents() << " nTuples(arr): " << farr->GetNumberOfTuples() << std::endl;
+
             for (int i = 0; i < nI; ++i)
                 for (int j = 0; j < nJ; ++j)
                     for (int k = 0; k < nK; ++k)
