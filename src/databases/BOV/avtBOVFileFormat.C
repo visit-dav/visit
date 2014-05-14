@@ -277,6 +277,15 @@ avtBOVFileFormat::ActivateTimestep(void)
 //    Hank Childs, Fri Nov 19 09:55:22 PST 2010
 //    Add a base_index so index select will work.
 //
+//    Gunther H. Weber, Tue May 13 18:12:54 PDT 2014
+//    Fix domain decomposition for bricklets of node centered data.
+//    Conceptually, in 1D the BOV reader would split the data set 1-2-3-4
+//    into two chunks 1-2 and 3-4, with the nodes for 2 and 3 inhabiting the
+//    same location. The result are discontinuities in the data set. To be
+//    consistent for nodal data, values need to be replicated, i.e., the
+//    data set 1-2-3 needs to be split into two chunks 1-2 and 2-3 with the
+//    2s coinciding. This commit changes the decomposition scheme appropriately.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -315,12 +324,20 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     float x_step = dimensions[0] / (nx);
     float y_step = dimensions[1] / (ny);
     float z_step = dimensions[2] / (nz);
+
+    if (nodalCentering)
+    {
+        x_step = bricklet_size[0] * (dimensions[0] / (full_size[0] - 1));
+        y_step = bricklet_size[1] * (dimensions[1] / (full_size[1] - 1));
+        z_step = bricklet_size[2] * (dimensions[2] / (full_size[2] - 1));
+    }
+
     float x_start = origin[0] + x_step*x_off;
-    float x_stop  = origin[0] + x_step*(x_off+1);
+    float x_stop  = std::min(dimensions[0], origin[0] + x_step*(x_off+1));
     float y_start = origin[1] + y_step*y_off;
-    float y_stop  = origin[1] + y_step*(y_off+1);
+    float y_stop  = std::min(dimensions[1], origin[1] + y_step*(y_off+1));
     float z_start = origin[2] + z_step*z_off;
-    float z_stop  = origin[2] + z_step*(z_off+1);
+    float z_stop  = std::min(dimensions[2], origin[2] + z_step*(z_off+1));
 
     //
     // Create the VTK construct.  Note that the mesh is being created to fit
@@ -344,6 +361,9 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     }
     if (! nodalCentering) 
         dx += 1;
+    else if (x_off < nx - 1)
+        dx += 1;
+
     x->SetNumberOfTuples(dx);
 
     // Don't fill in gaps
@@ -365,6 +385,8 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
             dy -= 1;
     }
     if (! nodalCentering) 
+        dy += 1;
+    else if (y_off < ny - 1)
         dy += 1;
 
     // Don't fill in gaps
@@ -394,6 +416,8 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
                 dz -= 1;
         }
         if (! nodalCentering) 
+            dz += 1;
+        else if (z_off < nz - 1)
             dz += 1;
  
         // Don't fill in gaps
@@ -870,6 +894,16 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
 //    Kathleen Biagas, Fri Jul 27 13:54:27 MST 2012
 //    Use FSEEK macro to get correct fseek version on Windows that will accept
 //    large offsets.
+//
+//    Gunther H. Weber, Tue May 13 18:12:54 PDT 2014
+//    Fix domain decomposition for bricklets of node centered data.
+//    Conceptually, in 1D the BOV reader would split the data set 1-2-3-4
+//    into two chunks 1-2 and 3-4, with the nodes for 2 and 3 inhabiting the
+//    same location. The result are discontinuities in the data set. To be
+//    consistent for nodal data, values need to be replicated, i.e., the
+//    data set 1-2-3 needs to be split into two chunks 1-2 and 2-3 with the
+//    2s coinciding. This commit changes the decomposition scheme appropriately.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -997,17 +1031,20 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         debug4 << mName << "Dividing whole brick" << endl;
 
         // Allocate enough memory for 1 bricklet.
-        unsigned long long nvals = bricklet_size[0] * 
-                             bricklet_size[1] *
-                             bricklet_size[2];
+        unsigned long long nvals = (nodalCentering && x_off < nx - 1 ? bricklet_size[0] + 1 : bricklet_size[0]) * 
+                             (nodalCentering && y_off < ny - 1 ? bricklet_size[1] + 1 : bricklet_size[1]) *
+                             (nodalCentering && full_size[2] != 1 && z_off < nz - 1 ? bricklet_size[2] + 1 : bricklet_size[2]);
         rv->SetNumberOfTuples(nvals);
 
         long long x_start = x_off * bricklet_size[0];
         long long y_start = y_off * bricklet_size[1];
         long long z_start = z_off * bricklet_size[2];
         long long x_stop = x_start + bricklet_size[0];
+        if (nodalCentering && x_off < nx - 1) x_stop += 1;
         long long y_stop = y_start + bricklet_size[1];
+        if (nodalCentering && y_off < ny - 1) y_stop += 1;
         long long z_stop = z_start + bricklet_size[2];
+        if (nodalCentering && full_size[2] != 1 && z_off < nz - 1) z_stop += 1;
 
         debug4 << mName << "byteOffset: " << byteOffset << endl;
         debug4 << mName << "Full size: " << full_size[0] << ", "
