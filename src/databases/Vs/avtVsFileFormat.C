@@ -379,6 +379,9 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 //
 //  Modifications:
 //
+//    Gunther H. Weber, Tue May 13 18:22:27 PDT 2014
+//    Added missing () to PAR_Rank() function call for diagnostic output
+//
 
 vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 {
@@ -492,7 +495,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
         // on proc 0 only
         if (PAR_Rank() > 0) {
             VsLog::debugLog() << CLASSFUNCLINE << "  "
-            << "In parallel mode on processor " << PAR_Rank
+            << "In parallel mode on processor " << PAR_Rank()
             << " and mesh is not uniform.  "
             << "Returning NULL, mesh will be loaded on processor 0 only."
             << std::endl;
@@ -568,6 +571,9 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 //  Creation:   June, 2010
 //
 //  Modifications:
+//
+//    Gunther H. Weber, Tue May 13 18:23:13 PDT 2014
+//    Fixed computation of grid spacing
 //
 
 vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
@@ -666,11 +672,11 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     // Number of nodes is equal to number of cells plus one
     std::vector<int> numNodes(vsdim);
     for (size_t i = 0; i < numTopologicalDims; ++i)
-    numNodes[i] = numCells[i]+1;
+        numNodes[i] = numCells[i]+1;
 
     // Set unused dims to 1
     for (size_t i=numTopologicalDims; i<vsdim; ++i)
-    numNodes[i] = 1;
+        numNodes[i] = 1;
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
@@ -710,7 +716,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
         // Delta
         double delta = 0;
         if (gdims[i] > 1)
-        delta = (upperBounds[i] - lowerBounds[i]) / (gdims[i]-1);
+        delta = (upperBounds[i] - lowerBounds[i]) / (numNodes[i]-1);
 
         int cc = 0;
         int j = mins[i];
