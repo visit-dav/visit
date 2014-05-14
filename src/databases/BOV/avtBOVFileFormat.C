@@ -286,6 +286,11 @@ avtBOVFileFormat::ActivateTimestep(void)
 //    data set 1-2-3 needs to be split into two chunks 1-2 and 2-3 with the
 //    2s coinciding. This commit changes the decomposition scheme appropriately.
 //
+//    Gunther H. Weber, Wed May 14 14:17:44 PDT 2014
+//    Use doubles instead of floats (to use the same type as dimensions,
+//    full_size, etc. Add missing origin for {x,y,z}_stop expressions
+//    causing regression test failure.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -321,9 +326,9 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     //
     // Establish what the range is of this dataset.
     //
-    float x_step = dimensions[0] / (nx);
-    float y_step = dimensions[1] / (ny);
-    float z_step = dimensions[2] / (nz);
+    double x_step = dimensions[0] / (nx);
+    double y_step = dimensions[1] / (ny);
+    double z_step = dimensions[2] / (nz);
 
     if (nodalCentering)
     {
@@ -332,12 +337,12 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         z_step = bricklet_size[2] * (dimensions[2] / (full_size[2] - 1));
     }
 
-    float x_start = origin[0] + x_step*x_off;
-    float x_stop  = std::min(dimensions[0], origin[0] + x_step*(x_off+1));
-    float y_start = origin[1] + y_step*y_off;
-    float y_stop  = std::min(dimensions[1], origin[1] + y_step*(y_off+1));
-    float z_start = origin[2] + z_step*z_off;
-    float z_stop  = std::min(dimensions[2], origin[2] + z_step*(z_off+1));
+    double x_start = origin[0] + x_step*x_off;
+    double x_stop  = origin[0] + std::min(dimensions[0], x_step*(x_off+1));
+    double y_start = origin[1] + y_step*y_off;
+    double y_stop  = origin[1] + std::min(dimensions[1], y_step*(y_off+1));
+    double z_start = origin[2] + z_step*z_off;
+    double z_stop  = origin[2] + std::min(dimensions[2], z_step*(z_off+1));
 
     //
     // Create the VTK construct.  Note that the mesh is being created to fit
