@@ -54,7 +54,7 @@ function bv_eavl_host_profile
     if [[ "$DO_EAVL" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## eavl " >> $HOSTCONF
+        echo "## EAVL " >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_EAVL_DIR \${VISITHOME}/eavl/$EAVL_VERSION/\${VISITARCH})" \
