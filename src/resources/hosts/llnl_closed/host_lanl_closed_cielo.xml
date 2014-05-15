@@ -5,7 +5,7 @@
     <Field name="hostNickname" type="string">LANL Cielo</Field>
     <Field name="directory" type="string">/usr/projects/views/visit</Field>
     <Field name="useGateway" type="bool">true</Field>
-    <Field name="gatewayHost" type="string">rfta15.lanl.gov</Field>
+    <Field name="gatewayHost" type="string">red-wtrw.lanl.gov</Field>
     <Field name="clientHostDetermination" type="string">MachineName</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">parallel viz</Field>
