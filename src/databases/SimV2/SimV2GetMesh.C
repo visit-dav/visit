@@ -773,6 +773,9 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
         }
     }
 
+    if (ndims == 2)
+        dataType[2] = dataType[0];
+
     // Create the VTK objects and connect them up.
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(nTuples);
