@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -69,6 +69,8 @@ visit_handle SimGetDomainList(const char *, void *);
 #define SIM_STOPPED       0
 #define SIM_RUNNING       1
 
+#define SIM_EXPORT
+
 typedef struct
 {
 #ifdef PARALLEL
@@ -83,6 +85,9 @@ typedef struct
     int      savingFiles;
     int      saveCounter;
     int      batch;
+#ifdef SIM_EXPORT
+    int      export;
+#endif
 
     int      pcId;
     int      meshId;
@@ -100,6 +105,9 @@ simulation_data_ctor(simulation_data *sim)
     sim->savingFiles = 0;
     sim->saveCounter = 0;
     sim->batch = 0;
+#ifdef SIM_EXPORT
+    sim->export = 0;
+#endif
 
     sim->pcId = -1;
     sim->meshId = -1;
@@ -110,7 +118,7 @@ simulation_data_dtor(simulation_data *sim)
 {
 }
 
-const char *cmd_names[] = {"halt", "step", "run", "addplot"};
+const char *cmd_names[] = {"halt", "step", "run", "addplot", "export"};
 
 /******************************************************************************
  ******************************************************************************
@@ -139,7 +147,10 @@ void simulate_one_timestep(simulation_data *sim)
     sim->time += (M_PI / 10.);
 
     if(sim->par_rank == 0)
+    {
         printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+        fflush(stdout);
+    }
 
     VisItTimeStepChanged();
     VisItUpdatePlots();
@@ -157,6 +168,23 @@ void simulate_one_timestep(simulation_data *sim)
         else if(sim->par_rank == 0)
             printf("The image could not be saved to %s\n", filename);
     }
+
+#ifdef SIM_EXPORT
+    if(sim->export)
+    {
+        char cmd[500];
+        sprintf(cmd,  
+        "dbAtts = ExportDBAttributes()\n"
+        "dbAtts.db_type= \"Silo\"\n"
+        "dbAtts.filename = \"updateplots_export%04d\"\n"
+        "dbAtts.dirname = \".\"\n"
+        "dbAtts.variables = (\"default\",)\n"
+        "ExportDatabase(dbAtts)",
+        sim->saveCounter);
+        VisItExecuteCommand(cmd);
+        sim->saveCounter++;
+    }
+#endif
 }
 
 
@@ -180,6 +208,10 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
         VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
         VisItExecuteCommand("DrawPlots()\n");
     }
+#ifdef SIM_EXPORT
+    else if(strcmp(cmd, "export") == 0)
+        sim->export = 1;
+#endif
 }
 
 /* CHANGE 1 */
@@ -317,6 +349,10 @@ ProcessConsoleCommand(simulation_data *sim)
         VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
         VisItExecuteCommand("DrawPlots()\n");
     }
+#ifdef SIM_EXPORT
+    else if(strcmp(cmd, "export") == 0)
+        sim->export = 1;
+#endif
 }
 
 /******************************************************************************
