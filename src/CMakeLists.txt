@@ -728,7 +728,6 @@ ENDIF(WIN32)
 #       needs to link but not to compile). Use the plugin's .xml file for
 #       libs a plugin is DIRECTLY dependent on (e.g. needs to both compile
 #       and link).
-VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
 VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
@@ -739,6 +738,7 @@ VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(EAVL_DIR      "Path containing the eavl library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the Fastbit library's include and lib")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
+VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
 VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
 VISIT_3RDPARTY_DEP(HDF4_LIBDEP   "HDF4 library dependencies")
 VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and lib")
@@ -750,16 +750,16 @@ VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and
 VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
+VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
 VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
+VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
 VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
 VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
 VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
-VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
-VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -1274,9 +1274,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
 
     # Configure eavl support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindEAVL.cmake)
-    IF(MFEM_FOUND)
-        SET(HAVE_EAVL 1)
-    ENDIF(MFEM_FOUND)
+    IF(EAVL_FOUND)
+        SET(HAVE_LIBEAVL 1)
+    ENDIF(EAVL_FOUND)
 
     # Configure Fastbit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
@@ -1314,7 +1314,7 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
     # Configure mfem support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMFEM.cmake)
     IF(MFEM_FOUND)
-        SET(HAVE_MFEM 1)
+        SET(HAVE_LIBMFEM 1)
     ENDIF(MFEM_FOUND)
 
     # Configure Mili support.
