@@ -266,7 +266,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("materialvar",
         "Demonstrates variables restricted to certain materials",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();

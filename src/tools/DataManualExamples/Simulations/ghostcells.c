@@ -1034,7 +1034,7 @@ int main(int argc, char **argv)
 #endif
             "Demonstrate ghost cells on different mesh types",
             "/path/to/where/sim/was/started",
-            NULL, NULL, NULL);
+            NULL, NULL, SimulationFilename());
     }
 
     /* Read input problem setup, geometry, data.*/
