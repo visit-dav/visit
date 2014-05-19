@@ -41,29 +41,35 @@
  * Optional libraries
  ******************************************************************************/
 
-/* Define if you have the GLEW library. */
-#cmakedefine HAVE_LIBGLEW
-
 /* Define if you have the boost interval template library. */
 #cmakedefine HAVE_BILIB
 
-/* Define to 1 if you have the `m' library (-lm). */
-#cmakedefine HAVE_LIBM 1
-
-/* Define to 1 if you have the `z' library (-lz). */
-#cmakedefine HAVE_LIBZ 1
+/* Define if you have the EAVL library. */
+#cmakedefine HAVE_LIBEAVL
 
 /* Define if you have the FastBit library. */
 #cmakedefine HAVE_LIBFASTBIT 
 
+/* Define if you have the GLEW library. */
+#cmakedefine HAVE_LIBGLEW
+
+/* Define to 1 if you have the `m' library (-lm). */
+#cmakedefine HAVE_LIBM 1
+
+/* Define if you have the MFEM library. */
+#cmakedefine HAVE_LIBMFEM
+
 /* Define if you have the R library. */
 #cmakedefine HAVE_LIB_R
 
-/* Define if you have the OSMESA */
-#cmakedefine HAVE_OSMESA
-
 /* Define if you have the X11 library */
 #cmakedefine HAVE_LIBX11
+
+/* Define to 1 if you have the `z' library (-lz). */
+#cmakedefine HAVE_LIBZ 1
+
+/* Define if you have the OSMESA */
+#cmakedefine HAVE_OSMESA
 
 /*******************************************************************************
  * Header file checks
