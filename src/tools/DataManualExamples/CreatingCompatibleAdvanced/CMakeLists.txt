@@ -38,6 +38,8 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #   
+#   Mark C. Miller, Mon May 19 10:51:53 PDT 2014
+#   Added explicit 'm' (math library) for SILO_LIB linkage.
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -58,7 +60,7 @@ ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
 FUNCTION(ADD_SILO_EXAMPLE target)
     IF(SILO_FOUND)
         ADD_EXECUTABLE(adv_example_${target} ${ARGN})
-        TARGET_LINK_LIBRARIES(adv_example_${target} ${SILO_LIB} stdc++)
+        TARGET_LINK_LIBRARIES(adv_example_${target} ${SILO_LIB} stdc++ m)
         SET_TARGET_PROPERTIES(adv_example_${target} PROPERTIES
             OUTPUT_NAME ${target}
             RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatibleAdvanced
