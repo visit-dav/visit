@@ -247,6 +247,7 @@ struct simulation_data
     int     savingFiles;
     int     saveCounter;
     bool    autoupdate;
+    bool    echo;
     patch_t patch;
 
     int     *patch_list; /* Patch list for this rank. */
@@ -267,6 +268,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->savingFiles = 0;
     sim->saveCounter = 0;
     sim->autoupdate = false;
+    sim->echo = false;
     patch_ctor(&sim->patch);
 
     sim->patch_list = NULL;
@@ -649,6 +651,12 @@ ProcessConsoleCommand(simulation_data *sim)
         printf("   rank0          Use rank0 patch to processor mapping\n");
         printf("   verbose on/off Print processor mapping\n");
     }
+
+    if(sim->echo && sim->par_rank == 0)
+    {
+        fprintf(stderr, "Command %s completed.\n", cmd);
+        fflush(stderr);
+    }
 }
 
 /******************************************************************************
@@ -911,6 +919,12 @@ int main(int argc, char **argv)
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
+    for(int i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "-echo") == 0)
+            sim.echo = true;
+    }
+
 #ifdef PARALLEL
     /* Install callback functions for global communication. */
     VisItSetBroadcastIntFunction2(visit_broadcast_int_callback, (void*)&sim);
@@ -943,7 +957,7 @@ int main(int argc, char **argv)
 #endif
             "Demonstrates creating the Mandelbrot set on an AMR mesh",
             "/path/to/where/sim/was/started",
-            NULL, "mandelbrot.ui", NULL);
+            NULL, "mandelbrot.ui", SimulationFilename());
     }
 
     /* Read input problem setup, geometry, data. */

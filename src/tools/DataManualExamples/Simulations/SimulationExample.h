@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+static char *__sim2_filename__ = NULL;
+
 /*****************************************************************************
  * Method: SimulationExample
  *
@@ -64,7 +66,19 @@ SimulationArguments(int argc, char **argv)
             ++i;
         }
 #endif
+        else if(strcmp(argv[i], "-sim2") == 0 &&
+               (i+1) < argc)
+        {
+            __sim2_filename__ = argv[i+1];
+            ++i;
+        }
     }
+}
+
+char *
+SimulationFilename(void)
+{
+    return __sim2_filename__;
 }
 
 /*****************************************************************************
