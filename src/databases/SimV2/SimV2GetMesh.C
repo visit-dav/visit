@@ -433,6 +433,9 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 //   * make error handling consistent(throw exceptions) because callers don't
 //     check for null return
 //
+//    Kathleen Biagas, Mon May 19 11:38:05 PDT 2014
+//    When calling SetArray, include nComps in the size argument.
+//
 // ****************************************************************************
 
 static vtkPoints *
@@ -575,8 +578,9 @@ SimV2_CreatePoints(int ndims, int coordMode,
         {
             // zero-copy, VTK uses the pointer rather than making
             // a copy. this is inherently risky, especially for VISIT_OWNER_SIM
-            // with VISIT_OWNER_VISIT_EX the sim is expected to hold a reference
-            // until his callback is invoked bt the vtk array delete event observer
+            // with VISIT_OWNER_VISIT_EX the sim is expected to hold a
+            // reference until his callback is invoked by the vtk array delete
+            // event observer
             switch (dataType)
             {
             simV2FloatTemplateMacro(
@@ -585,21 +589,25 @@ SimV2_CreatePoints(int ndims, int coordMode,
 
                 if (owner == VISIT_OWNER_VISIT_EX)
                 {
-                    // we observe VTK data array's DeleteEvent and invoke the user
-                    // provided callback in repsonse. it's the callbacks duty to free
-                    // the memory.
-                    pts->SetArray(static_cast<simV2_TT::cppType*>(data), nTuples, 1);
+                    // we observe VTK data array's DeleteEvent and invoke the
+                    // user provided callback in repsonse. it's the callbacks
+                    // duty to free the memory.
+                    pts->SetArray(static_cast<simV2_TT::cppType*>(data), 
+                                  nTuples*3, 1);
 
-                    simV2_DeleteEventObserver *observer = simV2_DeleteEventObserver::New();
+                    simV2_DeleteEventObserver *observer = 
+                        simV2_DeleteEventObserver::New();
                     observer->Observe(pts, callback, callbackData);
-                    // this is not a leak, the observer is Delete'd after it's invoked.
+                    // this is not a leak, the observer is Delete'd after it's
+                    // invoked.
                 }
                 else
                 {
-                    // VTK assumes ownership for VISIT_OWNER_VISIT. for VISIT_OWNER_SIM
-                    // the sim must ensure that data persists while VTK is using it
+                    // VTK assumes ownership for VISIT_OWNER_VISIT. For
+                    // VISIT_OWNER_SIM the sim must ensure that data persists
+                    // while VTK is using it
                     pts->SetArray(static_cast<simV2_TT::cppType*>(data),
-                         nTuples, ((owner==VISIT_OWNER_VISIT)?0:1));
+                         nTuples*3, ((owner==VISIT_OWNER_VISIT)?0:1));
 
                 }
                 points->SetData(pts);
