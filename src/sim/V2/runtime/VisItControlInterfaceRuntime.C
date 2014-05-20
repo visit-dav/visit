@@ -249,7 +249,10 @@ void simv2_disconnect()
         if (visitTimer)
             TimingsManager::Finalize();
 
-        vtkVisItUtility::CleanupStaticVTKObjects();
+        // KSB: This may be needed for memory leaks, but I've commented
+        // it out for now, as it's use causes a segfault should VisIt
+        // try to reconnect to the same simulation.
+        //vtkVisItUtility::CleanupStaticVTKObjects();
         avtFileDescriptorManager::DeleteInstance();
 
         DataCallbacksCleanup();
