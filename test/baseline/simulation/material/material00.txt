@@ -1,0 +1,3 @@
+Simulation executable "material" exists.
+Simulation "material" started.
+VisIt connected to simulation "material".

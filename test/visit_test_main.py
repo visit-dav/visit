@@ -1695,6 +1695,165 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
     return 0, ""
 
 #############################################################################
+#   Simulation Support
+#############################################################################
+
+def SimVisItDir():
+    return TestEnv.params["sim_dir"]
+
+def SimProgram(sim):
+    return os.path.join(SimVisItDir(),"tools","DataManualExamples","Simulations",sim)
+
+def SimFile(sim2):
+    workingdir = os.curdir
+    return os.path.abspath(os.path.join(workingdir, sim2))
+
+def TestSimulation(sim, sim2):
+    return Simulation(SimVisItDir(), SimProgram(sim), SimFile(sim2))
+
+# ----------------------------------------------------------------------------
+#  Class: Simulation
+#
+#  Programmer: Brad Whitlock
+#  Date:       Wed Dec 18, 2013
+#
+#  Modifications:
+#
+# ----------------------------------------------------------------------------
+class Simulation(object):
+    def __init__(self, vdir, s, sim2):
+        self.simulation = s
+        self.host = "localhost"
+        self.sim2 = sim2
+        self.visitdir = vdir
+        self.p = None
+        self.connected = False
+        self.extraargs = []
+
+    def startsim(self):
+        """
+        Start up the simulation.
+        """
+        tfile = self.sim2 + ".trace"
+        #args = ["xterm", "-e", 
+        args = [self.simulation, "-dir", self.visitdir, "-trace", tfile, "-sim2", self.sim2]
+        for a in self.extraargs:
+            args = args + [a]
+        self.p = subprocess.Popen(args, 
+                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        return self.p != None
+
+    def addargument(self, arg):
+        """
+        Add an extra command line argument for the simulation."
+        """
+        self.extraargs = self.extraargs + [arg]
+
+    def connect(self):
+        """
+        Connect to the simulation."
+        """
+        ret = OpenDatabase(self.sim2)
+        if ret:
+            self.connected = True
+        return ret
+
+    def disconnect(self):
+        """
+        Disconnect from the simulation.
+        """
+        self.connected = False
+        CloseDatabase(self.sim2)
+        CloseComputeEngine(self.host, self.sim2)
+        return 1
+
+    def endsim(self):
+        """
+        Tell the simulation to terminate."
+        """
+        if self.connected:
+            # Be nice about it.
+            self.p.stdin.write("quit\n")
+            self.p.communicate()
+            self.p.wait()
+        else:
+            # Force the sim to terminate.
+            self.p.terminate()
+        return 1
+
+    # Sim commands
+    def consolecommand(self, cmd):
+        """
+        Send a console command to the simulation."
+        """
+        if self.connected:
+            self.p.stdin.write(cmd + "\n")
+            self.p.stdin.flush()
+
+    def controlcommand(self, cmd):
+        """
+        Send a control command to the simulation."
+        """
+        ret = 0
+        if self.connected:
+            ret = SendSimulationCommand(self.host, self.sim2, cmd)
+   
+    def metadata(self):
+        md = None
+        if self.connected:
+            md = GetMetaData(self.sim2)
+        return md
+
+# ----------------------------------------------------------------------------
+# Function: TestSimStartAndConnect
+#
+# ----------------------------------------------------------------------------
+
+def TestSimStartAndConnect(testname, sim):
+    # Test that the simulation executable exists.
+    exe = os.path.split(sim.simulation)[1]
+    started = 0
+    connected = 0
+    if os.path.exists(sim.simulation):
+        txt = "Simulation executable \"%s\" exists.\n" % exe
+        # Test that the simulation starts and that we can connect to it.
+        started = sim.startsim()
+        if started:
+            txt = txt + "Simulation \"%s\" started.\n" % exe
+            connected = sim.connect()
+            if connected:
+                txt = txt + "VisIt connected to simulation \"%s\"." % exe
+            else:
+                txt = txt + "VisIt did not connect to simulation \"%s\"." % exe
+        else:
+            txt = txt + "Simulation \"%s\" did not start." % exe
+    else:
+        txt = "Simulation executable \"%s\" does not exist.\n" % exe    
+    TestText(testname, txt)
+    return started,connected
+
+# ----------------------------------------------------------------------------
+# Function: TestSimMetaData
+#
+# ----------------------------------------------------------------------------
+
+def TestSimMetaData(testname, md):
+    lines = string.split(str(md), "\n")
+    txt = ""
+    for line in lines:
+        if "exprList" in line:
+            continue
+        outline = line
+        if "simInfo.port" in line:
+            outline = "simInfo.port = PORT"
+        if "simInfo.securityKey" in line:
+            outline = "simInfo.securityKey = KEY"
+        if "simInfo.host" in line:
+            outline = "simInfo.host = HOST"
+        txt = txt + outline + "\n"
+    TestText(testname, txt)
+
+#############################################################################
 #   Argument/Environment Processing
 #############################################################################
 
