@@ -236,6 +236,7 @@ fi
     -DVISIT_CONFIG_SITE=config-site/edge83.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DVISIT_BUILD_ALL_PLUGINS=1 \
+    -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
     -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
     . >> ../buildlog 2>&1
 make -j 12 >> ../buildlog 2>&1
