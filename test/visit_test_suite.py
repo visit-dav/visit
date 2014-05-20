@@ -144,6 +144,9 @@ def parse_test_specific_vargs(test_file):
 #    Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
 #    Pass 'ctest' to test.
 #
+#    Kathleen Biagas, Fri May 16 15:23:13 PDT 2014
+#    Set up sim_dir based off executable location.
+#
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -224,6 +227,10 @@ def launch_visit_test(args):
     tparams["width"]          = opts["width"]
     tparams["height"]         = opts["height"]
     tparams["ctest"]          = opts["ctest"]
+
+    exe_dir, exe_file = os.path.split(tparams["visit_bin"])
+    tparams["sim_dir"] = os.path.abspath(os.path.join(exe_dir, ".."))
+
     if not opts["no_skip"]:
         tparams["skip_file"]  = opts["skip_file"]
     skip  =  check_skip(opts["skip_list"],modes,test_cat,test_file)
