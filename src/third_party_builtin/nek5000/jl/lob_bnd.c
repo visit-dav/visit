@@ -149,7 +149,7 @@ static void lob_bnd_ext(
   const double *restrict lbnp, unsigned n, unsigned m,
   const double *restrict br_, unsigned mr,
   double *restrict a)
-{
+{{
   const double *restrict br = br_;
   double *restrict b = b_;
   unsigned i,j,k;
@@ -184,7 +184,7 @@ static void lob_bnd_ext(
           *b++ += w1 * lbnp[4*k+3] + w0 * lbnp[4*k+0];
     }
   }
-}
+}}
 
 void lob_bnd_lin_1(double *restrict b,
                    const double *restrict lob_bnd_data, unsigned n, unsigned m,
