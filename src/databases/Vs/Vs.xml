@@ -4,12 +4,6 @@
       avtVsFileFormat.C
       avtVsOptions.C
       VsFilter.C
-      VsH5Attribute.C
-      VsH5Dataset.C
-      VsH5File.C
-      VsH5Group.C
-      VsH5Object.C
-      VsH5Reader.C
       VsLog.C
       VsMDMesh.C
       VsMDVariable.C
@@ -24,18 +18,20 @@
       VsVariableWithMesh.C
       VsRegistry.C
       VsRegistryObject.C
+      VsGroup.C
+      VsObject.C
+      VsDataset.C
+      VsAttribute.C
+      VsFile.C
+      VsReader.C
+      VsStaggeredField.C
+      HighOrderUnstructuredData.C
     </Files>
 
     <Files components="E">
       avtVsFileFormat.C
       avtVsOptions.C
       VsFilter.C
-      VsH5Attribute.C
-      VsH5Dataset.C
-      VsH5File.C
-      VsH5Group.C
-      VsH5Object.C
-      VsH5Reader.C
       VsLog.C
       VsMDMesh.C
       VsMDVariable.C
@@ -50,6 +46,13 @@
       VsVariableWithMesh.C
       VsRegistry.C
       VsRegistryObject.C
+      VsGroup.C
+      VsObject.C
+      VsDataset.C
+      VsAttribute.C
+      VsFile.C
+      VsReader.C
+      HighOrderUnstructuredData.C
     </Files>
 
     <CXXFLAGS>

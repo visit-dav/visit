@@ -72,7 +72,7 @@ set(guiwrapper_include_paths
 
 include_directories(${guiwrapper_include_paths})
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR})
 set(guiwrapper_link_libs 
     gui
     viewer

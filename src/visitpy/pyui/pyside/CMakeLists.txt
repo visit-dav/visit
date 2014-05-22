@@ -40,3 +40,7 @@
 
 add_subdirectory(hook)
 add_subdirectory(gui)
+
+LINK_DIRECTORIES(
+${EAVL_LIBRARY_DIR}
+)
