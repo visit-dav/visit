@@ -164,16 +164,18 @@ VISIT_VTK_DIR
     mkdir "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
     mkdir "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/lib"
 
-    cp lib/libeavl.a      "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/lib"
-    cp src/common/*.h     "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/exporters/*.h  "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/importers/*.h  "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/rendering/*.h  "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/filters/*.h    "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/math/*.h       "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/fonts/*.h      "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/operations/*.h "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
-    cp src/vtk/*.h        "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp lib/libeavl.a         "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/lib"
+    cp config/eavlConfig.h   "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp config/eavlPlatform.h "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/common/*.h        "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/exporters/*.h     "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/importers/*.h     "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/rendering/*.h     "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/filters/*.h       "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/math/*.h          "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/fonts/*.h         "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/operations/*.h    "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
+    cp src/vtk/*.h           "$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH/include"
 
 
     if [[ "$DO_GROUP" == "yes" ]] ; then

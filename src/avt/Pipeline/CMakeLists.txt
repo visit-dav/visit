@@ -241,12 +241,13 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
+${EAVL_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 ${ZLIB_INCLUDE_DIR}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
 
 # Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
 IF(NOT VISIT_DBIO_ONLY)
@@ -260,7 +261,7 @@ ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
                                            vtkCommonDataModel vtkFiltersGeometry 
                                            vtkRenderingOpenGL vtkRenderingFreeType 
                                            vtkRenderingFreeTypeOpenGL vtkInteractionStyle 
-                                           ${ZLIB_LIB})
+                                           ${ZLIB_LIB} ${EAVL_LIB})
 
 IF(HAVE_LIB_R)
      TARGET_LINK_LIBRARIES(avtpipeline_ser vtkFiltersStatisticsGnuR)
@@ -280,7 +281,7 @@ IF(VISIT_PARALLEL)
                                               vtkRenderingOpenGL vtkRenderingFreeType 
                                               vtkRenderingFreeTypeOpenGL 
                                               vtkInteractionStyle ${ZLIB_LIB} 
-                                              )
+                                              ${EAVL_LIB})
     IF(HAVE_LIB_R)
         TARGET_LINK_LIBRARIES(avtpipeline_par vtkFiltersStatisticsGnuR)
     ENDIF(HAVE_LIB_R)

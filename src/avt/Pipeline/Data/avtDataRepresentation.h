@@ -48,9 +48,16 @@
 #include <array_ref_ptr.h>
 #include <string>
 
-class  vtkDataSet;
 class  avtWebpage;
+class  eavlDataSet;
+class  vtkDataSet;
 
+
+typedef enum
+{
+    DATA_REP_TYPE_EAVL,
+    DATA_REP_TYPE_VTK,
+} DataRepType;
 
 typedef enum
 {
@@ -126,6 +133,7 @@ class PIPELINE_API avtDataRepresentation
 
     avtDataRepresentation    &operator=(const avtDataRepresentation &);
 
+    eavlDataSet        *GetDataEAVL(void);
     vtkDataSet         *GetDataVTK(void);
     unsigned char      *GetDataString(int &, DataSetType &);
     unsigned char      *GetCompressedDataString(int &, DataSetType &);
@@ -143,11 +151,13 @@ class PIPELINE_API avtDataRepresentation
     const char         *DebugDump(avtWebpage *, const char *);
 
   protected:
+    eavlDataSet        *asEAVL;
     vtkDataSet         *asVTK;
     unsigned char      *asChar;
     int                 asCharLength;
     CharStrRef          originalString;
     DataSetType         datasetType;
+    DataRepType         dataRepType;
 
     float               compressionRatio;
     float               timeToCompress;

@@ -38,6 +38,10 @@
 #
 #****************************************************************************/
 
+LINK_DIRECTORIES(
+${EAVL_LIBRARY_DIR}
+)
+
 IF(UNIX)
     ADD_SUBDIRECTORY(V1)
 ENDIF(UNIX)

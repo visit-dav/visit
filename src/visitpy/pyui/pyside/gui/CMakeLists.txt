@@ -98,7 +98,7 @@ ${CMAKE_CURRENT_BINARY_DIR}/pyside_gui/pyside_gui_module_wrapper.cpp)
 #
 IF(MESA_FOUND)
     set(pyside_gui_link_libs ${pyside_gui_link_libs} ${MESA_LIB})
-    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR})
+    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR} ${EAVL_LIBRARY_DIR})
 ENDIF(MESA_FOUND)
 
 PYSIDE_ADD_MODULE(pyside_gui

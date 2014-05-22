@@ -42,6 +42,13 @@
 
 #include <avtDataRepresentation.h>
 
+#include <visit-config.h>
+
+#ifdef HAVE_LIBEAVL
+#include <eavl.h>
+#include <eavlDataSet.h>
+#endif
+
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
@@ -580,6 +587,30 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
     return asChar;
 }
 
+// ****************************************************************************
+//  Method: avtDataRepresentation::GetDataEAVL
+//
+//  Purpose:
+//      Gets the data as an eavlDataSet.
+//
+//  Returns:      The data as a eavlDataSet.
+//
+//  Programmer: Eric Brugger
+//  Creation:   May 21, 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+eavlDataSet *
+avtDataRepresentation::GetDataEAVL(void)
+{
+#ifdef HAVE_LIBEAVL
+    asEAVL = new eavlDataSet();
+#else
+    asEAVL = NULL;
+#endif
+}
 
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetDataVTK

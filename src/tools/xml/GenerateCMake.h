@@ -150,6 +150,9 @@
 //    For extraIncludes specified in CXXFLAGS, check for use of 
 //    ${VISIT_INCLUDE_DIR} and correct it if building against public VisIt.
 //
+//    Eric Brugger, Wed May 21 14:48:11 PDT 2014
+//    I added support for EAVL.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -461,6 +464,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${QT_INCLUDE_DIR}" << endl;
         out << "${QT_QTCORE_INCLUDE_DIR}" << endl;
         out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
+        out << "${EAVL_INCLUDE_DIR} " << endl;
         out << "${VTK_INCLUDE_DIRS} " << endl;
         out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
@@ -625,6 +629,7 @@ class CMakeGeneratorPlugin : public Plugin
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${QT_LIBRARY_DIR}");
         linkDirs.push_back("${GLEW_LIBRARY_DIR}");
+        linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         linkDirs.push_back("${VTK_LIBRARY_DIRS}");
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         for (size_t i=0; i<ldflags.size(); i++)
@@ -852,6 +857,7 @@ class CMakeGeneratorPlugin : public Plugin
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${QT_LIBRARY_DIR}");
         linkDirs.push_back("${GLEW_LIBRARY_DIR}");
+        linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         linkDirs.push_back("${VTK_LIBRARY_DIRS}");
         for (size_t i=0; i<ldflags.size(); i++)
         {
@@ -1086,6 +1092,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
+        out << "${EAVL_INCLUDE_DIR} " << endl;
         out << "${VTK_INCLUDE_DIRS} " << endl;
         out << ")" << endl;
         out << endl;
@@ -1147,6 +1154,7 @@ class CMakeGeneratorPlugin : public Plugin
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
+        linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         linkDirs.push_back("${VTK_LIBRARY_DIRS}");
         for (size_t i=0; i<ldflags.size(); i++)
         {

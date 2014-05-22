@@ -66,7 +66,7 @@ ${PYTHON_INCLUDE_PATH}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${PYTHON_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${PYTHON_DIR})
 
 
 #********************************* SERIAL ************************************
