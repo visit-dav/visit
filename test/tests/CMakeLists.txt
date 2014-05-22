@@ -43,61 +43,43 @@
 # Modifications:
 #   Kathleen Biagas, Thu Feb 6 08:57:13 PST 2014
 #   Account for differences on Windows and whether or not the IDE is used
+#
+#   Burlen Loring, Wed May 21 13:20:09 PDT 2014
+#   compact special windows cases, make unix like use the
+#   python as reported by visit cmake config, add libsim
+#   tests, use --fuzzy --avgdiff=2 so tests more pass on
+#   apple
+#
 # ****************************************************************************
 
 MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
+    SET(TESTSUITE_PLATFORM_ARGS)
+    SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/visit.exe")
+    IF(WIN32)
+        # windows needs skiplist to various prevent crashes
+        # and msvc needs configuration specific paths
+        IF(MSVC_IDE)
+            SET(TESTSUITE_VISIT_EXEC ${CMAKE_BINARY_DIR}/exe/$<CONFIGURATION>/visit.exe)
+        ENDIF()
+    ELSE()
+        # run all tests on unix like systems
+        LIST(APPEND TESTSUITE_PLATFORM_ARGS "--no-skiplist")
+    ENDIF()
     SET(N_PY_TESTS)
     LIST(LENGTH PY_TESTS N_PY_TESTS)
     MESSAGE(STATUS "Configuring ${N_PY_TESTS} python tests for ${MODULE_NAME}")
-    IF(NOT WIN32)
-        FOREACH(PY_TEST ${PY_TESTS})
-            ADD_TEST(
-                NAME Test${MODULE_NAME}_${PY_TEST}
-                COMMAND python "${VISIT_TEST_DIR}/visit_test_suite.py"
-                --no-skiplist --no-data-check --ctest -n 1
-                --cleanup-delay=1 --pixdiff=4 --lessverbose
-                -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
-                -e ${CMAKE_BINARY_DIR}/bin/visit
-                -o ${CMAKE_BINARY_DIR}/PyTestOutput
-                ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
-                )
-        ENDFOREACH()
-    ELSE()
-        # Need to use skip list because some of the skipped tests on 
-        # windows cause a crash. 
-        IF(MSVC_IDE)
-            # Use ${PYTHON_EXECUTABLE} and path-to-visit executable
-            # that takes into account the current configuration.
-            FOREACH(PY_TEST ${PY_TESTS})
-                ADD_TEST(
-                    NAME Test${MODULE_NAME}_${PY_TEST}
-                    COMMAND ${PYTHON_EXECUTABLE} 
-                     "${VISIT_TEST_DIR}/visit_test_suite.py"
-                    --no-data-check --ctest -n 1
-                    --cleanup-delay=1 --pixdiff=4 --lessverbose
-                    -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
-                    -e ${CMAKE_BINARY_DIR}/exe/$<CONFIGURATION>/visit.exe
-                    -o ${CMAKE_BINARY_DIR}/PyTestOutput
-                    ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
-                )
-            ENDFOREACH()
-        ELSE()
-            # Use ${PYTHON_EXECUTABLE} and path-to-visit executable
-            FOREACH(PY_TEST ${PY_TESTS})
-                ADD_TEST(
-                    NAME Test${MODULE_NAME}_${PY_TEST}
-                    COMMAND ${PYTHON_EXECUTABLE} 
-                     "${VISIT_TEST_DIR}/visit_test_suite.py"
-                    --no-data-check --ctest -n 1
-                    --cleanup-delay=1 --pixdiff=4 --lessverbose
-                    -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
-                    -e ${CMAKE_BINARY_DIR}/exe/visit.exe
-                    -o ${CMAKE_BINARY_DIR}/PyTestOutput
-                    ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
-                )
-            ENDFOREACH()
-        ENDIF()
-    ENDIF()
+    FOREACH(PY_TEST ${PY_TESTS})
+        ADD_TEST(
+            NAME Test${MODULE_NAME}_${PY_TEST}
+            COMMAND ${PYTHON_EXECUTABLE} "${VISIT_TEST_DIR}/visit_test_suite.py"
+            ${TESTSUITE_PLATFORM_ARGS} --no-data-check --ctest -n 1
+            --cleanup-delay=1 --avgdiff=2 --fuzzy --lessverbose
+            -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
+            -e ${CMAKE_BINARY_DIR}/bin/visit
+            -o ${CMAKE_BINARY_DIR}/PyTestOutput
+            ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
+            )
+    ENDFOREACH()
 ENDMACRO()
 
 # macro for tests that depend on third party libraries
@@ -142,4 +124,5 @@ SUBDIRS(
     queries
     rendering
     session
-    unit)
+    unit
+    simulation)
