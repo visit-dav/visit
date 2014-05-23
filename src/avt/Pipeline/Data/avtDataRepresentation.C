@@ -610,6 +610,7 @@ avtDataRepresentation::GetDataEAVL(void)
 #else
     asEAVL = NULL;
 #endif
+    return asEAVL;
 }
 
 // ****************************************************************************
