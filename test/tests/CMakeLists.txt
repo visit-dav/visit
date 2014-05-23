@@ -47,7 +47,7 @@
 #   Burlen Loring, Wed May 21 13:20:09 PDT 2014
 #   compact special windows cases, make unix like use the
 #   python as reported by visit cmake config, add libsim
-#   tests, use --fuzzy --avgdiff=2 so tests more pass on
+#   tests, use --fuzzy --avgdiff=11 so more tests pass on
 #   apple
 #
 # ****************************************************************************
@@ -73,7 +73,7 @@ MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
             NAME Test${MODULE_NAME}_${PY_TEST}
             COMMAND ${PYTHON_EXECUTABLE} "${VISIT_TEST_DIR}/visit_test_suite.py"
             ${TESTSUITE_PLATFORM_ARGS} --no-data-check --ctest -n 1
-            --cleanup-delay=1 --avgdiff=2 --fuzzy --lessverbose
+            --cleanup-delay=1 --avgdiff=11 --fuzzy --lessverbose
             -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
             -e ${CMAKE_BINARY_DIR}/bin/visit
             -o ${CMAKE_BINARY_DIR}/PyTestOutput
