@@ -40,6 +40,7 @@
 //                            avtPythonQuery.C                               //
 // ************************************************************************* //
 
+#include <Python.h> // this must be the first include
 #include <avtPythonQuery.h>
 
 #include <string>
@@ -51,7 +52,6 @@
 #include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
-#include <Python.h>
 #include <PyContract.h>
 
 // Helper for throwing an exception when things go wrong.
