@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                              avtPythonExpression.C                        //
 // ************************************************************************* //
+#include <Python.h> // this must be the first include
 #include <avtPythonExpression.h>
-#include <Python.h>
 
 #include <avtExprNode.h>
 #include <avtExpressionEvaluatorFilter.h>
