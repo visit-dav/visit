@@ -119,7 +119,7 @@ function build_mpich
     cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
     info "Invoking command to configure MPICH"
 
-    mpich_opts="--disable-fc --disable-f77"
+    mpich_opts=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         mpich_opts="${mpich_opts} --enable-two-level-namespace"
     fi
@@ -133,6 +133,7 @@ function build_mpich
     MPICH_C_OPT_FLAGS=`echo $C_OPT_FLAGS | sed -e 's/-fno-common//g'`
     MPICH_CXXFLAGS=`echo $CXXFLAGS | sed -e 's/-fno-common//g'`
     MPICH_CXX_OPT_FLAGS=`echo $CXX_OPT_FLAGS | sed -e 's/-fno-common//g'`
+    MPICH_FCFLAGS=`echo $FCFLAGS | sed -e 's/-fno-common//g'`
 
     info "HERE $MPICH_CFLAGS"
     info "HERE $MPICH_CXXFLAGS"
@@ -142,6 +143,7 @@ function build_mpich
                       CC="$C_COMPILER" \
                       CFLAGS="$MPICH_CFLAGS $MPICH_C_OPT_FLAGS" \
                       CXXFLAGS="$MPICH_CXXFLAGS $MPICH_CXX_OPT_FLAGS"\
+                      FFLAGS="$MPICH_FCFLAGS"\
                       ./configure ${mpich_opts} \
                       --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
 
