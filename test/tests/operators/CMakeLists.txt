@@ -51,4 +51,9 @@ PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
 
 PY_3RDPARTY_TEST(PY_TESTS HDF5 persistent_particles)
 
-ADD_VISIT_PY_TESTS(Operators "${PY_TESTS}")
+SET(TEST_EXTRA_ARGS)
+IF (APPLE)
+    SET(TEST_EXTRA_ARGS "--threshold-error=ops_resampleop_curv2d:16")
+ENDIF()
+
+ADD_VISIT_PY_TESTS(Operators "${PY_TESTS}" ${TEST_EXTRA_ARGS})
