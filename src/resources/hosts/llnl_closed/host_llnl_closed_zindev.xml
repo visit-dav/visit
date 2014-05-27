@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">zindev.llnl.gov</Field>
+    <Field name="hostAliases" type="string">zin2433.llnl.gov zin2434.llnl.gov zin2463.llnl.gov zin2464.llnl.gov zin2465.llnl.gov zin2466.llnl.gov zin2467.llnl.gov zin2468.llnl.gov zin2469.llnl.gov zin2470.llnl.gov zin2471.llnl.gov zin2472.llnl.gov zin2473.llnl.gov zin2474.llnl.gov zin2475.llnl.gov zin2476.llnl.gov zin2477.llnl.gov zin2478.llnl.gov zin2479.llnl.gov zin2480.llnl.gov zin2481.llnl.gov zin2482.llnl.gov zin2483.llnl.gov zin2484.llnl.gov zin2485.llnl.gov zin2486.llnl.gov zin2487.llnl.gov zin2488.llnl.gov zin2489.llnl.gov zin2490.llnl.gov zin2491.llnl.gov zin2492.llnl.gov zin2493.llnl.gov zin2494.llnl.gov zin2433 zin2434 zin2463 zin2464 zin2465 zin2466 zin2467 zin2468 zin2469 zin2470 zin2471 zin2472 zin2473 zin2474 zin2475 zin2476 zin2477 zin2478 zin2479 zin2480 zin2481 zin2482 zin2483 zin2484 zin2485 zin2486 zin2487 zin2488 zin2489 zin2490 zin2491 zin2492 zin2493 zin2494</Field>
+    <Field name="hostNickname" type="string">LLNL Closed Zindev</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
+    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">serial</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">1</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">0</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">false</Field>
+        <Field name="launchMethod" type="string"></Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">false</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel interactive pdebug</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">32</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">0</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">pdebug</Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>
