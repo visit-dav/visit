@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
     <Field name="host" type="string">zin.llnl.gov</Field>
-    <Field name="hostAliases" type="string">zin#.llnl.gov zin##.llnl.gov zin###.llnl.gov zin####.llnl.gov zin# zin## zin### zin####</Field>
+    <Field name="hostAliases" type="string">zin#.llnl.gov zin##.llnl.gov zin###.llnl.gov zin0###.llnl.gov zin1###.llnl.gov zin20##.llnl.gov zin21##.llnl.gov zin22##.llnl.gov zin23##.llnl.gov zin240#.llnl.gov zin241#.llnl.gov zin242#.llnl.gov zin2430.llnl.gov zin2431.llnl.gov zin2432.llnl.gov zin2435.llnl.gov zin2436.llnl.gov zin2437.llnl.gov zin2438.llnl.gov zin2439.llnl.gov zin244#.llnl.gov zin245#.llnl.gov zin2460.llnl.gov zin2461.llnl.gov zin2462.llnl.gov zin2495.llnl.gov zin2496.llnl.gov zin2497.llnl.gov zin2498.llnl.gov zin2499.llnl.gov zin25##.llnl.gov zin26##.llnl.gov zin27##.llnl.gov zin28##.llnl.gov zin29##.llnl.gov zin3###.llnl.gov zin4###.llnl.gov zin5###.llnl.gov zin6###.llnl.gov zin7###.llnl.gov zin8###.llnl.gov zin9###.llnl.gov zin# zin## zin### zin0### zin1### zin20## zin21## zin22## zin23## zin240# zin241# zin242# zin2430 zin2431 zin2432 zin2435 zin2436 zin2437 zin2438 zin2439 zin244# zin245# zin2460 zin2461 zin2462 zin2495 zin2496 zin2497 zin2498 zin2499 zin25## zin26## zin27## zin28## zin29## zin3### zin4### zin5### zin6### zin7### zin8### zin9###</Field>
     <Field name="hostNickname" type="string">LLNL Closed Zin</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
