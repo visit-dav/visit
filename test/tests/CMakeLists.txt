@@ -50,9 +50,13 @@
 #   tests, use --fuzzy --avgdiff=11 so more tests pass on
 #   apple
 #
+#   Burlen Loring, Mon May 26 15:53:01 PDT 2014
+#   Switch to threshold based diffing
+#
 # ****************************************************************************
 
 MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
+    SET(TEST_EXTRA_ARGS ${ARGN})
     SET(TESTSUITE_PLATFORM_ARGS)
     SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/visit.exe")
     IF(WIN32)
@@ -72,8 +76,9 @@ MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
         ADD_TEST(
             NAME Test${MODULE_NAME}_${PY_TEST}
             COMMAND ${PYTHON_EXECUTABLE} "${VISIT_TEST_DIR}/visit_test_suite.py"
-            ${TESTSUITE_PLATFORM_ARGS} --no-data-check --ctest -n 1
-            --cleanup-delay=1 --avgdiff=11 --fuzzy --lessverbose
+            -n 1 --no-data-check --ctest --lessverbose
+            --cleanup-delay=1 --threshold-diff
+            ${TESTSUITE_PLATFORM_ARGS} ${TEST_EXTRA_ARGS}
             -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
             -e ${CMAKE_BINARY_DIR}/bin/visit
             -o ${CMAKE_BINARY_DIR}/PyTestOutput

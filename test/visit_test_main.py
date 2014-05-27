@@ -70,6 +70,10 @@ try:
 except ImportError, err:
     pil_available=False
 
+from vtk import vtkPNGReader, vtkPNMReader, vtkJPEGReader, vtkTIFFReader, \
+                vtkImageResize, vtkImageDifference
+import array
+
 # used to acccess visit_test_common
 sys.path.append(os.path.abspath(os.path.split(__visit_script_file__)[0]))
 
@@ -665,11 +669,13 @@ def HTMLAssertTestResult(case_name,status,assert_check,result,details):
 #   Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
 #   Only do ctest logging if ctest is enabled.
 #
+#   Burlen Loring, Tue May 27 11:44:04 PDT 2014
+#   Report threshold error
 # ----------------------------------------------------------------------------
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
                        tPixs, pPixs, dPixs, dpix, davg,
-                       cur, diff, base):
+                       cur, diff, base, thrErr):
     """
     Log the result of an image based test.
     """
@@ -679,18 +685,20 @@ def LogImageTestResult(case_name,
         status = "passed"
     elif diffState == 'Acceptable':
         status  = "passed"
-        details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" % (tPixs, pPixs, dPixs, dpix, davg)
+        details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f, threrr=%3.3f" \
+                    % (tPixs, pPixs, dPixs, dpix, davg, thrErr)
     elif diffState == 'Unacceptable':
         status  = "failed"
-        details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" % (tPixs, pPixs, dPixs, dpix, davg)
+        details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f, threrr=%3.3f" \
+                    % (tPixs, pPixs, dPixs, dpix, davg, thrErr)
         if TestEnv.params["ctest"]:
-            Log(ctestReportDiff(dPixs))
+            Log(ctestReportDiff(thrErr))
             Log(ctestReportDiffImages(cur,diff,base))
     elif diffState == 'Skipped':
         status = "skipped"
     else:
         status = "unknown"
-        details = "#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK"
+        details = "#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK threrr=UNK"
     msg = "    Test case '%s' %s" % (case_name,status.upper())
     if details !="":
         msg += ": " + details
@@ -821,17 +829,27 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     dPixs     = 0
     dpix      = 0.0
     davg      = 0.0
+    thrErr    = None
+
     if TestEnv.params["use_pil"]:
-        (tPixs, pPixs, dPixs, davg) = DiffUsingPIL(case_name, cur, diff,
-                                                   base, altbase)
-        diffState, dpix = CalcDiffState(pPixs, dPixs, davg)
+        if TestEnv.params["threshold_diff"]:
+            # threshold difference
+            diffState, thrErr, (tPixs, pPixs, dPixs, davg) \
+                = DiffUsingThreshold(case_name, cur, diff, base, altbase,
+                               TestEnv.params["threshold_error"])
+        else:
+            # raw difference
+            (tPixs, pPixs, dPixs, davg) \
+                = DiffUsingPIL(case_name, cur, diff, base, altbase)
+            diffState, dpix = CalcDiffState(pPixs, dPixs, davg)
+
     if skip:
         diffState = 'Skipped'
         TestEnv.results["numskip"]+= 1
 
     LogImageTestResult(case_name,diffState, modeSpecific,
                        dpix, tPixs, pPixs, dPixs, davg,
-                       cur, diff, base)
+                       cur, diff, base, thrErr)
 
     # update maxmimum diff state
     diffVals = {
@@ -1035,6 +1053,157 @@ def GetBackgroundImage(file):
     return bkimage
 
 # ----------------------------------------------------------------------------
+# Function: GetReaderForFile
+#
+# Burlen Loring, Sat May 24 15:44:33 PDT 2014
+# Create a reader to read an image file
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+
+def GetReaderForFile(filename):
+    """
+    Given a filename return a VTK reader that can read it
+    """
+    r = vtkPNGReader()
+    if not r.CanReadFile(filename):
+        r = vtkPNMReader()
+        if not r.CanReadFile(filename):
+            r = vtkJPEGReader()
+            if not r.CanReadFile(filename):
+                r = vtkTIFFReader()
+                if not r.CanReadFile(filename):
+                    return None
+    r.SetFileName(filename)
+    return r
+
+# ----------------------------------------------------------------------------
+# Function: VTKImageDataToPILImage
+#
+# Burlen Loring, Sat May 24 15:44:33 PDT 2014
+# In memory conversion from vtkImageData to PIL Image
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+
+def VTKImageDataToPILImage(dataset):
+    """
+    Convert the image from VTK to PIL
+    """
+    def zeros(n):
+      while n>0:
+        yield 0
+        n-=1
+
+    def fmt(nc):
+      if nc==1: return 'L'
+      elif nc==3: return 'RGB'
+      elif nc==4: return 'RGBA'
+      else: return None
+
+    dims = dataset.GetDimensions()[0:2]
+    vim = dataset.GetPointData().GetArray(0)
+    nc = vim.GetNumberOfComponents()
+    nt = vim.GetNumberOfTuples()
+    buf = array.array('B',zeros(nc*nt)) # TOOD -- Use numpy
+    vim.ExportToVoidPointer(buf)
+    pim = Image.frombuffer(fmt(nc),dims,buf,'raw',fmt(nc),0,1)
+    pim = pim.transpose(Image.FLIP_TOP_BOTTOM)
+    return pim
+
+# ----------------------------------------------------------------------------
+# Function: DiffUsingThreshold
+# Burlen Loring, Sat May 24 15:44:33 PDT 2014
+#
+# Image difference using VTK's threshold algorithm. Stats are
+# computed and diffs are enhanced using the same processing as
+# is done in DiffUsingPIL for which this is a drop in replacement.
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+
+def DiffUsingThreshold(case_name, cur, diff, base, altbase, overrides):
+    """
+    Computes difference and stats for the regression test using
+    threshold based image difference algorithm.
+    """
+    acceptableError = 10.0
+    if case_name in overrides:
+        acceptableError = overrides[case_name]
+
+    baseline = None
+    baseReader = None
+    baselines = [altbase, base]
+    # check for existence of the baseline
+    for f in baselines:
+        if os.path.isfile(f):
+            baseline = f
+            break
+    if baseline is None:
+        Log('Warning: No baseline image: %s'%(base))
+        if TestEnv.params["ctest"]:
+            Log(ctestReportMissingBaseline(base))
+        baselines = [test_module_path('nobaseline.pnm')]
+    # check for the reader
+    for f in baselines:
+        baseReader = GetReaderForFile(f)
+        if baseReader is not None:
+            break
+    if baseReader is None:
+        Log('Warning: No reader for baseline image: %s'%(base))
+    # read baseline
+    baseReader.Update()
+    baseDims = baseReader.GetOutput().GetDimensions()
+
+    # read test image
+    testReader = GetReaderForFile(cur)
+    testReader.Update()
+    testDims = testReader.GetOutput().GetDimensions()
+
+    # resize baseline
+    baseSource = baseReader
+    if testDims != baseDims:
+        Log('Error: Baseline%s and current%s images are different sizes.' \
+            %(str(baseDims[0:2]),str(testDims[0:2])))
+        baseSource = vtkImageResize()
+        baseSource.SetInputConnection(baseReader.GetOutputPort())
+        baseSource.SetOutputDimensions(testDims)
+
+    # compute the diff
+    differ = vtkImageDifference()
+    differ.SetInputConnection(testReader.GetOutputPort())
+    differ.SetImageConnection(baseSource.GetOutputPort())
+    differ.Update()
+
+    # test status
+    error = differ.GetThresholdedError();
+    testFailed = error > acceptableError
+    diffState = 'Unacceptable' if testFailed else 'Acceptable'
+
+    # create images/data for test suite's reporting
+    mdiffimg = None
+    dmin, dmax, dmean, dmedian, drms, dstddev = 0,0,0,0,0,0
+    plotpixels, diffpixels, totpixels = 0,0,0
+
+    oldimg = VTKImageDataToPILImage(baseReader.GetOutput())
+    newimg = VTKImageDataToPILImage(testReader.GetOutput())
+    diffimg = VTKImageDataToPILImage(differ.GetOutput())
+
+    mdiffimg, dmin, dmax, dmean, dmedian, drms, dstddev, \
+    plotpixels, diffpixels, totpixels \
+        = ProcessDiffImage(case_name, oldimg, newimg, diffimg)
+
+    mdiffimg.save(diff)
+    #diffimg.save(diff)
+
+    CreateImagesForWeb(case_name, testFailed, oldimg, newimg, mdiffimg)
+
+    return diffState, error, (totpixels, plotpixels, diffpixels, dmean)
+
+# ----------------------------------------------------------------------------
 # Function: DiffUsingPIL
 #
 # Modifications:
@@ -1054,6 +1223,9 @@ def GetBackgroundImage(file):
 #   Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
 #   Only do ctest logging if ctest is enabled.
 #
+#   Burlen Loring, Mon May 26 13:39:37 PDT 2014
+#   refactor generally useful code into two new functions: CreateImagesForWeb
+#   and ProcessDiffImage
 # ----------------------------------------------------------------------------
 
 def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
@@ -1085,15 +1257,78 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
     except:
         oldimg = Image.open(test_module_path('nobaseline.pnm'))
         Log("Warning: Defective baseline image: %s" % baseline)
+        if TestEnv.params["ctest"]:
+            Log(ctestReportMissingBaseline(baseline))
         oldimg = oldimg.resize(size, Image.BICUBIC)
 
 
     # create the difference image
     diffimg = ImageChops.difference(oldimg, newimg)
     #dstatc = ImageStat.Stat(diffimg) # stats of color image
+
+    mdiffimg, dmin, dmax, dmean, dmedian, drms, dstddev, \
+    plotpixels, diffpixels, totpixels \
+        = ProcessDiffImage(case_name, oldimg, newimg, diffimg)
+
+    mdiffimg.save(diff)
+
+    CreateImagesForWeb(case_name, bool(dmax!=0), oldimg, newimg, mdiffimg)
+
+    return (totpixels, plotpixels, diffpixels, dmean)
+
+
+# ----------------------------------------------------------------------------
+# Function: CreateImagesForWeb
+#
+# Burlen Loring, Mon May 26 09:45:21 PDT 2014
+# Split this out of DiffUsingPIL so it can be used elsewhere.
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+
+def CreateImagesForWeb(case_name, testFailed, baseimg, testimg, diffimg):
+    """
+    Given test image set create coresponding thumbnails for web
+    consumption
+    """
+    thumbsize = (100,100)
+
+    # full size baseline
+    baseimg.save(out_path("html","b_%s.png"%case_name))
+    # thumb size baseline
+    oldthumb = baseimg.resize(   thumbsize, Image.BICUBIC)
+    oldthumb.save(out_path("html","b_%s_thumb.png"%case_name))
+
+    if (testFailed):
+        # fullsize test image and diff
+        testimg.save(out_path("html","c_%s.png"%case_name))
+        diffimg.save(out_path("html","d_%s.png"%case_name))
+        # thumbsize test and diff
+        newthumb = testimg.resize(thumbsize, Image.BICUBIC)
+        newthumb.save(out_path("html","c_%s_thumb.png"%case_name))
+
+        diffthumb = diffimg.resize(thumbsize, Image.BICUBIC)
+        diffthumb.save(out_path("html","d_%s_thumb.png"%case_name))
+
+# ----------------------------------------------------------------------------
+# Function: ProcessDiffImage
+#
+# Burlen Loring, Mon May 26 09:45:21 PDT 2014
+# Split this out of DiffUsingPIL so it can be used elsewhere.
+#
+# Modifications:
+#
+# ----------------------------------------------------------------------------
+
+def ProcessDiffImage(case_name, baseimg, testimg, diffimg):
+    """
+    Given a set of test images process (ie enhance) the difference image
+    and compute various stats used in the report. Return the processed image
+    and stats.
+    """
     diffimg = diffimg.convert("L", (0.3333333, 0.3333333, 0.3333333, 0))
 
-    # get some statistics
     dstat   = ImageStat.Stat(diffimg)
     dmin    = dstat.extrema[0][0]
     dmax    = dstat.extrema[0][1]
@@ -1104,12 +1339,12 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
 
     plotpixels = 0
     diffpixels = 0
-    size = newimg.size
+    size = testimg.size
     totpixels = size[0] * size[1]
 
     mdiffimg = diffimg.copy()
-    if (dmax > 0 and dmax != dmin):
 
+    if (dmax > 0 and dmax != dmin):
         # brighten the difference image before we save it
         pmap = []
         pmap.append(0)
@@ -1125,50 +1360,33 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
             # background
             backimg = GetBackgroundImage(case_name)
 
-            # now, scan over pixels in oldimg counting how many non-background
+            # now, scan over pixels in baseimg counting how many non-background
             # pixels there are and how many diffs there are
             for col in range(0,size[0]):
                 for row in range(0, size[1]):
-                    newpixel = newimg.getpixel((col,row))
-                    oldpixel = oldimg.getpixel((col,row))
+                    newpixel = testimg.getpixel((col,row))
+                    oldpixel = baseimg.getpixel((col,row))
                     backpixel = backimg.getpixel((col,row))
                     diffpixel = mdiffimg.getpixel((col,row))
                     if oldpixel != backpixel:
                         plotpixels = plotpixels + 1
                     if diffpixel == 255:
                         diffpixels = diffpixels + 1
-
         else:
-
+            # constant color background
             mdstat   = ImageStat.Stat(mdiffimg)
-            oldimgm = oldimg.convert("L", (0.3333333, 0.3333333, 0.3333333, 0))
+            baseimgm = baseimg.convert("L", (0.3333333, 0.3333333, 0.3333333, 0))
             map1 = []
             for i in range(0,254): map1.append(255)
             map1.append(0)
             map1.append(0)
-            oldimgm = oldimgm.point(map1)
-            mbstat   = ImageStat.Stat(oldimgm)
+            baseimgm = baseimgm.point(map1)
+            mbstat   = ImageStat.Stat(baseimgm)
             diffpixels = int(mdstat.sum[0]/255)
             plotpixels = int(mbstat.sum[0]/255)
 
-    mdiffimg.save(diff)
+    return mdiffimg, dmin, dmax, dmean, dmedian, drms, dstddev, plotpixels, diffpixels, totpixels
 
-    # thumbnail size (w,h)
-    thumbsize = (100,100)
-
-    # create thumbnails and save jpegs
-    oldthumb = oldimg.resize(   thumbsize, Image.BICUBIC)
-    oldthumb.save(out_path("html","b_%s_thumb.png"%case_name));
-    oldimg.save(out_path("html","b_%s.png"%case_name));
-    if (dmax != 0):
-        newthumb    = newimg.resize(   thumbsize, Image.BICUBIC)
-        diffthumb   = mdiffimg.resize(  thumbsize, Image.BICUBIC)
-        newthumb.save(out_path("html","c_%s_thumb.png"%case_name));
-        diffthumb.save(out_path("html","d_%s_thumb.png"%case_name));
-        newimg.save(out_path("html","c_%s.png"%case_name));
-        mdiffimg.save(out_path("html","d_%s.png"%case_name));
-
-    return (totpixels, plotpixels, diffpixels, dmean)
 
 # ----------------------------------------------------------------------------
 # Function: FilterTestText
@@ -1875,6 +2093,8 @@ class TestEnv(object):
     """
     params  = {"interactive": 0,
                "use_pil":     True,
+               "threshold_diff": False,
+               "threshold_error": {},
                "avgdiff":     0.0,
                "pixdiff":     0,
                "numdiff":     0.0,
@@ -1901,9 +2121,10 @@ class TestEnv(object):
                 cls.params["serial"]   = False
             if mode == "pdb":
                 cls.params["silo_mode"] = "pdb"
-            if cls.params["use_pil"] and not pil_available:
+            if (cls.params["use_pil"] or cls.params["threshold_diff"]) and not pil_available:
                 Log("WARNING: unable to import modules from PIL: %s" % str(err))
                 cls.params["use_pil"] = False
+                cls.params["threshold_diff"] = False
         if cls.params["fuzzy_match"]:
             # default tols for scalable mode
             if cls.params["pixdiff"] < 2:

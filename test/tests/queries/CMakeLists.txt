@@ -52,9 +52,15 @@ PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
 
 PY_3RDPARTY_TEST(PY_TESTS SILO
     avg_value bestfitline casetest centroid curvature
-    database hohlraum l2norm length line_scan pickarray
+    database hohlraum l2norm length pickarray
     pickcleanzonesonly py_queries queryMultiWindow
     revolved_surface_area scf streamlineInfo watertight
     xrayimage)
+
+IF (HAVE_OSMESA)
+    # osmesa rasterizes lines differently and
+    # thus this test fails with other GL
+    PY_3RDPARTY_TEST(PY_TESTS SILO line_scan)
+ENDIF()
 
 ADD_VISIT_PY_TESTS(Queries "${PY_TESTS}")
