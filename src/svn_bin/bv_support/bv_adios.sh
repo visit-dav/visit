@@ -114,7 +114,8 @@ function build_ADIOS
     if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
         ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            MPICXX="$VISIT_MPI_COMPILER" \
+            MPICC="$VISIT_MPI_COMPILER" \
+            --disable-fortran \
 	    --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
             --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
