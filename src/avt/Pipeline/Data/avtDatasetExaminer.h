@@ -87,6 +87,10 @@ class     vtkDataArray;
 //    Hank Childs, Fri May 21 11:22:21 CDT 2010
 //    Added CalculateHistogram.
 //
+//    Kathleen Biagas, Wed May 28 17:37:30 MST 2014
+//    Added 'connecteNodesOnly' to GetDataExtents.  Meant to be set to true
+//    if actual extents are desired.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
@@ -103,7 +107,8 @@ class PIPELINE_API avtDatasetExaminer
     static bool               GetSpatialExtents(std::vector<avtDataTree_p> &, 
                                                 double *);
     static bool               GetDataExtents(avtDataset_p &, double *,
-                                             const char * = NULL);
+                                             const char * = NULL,
+                                             bool connectedNodesOnly=false);
     static void               FindMinimum(avtDataset_p &, double *, double &);
     static void               FindMaximum(avtDataset_p &, double *, double &);
     static bool               FindZone(avtDataset_p &, int, int, double *);
