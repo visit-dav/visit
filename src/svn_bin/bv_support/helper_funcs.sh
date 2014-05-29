@@ -948,6 +948,10 @@ function check_parallel
 {
     rv=0
 
+    if [[ "$DO_MPICH" == "yes" && "$parallel" == "no" ]] ; then
+        parallel="yes"
+    fi
+
     #
     # Parallelization
     #
@@ -986,13 +990,28 @@ function check_parallel
         #
         # VisIt's cmake build can obtain all necessary MPI flags from
         # a MPI compiler wrapper. If we have found one & the user
-        # did not set PAR_LIBS or PAR_INCLUDE  we are done.
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
         #
         if [[ "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" != "" ]] ; then
             export VISIT_MPI_COMPILER=$MPIWRAPPER
             export PAR_COMPILER=$MPIWRAPPER
             info \
                 "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+            return 0
+        fi
+
+        #
+        # VisIt's build_visit can obtain all necessary MPI flags from
+        # bv_mpich. If we are building mpich and the user
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
+        #
+        if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
+
+            export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+            export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+            export PAR_COMPILER="$MPICH_COMPILER"
+            info \
+                "Configuring with build mpich: $MPICH_COMPILER"
             return 0
         fi
 

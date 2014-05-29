@@ -1,5 +1,6 @@
 function bv_uintah_initialize
 {
+export FORCE_UINTAH="no"
 export DO_UINTAH="no"
 export ON_UINTAH="off"
 export USE_SYSTEM_UINTAH="no"
@@ -8,18 +9,27 @@ add_extra_commandline_args "uintah" "alt-uintah-dir" 1 "Use alternative director
 
 function bv_uintah_enable
 {
-DO_UINTAH="yes"
-ON_UINTAH="on"
+    if [[ "$1" == "force" ]]; then
+        FORCE_UINTAH="yes"
+    fi
+
+    DO_UINTAH="yes"
+    ON_UINTAH="on"
 }
 
 function bv_uintah_disable
 {
-DO_UINTAH="no"
-ON_UINTAH="off"
+    DO_UINTAH="no"
+    ON_UINTAH="off"
 }
 
 function bv_uintah_alt_uintah_dir
 {
+    echo "Using alternate Uintah directory"
+
+    # Check to make sure the directory or a particular include file exists.
+    [ ! -e "$1/../src/StandAlone/tools/uda2vis/udaData.h" ] && error "Uintah not found in $1"
+
     bv_uintah_enable
     USE_SYSTEM_UINTAH="yes"
     UINTAH_INSTALL_DIR="$1"
@@ -29,11 +39,19 @@ function bv_uintah_depends_on
 {
     if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
         echo ""
+    else
+        echo ""
     fi
 }
 
 function bv_uintah_initialize_vars
 {
+    if [[ "$FORCE_UINTAH" == "no" && "$parallel" == "no" ]]; then
+        bv_uintah_disable
+        warn "Uintah requested by default but the parallel flag has not been set. Uintah will not be built."
+        return
+    fi
+
     if [[ "$USE_SYSTEM_UINTAH" == "no" ]]; then
         UINTAH_INSTALL_DIR="${VISITDIR}/uintah/$UINTAH_VERSION/$VISITARCH"
     fi
@@ -63,6 +81,7 @@ function bv_uintah_print
 function bv_uintah_print_usage
 {
 printf "%-15s %s [%s]\n" "--uintah" "Build UINTAH" "${DO_UINTAH}"
+printf "%-15s %s [%s]\n" "--alt-uintah-dir"  "Use Uintah" "Use Uintah from alternative directory"
 }
 
 function bv_uintah_graphical
@@ -81,7 +100,7 @@ function bv_uintah_host_profile
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" >> $HOSTCONF 
-	    echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)" >> $HOSTCONF
+            echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)" >> $HOSTCONF
         else
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR \${VISITHOME}/uintah/$UINTAH_VERSION/\${VISITARCH})" \
@@ -307,7 +326,6 @@ function bv_uintah_is_enabled
 
 function bv_uintah_is_installed
 {
-
     if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
         return 1
     fi
