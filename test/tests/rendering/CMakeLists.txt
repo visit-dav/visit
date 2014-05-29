@@ -44,10 +44,4 @@ PY_3RDPARTY_TEST(PY_TESTS SILO
     saveformats scalable2 scalable shadows specular text2d
     timeslider transparency tuvok viewChange view volume)
 
-SET(TEST_EXTRA_ARGS)
-IF (APPLE)
-    SET(TEST_EXTRA_ARGS "--threshold-error=legends_11:12,legends_12:12,renderpoint_2_05:13")
-    SET(TEST_EXTRA_ARGS "${TEST_EXTRA_ARGS},renderpoint_2_06:18,renderpoint_2_07:12,transparency_06:30")
-ENDIF()
-
-ADD_VISIT_PY_TESTS(Rendering "${PY_TESTS}" ${TEST_EXTRA_ARGS})
+ADD_VISIT_PY_TESTS(Rendering "${PY_TESTS}")

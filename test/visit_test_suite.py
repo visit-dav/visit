@@ -147,8 +147,6 @@ def parse_test_specific_vargs(test_file):
 #    Kathleen Biagas, Fri May 16 15:23:13 PDT 2014
 #    Set up sim_dir based off executable location.
 #
-#    Burlen Loring, Mon May 26 15:36:26 PDT 2014
-#    Addedd command line option to use threshold based image diff
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -218,8 +216,6 @@ def launch_visit_test(args):
     tparams["skip_file"]      = None
     tparams["interactive"]    = opts["interactive"]
     tparams["use_pil"]        = opts["use_pil"]
-    tparams["threshold_diff"] = opts["threshold_diff"]
-    tparams["threshold_error"]= opts["threshold_error"]
     tparams["pixdiff"]        = opts["pixdiff"]
     tparams["avgdiff"]        = opts["avgdiff"]
     tparams["numdiff"]        = opts["numdiff"]
@@ -384,8 +380,6 @@ def default_suite_options():
     nprocs_def      = multiprocessing.cpu_count()
     opts_full_defs = {
                       "use_pil":True,
-                      "threshold_diff":False,
-                      "threshold_error":{},
                       "data_dir":     data_dir_def,
                       "baseline_dir": base_dir_def,
                       "tests_dir":    tests_dir_def,
@@ -605,42 +599,12 @@ def parse_args():
                       default=defs["ctest"],
                       action="store_true",
                       help="generate ctest compatible output")
-    parser.add_option("--threshold-diff",
-                      default=defs["threshold_diff"],
-                      dest="threshold_diff",
-                      action="store_true",
-                      help="use threshold based image diff")
-    parser.add_option("--threshold-error",
-                      default=defs["threshold_error"],
-                      dest="threshold_error",
-                      type=str,
-                      action='callback',
-                      callback=ParseThresholdOverride,
-                      help="Per case overide of the max allowable error for threshold based image diff")
 
     # parse args
     opts, tests = parser.parse_args()
     # note: we want a dict b/c the values could be passed without using optparse
     opts = vars(opts)
     return opts, tests
-
-# ----------------------------------------------------------------------------
-#  Method: ParseThresholdOverride
-#
-#  Programmer: Burlen Loring
-#  Date:       Tue May 27 11:11:22 PDT 2014
-# ----------------------------------------------------------------------------
-def ParseThresholdOverride(option, opt, value, parser):
-    """
-    Convert threshold overrides encodeed in a string like
-    --threshold-error=a:b,c:d to a dictionary. Parse
-    errors are intentionally fatal.
-    """
-    d={}
-    for pair in value.split(','):
-        k,v = pair.split(':')
-        d[k] = float(v)
-    setattr(parser.values, option.dest, d)
 
 # ----------------------------------------------------------------------------
 #  Method: find_test_cases
