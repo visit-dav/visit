@@ -349,7 +349,6 @@ if [[ "$VISIT_FILE" != "" ]] ; then
 fi
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-
 for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
 do
     initializeFunc="bv_${reqlibs[$bv_i]}_info"
@@ -836,7 +835,8 @@ for arg in "${arguments[@]}" ; do
         if [[ $? == 0 ]] ; then
             #echo "enabling ${resolve_arg}"
             initializeFunc="bv_${resolve_arg}_enable"
-            $initializeFunc
+            #argument is being explicitly set by the user so add a "force" flag
+            $initializeFunc force
             continue
         elif [[ ${#resolve_arg} -gt 3 ]] ; then #in case it is --no-
             resolve_arg_no_opt=${resolve_arg:3}
@@ -1306,35 +1306,6 @@ if [[ $? != 0 ]] ; then
 fi
 
 #
-# See if the user wants to build a parallel version.
-#
-check_parallel
-if [[ $? != 0 ]] ; then
-   error "Stopping build because necessary parallel options are not set."
-fi
-
-#
-# See if the user wants to modify variables
-#
-check_variables
-if [[ $? != 0 ]] ; then
-   error "Stopping build because of bad variable option setting error."
-fi
-
-if [[ $VISITARCH == "" ]] ; then
-    export VISITARCH=${ARCH}_${C_COMPILER}
-    if [[ "$CXX_COMPILER" == "g++" ]] ; then
-       VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
-       if [[ ${#VERSION} == 3 ]] ; then
-          VISITARCH=${VISITARCH}-${VERSION}
-       fi
-    fi
-fi
-if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
-    DO_CMAKE="yes"
-fi
-
-#
 # Log build_visit invocation w/ arguments & the start time.
 # Especially helpful if there are multiple starts dumped into the
 # same log.
@@ -1426,8 +1397,36 @@ if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
       error "Unable to access the third party location. Bailing out."
    fi
 fi
+
+if [[ $VISITARCH == "" ]] ; then
+    export VISITARCH=${ARCH}_${C_COMPILER}
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+       VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
+       if [[ ${#VERSION} == 3 ]] ; then
+          VISITARCH=${VISITARCH}-${VERSION}
+       fi
+    fi
+fi
+
 export VISITDIR=${VISITDIR:-$(pwd)}
 cd "$START_DIR"
+
+#
+# See if the user wants to build a parallel version.
+#
+check_parallel
+if [[ $? != 0 ]] ; then
+   error "Stopping build because necessary parallel options are not set."
+fi
+
+check_variables
+if [[ $? != 0 ]] ; then
+   error "Stopping build because of bad variable option setting error."
+fi
+
+if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
+    DO_CMAKE="yes"
+fi
 
 #initialize module variables, since all of VisIt's variables should be set by now..
 initialize_module_variables
@@ -1504,4 +1503,3 @@ fi
 #build visit itself..
 bv_visit_build
 }
-

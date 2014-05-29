@@ -1,27 +1,61 @@
 function bv_adios_initialize
 {
-export DO_ADIOS="no"
-export ON_ADIOS="off"
+    export FORCE_ADIOS="no"
+    export DO_ADIOS="no"
+    export ON_ADIOS="off"
+    export USE_SYSTEM_ADIOS="no"
+    add_extra_commandline_args "adios" "alt-adios-dir" 1 "Use alternative directory for adios"
+
 }
 
 function bv_adios_enable
 {
-DO_ADIOS="yes"
-ON_ADIOS="on"
-#TODO: temporary until I get dependencies working
-DO_MXML="yes"
-ON_MXML="on"
+    if [[ "$1" == "force" ]]; then
+        FORCE_ADIOS="yes"
+    fi
+
+    DO_ADIOS="yes"
+    ON_ADIOS="on"
 }
 
 function bv_adios_disable
 {
-DO_ADIOS="no"
-ON_ADIOS="off"
+    DO_ADIOS="no"
+    ON_ADIOS="off"
+}
+
+function bv_adios_alt_adios_dir
+{
+    echo "Using alternate Adios directory"
+
+    # Check to make sure the directory or a particular include file exists.
+#    [ ! -e "$1" ] && error "Adios not found in $1"
+
+    bv_adios_enable
+    USE_SYSTEM_ADIOS="yes"
+    ADIOS_INSTALL_DIR="$1"
 }
 
 function bv_adios_depends_on
 {
-echo "mxml"
+    if [[ "$USE_SYSTEM_ADIOS" == "yes" ]]; then
+        echo ""
+    else
+        echo "mxml"
+    fi
+}
+
+function bv_adios_initialize_vars
+{
+    if [[ "$FORCE_ADIOS" == "no" && "$parallel" == "no" ]]; then
+        bv_adios_disable
+        warn "Adios requested by default but the parallel flag has not been set. Adios will not be built."
+        return
+    fi
+
+    if [[ "$USE_SYSTEM_ADIOS" == "no" ]]; then
+        ADIOS_INSTALL_DIR="${VISITDIR}/adios/$ADIOS_VERSION/$VISITARCH"
+    fi
 }
 
 function bv_adios_info
@@ -63,16 +97,21 @@ function bv_adios_host_profile
             echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
         fi
         echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/ADIOS/$ADIOS_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+
+        if [[ "$USE_SYSTEM_ADIOS" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR $ADIOS_INSTALL_DIR)" >> $HOSTCONF 
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/adios/$ADIOS_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF 
+        fi
     fi
 }
 
 function bv_adios_ensure
 {
-    if [[ "$DO_ADIOS" == "yes" ]] ; then
-        ensure_built_or_ready "ADIOS" $ADIOS_VERSION $ADIOS_BUILD_DIR $ADIOS_FILE
+    if [[ "$DO_ADIOS" == "yes" && "$USE_SYSTEM_ADIOS" == "no" ]] ; then
+        ensure_built_or_ready "adios" $ADIOS_VERSION $ADIOS_BUILD_DIR $ADIOS_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ADIOS="no"
@@ -116,14 +155,14 @@ function build_ADIOS
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             MPICC="$VISIT_MPI_COMPILER" \
             --disable-fortran \
-	    --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
+            --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
             --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
     else
         ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             --without-mpi --disable-fortran\
-	    --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
+            --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
             --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
     fi
@@ -170,6 +209,10 @@ function bv_adios_is_enabled
 
 function bv_adios_is_installed
 {
+    if [[ "$USE_SYSTEM_ADIOS" == "yes" ]]; then
+        return 1
+    fi
+
     check_if_installed "ADIOS" $ADIOS_VERSION
     if [[ $? == 0 ]] ; then
         return 1
@@ -180,22 +223,12 @@ function bv_adios_is_installed
 function bv_adios_build
 {
 cd "$START_DIR"
-if [[ "$DO_ADIOS" == "yes" ]] ; then
+
+if [[ "$DO_ADIOS" == "yes" && "$USE_SYSTEM_ADIOS" == "no" ]] ; then
     check_if_installed "ADIOS" $ADIOS_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping ADIOS build.  ADIOS is already installed."
     else
-        check_if_installed "mxml" $MXML_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping build of MXML"
-        else
-            build_mxml
-            if [[ $? != 0 ]] ; then
-                 error "Unable to build or install mxml.  Bailing out."
-            fi
-            info "Done building mxml"
-        fi
-
         info "Building ADIOS (~1 minutes)"
         build_ADIOS
         if [[ $? != 0 ]] ; then
@@ -205,4 +238,3 @@ if [[ "$DO_ADIOS" == "yes" ]] ; then
    fi
 fi
 }
-
