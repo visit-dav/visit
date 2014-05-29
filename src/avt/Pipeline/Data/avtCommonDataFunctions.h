@@ -138,6 +138,9 @@ class     vtkDataArray;
 //    Kathleen Biagas, Mon Jan 28 10:06:01 PST 2013
 //    Remove no longer used method CUpdateData.
 //
+//    Kathleen Biagas, Wed May 28 17:25:57 MST 2014
+//    Added connectedNodesOnly to GetVariableRangeArgs.
+//
 // ****************************************************************************
 
 //
@@ -238,6 +241,7 @@ typedef struct
 {
     double       *extents;
     const char   *varname;
+    bool          connectedNodesOnly;
 } GetVariableRangeArgs;
 
 typedef struct

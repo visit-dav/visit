@@ -313,11 +313,15 @@ avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
 //    Hank Childs, Fri Jun  9 13:25:31 PDT 2006
 //    Remove unused variable
 //
+//    Kathleen Biagas, Wed May 28 17:38:40 MST 2014
+//    Added connectedNodesOnly.
+//
 // ****************************************************************************
  
 bool
 avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
-                                   const char *varname)
+                                   const char *varname,
+                                   bool connectedNodesOnly)
 {
     if (*ds == NULL || *(ds->GetDataTree()) == NULL)
         return false;
@@ -336,6 +340,7 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
     GetVariableRangeArgs gvra;
     gvra.varname = varname;
     gvra.extents = de;
+    gvra.connectedNodesOnly = connectedNodesOnly;
     if (*dataTree != NULL)
     {
         dataTree->Traverse(CGetDataExtents, (void *) &gvra, foundExtents);

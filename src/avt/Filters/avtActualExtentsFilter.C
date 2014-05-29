@@ -100,6 +100,10 @@ avtActualExtentsFilter::Execute(void)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.  Only calculate the requested variables.
 //
+//    Kathleen Biagas, Wed May 28 17:23:54 MST 2014
+//    Add arg to avtDatasetExaminer::GetDataExtents that says to only consider
+//    connected nodes.
+//
 // ****************************************************************************
 
 void
@@ -118,7 +122,7 @@ avtActualExtentsFilter::UpdateExtents(void)
         if (! lastContract->ShouldCalculateVariableExtents(vname))
             continue;
     
-        bool foundDE = avtDatasetExaminer::GetDataExtents(ds, de, vname);
+        bool foundDE = avtDatasetExaminer::GetDataExtents(ds, de, vname, true);
         if (foundDE)
         {
             outAtts.GetThisProcsActualDataExtents(vname)->Merge(de);
