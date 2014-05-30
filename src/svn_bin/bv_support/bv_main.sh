@@ -24,6 +24,14 @@ unset CDPATH
 ### export TAR=/usr/local/bin/tar # Up and Purple
 export TAR=tar
 
+#
+# we have logic that assumes lib dirs are named "lib", not "lib64". On 
+# openSuSe some of the autoconf based 3rd party libs will install to "lib64"
+# unless the "CONFIG_SITE" env var is cleared  
+#
+export CONFIG_SITE=""
+
+
 # Determine if gfortran is present. This overly complex coding is to prevent
 # the "which" command from echoing failure to the user.
 which gfortran >& /dev/null
