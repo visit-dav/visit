@@ -135,9 +135,11 @@ function build_mpich
     MPICH_CXX_OPT_FLAGS=`echo $CXX_OPT_FLAGS | sed -e 's/-fno-common//g'`
     MPICH_FCFLAGS=`echo $FCFLAGS | sed -e 's/-fno-common//g'`
 
-    info "HERE $MPICH_CFLAGS"
-    info "HERE $MPICH_CXXFLAGS"
-    
+    # disable fortran if we don't have a fortran compiler
+        
+    if [[ "$FC_COMPILER" == "no" ]] ; then
+        mpich_opts="${mpich_opts} --disable-fc --disable-f77"
+    fi
 
     issue_command env CXX="$CXX_COMPILER" \
                       CC="$C_COMPILER" \

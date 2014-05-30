@@ -448,30 +448,32 @@ function download_file
     info "Downloading $dfile . . ." 
     shift
     
+    SVN_ROOT_PREFIX="${SVN_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
+    SVN_ANON_ROOT_PREFIX="${SVN_ANON_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
     # If SVN is requested, try that first before anything else
     if [[ "$DO_SVN" == "yes" ]] ; then
-        svn cat $SVN_ROOT_PATH/trunk/third_party/$dfile > $dfile
+        svn cat $SVN_ROOT_PREFIX/$dfile > $dfile
         if [[ $? == 0 && -e $dfile ]] ; then
-            info "SVN download succeeded: $SVN_ROOT_PATH/trunk/third_party/$dfile"
+            info "SVN download succeeded: $SVN_ROOT_PREFIX/$dfile"
             return 0
         else
             warn "Normal svn failed. Trying anonymous svn." 
-            svn cat $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile > $dfile
+            svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
             if [[ $? == 0 && -e $dfile ]] ; then
-                info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+                info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
                 return 0
             fi
         fi
-        warn "SVN download attempt failed: $SVN_ROOT_PATH/trunk/third_party/$dfile"
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+        warn "SVN download attempt failed: $SVN_ROOT_PATH/$SVN_THIRDPARTY_PATH/$dfile"
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
         rm -f $dfile
     elif [[ "$DO_SVN_ANON" == "yes" ]] ; then
-        svn cat $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile > $dfile
+        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
         if [[ $? == 0 && -e $dfile ]] ; then
-            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
             return 0
         fi
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
         rm -f $dfile
     fi
 
@@ -495,17 +497,17 @@ function download_file
 
     # Now try anonymous svn unless we tried it above.
     if [[ "$DO_SVN" != "yes" && "$DO_ANON_SVN" != "yes" ]] ; then
-        svn cat $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile > $dfile
+        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
         if [[ $? == 0 && -e $dfile ]] ; then
-            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
             return 0
         fi
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
         rm -f $dfile
     fi
 
     # Now try the anonymous svn site with wget or curl.
-    try_download_file $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile $dfile
+    try_download_file $SVN_ANON_ROOT_PREFIX/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
     fi
@@ -946,6 +948,10 @@ function check_parallel
 {
     rv=0
 
+    if [[ "$DO_MPICH" == "yes" && "$parallel" == "no" ]] ; then
+        parallel="yes"
+    fi
+
     #
     # Parallelization
     #
@@ -961,6 +967,21 @@ function check_parallel
             export VISIT_MPI_COMPILER=$PAR_COMPILER
             info \
                 "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+            return 0
+        fi
+
+        #
+        # VisIt's build_visit can obtain all necessary MPI flags from
+        # bv_mpich. If we are building mpich and the user
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
+        #
+        if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
+
+            export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+            export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+            export PAR_COMPILER="$MPICH_COMPILER"
+            info \
+                "Configuring with build mpich: $MPICH_COMPILER"
             return 0
         fi
 
@@ -984,7 +1005,7 @@ function check_parallel
         #
         # VisIt's cmake build can obtain all necessary MPI flags from
         # a MPI compiler wrapper. If we have found one & the user
-        # did not set PAR_LIBS or PAR_INCLUDE  we are done.
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
         #
         if [[ "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" != "" ]] ; then
             export VISIT_MPI_COMPILER=$MPIWRAPPER
