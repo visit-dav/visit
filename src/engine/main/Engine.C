@@ -3783,18 +3783,20 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 //
 //    Satheesh Maheswaran, Mon Oct 01 11:48:10 PST 2012
 //    Added code to get memory information from each processor
+//
 // ****************************************************************************
 
 ProcessAttributes *
 Engine::GetProcessAttributes()
 {
-    unsigned long m_size, m_rss;
-    double m_size_mb, m_rss_mb;
-  
+    // Only allocate procAtts once.  
     if (procAtts == NULL)
-    {
         procAtts = new ProcessAttributes;
 
+    // Populate procAtts.
+    {
+        unsigned long m_size, m_rss;
+        double m_size_mb, m_rss_mb;
         intVector pids;
         intVector ppids;
         intVector memusage;
@@ -3809,7 +3811,6 @@ Engine::GetProcessAttributes()
 #endif
 
 #ifdef PARALLEL
-
         char myHost[2*MPI_MAX_PROCESSOR_NAME];
         int strLen;
         MPI_Get_processor_name(myHost, &strLen); 
@@ -3844,8 +3845,8 @@ Engine::GetProcessAttributes()
         MPI_Gather(&myHost, sizeof(myHost), MPI_CHAR,
                    allHosts, sizeof(myHost), MPI_CHAR, 0, VISIT_MPI_COMM);
         int m_size_mb_tmp = (int)m_size_mb;
-    MPI_Gather(&m_size_mb_tmp, 1, MPI_INT,
-           allMemusage, 1, MPI_INT, 0, VISIT_MPI_COMM);
+        MPI_Gather(&m_size_mb_tmp, 1, MPI_INT,
+                   allMemusage, 1, MPI_INT, 0, VISIT_MPI_COMM);
 
         if (PAR_Rank() == 0)
         {
@@ -3862,7 +3863,6 @@ Engine::GetProcessAttributes()
             delete [] allHosts;
             delete [] allMemusage;
         }
-
 #else
 
         pids.push_back(myPid);
@@ -3886,11 +3886,9 @@ Engine::GetProcessAttributes()
         procAtts->SetHosts(hosts);
         procAtts->SetMemory(memusage);
         procAtts->SetIsParallel(isParallel);
-
     }
 
     return procAtts;
-
 }
 
 // ****************************************************************************
