@@ -85,12 +85,16 @@ using std::vector;
 // Creation:   December 18, 2011
 //
 // Modifications:
+//   Jonathan Byrd, Mon Feb 4, 2013
+//   Add variable and element to pick record
 //
 // ****************************************************************************
 
 PickRecord::PickRecord() {
     domain = -1;
-    simulation = "<none>";
+    element = -1;
+    variable = "<none>";
+    value = "";
 }
 
 // ****************************************************************************
@@ -103,12 +107,16 @@ PickRecord::PickRecord() {
 // Creation:   December 18, 2011
 //
 // Modifications:
+//   Jonathan Byrd, Mon Feb 4, 2013
+//   Add variable and element to pick record
 //
 // ****************************************************************************
 
-PickRecord::PickRecord(int dom, std::string &sim) {
+PickRecord::PickRecord(int dom, std::string &var, int elem, std::string &val) {
     domain = dom;
-    simulation = sim;
+    element = elem;
+    variable = var;
+    value = val;
 }
 
 // ****************************************************************************
@@ -122,12 +130,15 @@ PickRecord::PickRecord(int dom, std::string &sim) {
 // Creation:   December 18, 2011
 //
 // Modifications:
-//
+//   Jonathan Byrd, Mon Feb 4, 2013
+//   Add variable and element to pick record
 // ****************************************************************************
 
 void PickRecord::reset() {
     domain = -1;
-    simulation = "<none>";
+    element = -1;
+    variable = "<none>";
+    value = "";
 }
 
 // ****************************************************************************
@@ -390,7 +401,7 @@ QvisPickWindow::CreateWindowContents()
 
 #ifdef HAVE_DDT
     QPushButton *focusPickInDDTButton =
-        new QPushButton(tr("Focus DDT on Pick"), central);
+        new QPushButton(tr("Add Pick to DDT"), central);
     connect(focusPickInDDTButton, SIGNAL(clicked()),
             this,SLOT(focusPickInDDTClicked()));
     gLayout->addWidget(focusPickInDDTButton,3,2,1,2);
@@ -987,6 +998,9 @@ QvisPickWindow::UpdateTimeOptions()
 //   Use value in userMaxPickTabs for setting nextPage instead of 
 //   MAX_PICK_TABS. 
 //
+//   Jonathan Byrd Mon Feb 4, 2013
+//   Record data concerning the latest pick in the pickRecord array
+//
 // ****************************************************************************
 
 void
@@ -1019,9 +1033,30 @@ QvisPickWindow::UpdatePage()
         infoLists[nextPage]->clear();
         infoLists[nextPage]->setText(displayString.c_str());
 
-        // Record the domain belonging to this pick
-        pickRecords[nextPage]->domain = pickAtts->GetDomain();
-        pickRecords[nextPage]->simulation = pickAtts->GetDatabaseName();
+        // Record the data concerning this pick
+        pickRecords[nextPage]->domain  = pickAtts->GetDomain();
+        pickRecords[nextPage]->element = pickAtts->GetElementNumber();
+        pickRecords[nextPage]->variable = pickAtts->GetActiveVariable();
+
+        // Record the value of the active variable of this pick
+        char buff[256];
+        buff[0] = '\0';
+        for (int i=0; i<pickAtts->GetNumVarInfos(); ++i)
+        {
+            const PickVarInfo  &info = pickAtts->GetVarInfo(i);
+            const doubleVector &values = info.GetValues();
+
+            // For the active variable only
+            if (info.GetVariableName() == pickRecords[nextPage]->variable)
+            {
+                if (info.GetVariableType() == "scalar" && values.size()==1)
+                {
+                    SNPRINTF(buff, 256, info.GetFloatFormat().c_str(), values[0]);
+                }
+            }
+        }
+        std::string targetValue(buff);
+        pickRecords[nextPage]->value = buff;
 
         // Show the tab.
         resultsTabWidget->setCurrentIndex(nextPage);
@@ -2338,13 +2373,13 @@ QvisPickWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // Creation:   December 18, 2011
 //
 // Modifications:
+//   Jonathan Byrd, Mon Feb 4, 2013
+//   Focus on domain, variable and element, not just domain
 //
 // ****************************************************************************
 void
 QvisPickWindow::focusPickInDDTClicked()
 {
-    int targetDomain = pickRecords[resultsTabWidget->currentIndex()]->domain;
-    string targetSim = pickRecords[resultsTabWidget->currentIndex()]->simulation;
-
-    GetViewerMethods()->DDTFocus(targetDomain);
+    const PickRecord *target = pickRecords[resultsTabWidget->currentIndex()];
+    GetViewerMethods()->DDTFocus(target->domain, target->variable, target->element, target->value);
 }

@@ -111,7 +111,7 @@ static const char *ViewerRPCType_strings[] = {
 "SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", "MovePlotOrderTowardLastRPC", 
 "SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", "RenamePickLabelRPC", 
 "GetQueryParametersRPC", "DDTConnectRPC", "DDTFocusRPC", 
-"ReleaseToDDTRPC", "ExportRPC", "MaxRPC"
+"ReleaseToDDTRPC", "PlotDDTVispointVariablesRPC", "ExportRPC", "MaxRPC"
 };
 
 std::string

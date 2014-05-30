@@ -610,6 +610,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
     AddAction(new SetToolUpdateModeAction(win), ViewerRPC::SetToolUpdateModeRPC);
 #ifdef HAVE_DDT
     AddAction(new ReleaseToDDTAction(win), ViewerRPC::ReleaseToDDTRPC);
+    AddAction(new PlotDDTVispointVariablesAction(win), ViewerRPC::PlotDDTVispointVariablesRPC);
 #endif
 
     AddAction(new ToggleSpinModeAction(win), ViewerRPC::ToggleSpinModeRPC);

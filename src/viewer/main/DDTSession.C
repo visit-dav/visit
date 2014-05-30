@@ -243,17 +243,61 @@ void
 DDTSession::setFocusOnDomain(const int domain)
 {
     if (domain == -1)
-        Error(tr("No domain information, may not be a parallel simulation. DDT's focus will not be changed."));
-
-    if (mSocket->state() == QLocalSocket::ConnectedState)
     {
-        QString str = QString("[VisIt] focus domain %0\n").arg(domain);
+        Error(tr("No domain information, may not be a parallel simulation. DDT's focus will not be changed."));
+    }
+    else if (mSocket->state() == QLocalSocket::ConnectedState)
+    {
+        const QString str = QString("[VisIt] focus domain %0\n").arg(QString::number(domain));
         mSocket->write(str.toLatin1().constData());
         mSocket->flush();
     }
     else
     {
         Error(tr("Cannot focus DDT on domain %0 as VisIt is not currently connected to DDT.").arg(domain));
+    }
+}
+
+// ****************************************************************************
+// Method: DDTSession::setFocusOnElement
+//
+// Purpose:
+//     Sends a command over the socket instructing DDT to focus on a
+//     specific element within a domain
+//
+// Programmer: Jonathan Byrd
+// Creation:   Fri Feb 1, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+DDTSession::setFocusOnElement(const int domain, const std::string& variable,
+        const int elementNumber, const std::string& value)
+{
+    int safeDomain;
+    if (domain < 0) // No domain information. May be a 1-proc simulation
+        safeDomain = 0; // DDT assumes domain == MPI rank. Negative domain nonsensical.
+    else
+        safeDomain = domain;
+
+    if (elementNumber < 0)
+        Error(tr("Invalid element number (%0). DDT's focus will not be changed."));
+    else if (mSocket->state() == QLocalSocket::ConnectedState)
+    {
+        QString str = QString("[VisIt];;command=focus;;domain=%0;;variable=%1;;element=%2;;value=%3\n").arg(
+                QString::number(safeDomain),
+                QString::fromLatin1(variable.c_str()),
+                QString::number(elementNumber),
+                QString::fromLatin1(value.c_str()));
+        mSocket->write(str.toLatin1().constData());
+        mSocket->flush();
+    }
+    else
+    {
+        Error(tr("Cannot focus DDT on element %0 domain %1 as VisIt is not currently connected to DDT.").arg(
+                    elementNumber, domain));
     }
 }
 
@@ -348,6 +392,10 @@ DDTSession::readDataFromDDT()
                                 key, "DDT", "");
                 }
             }
+        }
+        else if (message=="exit")
+        {
+            GetViewerMethods()->Close();
         }
         else
             Error(QString("Unrecognised message from DDT: %0").arg(message));
