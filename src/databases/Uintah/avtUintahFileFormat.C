@@ -805,7 +805,21 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   md->AddGroupInformation(numLevels, totalPatches, groupIds);
   md->AddDefaultSILRestrictionDescription(std::string("!TurnOnAll"));
 
+  // Set the cycles and times.
+  md->SetCyclesAreAccurate(true);
 
+  std::vector<int> cycles;
+
+  cycles.resize( cycleTimes.size() );
+
+  for(int i=0; i<cycleTimes.size(); ++i )
+    cycles[i] = i;
+
+  md->SetCycles( cycles );
+
+  md->SetTimesAreAccurate(true);
+  md->SetTimes( cycleTimes );
+  
   AddExpressionsToMetadata(md);
 }
 
