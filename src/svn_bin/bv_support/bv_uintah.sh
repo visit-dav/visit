@@ -208,12 +208,10 @@ function build_uintah
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
 
-      if [[ "$OPSYS" != "Darwin" ]]; then
         warn "Uintah may require fortran to be enabled. It does not appear that the --fortran "
         warn "agrument was set. If Uintah fails to build try adding the --fortranargument"
-        FORTRANARGS=""
-#       return 1
-      fi
+        FORTRANARGS="--without-fortran"
+        #return 1
 
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"

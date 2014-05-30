@@ -971,6 +971,21 @@ function check_parallel
         fi
 
         #
+        # VisIt's build_visit can obtain all necessary MPI flags from
+        # bv_mpich. If we are building mpich and the user
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
+        #
+        if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
+
+            export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+            export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+            export PAR_COMPILER="$MPICH_COMPILER"
+            info \
+                "Configuring with build mpich: $MPICH_COMPILER"
+            return 0
+        fi
+
+        #
         # Check the environment that mpicc would set up as a first stab.
         # Since VisIt currently only ever uses MPI's C interface, we need
         # only the information to link to MPI's implementation of its C
