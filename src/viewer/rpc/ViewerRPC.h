@@ -262,6 +262,7 @@ public:
         DDTConnectRPC,
         DDTFocusRPC,
         ReleaseToDDTRPC,
+        PlotDDTVispointVariablesRPC,
         ExportRPC,
         MaxRPC
     };

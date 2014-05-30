@@ -440,7 +440,7 @@ public:
                     const stringVector &args);
 
     void DDTConnect(bool connect);
-    void DDTFocus(int domain);
+    void DDTFocus(int domain, const std::string &variable, int element, const std::string &value);
 
     void ExportWindows(const intVector &windowIds, const std::string& format);
     void ExportHostProfile(const std::string& profile, const std::string &filename, const bool& saveInUserDir = false);

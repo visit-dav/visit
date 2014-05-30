@@ -46,6 +46,8 @@
 #include <OperatorPluginManager.h>
 #include <ViewerEngineManager.h>
 #include <DDTManager.h>
+#include <avtDatabaseMetaData.h>
+#include <avtSimulationCommandSpecification.h>
 
 #include <QIcon>
 #include <QPixmap>
@@ -957,7 +959,7 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
         AddChoice(tr("Zone Pick"), tr("Zone Pick mode"), QPixmap(zonepickmode_xpm));
         AddChoice(tr("Node Pick"), tr("Node Pick mode"), QPixmap(nodepickmode_xpm));
         AddChoice(tr("Spreadsheet Pick"), tr("Spreadsheet Pick mode"), QPixmap(spreadsheetpickmode_xpm));
-        AddChoice(tr("DDT Pick"), tr("DDT Pick mode"), QPixmap(ddtpickmode_xpm));
+        AddChoice(tr("Add DDT Pick"), tr("DDT Pick mode"), QPixmap(ddtpickmode_xpm));
         AddChoice(tr("Lineout"), tr("Lineout mode"), QPixmap(lineoutmode_xpm));
     }
     else 
@@ -967,7 +969,7 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
         AddChoice(tr("Zone Pick"));
         AddChoice(tr("Node Pick"));
         AddChoice(tr("Spreadsheet Pick"));
-        AddChoice(tr("DDT Pick"));
+        AddChoice(tr("Add DDT Pick"));
         AddChoice(tr("Lineout"));
     }
 
@@ -1552,4 +1554,85 @@ ReleaseToDDTAction::Enabled() const
     // is displaying a ddtsim-sourced simulation
     return (window->GetPlotList()->GetEngineKey().IsSimulation()
             && DDTManager::isDatabaseDDTSim(window->GetPlotList()->GetDatabaseName()));
+}
+
+// ****************************************************************************
+// Method: PlotDDTVispointVariablesAction::PlotDDTVispointVariablesAction
+//
+// Purpose:
+//   Constructor for the 'plot vispoint variables' Action
+//
+// Arguments:
+//   win : The ViewerWindow this action applies to
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   July 15, 2013
+//
+// ****************************************************************************
+
+PlotDDTVispointVariablesAction::PlotDDTVispointVariablesAction(ViewerWindow *win) :
+    ViewerAction(win)
+{
+    SetAllText(tr("Plot DDT vispoint variables"));
+}
+
+// ****************************************************************************
+// Method: PlotDDTVispointVariablesAction::Execute
+//
+// Purpose:
+//   Performs the 'plot vispoint variables' Action
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   July 15, 2013
+//
+// ****************************************************************************
+
+void
+PlotDDTVispointVariablesAction::Execute()
+{
+    if (DDTManager::isDatabaseDDTSim(GetWindow()->GetPlotList()->GetDatabaseName()))
+    {
+        const EngineKey &key = GetWindow()->GetPlotList()->GetEngineKey();
+        if (key.IsSimulation())
+            ViewerEngineManager::Instance()->SendSimulationCommand(
+                    key, "plot", "force");
+    }
+}
+
+// ****************************************************************************
+// Method: PlotDDTVispointVariablesAction::Enabled
+//
+// Purpose:
+//   Determines the enabled status for the 'plot vispoint variables' Action
+//
+// Returns:
+//   true if this Action should appear enabled
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   July 15, 2013
+//
+// ****************************************************************************
+
+bool
+PlotDDTVispointVariablesAction::Enabled() const
+{
+    const EngineKey &key = GetWindow()->GetPlotList()->GetEngineKey();
+    if (key.IsSimulation())
+    {
+        const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(
+                key);
+
+        // This action should only be enabled if the window to which the action belongs
+        // is displaying a ddtsim-sourced simulation
+       if (md && DDTManager::isDatabaseDDTSim(window->GetPlotList()->GetDatabaseName()))
+       {
+            // The ddtsim library in use must also support the "plot" command
+            const int numCommands = md->GetSimInfo().GetNumGenericCommands();
+            const std::string plotCmd = "plot";
+            for (int i=0; i<numCommands; ++i)
+                if (md->GetSimInfo().GetGenericCommands(i).GetName()==plotCmd)
+                    return true;
+       }
+    }
+    return false;
 }

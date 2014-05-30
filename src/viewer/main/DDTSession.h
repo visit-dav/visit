@@ -55,7 +55,8 @@
 // Creation:   Sun Dec 18, 2011
 //
 // Modifications:
-//
+//   Jonathan Byrd Fri Feb 1, 2013
+//   Add setFocusOnElement
 // ****************************************************************************
 
 class VIEWER_API DDTSession : public ViewerBase
@@ -71,6 +72,8 @@ public:
 
     QString statusString();
     void setFocusOnDomain(const int domain);
+    void setFocusOnElement(const int domain, const std::string& variable,
+            const int elementNumber, const std::string& value);
 
 signals:
     void statusChanged();
