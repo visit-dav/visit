@@ -7750,11 +7750,14 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
             if (DDTManager::isDDTSim(win))
             {
                 const EngineKey &key = win->GetPlotList()->GetEngineKey();
-                const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
-                if (md->GetSimInfo().GetMode()==avtSimulationInformation::Running)
-                    windowInfo->SetAnimationMode(3);
-                else
-                    windowInfo->SetAnimationMode(2);
+                if (key.IsSimulation())
+                {
+                    const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+                    if (md->GetSimInfo().GetMode()==avtSimulationInformation::Running)
+                        windowInfo->SetAnimationMode(3);
+                    else
+                        windowInfo->SetAnimationMode(2);
+                }
             }
             else
             {

@@ -143,7 +143,8 @@ DDTManager::getSessionNC()
 // Creation:   Sun Dec 18, 2011
 //
 // Modifications:
-//
+//   Jonathan Byrd, Fri Feb 1, 2013
+//   Update default location of DDT's socket (for DDT >= 4.0)
 // ****************************************************************************
 
 DDTSession*
@@ -160,7 +161,21 @@ DDTManager::makeConnection()
 
     QString filename = QFile::decodeName(getenv("DDT_SOCKET"));
     if(filename.isEmpty())
-        filename = QDir::homePath() + "/.ddt/ddt.socket.tmp";
+    {
+        const char *userName = NULL;
+        userName = getenv("USER");          // Linux/Mac
+        if (userName == NULL)
+            userName = getenv("LOGNAME");
+        if (userName == NULL)
+            userName = getenv("USERNAME");  // Windows
+        if (userName == NULL)
+            return NULL;                    // Unable to get username
+        filename = QString("%0/allinea-%1/ddt.socket.tmp").arg(QDir::tempPath(),QString::fromLocal8Bit(userName));
+    }
+
+    if (!QFile::exists(filename))
+        return NULL;                // Named socket does not exist, cannot connect to it
+
     mSession = new DDTSession(filename);
 
     if (mSession->connected())

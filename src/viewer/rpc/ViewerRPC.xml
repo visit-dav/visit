@@ -200,6 +200,7 @@
       DDTConnectRPC
       DDTFocusRPC
       ReleaseToDDTRPC
+      PlotDDTVispointVariablesRPC
       ExportRPC
       MaxRPC
     </Enum>

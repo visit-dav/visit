@@ -166,6 +166,7 @@
 #include <avtColorTables.h>
 #include <avtDatabaseMetaData.h>
 #include <avtSimulationInformation.h>
+#include <avtSimulationCommandSpecification.h>
 #include <SharedDaemon.h>
 
 #include <DDTManager.h>
@@ -10129,6 +10130,21 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
         {
             wM->UpdateWindowInformation(WINDOWINFO_ANIMATION, -1);
             wM->UpdateActions();
+
+            const EngineKey &key = plotList->GetEngineKey();
+            const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+            // If supported, send a command to the DDTSim simulation to (optionally)
+            // generate python commands to set up suitable plots for the current
+            // vispoint
+            if (md && key.IsSimulation())
+            {
+                for (int i=0; i<md->GetSimInfo().GetNumGenericCommands(); ++i)
+                    if (md->GetSimInfo().GetGenericCommands(i).GetName()=="plot")
+                    {
+                        ViewerEngineManager::Instance()->SendSimulationCommand(
+                                key, "plot", "");
+                    }
+            }
         }
     }
     CATCHALL
@@ -11938,20 +11954,30 @@ void ViewerSubject::DDTConnect()
 // Method:  DDTFocus
 //
 // Purpose:
-//   Instructs DDT to focus on a specific domain
+//   Instructs DDT to focus on a specific domain & element
 //
 // Programmer:  Jonathan Byrd
 // Creation:    December 18, 2011
+//
+// Modifications:
+//   Jonathan Byrd, Mon Feb 4, 2013
+//   Focus on variable & element within a domain, not just a domain
 //
 // ****************************************************************************
 
 void ViewerSubject::DDTFocus()
 {
-    const int domain = GetViewerState()->GetViewerRPC()->GetIntArg1();
+    const int domain  = GetViewerState()->GetViewerRPC()->GetIntArg1();
+    const int element = GetViewerState()->GetViewerRPC()->GetIntArg2();
+    const std::string variable = GetViewerState()->GetViewerRPC()->GetStringArg1();
+    const std::string value    = GetViewerState()->GetViewerRPC()->GetStringArg2();
 
     DDTSession* ddt = DDTManager::getInstance()->getSession();
     if (ddt!=NULL)
-        ddt->setFocusOnDomain(domain);
+        ddt->setFocusOnElement(domain, variable, element, value);
     else
-        Error(tr("Cannot focus DDT on domain %0: failed to connect to DDT").arg(domain));
+        Error(tr("Cannot focus DDT on domain %0, element %1 of %2:: failed to connect to DDT").arg(
+                    QString::number(domain),
+                    QString::number(element),
+                    QString::fromLatin1(variable.c_str())));
 }

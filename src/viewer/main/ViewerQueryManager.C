@@ -2762,6 +2762,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Check whether reusePickLetter flag in PickAttributes is set and
 //   do not advance pick designtor if it is.
 //
+//   Jonathan Byrd, Fri Feb 1 2013
+//   Add DDT pick support for domain & element
 // ****************************************************************************
 
 void
@@ -2798,13 +2800,37 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         // instead of picking it directly
         if (win->GetInteractionMode() == DDT_PICK)
         {
-            const int targetDomain = pickAtts->GetDomain();
+            const int targetDomain           = pickAtts->GetDomain();
+            const int targetElement          = pickAtts->GetElementNumber();
+            const std::string targetVariable = pickAtts->GetActiveVariable();
+
+            char buff[256];
+            buff[0] = '\0';
+
+            for (int i=0; i<pickAtts->GetNumVarInfos(); ++i)
+            {
+                const PickVarInfo  &info = pickAtts->GetVarInfo(i);
+                const doubleVector &values = info.GetValues();
+
+                // For the active variable only
+                if (info.GetVariableName() == targetVariable)
+                {
+                    if (info.GetVariableType() == "scalar" && values.size()==1)
+                    {
+                        SNPRINTF(buff, 256, info.GetFloatFormat().c_str(), values[0]);
+                    }
+                }
+            }
+            std::string targetValue(buff);
 
             DDTSession* ddt = DDTManager::getInstance()->getSession();
             if (ddt!=NULL)
-                ddt->setFocusOnDomain(targetDomain);
+                ddt->setFocusOnElement(targetDomain, targetVariable, targetElement, targetValue);
             else
-                Error(tr("Cannot focus on domain %0, unable to connect to DDT").arg(targetDomain));
+                Error(tr("Cannot focus on domain %0, element %1 of %2: unable to connect to DDT").arg(
+                            QString::number(targetDomain),
+                            QString::number(targetElement),
+                            QString::fromLatin1(targetVariable.c_str())));
         }
         else
         {

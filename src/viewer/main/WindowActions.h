@@ -446,3 +446,28 @@ public:
     virtual void Execute();
     virtual bool Enabled() const;
 };
+
+// ****************************************************************************
+// Class: PlotDDTVispointVariablesAction
+//
+// Purpose:
+//   Action to automatically plot variables at the current DDT vispoint.
+//
+// Notes:
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   July 15, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class VIEWER_API PlotDDTVispointVariablesAction : public ViewerAction
+{
+public:
+    PlotDDTVispointVariablesAction(ViewerWindow *win);
+    virtual ~PlotDDTVispointVariablesAction(){}
+
+    virtual void Execute();
+    virtual bool Enabled() const;
+};

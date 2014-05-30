@@ -5443,13 +5443,21 @@ ViewerMethods::DDTConnect(bool connect)
 //  Programmer: Jonathan Byrd
 //  Creation:   December 18, 2011
 //
+//  Modifications:
+//    Jonathan Byrd, Mon Feb 4, 2013
+//    Focus on domain, variable and element, not just domain
+//
 // ****************************************************************************
 
 void
-ViewerMethods::DDTFocus(int domain)
+ViewerMethods::DDTFocus(int domain, const std::string& variable, int element,
+        const std::string& value)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::DDTFocusRPC);
     state->GetViewerRPC()->SetIntArg1(domain);
+    state->GetViewerRPC()->SetIntArg2(element);
+    state->GetViewerRPC()->SetStringArg1(variable);
+    state->GetViewerRPC()->SetStringArg2(value);
     state->GetViewerRPC()->Notify();
 }
 
