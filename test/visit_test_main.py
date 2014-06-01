@@ -834,7 +834,7 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     dPixs     = 0
     dpix      = 0.0
     davg      = 0.0
-    thrErr    = None
+    thrErr    = -1.0
 
     if TestEnv.params["use_pil"]:
         if TestEnv.params["threshold_diff"]:
