@@ -43,4 +43,9 @@ PY_3RDPARTY_TEST(PY_TESTS SILO
     restorewithsources selection sessionexpression sessionview
     simplekeyframe textannot view3d wavecontour)
 
-ADD_VISIT_PY_TESTS(Session "${PY_TESTS}")
+SET(TEST_EXTRA_ARGS)
+IF (APPLE)
+    SET(TEST_EXTRA_ARGS "--threshold-error=wavecontour00:12")
+ENDIF()
+
+ADD_VISIT_PY_TESTS(Session "${PY_TESTS}" ${TEST_EXTRA_ARGS})
