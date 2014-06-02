@@ -963,10 +963,15 @@ function check_parallel
         # Check if PAR_COMPILER is set & if so use that.
         #
         export VISIT_MPI_COMPILER=""
+        export VISIT_MPI_COMPILER_CXX=""
         if [[ "$PAR_COMPILER" != "" ]] ; then
-            export VISIT_MPI_COMPILER=$PAR_COMPILER
+            export VISIT_MPI_COMPILER="$PAR_COMPILER"
             info \
                 "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+            if [[ "$PAR_COMPILER_CXX" != "" ]] ; then
+                export VISIT_MPI_COMPILER_CXX="$PAR_COMPILER_CXX"
+                "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
+            fi
             return 0
         fi
 
@@ -978,10 +983,14 @@ function check_parallel
         if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
 
             export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+            export MPICH_COMPILER_CXX="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpic++"
             export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+            export VISIT_MPI_COMPILER_CXX="$MPICH_COMPILER_CXX"
             export PAR_COMPILER="$MPICH_COMPILER"
-            info \
-                "Configuring with build mpich: $MPICH_COMPILER"
+            export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
+            info  "Configuring parallel with mpich build: "
+            info  "  PAR_COMPILER: $MPICH_COMPILER " 
+            info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
             return 0
         fi
 
