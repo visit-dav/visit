@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class ViewerClientInformationElement extends AttributeSubject
 {
-    private static int ViewerClientInformationElement_numAdditionalAtts = 4;
+    private static int ViewerClientInformationElement_numAdditionalAtts = 5;
 
     public ViewerClientInformationElement()
     {
@@ -68,6 +68,7 @@ public class ViewerClientInformationElement extends AttributeSubject
         rawData = new Vector();
         format = 0;
         isRaw = false;
+        windowId = -1;
     }
 
     public ViewerClientInformationElement(int nMoreFields)
@@ -78,6 +79,7 @@ public class ViewerClientInformationElement extends AttributeSubject
         rawData = new Vector();
         format = 0;
         isRaw = false;
+        windowId = -1;
     }
 
     public ViewerClientInformationElement(ViewerClientInformationElement obj)
@@ -96,6 +98,7 @@ public class ViewerClientInformationElement extends AttributeSubject
 
         format = obj.format;
         isRaw = obj.isRaw;
+        windowId = obj.windowId;
 
         SelectAll();
     }
@@ -127,7 +130,8 @@ public class ViewerClientInformationElement extends AttributeSubject
         return ((data.equals(obj.data)) &&
                 rawData_equal &&
                 (format == obj.format) &&
-                (isRaw == obj.isRaw));
+                (isRaw == obj.isRaw) &&
+                (windowId == obj.windowId));
     }
 
     // Property setting methods
@@ -155,11 +159,18 @@ public class ViewerClientInformationElement extends AttributeSubject
         Select(3);
     }
 
+    public void SetWindowId(int windowId_)
+    {
+        windowId = windowId_;
+        Select(4);
+    }
+
     // Property getting methods
     public String  GetData() { return data; }
     public Vector  GetRawData() { return rawData; }
     public int     GetFormat() { return format; }
     public boolean GetIsRaw() { return isRaw; }
+    public int     GetWindowId() { return windowId; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -172,6 +183,8 @@ public class ViewerClientInformationElement extends AttributeSubject
             buf.WriteInt(format);
         if(WriteSelect(3, buf))
             buf.WriteBool(isRaw);
+        if(WriteSelect(4, buf))
+            buf.WriteInt(windowId);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -190,6 +203,9 @@ public class ViewerClientInformationElement extends AttributeSubject
         case 3:
             SetIsRaw(buf.ReadBool());
             break;
+        case 4:
+            SetWindowId(buf.ReadInt());
+            break;
         }
     }
 
@@ -200,6 +216,7 @@ public class ViewerClientInformationElement extends AttributeSubject
         str = str + ucharVectorToString("rawData", rawData, indent) + "\n";
         str = str + intToString("format", format, indent) + "\n";
         str = str + boolToString("isRaw", isRaw, indent) + "\n";
+        str = str + intToString("windowId", windowId, indent) + "\n";
         return str;
     }
 
@@ -209,5 +226,6 @@ public class ViewerClientInformationElement extends AttributeSubject
     private Vector  rawData; // vector of Byte objects
     private int     format;
     private boolean isRaw;
+    private int     windowId;
 }
 

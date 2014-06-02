@@ -57,6 +57,7 @@
 void ViewerClientInformationElement::Init()
 {
     isRaw = false;
+    windowId = -1;
 
     ViewerClientInformationElement::SelectAll();
 }
@@ -82,6 +83,7 @@ void ViewerClientInformationElement::Copy(const ViewerClientInformationElement &
     rawData = obj.rawData;
     format = obj.format;
     isRaw = obj.isRaw;
+    windowId = obj.windowId;
 
     ViewerClientInformationElement::SelectAll();
 }
@@ -242,7 +244,8 @@ ViewerClientInformationElement::operator == (const ViewerClientInformationElemen
     return ((data == obj.data) &&
             (rawData == obj.rawData) &&
             (format == obj.format) &&
-            (isRaw == obj.isRaw));
+            (isRaw == obj.isRaw) &&
+            (windowId == obj.windowId));
 }
 
 // ****************************************************************************
@@ -386,10 +389,11 @@ ViewerClientInformationElement::NewInstance(bool copy) const
 void
 ViewerClientInformationElement::SelectAll()
 {
-    Select(ID_data,    (void *)&data);
-    Select(ID_rawData, (void *)&rawData);
-    Select(ID_format,  (void *)&format);
-    Select(ID_isRaw,   (void *)&isRaw);
+    Select(ID_data,     (void *)&data);
+    Select(ID_rawData,  (void *)&rawData);
+    Select(ID_format,   (void *)&format);
+    Select(ID_isRaw,    (void *)&isRaw);
+    Select(ID_windowId, (void *)&windowId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -446,6 +450,12 @@ ViewerClientInformationElement::CreateNode(DataNode *parentNode, bool completeSa
         node->AddNode(new DataNode("isRaw", isRaw));
     }
 
+    if(completeSave || !FieldsEqual(ID_windowId, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("windowId", windowId));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -490,6 +500,8 @@ ViewerClientInformationElement::SetFromNode(DataNode *parentNode)
         SetFormat(node->AsInt());
     if((node = searchNode->GetNode("isRaw")) != 0)
         SetIsRaw(node->AsBool());
+    if((node = searchNode->GetNode("windowId")) != 0)
+        SetWindowId(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -522,6 +534,13 @@ ViewerClientInformationElement::SetIsRaw(bool isRaw_)
 {
     isRaw = isRaw_;
     Select(ID_isRaw, (void *)&isRaw);
+}
+
+void
+ViewerClientInformationElement::SetWindowId(int windowId_)
+{
+    windowId = windowId_;
+    Select(ID_windowId, (void *)&windowId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -564,6 +583,12 @@ ViewerClientInformationElement::GetIsRaw() const
     return isRaw;
 }
 
+int
+ViewerClientInformationElement::GetWindowId() const
+{
+    return windowId;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -604,10 +629,11 @@ ViewerClientInformationElement::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_data:    return "data";
-    case ID_rawData: return "rawData";
-    case ID_format:  return "format";
-    case ID_isRaw:   return "isRaw";
+    case ID_data:     return "data";
+    case ID_rawData:  return "rawData";
+    case ID_format:   return "format";
+    case ID_isRaw:    return "isRaw";
+    case ID_windowId: return "windowId";
     default:  return "invalid index";
     }
 }
@@ -632,10 +658,11 @@ ViewerClientInformationElement::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_data:    return FieldType_string;
-    case ID_rawData: return FieldType_ucharVector;
-    case ID_format:  return FieldType_int;
-    case ID_isRaw:   return FieldType_bool;
+    case ID_data:     return FieldType_string;
+    case ID_rawData:  return FieldType_ucharVector;
+    case ID_format:   return FieldType_int;
+    case ID_isRaw:    return FieldType_bool;
+    case ID_windowId: return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -660,10 +687,11 @@ ViewerClientInformationElement::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_data:    return "string";
-    case ID_rawData: return "ucharVector";
-    case ID_format:  return "int";
-    case ID_isRaw:   return "bool";
+    case ID_data:     return "string";
+    case ID_rawData:  return "ucharVector";
+    case ID_format:   return "int";
+    case ID_isRaw:    return "bool";
+    case ID_windowId: return "int";
     default:  return "invalid index";
     }
 }
@@ -708,6 +736,11 @@ ViewerClientInformationElement::FieldsEqual(int index_, const AttributeGroup *rh
     case ID_isRaw:
         {  // new scope
         retval = (isRaw == obj.isRaw);
+        }
+        break;
+    case ID_windowId:
+        {  // new scope
+        retval = (windowId == obj.windowId);
         }
         break;
     default: retval = false;

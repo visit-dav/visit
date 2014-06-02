@@ -15993,8 +15993,8 @@ visit_exec_client_method(void *data)
         keepGoing = false;
         // Make the interpreter quit.
         viewerInitiatedQuit = true;
-        if(acquireLock)
-            VisItUnlockPythonInterpreter(myThreadState);
+        //if(acquireLock)
+        //    VisItUnlockPythonInterpreter(myThreadState);
 
         PyGILState_STATE state = PyGILState_Ensure();
         PyRun_SimpleString("import sys; sys.exit(0)");
@@ -18570,7 +18570,10 @@ initvisit()
     PyEval_InitThreads();
     // save a pointer to the main PyThreadState object
     mainThreadState = PyThreadState_Get();
-
+    ///http://porky.linuxjournal.com:8080/LJ/073/3641.html
+    ///according to the above article PyEval_InitThreads() is
+    ///acquiring lock and needs to be released.
+    PyEval_ReleaseLock();
     //
     // Initialize the module, but only do it one time.
     //
@@ -18599,7 +18602,6 @@ initvisit()
     PyDict_SetItemString(d, "VisItException", VisItError);
     VisItInterrupt = PyErr_NewException((char*)"visit.VisItInterrupt", NULL, NULL);
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
-
 }
 
 // ****************************************************************************

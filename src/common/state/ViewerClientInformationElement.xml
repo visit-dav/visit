@@ -9,4 +9,7 @@
     <Field name="isRaw" label="isRaw" type="bool">
       false
     </Field>
+    <Field name="windowId" label="windowId" type="int">
+      -1
+    </Field>
   </Attribute>
