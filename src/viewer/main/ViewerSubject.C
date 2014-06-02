@@ -3563,6 +3563,7 @@ void GetSerializedData(int windowIndex,
 
             element.SetData(QString(data.toBase64()).toStdString());
             element.SetFormat(ViewerClientInformation::Image);
+            element.SetWindowId(vwin->GetWindowId()+1);
             elementList.push_back(element);
         }
         delete [] result;
@@ -3596,6 +3597,7 @@ void GetSerializedData(int windowIndex,
                     ViewerClientInformationElement element;
                     element.SetData(QString(data.toBase64()).toStdString());
                     element.SetFormat(ViewerClientInformation::Image);
+                    element.SetWindowId(vwin->GetWindowId()+1);
                     elementList.push_back(element);
                 }
                 /// free the memory
@@ -3611,6 +3613,7 @@ void GetSerializedData(int windowIndex,
                     ViewerClientInformationElement element;
                     element.SetData(QString(data.toBase64()).toStdString());
                     element.SetFormat(ViewerClientInformation::Data);
+                    element.SetWindowId(vwin->GetWindowId()+1);
                     elementList.push_back(element);
                 }
             }

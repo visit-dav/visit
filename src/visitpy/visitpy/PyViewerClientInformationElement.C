@@ -101,6 +101,8 @@ PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *
     else
         SNPRINTF(tmpStr, 1000, "%sisRaw = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
+    str += tmpStr;
     return str;
 }
 
@@ -262,6 +264,30 @@ ViewerClientInformationElement_GetIsRaw(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ViewerClientInformationElement_SetWindowId(PyObject *self, PyObject *args)
+{
+    ViewerClientInformationElementObject *obj = (ViewerClientInformationElementObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the windowId in the object.
+    obj->data->SetWindowId((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ViewerClientInformationElement_GetWindowId(PyObject *self, PyObject *args)
+{
+    ViewerClientInformationElementObject *obj = (ViewerClientInformationElementObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetWindowId()));
+    return retval;
+}
+
 
 
 PyMethodDef PyViewerClientInformationElement_methods[VIEWERCLIENTINFORMATIONELEMENT_NMETH] = {
@@ -274,6 +300,8 @@ PyMethodDef PyViewerClientInformationElement_methods[VIEWERCLIENTINFORMATIONELEM
     {"GetFormat", ViewerClientInformationElement_GetFormat, METH_VARARGS},
     {"SetIsRaw", ViewerClientInformationElement_SetIsRaw, METH_VARARGS},
     {"GetIsRaw", ViewerClientInformationElement_GetIsRaw, METH_VARARGS},
+    {"SetWindowId", ViewerClientInformationElement_SetWindowId, METH_VARARGS},
+    {"GetWindowId", ViewerClientInformationElement_GetWindowId, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -310,6 +338,8 @@ PyViewerClientInformationElement_getattr(PyObject *self, char *name)
         return ViewerClientInformationElement_GetFormat(self, NULL);
     if(strcmp(name, "isRaw") == 0)
         return ViewerClientInformationElement_GetIsRaw(self, NULL);
+    if(strcmp(name, "windowId") == 0)
+        return ViewerClientInformationElement_GetWindowId(self, NULL);
 
     return Py_FindMethod(PyViewerClientInformationElement_methods, self, name);
 }
@@ -332,6 +362,8 @@ PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *a
         obj = ViewerClientInformationElement_SetFormat(self, tuple);
     else if(strcmp(name, "isRaw") == 0)
         obj = ViewerClientInformationElement_SetIsRaw(self, tuple);
+    else if(strcmp(name, "windowId") == 0)
+        obj = ViewerClientInformationElement_SetWindowId(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -94,6 +94,7 @@ public:
     void SetRawData(const unsignedCharVector &rawData_);
     void SetFormat(int format_);
     void SetIsRaw(bool isRaw_);
+    void SetWindowId(int windowId_);
 
     // Property getting methods
     const std::string        &GetData() const;
@@ -102,6 +103,7 @@ public:
           unsignedCharVector &GetRawData();
     int                      GetFormat() const;
     bool                     GetIsRaw() const;
+    int                      GetWindowId() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -121,6 +123,7 @@ public:
         ID_rawData,
         ID_format,
         ID_isRaw,
+        ID_windowId,
         ID__LAST
     };
 
@@ -129,11 +132,12 @@ private:
     unsignedCharVector rawData;
     int                format;
     bool               isRaw;
+    int                windowId;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEWERCLIENTINFORMATIONELEMENT_TMFS "su*ib"
+#define VIEWERCLIENTINFORMATIONELEMENT_TMFS "su*ibi"
 
 #endif
