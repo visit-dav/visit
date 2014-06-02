@@ -133,7 +133,40 @@ function bv_vtk_dry_run
 
 function apply_vtk_600_patch
 {
-    return 0
+# fix for 10.9 -- this fix is already in newer versions of VTK
+    info "Patching vtk-6"
+    patch -p0 << \EOF
+diff -c CMakeLists.txt.orig CMakeLists.txt
+*** CMakeLists.txt.orig	2014-05-30 15:54:16.000000000 -0700
+--- CMakeLists.txt	2014-05-30 15:54:25.000000000 -0700
+***************
+*** 4,13 ****
+  
+  # Objective-C++ compile flags, future CMake versions might make this obsolete
+  IF(APPLE)
+!   # Being a library, VTK may be linked in either GC (garbage collected)
+!   # processes or non-GC processes.  Default to "GC supported" so that both
+!   # GC and MRR (manual reference counting) are supported.
+!   SET(VTK_OBJCXX_FLAGS_DEFAULT "-fobjc-gc")
+    SET(VTK_REQUIRED_OBJCXX_FLAGS ${VTK_OBJCXX_FLAGS_DEFAULT} CACHE STRING "Extra flags for Objective-C++ compilation")
+    MARK_AS_ADVANCED(VTK_REQUIRED_OBJCXX_FLAGS)
+  ENDIF(APPLE)
+--- 4,10 ----
+  
+  # Objective-C++ compile flags, future CMake versions might make this obsolete
+  IF(APPLE)
+!   SET(VTK_OBJCXX_FLAGS_DEFAULT "")
+    SET(VTK_REQUIRED_OBJCXX_FLAGS ${VTK_OBJCXX_FLAGS_DEFAULT} CACHE STRING "Extra flags for Objective-C++ compilation")
+    MARK_AS_ADVANCED(VTK_REQUIRED_OBJCXX_FLAGS)
+  ENDIF(APPLE)
+
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "vtk6 patch failed."
+      return 1
+    fi
+
+    return 0;
 }
 
 function apply_vtk_patch
@@ -222,6 +255,7 @@ function build_vtk
     # Apply patches
     #
     info "Patching VTK . . ."
+    cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
     apply_vtk_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_vtk == 1 ]] ; then
@@ -234,6 +268,8 @@ function build_vtk
                  "failing harmlessly on a second application."
         fi
     fi
+    # move back up to the start dir 
+    cd "$START_DIR"
 
     info "Configuring VTK . . ."
 
