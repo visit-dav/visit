@@ -18573,7 +18573,7 @@ initvisit()
     ///http://porky.linuxjournal.com:8080/LJ/073/3641.html
     ///according to the above article PyEval_InitThreads() is
     ///acquiring lock and needs to be released.
-    PyEval_ReleaseLock();
+    //PyEval_ReleaseLock();
     //
     // Initialize the module, but only do it one time.
     //
