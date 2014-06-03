@@ -493,7 +493,7 @@ void SlaveProcessCallback(void *cbdata)
 /* Process commands from viewer on all processors. */
 int ProcessVisItCommand(simulation_data *sim)
 {
-    int command;
+    int command=0;
     if (sim->par_rank==0)
     {  
         int success = VisItProcessEngineCommand();
