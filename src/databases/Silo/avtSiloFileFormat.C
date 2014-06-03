@@ -4830,6 +4830,10 @@ avtSiloFileFormat::StoreMultimeshInfo(const char *const dirname,
 //    Mark C. Miller, Tue Feb 25 15:10:29 PST 2014
 //    Do the work that md->AddGroupInformation() would have done but make
 //    sure we do it *only* for the relevant meshes.
+//
+//    Mark C. Miller, Tue Jun  3 13:07:01 PDT 2014
+//    Adjust algorithm to find matching meshes to attach group info and ids
+//    to make it a little clearer what it is doing/how it is working.
 // ****************************************************************************
 
 void
@@ -4861,11 +4865,19 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
     {
         for (int i = 0; i < md->GetNumMeshes(); i++)
         {
-            bool nameAndBlockMatch = false;
-            for (int j = 0; j < (int) actualMeshName.size() && !nameAndBlockMatch; j++)
-                nameAndBlockMatch = md->GetMeshes(i).name == actualMeshName[j] &&
-                                    md->GetMeshes(i).numBlocks == groupInfo.ndomains;
-            if (nameAndBlockMatch)
+            int namesMatchAtIndex = -1;
+            for (int j = 0; j < (int) actualMeshName.size(); j++)
+            {
+                if (md->GetMeshes(i).name == actualMeshName[j])
+                {
+                    namesMatchAtIndex = j;
+                    break;
+                }
+            }
+
+            if (namesMatchAtIndex != -1 &&
+                groupInfo.ndomains == blocksForMesh[namesMatchAtIndex] && 
+                groupInfo.ndomains == md->GetMeshes(i).numBlocks)
             {
                 md->GetMeshes(i).numGroups = groupInfo.numgroups;
                 md->GetMeshes(i).groupIds = groupInfo.ids;
@@ -4992,6 +5004,10 @@ avtSiloFileFormat::FindDecomposedMeshType(DBfile *dbfile)
 //    Hank Childs, Wed Dec 22 15:14:33 PST 2010
 //    Early return when we are streaming.
 //
+//    Mark C. Miller, Tue Jun  3 13:09:26 PDT 2014
+//    Adjust conditional logic to determine if domain boundary information is
+//    served up from 'ndomains > 0' to 'ndomains > 1' to deal with Silo files
+//    with one domain and one group.
 // ****************************************************************************
 
 void
@@ -5089,7 +5105,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
     // appropriate data structure and register it.
     //
     if (!useLocalDomainBoundries &&
-        ndomains > 0 &&
+        ndomains > 1 &&
         !avtDatabase::OnlyServeUpMetaData())
     {
         avtStructuredDomainBoundaries *dbi = NULL;
@@ -5364,6 +5380,9 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
 //    local info as global if it were global and crash. Also support
 //    Domain to Block mapping via Domains_BlockNums array.
 //
+//    Mark C. Miller, Tue Jun  3 13:10:31 PDT 2014
+//    If numGroups is 1 *and* ndomains is also 1, set needConnectivityInfo to
+//    false. This is to deal with Silo files with one domain and one group.
 // ****************************************************************************
 
 
@@ -5427,6 +5446,8 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
                  groupIds[i] = 0;
              }
              needGroupInfo = false;
+             if (ndomains == 1)
+                 needConnectivityInfo = false;
          }
          else
          {
