@@ -47,7 +47,7 @@
 
 #include "avtADIOSBasicFileFormat.h"
 #include "avtXGCFileFormat.h"
-#include "avtPixieFileFormat.h"
+//#include "avtPixieFileFormat.h"
 #include "avtSpecFEMFileFormat.h"
 #include <avtADIOSSchemaFileFormat.h>
 
