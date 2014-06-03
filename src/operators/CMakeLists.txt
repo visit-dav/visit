@@ -89,6 +89,7 @@ Displace
 DualMesh
 Edge
 Elevate
+EllipsoidSlice
 ExternalSurface
 ExtractPointFunction2D
 Extrude
