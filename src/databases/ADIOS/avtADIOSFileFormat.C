@@ -47,7 +47,7 @@
 
 #include "avtADIOSBasicFileFormat.h"
 #include "avtXGCFileFormat.h"
-#include "avtPixieFileFormat.h"
+//#include "avtPixieFileFormat.h"
 #include "avtSpecFEMFileFormat.h"
 #include <avtADIOSSchemaFileFormat.h>
 
@@ -132,9 +132,11 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
           case 1:
             ffi = avtXGCFileFormat::CreateInterface(list, nList, nBlock);
             break;
+            /*
           case 2:
             ffi = avtPixieFileFormat::CreateInterface(list, nList, nBlock);
             break;
+            */
           case 3:
             ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock);
             break;
