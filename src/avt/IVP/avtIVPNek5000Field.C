@@ -51,7 +51,6 @@
 
 #include <vtkCellData.h>
 #include <vtkIntArray.h>
-#include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <InvalidVariableException.h>
@@ -73,29 +72,23 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
   vtkFieldData *fieldData = dataset->GetFieldData();
 
   // Pick off all of the data stored with the vtk field.
-
-  // Get the pointer to the points that make up the spetral element.
   vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid*) dataset;
+
   vtkPoints *pts = ugrid->GetPoints();
-  float *pts_ptr = (float *) pts->GetVoidPointer(0);
+  if (pts == NULL) {
+    EXCEPTION1( InvalidVariableException,
+                "avtIVPNek5000Field - Can not find vertices." );
+  }
 
-  vtkFloatArray *vecs = (vtkFloatArray *) ugrid->GetPointData()->GetVectors();
-
+  vtkDataArray *vecs = ugrid->GetPointData()->GetVectors();
   if (vecs == NULL) {
     EXCEPTION1( InvalidVariableException,
                 "avtIVPNek5000Field - Can not find velocity variable." );
   }
 
-  if( vecs->GetNumberOfComponents() != 3 ) {
-    EXCEPTION1( InvalidVariableException,
-                "avtIVPNek5000Field - Velocity variable does not contain three components." );
-  }
-
-  float *vec_ptr = (float *) vecs->GetVoidPointer(0);
-
+  // Get the number of point per spectrial elements
   unsigned int iDim, iBlockSize[3], iNumBlocks, npts = 1;
 
-  // Get the number of point per spectrial elements
   vtkIntArray *semVTK =
     (vtkIntArray *) fieldData->GetAbstractArray("Nek_SpectralElementData");  
 
@@ -139,11 +132,38 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
   if (iDim == 3)
     hexes_per_element *= (iBlockSize[2]-1);
 
-  // Move the points from the VTK structure into a form that Nek5000
+  // Move the vertices from the VTK structure into a form that Nek5000
   // uses.
   nek_pts[0] = new double[pts_per_element*num_elements];
   nek_pts[1] = new double[pts_per_element*num_elements];
   nek_pts[2] = new double[pts_per_element*num_elements];
+
+  // Get the pointer to the points that make up the spetral element.
+  int pts_type = pts->GetDataType();
+
+  if( pts_type == VTK_FLOAT ) {
+    float *pts_ptr = (float*) pts->GetVoidPointer(0);
+
+    for( unsigned int i=0; i<pts_per_element*num_elements; ++i )
+    {
+      nek_pts[0][i] = pts_ptr[i*3+0];
+      nek_pts[1][i] = pts_ptr[i*3+1];
+      nek_pts[2][i] = pts_ptr[i*3+2];
+    }
+  } else if( pts_type == VTK_DOUBLE ) {
+    double *pts_ptr = (double*) pts->GetVoidPointer(0);
+
+    for( unsigned int i=0; i<pts_per_element*num_elements; ++i )
+    {
+      nek_pts[0][i] = pts_ptr[i*3+0];
+      nek_pts[1][i] = pts_ptr[i*3+1];
+      nek_pts[2][i] = pts_ptr[i*3+2];
+    }
+  }
+  else {
+    EXCEPTION1( InvalidVariableException,
+                "avtIVPNek5000Field - Expected single or double precison floating point vertices." );
+  }
 
   // Move the vectors from the VTK structure into a form that Nek5000
   // uses.
@@ -151,17 +171,39 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
   nek_vec[1] = new double[pts_per_element*num_elements];
   nek_vec[2] = new double[pts_per_element*num_elements];
 
-  for( unsigned int i=0; i<pts_per_element*num_elements; ++i )
-  {
-    nek_pts[0][i] = pts_ptr[i*3+0];
-    nek_pts[1][i] = pts_ptr[i*3+1];
-    nek_pts[2][i] = pts_ptr[i*3+2];
-
-    nek_vec[0][i] = vec_ptr[i*3+0];
-    nek_vec[1][i] = vec_ptr[i*3+1];
-    nek_vec[2][i] = vec_ptr[i*3+2];
+  // Get the pointer to the vectors that make up the spetral element.
+  if( vecs->GetNumberOfComponents() != 3 ) {
+    EXCEPTION1( InvalidVariableException,
+                "avtIVPNek5000Field - Velocity variable does not contain three components." );
   }
 
+  int vec_type = vecs->GetDataType();
+
+  if( vec_type == VTK_FLOAT ) {
+    float *vec_ptr = (float*) vecs->GetVoidPointer(0);
+
+    for( unsigned int i=0; i<pts_per_element*num_elements; ++i )
+    {
+      nek_vec[0][i] = vec_ptr[i*3+0];
+      nek_vec[1][i] = vec_ptr[i*3+1];
+      nek_vec[2][i] = vec_ptr[i*3+2];
+    }
+  } else if( vec_type == VTK_DOUBLE ) {
+    double *vec_ptr = (double*) vecs->GetVoidPointer(0);
+
+    for( unsigned int i=0; i<pts_per_element*num_elements; ++i )
+    {
+      nek_vec[0][i] = vec_ptr[i*3+0];
+      nek_vec[1][i] = vec_ptr[i*3+1];
+      nek_vec[2][i] = vec_ptr[i*3+2];
+    }
+  }
+  else {
+    EXCEPTION1( InvalidVariableException,
+                "avtIVPNek5000Field - Expected single or double precison floating point vectors." );
+  }
+
+  // Create the internal Nek5000 field
   nek_fld = findpts_local_setup(iDim, nek_pts, iBlockSize, num_elements,
                                 iBlockSize2, 0.01, pts_per_element*num_elements,
                                 npts, 1024.0*std::numeric_limits<double>::epsilon());
