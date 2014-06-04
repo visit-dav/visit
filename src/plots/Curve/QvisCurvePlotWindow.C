@@ -698,6 +698,9 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Kathleen Biagas, Wed Sep 11 17:22:43 PDT 2013
 //   Added polarToggle and degreesToggle.
 //
+//   Kathleen Biagas, Wed Jun 4 11:45:17 PDT 2014
+//   Added blockSignals to widgets without them.
+//
 // ****************************************************************************
 
 void
@@ -759,8 +762,10 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             symbolType->blockSignals(false);
             break;
           case CurveAttributes::ID_pointSize:
+            pointSize->blockSignals(true);
             tempText.setNum(atts->GetPointSize());
             pointSize->setText(tempText);
+            pointSize->blockSignals(false);
             break;
           case CurveAttributes::ID_pointFillMode:
             {
@@ -808,10 +813,14 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             }
             break;
           case CurveAttributes::ID_showLegend:
+            legendToggle->blockSignals(true);
             legendToggle->setChecked(atts->GetShowLegend());
+            legendToggle->blockSignals(false);
             break;
           case CurveAttributes::ID_showLabels:
+            labelsToggle->blockSignals(true);
             labelsToggle->setChecked(atts->GetShowLabels());
+            labelsToggle->blockSignals(false);
             break;
           case CurveAttributes::ID_designator: // internal
             break;
@@ -851,7 +860,9 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             }
             break;
           case CurveAttributes::ID_timeCueBallSize:
+            timeCueBallSize->blockSignals(true);
             timeCueBallSize->setText(DoubleToQString(atts->GetTimeCueBallSize()));
+            timeCueBallSize->blockSignals(false);
             break;
           case CurveAttributes::ID_doLineTimeCue:
             if (atts->GetDoLineTimeCue() == true)
@@ -899,7 +910,9 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             doCropTimeCue->blockSignals(false);
             break;
           case CurveAttributes::ID_timeForTimeCue:
+            timeForTimeCue->blockSignals(true);
             timeForTimeCue->setText(DoubleToQString(atts->GetTimeForTimeCue()));
+            timeForTimeCue->blockSignals(false);
             break;
           case CurveAttributes::ID_fillMode:
             { // new scope
