@@ -260,8 +260,9 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_DDTCONNECTRPC = 196;
     public final static int VIEWERRPCTYPE_DDTFOCUSRPC = 197;
     public final static int VIEWERRPCTYPE_RELEASETODDTRPC = 198;
-    public final static int VIEWERRPCTYPE_EXPORTRPC = 199;
-    public final static int VIEWERRPCTYPE_MAXRPC = 200;
+    public final static int VIEWERRPCTYPE_PLOTDDTVISPOINTVARIABLESRPC = 199;
+    public final static int VIEWERRPCTYPE_EXPORTRPC = 200;
+    public final static int VIEWERRPCTYPE_MAXRPC = 201;
 
 
     public ViewerRPC()
@@ -1315,6 +1316,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_DDTFOCUSRPC";
         if(RPCType == VIEWERRPCTYPE_RELEASETODDTRPC)
             str = str + "VIEWERRPCTYPE_RELEASETODDTRPC";
+        if(RPCType == VIEWERRPCTYPE_PLOTDDTVISPOINTVARIABLESRPC)
+            str = str + "VIEWERRPCTYPE_PLOTDDTVISPOINTVARIABLESRPC";
         if(RPCType == VIEWERRPCTYPE_EXPORTRPC)
             str = str + "VIEWERRPCTYPE_EXPORTRPC";
         if(RPCType == VIEWERRPCTYPE_MAXRPC)
