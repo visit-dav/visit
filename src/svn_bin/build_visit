@@ -52,7 +52,7 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_VERSION=${VISIT_VERSION:-"2.7.1"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.7.3"}
 
 ####
 # Trunk:
