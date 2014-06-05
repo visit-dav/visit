@@ -45,7 +45,7 @@ SET(PY_TESTS
     multiblock)
 
 SET(TEST_EXTRA_ARGS)
-IF (APPLE)
+IF (NOT HAVE_OSMESA)
     SET(TEST_EXTRA_ARGS "--threshold-error=mandelbrot02:12")
 ENDIF()
 

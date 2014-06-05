@@ -51,7 +51,7 @@ PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
     TESTNAMES label subset)
 
 SET(TEST_EXTRA_ARGS)
-IF (APPLE)
+IF (NOT HAVE_OSMESA)
     SET(TEST_EXTRA_ARGS "--threshold-error=ray_trace_06:12,ray_trace_07:12,hf_0_1:21")
 ENDIF()
 
