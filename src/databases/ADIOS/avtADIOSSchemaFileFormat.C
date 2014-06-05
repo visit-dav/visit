@@ -79,10 +79,6 @@ extern "C"
 
 using namespace std;
 
-static vtkDataArray *AllocateArray(ADIOS_DATATYPES &t, int nt, int nc=1);
-static int NumberOfVertices(ADIOS_CELL_TYPE &ct);
-static int GetCellType(ADIOS_CELL_TYPE &ct);
-
 // ****************************************************************************
 //  Method: avtADIOSSchemaFileFormat::Identify
 //
@@ -161,8 +157,7 @@ avtADIOSSchemaFileFormat::CreateInterface(const char *const *list,
 avtADIOSSchemaFileFormat::avtADIOSSchemaFileFormat(const char *nm)
     : avtMTMDFileFormat(nm)
 {
-    fp = NULL;
-    filename = nm;
+    fileObj = new ADIOSFileObject(nm);
     initialized = false;
     numTimes = 0;
 }
@@ -187,9 +182,9 @@ avtADIOSSchemaFileFormat::~avtADIOSSchemaFileFormat()
     vars.clear();
     varMeshes.clear();
     
-    if (fp)
-        adios_read_close(fp);
-    fp = NULL;
+    if (fileObj)
+        delete fileObj;
+    fileObj = NULL;
 }
 
 
@@ -333,7 +328,8 @@ avtADIOSSchemaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int 
             avtMeshMetaData *mesh = new avtMeshMetaData;
             mesh->name = am->name;
             mesh->meshType = AVT_UNSTRUCTURED_MESH;
-            mesh->numBlocks = PAR_Size();
+            //mesh->meshType = AVT_POINT_MESH;
+            mesh->numBlocks = 1;
             mesh->blockOrigin = 0;
             mesh->spatialDimension = am->unstructured->nspaces;
             mesh->topologicalDimension = am->unstructured->nspaces;
@@ -341,23 +337,25 @@ avtADIOSSchemaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int 
         }
     }
 
-    map<string, ADIOS_VARINFO *>::const_iterator vit;
-    for (vit = vars.begin(); vit != vars.end(); vit++)
+    std::map<std::string, ADIOS_VARINFO*>::const_iterator v;
+    for (v = fileObj->variables.begin(); v != fileObj->variables.end(); v++)
     {
-        string varNm = vit->first;
-        ADIOS_VARINFO *avi = vit->second;
-        string meshNm = varMeshes.find(varNm)->second;
-        ADIOS_MESH *m = meshes.find(meshNm)->second;
-        
+        string varNm = v->first;
+        ADIOS_VARINFO *avi = v->second;
+        ADIOS_MESH *am = fileObj->GetMeshInfo(avi);
+        if (am == NULL)
+            continue;
+
         avtScalarMetaData *smd = new avtScalarMetaData();
         smd->name = varNm;
+        
         if (smd->name[0] == '/')
         {
             smd->originalName = smd->name;
             smd->name = string(&smd->name[1]);
         }
 
-        smd->meshName = meshNm;
+        smd->meshName = am->name;
         if (avi->meshinfo->centering == point)
             smd->centering = AVT_NODECENT;
         else
@@ -440,17 +438,8 @@ vtkDataArray *
 avtADIOSSchemaFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
     Initialize();
-    
-    ADIOS_VARINFO *avi = vars.find(varname)->second;
-
-    int sz = 1;
-    for (int i = 0; i < avi->ndim; i++)
-        sz *= avi->dims[i];
-    
-    //cout<<"GetVar "<<varname<<" sz= "<<sz<<" mesh= "<<varMeshes.find(varname)->second<<endl;
-    vtkDataArray *arr = AllocateArray(avi->type, sz);
-    ReadData(avi, timestate, arr->GetVoidPointer(0));
-
+    vtkDataArray *arr = NULL;
+    fileObj->ReadScalarData(varname, timestate, &arr);
     return arr;
 }
 
@@ -502,35 +491,26 @@ avtADIOSSchemaFileFormat::GetVectorVar(int timestate, int domain, const char *va
 void
 avtADIOSSchemaFileFormat::Initialize()
 {
+    if (!fileObj->Open())
+        EXCEPTION0(ImproperUseException);
     if (initialized)
         return;
 
-#ifdef PARALLEL
-    fp = adios_read_open_file(filename.c_str(), ADIOS_READ_METHOD_BP, (MPI_Comm)VISIT_MPI_COMM);
-#else
-    MPI_Comm comm_dummy = 0;
-    fp = adios_read_open_file(filename.c_str(), ADIOS_READ_METHOD_BP, comm_dummy);
-#endif
-    
-    //Read vars.
     bool firstIter = true;
-    for (int i = 0; i < fp->nvars; i++)
+    std::map<std::string, ADIOS_VARINFO*>::iterator vi;
+    for (vi = fileObj->variables.begin(); vi != fileObj->variables.end(); ++vi)
     {
-        //cout<<i<<" "<<fp->var_namelist[i]<<endl;
-        ADIOS_VARINFO *avi = adios_inq_var_byid(fp, i);
-        if (adios_inq_var_meshinfo(fp, avi) != 0)
-            continue;
+        ADIOS_VARINFO *avi = vi->second;
         if (avi->meshinfo == NULL)
             continue;
-        //cout<<"GET MESH, id= "<<avi->meshinfo->meshid<<endl;
-        ADIOS_MESH *am = adios_inq_mesh_byid(fp, avi->meshinfo->meshid);
+        
+        ADIOS_MESH *am = fileObj->GetMeshInfo(avi);
         if (am == NULL)
             continue;
-        adios_inq_var_blockinfo(fp, avi);
+
         if (meshes.find(am->name) == meshes.end())
             meshes[am->name] = am;
-        vars[fp->var_namelist[i]] = avi;
-        varMeshes[fp->var_namelist[i]] = am->name;
+
         if (firstIter)
         {
             numTimes = avi->nsteps;
@@ -541,34 +521,23 @@ avtADIOSSchemaFileFormat::Initialize()
             if (numTimes != avi->nsteps)
                 EXCEPTION1(InvalidVariableException, "Variable inconsitency");
         }
-        /*
-        //print some info
-        cout<<i<<" "<<fp->var_namelist[i]<<" mesh= "<<am->name;
-        cout<<" dims: ";
-        for (int i = 0; i < avi->ndim; i++)
-            cout<<avi->dims[i]<<" ";
-        cout<<endl;
-        for (int i = 0; i < avi->nsteps; i++)
-        {
-            cout<<"Step: "<<i<<endl;
-            for (int j = 0; j < avi->nblocks[i]; j++)
-            {
-                cout<<" Block: "<<j<<" ";
-                cout<<"s: ";
-                for (int k = 0; k < avi->ndim; k++)
-                    cout<<avi->blockinfo[j].start[k]<<" ";
-                cout<<"c: ";
-                for (int k = 0; k < avi->ndim; k++)
-                    cout<<avi->blockinfo[j].count[k]<<" ";
-                cout<<endl;
-            }
-        }
-        */
     }
-
+    
     initialized = true;
 }
 
+//****************************************************************************
+// Method:  avtADIOSSchemaFileFormat::MakeUniformMesh
+//
+// Purpose:
+//   Construct a uniform mesh.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
 vtkDataSet *
 avtADIOSSchemaFileFormat::MakeUniformMesh(MESH_UNIFORM *m, int ts, int dom)
@@ -617,7 +586,6 @@ avtADIOSSchemaFileFormat::MakeUniformMesh(MESH_UNIFORM *m, int ts, int dom)
         rg->SetZCoordinates(xyz[0]);
     }
     rg->SetDimensions(dims);
-    //cout<<"Uniform Mesh dims: "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
 
     xyz[0]->Delete();
     xyz[1]->Delete();
@@ -626,11 +594,24 @@ avtADIOSSchemaFileFormat::MakeUniformMesh(MESH_UNIFORM *m, int ts, int dom)
     return rg;
 }
 
+//****************************************************************************
+// Method:  avtADIOSSchemaFileFormat::MakeRectilinearMesh
+//
+// Purpose:
+//   Construct a rectilinear mesh.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
 vtkDataSet *
 avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int dom)
 {
     vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
-    vtkDataArray *xyz[3];
+    vtkDataArray *xyz[3] = {NULL, NULL, NULL};
     if (m->use_single_var == 1)
     {
         
@@ -640,11 +621,7 @@ avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int d
         for (int d = 0; d < 3; d++)
         {
             if (d < m->num_dimensions)
-            {
-                ADIOS_VARINFO *avi = adios_inq_var(fp, m->coordinates[d]);
-                xyz[d] = AllocateArray(avi->type, m->dimensions[d]);
-                ReadData(avi, ts, xyz[d]->GetVoidPointer(0));
-            }
+                fileObj->ReadScalarData(m->coordinates[d], ts, &(xyz[d]));
             else
             {
                 xyz[d] = vtkFloatArray::New();
@@ -678,7 +655,6 @@ avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int d
         rg->SetYCoordinates(xyz[1]);
         rg->SetZCoordinates(xyz[0]);
     }
-    //cout<<"Rect Mesh dims: "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
     rg->SetDimensions(dims);
 
     xyz[0]->Delete();
@@ -686,6 +662,19 @@ avtADIOSSchemaFileFormat::MakeRectilinearMesh(MESH_RECTILINEAR *m, int ts, int d
     xyz[2]->Delete();
     return rg;
 }
+
+//****************************************************************************
+// Method:  avtADIOSSchemaFileFormat::MakeStructuredMesh
+//
+// Purpose:
+//   Construct a structured mesh.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
 vtkDataSet *
 avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom)
@@ -708,7 +697,6 @@ avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom
         dims[2] = m->dimensions[0];
     }
 
-    //cout<<"STRUCTURED: dims= "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
     int sz = dims[0]*dims[1]*dims[2];
     vtkDataArray *xyz[3];
     if (m->use_single_var == 1)
@@ -719,11 +707,7 @@ avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom
         for (int d = 0; d < 3; d++)
         {
             if (d < m->num_dimensions)
-            {
-                ADIOS_VARINFO *avi = adios_inq_var(fp, m->points[d]);
-                xyz[d] = AllocateArray(avi->type, sz);
-                ReadData(avi, ts, xyz[d]->GetVoidPointer(0));
-            }
+                fileObj->ReadScalarData(m->points[d], ts, &(xyz[d]));
             else
             {
                 xyz[d] = vtkFloatArray::New();
@@ -749,54 +733,49 @@ avtADIOSSchemaFileFormat::MakeStructuredMesh(MESH_STRUCTURED *m, int ts, int dom
                               xyz[2]->GetTuple1(idx));
                 cnt++;
             }
-                              
+    
     xyz[0]->Delete();
     xyz[1]->Delete();
     xyz[2]->Delete();
 
     sg->SetPoints(pts);
     pts->Delete();
-
-
-    cout<<__LINE__<<endl;
-
     return sg;
 }
+
+//****************************************************************************
+// Method:  avtADIOSSchemaFileFormat::MakeUnstructuredMesh
+//
+// Purpose:
+//   Construct an unstructured mesh.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
 vtkDataSet *
 avtADIOSSchemaFileFormat::MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int dom)
 {
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
-    vtkDataArray *xyz[3];
+    //Read in the points.
+
+    vtkPoints *pts = NULL;
     if (m->nvar_points == 1)
     {
-        ADIOS_VARINFO *avi = adios_inq_var(fp, m->points[0]);
-        vtkDataArray *p =  AllocateArray(avi->type, m->npoints, avi->ndim);
-        ReadData(avi, ts, p->GetVoidPointer(0));
-
-        for (int d = 0; d < 3; d++)
-        {
-            xyz[d] = AllocateArray(avi->type, m->npoints);
-            if (d < avi->ndim)
-                for (int i = 0; i < m->npoints; i++)
-                    xyz[d]->SetTuple1(i, p->GetComponent(i, d));
-            else
-                for (int i = 0; i < m->npoints; i++)
-                    xyz[d]->SetTuple1(i, 0.0);
-        }
-        p->Delete();
+        pts = fileObj->ReadCoordinates(m->points[0], ts, m->nspaces, m->npoints);
     }
     else
     {
+        pts->SetNumberOfPoints(m->npoints);
+        vtkDataArray *xyz[3] = {NULL, NULL, NULL};
         for (int d = 0; d < 3; d++)
         {
             if (d < m->nspaces)
-            {
-                ADIOS_VARINFO *avi = adios_inq_var(fp, m->points[d]);
-                xyz[d] = AllocateArray(avi->type, m->npoints);
-                ReadData(avi, ts, xyz[d]->GetVoidPointer(0));
-            }
+                fileObj->ReadScalarData(m->points[d], ts, &(xyz[d]));
             else
             {
                 xyz[d] = vtkFloatArray::New();
@@ -805,49 +784,33 @@ avtADIOSSchemaFileFormat::MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int
                     xyz[d]->SetTuple1(i, 0.0f);
             }
         }
+        for (int i = 0; i < m->npoints; i++)
+            pts->SetPoint(i, xyz[0]->GetTuple1(i), xyz[1]->GetTuple1(i), xyz[2]->GetTuple1(i));
     }
     
-    vtkPoints *pts = vtkPoints::New();
-    pts->SetNumberOfPoints(m->npoints);
     ugrid->SetPoints(pts);
     pts->Delete();
 
-    for (int i = 0; i < m->npoints; i++)
-    {
-        pts->SetPoint(i, 
-                      xyz[0]->GetTuple1(i),
-                      xyz[1]->GetTuple1(i),
-                      xyz[2]->GetTuple1(i));
-        //cout<<i<<": "<<xyz[0]->GetTuple1(i)<<" "<<xyz[1]->GetTuple1(i)<<" "<<xyz[2]->GetTuple1(i)<<endl;
-    }
-
+    
+    //Read in the cells.
     for (int c = 0; c < m->ncsets; c++)
     {
-        ADIOS_VARINFO *avi = adios_inq_var(fp, m->cdata[c]);
-        //cout<<"CELL TYPE = "<<m->ctypes[c]<<endl;
-        //m->ctypes[c] = ADIOS_CELL_TRI;
         int nVerts = NumberOfVertices(m->ctypes[c]);
-        vtkDataArray *cells = AllocateArray(avi->type, m->ccounts[c], nVerts);
-        ReadData(avi, ts, cells->GetVoidPointer(0));
         ADIOS_CELL_TYPE cType = m->ctypes[c];
+        
+        vtkDataArray *cells = NULL;
+        fileObj->ReadScalarData(m->cdata[c], ts, &cells);
         
         int cellType = GetCellType(m->ctypes[c]);
         vtkIdType *verts = new vtkIdType[nVerts];
-        //cout<<"CELLS: "<<endl;
+        int idx = 0;
         for (int i = 0; i < m->ccounts[c]; i++)
         {
-            for (int j = 0; j < nVerts; j++)
-                verts[j] = cells->GetComponent(i, j);
-          
-            /*  
-            cout<<" "<<i<<" :"<<cellType<<" [";
-            for (int j = 0; j < nVerts; j++)
-                cout<<verts[j]<<" ";
-            cout<<"]"<<endl;
-            */
-            
+            for (int j = 0; j < nVerts; j++, idx++)
+                verts[j] = cells->GetTuple1(idx);
             ugrid->InsertNextCell(cellType, nVerts, verts);
         }
+        
         cells->Delete();
         delete [] verts;
     }
@@ -855,84 +818,21 @@ avtADIOSSchemaFileFormat::MakeUnstructuredMesh(MESH_UNSTRUCTURED *m, int ts, int
     return ugrid;
 }
 
-void
-avtADIOSSchemaFileFormat::ReadData(ADIOS_VARINFO *avi, int ts, void *data)
-{
-    ADIOS_SELECTION *sel;
-    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
-    for (int i = 0; i < avi->ndim; i++)
-        count[i] = avi->dims[i];
-    //cout<<"READS: "<<start[0]<<" "<<start[1]<<" "<<start[2]<<" "<<start[3]<<endl;
-    //cout<<"READC: "<<count[0]<<" "<<count[1]<<" "<<count[2]<<" "<<count[3]<<endl;
-    sel = adios_selection_boundingbox(avi->ndim, start, count);
-    adios_schedule_read_byid(fp, sel, avi->varid, ts, 1, data);
-    int retval = adios_perform_reads(fp, 1);
-    adios_selection_delete(sel);
-}
+//****************************************************************************
+// Method:  avtADIOSSchemaFileFormat::NumberOfVertices
+//
+// Purpose:
+//   Cell type to number of vertices.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
-
-static vtkDataArray *
-AllocateArray(ADIOS_DATATYPES &t, int nt, int nc)
-{
-    vtkDataArray *array = NULL;
-    switch (t)
-    {
-      case adios_unsigned_byte:
-        array = vtkCharArray::New();
-        break;
-      case adios_byte:
-        array = vtkUnsignedCharArray::New();
-        break;
-      case adios_string:
-        array = vtkCharArray::New();
-        break;
-        
-      case adios_unsigned_short:
-        array = vtkUnsignedShortArray::New();
-        break;
-      case adios_short:
-        array = vtkShortArray::New();
-        break;
-        
-      case adios_unsigned_integer:
-        array = vtkUnsignedIntArray::New(); 
-        break;
-      case adios_integer:
-        array = vtkIntArray::New(); 
-        break;
-        
-      case adios_unsigned_long:
-        array = vtkUnsignedLongArray::New(); 
-        break;
-      case adios_long:
-        array = vtkLongArray::New(); 
-        break;
-        
-      case adios_real:
-        array = vtkFloatArray::New(); 
-        break;
-        
-      case adios_double:
-        array = vtkDoubleArray::New(); 
-        break;
-        
-      case adios_long_double: // 16 bytes
-      case adios_complex:     //  8 bytes
-      case adios_double_complex: // 16 bytes
-      default:
-        std::string str = "Inavlid variable type";
-        EXCEPTION1(InvalidVariableException, str);
-        break;
-    }
-
-    array->SetNumberOfComponents(nc);
-    array->SetNumberOfTuples(nt);
-    return array;
-}
-
-
-static int
-NumberOfVertices(ADIOS_CELL_TYPE &ct)
+int
+avtADIOSSchemaFileFormat::NumberOfVertices(ADIOS_CELL_TYPE &ct)
 {
     if (ct == ADIOS_CELL_PT)
         return 1;
@@ -952,8 +852,21 @@ NumberOfVertices(ADIOS_CELL_TYPE &ct)
         return 5;
 }
 
-static int
-GetCellType(ADIOS_CELL_TYPE &ct)
+//****************************************************************************
+// Method:  avtADIOSSchemaFileFormat::GetCellType
+//
+// Purpose:
+//   ADIOS cell type to VTK cell type.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+int
+avtADIOSSchemaFileFormat::GetCellType(ADIOS_CELL_TYPE &ct)
 {
     if (ct == ADIOS_CELL_PT)
         return VTK_VERTEX;

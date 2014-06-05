@@ -64,16 +64,13 @@
 
 using namespace std;
 
-static bool doWhole = true;
-static bool onLens = false;
-static int DIV = 1;
+int avtSpecFEMFileFormat::NUM_REGIONS = 3;
 
 //#define POINT_MESH
 #define USE_IBOOL
 
-
 // ****************************************************************************
-//  Method: avtPixleFileFormat::Identify
+//  Method: avtSpecFEMFileFormat::Identify
 //
 //  Purpose:
 //      Determine if this file is of this flavor.
@@ -86,23 +83,34 @@ static int DIV = 1;
 bool
 avtSpecFEMFileFormat::Identify(const char *fname)
 {
-    return false;
-
-
-    ADIOSFileObject *f = new ADIOSFileObject(fname);
-    f->Open();
-    bool val = false;
-    if (avtSpecFEMFileFormat::IsMeshFile(f) || avtSpecFEMFileFormat::IsDataFile(f))
+    string meshNm, dataNm;
+    bool valid = false;
+    
+    if (avtSpecFEMFileFormat::GenerateFileNames(fname, meshNm, dataNm))
     {
-        string meshNm, dataNm;
-        avtSpecFEMFileFormat::GenerateFileNames(f->Filename(), meshNm, dataNm);
         ifstream mFile(meshNm.c_str()), dFile(dataNm.c_str());
         if (!mFile.fail() && !dFile.fail())
-            val = true;
+            valid = true;
+
+        if (valid)
+        {
+            ADIOSFileObject *f = new ADIOSFileObject(meshNm);
+            f->Open();
+            if (! avtSpecFEMFileFormat::IsMeshFile(f))
+                valid = false;
+            delete f;
+        }
+        
+        if (valid)
+        {
+            ADIOSFileObject *f = new ADIOSFileObject(dataNm);
+            f->Open();
+            if (! avtSpecFEMFileFormat::IsDataFile(f))
+                valid = false;
+            delete f;
+        }
     }
-    delete f;
-    cout<<"SPECFM "<<val<<endl;
-    return val;
+    return valid;
 }
 
 
@@ -144,18 +152,11 @@ avtSpecFEMFileFormat::avtSpecFEMFileFormat(const char *nm)
     string filename(nm), meshNm, dataNm;
     GenerateFileNames(filename, meshNm, dataNm);
 
-    cout<<"Mesh: "<<meshNm<<endl;
-    cout<<"Data: "<<dataNm<<endl;
-    
-    meshFile = new ADIOSFileObject(meshNm.c_str());
-    dataFile = new ADIOSFileObject(dataNm.c_str());
+    meshFile = new ADIOSFileObject(meshNm);
+    dataFile = new ADIOSFileObject(dataNm);
     initialized = false;
     //This needs to be put into the file.
     ngllx = nglly = ngllz = 5;
-    nWriters = 1;
-    nRegions = 1;
-    nElems = 0;
-    nPts = 0;
 }
 
 // ****************************************************************************
@@ -278,34 +279,208 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
     Initialize();
     md->SetFormatCanDoDomainDecomposition(false);
 
-    avtMeshMetaData *mmd = new avtMeshMetaData;
-    mmd->name = "mesh";
-    mmd->spatialDimension = 3;
-    mmd->topologicalDimension = 3;
-#ifdef POINT_MESH
-    mmd->meshType = AVT_POINT_MESH;
-#else
-    mmd->meshType = AVT_UNSTRUCTURED_MESH;
+    //Add the entire mesh.
+#ifdef USE_IBOOL
+    AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, numBlocks, 0, 3, 3);
 #endif
-
-    if (doWhole)
-        mmd->numBlocks = (onLens ? 600 : 50);
-    else
-        mmd->numBlocks = 4;
-    md->Add(mmd);
-
-    for (int i = 0; i < variables.size(); i++)
+#ifdef POINT_MESH
+    AddMeshToMetaData(md, "mesh", AVT_POINT_MESH, NULL, numBlocks, 0, 3, 1);
+#endif
+    
+    for (int i = 0; i < regions.size(); i++)
     {
-        avtScalarMetaData *sm = new avtScalarMetaData;
-        sm->name = variables[i];
-        sm->meshName = "mesh";
-        sm->hasDataExtents = false;
-        sm->centering = AVT_NODECENT;
-
-        md->Add(sm);
+        if (regions[i])
+        {
+            avtMeshMetaData *mmd = new avtMeshMetaData;
+            char nm[128];
+            sprintf(nm, "reg%d/mesh", i+1);
+#ifdef USE_IBOOL
+            AddMeshToMetaData(md, nm, AVT_UNSTRUCTURED_MESH, NULL, numBlocks, 0, 3, 3);
+#endif
+#ifdef POINT_MESH
+            AddMeshToMetaData(md, nm, AVT_POINT_MESH, NULL, numBlocks, 0, 3, 1);
+#endif
+        }
     }
 
-    AddScalarVarToMetaData(md, "pointID", "mesh", AVT_NODECENT);
+    bool allRegionsPresent = true;
+    for (int i = 0; i < regions.size(); i++)
+        allRegionsPresent &= regions[i];
+
+    //Add the variables
+    map<string, ADIOS_VARINFO*>::const_iterator it;
+    for (it = dataFile->variables.begin(); it != dataFile->variables.end(); it++)
+    {
+        string vname = GetVariable(it->first);
+        //Add var only if all regions present.
+        if (allRegionsPresent)
+            AddScalarVarToMetaData(md, vname, "mesh", AVT_NODECENT);
+        
+        for (int i = 0; i < regions.size(); i++)
+        {
+            if (regions[i])
+            {
+                char mesh[128], var[128];
+                sprintf(mesh, "reg%d/mesh", i+1);
+                sprintf(var, "reg%d/%s", i+1, vname.c_str());
+                AddScalarVarToMetaData(md, var, mesh, AVT_NODECENT);
+            }
+        }
+    }
+}
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetWholeMesh
+//
+// Purpose:
+//   Get mesh containing all regions.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+
+vtkDataSet *
+avtSpecFEMFileFormat::GetWholeMesh(int ts, int dom)
+{
+    vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();
+    vtkPoints *pts = vtkPoints::New();
+    mesh->SetPoints(pts);
+
+    int nPts, ptOffset = 0;
+    char nP[128];
+    for (int i = 0; i < avtSpecFEMFileFormat::NUM_REGIONS; i++)
+    {
+        AddRegionMesh(ts, dom, i+1, mesh, ptOffset);
+
+        sprintf(nP, "reg%d/nglob", i+1);
+        meshFile->GetScalar(nP, nPts);
+        ptOffset += nPts;
+    }
+    pts->Delete();
+    
+    return mesh;
+}
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::AddRegionMesh
+//
+// Purpose:
+//   Get the mesh for a particular region.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+void
+avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds, int ptOffset)
+{
+    vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)ds;
+    vtkPoints *pts = mesh->GetPoints();
+
+    vtkDataArray *x = NULL, *y = NULL, *z = NULL, *ib = NULL;
+    char xNm[128], yNm[128], zNm[128], iNm[128], nE[128], nP[128];
+    sprintf(xNm, "reg%d/xstore/array", region);
+    sprintf(yNm, "reg%d/ystore/array", region);
+    sprintf(zNm, "reg%d/zstore/array", region);
+    sprintf(iNm, "reg%d/ibool/array", region);
+    sprintf(nE, "reg%d/nspec", region);
+    sprintf(nP, "reg%d/nglob", region);
+
+    int nElem, nPts;
+    meshFile->GetScalar(nE, nElem);
+    meshFile->GetScalar(nP, nPts);
+
+    //Process which points are needed....
+    meshFile->ReadScalarData(iNm, ts, dom, &ib);
+    int N = ib->GetNumberOfTuples();
+
+    int *ibl = (int*)ib->GetVoidPointer(0);
+    vector<bool> ptMask(N, false);
+    vector<int> ptID(N);
+    int ptCnt = 0;
+    for (int i = 0; i < N; i++)
+    {
+        int idx = ibl[i];
+        if (!ptMask[idx])
+        {
+            ptID[idx] = ptCnt;
+            ptCnt++;
+            ptMask[idx] = true;
+        }
+    }
+    for (int i = 0; i < N; i++)
+        ptMask[i] = false;
+
+    meshFile->ReadScalarData(xNm, ts, dom, &x);
+    meshFile->ReadScalarData(yNm, ts, dom, &y);
+    meshFile->ReadScalarData(zNm, ts, dom, &z);
+    vtkIdType vid;
+    for (int i = 0; i < N; i++)
+    {
+        int idx = ibl[i];
+        if (!ptMask[idx])
+        {
+            vid = pts->InsertNextPoint(x->GetTuple1(i),
+                                       y->GetTuple1(i),
+                                       z->GetTuple1(i));
+            ptMask[idx] = true;
+#ifdef POINT_MESH
+            mesh->InsertNextCell(VTK_VERTEX, 1, &vid);
+#endif
+        }
+    }
+
+#ifdef USE_IBOOL
+    int di=1, dj=1, dk=1;
+    vtkIdType v[8];
+    int eCnt = 0;
+    
+    #define INDEX(x,i,j,k,e) x[(i)+(j)*ngllx + (k)*ngllx*nglly + (e)*ngllx*nglly*ngllz] - 1;
+    for (int e = 0; e < nElem; e++)
+        for (int k = 0; k < ngllz-1; k+=dk)
+            for (int j = 0; j < nglly-1; j+=dj)
+                for (int i = 0; i < ngllx-1; i+=di)
+                {
+                    v[0] = INDEX(ibl,i,j,k,e);
+                    v[1] = INDEX(ibl,i+di,j,k,e);
+                    v[2] = INDEX(ibl,i+di,j+dj,k,e);
+                    v[3] = INDEX(ibl,i,j+dj,k,e);
+    
+                    v[4] = INDEX(ibl,i,j,k+dk,e);
+                    v[5] = INDEX(ibl,i+di,j,k+dk,e);
+                    v[6] = INDEX(ibl,i+di,j+dj,k+dk,e);
+                    v[7] = INDEX(ibl,i,j+dj,k+dk,e);
+                    for (int vi = 0; vi < 8; vi++)
+                        v[vi] += ptOffset;
+                    mesh->InsertNextCell(VTK_HEXAHEDRON, 8, v);
+                    eCnt++;
+                }
+#endif
+
+    x->Delete();
+    y->Delete();
+    z->Delete();
+    ib->Delete();
+}
+ 
+vtkDataSet *
+avtSpecFEMFileFormat::GetRegionMesh(int ts, int dom, int region)
+{
+    vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();
+    vtkPoints *pts = vtkPoints::New();
+    mesh->SetPoints(pts);
+
+    AddRegionMesh(ts, dom, region, mesh);
+    
+    pts->Delete();
+    return mesh;
 }
 
 
@@ -338,27 +513,41 @@ avtSpecFEMFileFormat::GetMesh(int ts, int domain, const char *meshname)
     debug1 << "avtSpecFEMFileFormat::GetMesh " << meshname << endl;
     Initialize();
 
-    vtkDataArray *x = NULL, *y = NULL, *z = NULL, *ib = NULL;
-    string varPath = domainVarPaths[domain].first;
-    int writerIdx = domainVarPaths[domain].second;
+    if (strcmp(meshname, "mesh") == 0)
+        return GetWholeMesh(ts, domain);
+    else
+        return GetRegionMesh(ts, domain, GetRegion(meshname));
+}
 
-    meshFile->ReadVariable("reg1/xstore/array", ts, writerIdx, &x);
-    meshFile->ReadVariable("reg1/ystore/array", ts, writerIdx, &y);
-    meshFile->ReadVariable("reg1/zstore/array", ts, writerIdx, &z);
-    meshFile->ReadVariable("reg1/ibool/array", ts, writerIdx, &ib);
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetVarRegion
+//
+// Purpose:
+//   Get the variable for a particular region.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
-    vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();    
-    vtkPoints *pts = vtkPoints::New();
-    int N = 278000;
-    int pOffset = N * domain;
-    int n = x->GetNumberOfTuples();
 
-    int *ibl = (int*)ib->GetVoidPointer(0);
-    ibl = &(ibl[pOffset]);
-
-#ifdef USE_IBOOL
+vtkDataArray *
+avtSpecFEMFileFormat::GetVarRegion(std::string &nm, int ts, int dom)
+{
+    vtkDataArray *arr = NULL, *ib = NULL;
+    char iNm[128];
+    //Read the ibool array.
+    int region = GetRegion(nm);
+    sprintf(iNm, "reg%d/ibool/array", region);
+    meshFile->ReadScalarData(iNm, ts, dom, &ib);
+    
+    int N = ib->GetNumberOfTuples();
     vector<bool> ptMask(N, false);
     vector<int> ptID(N);
+    int *ibl = (int*)ib->GetVoidPointer(0);
+
     int ptCnt = 0;
     for (int i = 0; i < N; i++)
     {
@@ -370,85 +559,26 @@ avtSpecFEMFileFormat::GetMesh(int ts, int domain, const char *meshname)
             ptMask[idx] = true;
         }
     }
-    pts->SetNumberOfPoints(ptCnt);
-    
     for (int i = 0; i < N; i++)
         ptMask[i] = false;
+
+    dataFile->ReadScalarData(nm+string("/array"), ts, dom, &arr);
+    vtkFloatArray *var = vtkFloatArray::New();
+    var->SetNumberOfTuples(ptCnt);
     for (int i = 0; i < N; i++)
     {
         int idx = ibl[i];
         if (!ptMask[idx])
         {
-            pts->SetPoint(ptID[idx],
-                          x->GetTuple1(i+pOffset),
-                          y->GetTuple1(i+pOffset),
-                          z->GetTuple1(i+pOffset));
+            var->SetTuple1(ptID[idx], arr->GetTuple1(i));
             ptMask[idx] = true;
         }
     }
-
-#else
-    pts->SetNumberOfPoints(N);
-    for (int i = 0; i < N; i++)
-        pts->SetPoint(i,
-                      x->GetTuple1(i+pOffset),
-                      y->GetTuple1(i+pOffset),
-                      z->GetTuple1(i+pOffset));
-#endif
-
-                      
-    mesh->SetPoints(pts);
-    
-#ifdef POINT_MESH
-    vtkIdType v;
-    for (int i = 0; i < pts->GetNumberOfPoints(); i++)
-    {
-        v = i;
-        mesh->InsertNextCell(VTK_VERTEX, 1, &v);
-    }
-#else
-    int nElems;
-    meshFile->GetIntScalar("reg1/nspec", nElems);
-    int di=1, dj=1, dk=1;
-    vtkIdType v[8];
-    int eCnt = 0;
-    
-    #define INDEX(x,i,j,k,e) x[(i)+(j)*ngllx + (k)*ngllx*nglly + (e)*ngllx*nglly*ngllz] - 1;
-    for (int e = 0; e < nElems; e++)
-        for (int k = 0; k < ngllz-1; k+=dk)
-            for (int j = 0; j < nglly-1; j+=dj)
-                for (int i = 0; i < ngllx-1; i+=di)
-                {
-                    v[0] = INDEX(ibl,i,j,k,e);
-                    v[1] = INDEX(ibl,i+di,j,k,e);
-                    v[2] = INDEX(ibl,i+di,j+dj,k,e);
-                    v[3] = INDEX(ibl,i,j+dj,k,e);
-    
-                    v[4] = INDEX(ibl,i,j,k+dk,e);
-                    v[5] = INDEX(ibl,i+di,j,k+dk,e);
-                    v[6] = INDEX(ibl,i+di,j+dj,k+dk,e);
-                    v[7] = INDEX(ibl,i,j+dj,k+dk,e);
-                    for (int vi = 0; vi < 8; vi++)
-                    {
-                        //v[vi] = ptID[v[vi]];
-                        v[vi] = v[vi];
-                    }
-                    mesh->InsertNextCell(VTK_HEXAHEDRON, 8, v);
-                    eCnt++;
-                }
-    
-#endif
-
-    cout<<"MESH: "<<domain<<" nPts= "<<pts->GetNumberOfPoints()<<endl;
-    pts->Delete();
-    x->Delete();
-    y->Delete();
-    z->Delete();
     ib->Delete();
-
-    return mesh;
+    arr->Delete();
+    
+    return var;
 }
-
 
 // ****************************************************************************
 //  Method: avtSpecFEMFileFormat::GetVar
@@ -476,120 +606,55 @@ avtSpecFEMFileFormat::GetMesh(int ts, int domain, const char *meshname)
 vtkDataArray *
 avtSpecFEMFileFormat::GetVar(int ts, int domain, const char *varname)
 {
-    cout<<"GetVar: "<<domain<<" "<<varname<<endl;
-    if (!strcmp(varname, "pointID"))
+    string vNm = varname;
+    if (strncmp("reg", varname, 3) == 0)
+        return GetVarRegion(vNm, ts, domain);
+
+    //Determine how many total values.
+    int n = 0, nPts;
+    char tmp[128];
+    for (int i = 0; i < avtSpecFEMFileFormat::NUM_REGIONS; i++)
     {
-        int N = 278000;
-        vtkFloatArray *var = vtkFloatArray::New();
-        var->SetNumberOfTuples(N);
-        for (int i = 0; i < N; i++)
-            var->SetTuple1(i, i);
-        return var;
+        sprintf(tmp, "reg%d/nglob", i+1);
+        meshFile->GetScalar(tmp, nPts);
+        n += nPts;
     }
-
-    debug1 << "avtSpecFEMFileFormat::GetVar " << varname << endl;
-
-    Initialize();
-
-    string varPath = domainVarPaths[domain].first;
-    int writerIdx = domainVarPaths[domain].second;
-
-    vtkDataArray *arr = NULL, *ib = NULL;
-    dataFile->ReadVariable(string("reg1/") + varname + string("/array"), ts, 0, &arr);
-    meshFile->ReadVariable("reg1/ibool/array", ts, 0, &ib);
-
-    int N = 278000;
-    int pOffset = N * domain;
-    vtkFloatArray *var = vtkFloatArray::New();
-
-#ifdef USE_IBOOL
-    int n = arr->GetNumberOfTuples();
-
-    vector<bool> ptMask(N, false);
-    vector<int> ptID(N);
-    int *ibl = (int*)ib->GetVoidPointer(0);
-    ibl = &(ibl[pOffset]);
-    int ptCnt = 0;
-    for (int i = 0; i < N; i++)
+    vtkFloatArray *arr = vtkFloatArray::New();
+    arr->SetNumberOfTuples(n);
+    
+    //Append in each region to the whole.
+    int offset = 0;
+    for (int i = 0; i < avtSpecFEMFileFormat::NUM_REGIONS; i++)
     {
-        int idx = ibl[i];
-        if (!ptMask[idx])
-        {
-            ptID[idx] = ptCnt;
-            ptCnt++;
-            ptMask[idx] = true;
-        }
+        sprintf(tmp, "reg%d/%s", i+1, varname);
+        vNm = tmp;
+        vtkDataArray *v = GetVarRegion(vNm, ts, domain);
+        
+        float *ptr = &((float *)arr->GetVoidPointer(0))[offset];
+        for (int j = 0; j < v->GetNumberOfTuples(); j++)
+            ptr[j] = v->GetTuple1(j);
+        
+        sprintf(tmp, "reg%d/nglob", i+1);
+        meshFile->GetScalar(tmp, nPts);
+        offset += nPts;
+        v->Delete();
     }
-    var->SetNumberOfTuples(ptCnt);
-    for (int i = 0; i < N; i++)
-        ptMask[i] = false;
-    for (int i = 0; i < N; i++)
-    {
-        int idx = ibl[i];
-        if (!ptMask[idx])
-        {
-            var->SetTuple1(ptID[idx], arr->GetTuple1(i+pOffset));
-            ptMask[idx] = true;
-        }
-    }
-#else
-
-    var->SetNumberOfTuples(N);
-    for (int i = 0; i < N; i++)
-        var->SetTuple1(i, arr->GetTuple1(i+pOffset));
-#endif
-
-    arr->Delete();
-    ib->Delete();
-
-    //cout<<"VAR: "<<domain<<" npts= "<<n<<" ptCnt= "<<ptCnt<<endl;
-    return var;
+    
+    return arr;
 }
 
-
-// ****************************************************************************
-//  Method: avtSpecFEMFileFormat::GetVectorVar
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::Initialize
 //
-//  Purpose:
-//      Gets a vector variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
-//      that is supported everywhere through VisIt.
+// Purpose:
+//   Create world peace.
 //
-//  Arguments:
-//      timestate  The index of the timestate.  If GetNTimesteps returned
-//                 'N' time steps, this is guaranteed to be between 0 and N-1.
-//      varname    The name of the variable requested.
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
 //
+// Modifications:
 //
-//  Programmer: Dave Pugmire
-//  Creation:   Wed Mar 17 15:29:24 EDT 2010
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtSpecFEMFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
-{
-    return NULL;
-}
-
-// ****************************************************************************
-//  Method: avtSpecFEMFileFormat::Initialize
-//
-//  Purpose:
-//      Initialize the reader.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Wed Mar 17 15:29:24 EDT 2010
-//
-//  Modifications:
-//
-//  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
-//  Read in expressions.
-//
-//   Dave Pugmire, Thu Jan 27 11:39:46 EST 2011
-//   Support for new Pixle file format.
-//
-// ****************************************************************************
+//****************************************************************************
 
 void
 avtSpecFEMFileFormat::Initialize()
@@ -600,115 +665,163 @@ avtSpecFEMFileFormat::Initialize()
     if (initialized)
         return;
 
-    //Determine how many writers there are.
-    int g, l;
-    meshFile->GetIntScalar("reg1/x_global/global_dim", g);
-    meshFile->GetIntScalar("reg1/x_global/local_dim", l);
-    nWriters = g/l;
-    nRegions = 1;
+    //See which regions we have.
+    regions.resize(NUM_REGIONS, false);
 
-    //Construct the domain to regions mapping.
-    char varPath[32];
-    for (int i = 0; i < nWriters; i++)
-        for (int j = 0; j < nRegions; j++)
-        {
-            SNPRINTF(varPath, 32, "reg%d/", j+1);
-            domainVarPaths.push_back(pair<string,int>(varPath, i));
-        }
-
-    //See what variables we have.
-    ADIOSFileObject::varIter vi;
-    for (vi = dataFile->variables.begin(); vi != dataFile->variables.end(); vi++)
+    map<string, ADIOS_VARINFO*>::const_iterator it;
+    numBlocks = 1;
+    for (it = dataFile->variables.begin(); it != dataFile->variables.end(); it++)
     {
-        const ADIOSVar &v = vi->second;
-        
-        string varName = v.name;
-        string::size_type idx = varName.find("/array");
-
-        //extract varname from reg?/varname/array
-        varName = varName.substr(5, idx-5);
-
-        if (find(variables.begin(), variables.end(), varName) == variables.end())
-            variables.push_back(varName);
+        regions[GetRegion(it->first)-1] = true;
+        if (it->second->sum_nblocks > numBlocks)
+            numBlocks = it->second->sum_nblocks;
     }
-
     initialized = true;
 }
 
-void
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GenerateFileNames
+//
+// Purpose:
+//   Generate the mesh data file names.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+
+bool
 avtSpecFEMFileFormat::GenerateFileNames(const std::string &nm,
                                         std::string &meshNm, std::string &dataNm)
 {
-    if (doWhole)
-    {
-        if (onLens)
-        {
-            meshNm = "/lustre/widow/proj/csc094/pugmire/specfm/whole/solver_data.bp";
-            dataNm = "/lustre/widow/proj/csc094/pugmire/specfm/whole/solver_meshfiles.bp";
-        }
-        else
-        {
-            meshNm = "/home/pugmire/proj/specfm/whole/solver_data.bp";
-            dataNm = "/home/pugmire/proj/specfm/whole/solver_meshfiles.bp";
-        }
-        DIV = 20;
-    }
-    else
-    {
-        if (onLens)
-        {
-            meshNm = "/lustre/widow/proj/csc094/pugmire/specfm/small/solver_data.bp";
-            dataNm = "/lustre/widow/proj/csc094/pugmire/specfm/small/solver_meshfiles.bp";
-        }
-        else
-        {
-            meshNm = "/home/pugmire/proj/specfm/regional_Greece_merged/DATABASES_MPI/solver_data.bp";
-            dataNm = "/home/pugmire/proj/specfm/regional_Greece_merged/DATABASES_MPI/solver_meshfiles.bp";
-        }
-        DIV = 1;
-    }
+    //They have opened the mesh file... Can't continue.
+    if (nm.find("solver_data.bp") != string::npos)
+        return false;
 
-    return;
+    dataNm = nm;
 
+    //Create the meshNm.
+    string::size_type idx = dataNm.rfind("/");
+    meshNm = dataNm.substr(0,idx+1) + "solver_data.bp";
 
-
-    string::size_type i0 = nm.rfind("_data.bp");
-    string::size_type i1 = nm.rfind("_meshfiles.bp");
-
-    if (i0 != string::npos)
-    {
-        meshNm = nm;
-        dataNm = nm.substr(0, i0) + "_meshfiles.bp";
-    }
-    else if (i1 != string::npos)
-    {
-        meshNm = nm.substr(0, i0) + "_data.bp";
-        dataNm = nm;
-    }
-    else
-    {
-        EXCEPTION1(ImproperUseException, "Data and/or mesh files not found.");
-    }
+    return true;
 }
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::IsMeshFile
+//
+// Purpose:
+//   See if this file contains the mesh
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
 bool
 avtSpecFEMFileFormat::IsMeshFile(ADIOSFileObject *f)
 {
-    int x;
-    
-    if (!f->GetIntScalar("/nspec", x) || !f->GetIntScalar("/nglob", x) ||
-        !f->GetIntScalar("/xstore/local_dim", x) || !f->GetIntScalar("/xstore/global_dim", x) ||
-        !f->GetIntScalar("/ystore/local_dim", x) || !f->GetIntScalar("/ystore/global_dim", x) ||
-        !f->GetIntScalar("/zstore/local_dim", x) || !f->GetIntScalar("/zstore/global_dim", x))
+    //Make sure we have all of these scalars...
+    std::map<std::string, ADIOS_VARINFO*>::const_iterator si;
+    int scalarCount = 0;
+    for (si = f->scalars.begin(); si != f->scalars.end(); si++)
     {
-        return false;
+        if (si->first.find("/nspec") != string::npos) scalarCount++;
+        else if (si->first.find("/nglob") != string::npos) scalarCount++;
+        else if (si->first.find("/x_global/local_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/x_global/global_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/x_global/offset") != string::npos) scalarCount++;
+        else if (si->first.find("/y_global/local_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/y_global/global_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/y_global/offset") != string::npos) scalarCount++;
+        else if (si->first.find("/z_global/local_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/z_global/global_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/z_global/offset") != string::npos) scalarCount++;
+        else if (si->first.find("/xstore/local_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/xstore/global_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/ystore/local_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/ystore/global_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/zstore/local_dim") != string::npos) scalarCount++;
+        else if (si->first.find("/zstore/global_dim") != string::npos) scalarCount++;
     }
     
+    if (scalarCount < 17)
+        return false;
+
     return true;
 }
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::IsDataFile
+//
+// Purpose:
+//   See if this file contains data
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
 
 bool
 avtSpecFEMFileFormat::IsDataFile(ADIOSFileObject *f)
 {
     return true;
+}
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetRegion
+//
+// Purpose:
+//   Extract the region number from a variable name.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+int
+avtSpecFEMFileFormat::GetRegion(const string &str)
+{
+    int region, n;
+    char t1[128];
+    
+    n = sscanf(str.c_str(), "reg%d/%s", &region, t1);
+    if (n != 2 || region < 1 || region > avtSpecFEMFileFormat::NUM_REGIONS)
+        EXCEPTION1(ImproperUseException, "Invalide region");
+    
+    return region;
+}
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetVariable
+//
+// Purpose:
+//   Extract the variable name from a string with region information in it.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+string
+avtSpecFEMFileFormat::GetVariable(const string &str)
+{
+    char t1[128], t2[128], v[128];
+    string::size_type i0 = str.find("/");
+    string::size_type i1 = str.rfind("/");
+    if (i0 == string::npos || i1 == string::npos)
+        EXCEPTION1(ImproperUseException, "Invalid variable");
+
+    return str.substr(i0+1, i1-i0-1);
 }

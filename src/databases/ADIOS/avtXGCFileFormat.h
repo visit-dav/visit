@@ -72,8 +72,7 @@ class avtXGCFileFormat : public avtMTMDFileFormat
                                                    int nBlock);
     static std::string CreateMeshName(const std::string &filename);
     static std::string CreateDiagName(const std::string &filename);
-    static bool IsFieldPFile(ADIOSFileObject *f);
-    static bool IsFieldIFile(ADIOSFileObject *f);
+    static std::string CreateSeparatrixName(const std::string &filename);
     
     avtXGCFileFormat(const char *);
     virtual  ~avtXGCFileFormat();
@@ -106,9 +105,8 @@ class avtXGCFileFormat : public avtMTMDFileFormat
 
   protected:
     ADIOSFileObject *file, *meshFile, *diagFile;
-    std::map<std::string, std::string> labelToVar;
-    
-    bool             initialized;
+    std::string sepFileName;
+    bool initialized, haveSepMesh;
     int numNodes, numTris, numPhi;
 
 
@@ -116,6 +114,7 @@ class avtXGCFileFormat : public avtMTMDFileFormat
     vtkDataArray          *GetTurbulence(int ts, int dom);
     vtkDataArray          *GetSep();
     vtkDataSet            *GetSepMesh();
+    vtkDataSet            *GetMesh2D(int ts, int dom);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
