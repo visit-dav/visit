@@ -45,7 +45,7 @@ PY_3RDPARTY_TEST(PY_TESTS SILO
     timeslider transparency tuvok viewChange view volume)
 
 SET(TEST_EXTRA_ARGS)
-IF (APPLE)
+IF (NOT HAVE_OSMESA)
     SET(TEST_EXTRA_ARGS "--threshold-error=legends_11:12,legends_12:12,renderpoint_2_05:13")
     SET(TEST_EXTRA_ARGS "${TEST_EXTRA_ARGS},renderpoint_2_06:18,renderpoint_2_07:12,transparency_06:30")
 ENDIF()
