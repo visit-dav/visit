@@ -268,7 +268,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("var",
         "Demonstrates creating different variable types",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();
