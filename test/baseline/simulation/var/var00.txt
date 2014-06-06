@@ -1,0 +1,3 @@
+Simulation executable "var" exists.
+Simulation "var" started.
+VisIt connected to simulation "var".
