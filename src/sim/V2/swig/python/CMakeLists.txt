@@ -45,6 +45,10 @@
 #  Brad Whitlock, Fri May 17 13:42:43 PDT 2013
 #  Build in the libsim sources directly.
 #
+#  Kathleen Biagas, Fri Jun  6 11:24:37 PDT 2014
+#  Copy simV2.py to lib dir when doing out-of-source builds.  Makes running
+#  python examples easier.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -84,3 +88,10 @@ VISIT_INSTALL_TARGETS(pysimV2)
 INSTALL(FILES simV2.py
     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
     )
+
+#Copy simV2.py for use during dev work
+IF(VISIT_OUT_OF_SOURCE_BUILD)
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
+        ${CMAKE_CURRENT_SOURCE_DIR}/simV2.py
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
