@@ -61,6 +61,10 @@
 #   Brad Whitlock, Mon Aug 13 11:37:49 PDT 2012
 #   Added multiblock.c
 #
+#   Kathleen Biagas, Fri Jun  6 11:16:01 PDT 2014
+#   Remove no-longer use SIMV1 functions.  Copy python examples when
+#   doing out-of-source builds.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -107,54 +111,6 @@ ELSE(WIN32)
     ENDIF(NOT APPLE)
 ENDIF(WIN32)
 
-##
-## SimV1 functions
-##
-
-FUNCTION(ADD_SIMV1_SIMULATION target)
-    ADD_EXECUTABLE(sim_${target} ${ARGN})
-    SET_SIMULATION_PROPERTIES(${target})
-    TARGET_LINK_LIBRARIES(sim_${target} sim ${EXTRA_SIM_LIBS})
-    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V1/lib
-        ${VISIT_SOURCE_DIR}/databases/SimV1
-    )
-    ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
-ENDFUNCTION(ADD_SIMV1_SIMULATION)
-
-FUNCTION(ADD_FORTRAN_SIMV1_SIMULATION target)
-    IF(VISIT_FORTRAN)
-        ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexample.f)
-        SET_SIMULATION_PROPERTIES(${target})
-        TARGET_LINK_LIBRARIES(sim_${target} simf sim ${EXTRA_SIM_LIBS})
-        ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V1/lib
-            ${VISIT_SOURCE_DIR}/databases/SimV1
-        )
-        ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
-    ENDIF(VISIT_FORTRAN)
-ENDFUNCTION(ADD_FORTRAN_SIMV1_SIMULATION)
-
-FUNCTION(ADD_PARALLEL_SIMV1_SIMULATION target)
-    ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
-    SET_SIMULATION_PROPERTIES(${target})
-    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
-    TARGET_LINK_LIBRARIES(sim_${target} sim ${EXTRA_SIM_LIBS})
-    ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V1/lib
-        ${VISIT_SOURCE_DIR}/databases/SimV1
-    )
-    ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
-ENDFUNCTION(ADD_PARALLEL_SIMV1_SIMULATION)
-
-FUNCTION(ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION target)
-    IF(VISIT_FORTRAN)
-        ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN} simulationexample.f)
-        SET_SIMULATION_PROPERTIES(${target})
-        TARGET_LINK_LIBRARIES(sim_${target} simf sim ${EXTRA_SIM_LIBS})
-        ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V1/lib
-            ${VISIT_SOURCE_DIR}/databases/SimV1
-        )
-        ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
-    ENDIF(VISIT_FORTRAN)
-ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION)
 
 ##
 ## SimV2 functions
@@ -195,6 +151,12 @@ FUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
         ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
     ENDIF(VISIT_PARALLEL AND VISIT_FORTRAN)
 ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION)
+
+FUNCTION(ADD_PYTHON_SIMV2_SIMULATION target)
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/${target} ${CMAKE_CURRENT_BINARY_DIR})
+ENDFUNCTION(ADD_PYTHON_SIMV2_SIMULATION)
+
 
 ##
 ## Simulation targets
@@ -297,3 +259,10 @@ ADD_SIMV2_SIMULATION(var var.c)
 
 ADD_SIMV2_SIMULATION(writeback writeback.c)
 ADD_PARALLEL_SIMV2_SIMULATION(writeback_par writeback.c)
+
+# copy python examples to simulation examples build dir
+IF(VISIT_OUT_OF_SOURCE_BUILD)
+    ADD_PYTHON_SIMV2_SIMULATION(material.py)
+    ADD_PYTHON_SIMV2_SIMULATION(updateplots.py)
+    ADD_PYTHON_SIMV2_SIMULATION(var.py)
+ENDIF()

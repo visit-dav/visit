@@ -1239,6 +1239,7 @@ int VisIt_VariableMetaData_setUnits(visit_handle h, const char *);
 int VisIt_VariableMetaData_setCentering(visit_handle h, int);
 int VisIt_VariableMetaData_setType(visit_handle h, int);
 int VisIt_VariableMetaData_setTreatAsASCII(visit_handle h, int);
+int VisIt_VariableMetaData_setNumComponents(visit_handle h, int);
 
 #ifdef __cplusplus
 }

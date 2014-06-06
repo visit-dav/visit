@@ -773,7 +773,12 @@ int copyArray(PyArrayObject *ndarray, T *dptr)
 }
 #endif // end of numpy support
 
-/******************************************************************************/
+//******************************************************************************
+// Modifications:
+//   Kathleen Biagas, Fri Jun  6 11:08:09 PDT 2014
+//   Add support for string object.
+//
+//******************************************************************************
 static int getSequenceSize(PyObject *obj, Py_ssize_t *seqSize)
 {
     PyObject *seq = PySequence_Fast(obj, "getSequenceSize : Not a sequence");
@@ -787,7 +792,11 @@ static int getSequenceSize(PyObject *obj, Py_ssize_t *seqSize)
         PyObject *o = PySequence_Fast_GET_ITEM(seq, i);
         if (PySequence_Check(o))
         {
-            if (getSequenceSize(o, seqSize))
+            if (PyString_Check(o))
+            {
+                *seqSize += PyString_Size(o);
+            }
+            else if (getSequenceSize(o, seqSize))
             {
                 return -2;
             }
@@ -807,34 +816,57 @@ static int getSequenceSize(PyObject *obj, Py_ssize_t *seqSize)
 }
 
 
-/******************************************************************************/
+//******************************************************************************
+// Modifications:
+//   Kathleen Biagas, Fri Jun  6 11:08:09 PDT 2014
+//   Add support for string object.
+//
+//******************************************************************************
 template <typename T>
 int copyObject(PyObject *obj, T *&dptr)
 {
     if (PyFloat_Check(obj))
     {
         *dptr = static_cast<T>(PyFloat_AsDouble(obj));
+        ++dptr;
     }
     else
     if (PyInt_Check(obj))
     {
         *dptr = static_cast<T>(PyInt_AsLong(obj));
+        ++dptr;
     }
     else
     if (PyLong_Check(obj))
     {
         *dptr = static_cast<T>(PyLong_AsLong(obj));
+        ++dptr;
+    }
+    else
+    if (PyString_Check(obj))
+    {
+        Py_ssize_t n = PyString_Size(obj);
+        char *asChar = PyString_AsString(obj);
+        for (Py_ssize_t i = 0; i < n; ++i)
+        {
+            *dptr = asChar[i];
+            ++dptr;
+        }
     }
     else
     {
         PyErr_SetString(PyExc_TypeError, "copyObject : Unsupported type.");
         return -1;
     }
-    ++dptr;
     return 0;
 }
 
-/******************************************************************************/
+//******************************************************************************
+// Modifications:
+//   Kathleen Biagas, Fri Jun  6 11:08:09 PDT 2014
+//   Add support for string object.
+//
+//******************************************************************************
 template <typename T>
 int copySequence(PyObject *obj, T *&dptr)
 {
@@ -849,6 +881,14 @@ int copySequence(PyObject *obj, T *&dptr)
         PyObject *o = PySequence_Fast_GET_ITEM(seq, i);
         if (PySequence_Check(o))
         {
+            if (PyString_Check(o))
+            {
+                if (copyObject(o, dptr))
+                {
+                    return -3;
+                }
+            }
+            else
             if (copySequence(o, dptr))
             {
                 return -2;
