@@ -42,7 +42,8 @@ SET(PY_TESTS
     material
     materialvar
     mesh
-    multiblock)
+    multiblock
+    var)
 
 SET(TEST_EXTRA_ARGS)
 IF (NOT HAVE_OSMESA)
