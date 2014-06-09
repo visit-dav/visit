@@ -277,15 +277,23 @@ int main(int argc, char **argv)
 
 /* DATA ACCESS FUNCTIONS */
 
-/* AMR mesh */
-#define NPATCHES 4
-float rmx[NPATCHES][2]    = {{0., 10.}, {3., 10.}, {5., 7.5}, {7.5, 10.}};
-float rmy[NPATCHES][2]    = {{0., 10.}, {1., 9.}, {2., 7.}, {2., 7.}};
-int   rmxext[NPATCHES][2] = {{0,9}, {6,19}, {20,29}, {30,39}};
-int   rmyext[NPATCHES][2] = {{0,9}, {2,17}, {8,27},  {8,27}};
-int   level[NPATCHES]     = {0, 1, 2, 2};
-int   ncpatch[NPATCHES]   = {1,2,0,0};
-int   cpatch[NPATCHES][2] = {{1,-1},{2,3},{-1,-1},{-1,-1}};
+/* AMR mesh 
+ *
+ * NOTE: Patch 4 spans patches 2,3 in level 2 and only exists on even sim cycles.
+ */
+#define ITER 2
+#define NPATCHES 5
+float rmx[NPATCHES][2]    = {{0., 10.}, {3., 10.}, {5., 7.5}, {7.5, 10.}, {6, 8.75}};
+float rmy[NPATCHES][2]    = {{0., 10.}, {1., 9.}, {2., 7.}, {2., 7.}, {3., 4.75}};
+int   rmxext[NPATCHES][2] = {{0,9}, {6,19}, {20,29}, {30,39}, {48,69}};
+int   rmyext[NPATCHES][2] = {{0,9}, {2,17}, {8,27},  {8,27}, {24,37}};
+int   level[NPATCHES]     = {0, 1, 2, 2, 3};
+int   ncpatch[ITER][NPATCHES]   = {{1,2,1,1,0},
+                                   {1,2,0,0,0}};
+int   cpatch[ITER][NPATCHES][2] = {{{1,-1},{2,3},{4,-1},{4,-1},{-1,-1}},
+                                   {{1,-1},{2,3},{-1,-1},{-1,-1},{-1,-1}}};
+int   npatches[ITER] = {NPATCHES,NPATCHES-1};
+int   nlevels[ITER] = {4, 3};
 
 /******************************************************************************
  *
@@ -321,22 +329,20 @@ SimGetMetaData(void *cbdata)
             /* Vary the number of patches based on the cycle so we can test
              * AMR SILs that change over time.
              */
-            int np = NPATCHES-1;
-            if(sim->cycle % 2 == 1)
-                np = NPATCHES;
+            int iter = (sim->cycle % 2);
 
             /* Set the mesh's properties.*/
             VisIt_MeshMetaData_setName(mmd, "amr");
             VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_AMR);
             VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
             VisIt_MeshMetaData_setSpatialDimension(mmd, 2);
-            VisIt_MeshMetaData_setNumDomains(mmd, np);
+            VisIt_MeshMetaData_setNumDomains(mmd, npatches[iter]);
             VisIt_MeshMetaData_setDomainTitle(mmd, "Patches");
             VisIt_MeshMetaData_setDomainPieceName(mmd, "patch");
-            VisIt_MeshMetaData_setNumGroups(mmd, 3);
+            VisIt_MeshMetaData_setNumGroups(mmd, nlevels[iter]);
             VisIt_MeshMetaData_setGroupTitle(mmd, "Levels");
             VisIt_MeshMetaData_setGroupPieceName(mmd, "level");
-            for(i = 0; i < np; ++i)
+            for(i = 0; i < npatches[iter]; ++i)
                 VisIt_MeshMetaData_addGroupId(mmd, level[i]);
             VisIt_MeshMetaData_setXUnits(mmd, "cm");
             VisIt_MeshMetaData_setYUnits(mmd, "cm");
@@ -437,29 +443,19 @@ SimGetDomainNesting(const char *name, void *cbdata)
 #define XMAX 3
 #define YMAX 4
 #define ZMAX 5
-        int i, dom, nlevels = 3;
+        int i, dom;
         int ratios[3] = {2,2,1}, ext[6]={0,0,0,0,0,0}, patch[2]={0,0};
 
         /* Vary the number of patches based on the cycle so we can test
          * AMR SILs that change over time.
          */
-        int np = NPATCHES-1;
-        if(sim->cycle % 2 == 1)
-        {
-            np = NPATCHES;
-            ncpatch[1] = 2;
-        }
-        else
-        {
-            ncpatch[1] = 1;
-        }
-        VisIt_DomainNesting_set_dimensions(h, np, nlevels, 2);
+        int iter = (sim->cycle % 2);
+        VisIt_DomainNesting_set_dimensions(h, npatches[iter], nlevels[iter], 2);
 
-        VisIt_DomainNesting_set_levelRefinement(h, 0, ratios);
-        VisIt_DomainNesting_set_levelRefinement(h, 1, ratios);
-        VisIt_DomainNesting_set_levelRefinement(h, 2, ratios);
+        for(i = 0; i < nlevels[iter]; ++i)
+            VisIt_DomainNesting_set_levelRefinement(h, i, ratios);
 
-        for(dom = 0; dom < np; ++dom)
+        for(dom = 0; dom < npatches[iter]; ++dom)
         {
             ext[XMIN] = rmxext[dom][0];
             ext[YMIN] = rmyext[dom][0];
@@ -467,10 +463,10 @@ SimGetDomainNesting(const char *name, void *cbdata)
             ext[XMAX] = rmxext[dom][1];
             ext[YMAX] = rmyext[dom][1];
             ext[ZMAX] = 0;
-            for(i = 0; i < ncpatch[dom]; ++i)
-                patch[i] = cpatch[dom][i];
+            for(i = 0; i < ncpatch[iter][dom]; ++i)
+                patch[i] = cpatch[iter][dom][i];
             VisIt_DomainNesting_set_nestingForPatch(h, dom, level[dom],
-                patch, ncpatch[dom], ext);
+                patch, ncpatch[iter][dom], ext);
         }
     }
 
