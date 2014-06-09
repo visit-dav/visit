@@ -590,14 +590,25 @@ class Simulation(object):
         return h
         
     # TODO: Change the owner to 'SIM' and see what happens.
-    def visit_variable(self, data_func, data, owner='VISIT'):
-        """Creates a variable."""
+    def visit_variable(self, data_func, data, owner='VISIT', nComp=1):
+        """Creates a variable.
+        
+        nComp determines the "number of components". For a precise definition
+        see the documentation. For Floats and Ints this should typically be
+        1 (no stride). For character strings (such as labels), this is the
+        length of the label; it is required that each string be the same length.
+        """
         h = simV2.VisIt_VariableData_alloc()
-        data_func(h,self.DATAOWNERS[owner],1,len(data),data)
+        data_func(h,self.DATAOWNERS[owner],nComp,len(data),data)
         return h
 
     def visit_variableArray(self, data_func, nComp, data, owner='VISIT'):
-        """Creates a variable."""
+        """Creates a variable.
+        
+        This version is deprecated, the preferred method is visit_variable(),
+        passing nComp as a keyword arg. However this may read easier for
+        users who are already familiar with sims and VisIt.
+        """
         h = simV2.VisIt_VariableData_alloc()
         data_func(h,self.DATAOWNERS[owner],nComp,len(data),data)
         return h

@@ -183,7 +183,7 @@ class PlotSim(Simulation):
         if name == 'z2d':
             h = self.visit_variable(self.VARDATATYPES['FLOAT'], self.points[2])
         if name == 'pointLabels':
-            h = self.visit_variableArray(self.VARDATATYPES['CHAR'], len(self.labels[0]), self.labels)
+            h = self.visit_variable(self.VARDATATYPES['CHAR'], self.labels, nComp=len(self.labels[0]))
         return h
 
 #
