@@ -49,6 +49,9 @@
 #  Copy simV2.py to lib dir when doing out-of-source builds.  Makes running
 #  python examples easier.
 #
+#  Kathleen Biagas, Mon Jun  9 08:28:07 MST 2014
+#  Fix copy of simV2.lib.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -93,5 +96,5 @@ INSTALL(FILES simV2.py
 IF(VISIT_OUT_OF_SOURCE_BUILD)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
         ${CMAKE_CURRENT_SOURCE_DIR}/simV2.py
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/simV2.py)
 ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
