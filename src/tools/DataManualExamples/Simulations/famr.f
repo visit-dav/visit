@@ -119,7 +119,7 @@ ccc   SIMSTATE common block
       common /SIMSTATE/ runflag, simcycle, simtime
 ccc   AMRMESH common block
       integer NPATCHES
-      parameter (NPATCHES = 4)
+      parameter (NPATCHES = 5)
       real rmx(2, NPATCHES), rmy(2, NPATCHES)
       integer rmxext(2, NPATCHES), rmyext(2, NPATCHES)
       integer level(NPATCHES), ncpatch(NPATCHES)
@@ -127,13 +127,13 @@ ccc   AMRMESH common block
       common /AMRMESH/ rmx,rmy,rmxext,rmyext,level,ncpatch,cpatch
       save /AMRMESH/
 ccc   AMRMESH data
-      data rmx/0., 10., 3., 10., 5., 7.5, 7.5, 10./
-      data rmy/0., 10., 1., 9., 2., 7., 2., 7./
-      data rmxext/0,9, 6,19, 20,29, 30,39/
-      data rmyext/0,9,  2,17,  8,27,  8,27/
-      data level/0, 1, 2, 2/
-      data ncpatch/1,2,0,0/
-      data cpatch/1,-1,2,3,-1,-1,-1,-1/
+      data rmx/0., 10., 3., 10., 5., 7.5, 7.5, 10., 6., 8.75/
+      data rmy/0., 10., 1., 9., 2., 7., 2., 7., 3., 4.75/
+      data rmxext/0,9, 6,19, 20,29, 30,39, 48,69/
+      data rmyext/0,9,  2,17,  8,27,  8,27, 24,37/
+      data level/0, 1, 2, 2, 3/
+      data ncpatch/1,2,1,1,0/
+      data cpatch/1,-1,2,3,4,-1,4,-1,-1,-1/
 c locals
       integer err
 
@@ -224,7 +224,7 @@ ccc   SIMSTATE common block
       common /SIMSTATE/ runflag, simcycle, simtime
 ccc   AMRMESH common block
       integer NPATCHES
-      parameter (NPATCHES = 4)
+      parameter (NPATCHES = 5)
       real rmx(2, NPATCHES), rmy(2, NPATCHES)
       integer rmxext(2, NPATCHES), rmyext(2, NPATCHES)
       integer level(NPATCHES), ncpatch(NPATCHES)
@@ -248,10 +248,10 @@ c     Add a 2D AMR mesh
      .            VISIT_MESHTYPE_AMR)
               err = visitmdmeshsettopologicaldim(mmd, 2)
               err = visitmdmeshsetspatialdim(mmd, 2)
-              err = visitmdmeshsetnumdomains(mmd, 4)
+              err = visitmdmeshsetnumdomains(mmd, NPATCHES)
               err = visitmdmeshsetdomaintitle(mmd, "patches", 7)
               err = visitmdmeshsetdomainpiecename(mmd, "patch", 5)
-              err = visitmdmeshsetnumgroups(mmd, 3)
+              err = visitmdmeshsetnumgroups(mmd, 4)
               err = visitmdmeshsetgrouptitle(mmd, "levels", 6)
               err = visitmdmeshsetgrouppiecename(mmd, "level", 5)
               do 1400 i=1,NPATCHES
@@ -296,7 +296,7 @@ c---------------------------------------------------------------------------
       include "visitfortransimV2interface.inc" 
 ccc   AMRMESH common block
       integer NPATCHES
-      parameter (NPATCHES = 4)
+      parameter (NPATCHES = 5)
       real rmx(2, NPATCHES), rmy(2, NPATCHES)
       integer rmxext(2, NPATCHES), rmyext(2, NPATCHES)
       integer level(NPATCHES), ncpatch(NPATCHES)
@@ -389,7 +389,7 @@ c---------------------------------------------------------------------------
       include "visitfortransimV2interface.inc"
 ccc   AMRMESH common block
       integer NPATCHES
-      parameter (NPATCHES = 4)
+      parameter (NPATCHES = 5)
       real rmx(2, NPATCHES), rmy(2, NPATCHES)
       integer rmxext(2, NPATCHES), rmyext(2, NPATCHES)
       integer level(NPATCHES), ncpatch(NPATCHES)
@@ -409,11 +409,12 @@ ccc local vars
       data patch/0,0/
 
       if(visitdnestingalloc(h).eq.VISIT_OKAY) then
-          err = visitdnestingsetdimensions(h, 4, 3, 2)
+          err = visitdnestingsetdimensions(h, NPATCHES, 4, 2)
 
           err = visitdnestingsetlevelrefinement(h, 0, ratios)
           err = visitdnestingsetlevelrefinement(h, 1, ratios)
           err = visitdnestingsetlevelrefinement(h, 2, ratios)
+          err = visitdnestingsetlevelrefinement(h, 3, ratios)
 
           do 1800 dom = 1,4
               ext(XMIN) = rmxext(1, dom)
