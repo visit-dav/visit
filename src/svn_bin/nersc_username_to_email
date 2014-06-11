@@ -76,6 +76,9 @@
 #    Kevin Griffin, Mon Jun  2 12:06:07 PDT 2014
 #    Added case for userid "kgriffin".
 #
+#    Ryan Bleile, Wed Jun 11 09:23:59 CDT 2014
+#    Added case for userid "rbleile" for myself. 
+#
 # *****************************************************************************
 
 
@@ -199,6 +202,10 @@ case $1 in
     # Cameron Christensen
     "camc")
         emaddr=cam@sci.utah.edu
+        ;;
+    # Ryan Bleile
+    "rbleile")
+        emaddr=rbleile@cs.uoregon.edu
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
