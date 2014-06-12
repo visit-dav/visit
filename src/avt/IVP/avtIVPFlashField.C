@@ -45,8 +45,6 @@
 #include <DebugStream.h>
 
 #include <vtkCellData.h>
-#include <vtkIntArray.h>
-#include <vtkFloatArray.h>
 
 // ****************************************************************************
 //  Method: avtIVPFlashField constructor

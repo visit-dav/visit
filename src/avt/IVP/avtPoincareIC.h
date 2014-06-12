@@ -307,7 +307,7 @@ class IVP_API avtPoincareIC : public avtStateRecorderIntegralCurve
 {
 public:
     avtPoincareIC(int maxSteps, bool doTime, double maxTime,
-                  unsigned char mask, const avtIVPSolver* model, 
+                  unsigned int mask, const avtIVPSolver* model, 
                   Direction dir, const double& t_start, 
                   const avtVector &p_start,
                   const avtVector &v_start,

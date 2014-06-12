@@ -380,6 +380,10 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
         }
     }
 
+    // std::cerr << (blockLoaded ? "block loaded  " : "no block to load  ")
+    //        << timeStep << "  " << skipBlk
+    //        << std::endl;
+
     // No blocks, exited spatial boundary.
     if (ic->blockList.empty())
         ic->status.SetExitSpatialBoundary();
@@ -704,7 +708,7 @@ avtPICSFilter::LoadNextTimeSlice()
         }
     }
 
-    // std::cerr<< "LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<"  "<< period << std::endl;
+    // std::cerr << "LoadNextTimeSlice() " << curTimeSlice << " tsMax= " << domainTimeIntervals.size() <<"  " << period << std::endl;
 
 
     if (DebugStream::Level5())
@@ -1655,7 +1659,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             EXCEPTION1(VisItException, "Pathlines - Only one time slice in the data sett, two or more are needed.");
         }
 
-        double interval = md->GetTimes()[1] - md->GetTimes()[0];
+        timeSliceInterval = md->GetTimes()[1] - md->GetTimes()[0];
 
         if( period > 0 )
         {
@@ -1691,9 +1695,15 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             EXCEPTION1(VisItException, "Periodic Pathlines - the period must be greater than twice the time slice interval.");
           }
 
-          double intPart, fracPart = modf(period / interval, &intPart);
+          double intPart, fracPart = modf(period / timeSliceInterval, &intPart);
 
-          if( fracPart > DBL_EPSILON )
+          // std::cerr << period << "  " << timeSliceInterval << "  "
+          //        << period / timeSliceInterval << "  "
+          //        << intPart << "  " << fracPart << "  "
+          //        << FLT_EPSILON << "  " << DBL_EPSILON
+          //        << std::endl;
+
+          if( fracPart > FLT_EPSILON )
           {
             EXCEPTION1(VisItException, "Periodic Pathlines - the period must be an integer multiple of the time slice interval .");
           }
@@ -1726,9 +1736,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
                 EXCEPTION1(VisItException, "Pathlines - Found two adjacent steps that are not increasing or equal in time.");
             }
 
-            if (period && fabs((intv[1]-intv[0]) - interval) > DBL_EPSILON )
+            if (period && fabs((intv[1]-intv[0]) - timeSliceInterval) > FLT_EPSILON )
             {
-                EXCEPTION1(VisItException, "Periodic Pathlines - Found two adjacent steps that do not have the same interval as the others.");
+                EXCEPTION1(VisItException, "Periodic Pathlines - Found two adjacent time steps that do not have the same interval as the others.");
             }
 
             domainTimeIntervals.push_back(intv);
@@ -2718,6 +2728,8 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
             delete field;
     }
 
+    // std::cerr << (haveBlock ? "have block" : "no block") << std::endl;
+
     if (!haveBlock)
     {
         ic->status.ClearTemporalBoundary();
@@ -2732,6 +2744,15 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 
     ic->Advance(field);
     delete field;
+
+    // double dt = ((double) ((int) (ic->CurrentTime()*100.0)) / 100.0);
+
+    // std::cerr << (ic->CurrentTime()-dt) << "  "
+    //        << dt << "  "
+    //        << ic->CurrentTime() << "  "
+    //        << ic->CurrentLocation() << "  "
+    //        << ic->status << "  "
+    //        << std::endl;
 
     if (!ic->status.Terminated())
         FindCandidateBlocks(ic, &blk);

@@ -306,29 +306,29 @@ avtIntegralCurve::Advance(avtIVPField *field)
             // determine((among other things) whether to terminate.
             AnalyzeStep(step, field);
 
-            if (result == avtIVPSolver::TERMINATE)
-            {
-                fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
-                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
-                    status.SetAtSpatialBoundary();
-                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
-                    status.SetAtTemporalBoundary();
-                break;
-            }
-
             // Check if the new position is outside the domain
-
             // (or in the domain's ghost data); in this case
             // finish here and continue in the next domain.
-            fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+            fieldRes = field->IsInside(ivp->GetCurrentT(),
+                                       ivp->GetCurrentY());
+
             if (fieldRes != avtIVPField::OK)
             {
                 if( DebugStream::Level5() )
                     debug5 << "avtIntegralCurve::Advance(): step ended in ghost data\n";
-                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
+                    fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtSpatialBoundary();
-                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL ||
+                    fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtTemporalBoundary();
+                break;
+            }
+
+            // Not out side the domain but hit a terminate criteria so
+            // bounce out.
+            if (result == avtIVPSolver::TERMINATE)
+            {
                 break;
             }
         }
@@ -344,14 +344,17 @@ avtIntegralCurve::Advance(avtIVPField *field)
             // First, check if the current point is inside the domain.
             // If it is outside, there is nothing further we can do.
             fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+
             if (fieldRes != avtIVPField::OK)
             {
                 if( DebugStream::Level5() )
                     debug5 << "avtIntegralCurve::Advance(): "
                            << "current point outside domain\n";
-                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
+                    fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtSpatialBoundary();
-                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL ||
+                    fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtTemporalBoundary();
                 break;
             }
@@ -360,6 +363,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
             // Try to reduce the step size.
             double h = ivp->GetNextStepSize();
             double t = ivp->GetCurrentT();
+
             if (h == 0.0)
             {
                 // In the case where h = 0, the integrator's initial 
@@ -632,5 +636,3 @@ avtIntegralCurve::LessThan(const avtIntegralCurve *ic) const
         return false;
     return false;  // equal
 }
-
-

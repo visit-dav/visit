@@ -184,6 +184,8 @@ class IVP_API ICStatus
     void ClearNumericalError() {ClearBit(NUMERICAL_ERROR);}
     void ClearBadStepError() {ClearBit(BAD_STEP_ERROR);}
 
+    unsigned long GetStatus() const {return status;};
+
  private:
     //bit assignments:
     //0:   OK

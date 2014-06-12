@@ -66,7 +66,7 @@ const double avtStateRecorderIntegralCurve::epsilon =
 // ****************************************************************************
 
 avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
-    unsigned char mask,
+    unsigned int mask,
     const avtIVPSolver* model, 
     Direction dir,
     const double& t_start,
@@ -79,6 +79,27 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
     distance = 0.0;
     sequenceCnt = 0;
     _serializeFlags = SERIALIZE_NO_OPT;
+
+    // The data variable will always be the after the secondary variables.
+    if( historyMask & SAMPLE_VARIABLE )
+    {
+      if( historyMask & SAMPLE_SECONDARY5 )
+        variableIndex = 6;
+      else if( historyMask & SAMPLE_SECONDARY4 )
+        variableIndex = 5;
+      else if( historyMask & SAMPLE_SECONDARY3 )
+        variableIndex = 4;
+      else if( historyMask & SAMPLE_SECONDARY2 )
+        variableIndex = 3;
+      else if( historyMask & SAMPLE_SECONDARY1 )
+        variableIndex = 2;
+      else if( historyMask & SAMPLE_SECONDARY0 )
+        variableIndex = 1;
+      else
+        variableIndex = 0;
+    }
+    else
+        variableIndex = 0;
 }
 
 
@@ -176,14 +197,26 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
     if( historyMask & SAMPLE_ARCLENGTH )
         history.push_back( distance );
         
-    if( historyMask & SAMPLE_SCALAR0 )
+    if( historyMask & SAMPLE_VARIABLE )
+        history.push_back( field->ComputeScalarVariable( variableIndex, t, p ) );
+
+    if( historyMask & SAMPLE_SECONDARY0 )
         history.push_back( field->ComputeScalarVariable( 0, t, p ) );
         
-    if( historyMask & SAMPLE_SCALAR1 )
+    if( historyMask & SAMPLE_SECONDARY1 )
         history.push_back( field->ComputeScalarVariable( 1, t, p ) );
 
-    if( historyMask & SAMPLE_SCALAR2 )
+    if( historyMask & SAMPLE_SECONDARY2 )
         history.push_back( field->ComputeScalarVariable( 2, t, p ) );
+
+    if( historyMask & SAMPLE_SECONDARY3 )
+        history.push_back( field->ComputeScalarVariable( 3, t, p ) );
+        
+    if( historyMask & SAMPLE_SECONDARY4 )
+        history.push_back( field->ComputeScalarVariable( 4, t, p ) );
+
+    if( historyMask & SAMPLE_SECONDARY5 )
+        history.push_back( field->ComputeScalarVariable( 5, t, p ) );
 }
 
 // ****************************************************************************
@@ -266,9 +299,13 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
     TEST_AND_INCREMENT( SAMPLE_VELOCITY, 3 );
     TEST_AND_INCREMENT( SAMPLE_VORTICITY, 1 );
     TEST_AND_INCREMENT( SAMPLE_ARCLENGTH, 1 );
-    TEST_AND_INCREMENT( SAMPLE_SCALAR0, 1 );
-    TEST_AND_INCREMENT( SAMPLE_SCALAR1, 1 );
-    TEST_AND_INCREMENT( SAMPLE_SCALAR2, 1 );
+    TEST_AND_INCREMENT( SAMPLE_VARIABLE, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SECONDARY0, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SECONDARY1, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SECONDARY2, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SECONDARY3, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SECONDARY4, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SECONDARY5, 1 );
 
 #undef TEST_AND_INCREMENT
 
@@ -332,20 +369,40 @@ avtStateRecorderIntegralCurve::GetSample( size_t n ) const
     else
         s.arclength = 0;
 
-    if( historyMask & SAMPLE_SCALAR0 ) 
-        s.scalar0 = *(m++);
+    if( historyMask & SAMPLE_VARIABLE )
+        s.variable = *(m++);
     else
-        s.scalar0 = 0;
+        s.variable = 0;
 
-    if( historyMask & SAMPLE_SCALAR1 )
-        s.scalar1 = *(m++);
+    if( historyMask & SAMPLE_SECONDARY0 ) 
+        s.secondarys[0] = *(m++);
     else
-        s.scalar1 = 0;
+        s.secondarys[0] = 0;
 
-    if( historyMask & SAMPLE_SCALAR2 )
-        s.scalar2 = *(m++);
+    if( historyMask & SAMPLE_SECONDARY1 )
+        s.secondarys[1] = *(m++);
     else
-        s.scalar2 = 0;
+        s.secondarys[1] = 0;
+
+    if( historyMask & SAMPLE_SECONDARY2 )
+        s.secondarys[2] = *(m++);
+    else
+        s.secondarys[2] = 0;
+
+    if( historyMask & SAMPLE_SECONDARY3 ) 
+        s.secondarys[3] = *(m++);
+    else
+        s.secondarys[3] = 0;
+
+    if( historyMask & SAMPLE_SECONDARY4 )
+        s.secondarys[4] = *(m++);
+    else
+        s.secondarys[4] = 0;
+
+    if( historyMask & SAMPLE_SECONDARY5 )
+        s.secondarys[5] = *(m++);
+    else
+        s.secondarys[5] = 0;
 
     return s;
 }
