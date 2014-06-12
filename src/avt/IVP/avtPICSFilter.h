@@ -240,7 +240,7 @@ class IVP_API avtPICSFilter :
     double seedTime0;
     int    seedTimeStep0;
 
-    double period, baseTime;
+    double period, baseTime, timeSliceInterval;
     bool   rollover;
 
     avtIntervalTree *intervalTree;

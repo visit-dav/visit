@@ -43,8 +43,10 @@
 #include <avtIVPDopri5.h>
 #include <avtIVPStateHelper.h>
 #include <DebugStream.h>
+
 #include <limits>
 #include <cmath>
+#include <float.h>
 
 // some constants for the Dormand-Prince RK scheme
 static const double safe = 0.9;
@@ -606,6 +608,9 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 
             yCur = y_new;
             t = t+h;
+
+            if( period && last )
+              t += FLT_EPSILON;
 
             // Set the step size on sucessful step.
             h = h_new;

@@ -360,7 +360,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     if (DebugStream::Level1())
         debug1 << "avtIVPM3DC1Field::SetDataPointer "
                << "Variable " << varname
-               << " is not of type float - can not safely down cast"
+               << " is not of type int/float/double - can not safely down cast"
                << endl;
     if( newptr )
         delete [] newptr;

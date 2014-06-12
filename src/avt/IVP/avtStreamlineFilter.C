@@ -275,12 +275,12 @@ avtStreamlineFilter::GetCommunicationPattern()
 //
 // ****************************************************************************
 
-unsigned char
+unsigned int
 avtStreamlineFilter::GenerateAttributeFields() const
 {
 
     // need at least these three attributes
-    unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+    unsigned int attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
 
     if (storeVelocitiesForLighting)
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
@@ -313,16 +313,16 @@ avtStreamlineFilter::GenerateAttributeFields() const
         attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
         break;
       case PICS_COLOR_VARIABLE:
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SECONDARY0;
         break;
     }
 
     // opacity scalar
     if( !opacityVariable.empty() )
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR1;
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SECONDARY1;
     // tube radius scale scalar
     if (!scaleTubeRadiusVariable.empty())
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR2;
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SECONDARY2;
 
     return attr;
 }
@@ -413,7 +413,7 @@ avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                           const avtVector &v_start,
                                           long ID ) 
 {
-    unsigned char attr = GenerateAttributeFields();
+    unsigned int attr = GenerateAttributeFields();
 
     double t_end;
 

@@ -362,7 +362,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
                 scalars->InsertTuple1(pIdx, s.arclength);
                 break;
               case PICS_COLOR_VARIABLE:
-                scalars->InsertTuple1(pIdx, s.scalar0);
+                scalars->InsertTuple1(pIdx, s.secondarys[0]);
                 break;
               case PICS_COLOR_ID:
                 scalars->InsertTuple1(pIdx, ic->id);
@@ -391,7 +391,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
             
             // opacity/theta scalars
             if (opacity)
-                opacity->InsertTuple1(pIdx, s.scalar1);
+                opacity->InsertTuple1(pIdx, s.secondarys[1]);
             if (thetas)
             {
                 float scaledVort = s.vorticity * (prevT-s.time);
@@ -400,7 +400,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
                 prevT = s.time;
             }
             if (scaleTubeRad)
-                scaleTubeRad->InsertTuple1(pIdx, s.scalar2);
+                scaleTubeRad->InsertTuple1(pIdx, s.secondarys[2]);
             
             pIdx++;
         }
@@ -562,10 +562,10 @@ avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegr
             for (int j = 0; j < n; j++)
             {
                 avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
-                if (s.scalar2 < range[0])
-                    range[0] = s.scalar2;
-                if (s.scalar2 > range[1])
-                    range[1] = s.scalar2;
+                if (s.secondarys[2] < range[0])
+                    range[0] = s.secondarys[2];
+                if (s.secondarys[2] > range[1])
+                    range[1] = s.secondarys[2];
             }
         }
 
@@ -577,7 +577,7 @@ avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegr
             for (int j = 0; j < n; j++)
             {
                 avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
-                s.scalar2 = (s.scalar2-range[0])/dRange;
+                s.secondarys[2] = (s.secondarys[2]-range[0])/dRange;
             }
         }
     }

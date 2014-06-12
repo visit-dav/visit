@@ -46,6 +46,7 @@
 
 #include <limits>
 #include <cmath>
+#include <float.h>
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
@@ -296,16 +297,17 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     // Calculate the new position.
     yNew = yCur + h * vNew;
 
-    // Update the history to save the last N vector values.
-    for (size_t i = abStep; i>0; --i)
-      history[i] = history[i-1];
-
     // Increment the number of steps to be taken.
     if( abNSteps < ADAMS_BASHFORTH_NSTEPS )
     {
       ++abStep;    // Index of the coefficents for the step order.
       ++abNSteps;  // Number of steps to be taken
     }
+
+    // Update the history to save the last N vector values. Note: the
+    // history needs to be updated after the abStep is incremented.
+    for (size_t i = abStep; i>0; --i)
+      history[i] = history[i-1];
 
     // Convert and save the position.
     ivpstep->resize(2);
@@ -329,6 +331,9 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
 
     yCur = yNew;
     t = t+h;
+
+    if( period && last )
+      t += epsilon*10000.0;
 
     // Reset the step size on sucessful step.
     h = h_max;

@@ -46,6 +46,7 @@
 
 #include <limits>
 #include <cmath>
+#include <float.h>
 
 #include <avtIVPFlashField.h>
 
@@ -291,6 +292,9 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     yCur = yNew;
     vCur = vNew;
     t = t+h;
+
+    if( period && last )
+      t += FLT_EPSILON;
 
     // Reset the step size on sucessful step.
     h = h_max;

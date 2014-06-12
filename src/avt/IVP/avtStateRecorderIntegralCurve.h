@@ -95,15 +95,18 @@ public:
     // historyMask and the *Sample* member functions.
     enum Attribute
     {
-        SAMPLE_TIME       = 1,
-        SAMPLE_POSITION   = 2,
-        SAMPLE_VELOCITY   = 4,
-        SAMPLE_VORTICITY  = 8,
-        SAMPLE_ARCLENGTH  = 16,
-        SAMPLE_SCALAR0    = 32,
-        SAMPLE_SCALAR1    = 64,
-        SAMPLE_SCALAR2    = 128,
-        SAMPLE_UNUSED     = 256,
+        SAMPLE_TIME       = 0x000000000001,
+        SAMPLE_POSITION   = 0x000000000010,
+        SAMPLE_VELOCITY   = 0x000000000100,
+        SAMPLE_VORTICITY  = 0x000000001000,
+        SAMPLE_ARCLENGTH  = 0x000000010000,
+        SAMPLE_VARIABLE   = 0x000000100000,
+        SAMPLE_SECONDARY0 = 0x000001000000,
+        SAMPLE_SECONDARY1 = 0x000010000000,
+        SAMPLE_SECONDARY2 = 0x000100000000,
+        SAMPLE_SECONDARY3 = 0x001000000000,
+        SAMPLE_SECONDARY4 = 0x010000000000,
+        SAMPLE_SECONDARY5 = 0x100000000000,
     };
 
     struct Sample
@@ -113,14 +116,13 @@ public:
         avtVector velocity;
         double    vorticity;
         double    arclength;
-        double    scalar0;
-        double    scalar1;
-        double    scalar2;
+        double    variable;
+        double    secondarys[6];
     };
 
     // ----
 
-    avtStateRecorderIntegralCurve( unsigned char mask,
+    avtStateRecorderIntegralCurve( unsigned int mask,
                                    const avtIVPSolver* model, 
                                    Direction dir,
                                    const double& t_start, 
@@ -166,11 +168,13 @@ public:
   public:
     SerializeFlags      _serializeFlags;
     long                sequenceCnt;
-    unsigned char       historyMask;
+    unsigned int        historyMask;
 
   protected:
     double time;
     double distance;
+
+    unsigned int variableIndex;
 
     std::vector<double>  history;
     static const double epsilon;

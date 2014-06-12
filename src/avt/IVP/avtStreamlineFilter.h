@@ -350,7 +350,7 @@ class IVP_API avtStreamlineFilter : virtual public avtPICSFilter
     void GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
     void GenerateSeedPointsFromSelection(std::vector<avtVector> &pts);
 
-    unsigned char GenerateAttributeFields() const;
+    unsigned int GenerateAttributeFields() const;
 
     virtual std::vector<avtVector> GetInitialLocations(void);
     virtual std::vector<avtVector> GetInitialVelocities(void);

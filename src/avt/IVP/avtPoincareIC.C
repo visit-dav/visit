@@ -68,7 +68,7 @@ avtPoincareIC::avtPoincareIC(
     int maxSteps_,
     bool doTime_,
     double maxTime_,
-    unsigned char mask,
+    unsigned int mask,
     const avtIVPSolver* model, 
     Direction dir,
     const double& t_start,

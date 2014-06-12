@@ -73,7 +73,7 @@ public:
 
     avtStreamlineIC(int maxSteps, bool doDistance, double maxDistance,
                     bool doTime, double maxTime,
-                    unsigned char mask, const avtIVPSolver* model, 
+                    unsigned int mask, const avtIVPSolver* model, 
                     Direction dir, const double& t_start, 
                     const avtVector &p_start, const avtVector &v_start,
                     int ID);
