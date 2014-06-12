@@ -251,7 +251,6 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
 
     void showLinesChanged(bool val);
     void showPointsChanged(bool val);
-    void geometryButtonGroupChanged(int val);
 
     void coordinateButtonGroupChanged(int val);
     void phiScalingToggled(bool);
@@ -355,9 +354,6 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
 
     QCheckBox    *showLines;
     QCheckBox    *showPoints;
-
-    QLabel       *geometryLabel;
-    QButtonGroup *geometryButtonGroup;
 
     QButtonGroup *coordinateButtonGroup;
     QLineEdit *phiScaling;

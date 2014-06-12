@@ -825,26 +825,6 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     displayLayout->addWidget(showPoints, 0, 1);
 
 
-    geometryLabel = new QLabel(tr("Line geometry"), central);
-    displayLayout->addWidget(geometryLabel, 1, 0);
-
-    geometryButtonGroup = new QButtonGroup(central);
-    QRadioButton *rb = new QRadioButton(tr("Line"), central);
-    geometryButtonGroup->addButton(rb, 0);
-    displayLayout->addWidget(rb, 1, 1);
-
-    rb = new QRadioButton(tr("Tubes"), central);
-    geometryButtonGroup->addButton(rb, 1);
-    displayLayout->addWidget(rb, 1, 2);
-
-    rb = new QRadioButton(tr("Ribbons"), central);
-    displayLayout->addWidget(rb, 1, 3);
-    geometryButtonGroup->addButton(rb, 2);
-
-    connect(geometryButtonGroup, SIGNAL(buttonClicked(int)), this,
-            SLOT(geometryButtonGroupChanged(int)));
-
-
     // Create the coordinate group
     QGroupBox *coordinateGrp = new QGroupBox(central);
     coordinateGrp->setTitle(tr("Coordinate transform"));
@@ -1355,21 +1335,11 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             showLines->setChecked(atts->GetShowLines());
             showLines->blockSignals(false);
 
-            geometryLabel->setEnabled(atts->GetShowLines());
-            geometryButtonGroup->button(0)->setEnabled(atts->GetShowLines());
-            geometryButtonGroup->button(1)->setEnabled(atts->GetShowLines());
-            geometryButtonGroup->button(2)->setEnabled(atts->GetShowLines());
-            
             break;
         case IntegralCurveAttributes::ID_showPoints:
             showPoints->blockSignals(true);
             showPoints->setChecked(atts->GetShowPoints());
             showPoints->blockSignals(false);
-            break;
-        case IntegralCurveAttributes::ID_displayGeometry:
-            geometryButtonGroup->blockSignals(true);
-            geometryButtonGroup->button(atts->GetDisplayGeometry())->setChecked(true);
-            geometryButtonGroup->blockSignals(false);
             break;
         case IntegralCurveAttributes::ID_integrationDirection:
             directionType->blockSignals(true);
@@ -2890,19 +2860,11 @@ QvisIntegralCurveWindow::showPointsChanged(bool val)
 }
 
 void
-QvisIntegralCurveWindow::geometryButtonGroupChanged(int val)
-{
-    atts->SetDisplayGeometry((IntegralCurveAttributes::DisplayGeometry) val);
-    Apply();
-}
-
-void
 QvisIntegralCurveWindow::useWholeBoxChanged(bool val)
 {
     atts->SetUseWholeBox(val);
     Apply();
 }
-
 
 void
 QvisIntegralCurveWindow::boxExtentsProcessText()
