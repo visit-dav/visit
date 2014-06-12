@@ -162,8 +162,6 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     }
 
     void SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
-    void SetOpacityVariable(const std::string &var);
-    void SetScaleTubeRadiusVariable(const std::string &var);
 
     void SetReferenceTypeForDisplay(int d) 
      { referenceTypeForDisplay = d; };
@@ -211,7 +209,7 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     void GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
     void GenerateSeedPointsFromSelection(std::vector<avtVector> &pts);
 
-    unsigned char GenerateAttributeFields() const;
+    unsigned int GenerateAttributeFields() const;
 
     virtual std::vector<avtVector> GetInitialLocations(void);
     virtual std::vector<avtVector> GetInitialVelocities(void);
@@ -234,9 +232,12 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     int    displayGeometry;
     int    dataValue;
     int    referenceTypeForDisplay;
-    std::string dataVariable, opacityVariable, scaleTubeRadiusVariable;
+    std::string dataVariable;
+    int    tubeVariableIndex;
     double correlationDistanceAngTol, correlationDistanceMinDist;
     bool correlationDistanceDoBBox;
+
+    std::vector< std::string > secondaryVariables;
 
     int      maxSteps;
     bool     doDistance;
