@@ -233,7 +233,7 @@ avtLagrangianFilter::CreateIntegralCurve(const avtIVPSolver *model,
     if (atts.GetXAxisSample() == LagrangianAttributes::Variable ||
         atts.GetYAxisSample() == LagrangianAttributes::Variable)
     {
-        mask |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
+        mask |= avtStateRecorderIntegralCurve::SAMPLE_VARIABLE;
     }
     
     avtLagrangianIC *ic = new avtLagrangianIC(mask, model, dir, t_start,
@@ -317,7 +317,7 @@ avtLagrangianFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
         else if (atts.GetYAxisSample() == LagrangianAttributes::Vorticity)
             yi = samp.vorticity;
         else if (atts.GetYAxisSample() == LagrangianAttributes::Variable)
-            yi = samp.scalar0;
+            yi = samp.variable;
         
         xc->SetValue(j, xi);
         vals->SetValue(j, yi);
