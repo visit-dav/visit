@@ -45,6 +45,8 @@
 
 #include <iosfwd>
 
+#include <MapNode.h>
+
 #include <pipeline_exports.h>
 #include <ref_ptr.h>
 #include <avtDataRequest.h>
@@ -150,6 +152,9 @@ class PIPELINE_API avtContract
     void                AddFilter(void)  { nFilters++; };
     int                 GetNFilters(void)  { return nFilters; };
 
+    void                SetLineType( int type)  { lineType = type; };
+    int                 GetLineType(void)  { return lineType; };
+
     bool                ShouldCalculateMeshExtents(void) { return calculateMeshExtents; };
     void                SetCalculateMeshExtents(bool c)  { calculateMeshExtents = c; };
     bool                ShouldCalculateVariableExtents(const std::string &s);
@@ -160,6 +165,11 @@ class PIPELINE_API avtContract
                                                       { return needExtentsForTheseVariables; };
     void                DisableExtentsCalculations(void) { calculateMeshExtents = false; 
                                                            needExtentsForTheseVariables.clear(); };
+
+    template<class T>
+    std::string         SetAttribute( AttributeSubject *atts,
+                                      int index, T val );
+    MapNode*            GetAttribute( std::string );
 
     avtContract        &operator=(const avtContract &);
     void                DebugDump(avtWebpage *);
@@ -178,10 +188,45 @@ class PIPELINE_API avtContract
     std::vector<std::string>    needExtentsForTheseVariables;
     bool                        calculateMeshExtents;
 
+    int                 lineType;
+    MapNode             attributeMap;
+
   private:
     // This method is defined to prevent accidental use of a bitwise copy
     // implementation.  If you want to re-define it to do something
     // meaningful, that's fine.
     avtContract(const avtContract &) {;};
 };
+
+// ****************************************************************************
+//  Method: avtContract::SetAttribute
+//
+//  Purpose:
+//      Add an operator or plot attribute to the contract so that 
+//      communication can happen within the pipeline.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   June 16, 2014
+//
+// ****************************************************************************
+
+template<class T> std::string
+avtContract::SetAttribute( AttributeSubject *atts, int index, T value )
+{
+  // Create a key string that contains the attribute class name and
+  // attribute name.
+  std::string key = atts->TypeName();
+  key += std::string("::");
+  key += atts->GetFieldName( index );
+
+  if( attributeMap.HasEntry( key ) )
+  {
+    return std::string("");
+  }
+
+  attributeMap[ key ] = value;
+
+  return key;
+}
+
 #endif

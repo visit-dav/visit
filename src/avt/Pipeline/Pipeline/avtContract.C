@@ -45,7 +45,7 @@
 #include <string.h>
 
 #include <avtWebpage.h>
-
+#include <VisItStreamUtil.h>
 
 static const char* bool2str(bool b) { return b ? "yes" : "no"; }
 
@@ -70,7 +70,7 @@ static const char* bool2str(bool b) { return b ? "yes" : "no"; }
 // ****************************************************************************
 ostream& operator<<(ostream &os, const avtContract& c)
 {
-    os << "avtContract information:"
+    os << "avtContract information:\n"
        << "\tpipeline index: " << c.pipelineIndex << "\n"
        << "\tstreaming possible: " << bool2str(c.canDoStreaming) << "\n"
        << "\tstreaming: " << bool2str(c.doingOnDemandStreaming) << "\n"
@@ -92,9 +92,12 @@ ostream& operator<<(ostream &os, const avtContract& c)
    os  << "\tmesh optimizations:" << "\n"
        << "\t\tcurvilinear: " << bool2str(c.haveCurvilinearMeshOptimizations)
        << "\n\t\trectilinear: " << bool2str(c.haveRectilinearMeshOptimizations)
-       << "\n\tfilters: " << c.nFilters << std::endl;
-  
-    return os;
+       << "\n\tfilters: " << c.nFilters
+       << "\n\tline type: " << c.lineType
+//       << "\n\tattributeMap: " << c.attributeMap
+       << std::endl;
+
+   return os;
 }
 
 // ****************************************************************************
@@ -147,6 +150,7 @@ avtContract::avtContract(avtDataRequest_p d, int pi)
     doingOnDemandStreaming           = false;
     replicateSingleDomainOnAllProcessors = false;
     calculateMeshExtents = true;
+    lineType         = 0;
 }
 
 
@@ -261,6 +265,9 @@ avtContract::operator=(const avtContract &ps)
     calculateMeshExtents = ps.calculateMeshExtents;
     needExtentsForTheseVariables = ps.needExtentsForTheseVariables;
 
+    lineType     = ps.lineType;
+    attributeMap = ps.attributeMap;
+
     return *this;
 }
 
@@ -338,6 +345,30 @@ avtContract::SetCalculateVariableExtents(const std::string &s, bool v)
                 newList.push_back(needExtentsForTheseVariables[i]);
         needExtentsForTheseVariables = newList;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtContract::GetAttribute
+//
+//  Purpose:
+//      Get an operator or plot attribute to the contract so that 
+//      communication can happen within the pipeline.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   June 16, 2014
+//
+// ****************************************************************************
+
+MapNode*
+avtContract::GetAttribute( std::string key )
+{
+  if( attributeMap.HasEntry( key ) )
+  {
+    return attributeMap.GetEntry( key );
+  }
+  else
+    return NULL;
 }
 
 
@@ -432,7 +463,5 @@ avtContract::DebugDump(avtWebpage *webpage)
 void
 avtContract::Print(ostream &os)
 {
-    os << this;
+    os << *this;
 }
-
-
