@@ -354,7 +354,8 @@ avtDataObject_p
 avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input; 
-    topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension(); 
+    topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
+
     if ((atts.GetCentering() == PseudocolorAttributes::Nodal) ||
         (atts.GetCentering() == PseudocolorAttributes::Zonal))
     {
@@ -587,9 +588,60 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
     glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
     glyphMapper->SetScale(atts.GetPointSize());
-    if (atts.GetPointSizeVarEnabled() &&
+
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    if( atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
+        atts.GetOpacityVariable() != "" &&
+        atts.GetOpacityVariable() != "\0")
+    {   
+      // glyphMapper->SetVariableOpacity(atts.GetOpacity());
+      // if( atts.GetOpacityVarMinFlag() )
+      //     glyphMapper->SetVariableMinOpacity(atts.GetOpacityVarMin());
+      // if( atts.GetOpacityVarMaxFlag() )
+      //     glyphMapper->SetVariableMaxOpacity(atts.GetOpacityVarMax());
+        if (atts.GetOpacityVariable() == "default")
+        { 
+//            if (varname != NULL)
+//                glyphMapper->ScaleOpacityByVar(varname);
+        } 
+        else
+        { 
+//            glyphMapper->ScaleOpacityByVar(atts.GetOpacityVariable());
+        } 
+    }
+    else 
+    {
+//        glyphMapper->OpacityScalingOff();
+    }
+
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    if( (topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
+        atts.GetLineType() == PseudocolorAttributes::Tube && 
+        atts.GetVaryTubeRadius() == true  &&
+        atts.GetVaryTubeRadiusVariable() != "" &&
+        atts.GetVaryTubeRadiusVariable() != "\0" )
+    {
+        if (atts.GetVaryTubeRadiusVariable() == "default")
+        { 
+//            if (varname != NULL)
+//                glyphMapper->ScaleTubesByVar(varname);
+        } 
+        else
+        { 
+//            glyphMapper->ScaleTubesByVar(atts.GetVaryTubeRadiusVariable());
+        } 
+    }
+    else 
+    {
+//        glyphMapper->TubeScalingOff();
+    }
+
+    if( (topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
+        atts.GetPointType() != PseudocolorAttributes::Point &&
+        atts.GetPointType() != PseudocolorAttributes::Sphere &&
+        atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "" &&
-        atts.GetPointSizeVar() != "\0")
+        atts.GetPointSizeVar() != "\0" )
     {
         if (atts.GetPointSizeVar() == "default")
         { 
@@ -605,6 +657,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     {
         glyphMapper->DataScalingOff();
     }
+
     if (atts.GetPointType() == PseudocolorAttributes::Box)
         glyphMapper->SetGlyphType(avtPointGlypher::Box);
     else if (atts.GetPointType() == PseudocolorAttributes::Axis)
@@ -1182,6 +1235,8 @@ avtContract_p
 avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
 {
     avtContract_p rv = spec;
+
+#ifdef COMMENTOUT
     if (topoDim == 0)
     {
         std::string pointVar = atts.GetPointSizeVar();
@@ -1199,6 +1254,131 @@ avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
             rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
             rv->SetCalculateVariableExtents(pointVar, true);
         }
+    }
+#endif
+    bool needNewContract = true;
+
+    // Add in the opactiy variable
+    if( atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
+        atts.GetOpacityVariable() != "" &&
+        atts.GetOpacityVariable() != "\0")
+    {   
+        std::string opacityVar = atts.GetOpacityVariable();
+        avtDataRequest_p dataRequest = rv->GetDataRequest();
+      
+        if( opacityVar != "default" &&
+            opacityVar != dataRequest->GetVariable() &&
+            !dataRequest->HasSecondaryVariable(opacityVar.c_str()) )
+        {
+            if( needNewContract )
+            {
+              rv = new avtContract(spec);
+              needNewContract = false;
+            }
+
+            rv->GetDataRequest()->AddSecondaryVariable( opacityVar.c_str() );
+            rv->SetCalculateVariableExtents(opacityVar, true);
+        }
+
+        // if( needNewContract )
+        // {
+        //   rv = new avtContract(spec);
+        //   needNewContract = false;
+        // }
+
+        // std::string key =
+        //   rv->SetAttribute( &atts,
+        //                  PseudocolorAttributes::ID_opacityVariable,
+        //                  opacityVar );
+    }
+
+    // Add in the tube variable
+    if( (topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
+        atts.GetLineType() == PseudocolorAttributes::Tube && 
+        atts.GetVaryTubeRadius() == true &&
+        atts.GetVaryTubeRadiusVariable() != "" &&
+        atts.GetVaryTubeRadiusVariable() != "\0" )
+    {
+        std::string tubeVar = atts.GetVaryTubeRadiusVariable();
+        avtDataRequest_p dataRequest = rv->GetDataRequest();
+        
+        if( tubeVar != "default" &&
+            tubeVar != dataRequest->GetVariable() &&
+            !dataRequest->HasSecondaryVariable(tubeVar.c_str()) )
+        {
+            if( needNewContract )
+            {
+              rv = new avtContract(spec);
+              needNewContract = false;
+            }
+
+            rv->GetDataRequest()->AddSecondaryVariable( tubeVar.c_str() );
+            rv->SetCalculateVariableExtents(tubeVar, true);
+        }
+
+        if( needNewContract )
+        {
+          rv = new avtContract(spec);
+          needNewContract = false;
+        }
+
+        std::string key =
+          rv->SetAttribute( &atts,
+                            PseudocolorAttributes::ID_varyTubeRadiusVariable,
+                            tubeVar );
+    }
+
+    // Add in the point variable
+    if( (topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
+        atts.GetPointType() != PseudocolorAttributes::Point &&
+        atts.GetPointType() != PseudocolorAttributes::Sphere &&
+        atts.GetPointSizeVarEnabled() &&
+        atts.GetPointSizeVar() != "" &&
+        atts.GetPointSizeVar() != "\0" )
+      {
+        std::string pointVar = atts.GetPointSizeVar();
+        avtDataRequest_p dataRequest = rv->GetDataRequest();
+
+        if (pointVar != "default" &&
+            pointVar != dataRequest->GetVariable() &&
+            !dataRequest->HasSecondaryVariable(pointVar.c_str()))
+        {
+            if( needNewContract )
+                rv = new avtContract(spec);
+            rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
+            rv->SetCalculateVariableExtents(pointVar, true);
+            needNewContract = false;
+        }
+
+        // if( needNewContract )
+        // {
+        //   rv = new avtContract(spec);
+        //   needNewContract = false;
+        // }
+
+        // std::string key =
+        //   rv->SetAttribute( &atts,
+        //                  PseudocolorAttributes::ID_pointSizeVarEnabled,
+        //                  pointVar );
+    }
+
+
+    // Note the line type so that upstream operators can obtain the
+    // needed data for displaying ribbons or tubes.
+
+//    if( atts.GetLineType() == PseudocolorAttributes::Line ||
+//        atts.GetLineType() == PseudocolorAttributes::Tube ||
+//        atts.GetLineType() == PseudocolorAttributes::Ribbon )
+    {
+        if( needNewContract )
+        {
+          rv = new avtContract(spec);
+          needNewContract = false;
+        }
+
+        std::string key =
+          rv->SetAttribute( &atts, PseudocolorAttributes::ID_lineType,
+                            PseudocolorAttributes::LineType_ToString(atts.GetLineType()) );
     }
     return rv;
 }
