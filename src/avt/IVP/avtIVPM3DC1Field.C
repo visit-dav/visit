@@ -69,10 +69,14 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
                                     double fact) : 
   avtIVPVTKField( dataset, locator ),
   elements(0), trigtable(0), neighbors(0),
-  f0(0), psi0(0), fnr(0), fni(0), psinr(0), psini(0),
+  tElements(0), element_dimension(0),
+  nplanes(0), element_size(0), scalar_size(0),
+  reparameterize(false), factor(fact),
+  psi0(0), f0(0),
+  psinr(0), psini(0), fnr(0), fni(0),
   I0(0), f(0), psi(0), I(0),
-  eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0), factor(fact),
-  nelms(0), element_dimension(0), nplanes(0), reparameterize(false)
+  eqsubtract(0), linflag(0), nelms(0), tmode(0),
+  bzero(0), rzero(0), F0(0)
 {
   vtkFieldData *fieldData = dataset->GetFieldData();
 

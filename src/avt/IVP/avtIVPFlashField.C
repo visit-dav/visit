@@ -58,7 +58,7 @@ avtIVPFlashField::avtIVPFlashField( vtkDataSet* dataset,
                                     avtCellLocator* locator,
                                     double fact) : 
   avtIVPVTKField( dataset, locator ),
-  B_vtkDataArray(0), E_vtkDataArray(0), factor(1.0/fact)
+  factor(1.0/fact), B_vtkDataArray(0), E_vtkDataArray(0),
 {
   order = 2;
 
