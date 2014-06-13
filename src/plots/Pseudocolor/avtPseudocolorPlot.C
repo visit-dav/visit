@@ -584,6 +584,8 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     SetLighting(atts.GetLightingFlag());
     SetLegend(atts.GetLegendFlag());
 
+    SetScaling(atts.GetScaling(), atts.GetSkewFactor());
+    SetLimitsMode(atts.GetLimitsMode());
 
     glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
     glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
@@ -615,7 +617,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     }
 
     // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
-    if( (topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
+    if( //(topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
         atts.GetLineType() == PseudocolorAttributes::Tube && 
         atts.GetVaryTubeRadius() == true  &&
         atts.GetVaryTubeRadiusVariable() != "" &&
@@ -636,7 +638,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 //        glyphMapper->TubeScalingOff();
     }
 
-    if( (topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
+    if( //(topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
         atts.GetPointType() != PseudocolorAttributes::Point &&
         atts.GetPointType() != PseudocolorAttributes::Sphere &&
         atts.GetPointSizeVarEnabled() &&
@@ -647,7 +649,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         { 
             if (varname != NULL)
                 glyphMapper->ScaleByVar(varname);
-        } 
+        }
         else
         { 
             glyphMapper->ScaleByVar(atts.GetPointSizeVar());
@@ -681,9 +683,6 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     {
         glyphMapper->ColorByScalarOn(std::string(varname));
     }
-
-    SetScaling(atts.GetScaling(), atts.GetSkewFactor());
-    SetLimitsMode(atts.GetLimitsMode());
 }
 
 

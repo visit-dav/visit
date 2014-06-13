@@ -2575,18 +2575,33 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
 {
-   bool needSecondaryVar = obj.pointSizeVarEnabled &&
-                           pointSizeVar != obj.pointSizeVar &&
-                           obj.pointSizeVar != "default" && 
-                           obj.pointSizeVar != "" &&
-                           obj.pointSizeVar != "\0"; 
+   bool needSecondaryVar = (obj.pointType != Point &&
+                            obj.pointType != Sphere &&
+                            obj.pointSizeVarEnabled &&
+                            pointSizeVar != obj.pointSizeVar &&
+                            obj.pointSizeVar != "default" && 
+                            obj.pointSizeVar != "" &&
+                            obj.pointSizeVar != "\0") ||
+
+                           (obj.lineType == Tube &&
+                            obj.varyTubeRadius &&
+                            varyTubeRadiusVariable != obj.varyTubeRadiusVariable &&
+                            obj.varyTubeRadiusVariable != "default" && 
+                            obj.varyTubeRadiusVariable != "" &&
+                            obj.varyTubeRadiusVariable != "\0") ||
+
+                           (obj.opacityType == VariableRange &&
+                            opacityVariable != obj.opacityVariable &&
+                            obj.opacityVariable != "default" && 
+                            obj.opacityVariable != "" &&
+                            obj.opacityVariable != "\0");
 
     return (centering != obj.centering ||
             needSecondaryVar ||
             smoothingLevel != obj.smoothingLevel ||
-            renderSurfaces != obj.renderSurfaces ||
-            renderWireframe != obj.renderWireframe ||
-            renderPoints != obj.renderPoints ||
+//            renderSurfaces != obj.renderSurfaces ||
+//            renderWireframe != obj.renderWireframe ||
+//            renderPoints != obj.renderPoints ||
             0);
 
 }
