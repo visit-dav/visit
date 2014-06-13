@@ -1033,7 +1033,7 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 bool
 avtPseudocolorPlot::SetOpacityFromAtts()
 {
-    double realOpacity;
+    double realOpacity = 1.0;
 
     if( atts.GetOpacityType() == PseudocolorAttributes::FullyOpaque ) 
       realOpacity = 1.0;
