@@ -859,17 +859,13 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
     }
 
     // secondary scalar
-    // ARS - FIXME - FIXME - FIXME - FIXME
     unsigned int attribute = avtStateRecorderIntegralCurve::SAMPLE_SECONDARY0;
 
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
     {
         attr |= attribute;
-        attribute <<= 1;
+        attribute <<= 1;  // Bit shift gives the next enum. 
     }
-
-    // if( attr & avtStateRecorderIntegralCurve::SAMPLE_VARIABLE )
-    //   std::cerr << "variable set in " << __FUNCTION__ << std::endl;
 
     return attr;
 }
