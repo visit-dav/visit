@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -46,6 +46,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtExprNode.h>
 #include <avtExpressionEvaluatorFilter.h>
+#include <avtFacelistFilter.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
@@ -59,6 +60,7 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridRelevantPointsFilter.h>
@@ -94,12 +96,15 @@
 //    Cyrus Harrison, Thu Aug 23 08:35:12 PDT 2007
 //    Added init of enableGhostNeighbors
 //
+//    Ryan Bleile, Wed Jun 11 09:47:30 CDT 2014
+//    Modifies default for enableGhostNeighbors to fit new scheme
+//
 // ****************************************************************************
 
 avtConnComponentsExpression::avtConnComponentsExpression()
 {
     nFinalComps = 0;
-    enableGhostNeighbors = true;
+    enableGhostNeighbors = 0;
 }
 
 
@@ -133,6 +138,10 @@ avtConnComponentsExpression::~avtConnComponentsExpression()
 //
 //  Programmer:   Cyrus Harrison
 //  Creation:     August 8, 2007
+//
+//  Modificaions:
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    modifications enable ghost neighbors or boundary neighbors
 //
 // ****************************************************************************
 void
@@ -180,32 +189,15 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
             int enable =
                        dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
 
-            if(enable < 0 || enable > 1)
+            if(enable < 0 || enable > 2)
             {
 
                 EXCEPTION2(ExpressionException, outputVariableName,
                 "avtConnComponents: Invalid second argument.\n"
-                " Valid options are: 1,0 or \"true\",\"false\"");
+                " Valid options are: 0,1,2");
 
             }
             enableGhostNeighbors = enable;
-        }
-        // check for arg passed as string
-        else if((second_type == "StringConst"))
-        {
-            std::string sval =
-                        dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
-
-            if(sval == "true")
-                enableGhostNeighbors = true;
-            else if(sval == "false")
-                enableGhostNeighbors = false;
-            else
-            {
-                EXCEPTION2(ExpressionException, outputVariableName,
-                "avtConnComponents: Invalid second argument.\n"
-                " Valid options are: 1,0 or \"true\",\"false\"");
-            }
         }
         else // invalid arg type
         {
@@ -264,6 +256,9 @@ avtConnComponentsExpression::GetNumberOfComponents()
 //    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
 //    Added more timing info.
 //
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Added changes to handle new ghost zones method, boundary neighbors
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::Execute()
@@ -306,8 +301,13 @@ avtConnComponentsExpression::Execute()
 
     debug2 << "avtConnComponentsExpression::enableGhostNeighbors = " 
            << enableGhostNeighbors <<endl;
-    if( enableGhostNeighbors &&
-        CheckForProperGhostZones(data_sets,nsets))
+    if(enableGhostNeighbors == 0) 
+       if (!  CheckForProperGhostZones(data_sets,nsets))
+       {
+           enableGhostNeighbors = 2;
+       }
+
+    if (enableGhostNeighbors == 0)
     {
         debug2 << "avtConnComponentsExpression:: Proper ghost zones found for "
                << "ghost zone communication enhancement." 
@@ -321,13 +321,6 @@ avtConnComponentsExpression::Execute()
             UpdateProgress(currentProgress++,totalSteps);
         }
     }
-    else
-    {
-        debug2 << "avtConnComponentsExpression:: Proper ghost zones NOT found "
-               << "for ghost zone communication enhancement." << endl;
-    }
-
-
 #endif
 
     int t_gzrm = visitTimer->StartTimer();
@@ -347,6 +340,23 @@ avtConnComponentsExpression::Execute()
         }
     }
     visitTimer->StopTimer(t_gzrm,"Ghost Zone Removal");
+
+#ifdef PARALLEL
+    if (enableGhostNeighbors == 1)
+    {
+        debug2 << "avtConnComponentsExpression:: Proper ghost zones NOT found "
+               << "for ghost zone communication enhancement, using boundary neighbors." << endl;
+        for( i = 0; i <nsets ; i++)
+        {
+            LabelBoundaryNeighbors(data_sets[i]);
+            UpdateProgress(currentProgress++,totalSteps);
+        }
+    }
+    else // enableGhostNeighbors == 2
+    {
+        debug2 << "old method for boundary neighbors." << endl;
+    }
+#endif
 
     int t_local_lbl = visitTimer->StartTimer();
     // array to hold output sets
@@ -561,7 +571,7 @@ avtConnComponentsExpression::CheckForProperGhostZones(vtkDataSet **sets,
 //
 //  Purpose:
 //     Identifies cells that have ghost neighbors, storing the info in
-//     a vtkUnsignedCharArray named "avtGhostZoneNeighbors".
+//     a vtkUnsignedCharArray named "avtOnBoundary".
 //
 //  Arguments:
 //    data_set     Input mesh
@@ -576,6 +586,8 @@ avtConnComponentsExpression::CheckForProperGhostZones(vtkDataSet **sets,
 //    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
 //    Explicit check for DUPLICATED_ZONE_INTERNAL_TO_PROBLEM.
 //
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Changed avtGhostZoneNeighbors to avtOnBoundary
 // ****************************************************************************
 void
 avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
@@ -594,7 +606,7 @@ avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
     int ncells = data_set->GetNumberOfCells();
 
     vtkUnsignedCharArray *gzn_array = vtkUnsignedCharArray::New();
-    gzn_array->SetName("avtGhostZoneNeighbors");
+    gzn_array->SetName("avtOnBoundary");
     gzn_array->SetNumberOfComponents(1);
     gzn_array->SetNumberOfTuples(ncells);
 
@@ -634,6 +646,83 @@ avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
     data_set->GetCellData()->AddArray(gzn_array);
     gzn_array->Delete();
     visitTimer->StopTimer(t0,"Labeling Ghost Neighbors");
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::LabelBoundaryNeighbors
+//
+//  Purpose:
+//     Identifies cells that lie on the boundary, storing the results in 
+//     a vtkUnsignedCharArray named "avtOnBoundary".
+//
+//  Arguments:
+//    data_set     Input mesh
+//
+//  Programmer: Hank Childs
+//  Creation:   November 30, 2013
+//
+// ****************************************************************************
+
+void
+avtConnComponentsExpression::LabelBoundaryNeighbors(vtkDataSet *data_set)
+{
+    int i;
+    int t0 = visitTimer->StartTimer();
+
+    int ncells = data_set->GetNumberOfCells();
+
+    // make a clone of the input that has no variable
+    // (less variables mean less operations when manipulating it)
+    vtkDataSet *clone_ds = data_set->NewInstance();
+    clone_ds->ShallowCopy(data_set);
+    int numPointArrays = clone_ds->GetPointData()->GetNumberOfArrays();
+    for (i = numPointArrays-1 ; i>=0 ; i--)
+        clone_ds->GetPointData()->RemoveArray(i);
+    int numCellArrays = clone_ds->GetCellData()->GetNumberOfArrays();
+    for (i = numCellArrays-1 ; i>=0 ; i--)
+        clone_ds->GetCellData()->RemoveArray(i);
+
+    // set up a variable that has the cell ID for each cell.
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetNumberOfTuples(ncells);
+    for (vtkIdType i = 0 ; i < ncells ; i++)
+        arr->SetValue(i, (int)i);
+    const char *varname = "_avt_id";
+    arr->SetName(varname);
+    clone_ds->GetCellData()->AddArray(arr);
+    arr->Delete();
+
+    // use external routine to find which cells are external
+    avtFacelistFilter *flf = new avtFacelistFilter();
+    avtDataTree_p tree = flf->FindFaces(clone_ds, -1, "",
+                                  GetInput()->GetInfo(), false, false,
+                                  true, true, NULL);
+    delete flf;
+    clone_ds->Delete();
+    vtkDataSet *ds = tree->GetSingleLeaf();
+    // we do not need to Delete ds because it is contained by tree
+    // we do not need to delete tree, since it is a ref_ptr
+
+    // init the boundary neighbors array
+    vtkUnsignedCharArray *b_array = vtkUnsignedCharArray::New();
+    b_array->SetName("avtOnBoundary");
+    b_array->SetNumberOfComponents(1);
+    b_array->SetNumberOfTuples(ncells);
+    unsigned char *b_ptr = (unsigned char *)b_array->GetPointer(0);
+    memset(b_ptr,0,ncells * sizeof(unsigned char));
+
+    // go through external cells and update array for which are on boundary
+    vtkDataSet *just_exteriors = tree->GetSingleLeaf();
+    vtkIntArray *outsides = (vtkIntArray *) just_exteriors->GetCellData()->GetArray(varname);
+    int numOutsideCells = outsides->GetNumberOfTuples();
+    for (i = 0 ; i < numOutsideCells ; i++)
+        b_ptr[outsides->GetValue(i)] = 1;
+
+    data_set->GetCellData()->AddArray(b_array);
+    b_array->Delete();
+
+    visitTimer->StopTimer(t0,"Labeling Boundary Neighbors");
 }
 
 
@@ -1889,7 +1978,9 @@ avtConnComponentsExpression::BoundarySet::Finalize()
             itrees[i] = curr_itree;
         }
         else
-        {itrees[i] = NULL;}
+        {
+            itrees[i] = NULL;
+        }
     }
 
 }
@@ -1923,7 +2014,6 @@ avtConnComponentsExpression::BoundarySet::Clear()
     }
     meshes.clear();
     itrees.clear();
-
 }
 
 // ****************************************************************************
@@ -2261,6 +2351,8 @@ avtConnComponentsExpression::BoundarySet::GetBoundsIntersection
 //    Cyrus Harrison, Mon Mar 30 12:06:50 PDT 2009
 //    Only send labels array during relocate.
 //
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Changes avtGhostZoneNeighbors to avtOnBoundary
 // ****************************************************************************
 void
 avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
@@ -2274,6 +2366,9 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
     int nprocs = PAR_Size();
     int procid = PAR_Rank();
 
+    char *snd_msg = NULL;
+    int *snd_count = new int[nprocs];
+  
     // used to hold temporary meshes created to send to other processors
     vtkUnstructuredGrid **snd_meshes = new vtkUnstructuredGrid*[nprocs];
 
@@ -2311,7 +2406,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
 
         // get ghost zone neighbor info if available
         vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) mesh
-                      ->GetCellData()->GetArray("avtGhostZoneNeighbors");
+                      ->GetCellData()->GetArray("avtOnBoundary");
 
         unsigned char *gzn_ptr = NULL;
         if (gzn_array)
@@ -2409,7 +2504,6 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
     // use the appenders to concatenate mesh data to produce the final dataset
     // for each processor & and serialize the data for sending
 
-    int  *snd_count = new int[nprocs];
     char **snd_msgs = new char*[nprocs];
 
     for(i=0;i<nprocs;i++)
@@ -2454,7 +2548,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
         total_msg_size += snd_count[i];
 
     // allocate space for the total message
-    char *snd_msg = new char[total_msg_size];
+    snd_msg = new char[total_msg_size];
     char *ptr = snd_msg;
     
     // pack messages into the send buffer
@@ -2528,7 +2622,6 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
         // delete the reader and the data array
         reader->Delete();
         char_array->Delete();
-        
     }
     // prepare the boundary set
     Finalize();
@@ -2952,7 +3045,9 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
 //
 //    Cyrus Harrison, Mon Nov  8 15:52:43 PST 2010
 //    If we have ghost zone neighbors, only use these to create the partition.
-//
+//    
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Replaces interval tree with Octree for rcb searches
 // ****************************************************************************
 
 void
@@ -3004,11 +3099,13 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     int t3 = visitTimer->StartTimer();
     std::vector<vtkDataSet *> meshes = bset.GetMeshes();
     int total_cells = 0;
+    int my_ncells = 0;
     for (i = 0 ; i < meshes.size() ; i++)
     {
         const int ncells = meshes[i]->GetNumberOfCells();
+        my_ncells += ncells;
         vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
-                                        ->GetCellData()->GetArray("avtGhostZoneNeighbors");
+                                        ->GetCellData()->GetArray("avtOnBoundary");
         unsigned char *gzn_ptr = NULL;
         if (gzn_array)
             gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
@@ -3029,12 +3126,17 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
 
     if(total_cells > 0)
     {
+        t3 = visitTimer->StartTimer();
         int cell_index = 0;
-        avtIntervalTree it(total_cells, (is2D ? 2 : 3), false);
-        it.AccelerateSizeQueries();
-        //it.OptimizeForRepeatedQueries();
-        double bbox[6];
+
+        double BBMin[3] = { bounds[0], bounds[2], bounds[4] };
+        double BBMax[3] = { bounds[1], bounds[3], bounds[5] };
+        RcbOcTree ot( BBMin, BBMax );
+
         double cell_center[6];
+        double cell_pt[3];
+        double bbox[6];
+        
         for (i = 0 ; i < meshes.size() ; i++)
         {
             const int ncells = meshes[i]->GetNumberOfCells();
@@ -3057,11 +3159,15 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 cell_center[3] = cell_center[2];
                 cell_center[4] = (bbox[4] + bbox[5]) / 2.;
                 cell_center[5] = cell_center[4];
-                it.AddElement(cell_index, cell_center);
+
+                cell_pt[0] = cell_center[0];
+                cell_pt[1] = cell_center[2];
+                cell_pt[2] = cell_center[4];
+
+                ot.AddPoint(cell_pt, false);
                 cell_index++;
             }
         }
-        it.Calculate(true);
         visitTimer->StopTimer(t3, "Setting up interval tree for spatial partition generation");
 
         while (keepGoing)
@@ -3088,7 +3194,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                     b_list[i]->GetBoundaryForRegion(j, b);
                     double min[3] = { b[0], b[2], b[4] };
                     double max[3] = { b[1], b[3], b[5] };
-                    int nvals = it.GetNumberOfElementsInRange(min, max);
+                    int nvals = ot.NumPointsInRange( min, max );
                     b_list[i]->SetNumberOfPointsForRegion(j, nvals);
                 }
             }
@@ -3234,5 +3340,362 @@ avtConnComponentsExpression::SpatialPartition::GetProcessorList(vtkCell *cell,
     maxs[2] = bounds[5];
 
     itree->GetElementsListFromRange(mins, maxs, list);
+}
+
+
+const int RcbOcTree_splitting_width = 16;
+// ****************************************************************************
+//  Method: OcTree constructor without a bounding box
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+avtConnComponentsExpression::RcbOcTree::RcbOcTree()
+{
+    this->numPoints = 0;
+    this->child = 0;
+    this->X = new double[RcbOcTree_splitting_width];
+    this->Y = new double[RcbOcTree_splitting_width];
+    this->Z = new double[RcbOcTree_splitting_width];
+}
+
+
+// ****************************************************************************
+//  Method: OcTree constructor with a given bounding box
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+avtConnComponentsExpression::RcbOcTree::RcbOcTree(double* min, double *max)
+{
+    this->numPoints = 0;
+    this->child = 0;
+    this->X = new double[RcbOcTree_splitting_width];
+    this->Y = new double[RcbOcTree_splitting_width];
+    this->Z = new double[RcbOcTree_splitting_width];
+    this->BBMax[0] = max[0];
+    this->BBMax[1] = max[1];
+    this->BBMax[2] = max[2];
+    this->BBMin[0] = min[0];
+    this->BBMin[1] = min[1];
+    this->BBMin[2] = min[2];
+
+    this->max_extent[0] = max[0];
+    this->max_extent[1] = max[1];
+    this->max_extent[2] = max[2];
+    this->min_extent[0] = min[0];
+    this->min_extent[1] = min[1];
+    this->min_extent[2] = min[2];
+}
+
+
+// ****************************************************************************
+//  Method: OcTree destructor
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************  
+avtConnComponentsExpression::RcbOcTree::~RcbOcTree()
+{
+    if (this->X != 0)
+        delete [] this->X;
+
+    if (this->Y != 0)
+        delete [] this->Y;
+
+    if (this->Z != 0)
+        delete [] this->Z;
+
+    if (this->child != 0)
+        delete [] child;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::AddPoint
+//
+//  Purpose:
+//      Adds a point to the OcTree
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::RcbOcTree::AddPoint(double *point,
+                                                 bool checkForDuplicates)
+{
+    if (this->child != 0)
+    {
+        this->numPoints++;
+        this->child[this->WhichChild(point)].AddPoint(point, checkForDuplicates);
+    }
+    else
+    {
+        if (checkForDuplicates)
+        {
+            for (int i = 0; i < this->numPoints; i++)
+            {
+                if (point[0] == this->X[i] && 
+                    point[1] == this->Y[i] && 
+                    point[2] == this->Z[i])
+                {
+                    return;
+                }
+            }
+        }
+        if (this->numPoints == RcbOcTree_splitting_width)
+        {
+            this->SplitNode(point);
+        }
+        else
+        {
+            this->numPoints++;
+
+            if (this->min_extent[0] > point[0])
+                this->min_extent[0] = point[0];
+            if (this->min_extent[1] > point[1])
+                this->min_extent[1] = point[1];
+            if (this->min_extent[2] > point[2])
+                this->min_extent[2] = point[2];
+
+            if (this->max_extent[0] < point[0])
+                this->max_extent[0] = point[0];
+            if (this->max_extent[1] < point[1])
+                this->max_extent[1] = point[1];
+            if (this->max_extent[2] < point[2])
+                this->max_extent[2] = point[2];
+
+            X[numPoints-1] = point[0];
+            Y[numPoints-1] = point[1];
+            Z[numPoints-1] = point[2];
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::SetBB
+//
+//  Purpose:
+//      Sets the bounding box parameters passed in from variables to node
+//                      max -> input
+//                      min -> input
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::RcbOcTree::SetBB(double *min, double *max)
+{
+    BBMax[0] = max[0];
+    BBMax[1] = max[1];
+    BBMax[2] = max[2];
+    BBMin[0] = min[0];
+    BBMin[1] = min[1];
+    BBMin[2] = min[2];
+
+    max_extent[0] = max[0];
+    max_extent[1] = max[1];
+    max_extent[2] = max[2];
+    min_extent[0] = min[0];
+    min_extent[1] = min[1];
+    min_extent[2] = min[2];
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::SplitNode
+//
+//  Purpose:
+//      Splits the octree bounding box and adds a new point to the octree
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::RcbOcTree::SplitNode(double *point)
+{
+    double MidPoint[3] = { ((BBMax[0] + BBMin[0]) / 2.0),
+                           ((BBMax[1] + BBMin[1]) / 2.0),
+                           ((BBMax[2] + BBMin[2]) / 2.0) };
+
+    this->child = new RcbOcTree[8];
+
+    double BB_Children[16][3] = 
+    {
+        { BBMin[0],    BBMin[1],    BBMin[2]    },
+        { MidPoint[0], MidPoint[1], MidPoint[2] },
+        { MidPoint[0], BBMin[1],    BBMin[2]    },
+        { BBMax[0],    MidPoint[1], MidPoint[2] },
+        { BBMin[0],    MidPoint[1], BBMin[2]    },
+        { MidPoint[0], BBMax[1],    MidPoint[2] },
+        { MidPoint[0], MidPoint[1], BBMin[2]    },
+        { BBMax[0],    BBMax[1],    MidPoint[2] },
+        { BBMin[0],    BBMin[1],    MidPoint[2] },
+        { MidPoint[0], MidPoint[1], BBMax[2]    },
+        { MidPoint[0], BBMin[1],    MidPoint[2] },
+        { BBMax[0],    MidPoint[1], BBMax[2]    },
+        { BBMin[0],    MidPoint[1], MidPoint[2] },
+        { MidPoint[0], BBMax[1],    BBMax[2]    },
+        { MidPoint[0], MidPoint[1], MidPoint[2] },
+        { BBMax[0],    BBMax[1],    BBMax[2]    }
+    };
+
+    this->child[0].SetBB(BB_Children[0],  BB_Children[1]);
+    this->child[1].SetBB(BB_Children[2],  BB_Children[3]);
+    this->child[2].SetBB(BB_Children[4],  BB_Children[5]);
+    this->child[3].SetBB(BB_Children[6],  BB_Children[7]);
+    this->child[4].SetBB(BB_Children[8],  BB_Children[9]);
+    this->child[5].SetBB(BB_Children[10], BB_Children[11]);
+    this->child[6].SetBB(BB_Children[12], BB_Children[13]);
+    this->child[7].SetBB(BB_Children[14], BB_Children[15]);
+
+    int num_points = this->numPoints;
+
+    for (int i = 0; i < num_points; i++)
+    {
+        double pnt[3] = {this->X[i], this->Y[i], this->Z[i]};
+        this->child[this->WhichChild(pnt)].AddPoint(pnt, false);
+    }
+
+    this->child[this->WhichChild(point)].AddPoint(point, false);
+    this->numPoints++;
+
+    delete [] this->X;
+    delete [] this->Y;
+    delete [] this->Z;
+
+    this->X = 0;
+    this->Y = 0;
+    this->Z = 0;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::GetNumPoints
+//
+//  Purpose:
+//      Returns the number of points under that level of an OcTree
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::RcbOcTree::GetNumPoints()
+{
+    return numPoints;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::NumPointsInRange
+//
+//  Purpose:
+//      Returns the number of points contained inside this bounding box
+//
+//  Programmer: Ryan Bleile
+//  Creation:   December 3, 2013
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::RcbOcTree::NumPointsInRange(double* min, 
+                                                         double* max)
+{
+    int sum = 0;
+
+    if (max[0] <= BBMin[0] && max[1] <= BBMin[1] && max[2] <= BBMin[2] &&
+        min[0] >= BBMax[0] && min[1] >= BBMax[1] && min[2] >= BBMax[2])
+    {
+        // Search range is outside of current bounds
+        return 0;
+    }
+
+    if (max[0] >= BBMax[0] && max[1] >= BBMax[1] && max[2] >= BBMax[2] && 
+        min[0] <= BBMin[0] && min[1] <= BBMin[1] && min[2] <= BBMin[2])
+    {
+        // Search range is entirely inside of current bounds
+        return this->numPoints;
+    }
+
+    if (this->child != 0)
+    {
+        if (max[0] <= min_extent[0] || max[1] <= min_extent[1] || max[2] <= min_extent[2] || 
+            min[0] >= max_extent[0] || min[1] >= max_extent[1] || min[2] >= max_extent[2])
+        {
+            // Search range is outside of current bounds
+            return 0;
+        }
+
+        if (max[0] >= max_extent[0] && max[1] >= max_extent[1] && max[2] >= max_extent[2] && 
+            min[0] <= min_extent[0] && min[1] <= min_extent[1] && min[2] <= min_extent[2])
+        {
+            // Search range is entirely inside of current bounds
+            return this->numPoints;
+        }
+
+        sum += this->child[0].NumPointsInRange(min, max);
+        sum += this->child[1].NumPointsInRange(min, max);
+        sum += this->child[2].NumPointsInRange(min, max);
+        sum += this->child[3].NumPointsInRange(min, max);
+        sum += this->child[4].NumPointsInRange(min, max);
+        sum += this->child[5].NumPointsInRange(min, max);
+        sum += this->child[6].NumPointsInRange(min, max);
+        sum += this->child[7].NumPointsInRange(min, max);
+    }
+    else
+    {
+        if (this->numPoints != 0)
+        {
+            for (int i = 0; i < this->numPoints; i++)
+            {
+                if ((X[i] <= max[0] && X[i] >= min[0]) && 
+                    (Y[i] <= max[1] && Y[i] >= min[1]) && 
+                    (Z[i] <= max[2] && Z[i] >= min[2]))
+                {
+                    sum++;
+                }
+            }
+        }
+    }
+
+    return sum;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::WhichChild
+//
+//  Purpose:
+//      Returns which of 8 children (0-7) contains the box around a given point 
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::RcbOcTree::WhichChild(double* point)
+{
+    double midPoint[3] = { ((BBMax[0] + BBMin[0]) / 2.0), 
+                           ((BBMax[1] + BBMin[1]) / 2.0), 
+                           ((BBMax[2] + BBMin[2]) / 2.0) };
+    int which_child = 0;
+
+    if (point[0] > midPoint[0])
+        which_child++;
+
+    if (point[1] > midPoint[1])
+        which_child += 2;
+
+    if (point[2] > midPoint[2])
+        which_child += 4;
+
+    return which_child;
 }
 

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -51,6 +51,7 @@ class     vtkDataArray;
 class     vtkIntArray;
 class     vtkDataSet;
 class     vtkCell;
+class     vtkUnstructuredGrid;
 class     avtIntervalTree;
 
 // ****************************************************************************
@@ -222,13 +223,52 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
         avtIntervalTree      *itree;
     };
 
+    // ************************************************************************
+    //  Class: avtConnComponentsExpression::RcbOcTree
+    //
+    //  Purpose:
+    //      Creates an efficient data structure used when creating a spatial
+    //      partition.
+    //
+    //  Programmer: Ryan Bleile
+    //  Creation:   October 23, 2013
+    //
+    // ************************************************************************
+    class RcbOcTree
+    {
+      public:
+                      RcbOcTree();
+                      RcbOcTree(double *min, double *max);
+                      ~RcbOcTree();
+
+        void          AddPoint( double *point , bool checkforduplicates = false );
+        void          SetBB( double* min, double *max );
+        void          SplitNode( double *point );
+
+        int           GetNumPoints();
+        int           NumPointsInRange( double* min, double* max );
+        int           WhichChild( double* point );
+
+      private:
+        int           numPoints;
+        double        BBMax[3];
+        double        BBMin[3];
+        double        min_extent[3];
+        double        max_extent[3];
+
+        double        *X;
+        double        *Y;
+        double        *Z;
+        RcbOcTree     *child;
+    };
+
 
   protected:
     int                       nFinalComps;
     int                       currentProgress;
     int                       totalSteps;
 
-    bool                      enableGhostNeighbors;
+    int                       enableGhostNeighbors;
 
     virtual void              Execute(void);
 
@@ -237,6 +277,7 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
     
     virtual bool              CheckForProperGhostZones(vtkDataSet **sets,int nsets);
     virtual void              LabelGhostNeighbors(vtkDataSet *);
+    virtual void              LabelBoundaryNeighbors(vtkDataSet *);
     
     virtual vtkIntArray      *SingleSetLabel(vtkDataSet *, int &);
 
@@ -270,5 +311,4 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
 
 
 #endif
-
 
