@@ -970,7 +970,7 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
             continue;
         }
         
-        if (idx1 < 0 && idx1 < nPts-1)
+        if (idx1 < 0 && idx1 < nPts)
         {
             points->GetPoint(segptr[idx1-1], endPtPrev);
             points->GetPoint(segptr[idx1], endPt);
