@@ -10,6 +10,10 @@
 #   Jonathan Byrd (Allinea Software) Sun Dec 18, 2011
 #   Added static libddtsim to parallel archive
 #
+#   Kathleen Biagas, Thu Jun 12 10:19:07 PDT 2014
+#   Moved GLEW to visit_deps as visitGLEW, add libtess2 to visit_deps.
+#   Split avtivp into ser and par versions.
+#
 ################################################################################
 import os, sys
 
@@ -37,11 +41,13 @@ visit_deps = (
 "libvisit_verdict.a",
 "libvisit_vtk.a",
 "libvisitcommon.a",
-"libsimV2.a")
+"libsimV2.a",
+"libvisitGLEW.a",
+"libtess2.a",
+"libnek5000_interp.a")
 
 avt = (
 "libavtdbatts.a",
-"libavtivp.a",
 "libavtmath.a",
 "libavtqtviswindow.a",
 "libavtshapelets.a",
@@ -52,6 +58,7 @@ avt_ser = (
 "libavtdbin_ser.a",
 "libavtexpressions_ser.a",
 "libavtfilters_ser.a",
+"libavtivp_ser.a",
 "libavtmir_ser.a",
 "libavtpipeline_ser.a",
 "libavtplotter_ser.a",
@@ -69,6 +76,7 @@ avt_par = (
 "libavtdbin_par.a",
 "libavtexpressions_par.a",
 "libavtfilters_par.a",
+"libavtivp_par.a",
 "libavtmir_par.a",
 "libavtpipeline_par.a",
 "libavtplotter_par.a",
@@ -181,10 +189,10 @@ frameworks = "-lGL "
 if sys.platform == "darwin":
     frameworks = "-framework OpenGL -framework AGL -framework SystemConfiguration -framework IOKit -framework Cocoa "
 
-ser_link_line = get_linkline(ser_libs) + "-lGLEW -lz " + vtk_libs + frameworks
+ser_link_line = get_linkline(ser_libs) + "-lz " + vtk_libs + frameworks
 print "Serial link line if you link each library: "
 print ser_link_line
 
-par_link_line = get_linkline(par_libs) + "-lGLEW -lz " + vtk_libs + frameworks
+par_link_line = get_linkline(par_libs) + "-lz " + vtk_libs + frameworks
 print "Parallel link line if you link each library: "
 print par_link_line

@@ -1,0 +1,152 @@
+#*****************************************************************************
+#
+# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+# Produced at the Lawrence Livermore National Laboratory
+# LLNL-CODE-442911
+# All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or other materials provided with the distribution.
+#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+#    be used to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#
+#*****************************************************************************
+
+#******************************************************************************
+# Purpose: To create a static simV2 archive containing all relevant visit 
+#          libs (creates libsimV2_static_ser.a, libsimV2_static_par.a)
+#
+#******************************************************************************
+
+
+set(VISIT_PARALLEL @VISIT_PARALLEL@)
+set(VISIT_BINARY_DIR @VISIT_BINARY_DIR@)
+set(VISIT_FORTRAN @VISIT_FORTRAN@)
+set(CMAKE_CURRENT_BINARY_DIR "@CMAKE_CURRENT_BINARY_DIR@")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "@CMAKE_ARCHIVE_OUTPUT_DIRECTORY@")
+set(CMAKE_AR "@CMAKE_AR@")
+set(CMAKE_RANLIB "@CMAKE_RANLIB@")
+set(TMPDIR ${CMAKE_CURRENT_BINARY_DIR}/CreateStaticSimV2)
+unset(visit_libs_ser)
+unset(visit_libs_par)
+
+
+# want to build up a list of library files to merge into one simV2_static_ser
+# For this to work with cmake, need to list the cmake targets needed.
+set(SLIVR_LIBS air alan biff bow dye ell gage hest moss nrrd slivrG slivrV 
+    unrrdu)
+set(VISIT_LIBS enginerpc lightweight_visit_vtk mdserverproxy mdserverrpc 
+               visit_verdict visit_vtk visitcommon simV2)
+set(AVT_LIBS avtdbatts avtmath avtqtviswindow avtshapelets avtview)
+set(AVT_SER_LIBS avtdatabase_ser avtdbin_ser avtexpressions_ser avtfilters_ser
+                 avtivp_ser avtmir_ser avtpipeline_ser avtplotter_ser
+                 avtquery_ser avtviswindow_ser avtwriter_ser)
+set(ENGINE_SER_LIBS simV2runtime_ser engine_ser)
+set(AVT_PAR_LIBS cognomen avtdatabase_par avtdbin_par avtexpressions_par
+                 avtfilters_par avtivp_par avtmir_par avtpipeline_par
+                 avtplotter_par avtquery_par avtviswindow_par avtwriter_par)
+set(TP_LIBS visitGLEW tess2 nek5000_interp)
+set(ENGINE_PAR_LIBS simV2runtime_par engine_par)
+set(DDTSIM_LIBS ddtsim_static)
+
+list(APPEND visit_libs_ser ${ENGINE_SER_LIBS} ${AVT_LIBS} ${AVT_SER_LIBS}
+                           ${VISIT_LIBS} ${TP_LIBS} ${SLIVR_LIBS})
+if(VISIT_PARALLEL)
+    list(APPEND visit_libs_par ${ENGINE_PAR_LIBS} ${AVT_LIBS} ${AVT_PAR_LIBS}
+                               ${VISIT_LIBS} ${TP_LIBS} ${DDTSIM_LIBS}
+                               ${VISIT_SLIVR})
+endif()
+
+
+macro(get_enabled_plugins fname type suffix plist)
+   unset(lines)
+   file(READ "${fname}" lines) 
+   string(REGEX REPLACE "\n" ";" lines "${lines}")
+   foreach(plugin ${lines})
+      string(REPLACE "PLUGIN_VERB\(" "" pname "${plugin}")
+      string(REPLACE "\)" "" pname "${pname}")
+      list(APPEND ${plist} "I${pname}${type}" "E${pname}${type}${suffix}")
+   endforeach()
+endmacro()
+
+
+get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_plots.h"
+                    "Plot" "_ser" visit_libs_ser)
+get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_operators.h"
+                    "Operator" "_ser" visit_libs_ser)
+list(APPEND visit_libs_ser "ISimV2Database" "ESimV2Database_ser")
+
+if(VISIT_PARALLEL)
+    get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_plots.h"
+                        "Plot" "_par" visit_libs_par)
+    get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_operators.h"
+                        "Operator" "_par" visit_libs_par)
+    list(APPEND visit_libs_par "ISimV2Database" "ESimV2Database_ser")
+endif()
+
+
+function(create_archive libname liblist)
+    unset(ALL_OBJS)
+    make_directory(${TMPDIR})
+    # Extract every library in the list into a series of object files
+    foreach(LIB ${${liblist}})
+      if(EXISTS ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/lib${LIB}.a)
+	file(MAKE_DIRECTORY ${TMPDIR}/${LIB})
+	execute_process(
+            COMMAND ${CMAKE_AR} x ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/lib${LIB}.a
+            WORKING_DIRECTORY ${TMPDIR}/${LIB}
+	)
+	file(GLOB_RECURSE OBJS "${TMPDIR}/${LIB}/*")
+	set(ALL_OBJS ${ALL_OBJS} ${OBJS})
+      endif()
+    endforeach(LIB)
+
+    # Merge all extracted object files into the existing target archive
+    execute_process(
+	COMMAND ${CMAKE_AR} cr ${libname} ${ALL_OBJS}
+        WORKING_DIRECTORY ${TMPDIR}
+    )
+
+    # Ranlib the new archive library
+    execute_process(
+	COMMAND ${CMAKE_RANLIB} ${libname}
+        WORKING_DIRECTORY ${TMPDIR}
+    )
+
+    # Delete all leftover object files
+    file(REMOVE_RECURSE ${TMPDIR})
+endfunction()
+
+create_archive("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libsimV2_static_ser.a"
+               visit_libs_ser)
+
+if(VISIT_PARALLEL)
+    create_archive("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libsimV2_static_par.a"
+                   visit_libs_par)
+endif()
+
+

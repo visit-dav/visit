@@ -1,9 +1,15 @@
 function bv_pyside_initialize
 {
-export DO_PYSIDE="yes"
-export ON_PYSIDE="on"
-export USE_SYSTEM_PYSIDE="no"
-add_extra_commandline_args "pyside" "alt-pyside-dir" 1 "Use alternative directory for pyside"
+if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+    export DO_PYSIDE="yes"
+    export ON_PYSIDE="on"
+    export USE_SYSTEM_PYSIDE="no"
+    add_extra_commandline_args "pyside" "alt-pyside-dir" 1 "Use alternative directory for pyside"
+else
+    export DO_PYSIDE="no"
+    export ON_PYSIDE="off"
+    export USE_SYSTEM_PYSIDE="no"
+fi
 }
 
 function bv_pyside_enable
