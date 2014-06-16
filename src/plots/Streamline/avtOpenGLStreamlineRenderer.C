@@ -970,7 +970,7 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
             continue;
         }
         
-        if (idx1 == nPts-1)
+        if (idx1 < 0 && idx1 < nPts-1)
         {
             points->GetPoint(segptr[idx1-1], endPtPrev);
             points->GetPoint(segptr[idx1], endPt);
@@ -2157,7 +2157,7 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
     t1 = 0.0;
     
     bool modifiedStartEnd = false;
-    
+
     //Find the begining
     double beg = atts.GetDisplayBegin();
     if (atts.GetDisplayBeginFlag() && beg > 0.0)
@@ -2183,7 +2183,7 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
         if (nPts > 0 && (param->GetTuple1(segptr[nPts-1])<beg))
            j0 = nPts+1;
     }
-    
+
     float termination = 1000000;
     switch (atts.GetReferenceTypeForDisplay())
     {
