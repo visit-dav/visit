@@ -133,6 +133,9 @@ function bv_silo_dry_run
 #   Brad Whitlock, Tue Apr  9 12:20:22 PDT 2013
 #   Add support for custom zlib.
 #
+#   Kathleen Biagas, Tue Jun 10 08:21:33 MST 2014
+#   Disable silex for static builds.
+#
 # *************************************************************************** #
 
 function build_silo
@@ -170,7 +173,7 @@ function build_silo
     else
        WITHSZIPARG="--without-szlib"
     fi
-    if [[ "$DO_QT" != "yes" || "$OPSYS" == "Darwin" ]] ; then
+    if [[ "$DO_QT" != "yes" || "$OPSYS" == "Darwin" || "$DO_STATIC_BUILD" == "yes" ]] ; then
        WITHSILOQTARG="--disable-silex"
     else
        export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
