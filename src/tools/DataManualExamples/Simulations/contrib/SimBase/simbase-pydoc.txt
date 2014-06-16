@@ -68,6 +68,8 @@ CLASSES
      |          * halt
      |          * step
      |          * run
+     |          
+     |      Keyword arguments are passed to initialize()
      |  
      |  MainLoop(self)
      |      This is the main loop. It does not have a subclass-overridable companion,
@@ -80,10 +82,13 @@ CLASSES
      |      and to save the VisIt base directory.
      |      
      |      Parameters:
-     |        lib_path:     Path to simv2.py
+     |        lib_path:     Path to simv2.py. It is probably a good idea to set
+     |                      an environment variable VISIT_LIBPATH and pull from
+     |                      that.
      |        visit_base:   Base path to the VisIt installation. In practice,
      |                      this is one directory above the bin/ directory that
-     |                      VisIt runs out of.
+     |                      VisIt runs out of. It is probably a good idea to set
+     |                      an environment variable VISIT_HOME and pull from that.
      |  
      |  callback_command(self, cmd, visit_args, cbdata)
      |      Overridable method.
@@ -158,7 +163,9 @@ CLASSES
      |      This is the subclass-overridable companion to Finalize.
      |  
      |  initialize(self, **kwargs)
-     |      This is the subclass-overridable companion to Initialize.
+     |      This is the subclass-overridable companion to Initialize().
+     |      The keyword arguments are what were supplied in the call to
+     |      Initialize().
      |      
      |      Specific values which you might want to override:
      |          trace_qualifier:    Used while naming the trace file. Defaults to
@@ -172,6 +179,16 @@ CLASSES
      |                              exposed. Otherwise you are going to need to
      |                              override main_doVisItConnect and do a heap o'
      |                              work.
+     |      
+     |      callbacks in turn has substructures:
+     |          commands:           Defines commands which can be triggered from the
+     |                              VisIt sim control panel.
+     |          metadata:           Defines/names metadata for which callbacks should
+     |                              be made. The following types of metadata are
+     |                              supported: mesh, variable, curve expression.
+     |                              See the source for callback_metadata() method
+     |                              for enumeration of the properties which can be
+     |                              set for specific types of metadata.
      |  
      |  main_doConsoleCommand(self, cmd)
      |      Processes console commands.
@@ -202,6 +219,9 @@ CLASSES
      |  
      |  print_to_console(self, message)
      |      Prints to the console and reissues the console prompt.
+     |  
+     |  set_runMode(self, running)
+     |      Sets self.runMode to the appropriate VISIT_ constant.
      |  
      |  truth_to_0_1(self, truth)
      |      Returns 1 if truth is true, 0 if false.
@@ -235,13 +255,6 @@ CLASSES
      |      see the documentation. For Floats and Ints this should typically be
      |      1 (no stride). For character strings (such as labels), this is the
      |      length of the label; it is required that each string be the same length.
-     |  
-     |  visit_variableArray(self, data_func, nComp, data, owner='VISIT')
-     |      Creates a variable.
-     |      
-     |      This version is deprecated, the preferred method is visit_variable(),
-     |      passing nComp as a keyword arg. However this may read easier for
-     |      users who are already familiar with sims and VisIt.
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors defined here:

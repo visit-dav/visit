@@ -115,10 +115,13 @@ class Simulation(object):
         and to save the VisIt base directory.
         
         Parameters:
-          lib_path:     Path to simv2.py
+          lib_path:     Path to simv2.py. It is probably a good idea to set
+                        an environment variable VISIT_LIBPATH and pull from
+                        that.
           visit_base:   Base path to the VisIt installation. In practice,
                         this is one directory above the bin/ directory that
-                        VisIt runs out of.
+                        VisIt runs out of. It is probably a good idea to set
+                        an environment variable VISIT_HOME and pull from that.
         """
         # This is really such a glorious hack. Shout out to Quashie...
         if lib_path not in sys.path: sys.path.insert(1,lib_path)
@@ -188,6 +191,17 @@ class Simulation(object):
         return
     
     #*********************************************************
+    # SETTERS
+
+    def set_runMode(self,running):
+        """Sets self.runMode to the appropriate VISIT_ constant."""
+        if running:
+            self.runMode = simV2.VISIT_SIMMODE_RUNNING
+        else:
+            self.runMode = simV2.VISIT_SIMMODE_STOPPED
+        return
+    
+    #*********************************************************
     
     def Initialize(self,sim_name,sim_description,**kwargs):
         """Call this first.
@@ -199,6 +213,8 @@ class Simulation(object):
             * halt
             * step
             * run
+            
+        Keyword arguments are passed to initialize()
         """
         self.done = False
         self.trace_qualifier = os.getpid()
@@ -225,7 +241,9 @@ class Simulation(object):
         if self.trace_qualifier is not None: simV2.VisItOpenTraceFile("trace.%d.txt" % self.trace_qualifier)
         simV2.VisItSetDirectory(self.visit_base)
         if not simV2.VisItSetupEnvironment():
-            print >> sys.stderr, 'VisItSetupEnvironment: could not get environment'
+            print >> sys.stderr, \
+                "VisItSetupEnvironment: could not get environment\n\nVISIT_HOME is '%s', is this correct?" % \
+                (self.visit_base,)
             sys.exit(1)
         # We don't have to worry about the rank, because we only ever run a single compute kernel.
         if not simV2.VisItInitializeSocketAndDumpSimFile(
@@ -236,7 +254,9 @@ class Simulation(object):
         return
    
     def initialize(self,**kwargs):
-        """This is the subclass-overridable companion to Initialize.
+        """This is the subclass-overridable companion to Initialize().
+        The keyword arguments are what were supplied in the call to
+        Initialize().
         
         Specific values which you might want to override:
             trace_qualifier:    Used while naming the trace file. Defaults to
@@ -250,6 +270,16 @@ class Simulation(object):
                                 exposed. Otherwise you are going to need to
                                 override main_doVisItConnect and do a heap o'
                                 work.
+        
+        callbacks in turn has substructures:
+            commands:           Defines commands which can be triggered from the
+                                VisIt sim control panel.
+            metadata:           Defines/names metadata for which callbacks should
+                                be made. The following types of metadata are
+                                supported: mesh, variable, curve expression.
+                                See the source for callback_metadata() method
+                                for enumeration of the properties which can be
+                                set for specific types of metadata.
         """
         return
     
@@ -597,17 +627,6 @@ class Simulation(object):
         see the documentation. For Floats and Ints this should typically be
         1 (no stride). For character strings (such as labels), this is the
         length of the label; it is required that each string be the same length.
-        """
-        h = simV2.VisIt_VariableData_alloc()
-        data_func(h,self.DATAOWNERS[owner],nComp,len(data),data)
-        return h
-
-    def visit_variableArray(self, data_func, nComp, data, owner='VISIT'):
-        """Creates a variable.
-        
-        This version is deprecated, the preferred method is visit_variable(),
-        passing nComp as a keyword arg. However this may read easier for
-        users who are already familiar with sims and VisIt.
         """
         h = simV2.VisIt_VariableData_alloc()
         data_func(h,self.DATAOWNERS[owner],nComp,len(data),data)
