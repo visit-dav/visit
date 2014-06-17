@@ -2229,6 +2229,9 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
 //  * template refactor
 //  * uniform error handling
 //
+//    Kathleen Biagas, Tue Jun 17 08:00:12 MST 2014
+//    Fix loop indexing when copying the data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2301,8 +2304,8 @@ avtSimV2FileFormat::GetCurve(const char *name)
         // copy the data into float array
         simV2TemplateMacro(
             simV2_TT::cppType *src = static_cast<simV2_TT::cppType*>(data[i]);
-            for(int i = 0; i < nTuples[i]; ++i)
-                { pArr[i] = static_cast<float>(src[i]); }
+            for(int j = 0; j < nTuples[i]; ++j)
+                { pArr[j] = static_cast<float>(src[j]); }
             );
         }
     }
