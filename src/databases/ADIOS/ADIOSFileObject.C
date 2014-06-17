@@ -789,6 +789,9 @@ ADIOSFileObject::GetMeshInfo(ADIOS_VARINFO *avi)
 //
 // Modifications:
 //
+//   Dave Pugmire, Tue Jun 17 13:24:30 EDT 2014
+//   Bug fix to ADIOSFile interface.
+//
 //****************************************************************************
 
 vtkPoints *
@@ -796,7 +799,7 @@ ADIOSFileObject::ReadCoordinates(const std::string &nm, int ts, int dim, int nPt
 {
     Open();
     vtkDataArray *coords = NULL;
-    ReadScalarData(nm, ts, -1, &coords);
+    ReadScalarData(nm, ts, &coords);
 
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(nPts);
