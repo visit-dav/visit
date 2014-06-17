@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -73,6 +73,7 @@
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -115,7 +116,7 @@ using std::ostringstream;
 #include <simv2_VariableData.h>
 #include <simv2_TypeTraits.hxx>
 #include <simv2_DeleteEventObserver.h>
-
+#include <simv2_UnstructuredMesh.h>
 
 vtkDataSet *SimV2_GetMesh_Curvilinear(visit_handle h);
 vtkDataSet *SimV2_GetMesh_Rectilinear(visit_handle h);
@@ -1265,6 +1266,118 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #endif
 }
 
+#ifndef MDSERVER
+// ****************************************************************************
+// Method: PackageGlobalIdArray
+//
+// Purpose:
+//   Package the global cells/nodes as a VTK int array.
+//
+// Arguments:
+//   global : The data array.
+//   name   : Then name of the data array we're making.
+//
+// Returns:    A VTK int array with the global cell/node ids.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 13 10:53:32 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkIntArray *
+PackageGlobalIdArray(visit_handle global, const char *name)
+{
+    vtkIntArray *arr = NULL;
+    // Get the global cell id information
+    int owner, dataType, nComps, nTuples = 0;
+    void *data = 0;
+    if(simv2_VariableData_getData(global, owner, dataType, nComps, nTuples, data))
+    {
+        arr = vtkIntArray::New();
+        arr->SetName(name);
+        arr->SetNumberOfTuples(nTuples);
+        if(dataType == VISIT_DATATYPE_INT)
+            memcpy(arr->GetVoidPointer(0), data, sizeof(int) * nTuples);
+        else
+        {
+            int *iptr = (int *)arr->GetVoidPointer(0);
+            const long *lptr = (const long *)data;
+            for(int i = 0; i < nTuples; ++i)
+                iptr[i] = lptr[i];
+        }
+    }
+    return arr;
+}
+
+// ****************************************************************************
+// Method: CreateUnstructuredMeshGlobalCellIds
+//
+// Purpose:
+//   Creates global cell ids for unstructured mesh.
+//
+// Arguments:
+//   h : The handle to the unstructured mesh.
+//
+// Returns:    A pointer to the VTK data array containing the ids.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 13 10:47:37 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkIntArray *
+CreateUnstructuredMeshGlobalCellIds(visit_handle h)
+{
+    vtkIntArray *retval = NULL;
+    visit_handle globalCells = VISIT_INVALID_HANDLE;
+    if(simv2_UnstructuredMesh_getGlobalCellIds(h, &globalCells) == VISIT_OKAY)
+    {
+        retval = PackageGlobalIdArray(globalCells, "avtGlobalZoneIds");
+    }
+    return retval;
+}
+
+// ****************************************************************************
+// Method: CreateUnstructuredMeshGlobalNodeIds
+//
+// Purpose:
+//   Creates global node ids for unstructured mesh.
+//
+// Arguments:
+//   h : The handle to the unstructured mesh.
+//
+// Returns:    A pointer to the VTK data array containing the ids.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 13 10:47:37 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkIntArray *
+CreateUnstructuredMeshGlobalNodeIds(visit_handle h)
+{
+    vtkIntArray *retval = NULL;
+    visit_handle globalNodes = VISIT_INVALID_HANDLE;
+    if(simv2_UnstructuredMesh_getGlobalNodeIds(h, &globalNodes) == VISIT_OKAY)
+    {
+        retval = PackageGlobalIdArray(globalNodes, "avtGlobalNodeIds");
+    }
+    return retval;
+}
+#endif
+
 // ****************************************************************************
 //  Method: avtSimV2FileFormat::GetMesh
 //
@@ -1283,6 +1396,8 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   Thu Feb  5 11:50:58 PST 2009
 //
 //  Modifications:
+//    Brad Whitlock, Fri Jun 13 10:56:13 PDT 2014
+//    I added global nodes/cell support.
 //
 // ****************************************************************************
 
@@ -1331,6 +1446,26 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
                 cache->CacheVoidRef(meshname,
                                     AUXILIARY_DATA_POLYHEDRAL_SPLIT,
                                     timestep, domain, vr);
+            }
+            else
+            {
+                // Try and add the global ids if we have not split the mesh.
+
+                vtkIntArray *globalCellIds = CreateUnstructuredMeshGlobalCellIds(h);
+                if(globalCellIds != NULL)
+                {
+                    void_ref_ptr vr = void_ref_ptr(globalCellIds, avtVariableCache::DestructVTKObject);
+                    cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_ZONE_IDS, timestep,
+                                        domain, vr);
+                }
+
+                vtkIntArray *globalNodeIds = CreateUnstructuredMeshGlobalNodeIds(h);
+                if(globalNodeIds != NULL)
+                {
+                    void_ref_ptr vr = void_ref_ptr(globalNodeIds, avtVariableCache::DestructVTKObject);
+                    cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep,
+                                        domain, vr);
+                }
             }
         }
             break;

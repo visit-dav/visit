@@ -45,6 +45,9 @@
 !   Brad Whitlock, Tue Jun  4 09:28:59 PDT 2013
 !   Add newer environment functions (visitgetenv, visitsetupenv2).
 !
+!   Brad Whitlock, Fri Jun 13 09:38:34 PDT 2014
+!   Functions for getting/setting global node/cell ids.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -1454,6 +1457,14 @@
       external visitucdmeshsetghostnodes
       integer  visitucdmeshsetghostnodes
 
+! visitucdmeshsetglobalcellids(visit_handle obj, visit_handle gz)
+      external visitucdmeshsetglobalcellids
+      integer  visitucdmeshsetglobalcellids
+
+! visitucdmeshsetglobalnodeids(visit_handle obj, visit_handle gn)
+      external visitucdmeshsetglobalnodeids
+      integer  visitucdmeshsetglobalnodeids
+
 ! visitucdmeshgetcoords(visit_handle obj, int ndims, int coordmode,  
 !     visit_handle x, visit_handle y, visit_handle z, visit_handle c)
       external visitucdmeshgetcoords
@@ -1474,6 +1485,14 @@
 ! visitucdmeshgetghostnodes(visit_handle obj, visit_handle gn)
       external visitucdmeshgetghostnodes
       integer  visitucdmeshgetghostnodes
+
+! visitucdmeshgetglobalcellids(visit_handle obj, visit_handle gz)
+      external visitucdmeshgetglobalcellids
+      integer  visitucdmeshgetglobalcellids
+
+! visitucdmeshgetglobalnodeids(visit_handle obj, visit_handle gn)
+      external visitucdmeshgetglobalnodeids
+      integer  visitucdmeshgetglobalnodeids
 
 ! VisIt_VariableData functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

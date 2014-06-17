@@ -113,6 +113,22 @@ VisIt_UnstructuredMesh_setGhostNodes(visit_handle obj, visit_handle gn)
 }
 
 int
+VisIt_UnstructuredMesh_setGlobalCellIds(visit_handle obj, visit_handle gz)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setGlobalCellIds,
+                    int, (visit_handle,visit_handle), 
+                    (obj,gz));
+}
+
+int
+VisIt_UnstructuredMesh_setGlobalNodeIds(visit_handle obj, visit_handle gn)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setGlobalNodeIds,
+                    int, (visit_handle,visit_handle), 
+                    (obj,gn));
+}
+
+int
 VisIt_UnstructuredMesh_getCoords(visit_handle obj,
     int *ndims, int *coordMode,
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
@@ -155,6 +171,22 @@ VisIt_UnstructuredMesh_getGhostNodes(visit_handle obj, visit_handle *gn)
                     (obj,gn));
 }
 
+int
+VisIt_UnstructuredMesh_getGlobalCellIds(visit_handle obj, visit_handle *gz)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getGlobalCellIds,
+                    int, (visit_handle,visit_handle*), 
+                    (obj,gz));
+}
+
+int
+VisIt_UnstructuredMesh_getGlobalNodeIds(visit_handle obj, visit_handle *gn)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getGlobalNodeIds,
+                    int, (visit_handle,visit_handle*), 
+                    (obj,gn));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITUCDMESHALLOC              F77_ID(visitucdmeshalloc_,visitucdmeshalloc,VISITUCDMESHALLOC)
@@ -166,12 +198,16 @@ VisIt_UnstructuredMesh_getGhostNodes(visit_handle obj, visit_handle *gn)
 #define F_VISITUCDMESHSETREALINDICES     F77_ID(visitucdmeshsetrealindices_,visitucdmeshsetrealindices,VISITUCDMESHSETREALINDICES)
 #define F_VISITUCDMESHSETGHOSTCELLS      F77_ID(visitucdmeshsetghostcells_,visitucdmeshsetghostcells,VISITUCDMESHSETGHOSTCELLS)
 #define F_VISITUCDMESHSETGHOSTNODES      F77_ID(visitucdmeshsetghostnodes_,visitucdmeshsetghostnodes,VISITUCDMESHSETGHOSTNODES)
+#define F_VISITUCDMESHSETGLOBALCELLIDS   F77_ID(visitucdmeshsetglobalcellids_,visitucdmeshsetglobalcellids,VISITUCDMESHSETGLOBALCELLIDS)
+#define F_VISITUCDMESHSETGLOBALNODEIDS   F77_ID(visitucdmeshsetglobalnodeids_,visitucdmeshsetglobalnodeids,VISITUCDMESHSETGLOBALNODEIDS)
 
 #define F_VISITUCDMESHGETCOORDS          F77_ID(visitucdmeshgetcoords_,visitucdmeshgetcoords,VISITUCDMESHGETCOORDS)
 #define F_VISITUCDMESHGETCONNECTIVITY    F77_ID(visitucdmeshgetconnectivity_,visitucdmeshgetconnectivity,VISITUCDMESHGETCONNECTIVITY)
 #define F_VISITUCDMESHGETREALINDICES     F77_ID(visitucdmeshgetrealindices_,visitucdmeshgetrealindices,VISITUCDMESHGETREALINDICES)
 #define F_VISITUCDMESHGETGHOSTCELLS      F77_ID(visitucdmeshgetghostcells_,visitucdmeshgetghostcells,VISITUCDMESHGETGHOSTCELLS)
 #define F_VISITUCDMESHGETGHOSTNODES      F77_ID(visitucdmeshgetghostnodes_,visitucdmeshgetghostnodes,VISITUCDMESHGETGHOSTNODES)
+#define F_VISITUCDMESHGETGLOBALCELLIDS   F77_ID(visitucdmeshgetglobalcellids_,visitucdmeshgetglobalcellids,VISITUCDMESHGETGLOBALCELLIDS)
+#define F_VISITUCDMESHGETGLOBALNODEIDS   F77_ID(visitucdmeshgetglobalnodeids_,visitucdmeshgetglobalnodeids,VISITUCDMESHGETGLOBALNODEIDS)
 
 int
 F_VISITUCDMESHALLOC(visit_handle *obj)
@@ -228,6 +264,18 @@ F_VISITUCDMESHSETGHOSTNODES(visit_handle *obj, visit_handle *gn)
 }
 
 int
+F_VISITUCDMESHSETGLOBALCELLIDS(visit_handle *obj, visit_handle *gz)
+{
+    return VisIt_UnstructuredMesh_setGlobalCellIds(*obj, *gz);
+}
+
+int
+F_VISITUCDMESHSETGLOBALNODEIDS(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_UnstructuredMesh_setGlobalNodeIds(*obj, *gn);
+}
+
+int
 F_VISITUCDMESHGETCOORDS(visit_handle *obj, int *ndims, int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
 {
@@ -256,4 +304,16 @@ int
 F_VISITUCDMESHGETGHOSTNODES(visit_handle *obj, visit_handle *gn)
 {
     return VisIt_UnstructuredMesh_getGhostNodes(*obj, gn);
+}
+
+int
+F_VISITUCDMESHGETGLOBALCELLIDS(visit_handle *obj, visit_handle *gz)
+{
+    return VisIt_UnstructuredMesh_getGlobalCellIds(*obj, gz);
+}
+
+int
+F_VISITUCDMESHGETGLOBALNODEIDS(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_UnstructuredMesh_getGlobalNodeIds(*obj, gn);
 }
