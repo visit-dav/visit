@@ -437,6 +437,8 @@ avtDatabaseWriter::GetMeshName(const avtDatabaseMetaData *md) const
 // Creation:   Fri Mar 14 15:29:53 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Mon Jun 16 18:05:22 PDT 2014
+//   Be more permissive about adding whichever expressions the user wants.
 //
 // ****************************************************************************
 
@@ -535,6 +537,18 @@ avtDatabaseWriter::GetVariables(const std::string &meshname,
                                 // defined on the active mesh
                                 canAdd = true;
                             }
+                            else
+                            {
+                                TRY
+                                {
+                                    std::string m = md->MeshForVar(varlist[j]);
+                                    canAdd = m == meshname;
+                                }
+                                CATCH(VisItException)
+                                {
+                                }
+                                ENDTRY
+                            }
                             if (canAdd)
                             {
                                 Expression::ExprType type = expr.GetType();
@@ -606,6 +620,18 @@ avtDatabaseWriter::GetVariables(const std::string &meshname,
                         // mesh_quality expression  
                         // defined on the active mesh
                         canAdd = true;
+                    }
+                    else
+                    {
+                        TRY
+                        {
+                            std::string m = md->MeshForVar(varname);
+                            canAdd = m == meshname;
+                        }
+                        CATCH(VisItException)
+                        {
+                        }
+                        ENDTRY
                     }
                     if (canAdd)
                     {
@@ -711,6 +737,9 @@ avtDatabaseWriter::GetVariables(const std::string &meshname,
 //    export process.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Brad Whitlock, Mon Jun 16 18:06:06 PDT 2014
+//    Add some more debugging output.
+//
 // ****************************************************************************
 
 void
@@ -719,16 +748,25 @@ avtDatabaseWriter::Write(const std::string &plotName,
                          const avtDatabaseMetaData *md,
                          std::vector<std::string> &varlist, bool allVars)
 {
-    const char *mName = "avtDatabaseWriter::Write";
+    const char *mName = "avtDatabaseWriter::Write: ";
     avtDataObject_p dob = GetInput();
     if (*dob == NULL)
         EXCEPTION0(NoInputException);
+
+    // Print the input options.
+    debug5 << mName << "plotName=" << plotName
+           << ", filename=" << filename
+           << ", varlist={";
+    for(size_t i = 0; i < varlist.size(); ++i)
+        debug5 << varlist[i] << ", ";
+    debug5 << "}, allVars=" << (allVars?"true":"false") << endl;
 
     // Let the derived types decide whether the input data is suitable.
     CheckCompatibility(plotName);
 
     // Get the name of the mesh whose variables we're considering.
     std::string meshname(GetMeshName(md));
+    debug5 << mName << "meshname=" << meshname << endl;
 
     // Get the contract.
     avtContract_p spec;
@@ -740,6 +778,10 @@ avtDatabaseWriter::Write(const std::string &plotName,
 
     // Get an expansion of the default vars.
     std::vector<std::string> dv = GetDefaultVariables(ds);
+    debug5 << mName << "default variables={";
+    for(size_t i = 0; i < dv.size(); ++i)
+        debug5 << dv[i] << ", ";
+    debug5 << "}" << endl;
 
     // Get the list of variables that we need to fulfill the export.
     std::vector<std::string> scalarList;
@@ -747,6 +789,16 @@ avtDatabaseWriter::Write(const std::string &plotName,
     int varMode = GetVariables(meshname, md, varlist, allVars,
                                !shouldNeverDoExpressions, dv, 
                                scalarList, vectorList);
+
+    // Print the results of GetVariables.
+    debug5 << mName << "After GetVariables:\n\tscalarList={";
+    for(size_t i = 0; i < scalarList.size(); ++i)
+        debug5 << scalarList[i] << ", ";
+    debug5 << "}" << endl;
+    debug5 << "\tvectorList={";
+    for(size_t i = 0; i < vectorList.size(); ++i)
+        debug5 << vectorList[i] << ", ";
+    debug5 << "}" << endl;
 
     bool needsExecute = false;
 
@@ -793,7 +845,7 @@ avtDatabaseWriter::Write(const std::string &plotName,
     // If the contract changed, re-execute.
     if(needsExecute)
     {
-        debug5 << mName << "THE PIPELINE MUST REEXECUTE" << endl;
+        debug5 << endl << mName << "THE PIPELINE MUST REEXECUTE" << endl << endl;
 
         //
         // Actually force the read of the data.
