@@ -266,7 +266,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("aresamr",
         "Demonstrates domain nesting data plus ghost zones",
         "/no/useful/path",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();

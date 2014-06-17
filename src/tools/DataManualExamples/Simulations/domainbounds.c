@@ -617,7 +617,7 @@ int main(int argc, char **argv)
 #endif
             "Demonstrates domain boundaries",
             "/path/to/where/sim/was/started",
-            NULL, NULL, NULL);
+            NULL, NULL, SimulationFilename());
     }
 
     simulation_data_create_domains(&sim);
