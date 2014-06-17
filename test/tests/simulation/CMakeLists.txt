@@ -39,9 +39,11 @@
 SET(PY_TESTS
     amr
     aresamr
+    curve
     domainbounds
     ghostcells
     interleave
+    life
     mandelbrot
     material
     materialvar

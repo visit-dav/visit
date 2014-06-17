@@ -1,0 +1,3 @@
+Simulation executable "curve" exists.
+Simulation "curve" started.
+VisIt connected to simulation "curve".
