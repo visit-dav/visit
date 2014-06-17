@@ -13,6 +13,8 @@ struct VisIt_UnstructuredMesh : public VisIt_ObjectBase
     void FreeConnectivity();
     void FreeGhostCells();
     void FreeGhostNodes();
+    void FreeGlobalCellIds();
+    void FreeGlobalNodeIds();
 
     int ndims;
     int coordMode;
@@ -28,6 +30,8 @@ struct VisIt_UnstructuredMesh : public VisIt_ObjectBase
 
     visit_handle ghostCells;
     visit_handle ghostNodes;
+    visit_handle globalCellIds;
+    visit_handle globalNodeIds;
 };
 
 VisIt_UnstructuredMesh::VisIt_UnstructuredMesh() : 
@@ -47,6 +51,8 @@ VisIt_UnstructuredMesh::VisIt_UnstructuredMesh() :
 
     ghostCells = VISIT_INVALID_HANDLE;
     ghostNodes = VISIT_INVALID_HANDLE;
+    globalCellIds = VISIT_INVALID_HANDLE;
+    globalNodeIds = VISIT_INVALID_HANDLE;
 }
 
 VisIt_UnstructuredMesh::~VisIt_UnstructuredMesh()
@@ -55,6 +61,8 @@ VisIt_UnstructuredMesh::~VisIt_UnstructuredMesh()
     FreeConnectivity();
     FreeGhostCells();
     FreeGhostNodes();
+    FreeGlobalCellIds();
+    FreeGlobalNodeIds();
 }
 
 void
@@ -109,6 +117,26 @@ VisIt_UnstructuredMesh::FreeGhostNodes()
     {
         simv2_VariableData_free(ghostNodes);
         ghostNodes = VISIT_INVALID_HANDLE;
+    }
+}
+
+void
+VisIt_UnstructuredMesh::FreeGlobalCellIds()
+{
+    if(globalCellIds != VISIT_INVALID_HANDLE)
+    {
+        simv2_VariableData_free(globalCellIds);
+        globalCellIds = VISIT_INVALID_HANDLE;
+    }
+}
+
+void
+VisIt_UnstructuredMesh::FreeGlobalNodeIds()
+{
+    if(globalNodeIds != VISIT_INVALID_HANDLE)
+    {
+        simv2_VariableData_free(globalNodeIds);
+        globalNodeIds = VISIT_INVALID_HANDLE;
     }
 }
 
@@ -443,6 +471,78 @@ simv2_UnstructuredMesh_setGhostNodes(visit_handle h, visit_handle gn)
 }
 
 int
+simv2_UnstructuredMesh_setGlobalCellIds(visit_handle h, visit_handle glz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGlobalCellIds");
+    if(obj != NULL)
+    {
+        // Get the global cell id information
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(glz, owner, dataType, nComps, nTuples, data) == VISIT_ERROR)
+        {
+            VisItError("Could not obtain global cell id information.");
+            return VISIT_ERROR;
+        }
+
+        if(nComps != 1)
+        {
+            VisItError("Global cell id arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(dataType != VISIT_DATATYPE_LONG && dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("Global cell id arrays must contain either int or long elements.");
+            return VISIT_ERROR;
+        }
+
+        obj->FreeGlobalCellIds();
+        obj->globalCellIds = glz;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_UnstructuredMesh_setGlobalNodeIds(visit_handle h, visit_handle gln)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGlobalNodeIds");
+    if(obj != NULL)
+    {
+        // Get the global node id information
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(gln, owner, dataType, nComps, nTuples, data) == VISIT_ERROR)
+        {
+            VisItError("Could not obtain global node id information.");
+            return VISIT_ERROR;
+        }
+
+        if(nComps != 1)
+        {
+            VisItError("Global node id arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(dataType != VISIT_DATATYPE_LONG && dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("Global node id arrays must contain either int or long elements.");
+            return VISIT_ERROR;
+        }
+
+        obj->FreeGlobalNodeIds();
+        obj->globalNodeIds = gln;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
 simv2_UnstructuredMesh_getCoords(visit_handle h,
     int *ndims, int *coordMode,
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
@@ -518,6 +618,32 @@ simv2_UnstructuredMesh_getGhostNodes(visit_handle h, visit_handle *gn)
     return retval;
 }
 
+int
+simv2_UnstructuredMesh_getGlobalCellIds(visit_handle h, visit_handle *gz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_getGlobalCellIds");
+    if(obj != NULL)
+    {
+        *gz = obj->globalCellIds;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_UnstructuredMesh_getGlobalNodeIds(visit_handle h, visit_handle *gn)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_getGlobalNodeIds");
+    if(obj != NULL)
+    {
+        *gn = obj->globalNodeIds;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
 /*******************************************************************************
  * C++ code callable from the SimV2 plugin and within the runtime
  ******************************************************************************/
@@ -557,7 +683,23 @@ simv2_UnstructuredMesh_check(visit_handle h)
             }
         }
 
-        if(obj->ghostNodes != VISIT_INVALID_HANDLE)
+        if(obj->globalCellIds != VISIT_INVALID_HANDLE)
+        {
+            // Get the ghost cell information
+            int owner, dataType, nComps, nTuples = 0;
+            void *data = 0;
+            simv2_VariableData_getData(obj->globalCellIds, owner, dataType, nComps, nTuples, data);
+
+            if(nTuples != obj->nzones)
+            {
+                VisItError("The number of elements in the global cell id array does "
+                           "not match the number of cells in the mesh.");
+                return VISIT_ERROR;
+            }
+        }
+
+        if(obj->ghostNodes != VISIT_INVALID_HANDLE ||
+           obj->globalNodeIds != VISIT_INVALID_HANDLE)
         {
             // Get the ghost node information
             int owner, dataType, nComps, nTuples = 0, nNodes = 0;
@@ -571,13 +713,26 @@ simv2_UnstructuredMesh_check(visit_handle h)
                 simv2_VariableData_getData(obj->coords, owner, dataType, nComps, nNodes, data);
             }
 
-            simv2_VariableData_getData(obj->ghostNodes, owner, dataType, nComps, nTuples, data);
-
-            if(nTuples != nNodes)
+            if(obj->ghostNodes != VISIT_INVALID_HANDLE)
             {
-                 VisItError("The number of elements in the ghost node array does "
-                            "not match the number of nodes in the mesh.");
-                 return VISIT_ERROR;
+                simv2_VariableData_getData(obj->ghostNodes, owner, dataType, nComps, nTuples, data);
+                if(nTuples != nNodes)
+                {
+                    VisItError("The number of elements in the ghost node array does "
+                               "not match the number of nodes in the mesh.");
+                    return VISIT_ERROR;
+                }
+            }
+
+            if(obj->globalNodeIds != VISIT_INVALID_HANDLE)
+            {
+                simv2_VariableData_getData(obj->globalNodeIds, owner, dataType, nComps, nTuples, data);
+                if(nTuples != nNodes)
+                {
+                    VisItError("The number of elements in the global node ids array does "
+                               "not match the number of nodes in the mesh.");
+                    return VISIT_ERROR;
+                }
             }
         }
 

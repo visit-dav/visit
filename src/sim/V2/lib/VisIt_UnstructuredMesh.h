@@ -53,6 +53,8 @@ int VisIt_UnstructuredMesh_setConnectivity(visit_handle obj, int nCells, visit_h
 int VisIt_UnstructuredMesh_setRealIndices(visit_handle obj, int min, int max);
 int VisIt_UnstructuredMesh_setGhostCells(visit_handle obj, visit_handle gz);
 int VisIt_UnstructuredMesh_setGhostNodes(visit_handle obj, visit_handle gn);
+int VisIt_UnstructuredMesh_setGlobalCellIds(visit_handle obj, visit_handle glz);
+int VisIt_UnstructuredMesh_setGlobalNodeIds(visit_handle obj, visit_handle gln);
 
 int VisIt_UnstructuredMesh_getCoords(visit_handle h,
                                      int *ndims, int *coordMode,
@@ -65,6 +67,8 @@ int VisIt_UnstructuredMesh_getConnectivity(visit_handle h, int *nCells,
 int VisIt_UnstructuredMesh_getRealIndices(visit_handle obj, int *, int *);
 int VisIt_UnstructuredMesh_getGhostCells(visit_handle h, visit_handle *gz);
 int VisIt_UnstructuredMesh_getGhostNodes(visit_handle h, visit_handle *gn);
+int VisIt_UnstructuredMesh_getGlobalCellIds(visit_handle obj, visit_handle *glz);
+int VisIt_UnstructuredMesh_getGlobalNodeIds(visit_handle obj, visit_handle *gln);
 
 #ifdef __cplusplus
 }

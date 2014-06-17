@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-442911
 # All rights reserved.
@@ -68,6 +68,9 @@
 #   Kathleen Biagas, Thu Jun 12 13:24:08 PDT 2014
 #   Added mechanism for creating a simV2_static archive containing all
 #   visit symbols necessary for compiling these examples statically.
+#
+#   Brad Whitlock, Fri Jun 13 14:03:00 PDT 2014
+#   Add globalids example.
 #
 #****************************************************************************/
 
@@ -214,6 +217,9 @@ ADD_PARALLEL_SIMV2_SIMULATION(domainbounds_par domainbounds.c)
 
 ADD_SIMV2_SIMULATION(ghostcells ghostcells.c)
 ADD_PARALLEL_SIMV2_SIMULATION(ghostcells_par ghostcells.c)
+
+ADD_SIMV2_SIMULATION(globalids globalids.c)
+ADD_PARALLEL_SIMV2_SIMULATION(globalids_par globalids.c)
 
 ADD_SIMV2_SIMULATION(interleave interleave.c)
 
