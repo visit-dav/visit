@@ -75,6 +75,7 @@ typedef struct
     float    angle;
     float   *x;
     float   *y;
+    int     echo;
 } simulation_data;
 
 void
@@ -88,6 +89,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->angle = 0.;
     sim->x = (float *)malloc(sizeof(float) * NPTS);
     sim->y = (float *)malloc(sizeof(float) * NPTS);
+    sim->echo = 0;
 }
 
 void
@@ -163,6 +165,7 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 void
 ProcessConsoleCommand(simulation_data *sim)
 {
+    int i;
     /* Read A Command */
     char cmd[1000];
 
@@ -182,12 +185,22 @@ ProcessConsoleCommand(simulation_data *sim)
         sim->runMode = SIM_STOPPED;
     else if(strcmp(cmd, "step") == 0)
         simulate_one_timestep(sim);
+    else if(strcmp(cmd, "step25") == 0)
+    {
+        for (i = 0; i < 25; ++i)
+            simulate_one_timestep(sim);
+    }
     else if(strcmp(cmd, "run") == 0)
         sim->runMode = SIM_RUNNING;
     else if(strcmp(cmd, "update") == 0)
     {
         VisItTimeStepChanged();
         VisItUpdatePlots();
+    }
+    if (sim->echo)
+    {
+        fprintf(stderr, "Command %s completed.\n", cmd);
+        fflush(stderr);
     }
 }
 
@@ -288,6 +301,7 @@ void mainloop(simulation_data *sim)
 
 int main(int argc, char **argv)
 {
+    int i;
     simulation_data sim;
     simulation_data_ctor(&sim);
 
@@ -295,11 +309,17 @@ int main(int argc, char **argv)
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
+    for(i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "-echo") == 0)
+            sim.echo = 1;
+    }
+
     /* Write out .sim file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("curve",
         "Demonstrates curve data access function",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data.*/
     read_input_deck();

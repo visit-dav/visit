@@ -707,7 +707,7 @@ int main(int argc, char **argv)
         VisItInitializeSocketAndDumpSimFile("life",
             "Game of life by John Conway",
             "/path/to/where/sim/was/started",
-            NULL, NULL, NULL);
+            NULL, NULL, SimulationFilename());
     }
 #ifdef PARALLEL
     /* Install custom communicator. */
