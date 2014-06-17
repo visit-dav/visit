@@ -264,7 +264,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("amr",
         "Demonstrates domain nesting data access function",
         "/no/useful/path",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();
