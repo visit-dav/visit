@@ -238,8 +238,6 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         fieldConstant != obj.fieldConstant ||
         integrationType != obj.integrationType ||
         coordinateSystem != obj.coordinateSystem ||
-        phiScalingFlag != obj.phiScalingFlag ||
-        phiScaling != obj.phiScaling ||
         maxStepLength != obj.maxStepLength ||
         maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||

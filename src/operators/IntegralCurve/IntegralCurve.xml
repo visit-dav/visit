@@ -35,6 +35,11 @@
         Difference
         Variable
       </Enum>
+      <Enum name="CropValue">
+        Distance
+        Time
+        StepNumber
+      </Enum>
       <Enum name="DisplayGeometry">
         Lines
         Tubes
@@ -243,17 +248,26 @@
       <Field name="coordinateSystem" label="coordinateSystem" type="enum" subtype="CoordinateSystem">
         AsIs
       </Field>
-      <Field name="phiScalingFlag" label="Phi scaling" type="bool">
-        false
-      </Field>
-      <Field name="phiScaling" label="Phi scaling" type="double">
-        1.000000
-      </Field>
       <Field name="showLines" label="Show Lines" type="bool">
         true
       </Field>
       <Field name="showPoints" label="Show Points" type="bool">
         false
+      </Field>
+      <Field name="cropBeginFlag" label="Crop from" type="bool">
+        false
+      </Field>
+      <Field name="cropBegin" label="cropBegin" type="double">
+        0
+      </Field>
+      <Field name="cropEndFlag" label="Crop to" type="bool">
+        false
+      </Field>
+      <Field name="cropEnd" label="cropEnd" type="double">
+        0
+      </Field>
+      <Field name="cropValue" label="Crop value" type="enum" subtype="CropValue">
+        Time
       </Field>
       <Field name="sampleDistance0" label="sampleDistance0" type="double">
         10.000000

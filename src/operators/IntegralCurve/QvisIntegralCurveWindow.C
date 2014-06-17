@@ -833,7 +833,6 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     QGridLayout *coordinateLayout = new QGridLayout(coordinateGrp);
     coordinateLayout->setMargin(5);
     coordinateLayout->setSpacing(10);
-    coordinateLayout->setColumnStretch(2,10);
 
     coordinateButtonGroup = new QButtonGroup(coordinateGrp);
     QRadioButton *asIsButton = new QRadioButton(tr("None"), coordinateGrp);
@@ -850,18 +849,41 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
             SLOT(coordinateButtonGroupChanged(int)));
 
-    // Create the widgets that specify a phi scaling.
-    phiScalingToggle = new QCheckBox(tr("Phi scaling"), central);
-    coordinateLayout->addWidget(phiScalingToggle, 1, 0);
-    connect(phiScalingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(phiScalingToggled(bool)));
+    // Create the crop group
+    QGroupBox *cropGrp = new QGroupBox(pageAppearance);
+    cropGrp->setTitle(tr("Crop a portion of the integral curve (for animations)"));
+    mainLayout->addWidget(cropGrp, 3, 0);
 
-    phiScaling = new QLineEdit(coordinateGrp);
-    connect(phiScaling, SIGNAL(returnPressed()),
-            this, SLOT(phiScalingProcessText()));
-    coordinateLayout->addWidget(phiScaling, 1, 1);
+    QGridLayout *cropLayout = new QGridLayout(cropGrp);
+    cropLayout->setMargin(5);
+    cropLayout->setSpacing(10);
 
-    coordinateLayout->addWidget(new QLabel(tr("(When displaying in cylindrical coordinates.)"), central), 1, 2, 1, 2);
+    cropBeginFlag = new QCheckBox(tr("Crop from"), cropGrp);
+    connect(cropBeginFlag, SIGNAL(toggled(bool)), this, SLOT(cropBeginFlagChanged(bool)));
+    cropLayout->addWidget(cropBeginFlag, 0, 0);
+
+    cropBegin = new QLineEdit(cropGrp);
+    connect(cropBegin, SIGNAL(returnPressed()), this, SLOT(cropBeginProcessText()));
+    cropLayout->addWidget(cropBegin, 0, 1);
+
+
+    cropEndFlag = new QCheckBox(tr("To"), cropGrp);
+    connect(cropEndFlag, SIGNAL(toggled(bool)), this, SLOT(cropEndFlagChanged(bool)));
+    cropLayout->addWidget(cropEndFlag, 0, 2);
+
+    cropEnd = new QLineEdit(cropGrp);
+    connect(cropEnd, SIGNAL(returnPressed()), this, SLOT(cropEndProcessText()));
+    cropLayout->addWidget(cropEnd, 0, 3);
+
+    QLabel *cropValueLabel = new QLabel(tr("Crop value"), cropGrp);
+    cropLayout->addWidget(cropValueLabel, 1, 0);
+
+    cropValueComboBox = new QComboBox(cropGrp);
+    cropValueComboBox->addItem(tr("Distance"));
+    cropValueComboBox->addItem(tr("Time"));
+    cropValueComboBox->addItem(tr("Step numbers"));
+    connect(cropValueComboBox, SIGNAL(activated(int)), this, SLOT(cropValueChanged(int)));
+    cropLayout->addWidget(cropValueComboBox, 1, 1);
 
     // Streamlines/Pathline Group.
     QGroupBox *icGrp = new QGroupBox(pageAppearance);
@@ -1330,7 +1352,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
                 TurnOff(correlationDistanceMinDistType);
             }
             break;
-          case IntegralCurveAttributes::ID_showLines:
+        case IntegralCurveAttributes::ID_showLines:
             showLines->blockSignals(true);
             showLines->setChecked(atts->GetShowLines());
             showLines->blockSignals(false);
@@ -1341,6 +1363,37 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             showPoints->setChecked(atts->GetShowPoints());
             showPoints->blockSignals(false);
             break;
+
+        case IntegralCurveAttributes::ID_cropBeginFlag:
+            cropBeginFlag->blockSignals(true);
+            cropBeginFlag->setChecked(atts->GetCropBeginFlag());
+            cropBeginFlag->blockSignals(false);
+            cropBegin->setEnabled( atts->GetCropBeginFlag() );
+            break;
+
+        case IntegralCurveAttributes::ID_cropBegin:
+            temp.setNum(atts->GetCropBegin(), 'g', 16);
+            cropBegin->setText(temp);
+            break;
+
+        case IntegralCurveAttributes::ID_cropEndFlag:
+            cropEndFlag->blockSignals(true);
+            cropEndFlag->setChecked(atts->GetCropEndFlag());
+            cropEndFlag->blockSignals(false);
+            cropEnd->setEnabled( atts->GetCropEndFlag() );
+            break;
+
+        case IntegralCurveAttributes::ID_cropEnd:
+            temp.setNum(atts->GetCropEnd(), 'g', 16);
+            cropEnd->setText(temp);
+            break;
+
+        case IntegralCurveAttributes::ID_cropValue:
+            cropValueComboBox->blockSignals(true);
+            cropValueComboBox->setCurrentIndex(int(atts->GetCropValue()));
+            cropValueComboBox->blockSignals(false);
+            break;
+
         case IntegralCurveAttributes::ID_integrationDirection:
             directionType->blockSignals(true);
             directionType->setCurrentIndex(int(atts->GetIntegrationDirection()) );
@@ -1446,17 +1499,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
         case IntegralCurveAttributes::ID_coordinateSystem:
             coordinateButtonGroup->blockSignals(true);
             coordinateButtonGroup->button(atts->GetCoordinateSystem())->setChecked(true);
-            phiScalingToggle->setEnabled(atts->GetCoordinateSystem()!=1);
-            phiScaling->setEnabled(atts->GetCoordinateSystem()!=1 &&
-                                   atts->GetPhiScalingFlag());
             coordinateButtonGroup->blockSignals(false);
-            break;
-        case IntegralCurveAttributes::ID_phiScalingFlag:
-            phiScaling->setEnabled(atts->GetCoordinateSystem()!=1 &&
-                                   atts->GetPhiScalingFlag());
-            break;
-        case IntegralCurveAttributes::ID_phiScaling:
-            phiScaling->setText(DoubleToQString(atts->GetPhiScaling()));
             break;
         case IntegralCurveAttributes::ID_maxProcessCount:
             maxSLCount->blockSignals(true);
@@ -2195,6 +2238,33 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
             atts->SetTermDistance(atts->GetTermDistance());
         }
     }
+    // Do crop begin
+    if(which_widget == IntegralCurveAttributes::ID_cropBegin || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(cropBegin, val))
+            atts->SetCropBegin(val);
+        else
+        {
+            ResettingError(tr("crop begin"),
+                DoubleToQString(atts->GetCropBegin()));
+            atts->SetCropBegin(atts->GetCropBegin());
+        }
+    }
+    // Do crop end
+    if(which_widget == IntegralCurveAttributes::ID_cropEnd || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(cropEnd, val))
+            atts->SetCropEnd(val);
+        else
+        {
+            ResettingError(tr("crop end"),
+                DoubleToQString(atts->GetCropEnd()));
+            atts->SetCropEnd(atts->GetCropEnd());
+        }
+    }
+
     if(which_widget == IntegralCurveAttributes::ID_pathlinesOverrideStartingTime || doAll)
     {
         double val;
@@ -2486,22 +2556,6 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
         int val = workGroupSize->value();
         if (val >= 2)
             atts->SetWorkGroupSize(val);
-    }
-    
-    if(which_widget == IntegralCurveAttributes::ID_phiScaling || doAll)
-    {
-        double val;
-        LineEditGetDouble(phiScaling, val);
-        if(LineEditGetDouble(phiScaling, val) && val >= 0)
-            atts->SetPhiScaling(val);
-        else
-        {
-//          cerr << "phi scaling (" << val << ")" << endl;
-
-            ResettingError(tr("phi scaling"),
-                DoubleToQString(atts->GetPhiScaling()));
-            atts->SetPhiScaling(atts->GetPhiScaling());
-        }
     }
     
     // criticalPointThreshold
@@ -2846,6 +2900,41 @@ QvisIntegralCurveWindow::workGroupSizeChanged(int val)
 }
 
 void
+QvisIntegralCurveWindow::cropBeginFlagChanged(bool val)
+{
+    atts->SetCropBeginFlag(val);
+    Apply();
+}
+
+void
+QvisIntegralCurveWindow::cropBeginProcessText()
+{
+    GetCurrentValues(IntegralCurveAttributes::ID_cropBegin);
+    Apply();
+}
+
+void
+QvisIntegralCurveWindow::cropEndFlagChanged(bool val)
+{
+    atts->SetCropEndFlag(val);
+    Apply();
+}
+
+void
+QvisIntegralCurveWindow::cropEndProcessText()
+{
+    GetCurrentValues(IntegralCurveAttributes::ID_cropEnd);
+    Apply();
+}
+
+void
+QvisIntegralCurveWindow::cropValueChanged(int val)
+{
+    atts->SetCropValue((IntegralCurveAttributes::CropValue)val);
+    Apply();
+}
+
+void
 QvisIntegralCurveWindow::showLinesChanged(bool val)
 {
     atts->SetShowLines(val);
@@ -2891,13 +2980,6 @@ void
 QvisIntegralCurveWindow::coordinateButtonGroupChanged(int val)
 {
     atts->SetCoordinateSystem((IntegralCurveAttributes::CoordinateSystem) val);
-    Apply();
-}
-
-void
-QvisIntegralCurveWindow::phiScalingToggled(bool val)
-{
-    atts->SetPhiScalingFlag(val);
     Apply();
 }
 
@@ -3069,13 +3151,6 @@ QvisIntegralCurveWindow::processCorrelationDistanceMinDistEditText()
 {
     GetCurrentValues(IntegralCurveAttributes::ID_correlationDistanceMinDistAbsolute);
     GetCurrentValues(IntegralCurveAttributes::ID_correlationDistanceMinDistBBox);
-    Apply();
-}
-
-void
-QvisIntegralCurveWindow::phiScalingProcessText()
-{
-    GetCurrentValues(IntegralCurveAttributes::ID_phiScaling);
     Apply();
 }
 
