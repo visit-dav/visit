@@ -249,12 +249,16 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void processCorrelationDistanceAngTolEditText();
     void processCorrelationDistanceMinDistEditText();
 
+    void cropBeginFlagChanged(bool val);
+    void cropBeginProcessText();
+    void cropEndFlagChanged(bool val);
+    void cropEndProcessText();
+    void cropValueChanged(int val);
+
     void showLinesChanged(bool val);
     void showPointsChanged(bool val);
 
     void coordinateButtonGroupChanged(int val);
-    void phiScalingToggled(bool);
-    void phiScalingProcessText();
 
   // Advanced
     void parallelAlgorithmChanged(int val);
@@ -352,12 +356,16 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     QLineEdit *correlationDistanceAngTolEdit, *correlationDistanceMinDistEdit;
     QComboBox *correlationDistanceMinDistType;
 
+    QCheckBox *cropBeginFlag;
+    QLineEdit *cropBegin;
+    QCheckBox *cropEndFlag;
+    QLineEdit *cropEnd;
+    QComboBox *cropValueComboBox;
+
     QCheckBox    *showLines;
     QCheckBox    *showPoints;
 
     QButtonGroup *coordinateButtonGroup;
-    QLineEdit *phiScaling;
-    QCheckBox *phiScalingToggle;
 
   // Advanced
     QLabel    *parallelAlgoLabel;

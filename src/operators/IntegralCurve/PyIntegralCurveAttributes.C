@@ -571,13 +571,6 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
     }
 
-    if(atts->GetPhiScalingFlag())
-        SNPRINTF(tmpStr, 1000, "%sphiScalingFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sphiScalingFlag = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sphiScaling = %g\n", prefix, atts->GetPhiScaling());
-    str += tmpStr;
     if(atts->GetShowLines())
         SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
     else
@@ -588,6 +581,39 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     else
         SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetCropBeginFlag())
+        SNPRINTF(tmpStr, 1000, "%scropBeginFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scropBeginFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scropBegin = %g\n", prefix, atts->GetCropBegin());
+    str += tmpStr;
+    if(atts->GetCropEndFlag())
+        SNPRINTF(tmpStr, 1000, "%scropEndFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scropEndFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scropEnd = %g\n", prefix, atts->GetCropEnd());
+    str += tmpStr;
+    const char *cropValue_names = "Distance, Time, StepNumber";
+    switch (atts->GetCropValue())
+    {
+      case IntegralCurveAttributes::Distance:
+          SNPRINTF(tmpStr, 1000, "%scropValue = %sDistance  # %s\n", prefix, prefix, cropValue_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::Time:
+          SNPRINTF(tmpStr, 1000, "%scropValue = %sTime  # %s\n", prefix, prefix, cropValue_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::StepNumber:
+          SNPRINTF(tmpStr, 1000, "%scropValue = %sStepNumber  # %s\n", prefix, prefix, cropValue_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%ssampleDistance0 = %g\n", prefix, atts->GetSampleDistance0());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleDistance1 = %g\n", prefix, atts->GetSampleDistance1());
@@ -2150,54 +2176,6 @@ IntegralCurveAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_SetPhiScalingFlag(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the phiScalingFlag in the object.
-    obj->data->SetPhiScalingFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IntegralCurveAttributes_GetPhiScalingFlag(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetPhiScalingFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-IntegralCurveAttributes_SetPhiScaling(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the phiScaling in the object.
-    obj->data->SetPhiScaling(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IntegralCurveAttributes_GetPhiScaling(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPhiScaling());
-    return retval;
-}
-
-/*static*/ PyObject *
 IntegralCurveAttributes_SetShowLines(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
@@ -2242,6 +2220,135 @@ IntegralCurveAttributes_GetShowPoints(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_SetCropBeginFlag(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the cropBeginFlag in the object.
+    obj->data->SetCropBeginFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetCropBeginFlag(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCropBeginFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_SetCropBegin(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the cropBegin in the object.
+    obj->data->SetCropBegin(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetCropBegin(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCropBegin());
+    return retval;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_SetCropEndFlag(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the cropEndFlag in the object.
+    obj->data->SetCropEndFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetCropEndFlag(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCropEndFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_SetCropEnd(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the cropEnd in the object.
+    obj->data->SetCropEnd(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetCropEnd(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCropEnd());
+    return retval;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_SetCropValue(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the cropValue in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetCropValue(IntegralCurveAttributes::CropValue(ival));
+    else
+    {
+        fprintf(stderr, "An invalid cropValue value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Distance, Time, StepNumber.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetCropValue(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCropValue()));
     return retval;
 }
 
@@ -2756,14 +2863,20 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetDisplayGeometry", IntegralCurveAttributes_GetDisplayGeometry, METH_VARARGS},
     {"SetCoordinateSystem", IntegralCurveAttributes_SetCoordinateSystem, METH_VARARGS},
     {"GetCoordinateSystem", IntegralCurveAttributes_GetCoordinateSystem, METH_VARARGS},
-    {"SetPhiScalingFlag", IntegralCurveAttributes_SetPhiScalingFlag, METH_VARARGS},
-    {"GetPhiScalingFlag", IntegralCurveAttributes_GetPhiScalingFlag, METH_VARARGS},
-    {"SetPhiScaling", IntegralCurveAttributes_SetPhiScaling, METH_VARARGS},
-    {"GetPhiScaling", IntegralCurveAttributes_GetPhiScaling, METH_VARARGS},
     {"SetShowLines", IntegralCurveAttributes_SetShowLines, METH_VARARGS},
     {"GetShowLines", IntegralCurveAttributes_GetShowLines, METH_VARARGS},
     {"SetShowPoints", IntegralCurveAttributes_SetShowPoints, METH_VARARGS},
     {"GetShowPoints", IntegralCurveAttributes_GetShowPoints, METH_VARARGS},
+    {"SetCropBeginFlag", IntegralCurveAttributes_SetCropBeginFlag, METH_VARARGS},
+    {"GetCropBeginFlag", IntegralCurveAttributes_GetCropBeginFlag, METH_VARARGS},
+    {"SetCropBegin", IntegralCurveAttributes_SetCropBegin, METH_VARARGS},
+    {"GetCropBegin", IntegralCurveAttributes_GetCropBegin, METH_VARARGS},
+    {"SetCropEndFlag", IntegralCurveAttributes_SetCropEndFlag, METH_VARARGS},
+    {"GetCropEndFlag", IntegralCurveAttributes_GetCropEndFlag, METH_VARARGS},
+    {"SetCropEnd", IntegralCurveAttributes_SetCropEnd, METH_VARARGS},
+    {"GetCropEnd", IntegralCurveAttributes_GetCropEnd, METH_VARARGS},
+    {"SetCropValue", IntegralCurveAttributes_SetCropValue, METH_VARARGS},
+    {"GetCropValue", IntegralCurveAttributes_GetCropValue, METH_VARARGS},
     {"SetSampleDistance0", IntegralCurveAttributes_SetSampleDistance0, METH_VARARGS},
     {"GetSampleDistance0", IntegralCurveAttributes_GetSampleDistance0, METH_VARARGS},
     {"SetSampleDistance1", IntegralCurveAttributes_SetSampleDistance1, METH_VARARGS},
@@ -3022,14 +3135,27 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "CartesianToCylindrical") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::CartesianToCylindrical));
 
-    if(strcmp(name, "phiScalingFlag") == 0)
-        return IntegralCurveAttributes_GetPhiScalingFlag(self, NULL);
-    if(strcmp(name, "phiScaling") == 0)
-        return IntegralCurveAttributes_GetPhiScaling(self, NULL);
     if(strcmp(name, "showLines") == 0)
         return IntegralCurveAttributes_GetShowLines(self, NULL);
     if(strcmp(name, "showPoints") == 0)
         return IntegralCurveAttributes_GetShowPoints(self, NULL);
+    if(strcmp(name, "cropBeginFlag") == 0)
+        return IntegralCurveAttributes_GetCropBeginFlag(self, NULL);
+    if(strcmp(name, "cropBegin") == 0)
+        return IntegralCurveAttributes_GetCropBegin(self, NULL);
+    if(strcmp(name, "cropEndFlag") == 0)
+        return IntegralCurveAttributes_GetCropEndFlag(self, NULL);
+    if(strcmp(name, "cropEnd") == 0)
+        return IntegralCurveAttributes_GetCropEnd(self, NULL);
+    if(strcmp(name, "cropValue") == 0)
+        return IntegralCurveAttributes_GetCropValue(self, NULL);
+    if(strcmp(name, "Distance") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Distance));
+    if(strcmp(name, "Time") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::Time));
+    if(strcmp(name, "StepNumber") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::StepNumber));
+
     if(strcmp(name, "sampleDistance0") == 0)
         return IntegralCurveAttributes_GetSampleDistance0(self, NULL);
     if(strcmp(name, "sampleDistance1") == 0)
@@ -3173,14 +3299,20 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetDisplayGeometry(self, tuple);
     else if(strcmp(name, "coordinateSystem") == 0)
         obj = IntegralCurveAttributes_SetCoordinateSystem(self, tuple);
-    else if(strcmp(name, "phiScalingFlag") == 0)
-        obj = IntegralCurveAttributes_SetPhiScalingFlag(self, tuple);
-    else if(strcmp(name, "phiScaling") == 0)
-        obj = IntegralCurveAttributes_SetPhiScaling(self, tuple);
     else if(strcmp(name, "showLines") == 0)
         obj = IntegralCurveAttributes_SetShowLines(self, tuple);
     else if(strcmp(name, "showPoints") == 0)
         obj = IntegralCurveAttributes_SetShowPoints(self, tuple);
+    else if(strcmp(name, "cropBeginFlag") == 0)
+        obj = IntegralCurveAttributes_SetCropBeginFlag(self, tuple);
+    else if(strcmp(name, "cropBegin") == 0)
+        obj = IntegralCurveAttributes_SetCropBegin(self, tuple);
+    else if(strcmp(name, "cropEndFlag") == 0)
+        obj = IntegralCurveAttributes_SetCropEndFlag(self, tuple);
+    else if(strcmp(name, "cropEnd") == 0)
+        obj = IntegralCurveAttributes_SetCropEnd(self, tuple);
+    else if(strcmp(name, "cropValue") == 0)
+        obj = IntegralCurveAttributes_SetCropValue(self, tuple);
     else if(strcmp(name, "sampleDistance0") == 0)
         obj = IntegralCurveAttributes_SetSampleDistance0(self, tuple);
     else if(strcmp(name, "sampleDistance1") == 0)

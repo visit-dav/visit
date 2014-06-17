@@ -153,6 +153,7 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     
     void SetDisplayGeometry(int d);
     void SetDataValue(int, const std::string &var="");
+    void SetCropValue(int);
     void SetCorrelationDistanceTol(double angTol,
                                    double minDist, bool doBBox)
     {
@@ -163,8 +164,6 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
 
     void SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
 
-    void SetReferenceTypeForDisplay(int d) 
-     { referenceTypeForDisplay = d; };
     void IssueWarningForMaxStepsTermination(bool v) 
                  { issueWarningForMaxStepsTermination = v; };
     void IssueWarningForStiffness(bool v) 
@@ -196,9 +195,6 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     static std::string scaleRadiusArrayName;
 
     void SetCoordinateSystem(int c) {coordinateSystem = c;}
-    void SetPhiScaling(bool flag, double pf) { phiScalingFlag = flag;
-                                               phiScaling = pf; }
-
 
     void GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
     void GenerateSeedPointsFromLine(std::vector<avtVector> &pts);
@@ -231,7 +227,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     int    sourceType;   
     int    displayGeometry;
     int    dataValue;
-    int    referenceTypeForDisplay;
+    int    cropValue;
+
     std::string dataVariable;
     int    tubeVariableIndex;
     double correlationDistanceAngTol, correlationDistanceMinDist;
@@ -267,8 +264,6 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     avtVector seedVelocity;
 
     int    coordinateSystem;
-    bool   phiScalingFlag;
-    double phiScaling;
 
     std::string  SeedInfoString() const;
 };
