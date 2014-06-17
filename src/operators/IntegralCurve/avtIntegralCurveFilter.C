@@ -2374,7 +2374,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         // When cropping save off whether one needs to interpolate and
         // the parameter values at the end points. The beginning and
         // ending indexes along the curve.
-        vtkIdType cropBeginIndex, cropEndIndex;
+        vtkIdType cropBeginIndex = 0, cropEndIndex = 0;
         bool cropBeginInterpolate = false, cropEndInterpolate = false;
         double cropBeginParam = 0.0, cropEndParam = 1.0;
 
@@ -2383,7 +2383,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
         // Last crop value is need to obtain interpolation parametrization
         // values.
-        double last_crop_value, crop_value;
+        double last_crop_value = 0, crop_value = 0;
 
         int totalSamples = 0;
 
@@ -2532,7 +2532,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
             line->GetPointIds()->SetId(j-beginIndex, pIdx);
 
-            double pt[3];
+            double pt[3] = {0, 0, 0};
 
             if( coordinateSystem == 0 )
             {
@@ -2692,38 +2692,40 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 (j == 1 && cropEndInterpolate) )
             {
               // Point
-              double pt0[3], pt1[3];
+              double pt0[3] = {0,0,0}, pt1[3] = {0,0,0};
               points->GetPoint(cropIndex0, pt0);
               points->GetPoint(cropIndex1, pt1);
               avtVector pt = avtVector(pt0) +
                 (avtVector(pt1) - avtVector(pt0)) * cropParam;
               points->InsertPoint(cropIndex, pt[0], pt[1], pt[2]);
               // Scalar
-              double s0 = scalars->GetTuple1(cropIndex0);
-              double s1 = scalars->GetTuple1(cropIndex1);
+              double s0=0, s1=0;
+              scalars->GetTuple(cropIndex0, &s0);
+              scalars->GetTuple(cropIndex1, &s1);
               double s = s0 + (s1-s0) * cropParam;
               scalars->InsertTuple1(cropIndex, s);
               // Tangent
-              double tan0[3], tan1[3];
-              double *tan0_p = tan0, *tan1_p = tan1;
-              tan0_p = tangents->GetTuple3(cropIndex0);
-              tan1_p = tangents->GetTuple3(cropIndex1);
+              double tan0[3] = {0,0,0}, tan1[3] = {0,0,0};
+              tangents->GetTuple(cropIndex0, tan0);
+              tangents->GetTuple(cropIndex1, tan1);
               avtVector tan = avtVector(tan0) +
                 (avtVector(tan1) - avtVector(tan0)) * cropParam;
               tangents->InsertTuple3(cropIndex, tan[0], tan[1], tan[2]);
               // Theta
               if(displayGeometry == IntegralCurveAttributes::Ribbons)
               {
-                double t0 = thetas->GetTuple1(cropIndex0);
-                double t1 = thetas->GetTuple1(cropIndex1);
+                double t0=0, t1=0;
+                thetas->GetTuple(cropIndex0, &t0);
+                thetas->GetTuple(cropIndex1, &t0);
                 double t = t0 + (t1-t0) * cropParam;
                 thetas->InsertTuple1(cropIndex, t);
               }
               // Secondarys
               for( unsigned int i=0; i<secondaryVariables.size(); ++i )
               {
-                double s0 = secondarys[i]->GetTuple1(cropIndex0);
-                double s1 = secondarys[i]->GetTuple1(cropIndex1);
+                double s0=0, s1=0;
+                secondarys[i]->GetTuple(cropIndex0, &s0);
+                secondarys[i]->GetTuple(cropIndex1, &s1);
                 double s = s0 + (s1-s0) * cropParam;
                 secondarys[i]->InsertTuple1(cropIndex, s);
               }
