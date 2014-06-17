@@ -354,6 +354,11 @@ avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
 //  Programmer: Dave Pugmire
 //  Creation:   Tue Mar  9 12:40:15 EST 2010
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Jun 17 13:24:30 EDT 2014
+//   Bug fix to ADIOSFile interface.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -375,8 +380,8 @@ avtXGCFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     grid->SetPoints(pts);
 
     vtkDataArray *conn = NULL, *nextNode = NULL;
-    meshFile->ReadScalarData("/cell_set[0]/node_connect_list", timestate, 0, &conn);
-    meshFile->ReadScalarData("/nextnode", timestate, 0, &nextNode);
+    meshFile->ReadScalarData("/cell_set[0]/node_connect_list", timestate, &conn);
+    meshFile->ReadScalarData("/nextnode", timestate, &nextNode);
 
     //Create the points.
     double dPhi = 2.0*M_PI/(double)numPhi;
@@ -437,6 +442,23 @@ avtXGCFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     return grid;
 }
 
+//****************************************************************************
+// Method:  avtXGCFileFormat::GetMesh2D
+//
+// Purpose:
+//   Read 2D mesh
+//
+// Programmer:  Dave Pugmire
+// Creation:    June 17, 2014
+//
+// Modifications:
+//
+//   Dave Pugmire, Tue Jun 17 13:24:30 EDT 2014
+//   Bug fix to ADIOSFile interface.
+//
+//****************************************************************************
+
+
 vtkDataSet *
 avtXGCFileFormat::GetMesh2D(int ts, int dom)
 {
@@ -449,7 +471,7 @@ avtXGCFileFormat::GetMesh2D(int ts, int dom)
     grid->SetPoints(pts);
 
     vtkDataArray *conn = NULL;
-    meshFile->ReadScalarData("/cell_set[0]/node_connect_list", ts, 0, &conn);
+    meshFile->ReadScalarData("/cell_set[0]/node_connect_list", ts, &conn);
 
     //Create the points.
     double dPhi = 2.0*M_PI/(double)numPhi;
