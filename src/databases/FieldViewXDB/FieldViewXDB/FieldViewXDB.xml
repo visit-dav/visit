@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="XDB" type="database" label="XDB" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="true" hasoptions="false">
+  <Plugin name="FieldViewXDB" type="database" label="FieldView XDB" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="true" hasoptions="false">
     <CXXFLAGS>
       ${VXDB_INCLUDE_DIR}
       ${XDBLIB_INCLUDE_DIR}

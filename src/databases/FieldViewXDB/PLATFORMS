@@ -9,4 +9,4 @@ Linux64 - Linux 2.6.32-358.el6.x86_64 #1 SMP
           gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-4)
 
 * I hope AVT doesn't change that much or that could cause some problems.
-* The binaries were built from the trunk at about svn version 21139.
+* The binaries were built from the trunk at about svn version 23552.

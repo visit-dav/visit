@@ -306,7 +306,7 @@ ENDIF(VISIT_STATIC)
 # If we're not building statically, add XDB -- if we enabled it.
 IF(NOT VISIT_STATIC)
     IF(VISIT_ENABLE_XDB)
-        SET(XDBPLUGIN XDB)
+        SET(XDBPLUGIN FieldViewXDB)
     ENDIF(VISIT_ENABLE_XDB)
 ENDIF(NOT VISIT_STATIC)
 

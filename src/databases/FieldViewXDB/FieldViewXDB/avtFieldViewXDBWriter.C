@@ -4,15 +4,15 @@
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
 *****************************************************************************/
-#include <avtXDBWriter.h>
-#include <avtXDBWriterInternal.h>
+#include <avtFieldViewXDBWriter.h>
+#include <avtFieldViewXDBWriterInternal.h>
 
 #ifdef PARALLEL
 #include <avtParallel.h>
 #endif
 
 // ****************************************************************************
-// Method: avtXDBWriter constructor
+// Method: avtFieldViewXDBWriter constructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jan 14 17:29:14 PST 2014
@@ -21,17 +21,17 @@
 //
 // ****************************************************************************
 
-avtXDBWriter::avtXDBWriter() : avtDatabaseWriter()
+avtFieldViewXDBWriter::avtFieldViewXDBWriter() : avtDatabaseWriter()
 {
     int rank = 0;
 #ifdef PARALLEL
     rank = PAR_Rank();
 #endif
-    impl = new avtXDBWriterInternal(rank);
+    impl = new avtFieldViewXDBWriterInternal(rank);
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::~avtXDBWriter
+// Method: avtFieldViewXDBWriter::~avtFieldViewXDBWriter
 //
 // Purpose:
 //   Destructor
@@ -43,13 +43,13 @@ avtXDBWriter::avtXDBWriter() : avtDatabaseWriter()
 //
 // ****************************************************************************
 
-avtXDBWriter::~avtXDBWriter()
+avtFieldViewXDBWriter::~avtFieldViewXDBWriter()
 {
     delete impl;
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::GetDefaultVariables
+// Method: avtFieldViewXDBWriter::GetDefaultVariables
 //
 // Purpose:
 //   Create the list of variables that will be used for "default".
@@ -70,13 +70,13 @@ avtXDBWriter::~avtXDBWriter()
 // ****************************************************************************
 
 std::vector<std::string>
-avtXDBWriter::GetDefaultVariables(avtDataRequest_p ds)
+avtFieldViewXDBWriter::GetDefaultVariables(avtDataRequest_p ds)
 {
     return impl->GetDefaultVariables(GetInput(), ds);
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::CheckCompatibility
+// Method: avtFieldViewXDBWriter::CheckCompatibility
 //
 // Purpose:
 //   Look at the plot type and the data attributes to determine whether we
@@ -98,13 +98,13 @@ avtXDBWriter::GetDefaultVariables(avtDataRequest_p ds)
 // ****************************************************************************
 
 void
-avtXDBWriter::CheckCompatibility(const std::string &plotName)
+avtFieldViewXDBWriter::CheckCompatibility(const std::string &plotName)
 {
     impl->CheckCompatibility(GetInput(), plotName);
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::GetCombineMode
+// Method: avtFieldViewXDBWriter::GetCombineMode
 //
 // Purpose:
 //   Returns what type of geometry combination we want for the plot.
@@ -121,22 +121,22 @@ avtXDBWriter::CheckCompatibility(const std::string &plotName)
 // ****************************************************************************
 
 avtDatabaseWriter::CombineMode
-avtXDBWriter::GetCombineMode(const std::string &plotName) const
+avtFieldViewXDBWriter::GetCombineMode(const std::string &plotName) const
 {
     int mode = impl->GetCombineMode(GetInput(), plotName);
-    if(mode == avtXDBWriterInternal::CombineNone)
+    if(mode == avtFieldViewXDBWriterInternal::CombineNone)
         return CombineNone;
-    else if(mode == avtXDBWriterInternal::CombineNoneGather)
+    else if(mode == avtFieldViewXDBWriterInternal::CombineNoneGather)
         return CombineNoneGather;
-    else if(mode == avtXDBWriterInternal::CombineLike)
+    else if(mode == avtFieldViewXDBWriterInternal::CombineLike)
         return CombineLike;
-    else if(mode == avtXDBWriterInternal::CombineAll)
+    else if(mode == avtFieldViewXDBWriterInternal::CombineAll)
         return CombineAll;
     return CombineNone;
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::CreateNormals
+// Method: avtFieldViewXDBWriter::CreateNormals
 //
 // Purpose:
 //   Ensure that when we make polydata for the exported geometry that it has
@@ -154,13 +154,13 @@ avtXDBWriter::GetCombineMode(const std::string &plotName) const
 // ****************************************************************************
 
 bool
-avtXDBWriter::CreateNormals() const
+avtFieldViewXDBWriter::CreateNormals() const
 {
     return impl->CreateNormals(GetInput());
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::ApplyMaterialsToContract
+// Method: avtFieldViewXDBWriter::ApplyMaterialsToContract
 //
 // Purpose:
 //   This method lets a writer change the contract in response to its material
@@ -183,7 +183,7 @@ avtXDBWriter::CreateNormals() const
 // ****************************************************************************
 
 avtContract_p
-avtXDBWriter::ApplyMaterialsToContract(avtContract_p c0, 
+avtFieldViewXDBWriter::ApplyMaterialsToContract(avtContract_p c0, 
     const std::string &meshname, const std::vector<std::string> &mats,
     bool &changed)
 {
@@ -193,7 +193,7 @@ avtXDBWriter::ApplyMaterialsToContract(avtContract_p c0,
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::GetMaterials
+// Method: avtFieldViewXDBWriter::GetMaterials
 //
 // Purpose:
 //   Get the materials for pipeline's mesh.
@@ -215,7 +215,7 @@ avtXDBWriter::ApplyMaterialsToContract(avtContract_p c0,
 // ****************************************************************************
 
 void
-avtXDBWriter::GetMaterials(bool needsExecute, const std::string &meshname,
+avtFieldViewXDBWriter::GetMaterials(bool needsExecute, const std::string &meshname,
     const avtDatabaseMetaData *md,
     std::vector<std::string> &materialList)
 {
@@ -223,7 +223,7 @@ avtXDBWriter::GetMaterials(bool needsExecute, const std::string &meshname,
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::CanHandleMaterials
+// Method: avtFieldViewXDBWriter::CanHandleMaterials
 //
 // Purpose:
 //   Returns that this writer can deal with materials.
@@ -241,13 +241,13 @@ avtXDBWriter::GetMaterials(bool needsExecute, const std::string &meshname,
 // ****************************************************************************
 
 bool
-avtXDBWriter::CanHandleMaterials(void)
+avtFieldViewXDBWriter::CanHandleMaterials(void)
 {
     return impl->CanHandleMaterials(GetInput());
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::OpenFile
+// Method: avtFieldViewXDBWriter::OpenFile
 //
 // Purpose:
 //   Open the file that we want to create.
@@ -264,13 +264,13 @@ avtXDBWriter::CanHandleMaterials(void)
 // ****************************************************************************
 
 void
-avtXDBWriter::OpenFile(const std::string &fn, int numblocks)
+avtFieldViewXDBWriter::OpenFile(const std::string &fn, int numblocks)
 {
     impl->OpenFile(GetInput(), fn, numblocks);
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::WriteHeaders
+// Method: avtFieldViewXDBWriter::WriteHeaders
 //
 // Purpose:
 //   Set the title and notes in the XDB file.
@@ -291,7 +291,7 @@ avtXDBWriter::OpenFile(const std::string &fn, int numblocks)
 // ****************************************************************************
 
 void
-avtXDBWriter::WriteHeaders(const avtDatabaseMetaData *md,
+avtFieldViewXDBWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            std::vector<std::string> &scalars, 
                            std::vector<std::string> &vectors,
                            std::vector<std::string> &materials)
@@ -300,7 +300,7 @@ avtXDBWriter::WriteHeaders(const avtDatabaseMetaData *md,
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::BeginPlot
+// Method: avtFieldViewXDBWriter::BeginPlot
 //
 // Purpose:
 //   This method is called when we begin writing data for a plot. This lets us
@@ -319,13 +319,13 @@ avtXDBWriter::WriteHeaders(const avtDatabaseMetaData *md,
 // ****************************************************************************
 
 void
-avtXDBWriter::BeginPlot(const std::string &pn)
+avtFieldViewXDBWriter::BeginPlot(const std::string &pn)
 {
     impl->BeginPlot(GetInput(), pn);
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::WriteChunk
+// Method: avtFieldViewXDBWriter::WriteChunk
 //
 // Purpose:
 //   This writes out one chunk of an avtDataset.
@@ -342,13 +342,13 @@ avtXDBWriter::BeginPlot(const std::string &pn)
 // ****************************************************************************
 
 void
-avtXDBWriter::WriteChunk(vtkDataSet *ds, int chunk)
+avtFieldViewXDBWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     impl->WriteChunk(GetInput(), ds, chunk);
 }
 
 // ****************************************************************************
-// Method: avtXDBWriter::CloseFile
+// Method: avtFieldViewXDBWriter::CloseFile
 //
 // Purpose:
 //   Closes the XDB file.
@@ -361,7 +361,7 @@ avtXDBWriter::WriteChunk(vtkDataSet *ds, int chunk)
 // ****************************************************************************
 
 void
-avtXDBWriter::CloseFile(void)
+avtFieldViewXDBWriter::CloseFile(void)
 {
     impl->CloseFile(GetInput());
 }
