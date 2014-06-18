@@ -3926,11 +3926,11 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         absTolBBox != obj.absTolBBox ||
         absTolSizeType != obj.absTolSizeType ||
         forceNodeCenteredData != obj.forceNodeCenteredData ||
-        cropBeginFlag != obj.cropBeginFlag
-        cropBegin != obj.cropBegin
-        cropEndFlag != obj.cropEndFlag
-        cropEnd != obj.cropEnd
-        cropValue != obj.cropValue
+        cropBeginFlag != obj.cropBeginFlag ||
+        cropBegin != obj.cropBegin ||
+        cropEndFlag != obj.cropEndFlag ||
+        cropEnd != obj.cropEnd ||
+        cropValue != obj.cropValue ||
         coordinateSystem != obj.coordinateSystem ||
         showPoints != obj.showPoints ||
         showLines != obj.showLines ||
