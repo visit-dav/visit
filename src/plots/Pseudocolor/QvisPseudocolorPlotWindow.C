@@ -382,7 +382,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     colorLayout->addWidget(opacityType, gRow, 1);
 
     opacityVarLabel = new QLabel(tr("Variable"), central);
-    opacityVar = new QvisVariableButton(false, true, true,
+    opacityVar = new QvisVariableButton(true, true, true,
                                         QvisVariableButton::Scalars, central);
     colorLayout->addWidget(opacityVarLabel,gRow,2, Qt::AlignRight);
     colorLayout->addWidget(opacityVar,gRow,3);
@@ -581,7 +581,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     
     tubeRadiusVaryVariableLabel = new QLabel(tr("Variable"), central);
     lineLayout->addWidget(tubeRadiusVaryVariableLabel, 2, 1, Qt::AlignRight);
-    tubeRadiusVaryVariable = new QvisVariableButton(false, true, true,
+    tubeRadiusVaryVariable = new QvisVariableButton(true, true, true,
                                                     QvisVariableButton::Scalars, central);
     connect(tubeRadiusVaryVariable, SIGNAL(activated(const QString &)),
             this, SLOT(tubeRadiusVaryVariableChanged(const QString&)));
