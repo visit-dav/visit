@@ -120,6 +120,7 @@ typedef struct
     double          time;
     int             runMode;
     int             done;
+    int             echo;
 
     int             nx,ny,nz;
     float           extents[6];
@@ -139,6 +140,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->time = 0.;
     sim->runMode = SIM_STOPPED;
     sim->done = 0;
+    sim->echo = 0;
 
     sim->nx = 101;
     sim->ny = 101;
@@ -478,6 +480,12 @@ ProcessConsoleCommand(simulation_data *sim)
         simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
         sim->runMode = SIM_RUNNING;
+
+    if(sim->echo && sim->par_rank == 0)
+    {
+        fprintf(stderr, "Command %s completed.\n", cmd);
+        fflush(stderr);
+    }
 }
 
 /******************************************************************************
@@ -597,6 +605,7 @@ void mainloop(simulation_data *sim)
 
 int main(int argc, char **argv)
 {
+    int i;
     char *env = NULL;
     simulation_data sim;
     simulation_data_ctor(&sim);
@@ -615,6 +624,12 @@ int main(int argc, char **argv)
 
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
+
+    for(i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "-echo") == 0)
+            sim.echo = 1;
+    }
 
 #ifdef PARALLEL
     /* Install callback functions for global communication. */
