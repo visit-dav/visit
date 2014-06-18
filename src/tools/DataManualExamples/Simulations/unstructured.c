@@ -257,7 +257,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("unstructured",
         "Demonstrates creating an unstructured mesh",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();
