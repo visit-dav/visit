@@ -51,6 +51,7 @@ SET(PY_TESTS
     mesh
     multiblock
     scalar
+    unstructured
     var)
 
 SET(TEST_EXTRA_ARGS)
