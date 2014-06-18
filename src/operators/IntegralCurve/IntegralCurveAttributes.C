@@ -3918,7 +3918,6 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         fieldType != obj.fieldType ||
         fieldConstant != obj.fieldConstant ||
         integrationType != obj.integrationType ||
-        coordinateSystem != obj.coordinateSystem ||
         maxStepLength != obj.maxStepLength ||
         maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||
@@ -3927,6 +3926,12 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         absTolBBox != obj.absTolBBox ||
         absTolSizeType != obj.absTolSizeType ||
         forceNodeCenteredData != obj.forceNodeCenteredData ||
+        cropBeginFlag != obj.cropBeginFlag
+        cropBegin != obj.cropBegin
+        cropEndFlag != obj.cropEndFlag
+        cropEnd != obj.cropEnd
+        cropValue != obj.cropValue
+        coordinateSystem != obj.coordinateSystem ||
         showPoints != obj.showPoints ||
         showLines != obj.showLines ||
         pathlines != obj.pathlines ||
@@ -3942,6 +3947,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
           correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
         0 )
     {
+
         return true;
     }
          
