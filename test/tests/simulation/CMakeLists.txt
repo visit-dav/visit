@@ -42,6 +42,7 @@ SET(PY_TESTS
     curve
     domainbounds
     ghostcells
+    globalids
     interleave
     life
     mandelbrot
