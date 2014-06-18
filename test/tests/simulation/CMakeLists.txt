@@ -50,6 +50,7 @@ SET(PY_TESTS
     materialvar
     mesh
     multiblock
+    scalar
     var)
 
 SET(TEST_EXTRA_ARGS)
