@@ -16,9 +16,20 @@
 
 # Create our simulation object.
 sim = TestSimulation("globalids", "globalids.sim2")
+sim.addargument("-echo")
 
 # Test that we can start and connect to the simulation.
 started, connected = TestSimStartAndConnect("globalids00", sim)
+
+def step(sim):
+    sim.consolecommand("step")
+    # Read from stderr to look for the echoed command. Sync.
+    keepGoing = True
+    while keepGoing:
+        buf = sim.p.stderr.readline()
+        print buf
+        if "Command step" in buf:
+            keepGoing = False
 
 # Perform our tests.
 if connected:
@@ -86,7 +97,7 @@ if connected:
         # Advance some steps. This should make the plots update.
         nsteps = 5
         for j in xrange(nsteps):
-            sim.consolecommand("step")
+            step(sim)
             DrawPlots()
         # Query the time
         Query("Time")
