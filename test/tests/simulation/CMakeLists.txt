@@ -52,6 +52,7 @@ SET(PY_TESTS
     multiblock
     scalar
     unstructured
+    updateplots
     var)
 
 SET(TEST_EXTRA_ARGS)
