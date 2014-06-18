@@ -85,7 +85,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 
 # Give VisIt information so it can install MPI into the binary distribution.
-VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.4/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON)
 
 # Tell VisIt the parallel compiler so it can deduce parallel flags
