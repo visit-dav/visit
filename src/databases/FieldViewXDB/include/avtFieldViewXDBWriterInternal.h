@@ -4,8 +4,8 @@
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
 *****************************************************************************/
-#ifndef AVT_XDB_WRITER_INTERNAL_H
-#define AVT_XDB_WRITER_INTERNAL_H
+#ifndef AVT_FIELDVIEWXDB_WRITER_INTERNAL_H
+#define AVT_FIELDVIEWXDB_WRITER_INTERNAL_H
 #include "VXDB_exports.h"
 #include <avtDatabaseMetaData.h>
 #include <string>
@@ -17,7 +17,7 @@
 class vtkDataSet;
 
 // ****************************************************************************
-//  Class: avtXDBWriterInternal
+//  Class: avtFieldViewXDBWriterInternal
 //
 //  Purpose:
 //    The "internal" class that writes out XDB files.
@@ -29,11 +29,11 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class VXDB_API avtXDBWriterInternal
+class VXDB_API avtFieldViewXDBWriterInternal
 {
 public:
-    avtXDBWriterInternal(int rank);
-    ~avtXDBWriterInternal();
+    avtFieldViewXDBWriterInternal(int rank);
+    ~avtFieldViewXDBWriterInternal();
 
     static std::string GetCopyright();
 

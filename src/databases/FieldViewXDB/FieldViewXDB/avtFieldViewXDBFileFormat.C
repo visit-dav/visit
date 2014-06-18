@@ -4,32 +4,32 @@
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
 *****************************************************************************/
-#include <avtXDBFileFormat.h>
+#include <avtFieldViewXDBFileFormat.h>
 #include <avtDatabaseMetaData.h>
 
 // ****************************************************************************
-//  Method: avtXDBFileFormat constructor
+//  Method: avtFieldViewXDBFileFormat constructor
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Jan 14 17:29:14 PST 2014
 //
 // ****************************************************************************
 
-avtXDBFileFormat::avtXDBFileFormat(const char *filename)
+avtFieldViewXDBFileFormat::avtFieldViewXDBFileFormat(const char *filename)
     : avtMTMDFileFormat(filename)
 {
     // INITIALIZE DATA MEMBERS
 }
 
 // ****************************************************************************
-//  Method: avtXDBFileFormat destructor
+//  Method: avtFieldViewXDBFileFormat destructor
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Jan 14 17:29:14 PST 2014
 //
 // ****************************************************************************
 
-avtXDBFileFormat::~avtXDBFileFormat()
+avtFieldViewXDBFileFormat::~avtFieldViewXDBFileFormat()
 {
 }
 
@@ -45,14 +45,14 @@ avtXDBFileFormat::~avtXDBFileFormat()
 // ****************************************************************************
 
 int
-avtXDBFileFormat::GetNTimesteps(void)
+avtFieldViewXDBFileFormat::GetNTimesteps(void)
 {
     return 1;
 }
 
 
 // ****************************************************************************
-//  Method: avtXDBFileFormat::FreeUpResources
+//  Method: avtFieldViewXDBFileFormat::FreeUpResources
 //
 //  Purpose:
 //      When VisIt is done focusing on a particular timestep, it asks that
@@ -66,13 +66,13 @@ avtXDBFileFormat::GetNTimesteps(void)
 // ****************************************************************************
 
 void
-avtXDBFileFormat::FreeUpResources(void)
+avtFieldViewXDBFileFormat::FreeUpResources(void)
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtXDBFileFormat::PopulateDatabaseMetaData
+//  Method: avtFieldViewXDBFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      This database meta-data object is like a table of contents for the
@@ -85,14 +85,14 @@ avtXDBFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 void
-avtXDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtFieldViewXDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
     // Do nothing since we don't want to read XDB's.
 }
 
 
 // ****************************************************************************
-//  Method: avtXDBFileFormat::GetMesh
+//  Method: avtFieldViewXDBFileFormat::GetMesh
 //
 //  Purpose:
 //      Gets the mesh associated with this file.  The mesh is returned as a
@@ -114,7 +114,7 @@ avtXDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
 // ****************************************************************************
 
 vtkDataSet *
-avtXDBFileFormat::GetMesh(int timestate, int domain, const char *meshname)
+avtFieldViewXDBFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
     // Do nothing since we don't want to read XDB's.
     return NULL;
@@ -122,7 +122,7 @@ avtXDBFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
 
 // ****************************************************************************
-//  Method: avtXDBFileFormat::GetVar
+//  Method: avtFieldViewXDBFileFormat::GetVar
 //
 //  Purpose:
 //      Gets a scalar variable associated with this file.  Although VTK has
@@ -143,7 +143,7 @@ avtXDBFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 // ****************************************************************************
 
 vtkDataArray *
-avtXDBFileFormat::GetVar(int timestate, int domain, const char *varname)
+avtFieldViewXDBFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
     // Do nothing since we don't want to read XDB's.
     return NULL;
@@ -151,7 +151,7 @@ avtXDBFileFormat::GetVar(int timestate, int domain, const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtXDBFileFormat::GetVectorVar
+//  Method: avtFieldViewXDBFileFormat::GetVectorVar
 //
 //  Purpose:
 //      Gets a vector variable associated with this file.  Although VTK has
@@ -172,7 +172,7 @@ avtXDBFileFormat::GetVar(int timestate, int domain, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtXDBFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
+avtFieldViewXDBFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
 {
     // Do nothing since we don't want to read XDB's.
     return NULL;

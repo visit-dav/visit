@@ -4,15 +4,15 @@
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
 *****************************************************************************/
-#ifndef AVT_XDB_FILE_FORMAT_H
-#define AVT_XDB_FILE_FORMAT_H
+#ifndef AVT_FIELDVIEWXDB_FILE_FORMAT_H
+#define AVT_FIELDVIEWXDB_FILE_FORMAT_H
 
 #include <avtMTMDFileFormat.h>
 
 #include <vector>
 
 // ****************************************************************************
-//  Class: avtXDBFileFormat
+//  Class: avtFieldViewXDBFileFormat
 //
 //  Purpose:
 //      Reads in XDB files as a plugin to VisIt.
@@ -22,15 +22,15 @@
 //
 // ****************************************************************************
 
-class avtXDBFileFormat : public avtMTMDFileFormat
+class avtFieldViewXDBFileFormat : public avtMTMDFileFormat
 {
 public:
-                       avtXDBFileFormat(const char *);
-    virtual           ~avtXDBFileFormat();
+                       avtFieldViewXDBFileFormat(const char *);
+    virtual           ~avtFieldViewXDBFileFormat();
 
     virtual int            GetNTimesteps(void);
 
-    virtual const char    *GetType(void)   { return "XDB"; };
+    virtual const char    *GetType(void)   { return "FieldView XDB"; };
     virtual void           FreeUpResources(void); 
 
     virtual vtkDataSet    *GetMesh(int, int, const char *);

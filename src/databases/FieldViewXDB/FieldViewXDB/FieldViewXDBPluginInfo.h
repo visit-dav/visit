@@ -1,16 +1,16 @@
 /*****************************************************************************
 * Copyright (c) 2014 Intelligent Light. All rights reserved.
 * Work partially supported by DOE Grant SC0007548.
-* FieldView XDB Export is provided expressly for use within VisIt.
+* FieldView FieldViewXDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
 *****************************************************************************/
 
 // ****************************************************************************
-//                               XDBPluginInfo.h
+//                               FieldViewXDBPluginInfo.h
 // ****************************************************************************
 
-#ifndef XDB_PLUGIN_INFO_H
-#define XDB_PLUGIN_INFO_H
+#ifndef FIELDVIEWXDB_PLUGIN_INFO_H
+#define FIELDVIEWXDB_PLUGIN_INFO_H
 #include <DatabasePluginInfo.h>
 #include <database_plugin_exports.h>
 
@@ -18,10 +18,10 @@ class avtDatabase;
 class avtDatabaseWriter;
 
 // ****************************************************************************
-//  Class: XDBDatabasePluginInfo
+//  Class: FieldViewXDBDatabasePluginInfo
 //
 //  Purpose:
-//    Classes that provide all the information about the XDB plugin.
+//    Classes that provide all the information about the FieldViewXDB plugin.
 //    Portions are separated into pieces relevant to the appropriate
 //    components of VisIt.
 //
@@ -32,7 +32,7 @@ class avtDatabaseWriter;
 //
 // ****************************************************************************
 
-class XDBGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
+class FieldViewXDBGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
   public:
     virtual const char *GetName() const;
@@ -45,7 +45,7 @@ class XDBGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual bool  OpensWholeDirectory() const;
 };
 
-class XDBCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual XDBGeneralPluginInfo
+class FieldViewXDBCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual FieldViewXDBGeneralPluginInfo
 {
   public:
     virtual DatabaseType              GetDatabaseType();
@@ -54,14 +54,14 @@ class XDBCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virt
     virtual std::string               GetLicense() const;
 };
 
-class XDBMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual XDBCommonPluginInfo
+class FieldViewXDBMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual FieldViewXDBCommonPluginInfo
 {
   public:
     // this makes compilers happy... remove if we ever have functions here
     virtual void dummy();
 };
 
-class XDBEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual XDBCommonPluginInfo
+class FieldViewXDBEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual FieldViewXDBCommonPluginInfo
 {
   public:
     virtual avtDatabaseWriter        *GetWriter(void);

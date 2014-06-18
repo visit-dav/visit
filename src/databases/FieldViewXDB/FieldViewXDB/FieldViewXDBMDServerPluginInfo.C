@@ -5,7 +5,7 @@
 * All other uses are strictly forbidden.
 *****************************************************************************/
 
-#include <XDBPluginInfo.h>
+#include <FieldViewXDBPluginInfo.h>
 
 // ****************************************************************************
 //  Function:  GetMDServerInfo
@@ -17,13 +17,13 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* XDB_GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* FieldViewXDB_GetMDServerInfo()
 {
-    return new XDBMDServerPluginInfo;
+    return new FieldViewXDBMDServerPluginInfo;
 }
 
 // this makes compilers happy... remove if we ever have functions here
-void XDBMDServerPluginInfo::dummy()
+void FieldViewXDBMDServerPluginInfo::dummy()
 {
 }
 

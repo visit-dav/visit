@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
-class avtXDBWriterInternal;
+class avtFieldViewXDBWriterInternal;
 
 // ****************************************************************************
-//  Class: avtXDBWriter
+//  Class: avtFieldViewXDBWriter
 //
 //  Purpose:
 //      A module that writes out XDB files.
@@ -26,11 +26,11 @@ class avtXDBWriterInternal;
 //
 // ****************************************************************************
 
-class avtXDBWriter : public avtDatabaseWriter
+class avtFieldViewXDBWriter : public avtDatabaseWriter
 {
 public:
-                          avtXDBWriter();
-    virtual              ~avtXDBWriter();
+                          avtFieldViewXDBWriter();
+    virtual              ~avtFieldViewXDBWriter();
 
 protected:
     virtual void          CheckCompatibility(const std::string &plotName);
@@ -60,7 +60,7 @@ protected:
                                        const std::vector<std::string> &mats,
                                        bool &changed);
 private:
-    avtXDBWriterInternal *impl;
+    avtFieldViewXDBWriterInternal *impl;
 };
 
 #endif
