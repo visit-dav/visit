@@ -1730,6 +1730,8 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Fri Apr 12 15:33:46 PDT 2013
 //    Fix cast on big endian machines.
 //
+//    Mark C. Miller, Wed Jun 18 10:01:52 PDT 2014
+//    Replace some cases of strcmp/strstr with case-insensitive equivs.
 // ****************************************************************************
 
 template <class T>
@@ -2154,7 +2156,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "HAS_BOUNDARY:") == 0)
                 {
                     line += strlen("HAS_BOUNDARY:") + 1;
-                    if (strcmp(line, "true") == 0)
+                    if (strcasecmp(line, "true") == 0)
                     {
                         hasBoundaries = true;
                     }
@@ -2239,7 +2241,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "CENTERING:") == 0)
                 {
                     line += strlen("CENTERING:") + 1;
-                    if (strstr(line, "zon") != NULL)
+                    if (strcasestr(line, "zon") != NULL)
                         nodalCentering = false;
                 }
                 else if (strcmp(line, "BYTE_OFFSET:") == 0)
@@ -2251,7 +2253,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "DIVIDE_BRICK:") == 0)
                 {
                     line += strlen("DIVIDE_BRICK:") + 1;
-                    divideBrick = (strcmp(line, "true") == 0);
+                    divideBrick = (strcasecmp(line, "true") == 0);
                 }
             }
         }
