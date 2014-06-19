@@ -87,7 +87,9 @@
 #include <Utility.h>
 
 #include <string.h>
+#ifdef HAVE_VTK_SIZEOF___INT64
 #include <boost/cstdint.hpp>
+#endif
 
 #if defined(_WIN32)
 #define STRNCASECMP _strnicmp
@@ -99,7 +101,9 @@ using     std::map;
 using     std::sort;
 using     std::string;
 using     std::vector;
+#ifdef HAVE_VTK_SIZEOF___INT64
 using     boost::int64_t;
+#endif
 
 static int VisItNCErr;
 static map<string, int> messageCounts;
