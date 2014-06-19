@@ -122,23 +122,23 @@ Test( "streamline_geom_14" )
 # Test crop w/ head (cone) location
 #
 DeleteAllPlots()
-AddPlot("Streamline", "airVfGradient")
+AddPlot("Streamline", "grad", 1, 0)
 
 satts =  StreamlineAttributes()
 satts.displayEndFlag  = 1
 satts.showHeads       = 1
 satts.headDisplayType = satts.Cone
-satts.displayEnd      = 1
+satts.displayEnd      = 25
 SetPlotOptions(satts)
 DrawPlots()
 Test( "streamline_geom_crop_head_1")
 
-satts.displayEnd      = 5
+satts.displayEnd      = 75
 SetPlotOptions(satts)
 DrawPlots()
 Test( "streamline_geom_crop_head_2")
 
-satts.displayEnd      = 10
+satts.displayEnd      = 125
 SetPlotOptions(satts)
 DrawPlots()
 Test( "streamline_geom_crop_head_3")
