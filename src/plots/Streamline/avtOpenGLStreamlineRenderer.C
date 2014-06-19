@@ -969,23 +969,51 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
             segptr += nPts;
             continue;
         }
-        
-        if (0 < idx1 && idx1 < nPts)
+
+        // Just incase everything is cropped away
+        if (idx1 == 0 )
         {
-            points->GetPoint(segptr[idx1-1], endPtPrev);
-            points->GetPoint(segptr[idx1], endPt);
-            
-            float  s0, s1;
-            s0 = s[segptr[idx1-1]];
-            s1 = s[segptr[idx1]];
-            scalar = s0 + t1*(s1-s0);
+            double pt[3], next[3];
+
+            points->GetPoint(segptr[0], endPt);
+            points->GetPoint(segptr[1], next);
+
+            // For cones fake a previous point using the next point.
+            endPtPrev[0] = endPt[0] - .1*(next[0]-endPt[0]);
+            endPtPrev[1] = endPt[1] - .1*(next[1]-endPt[1]);
+            endPtPrev[2] = endPt[2] - .1*(next[2]-endPt[2]);
+
+            scalar = s[*(segptr)];
             if (o)
+              opacity = o[*(segptr)];
+        }
+        // If we have an interpolated end point, calculate it.
+        else if (0 < idx1 && idx1 < nPts-1)
+        {
+            double pt[3], next[3];
+            points->GetPoint(segptr[idx1-1], endPtPrev);
+            points->GetPoint(segptr[idx1], pt);
+            points->GetPoint(segptr[idx1+1], next);
+            
+            endPt[0] = pt[0] + t1*(next[0]-pt[0]);
+            endPt[1] = pt[1] + t1*(next[1]-pt[1]);
+            endPt[2] = pt[2] + t1*(next[2]-pt[2]);
+
+            float  s0, s1;
+            s0 = s[segptr[idx1]];
+            s1 = s[segptr[idx1+1]];
+            scalar = s0 + t1*(s1-s0);
+            
+            if (atts.GetOpacityType() == StreamlineAttributes::Ramp)
+                opacity = 1.0;
+            else if (o)
             {
-                s0 = o[segptr[idx1-1]];
-                s1 = o[segptr[idx1]];
+                s0 = o[segptr[idx1]];
+                s1 = o[segptr[idx1+1]];
                 opacity = s0 + t1*(s1-s0);
             }
         }
+        // No points are cropped.
         else
         {
             points->GetPoint(segptr[nPts-1], endPt);
