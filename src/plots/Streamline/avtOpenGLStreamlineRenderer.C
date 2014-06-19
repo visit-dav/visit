@@ -973,8 +973,7 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
         // Just incase everything is cropped away
         if (idx1 == 0 )
         {
-            double pt[3], next[3];
-
+            double next[3];
             points->GetPoint(segptr[0], endPt);
             points->GetPoint(segptr[1], next);
 
@@ -990,14 +989,13 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
         // If we have an interpolated end point, calculate it.
         else if (0 < idx1 && idx1 < nPts-1)
         {
-            double pt[3], next[3];
-            points->GetPoint(segptr[idx1-1], endPtPrev);
-            points->GetPoint(segptr[idx1], pt);
+            double next[3];
+            points->GetPoint(segptr[idx1], endPtPrev);
             points->GetPoint(segptr[idx1+1], next);
-            
-            endPt[0] = pt[0] + t1*(next[0]-pt[0]);
-            endPt[1] = pt[1] + t1*(next[1]-pt[1]);
-            endPt[2] = pt[2] + t1*(next[2]-pt[2]);
+
+            endPt[0] = endPtPrev[0] + t1*(next[0]-endPtPrev[0]);
+            endPt[1] = endPtPrev[1] + t1*(next[1]-endPtPrev[1]);
+            endPt[2] = endPtPrev[2] + t1*(next[2]-endPtPrev[2]);
 
             float  s0, s1;
             s0 = s[segptr[idx1]];
