@@ -128,17 +128,17 @@ satts =  StreamlineAttributes()
 satts.displayEndFlag  = 1
 satts.showHeads       = 1
 satts.headDisplayType = satts.Cone
-satts.displayEnd      = 25
+satts.displayEnd      = 2
 SetPlotOptions(satts)
 DrawPlots()
 Test( "streamline_geom_crop_head_1")
 
-satts.displayEnd      = 75
+satts.displayEnd      = 5
 SetPlotOptions(satts)
 DrawPlots()
 Test( "streamline_geom_crop_head_2")
 
-satts.displayEnd      = 125
+satts.displayEnd      = 8
 SetPlotOptions(satts)
 DrawPlots()
 Test( "streamline_geom_crop_head_3")
