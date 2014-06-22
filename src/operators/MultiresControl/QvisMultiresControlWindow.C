@@ -39,10 +39,10 @@
 #include <cstdio>
 #include <string>
 
-#include <QtGui/QApplication>
-#include <QtGui/QLabel>
-#include <QtGui/QGridLayout>
-#include <QtGui/QSlider>
+#include <QApplication>
+#include <QLabel>
+#include <QGridLayout>
+#include <QSlider>
 
 #include "QvisMultiresControlWindow.h"
 #include <DebugStream.h>

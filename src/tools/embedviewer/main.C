@@ -98,7 +98,7 @@ EmbeddedMain(int argc, char *argv[])
         // which is what we'll use for VISITHOME so it finds our development 
         // version of VisIt.
 #ifndef _WIN32
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
         QDir d(argv[0]);
 #else
         QDir d;
@@ -109,7 +109,7 @@ EmbeddedMain(int argc, char *argv[])
         std::string visithome(d.absolutePath().toStdString());
         if (visithome == "/")
         {
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
             QDir d2(argv[0]);
 #else
             QDir d2;

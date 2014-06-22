@@ -785,7 +785,7 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
     // Iterate over the objects in the custom page and try and find
     // a setting in the config file with the same name. If we find
     // a compatible value then set it.
-    QList<QWidget*> widgets = qFindChildren<QWidget*>(ui);
+    QList<QWidget*> widgets = ui->findChildren<QWidget*>();
     for(int i = 0; i < widgets.size(); ++i)
     {
         QWidget *obj = widgets[i];
@@ -898,7 +898,7 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
     // a setting in the config file with the same name. If we find
     // a compatible value then set it.
 
-    QList<QWidget*> widgets = qFindChildren<QWidget*>(ui);
+    QList<QWidget*> widgets = ui->findChildren<QWidget*>();
     for(int i = 0; i < widgets.size(); ++i)
     {
         QWidget *obj = widgets[i];

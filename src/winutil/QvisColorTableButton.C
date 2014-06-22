@@ -367,7 +367,7 @@ QvisColorTableButton::popupPressed()
 
         // Show the popup menu.         
         colorTableMenu->exec(QPoint(menuX, menuY));
-        setDown(FALSE);
+        setDown(false);
     }
 }
 

@@ -973,7 +973,7 @@ void
 QvisSpectrumBar::drawControls(QPainter &paint)
 {
 
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
     QBrush brush(palette().brush(QPalette::Background));
 #else
     QBrush brush(palette().brush(QPalette::Button));
@@ -1455,7 +1455,7 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 
     p.setPen(pen);
     p.setBrush(brush);
-    p.setWorldMatrix(matrix, TRUE);   // set transformation matrix
+    p.setWorldMatrix(matrix, true);   // set transformation matrix
     p.drawPolygon(bFill);             // fill arrow
     p.setBrush(Qt::NoBrush);          // don't fill
 

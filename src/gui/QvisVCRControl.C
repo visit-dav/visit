@@ -46,7 +46,7 @@
 //
 // Icons for the VCR buttons.
 //
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
 static const char * frevpix_icon[] = {
 "34 20 2 1",
 ". c None",
@@ -365,7 +365,7 @@ QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
     // Create the top layout.
     QHBoxLayout *topLayout = new QHBoxLayout(this);
     topLayout->setMargin(0);
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
     topLayout->setSpacing(1);
 #else
     topLayout->setSpacing(10);

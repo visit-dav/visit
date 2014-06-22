@@ -38,6 +38,7 @@
 
 #include <QvisHostProfileWindow.h>
 
+#include <QMimeData>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>

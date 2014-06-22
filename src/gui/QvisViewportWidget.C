@@ -1111,7 +1111,11 @@ QvisViewportWidget::mousePressEvent(QMouseEvent* e)
     if(e->button() == Qt::LeftButton && !selected)
     {
         dragViewportOutline = true;
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         dragMouseStart = e->posF();
+#else
+        dragMouseStart = e->localPos();
+#endif
     }
 }
 
@@ -1154,8 +1158,13 @@ QvisViewportWidget::mouseMoveEvent(QMouseEvent* e)
         // set rect
         float x = dragMouseStart.x();
         float y = dragMouseStart.y();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         float dx = e->posF().x() - x;
         float dy = e->posF().y() - y;
+#else
+        float dx = e->localPos().x() - x;
+        float dy = e->localPos().y() - y;
+#endif
         
         float w = dx;
         float h = dy;

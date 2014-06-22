@@ -57,7 +57,7 @@
 #include <QStyle>
 #include <QTranslator>
 
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
 // On MacOS X, we manage the printer options window instead of letting
 // Qt do it when we use the Mac or Aqua style.
 #include <Carbon/Carbon.h>
@@ -392,7 +392,7 @@ LongFileName(const std::string &shortName)
 //   X server.
 //
 // ****************************************************************************
-
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 static void
 GUI_LogQtMessages(QtMsgType type, const char *msg)
 {
@@ -429,6 +429,44 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
         break;
     }
 }
+#else
+static void
+GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    const int n_strs_to_suppress = 1;
+    const char *strs_to_suppress[] =
+       { "Invalid XLFD" };
+    bool shouldPrint = true;
+    for (int i = 0 ; i < n_strs_to_suppress ; i++)
+    {
+        if (strstr(msg.toStdString().c_str(), strs_to_suppress[i]) != NULL)
+        {
+            shouldPrint = false;
+            break;
+        }
+    }
+
+    if (shouldPrint)
+        cerr << msg.toStdString() << endl;
+
+    switch(type)
+    {
+    case QtDebugMsg:
+        debug1 << "Qt: Debug: " << msg.toStdString() << endl;
+        break;
+    case QtWarningMsg:
+        debug1 << "Qt: Warning: " << msg.toStdString() << endl;
+        break;
+    case QtCriticalMsg:
+        debug1 << "Qt: Critical: " << msg.toStdString() << endl;
+        break;
+    case QtFatalMsg:
+        debug1 << "Qt: Fatal: " << msg.toStdString() << endl;
+        abort(); // HOOKS_IGNORE
+        break;
+    }
+}
+#endif
 
 // ****************************************************************************
 // Method: QvisGUIApplication::QvisGUIApplication
@@ -763,7 +801,11 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     qt_argv[argc+4] = NULL;
 
     debug1 << "QvisApplication::QvisApplication: -font " << qt_argv[argc+1] << endl;
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     qInstallMsgHandler(GUI_LogQtMessages);
+#else
+    qInstallMessageHandler(GUI_LogQtMessages);
+#endif
 
     if(QApplication::instance()) //if application instance already exists..
     {
@@ -1660,7 +1702,7 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 3");
         break;
     case 4:
-#ifndef Q_WS_MACX
+#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
         // If we're not on MacOS X, hide the splashscreen now.
         if(splash)
             splash->hide();
@@ -1732,7 +1774,7 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 9");
         break;
     case 10:
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
         // On MacOS X, we hide the splashscreen last thing so we are very
         // near 100% likely to get the GUI's menu in the main Mac menu.
         if(splash)
@@ -1757,7 +1799,7 @@ QvisGUIApplication::FinalInitialization()
             if(code == CONFIGSTATE_FIRSTTIME)
             {
                 QTimer::singleShot(1000, this, SLOT(displayReleaseNotesIfAvailable()));
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
                 QTimer::singleShot(1001, this, SLOT(setupHostProfilesAndConfig()));
 #endif
             }
@@ -2425,10 +2467,10 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
             }
             std::string style(argv[i + 1]);
             if(
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
                style == "macintosh" ||
 #endif
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_OS_WIN)
                style == "windowsxp" ||
                style == "windowsvista" ||
 #endif
@@ -2725,7 +2767,7 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
     mainWin->setMinimumHeight(h);
 #endif
 // GUI need to be offset 20 pixels from the MenuBar, only on i386?
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
     if (y == 0) {
        y = 20;
        if (orientation < 2) h = h - y;
@@ -6676,7 +6718,7 @@ QvisGUIApplication::SplashScreenProgress(const QString &msg, int prog)
 {
     if(splash)
     {
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
         splash->activateWindow();
 #endif
         splash->Progress(msg, prog);
@@ -6757,8 +6799,8 @@ void
 QvisGUIApplication::PrintWindow()
 {
     PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
-
-#if defined(Q_WS_MACX) && !defined(VISIT_MAC_NO_CARBON)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#if (defined(Q_WS_MACX) || defined(Q_OS_MAC)) && !defined(VISIT_MAC_NO_CARBON)
     //
     // If we're on MacOS X and the Mac application style is being used, manage
     // the printer setup ourselves since the QPrinter object does not return
@@ -6961,8 +7003,9 @@ QvisGUIApplication::PrintWindow()
             //
             GetViewerMethods()->PrintWindow();
         }
-#if defined(Q_WS_MACX) && !defined(VISIT_MAC_NO_CARBON)
+#if (defined(Q_WS_MACX) || defined(Q_OS_MAC)) && !defined(VISIT_MAC_NO_CARBON)
     }
+#endif
 #endif
 }
 

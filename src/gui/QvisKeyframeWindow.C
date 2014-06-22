@@ -264,7 +264,11 @@ QvisKeyframeWindow::CreateWindowContents()
             kv, SLOT(expandAll()));
     connect(kv->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             this, SLOT(newSelection()));
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     kv->header()->setResizeMode(QHeaderView::ResizeToContents);
+#else
+    kv->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#endif
     kv->setEditTriggers(QAbstractItemView::AllEditTriggers);
     kv->setItemDelegateForColumn(1, new QvisKeyframeDelegate(this));
     mainLayout->addWidget(kv, row,0,1,3);

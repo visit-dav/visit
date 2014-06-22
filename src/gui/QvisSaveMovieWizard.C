@@ -1673,7 +1673,7 @@ QvisSaveMovieWizard::CreateFilenamePage()
             this, SLOT(page11_processOutputDirectoryText(const QString &)));
     QPushButton *outputSelectButton = new QPushButton("...", outputDirectoryParent);
     oLayout->addWidget(outputSelectButton);
-#ifndef Q_WS_MACX
+#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
     outputSelectButton->setMaximumWidth(
          fontMetrics().boundingRect("...").width() + 6);
 #endif

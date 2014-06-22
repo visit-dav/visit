@@ -197,6 +197,7 @@ DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
 void
 DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
 {
+    beginResetModel();
     rgrid = grid;
     dataArray = 0;
     ghostArray = 0;
@@ -219,7 +220,7 @@ DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
     nColumns = 2;
     nRows = tmpdims[0];
 
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -262,6 +263,7 @@ DataArrayModel::setDataArray(vtkDataArray *arr,
     vtkDataArray *ghosts, vtkDataArray *missingData,
     int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex, int baseIndex[3])
 {
+    beginResetModel();
     // The data arrays.
     rgrid = 0;
     dataArray = arr;
@@ -313,7 +315,7 @@ DataArrayModel::setDataArray(vtkDataArray *arr,
         nRows = dims[1];
     }
 
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -337,6 +339,7 @@ DataArrayModel::setDataArray(vtkDataArray *arr,
 void
 DataArrayModel::clearDataArray()
 {
+    beginResetModel();
     dims[0] = dims[1] = dims[2] = 0;
     nColumns = 0;
     nRows = 0;
@@ -344,7 +347,7 @@ DataArrayModel::clearDataArray()
     dataArray = 0;
     ghostArray = 0;
     missingDataArray = 0;
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -372,9 +375,10 @@ DataArrayModel::clearDataArray()
 void
 DataArrayModel::addSelectedCellLabel(int row, int col, const QString &label)
 {
+    beginResetModel();
     QSize key(row, col);
     selectedCellLabels.insert(key, label);
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -393,8 +397,9 @@ DataArrayModel::addSelectedCellLabel(int row, int col, const QString &label)
 void
 DataArrayModel::clearSelectedCellLabels()
 {
+    beginResetModel();
     selectedCellLabels.clear();
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************

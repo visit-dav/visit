@@ -177,8 +177,13 @@ QvisCreateBondsWindow::CreateWindowContents()
     bondsTree->setColumnWidth(1, 50);
     
     bondsTree->setRootIsDecorated(false);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     bondsTree->header()->setClickable(false);
     bondsTree->header()->setMovable(false);
+#else
+    bondsTree->header()->setSectionsClickable(false);
+    bondsTree->header()->setSectionsMovable(false);
+#endif
     bondsTree->setAllColumnsShowFocus(true);
     
     listLayout->addWidget(bondsTree);

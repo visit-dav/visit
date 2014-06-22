@@ -86,7 +86,7 @@ int  QvisWindowBase::windowAnchor[2] = {0,0};
 
 QvisWindowBase::QvisWindowBase(const QString &captionString, Qt::WindowFlags f) :
     QMainWindow(parentOfEveryWindow, 
-#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
                 Qt::Window | f)
 {
     // Make each window the child of the first window that is created

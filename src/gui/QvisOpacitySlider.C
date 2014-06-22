@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 
+#include <qdrawutil.h>
 #include <QvisOpacitySlider.h>
 #include <QBitmap>
 #include <QColor>
@@ -453,7 +454,7 @@ void
 QvisOpacitySlider::drawSliderGroove(QPainter *p, int x, int y, int w, int,
     int c)
 {
-    qDrawWinPanel(p, x, y + c - 2,  w, 4, palette(), TRUE);
+    qDrawWinPanel(p, x, y + c - 2,  w, 4, palette(), true);
     p->setPen(palette().color(QPalette::Shadow));
     p->drawLine(x+1, y + c - 1, x + w - 3, y + c - 1);
 }

@@ -43,10 +43,18 @@ function bv_pyside_depends_on
     fi
 }
 
+function bv_pyside_initialize_vars
+{
+    info "initialize Qt vars"
+    if [[ $IS_QT5 == "yes" && $DO_PYSIDE == "yes" ]]; then
+        error "PySide is not supported with Qt5, please disable"
+    fi
+}
+
 function bv_pyside_info
 {
-export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-1.1.1.tar.gz"}
-export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.1.1"}
+export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.2.1"}
+export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-${PYSIDE_VERSION}.tar.gz"}
 export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
 export PYSIDE_MD5_CHECKSUM="b96663b1b361c876ef834d6c338d44c4"
 export PYSIDE_SHA256_CHECKSUM=""
@@ -135,7 +143,7 @@ function build_pyside_component
     # Make sure to pass compilers and compiler flags to cmake
     #
     mkdir -p build
-    cd build #PySide 1.1.1 fails during in source build..
+    cd build #PySide fails during in source build..
     info "Configuring pyside/$1 . . ."
     $CMAKE_COMMAND .. \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
@@ -196,12 +204,12 @@ function build_pyside
     cd $PYSIDE_BUILD_DIR || error "Can't cd to PySide build dir."
 
 
-    build_pyside_component shiboken-1.1.1
+    build_pyside_component shiboken-${PYSIDE_VERSION}
     if [[ $? != 0 ]] ; then
        return 1
     fi
 
-    build_pyside_component pyside-qt4.8+1.1.1
+    build_pyside_component pyside-qt4.8+${PYSIDE_VERSION}
     if [[ $? != 0 ]] ; then
        return 1
     fi
@@ -241,8 +249,8 @@ function bv_pyside_is_installed
         return 0
     fi
 
-    if  [[ ! -e "${VISIT_PYSIDE_DIR}/shiboken-1.1.1_success" ||
-           ! -e "${VISIT_PYSIDE_DIR}/pyside-qt4.8+1.1.1_success" ]]; then
+    if  [[ ! -e "${VISIT_PYSIDE_DIR}/shiboken-${PYSIDE_VERSION}_success" ||
+           ! -e "${VISIT_PYSIDE_DIR}/pyside-qt4.8+${PYSIDE_VERSION}_success" ]]; then
        info "pyside not installed completely"
        return 0
     fi

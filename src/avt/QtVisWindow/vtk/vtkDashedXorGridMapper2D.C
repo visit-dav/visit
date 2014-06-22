@@ -65,7 +65,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QPainter>
 #include <QLine>
 #if defined(HAVE_XLIB)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #  include <QX11Info>
+#endif
 #  include <X11/Intrinsic.h>
 #endif
 
@@ -289,6 +291,7 @@ vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor
 void
 vtkDashedXorGridMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #if defined(HAVE_XLIB)
 #define SET_FOREGROUND_D(rgba) \
       aColor.red = (unsigned short) (rgba[0] * 65535.0); \
@@ -345,6 +348,7 @@ vtkDashedXorGridMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* a
     SET_FOREGROUND_D(actorColor);
 
 #include <vtkDashedXorGridMapper2D_body.C>
+#endif
 #endif
 }
 

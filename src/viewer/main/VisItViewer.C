@@ -998,7 +998,7 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 static void
 LogGlxAndXdpyInfo()
 {
-#if !defined(_WIN32) && !defined(Q_WS_MACX)
+#if !defined(_WIN32) && !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
     if (DebugStream::Level5())
     {
         LogCommand("sh -c \"xdpyinfo 2>&1\"", "number of visuals"); // truncate at list of visuals

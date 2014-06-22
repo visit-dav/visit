@@ -464,7 +464,7 @@ QvisColorButton::popupPressed()
         // Show the popup menu.         
         popup->move(menuX, menuY);
         popup->show();
-        setDown(FALSE);
+        setDown(false);
     }
 }
 

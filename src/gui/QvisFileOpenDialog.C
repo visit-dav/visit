@@ -437,7 +437,7 @@ QvisFileOpenDialog::exec()
 
     show();
 
-    in_loop = TRUE;
+    in_loop = true;
     QEventLoop eventLoop;
     connect(this, SIGNAL(quitloop()),
             &eventLoop, SLOT(quit()));

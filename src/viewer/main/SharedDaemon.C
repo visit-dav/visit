@@ -284,7 +284,7 @@ void SharedDaemon::handleConnection()
     else if(QWsSocket::initializeWebSocket(result,response))
     {
         /// this is a websocket connection, respond and get frame..
-        socket->write(response.toAscii());
+        socket->write(response.toLatin1());
         socket->flush();
 
         QEventLoop loop;
