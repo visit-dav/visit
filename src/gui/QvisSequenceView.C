@@ -93,7 +93,7 @@ public:
         {
             textColor = option.palette.color(QPalette::Text);
             QVariant value = index.data(Qt::BackgroundRole);
-            if (qVariantCanConvert<QBrush>(value)) {
+            if (value.canConvert<QBrush>()) {
                 QPointF oldBO = painter->brushOrigin();
                 painter->setBrushOrigin(option.rect.topLeft());
                 painter->fillRect(option.rect, qvariant_cast<QBrush>(value));
@@ -181,7 +181,11 @@ QvisSequenceView::QvisSequenceView(QWidget *parent) : QTableView(parent)
     setSelectionMode(QAbstractItemView::SingleSelection);
 
     horizontalHeader()->hide();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+#else
+    verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#endif
 
     setTextElideMode(Qt::ElideMiddle);
 

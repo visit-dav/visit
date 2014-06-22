@@ -250,8 +250,9 @@ KeyframeDataModel::SubjectRemoved(Subject *subj)
 void
 KeyframeDataModel::Update(Subject *)
 {
+    beginResetModel();
     RebuildRowInfo();
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -438,7 +439,7 @@ KeyframeDataModel::PlotIcon(int plotType) const
     GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
         plotPluginManager->GetEnabledID(plotType));
     if(GUIInfo != 0 && GUIInfo->XPMIconData() != 0)
-        retval = QIcon(GUIInfo->XPMIconData());
+        retval = QIcon(QPixmap(GUIInfo->XPMIconData()));
     return retval;
 }
 
@@ -712,7 +713,7 @@ bool
 KeyframeDataModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     bool retval = false;
-    if (qVariantCanConvert<PlotRangeData>(value))
+    if (value.canConvert<PlotRangeData>())
     {
         PlotRangeData s = value.value<PlotRangeData>();
         GetViewerMethods()->SetPlotFrameRange(s.id,
@@ -720,7 +721,7 @@ KeyframeDataModel::setData(const QModelIndex &index, const QVariant &value, int 
                                               qMax(s.start, s.end));
         retval = true;
     }
-    else if (qVariantCanConvert<KeyframePoints>(value))
+    else if (value.canConvert<KeyframePoints>())
     {
         KeyframePoints s = value.value<KeyframePoints>();
         int id = (int)index.internalId();

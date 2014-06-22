@@ -44,7 +44,7 @@
 #include <QPixmap>
 #include <QMenuBar>
 #include <QMenu>
-#include <QMenuItem>
+//#include <QMenuItem>
 #include <QComboBox>
 #include <QSplitter>
 #include <QStatusBar>
@@ -543,7 +543,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     filePopup->addSeparator();
 
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
     filePopup->addAction(tr("&Quit"),this, SIGNAL(quit()),
                          QKeySequence(Qt::CTRL + Qt::Key_Q));
 #else
@@ -601,7 +601,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                      this, SIGNAL(activatePickWindow()),
                      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P));
 
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
     ctrls->addAction(tr("Quer&y . . ."), 
                      this, SIGNAL(activateQueryWindow()),
                      QKeySequence(Qt::CTRL + Qt::Key_Y));
@@ -663,7 +663,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     winPopup->addAction(QPixmap(newwindow_xpm), tr("New"),
                         this, SLOT(windowAdd())
-#ifndef Q_WS_MACX
+#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
                          , QKeySequence(Qt::CTRL + Qt::Key_Insert)
 #endif
                         );
@@ -841,7 +841,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
 
     SetShowSelectedFiles(false);
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
     // Move the window to a known position on the screen
     // so we can take some measurements later
     move(QPoint(100,100));
@@ -2025,7 +2025,7 @@ QvisMainWindow::CreateNode(DataNode *parentNode)
     parentNode->AddNode(node);
 
     // Add generic window attributes
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
     int yval = y() > 0 ? 20 : 0;
     node->AddNode(new DataNode("x", x()));
     node->AddNode(new DataNode("y", y() - yval));

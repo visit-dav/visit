@@ -117,7 +117,8 @@ QvisPluginManagerAttributesDataModel::~QvisPluginManagerAttributesDataModel()
 void
 QvisPluginManagerAttributesDataModel::Update(Subject *)
 {
-    reset();
+    beginResetModel();
+    endResetModel();
 }
 
 // ****************************************************************************

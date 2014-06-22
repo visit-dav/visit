@@ -66,7 +66,12 @@ const char *QvisSequenceMappingModel::SequenceMimeType = "application/visit.sequ
 QvisSequenceMappingModel::QvisSequenceMappingModel(QObject *parent) : 
     QAbstractItemModel(parent), sequencesPerViewport()
 {
-    setSupportedDragActions(Qt::MoveAction);
+}
+
+Qt::DropActions
+QvisSequenceMappingModel::supportedDragActions() const
+{
+    return Qt::MoveAction;
 }
 
 // ****************************************************************************
@@ -102,8 +107,9 @@ QvisSequenceMappingModel::~QvisSequenceMappingModel()
 void
 QvisSequenceMappingModel::clear()
 {
+    beginResetModel();
     sequencesPerViewport.clear();
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -129,8 +135,9 @@ QvisSequenceMappingModel::clear()
 void
 QvisSequenceMappingModel::addViewport(const QString &viewportName)
 {
+    beginResetModel();
     sequencesPerViewport[viewportName] = QSequenceDataList();
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -160,6 +167,7 @@ void
 QvisSequenceMappingModel::addSequenceToViewport(const QString &vpt, 
     const QString &seqName, const QPixmap &pix, int seqType)
 {
+    beginResetModel();
     QStringQSequenceDataListMap::Iterator it;
     it = sequencesPerViewport.find(vpt);
     if(it == sequencesPerViewport.end())
@@ -174,8 +182,7 @@ QvisSequenceMappingModel::addSequenceToViewport(const QString &vpt,
     newSequence.pixmap = pix;
     newSequence.seqType = seqType;
     it.value().push_back(newSequence);
-
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -201,6 +208,7 @@ void
 QvisSequenceMappingModel::insertSequenceInViewport(const QString &vpt, int index,
     const QSequenceData &seqInfo)
 {
+    beginResetModel();
     // Find the viewport.
     QStringQSequenceDataListMap::Iterator it;
     it = sequencesPerViewport.find(vpt);
@@ -216,7 +224,7 @@ QvisSequenceMappingModel::insertSequenceInViewport(const QString &vpt, int index
         ++pos;
     it.value().insert(pos, seqInfo);
 
-    reset();
+    endResetModel();
 }
 
 // ****************************************************************************
@@ -292,7 +300,8 @@ QvisSequenceMappingModel::removeSequence(const QString &name)
             if((*dit).name == name)
             {
                 it.value().erase(dit);
-                reset();
+                beginResetModel();
+                endResetModel();
                 return;
             }
         }

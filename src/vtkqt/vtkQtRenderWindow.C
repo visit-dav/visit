@@ -2,8 +2,10 @@
 #include "QVTKWidget2.h"
 #include <vtkQtRenderWindow.h>
 
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QX11Info>
+#endif
 #endif
 #include "vtkGenericOpenGLRenderWindow.h"
 #include "QVTKInteractor.h"

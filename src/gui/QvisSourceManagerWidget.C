@@ -137,18 +137,18 @@ QvisSourceManagerWidget::QvisSourceManagerWidget(QWidget *parent)
     topLayout->setMargin(5);
     dbActionsToolbar = new QToolBar(this);
     dbActionsToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    dbOpenAction    = dbActionsToolbar->addAction(QIcon(db_open2_xpm),tr("Open"),
+    dbOpenAction    = dbActionsToolbar->addAction(QIcon(QPixmap(db_open2_xpm)),tr("Open"),
                                                   this, SIGNAL(activateFileOpenWindow()));
 
-    dbReopenAction  = dbActionsToolbar->addAction(QIcon(db_close2_xpm),tr("Close"),
+    dbReopenAction  = dbActionsToolbar->addAction(QIcon(QPixmap(db_close2_xpm)),tr("Close"),
                                                   this, SLOT(closeCurrentSource()));
 
-    dbCloseAction   = dbActionsToolbar->addAction(QIcon(db_reopen_xpm),tr("Reopen"),
+    dbCloseAction   = dbActionsToolbar->addAction(QIcon(QPixmap(db_reopen_xpm)),tr("Reopen"),
                                                   this, SLOT(reOpenCurrentSource()));
     dbActionsToolbar->addSeparator();
-    dbReplaceAction = dbActionsToolbar->addAction(QIcon(db_replace_xpm),tr("Replace"),
+    dbReplaceAction = dbActionsToolbar->addAction(QIcon(QPixmap(db_replace_xpm)),tr("Replace"),
                                                   this, SLOT(replaceWithCurrentSource()));
-    dbOverlayAction = dbActionsToolbar->addAction(QIcon(db_overlay_xpm),tr("Overlay"),
+    dbOverlayAction = dbActionsToolbar->addAction(QIcon(QPixmap(db_overlay_xpm)),tr("Overlay"),
                                                   this, SLOT(overlayWithCurrentSource()));
 
     sourceLabel = new QLabel(tr("Active source"), this);

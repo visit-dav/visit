@@ -294,7 +294,7 @@ QvisExportDBWindow::CreateWindowContents()
     directoryLayout->addWidget(directoryNameLineEdit);
     directoryLayout->addWidget(directorySelectButton);
     
-#ifndef Q_WS_MACX
+#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
     directorySelectButton->setMaximumWidth(
          fontMetrics().boundingRect("...").width() + 6);
 #endif

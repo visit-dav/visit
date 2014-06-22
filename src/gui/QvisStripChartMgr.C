@@ -89,8 +89,8 @@ QvisStripChartMgr::QvisStripChartMgr(QWidget *parent, ViewerProxy *theViewer,
     engines = engineList;
     addLayoutStretch = false;
     CreateEntireWindow();
-    isPosted = FALSE;
-    postEnabled = TRUE;
+    isPosted = false;
+    postEnabled = true;
 }
 
 // ****************************************************************************

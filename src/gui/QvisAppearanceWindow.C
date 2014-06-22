@@ -54,20 +54,20 @@
 // Tables of available styles.
 //
 static const char *styleNamesInMenu[] = {
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
 "Macintosh",
 #endif
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_OS_WIN)
 "Windows XP", "Windows Vista",
 #endif
 "Windows", "Motif", "CDE", "Plastique", "CleanLooks"
 };
 
 static const char *styleNames[] = {
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
 "macintosh",
 #endif
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_OS_WIN)
 "windowsxp", "windowsvista",
 #endif
 "windows", "motif", "cde", "plastique", "cleanlooks"

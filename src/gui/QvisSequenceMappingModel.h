@@ -77,6 +77,7 @@ public:
     //
     // Methods for manipulating the model.
     //
+    Qt::DropActions supportedDragActions() const;
     void clear();
     void addViewport(const QString &viewportName);
     void addSequenceToViewport(const QString &vpt, 

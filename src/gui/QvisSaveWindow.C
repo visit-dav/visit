@@ -231,7 +231,7 @@ QvisSaveWindow::CreateWindowContents()
     connect(outputDirectoryLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processOutputDirectoryText()));
 
-#ifndef Q_WS_MACX
+#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
     outputDirectorySelectButton->setMaximumWidth(
          fontMetrics().boundingRect("...").width() + 6);
 #endif

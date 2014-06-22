@@ -186,7 +186,7 @@
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 {
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
     setWindowModality(Qt::WindowModal);
 #endif    
     

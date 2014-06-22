@@ -71,7 +71,7 @@
 // Modifications:
 //   
 // ****************************************************************************
-
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 static void
 Viewer_LogQtMessages(QtMsgType type, const char *msg)
 {
@@ -92,6 +92,29 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
         break;
     }
 }
+#else
+static void
+Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QString& msg)
+{
+        switch(type)
+    {
+    case QtDebugMsg:
+        debug1 << "Qt: Debug: " << msg.toStdString() << endl;
+        break;
+    case QtWarningMsg:
+        debug1 << "Qt: Warning: " << msg.toStdString() << endl;
+        break;
+    case QtCriticalMsg:
+        debug1 << "Qt: Critical: " << msg.toStdString() << endl;
+        break;
+    case QtFatalMsg:
+        debug1 << "Qt: Fatal: " << msg.toStdString() << endl;
+        abort(); // HOOKS_IGNORE
+        break;
+    }
+
+}
+#endif
 
 // ****************************************************************************
 //  Method: ViewerMain
@@ -150,8 +173,10 @@ ViewerMain(int argc, char *argv[])
     {
         // clear any static lib paths to avoid conflicts with
         // loading qt after a make install or make package
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         QStringList empty;
-        QCoreApplication::setLibraryPaths(empty); 
+        QCoreApplication::setLibraryPaths(empty);
+#endif
         //
         // Create the viewer.
         //
@@ -193,7 +218,11 @@ ViewerMain(int argc, char *argv[])
         argv2[real_argc+4] = NULL;
 
         debug1 << "Viewer using font: " << argv2[real_argc+1] << endl;
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         qInstallMsgHandler(Viewer_LogQtMessages);
+#else
+        qInstallMessageHandler(Viewer_LogQtMessages);
+#endif
         int argc2 = real_argc + 2;
         QApplication *mainApp = new QApplication(argc2, argv2, !viewer.GetNowinMode());
 

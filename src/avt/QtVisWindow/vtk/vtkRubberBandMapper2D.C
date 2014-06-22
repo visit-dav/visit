@@ -62,7 +62,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QPainter>
 #include <QLine>
 #if defined(HAVE_XLIB)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #  include <QX11Info>
+#endif
 #  include <X11/Intrinsic.h>
 #endif
 
@@ -282,6 +284,7 @@ vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 void
 vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #if defined(HAVE_XLIB)
 #define STORE_POINT(P, X, Y) P.x = short(X); P.y = short(Y);
 
@@ -355,6 +358,7 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
     SET_FOREGROUND_D(actorColor);
 
 #include <vtkRubberBandMapper2D_body.C>
+#endif
 #endif
 }
 

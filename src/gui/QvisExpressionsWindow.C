@@ -1965,7 +1965,7 @@ QvisExpressionsWindow::QuoteVariable(const QString &var)
 
     for (int i=0; i<var.length(); i++)
     {
-        char c = var[i].toAscii();
+        char c = var[i].toLatin1();
         if ((c < 'A' || c > 'Z') &&
             (c < 'a' || c > 'z') &&
             (c < '0' || c > '9') &&

@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 
+#include <qdrawutil.h>
 #include <QvisLightingWidget.h>
 #include <math.h>
 #include <QMouseEvent>

@@ -256,8 +256,13 @@ QvisPluginWindow::CreateWindowContents()
 
     plotView = new QTreeView(pagePlots);
     plotView->setModel(plotDataModel);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     plotView->header()->setResizeMode(0,QHeaderView::ResizeToContents);
     plotView->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+#else
+    plotView->header()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    plotView->header()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+#endif
     plots_layout->addWidget(plotView);
 
     //
@@ -268,8 +273,13 @@ QvisPluginWindow::CreateWindowContents()
     tabs->addTab(pageOperators, tr("Operators"));
     operatorView = new QTreeView(pageOperators);
     operatorView->setModel(operatorDataModel);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     operatorView->header()->setResizeMode(0,QHeaderView::ResizeToContents);
     operatorView->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+#else
+    operatorView->header()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    operatorView->header()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+#endif
     ops_layout->addWidget(operatorView);
 
     QHBoxLayout *opsBLayout = new QHBoxLayout();
@@ -300,8 +310,13 @@ QvisPluginWindow::CreateWindowContents()
     listDatabases->setHeaderLabels(dbHeaders);
     listDatabases->headerItem()->setTextAlignment(1, Qt::AlignCenter);
     listDatabases->headerItem()->setTextAlignment(2, Qt::AlignCenter);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     listDatabases->header()->setResizeMode(0,QHeaderView::ResizeToContents);
     listDatabases->header()->setResizeMode(2,QHeaderView::ResizeToContents);
+#else
+    listDatabases->header()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    listDatabases->header()->setSectionResizeMode(2,QHeaderView::ResizeToContents);
+#endif
     db_llayout->addWidget(listDatabases);
 
     QFrame *grpBox = new QFrame(pageDatabases);

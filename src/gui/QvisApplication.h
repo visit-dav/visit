@@ -40,7 +40,7 @@
 #define QVIS_APPLICATION_H
 #include <QApplication>
 
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
 class QEventLoop;
 #endif
 
@@ -79,9 +79,11 @@ signals:
 private slots:
     void exitTheLoop();
 
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
 public:
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     virtual bool macEventFilter(EventHandlerCallRef, EventRef);
+#endif
     bool         needToMakeActive;
     QEventLoop  *eventLoop;
 #endif

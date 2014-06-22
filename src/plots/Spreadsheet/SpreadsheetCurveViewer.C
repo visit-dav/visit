@@ -92,7 +92,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
     topLayout->setMargin(10);
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
     QWidget *menuContainer = new QWidget(top);
     QHBoxLayout *menuLayout = new QHBoxLayout(menuContainer);
     topLayout->addWidget(menuContainer);
@@ -117,7 +117,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
     // Do the main menu.
     //
     fileMenu = new QMenu(tr("&File"), this);
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
     QPushButton *fileButton = new QPushButton(tr("&File"), menuContainer);
     menuLayout->addWidget(fileButton);
     fileButton->setMenu(fileMenu);
@@ -127,7 +127,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
     fileMenu->addAction(tr("Save curve . . ."), this, SLOT(saveCurve()), Qt::CTRL+Qt::Key_S);
 
     editMenu = new QMenu(tr("&Edit"), this);
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
     QPushButton *editButton = new QPushButton(tr("&Edit"), menuContainer);
     menuLayout->addWidget(editButton);
     editButton->setMenu(editMenu);
@@ -138,7 +138,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
 
 #ifdef PLOT_ENABLED
     operationsMenu = new QMenu(tr("&Operations"), this);
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
     QPushButton *opButton = new QPushButton(tr("&Operations"), menuContainer);
     menuLayout->addWidget(opButton);
     opButton->setMenu(operationsMenu);

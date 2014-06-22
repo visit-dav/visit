@@ -3,12 +3,13 @@ IF(NOT DEFINED VISIT_QT_DIR)
     MESSAGE(FATAL_ERROR "Qt5 installation directory not specified")
 ENDIF()
 
-SET(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc)
+set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(QT5_INCLUDE_DIRS "")
 set(QT5_LIBRARIES "")
 
 set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Xml UiTools)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_QT_DIR}/lib/cmake)
 find_package (Qt5 REQUIRED ${visit_qt_modules})
 
 

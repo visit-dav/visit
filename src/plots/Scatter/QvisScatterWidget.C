@@ -35,7 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
+#include <qdrawutil.h>
 #include <QvisScatterWidget.h>
 #include <math.h>
 

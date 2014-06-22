@@ -9633,7 +9633,7 @@ ViewerSubject::ConnectWindow(ViewerWindow *win)
     TRY
     {
         win->GetActionManager()->EnableActions(ViewerWindowManager::Instance()->GetWindowAtts());
-#ifdef Q_WS_MACX
+#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
         win->Show();
 #endif
     }

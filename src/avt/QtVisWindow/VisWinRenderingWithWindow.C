@@ -47,7 +47,7 @@
 #include <vtkRubberBandMapper2D.h>
 #include <vtkDashedXorGridMapper2D.h>
 
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
 // We only need WindowMetrics here if we're on X11.
 #include <WindowMetrics.h>
 #endif
@@ -296,7 +296,7 @@ VisWinRenderingWithWindow::Iconify(void)
 {
     if (realized && ownRenderWindow)
     {
-#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
         renWin->hide();
 #else
         if (! renWin->isMinimized())
@@ -457,7 +457,7 @@ VisWinRenderingWithWindow::DeIconify(void)
 {
     if (realized)
     {
-#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
         renWin->show();
 #else
         renWin->showNormal();

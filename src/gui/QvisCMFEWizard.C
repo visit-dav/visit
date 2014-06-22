@@ -740,7 +740,7 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     targetDatabase = new QComboBox(main_widget);
 
     targetDatabaseOpen = new QPushButton("...", this);
-#ifndef Q_WS_MACX
+#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
     targetDatabaseOpen->setMaximumWidth(fontMetrics().boundingRect("...").width() + 6);
 #endif
 
@@ -779,7 +779,7 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     donorDatabaseLabel = new QLabel(tr("Donor Database:"), main_widget);
     donorDatabase = new QComboBox(main_widget);
     donorDatabaseOpen = new QPushButton("...", this);
-#ifndef Q_WS_MACX
+#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
     donorDatabaseOpen->setMaximumWidth(fontMetrics().boundingRect("...").width() + 6);
 #endif
 

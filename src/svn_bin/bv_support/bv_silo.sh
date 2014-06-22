@@ -173,7 +173,7 @@ function build_silo
     else
        WITHSZIPARG="--without-szlib"
     fi
-    if [[ "$DO_QT" != "yes" || "$OPSYS" == "Darwin" || "$DO_STATIC_BUILD" == "yes" ]] ; then
+    if [[ "$DO_QT" != "yes" || "$OPSYS" == "Darwin" || "$DO_STATIC_BUILD" == "yes" || "$IS_QT5" == "yes" ]] ; then
        WITHSILOQTARG="--disable-silex"
     else
        export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"

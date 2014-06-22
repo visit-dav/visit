@@ -2101,7 +2101,7 @@ DecodeQualifiedFilename(const QVariant &v)
         f.host      = values[0].toString().toStdString();
         f.path      = values[1].toString().toStdString();
         f.filename  = values[2].toString().toStdString();
-        f.separator = values[3].toChar().toAscii();
+        f.separator = values[3].toChar().toLatin1();
         f.SetAccess(values[4].toBool());
         f.SetVirtual(values[5].toBool());
     }
