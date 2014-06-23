@@ -59,7 +59,8 @@
                     {"category":"databases","file":"rect.py","platform":"win"},
                     {"category":"databases","file":"itaps.py","platform":"win"},
                     {"category":"databases","file":"claw.py","platform":"win"},
-                    {"category":"plots","file":"pics.py"}
+                    {"category":"plots","file":"pics.py"},
+                    {"category":"plots","file":"streamline_geom.py","cases":["streamline_geom_10","streamline_geom_11","streamline_geom_12","streamline_geom_13","streamline_geom_14"]},
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
