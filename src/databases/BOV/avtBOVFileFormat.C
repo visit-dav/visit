@@ -81,6 +81,7 @@
 
 #ifdef _WIN32
 #define FSEEK _fseeki64
+#define strcasecmp stricmp
 #else
 #define FSEEK fseek
 #endif
@@ -2241,7 +2242,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "CENTERING:") == 0)
                 {
                     line += strlen("CENTERING:") + 1;
-                    if (strcasestr(line, "zon") != NULL)
+                    if (strstr(line, "zon") != NULL || strstr(line, "ZON") != NULL)
                         nodalCentering = false;
                 }
                 else if (strcmp(line, "BYTE_OFFSET:") == 0)
