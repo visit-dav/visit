@@ -40,4 +40,8 @@
     </Function>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
+    <Function name="PyQueryOverTimeAttributes_GetLogString" user="false" member="true">
+    </Function>
+    <Function name="PyQueryOverTimeAttributes_CallLogRoutine" user="false" member="true">
+    </Function>
   </Attribute>

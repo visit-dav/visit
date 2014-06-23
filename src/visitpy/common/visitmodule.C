@@ -17380,6 +17380,9 @@ AddExtensions()
 //   Brad Whitlock, Wed Jun  6 13:35:46 PDT 2012
 //   Add KeyframeAttributes.
 //
+//   Kathleen Biagas, Mon Jun 23 09:52:42 MST 2014
+//   Add QueryOvertimeAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -17400,6 +17403,7 @@ InitializeExtensions()
     PyPickAttributes_StartUp(GetViewerState()->GetPickAttributes(), 0);
     PyPrinterAttributes_StartUp(GetViewerState()->GetPrinterAttributes(), 0);
     PyProcessAttributes_StartUp(GetViewerState()->GetProcessAttributes(), 0);
+    PyQueryOverTimeAttributes_StartUp(GetViewerState()->GetQueryOverTimeAttributes(), 0);
     PyRenderingAttributes_StartUp(GetViewerState()->GetRenderingAttributes(), 0);
     PySaveWindowAttributes_StartUp(GetViewerState()->GetSaveWindowAttributes(), 0);
     PySelectionProperties_StartUp(0, 0);
