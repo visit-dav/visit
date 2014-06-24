@@ -88,6 +88,8 @@ function bv_qt_alt_qt_dir
 function bv_qt_qt5
 {
     info "enabling Qt5.."
+    bv_qt_enable
+
     QT_VERSION="5.2.1"
     QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
     QT_BUILD_DIR="${QT_FILE%.tar*}"
