@@ -1330,6 +1330,8 @@ PackageGlobalIdArray(visit_handle global, const char *name)
 // Creation:   Fri Jun 13 10:47:37 PDT 2014
 //
 // Modifications:
+//    Kathleen Biagas, Tue Jun 24 10:25:03 MST 2014
+//    Check for valid handle before packaging.
 //
 // ****************************************************************************
 
@@ -1340,7 +1342,8 @@ CreateUnstructuredMeshGlobalCellIds(visit_handle h)
     visit_handle globalCells = VISIT_INVALID_HANDLE;
     if(simv2_UnstructuredMesh_getGlobalCellIds(h, &globalCells) == VISIT_OKAY)
     {
-        retval = PackageGlobalIdArray(globalCells, "avtGlobalZoneIds");
+        if (globalCells != VISIT_INVALID_HANDLE)
+            retval = PackageGlobalIdArray(globalCells, "avtGlobalZoneIds");
     }
     return retval;
 }
@@ -1362,6 +1365,8 @@ CreateUnstructuredMeshGlobalCellIds(visit_handle h)
 // Creation:   Fri Jun 13 10:47:37 PDT 2014
 //
 // Modifications:
+//    Kathleen Biagas, Tue Jun 24 10:25:03 MST 2014
+//    Check for valid handle before packaging.
 //
 // ****************************************************************************
 
@@ -1372,7 +1377,8 @@ CreateUnstructuredMeshGlobalNodeIds(visit_handle h)
     visit_handle globalNodes = VISIT_INVALID_HANDLE;
     if(simv2_UnstructuredMesh_getGlobalNodeIds(h, &globalNodes) == VISIT_OKAY)
     {
-        retval = PackageGlobalIdArray(globalNodes, "avtGlobalNodeIds");
+        if (globalNodes != VISIT_INVALID_HANDLE)
+            retval = PackageGlobalIdArray(globalNodes, "avtGlobalNodeIds");
     }
     return retval;
 }
