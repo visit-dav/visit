@@ -1,0 +1,3 @@
+Simulation executable "ucdcurve" exists.
+Simulation "ucdcurve" started.
+VisIt connected to simulation "ucdcurve".
