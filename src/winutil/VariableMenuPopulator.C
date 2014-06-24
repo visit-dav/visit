@@ -768,6 +768,8 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
 //   Give operator plugins the existing expressions as well so they can
 //   work on those too.
 //
+//   Mark C. Miller, Tue Jun 24 11:41:03 PDT 2014
+//   Send message for created expression to debug5 instead of debug1.
 // ****************************************************************************
 
 void
@@ -801,7 +803,7 @@ VariableMenuPopulator::GetOperatorCreatedExpressions(ExpressionList &newExpressi
                 Expression *e = globalExpr->operator[](opExpr.GetName().c_str());
                 if(e == 0)
                 {
-                    debug1 << "GetOperatorCreatedExpressions: Adding "
+                    debug5 << "GetOperatorCreatedExpressions: Adding "
                               "operator-created expression " << opExpr.GetName()
                            << " to the global expression list." << endl;
                     globalExpr->AddExpressions(opExpr);
