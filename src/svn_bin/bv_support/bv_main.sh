@@ -292,8 +292,8 @@ export ON_FORTRAN="off"
 export DO_SLIVR="no"
 export ON_SLIVR="off"
 export PREVENT_ICET="no"
-GRAPHICAL="yes"
-ON_GRAPHICAL="on"
+GRAPHICAL="no"
+ON_GRAPHICAL="off"
 verify="no"
 ON_verify="off"
 export DO_OPTIONAL="yes"
@@ -911,6 +911,7 @@ for arg in "${arguments[@]}" ; do
         --cxx) next_arg="cxx";;
         --log-file) next_arg="log-file";;
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
+        --gui) GRAPHICAL="yes"; ON_GRAPHICAL="on";;
         --debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
         --bv-debug) set -vx;;
         --download-only) DOWNLOAD_ONLY="yes";;
