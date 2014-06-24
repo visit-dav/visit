@@ -79,6 +79,7 @@ typedef struct
     double   time;
     int      runMode;
     int      done;
+    int      echo;
 
     int      npts;
     float   *x;
@@ -97,6 +98,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->time = 0.;
     sim->runMode = SIM_STOPPED;
     sim->done = 0;
+    sim->echo = 0;
 
     sim->npts = 100;
     sim->x = (float *)malloc(sim->npts * sizeof(float));
@@ -301,6 +303,11 @@ ProcessConsoleCommand(simulation_data *sim)
         VisItTimeStepChanged();
         VisItUpdatePlots();
     }
+    if (sim->echo && sim->par_rank == 0)
+    {
+        fprintf(stderr, "Command '%s' completed.\n", cmd);
+        fflush(stderr);
+    }
 }
 
 /******************************************************************************
@@ -421,6 +428,7 @@ void mainloop(simulation_data *sim)
 int main(int argc, char **argv)
 {
     char *env = NULL;
+    int i = 0;
     simulation_data sim;
     simulation_data_ctor(&sim);
 
@@ -466,6 +474,12 @@ int main(int argc, char **argv)
     if(env != NULL)
         free(env);
 
+    for(i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "-echo") == 0)
+            sim.echo = 1;
+    }
+
     /* Write out .sim file that VisIt uses to connect. Only do it
      * on processor 0.
      */
@@ -481,7 +495,7 @@ int main(int argc, char **argv)
 #endif
             "Demonstrates 1D unstructured mesh",
             "/path/to/where/sim/was/started",
-            NULL, NULL, NULL);
+            NULL, NULL, SimulationFilename());
     }
 
     /* Read input problem setup, geometry, data.*/
