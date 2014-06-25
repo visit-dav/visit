@@ -265,22 +265,23 @@ static int SizeOfNCType(int type)
 }
 
 static void
-GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *rettype,
-    int *retnum_comps, int *retnum_vals, void **retbuf)
+GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, avtVarType vt, 
+    avtCentering vc, nc_type *rettype, int *retnum_comps, int *retnum_vals, void **retbuf)
 {
     int ncerr;
     int i;
-    avtCentering cent = AVT_NODECENT;
     void *buf;
     int num_vals;
-    int num_comps;
+    int num_comps = 0;
     nc_type type;
     size_t len = strlen(visit_varname);
     bool isCoord = !strncmp(visit_varname, "coord", 5);
     int exvaridx = -1;
+    avtCentering cent = vc==AVT_UNKNOWN_CENT?AVT_NODECENT:vc;
 
     if (isCoord)
     {
+        cent = AVT_NODECENT;
         if (!strncmp(visit_varname, "coordx", 6) ||
             !strncmp(visit_varname, "coordy", 6) ||
             !strncmp(visit_varname, "coordz", 6))
@@ -303,10 +304,12 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
         num_comps = 0;
         while (node_var_names[i])
         {
-            if (!strncmp(visit_varname, node_var_names[i], len))
+            if ((vt == AVT_VECTOR_VAR && !strncmp(visit_varname, node_var_names[i], len)) ||
+                (vt == AVT_SCALAR_VAR && !strcmp(visit_varname, node_var_names[i])))
             {
                 if (exvaridx == -1)
                 {
+                    cent = AVT_NODECENT;
                     exvaridx = i;
                     num_comps = 1;
                 }
@@ -321,15 +324,16 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
         if (exvaridx < 0)
         {
            // Now, try looking in elem var names 
-            cent = AVT_ZONECENT;
             char **elem_var_names = GetStringListFromExodusIINCvar(exncfid, "name_elem_var");
             i = 0;
             while (elem_var_names[i])
             {
-                if (!strncmp(visit_varname, elem_var_names[i], len))
+                if ((vt == AVT_VECTOR_VAR && !strncmp(visit_varname, elem_var_names[i], len)) ||
+                    (vt == AVT_SCALAR_VAR && !strcmp(visit_varname, elem_var_names[i])))
                 {
                     if (exvaridx < 0)
                     {
+                        cent = AVT_ZONECENT;
                         exvaridx = i;
                         num_comps = 1;
                     }
@@ -342,11 +346,86 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
             }
             FreeStringListFromExodusIINCvar(elem_var_names);
         }
-        if (exvaridx < 0)
-            EXCEPTION1(InvalidVariableException, visit_varname);
     }
 
-    if (cent == AVT_NODECENT)
+    if (exvaridx < 0)
+    {
+        // Lets see if this is a raw netcdf variable
+        int varid;
+        ncerr = nc_inq_varid(exncfid, visit_varname, &varid);
+        if (ncerr != NC_NOERR)
+            EXCEPTION1(InvalidVariableException, visit_varname);
+
+        int ndims, dimids[NC_MAX_VAR_DIMS];
+        ncerr = nc_inq_var(exncfid, varid, 0, &type, &ndims, dimids, 0);
+        if (ndims > 3)
+        {
+            char msg[256];
+            SNPRINTF(msg, sizeof(msg), "%s has %d>3 dimensions", visit_varname, ndims);
+            EXCEPTION1(InvalidVariableException, msg);
+        }
+
+        // Get some dimension information
+        int unlimited_dimId, num_nodes_dimId, num_elem_dimId;
+        nc_inq_unlimdim(exncfid, &unlimited_dimId);
+        nc_inq_dimid(exncfid, "num_nodes", &num_nodes_dimId);
+        nc_inq_dimid(exncfid, "num_elem", &num_elem_dimId);
+        size_t num_nodes, num_elem;
+        nc_inq_dimlen(exncfid, num_nodes_dimId, &num_nodes);
+        nc_inq_dimlen(exncfid, num_elem_dimId, &num_elem);
+
+        int ul_dim_idx=-1, num_ents_dim_idx, other_dim_idx=-1;
+        num_comps = 1;
+        for (i = 0; i < ndims; i++)
+        {
+            if (dimids[i] == unlimited_dimId)
+                ul_dim_idx = i;
+            else if (dimids[i] == num_nodes_dimId)
+            {
+                cent = AVT_NODECENT;
+                num_ents_dim_idx = i;
+                num_vals = num_nodes;
+            }
+            else if (dimids[i] == num_elem_dimId)
+            {
+                cent = AVT_ZONECENT;
+                num_ents_dim_idx = i;
+                num_vals = num_elem;
+            }
+            else
+            {
+                size_t dlen;
+                nc_inq_dimlen(exncfid, dimids[i], &dlen);
+                num_comps = (int) dlen;
+                other_dim_idx = i;
+            }
+        }
+
+        size_t starts[3], counts[3];
+        if (ul_dim_idx != -1)
+        {
+            starts[ul_dim_idx] = ts;
+            counts[ul_dim_idx] = 1;
+        }
+        if (other_dim_idx != -1)
+        {
+            starts[other_dim_idx] = 0;
+            counts[other_dim_idx] = num_comps;
+        }
+        starts[num_ents_dim_idx] = 0;
+        counts[num_ents_dim_idx] = num_vals;
+
+        buf = (void*) malloc(num_comps * num_vals * SizeOfNCType(type));
+        ncerr = nc_get_vara(exncfid, varid, starts, counts, buf);
+        CheckNCError2(ncerr, nc_get_vara, __LINE__, __FILE__)      
+        if (ncerr != NC_NOERR)
+        {
+            free(buf);
+            EXCEPTION1(InvalidVariableException, visit_varname);
+        }
+
+    }
+    else if (cent == AVT_NODECENT)
     {
         // Nodal variable data is either in an nc array of 3 dimensions,
         // time_step, num_nod_var, num_nodes named "vals_nod_var" or in
@@ -480,6 +559,7 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
             }
         }
     }
+
     *rettype = type;
     *retnum_comps = num_comps;
     *retnum_vals = num_vals;
@@ -738,15 +818,23 @@ GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElem
     {
         if (!status[i]) continue;
 
-        char tmp[32];
+        char tmp[32], tmp1[32];
         if (stype == "node")
             SNPRINTF(tmp, sizeof(tmp), "node_ns%d", i+1);
         else
-            SNPRINTF(tmp, sizeof(tmp), "elem_ss%d", i+1);
+        {
+            SNPRINTF(tmp,  sizeof(tmp), "elem_ss%d", i+1);
+            SNPRINTF(tmp1, sizeof(tmp1), "side_ss%d", i+1);
+        }
  
-        int setlist_varid;
+        int setlist_varid, sidelist_varid;
         ncerr = nc_inq_varid(exncfid, tmp, &setlist_varid);
         if (ncerr != NC_NOERR) continue;
+        if (stype == "side")
+        {
+            ncerr = nc_inq_varid(exncfid, tmp1, &sidelist_varid);
+            if (ncerr != NC_NOERR) continue;
+        }
 
         int dimids[NC_MAX_VAR_DIMS];
         ncerr = nc_inq_var(exncfid, setlist_varid, 0, &type, &ndims, dimids, 0);
@@ -759,18 +847,34 @@ GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElem
         if (ncerr != NC_NOERR) continue;
         if (!dlen) continue;
 
-        int *setids = new int[dlen];
+        int *setids = new int[dlen], *sideids = 0;
         ncerr = nc_get_var_int(exncfid, setlist_varid, setids);
         if (ncerr != NC_NOERR)
         {
             delete [] setids;
             continue;
         }
+        if (stype == "side")
+        {
+            sideids = new int[dlen];
+            ncerr = nc_get_var_int(exncfid, sidelist_varid, sideids);
+            if (ncerr != NC_NOERR)
+            {
+                delete [] setids;
+                delete [] sideids;
+                continue;
+            }
+        }
+
+        // Handling of side sets is in-complete. Need to get connectivity
+        // and iterate over elems in connects using sideids for a 'side' of
+        // an elem.
 
         for (int j = 0; j < (int) dlen; j++)
             retval->SetComponent(setids[j]-1, i, 1);
 
         delete [] setids;
+        if (sideids) delete [] sideids;
     }
 
     delete [] status;
@@ -1698,8 +1802,8 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     VisItNCErr = nc_inq(ncExIIId, 0, &nvars, 0, 0);
     CheckNCError(nc_inq);
 
-    int unlimited_dimid;
-    nc_inq_unlimdim(ncExIIId, &unlimited_dimid);
+    int unlimited_dimId;
+    nc_inq_unlimdim(ncExIIId, &unlimited_dimId);
     for (int i = 0; i < nvars; i++)
     {
         char vname[NC_MAX_NAME+1];
@@ -1713,7 +1817,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         int ncomps = 1;
         for (int j = 0; j < vndims; j++)
         {
-            if (vdimids[j] == unlimited_dimid)
+            if (vdimids[j] == unlimited_dimId)
                 continue;
             else if (vdimids[j] == num_nodes_dimId)
                 centering = AVT_NODECENT;
@@ -2089,17 +2193,33 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 //
 // ****************************************************************************
 
+#define GET_CENTERING1(CVAL, VAR, TYP)                                  \
+if (CVAL == AVT_UNKNOWN_CENT && metadata)                               \
+{                                                                       \
+    avt ## TYP ## MetaData const *p = metadata->Get ## TYP(VAR);        \
+    if (p) CVAL = p->centering;                                         \
+}
+
+#define GET_CENTERING(CVAL, VAR)             \
+    GET_CENTERING1(CVAL, VAR, Scalar)        \
+    GET_CENTERING1(CVAL, VAR, Vector)        \
+    GET_CENTERING1(CVAL, VAR, Tensor)
+
 vtkDataArray *
 avtExodusFileFormat::GetVar(int ts, const char *var)
 {
     nc_type type;
     int num_vals, num_comps;
     void *buf;
+    avtCentering vc = AVT_UNKNOWN_CENT;
+
+    GET_CENTERING(vc, var);
 
     if (string(var) == "Nodesets" || string(var) == "Sidesets")
         return GetExodusSetsVar(ncExIIId, ts, var, numNodes, numElems);
 
-    GetData(ncExIIId, ts, var, numBlocks, &type, &num_comps, &num_vals, &buf);
+    GetData(ncExIIId, ts, var, numBlocks, AVT_SCALAR_VAR, vc,
+        &type, &num_comps, &num_vals, &buf);
 
     return MakeVTKDataArrayByTakingOwnershipOfNCVarData(type, num_comps, num_vals, buf);
 }
@@ -2138,8 +2258,12 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
     nc_type type;
     int num_vals, num_comps;
     void *buf;
+    avtCentering vc = AVT_UNKNOWN_CENT;
 
-    GetData(ncExIIId, ts, var, numBlocks, &type, &num_comps, &num_vals, &buf);
+    GET_CENTERING(vc, var);
+
+    GetData(ncExIIId, ts, var, numBlocks, AVT_VECTOR_VAR, vc,
+        &type, &num_comps, &num_vals, &buf);
 
     vtkDataArray *arr = MakeVTKDataArrayByTakingOwnershipOfNCVarData(type, 
                             num_comps, num_vals, buf);
