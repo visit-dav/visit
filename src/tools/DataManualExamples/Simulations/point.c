@@ -44,9 +44,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 #include "SimulationExample.h"
 
@@ -311,7 +308,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("point",
         "Demonstrates creating a point mesh",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data.*/
     read_input_deck();
