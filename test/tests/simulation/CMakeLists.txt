@@ -50,7 +50,9 @@ SET(PY_TESTS
     materialvar
     mesh
     multiblock
+    point
     scalar
+    ucdcurve
     unstructured
     updateplots
     var)
