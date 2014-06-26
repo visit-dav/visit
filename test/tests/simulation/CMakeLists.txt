@@ -51,6 +51,7 @@ SET(PY_TESTS
     mesh
     multiblock
     point
+    polyhedral
     scalar
     ucdcurve
     unstructured
