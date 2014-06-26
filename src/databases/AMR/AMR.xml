@@ -16,14 +16,24 @@
     <Files components="M">
       avtAMRFileFormat.C
       EOS.C
+      AMRreaderInterface.C
       AMRreader.C
-      AMRreaderAgg.C
+      AMRreaderLowRes.C
+      AMRreaderBlkConso.C
+      AMRreaderLowResBlkConso.C
+      AMRreaderWithLevels.C
+      OctKey.C
     </Files>
     <Files components="E">
       avtAMRFileFormat.C
       EOS.C
+      AMRreaderInterface.C
       AMRreader.C
-      AMRreaderAgg.C
+      AMRreaderLowRes.C
+      AMRreaderBlkConso.C
+      AMRreaderLowResBlkConso.C
+      AMRreaderWithLevels.C
+      OctKey.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
