@@ -187,6 +187,9 @@ avtUnstructuredPointBoundaries::CheckGenerated(int d1, int d2)
 //    Brad Whitlock, Thu Sep 16 10:55:38 PDT 2004
 //    I added separate Windows coding to make it work with the MSVC6 compiler.
 //
+//    Brad Whitlock, Thu Jun 26 14:21:20 PDT 2014
+//    Permit ghosting for 2D cells so wireframe material plots work properly.
+//
 // ****************************************************************************
 
 void
@@ -229,7 +232,7 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
                 for (int k = 0; k < cl->GetNumberOfIds(); ++k)
                 {
                     int cellId = cl->GetId(k);
-                    
+#if 0
                     //
                     // We shouldn't ghost 2D cells.
                     //
@@ -237,7 +240,7 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
                     if (type == VTK_LINE || type == VTK_TRIANGLE
                         || type == VTK_VERTEX || type == VTK_QUAD)
                         continue;
-                    
+#endif
                     cells.insert(cellId);
                     ds->GetCellPoints(cellId, pl);
                     for (int m = 0; m < pl->GetNumberOfIds(); ++m)

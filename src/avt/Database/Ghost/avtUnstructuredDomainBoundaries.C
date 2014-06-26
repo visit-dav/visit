@@ -359,6 +359,10 @@ CopyPointer(T *src, T *dest, int components,
 //    Hank Childs, Fri May 19 13:29:29 PDT 2006
 //    Code around VTK memory leak.
 //
+//    Brad Whitlock, Mon Jun  2 16:05:42 PDT 2014
+//    Reinstate call to BuildLinks since it does not leak with the new VTK
+//    (and the old workaround did leak with the new VTK).
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -534,19 +538,8 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
         ghostCells->Delete();
         vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(outm->GetInformation(), 0);
 
-        // This call is in lieu of "BuildLinks", which has a memory leak.
-        // This should be the non-leaking equivalent.
-        //
-        //outm->BuildLinks();
-        if (outm->GetCellLinks() != NULL)
-        {
-            vtkCellLinks *links = outm->GetCellLinks();
-            links->Allocate(outm->GetNumberOfPoints());
-            links->Register(outm);  // Adds a reference.
-            links->BuildLinks(outm, outm->GetCells());
-            links->Delete();   // Removes the reference
-        }
-
+        // Rebuild the links now that we've added ghost cells.
+        outm->BuildLinks();
         out[d] = outm;
     }
 
