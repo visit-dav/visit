@@ -32,7 +32,7 @@ def InitializeView():
 def test0(datapath):
     TestSection("Solid")
     db = pjoin(datapath,"pelh.*.vld database")
-    OpenDatabase(db)
+    OpenDatabase(db,0,"Velodyne_1.0")
     md = GetMetaData(db)
     TestText("Velodyne_0_00", str(md))
     AddPlot("Pseudocolor", "Solid/Pressure")
@@ -62,7 +62,7 @@ def test0(datapath):
 def test1(datapath):
     TestSection("Surface")
 
-    OpenDatabase(pjoin(datapath,"pelh.1.vld"))
+    OpenDatabase(pjoin(datapath,"pelh.1.vld"),0,"Velodyne_1.0")
     AddPlot("Pseudocolor", "Surface/Velocity_0")
     DrawPlots()
     InitializeView()
