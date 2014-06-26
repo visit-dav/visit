@@ -99,10 +99,7 @@ void simulate_one_timestep(simulation_data *sim)
 float xc[] = {
 2.5, 2.5, 2.5, 2.5,
 1.5, 1.5, 1.5, 1.5,
-/*NOTE: the 0.49's are to displace a node so we don't have 3 colinear nodes
-        since it will cause the tessellator to ignore a node.
- */
-0.5, 0.49 ,0.5, 0.49, 0.5, 0.49, 0.5, 0.49, 0.5,
+0.5, 0.5 ,0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.
 };
 
@@ -324,7 +321,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("polyhedral",
         "Demonstrates creating a polyhedral mesh",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();
