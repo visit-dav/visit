@@ -580,13 +580,16 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
 //    we now have a way to show dangling bonds (periodic cases is
 //    another example) correctly, so we want to clip normally now.
 //
+//    Brad Whitlock, Mon Jun  2 12:51:24 PDT 2014
+//    Prevent leak of fast clipper (and consequently its input dataset) in
+//    the event that the clip generated no data.    
+//
 // ****************************************************************************
 
 int
 avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
                                ClipAttributes &atts, int domain, std::string label)
 {
-    vtkVisItClipper *fastClipper = vtkVisItClipper::New();
     vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
     vtkDataSet *output = NULL;
  
@@ -596,7 +599,6 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
     if (!funcSet)
     {
         // we have no functions to work with.  Just return the input dataset.
-        fastClipper->Delete();
         ifuncs->Delete();
 
         outDS[0] = inDS;
@@ -626,6 +628,7 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
     }
     if (doFast)
     {
+        vtkVisItClipper *fastClipper = vtkVisItClipper::New();
         vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
         fastClipper->SetInputData(inDS);
         fastClipper->SetOutput(ug);
@@ -633,25 +636,27 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
         fastClipper->SetInsideOut(inverse);
         fastClipper->SetRemoveWholeCells(nodesAreCritical);
         fastClipper->Update();
+        fastClipper->Delete();
 
         output = ug;
     }
 
     ifuncs->Delete();
 
+    int nds = 1;
     if (output != NULL)
     {
         if (output->GetNumberOfCells() == 0)
         {
             output->Delete();
-            return 0;
+            nds = 0;
         }
     }
-
-    fastClipper->Delete();
+    else
+        nds = 0;
 
     outDS[0] = output;
-    return 1;
+    return nds;
 }
 
 
