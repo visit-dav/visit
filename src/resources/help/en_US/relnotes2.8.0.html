@@ -55,8 +55,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.8</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li>An enhanced version of the AMR reader was added.</li>
+  <li>A reader for parallel Velodyne files was added.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -103,6 +103,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bad behavior with updating Curve Plot options when 'Auto apply' selected and multiple Curve plots are drawn.</li>
   <li>Fixed command recording for QueryOverTimeAttributes.</li>
   <li>Fixed tesselation bug that was preventing the polyhedral simulation example from rendering correctly.</li>
+  <li>Fixed a memory leak in unstructured grid ghost cell generation based on global node ids.</li>
+  <li>Fixed a problem preventing ghost cells from being generated for 2D unstructured cell types. This fixes a bug where wireframe FilledBoundary plots were showing wireframes along domain boundaries.</li>
+  <li>Fixed a problem-sized memory leak in the Clip operator after processing domains that resulted in zero clipped geometry.</li>
 </ul>
 
 <a name="Config_changes"></a>
