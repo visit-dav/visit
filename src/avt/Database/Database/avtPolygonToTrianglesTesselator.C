@@ -273,13 +273,15 @@ avtPolygonToTrianglesTesselator::GetVertexId(double *vals)
 // Creation:   Tue Oct  9 12:51:23 PDT 2012
 //
 // Modifications:
+//    Kathleen Biagas, Thu Jun 26 13:22:01 MST 2014
+//    Uncommented use of vertexManager to preserve order.
 //
 // ****************************************************************************
 void
 avtPolygonToTrianglesTesselator::AddContourVertex(double *vals)
 {
     // make vertex manager aware to preserve order
-    //vertexManager->GetVertexId(vals);
+    vertexManager->GetVertexId(vals);
     // TODO optimize!
     verts.push_back(vals[0]);
     verts.push_back(vals[1]);

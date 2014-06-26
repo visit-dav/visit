@@ -945,6 +945,9 @@ SimV2_UnstructuredMesh_Count_Cells(const int *connectivity, int connectivityLen,
 //   Cyrus Harrison, Tue Oct  9 13:21:32 PDT 2012
 //   Use tess2 via new avtPolygonToTrianglesTesselator class.
 //
+//   Kathleen Biagas, Thu Jun 26 14:14:37 MST 2014
+//   Send the face normal to the tesselator.
+//
 // ****************************************************************************
 
 static int
@@ -1041,6 +1044,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
             localPts->Allocate(nPointsInFace);
             int *local2Global = new int[nPointsInFace];
             avtPolygonToTrianglesTesselator tess(localPts);
+            tess.SetNormal(n);
             tess.BeginContour();
             for(int j = 0; j < nPointsInFace; ++j)
             {
