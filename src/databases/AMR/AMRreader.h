@@ -3,149 +3,160 @@
 */
 #ifndef AMR_READER_H
 #define AMR_READER_H
-    
-#include <math.h>
-
+#include <AMRreaderInterface.h>
+#include <EOS.h>
+#include <hdf5.h>
 #include <string>
 
-#include <hdf5.h>
-
-#include <EOS.h>
-
-
-class AMRreader
+class AMRreader : public AMRreaderInterface
 {
- public:
-  AMRreader() { init(); }
-  ~AMRreader() { freedata(); init(); }
+public:
+    AMRreader() : AMRreaderInterface()
+    {
+        init();
+    }
+    virtual ~AMRreader()
+    {
+        freedata();
+        init();
+    }
 
-  void init();
-  int  freedata();
-  int  getInfo( const char* filename );
+    void init();
+    virtual int  freedata();
+    virtual int  getInfo( const char* filename );
 
-
- public:
-  int    GetNumCycles() const { return ncycle_; }
-  double GetSimuTime() const { return tttttt_; }
-
-  int GetNumberOfBlocks() const { return nblks_; };
-  int GetBlockDimensions( int* dim ) const {
-    dim[0] = blkdim_[0];
-    dim[1] = blkdim_[1];
-    dim[2] = blkdim_[2];
-    return 0;
-  }
-  int GetBlockSize() const { return blksz_;  }
-  int GetBlockMesh( int bid, float* xs, float* dx );
-  int GetBlockVariable( int bid, int vid, float* dat );
-
-  void GetInterfaceSizes( int* np, int* ne ) const { 
-    *np = nvert_;
-    *ne = nrect_;
-  }
-  int GetInterfaceVariable( int vid, void* dat );
-
-
- protected:
-  int getAMRinfo( hid_t gid );
-  int getIntfInfo( hid_t gid );
-  int readAMRmesh();
-  int readAMRdata();
-  int readAMRadditionData();
-/*   virtual int  readblk( int bid ); */
-
-
- protected:
-  int compvar( int vid, float* blk, float* buf, int sz );
-  int  comp_dens( float*, float*, int sz );
-  int  comp_uvel( float*, float*, int sz );
-  int  comp_vvel( float*, float*, int sz );
-  int  comp_wvel( float*, float*, int sz );
-  int  comp_pres( float*, float*, int sz );
-  int  comp_temp( float*, float*, int sz );
-  int  comp_sndv( float*, float*, int sz );
-  int  comp_xmnt( float*, float*, int sz );
-  int  comp_ymnt( float*, float*, int sz );
-  int  comp_zmnt( float*, float*, int sz );
-  int  comp_etot( float*, float*, int sz );
-  int  comp_eint( float*, float*, int sz );
-  int  comp_eknt( float*, float*, int sz );
-  int  comp_velo( float*, float*, int sz );
-
-
- protected:
-  std::string  filename_;
-  int     ncycle_; // number of cycles
-  double  tttttt_;   // simulation time
-
-  int     nblks_; // number of leaf blocks
-  int     blkdim_[4];  // number of dimensions in each block
-  int     blksz_;
-
-  float*  blkxs_;
-  float*  blkdx_;
-  float*  datbuf_;
-  float*  prebuf_;
-  float*  sndbuf_;
-  float*  tmpbuf_;
-
-  int  nrect_, nvert_;
-
-  EOS* eos_;
+    virtual void BuildMetaData() { }
 
 public:
-  static const int v_dens = 0;
-  static const int v_uvel = 1;
-  static const int v_vvel = 2;
-  static const int v_wvel = 3;
-  static const int v_pres = 4;
-  static const int v_temp = 5;
-  static const int v_sndv = 6;
-  static const int v_xmnt = 7;
-  static const int v_ymnt = 8;
-  static const int v_zmnt = 9;
-  static const int v_etot =10;
-  static const int v_eint =11;
-  static const int v_eknt =12;
-  static const int v_velo =13;
+    virtual int    GetNumCycles() const
+    {
+        return ncycle_;
+    }
+    virtual double GetSimuTime() const
+    {
+        return tttttt_;
+    }
 
-  static const int i_coor=20;
-  static const int i_velo=21;
-  static const int i_pres=22;
-  static const int i_segt=23;
-/*   static const int i_uvel=24; */
-/*   static const int i_vvel=25; */
-/*   static const int i_wvel=26; */
+    virtual int GetNumberOfBlocks() const
+    {
+        return nblks_;
+    };
+    virtual int GetBlockDimensions( int bid, int* dim ) const
+    {
+        dim[0] = blkdim_[0];
+        dim[1] = blkdim_[1];
+        dim[2] = blkdim_[2];
+        return 0;
+    }
+
+    virtual int GetBlockDefaultDimensions(int *dim) const
+    {
+        dim[0] = blkdim_[0];
+        dim[1] = blkdim_[1];
+        dim[2] = blkdim_[2];
+        return 0;
+    }
+
+    virtual int GetBlockHierarchicalIndices(int bid, int *level,
+                                            int *ijk_start, int *ijk_end)
+    {
+        *level = 0;
+        // We could compute these off of the block key... later.
+        ijk_start[0] = ijk_start[1] = ijk_start[2] = 0;
+        ijk_end[0] = ijk_end[1] = ijk_end[2] = 0;
+        return 0;
+    }
+
+    virtual int GetNumberOfLevels()
+    {
+        return 1;
+    }
+
+    virtual int GetBlockSize( int bid ) const
+    {
+        return blksz_;
+    }
+    virtual int GetBlockMesh( int bid, float* xs, float* dx );
+    virtual int GetBlockVariable( int bid, int vid, float* dat );
+
+    virtual OctKey GetBlockKey(int bid);
+
+    virtual void GetInterfaceSizes( int* np, int* ne ) const
+    {
+        *np = nvert_;
+        *ne = nrect_;
+    }
+    virtual int GetInterfaceVariable( int vid, void* dat );
+
+    virtual bool HasTag() const
+    {
+        return blktag_==1;
+    }
 
 
 protected:
-  static const char* amr_grpname;
-  static const char* amr_dimname;
-  static const char* amr_time_name;
-  static const char* amr_iter_name;
-  static const char* amr_keyname;
-  static const char* amr_crdname;
-  static const char* amr_stpname;
-  static const char* amr_datname;
-  static const char* amr_prename;
-  static const char* amr_sndname;
-  static const char* amr_tmpname;
-  static const char* amr_idealname;
-  static const char* amr_jwlname;
-  static const char* amr_sesamename;
+    int getAMRinfo( hid_t gid );
+    int getAMRtagInfo( hid_t gid );
+    int getIntfInfo( hid_t gid );
+    int readAMRmesh();
+    int readAMRdata();
+    int readAMRadditionData();
+    int readAMRtagData();
+    int PreprocessData();
+
+    /*   virtual int  readblk( int bid ); */
+
+protected:
+    int compvar( int vid, float* blk, float* buf, int sz );
+    int  comp_dens( float*, float*, int sz );
+    int  comp_uvel( float*, float*, int sz );
+    int  comp_vvel( float*, float*, int sz );
+    int  comp_wvel( float*, float*, int sz );
+    int  comp_pres( float*, float*, int sz );
+    int  comp_temp( float*, float*, int sz );
+    int  comp_sndv( float*, float*, int sz );
+    int  comp_xmnt( float*, float*, int sz );
+    int  comp_ymnt( float*, float*, int sz );
+    int  comp_zmnt( float*, float*, int sz );
+    int  comp_etot( float*, float*, int sz );
+    int  comp_eint( float*, float*, int sz );
+    int  comp_eknt( float*, float*, int sz );
+    int  comp_velo( float*, float*, int sz );
+    int  comp_tags( float*, float*, int sz );
 
 
-  static const char* intf_grp_name;
-  static const char* intf_np_name;
-  static const char* intf_ne_name;
-  static const char* intf_coor_name;
-  static const char* intf_velo_name;
-  static const char* intf_pres_name;
-  static const char* intf_segt_name;
+protected:
+    std::string  filename_;
+    int     ncycle_; // number of cycles
+    double  tttttt_;   // simulation time
+    int     blktag_;
+
+    int     nblks_; // number of leaf blocks
+    int     blkdim_[4];  // number of dimensions in each block
+    int     blksz_;
+
+    float*  blkxs_;
+    float*  blkdx_;
+    OctKey *blkkey_;
+    float*  datbuf_;
+    float*  prebuf_;
+    float*  sndbuf_;
+    float*  tmpbuf_;
+    float*  tagbuf_;
+
+    int  nrect_, nvert_;
+
+    EOS* eos_;
 };
 
 
-
+extern int CompareKid2Kid0(const float* xs0, const float* xe0, const float* dx0,
+                           int kid, const float* xsk, const float* dxk );
+extern int isSeqEightSibling( const int* blkdim, const float*blkxs, const float* blkdx,
+                              const int fst );
+extern int ConsolidateBlocks(int nblks, const int* blkdim,
+                             const float* blkxs, const float* blkdx,
+                             int* ncb, int* sft );
 
 
 #endif

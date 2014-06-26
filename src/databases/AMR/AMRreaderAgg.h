@@ -3,7 +3,7 @@
 */
 #ifndef AMR_AGG_H
 #define AMR_AGG_H
-    
+
 #include <DebugStream.h>
 
 #include <AMRreader.h>
@@ -19,7 +19,7 @@ class AMRreaderAgg
 {
 public:
   AMRreaderAgg() { init(); }
-  ~AMRreaderAgg(){ freedata(); }
+  virtual ~AMRreaderAgg(){ freedata(); }
 
   void init() { 
     AMRreader::init();
@@ -27,16 +27,15 @@ public:
     aggbid_=NULL;
     aggsft_=NULL;
   }
-  int  freedata() { 
+  virtual int  freedata() { 
     AMRreader::freedata();
     if( aggbid_!=NULL ) delete [] aggbid_;
     if( aggsft_!=NULL ) delete [] aggsft_; 
     nagg_=aggdat_=0;
     aggbid_=NULL;
     aggsft_=NULL;
-    return 0;
   }
-  int  getInfo( const char* filename ) {
+  virtual int  getInfo( const char* filename ) {
     int err = AMRreader::getInfo( filename );
     if( err!=0 ) {
       debug1 << "Failed to get AMR file info in AMRreaderAgg::getInfo()\n";
@@ -57,8 +56,8 @@ public:
   }
 
 public:
-  int GetNumberOfBlocks() const { return nagg_; };
-  int GetBlockDimensions( int bid, int* dim ) const {
+  virtual int GetNumberOfBlocks() const { return nagg_; };
+  virtual int GetBlockDimensions( int bid, int* dim ) const {
     if( aggbid_[bid]>=0 ) {
       dim[0] = blkdim_[0];
       dim[1] = blkdim_[1];
@@ -71,14 +70,14 @@ public:
     }
     return 0;
   }
-  int GetBlockSize( int bid ) const { 
+  virtual int GetBlockSize( int bid ) const { 
     if( aggbid_[bid]>=0 ) 
       return blksz_;
     else
       return 8*blksz_;
   }
-  int GetBlockMesh( int bid, float* xs, float* dx );
-  int GetBlockVariable( int bid, int vid, float* dat );
+  virtual int GetBlockMesh( int bid, float* xs, float* dx );
+  virtual int GetBlockVariable( int bid, int vid, float* dat );
 
 
 protected:
@@ -86,6 +85,7 @@ protected:
   int genAggInfo();
   int genAggData();
   int genAggAdditionData();
+  int genAggTags();
 
   int genAggScalar( float* dat );
 

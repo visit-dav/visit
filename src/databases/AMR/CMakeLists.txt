@@ -17,8 +17,13 @@ AMRMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtAMRFileFormat.C
 EOS.C
+AMRreaderInterface.C
 AMRreader.C
-AMRreaderAgg.C
+AMRreaderLowRes.C
+AMRreaderBlkConso.C
+AMRreaderLowResBlkConso.C
+AMRreaderWithLevels.C
+OctKey.C
 )
 
 SET(LIBE_SOURCES
@@ -26,8 +31,13 @@ AMREnginePluginInfo.C
 ${COMMON_SOURCES}
 avtAMRFileFormat.C
 EOS.C
+AMRreaderInterface.C
 AMRreader.C
-AMRreaderAgg.C
+AMRreaderLowRes.C
+AMRreaderBlkConso.C
+AMRreaderLowResBlkConso.C
+AMRreaderWithLevels.C
+OctKey.C
 )
 
 INCLUDE_DIRECTORIES(
@@ -53,12 +63,11 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR} 
 ${VTK_INCLUDE_DIRS} 
 )
 
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${HDF5_LIBRARY_DIR} )
 
 ADD_LIBRARY(IAMRDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IAMRDatabase visitcommon)
