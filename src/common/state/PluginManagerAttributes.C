@@ -972,7 +972,7 @@ PluginManagerAttributes::GetPluginCategoryName(const std::string &s) const
 {
     std::string c("?");
     int index = GetIndexByID(s);
-    if(index >= 0 && index < category.size())
+    if(index >= 0 && (size_t)index < category.size())
     {
         c = category[index];
     }
@@ -996,7 +996,7 @@ void
 PluginManagerAttributes::SetPluginCategoryName(const std::string &s, const std::string &c)
 {
     int index = GetIndexByID(s);
-    if(index >= 0 && index < category.size())
+    if(index >= 0 && (size_t)index < category.size())
     {
         category[index] = c;
         SelectCategory();

@@ -258,7 +258,7 @@ int Namescheme::SaveInternalString(Namescheme *ns, char const * const sval)
 /* very simple circular cache for strings returned to caller from GetName */
 char * Namescheme::SaveReturnedString(char const * const retstr)
 {
-    static unsigned int n = 0;
+    static int n = 0;
     int modn = n++ % Namescheme::max_retstrs;
     if (retstr == 0)
     {
@@ -301,7 +301,7 @@ int Namescheme::EvalExprTree(Namescheme *ns, Namescheme::DBexprnode *tree, int n
     }
     else if (tree->left != 0 && tree->right != 0)
     {
-        int vc = 0, vl, vr;
+        int vc = 0, vl = 0, vr = 0;
         if (tree->type == '?')
         {
             vc = EvalExprTree(ns, tree->left, n);

@@ -58,7 +58,7 @@ FileConnection::FileConnection(const char *filename, bool writeMode_) :
 {
     fileStream = 0;
     fileSize = 0;
-    writeMode = writeMode;
+    writeMode = writeMode_;
 
     if(writeMode)
     {
@@ -237,7 +237,7 @@ FileConnection::Size()
 // *******************************************************************
 
 void
-FileConnection::Append(unsigned char *address, int nChars)
+FileConnection::Append(const unsigned char *address, int nChars)
 {
     if(writeMode)
     {

@@ -989,7 +989,7 @@ AnnotationObjectList::GetNewObjectName() const
 int
 AnnotationObjectList::IndexForName(const std::string &name) const
 {
-    int index = -1;
+    //int index = -1;
     for(int i = 0; i < GetNumAnnotations(); ++i)
     {
         if(GetAnnotation(i).GetObjectName() == name)

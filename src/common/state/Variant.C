@@ -90,7 +90,7 @@ EncodeToString(char *buf, T val)
 
     if(LittleEndian())
     {
-        for(int i = 0; i < sizeof(T); i++)
+        for(size_t i = 0; i < sizeof(T); i++)
         {
             sprintf(dest, "%02x", int(ptr[i]));
             dest += 2;
@@ -135,7 +135,7 @@ DecodeFromString(const char *buf, T &val)
 
     if(LittleEndian())
     {
-        for(int i = 0; i < sizeof(T); i++)
+        for(size_t i = 0; i < sizeof(T); i++)
         {
             hex[0] = *src++;
             hex[1] = *src++;
@@ -1399,37 +1399,37 @@ Variant::ToBoolVector(boolVector &res) const
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((bool)vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((bool)vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((bool)vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((bool)vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((bool)vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((bool)vec[i]);
     }
 }
@@ -1465,7 +1465,7 @@ Variant::ToCharVector(charVector &res) const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((char)vec[i]);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
@@ -1476,31 +1476,31 @@ Variant::ToCharVector(charVector &res) const
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((char)vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((char)vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((char)vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((char)vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((char)vec[i]);
     }
 }
@@ -1536,13 +1536,13 @@ Variant::ToUnsignedCharVector(unsignedCharVector &res) const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((unsigned char)vec[i]);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((unsigned char)vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
@@ -1553,25 +1553,25 @@ Variant::ToUnsignedCharVector(unsignedCharVector &res) const
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((unsigned char)vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((unsigned char)vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((unsigned char)vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((unsigned char)vec[i]);
     }
 }
@@ -1608,19 +1608,19 @@ Variant::ToIntVector(intVector &res) const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((int)vec[i]);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((int)vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((int)vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
@@ -1631,19 +1631,19 @@ Variant::ToIntVector(intVector &res) const
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((int)vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((int)vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((int)vec[i]);
     }
 }
@@ -1680,25 +1680,25 @@ Variant::ToLongVector(longVector &res) const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((long)vec[i]);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((long)vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((long)vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((long)vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
@@ -1709,13 +1709,13 @@ Variant::ToLongVector(longVector &res) const
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((long)vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((long)vec[i]);
     }
 }
@@ -1752,31 +1752,31 @@ Variant::ToFloatVector(floatVector &res) const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((float)vec[i]);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((float)vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((float)vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((float)vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((float)vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
@@ -1787,7 +1787,7 @@ Variant::ToFloatVector(floatVector &res) const
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((float)vec[i]);
     }
 }
@@ -1823,37 +1823,37 @@ Variant::ToDoubleVector(doubleVector &res) const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((double)vec[i]);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((double)vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((double)vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((double)vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((double)vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             res.push_back((double)vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
@@ -2217,7 +2217,7 @@ Variant::SetValue(const JSONNode &data, const JSONNode &meta, bool)
         const JSONNode::JSONArray& node = data.GetArray();
 
         boolVector &vec = AsBoolVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             vec.push_back(node[i].GetBool());
 
     }
@@ -2225,7 +2225,7 @@ Variant::SetValue(const JSONNode &data, const JSONNode &meta, bool)
     {
         const JSONNode::JSONArray& node = data.GetArray();
         charVector &vec = AsCharVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             if(node[i].GetString().size() > 0)
                 vec.push_back(node[i].GetString()[0]);
     }
@@ -2233,42 +2233,42 @@ Variant::SetValue(const JSONNode &data, const JSONNode &meta, bool)
     {
         const JSONNode::JSONArray& node = data.GetArray();
         unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             vec.push_back((unsigned char)node[i].GetInt());
     }
     else if(data_type == INT_VECTOR_TYPE)
     {
         const JSONNode::JSONArray& node = data.GetArray();
         intVector &vec = AsIntVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             vec.push_back(node[i].GetInt());
     }
     else if(data_type == LONG_VECTOR_TYPE)
     {
         const JSONNode::JSONArray& node = data.GetArray();
         longVector &vec = AsLongVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             vec.push_back(node[i].GetLong());
     }
     else if(data_type == FLOAT_VECTOR_TYPE)
     {
         const JSONNode::JSONArray& node = data.GetArray();
         floatVector &vec = AsFloatVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             vec.push_back(node[i].GetFloat());
     }
     else if(data_type == DOUBLE_VECTOR_TYPE)
     {
         const JSONNode::JSONArray& node = data.GetArray();
         doubleVector &vec = AsDoubleVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             vec.push_back(node[i].GetDouble());
     }
     else if(data_type == STRING_VECTOR_TYPE)
     {
         const JSONNode::JSONArray& node = data.GetArray();
         stringVector &vec = AsStringVector();
-        for(int i = 0; i < node.size(); ++i)
+        for(size_t i = 0; i < node.size(); ++i)
             vec.push_back(node[i].GetString());
     }
 }
@@ -2796,8 +2796,10 @@ Variant::ToXMLNode(bool encodeString) const
 }
 
 JSONNode
-Variant::ToJSONNode(bool encodeString) const
+Variant::ToJSONNode(bool encodeString, bool id) const
 {
+    (void) id;
+
     JSONNode node;
 
     if(dataType == BOOL_TYPE)

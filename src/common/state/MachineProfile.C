@@ -1975,7 +1975,7 @@ MachineProfile::SetDefaultUserName(const std::string &n)
 LaunchProfile *
 MachineProfile::GetActiveLaunchProfile() const
 {
-    if (activeProfile<0 || activeProfile>=launchProfiles.size())
+    if (activeProfile<0 || (size_t)activeProfile>=launchProfiles.size())
         return NULL;
 
     return (LaunchProfile*)launchProfiles[activeProfile];

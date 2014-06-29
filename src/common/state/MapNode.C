@@ -662,8 +662,8 @@ MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeStr
         const JSONNode::JSONArray& marray = metadata.GetArray();
         char buffer[1024];
 
-        for(int i = 0; i < array.size(); ++i) {
-            sprintf(buffer, "%d", i);
+        for(size_t i = 0; i < array.size(); ++i) {
+            sprintf(buffer, "%ld", i);
             entries[buffer] = MapNode();
             entries[buffer].SetValue(array[i], marray[i], decodeString);
         }
@@ -677,6 +677,12 @@ MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeStr
             Variant::SetValue(data,metadata,decodeString);
         }
     }
+}
+
+void
+MapNode::SetValue(const JSONNode* data, const JSONNode* metadata, bool decodeString)
+{
+    MapNode::SetValue(*data, *metadata, decodeString);
 }
 
 // ****************************************************************************

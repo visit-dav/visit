@@ -405,7 +405,7 @@ Xfer::Process()
         bufferedInput.ReadInt(&curLength);
 
         bool    bytesNeedToBeSkipped = true;
-        if (curOpcode < subjectList.size())
+        if (curOpcode < (int)subjectList.size())
         {
             if (subjectList[curOpcode])
             {
@@ -494,7 +494,7 @@ Xfer::ReadHeader()
     // means that we've tried to read for this operation before. Maybe
     // the message is all there this time.
 
-    if((input->Size() >= (2 * sizeof(int))) || haveStoredHeader)
+    if((input->Size() >= ((int)(2 * sizeof(int)))) || haveStoredHeader)
     {
         if(!haveStoredHeader)
         {
@@ -758,7 +758,7 @@ Xfer::SetupSpecialOpcodeHandler(void (*cb)(int, void *), void *data)
 const AttributeSubject *
 Xfer::GetSubject(int index) const
 {
-    return (index >= 0 && index < subjectList.size()) ? subjectList[index] : 0;
+    return (index >= 0 && (size_t)index < subjectList.size()) ? subjectList[index] : 0;
 }
 
 // ****************************************************************************

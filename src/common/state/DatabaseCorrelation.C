@@ -1196,7 +1196,7 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
     // Add the times and cycles for the new database to the correlation so
     // we can access them later and perhaps use them to correlate.
     //
-    for(int i = 0; i < nStates; ++i)
+    for(size_t i = 0; i < (size_t)nStates; ++i)
     {
         double t = ((i < times.size()) ? times[i] : 0.);
         databaseTimes.push_back(t);
@@ -1608,7 +1608,7 @@ int
 DatabaseCorrelation::GetCondensedCycleForState(int state) const
 {
     int retval = 0;
-    if(state >= 0 && state < condensedCycles.size())
+    if(state >= 0 && (size_t)state < condensedCycles.size())
         retval = condensedCycles[state];
 
     return retval;
@@ -1638,7 +1638,7 @@ double
 DatabaseCorrelation::GetCondensedTimeForState(int state) const
 {
     double retval = 0.;
-    if(state >= 0 && state < condensedTimes.size())
+    if(state >= 0 && (size_t)state < condensedTimes.size())
         retval = condensedTimes[state];
 
     return retval;

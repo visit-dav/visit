@@ -1470,7 +1470,7 @@ DBOptionsAttributes::GetNumberOfOptions(void) const
 DBOptionsAttributes::OptionType
 DBOptionsAttributes::GetType(int index) const
 {
-    if (index < 0 || index >= types.size())
+    if (index < 0 || (size_t)index >= types.size())
         EXCEPTION0(BadDeclareFormatString);
 
     return (DBOptionsAttributes::OptionType) types[index];

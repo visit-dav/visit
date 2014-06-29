@@ -218,7 +218,7 @@ class STATE_API Variant
     virtual std::string       ToXML(const std::string &indent="",bool encodeString = true) const;
     virtual std::string       ToJSON(const std::string &indent="",bool encodeString = true) const;
     virtual XMLNode           ToXMLNode(bool encodeString = true) const;
-    virtual JSONNode          ToJSONNode(bool encodeString = true) const;
+    virtual JSONNode          ToJSONNode(bool encodeString = true, bool id = true) const;
 
  protected:
     void                      Write(Connection &conn) const;

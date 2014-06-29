@@ -1351,6 +1351,8 @@ void View3DAttributes::RotateAxis(int axis, double angle)
     double viewFocus_tmp[3];
     double dist;
 
+    for(int i = 0; i < 15; ++i)
+        r[i] = 0.0;
     //
     // Calculate the rotation matrix in screen coordinates.
     //
@@ -1661,7 +1663,7 @@ View3DAttributes::ResetView(const double *bbox)
     // scale with perspective projections.
     //
     double    width;
-    double    distance;
+    //double    distance;
 
     width = 0.5 * sqrt(((bbox[1] - bbox[0]) *
                         (bbox[1] - bbox[0])) +
@@ -1671,7 +1673,7 @@ View3DAttributes::ResetView(const double *bbox)
                         (bbox[5] - bbox[4])));
 
     view3D.viewAngle = 30.;
-    distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
+    //distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
     view3D.parallelScale = width;
 

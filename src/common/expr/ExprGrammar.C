@@ -141,16 +141,16 @@ ExprGrammar::ExprGrammar() : Grammar(D)
   // ----------------------------------------------------------------------
 
   // Expression
-  AddRule(Rule(0,  Expr)  >>  Expr + T_Plus  + Expr );    // addition
-  AddRule(Rule(1,  Expr)  >>  Expr + T_Minus + Expr );    // subtraction
-  AddRule(Rule(2,  Expr)  >>  Expr + T_Mult  + Expr );    // multiplication
-  AddRule(Rule(3,  Expr)  >>  Expr + T_Slash + Expr );    // division
-  AddRule(Rule(4,  Expr)  >>  Expr + T_Exp   + Expr );    // exponentiation
-  AddRule(Rule(5,  Expr)  >>  Expr + T_Mod   + Expr );    // modulo
-  AddRule(Rule(15, Expr)  >>  Expr + T_And   + Expr );    // bitwise and 
-  AddRule(Rule(6,  Expr)  >>  Expr + T_LBracket + T_Integer + T_RBracket );    // index
-  AddRule(Rule(7,  Expr)  >>  T_Minus + Expr,  5);        // u-negative, prec=5
-  AddRule(Rule(8,  Expr)  >>  T_LParen + Expr + T_RParen );
+  AddRule(Rule(0,  Expr)  >>  (Expr + T_Plus  + Expr) );    // addition
+  AddRule(Rule(1,  Expr)  >>  (Expr + T_Minus + Expr) );    // subtraction
+  AddRule(Rule(2,  Expr)  >>  (Expr + T_Mult  + Expr) );    // multiplication
+  AddRule(Rule(3,  Expr)  >>  (Expr + T_Slash + Expr) );    // division
+  AddRule(Rule(4,  Expr)  >>  (Expr + T_Exp   + Expr) );    // exponentiation
+  AddRule(Rule(5,  Expr)  >>  (Expr + T_Mod   + Expr) );    // modulo
+  AddRule(Rule(15, Expr)  >>  (Expr + T_And   + Expr) );    // bitwise and 
+  AddRule(Rule(6,  Expr)  >>  (Expr + T_LBracket + T_Integer + T_RBracket) );    // index
+  AddRule(Rule(7,  Expr)  >>  (T_Minus + Expr),  5);      // u-negative, prec=5
+  AddRule(Rule(8,  Expr)  >>  (T_LParen + Expr + T_RParen) );
   AddRule(Rule(9,  Expr)  >>  Constant );
   AddRule(Rule(10, Expr)  >>  Vector   );
   AddRule(Rule(11, Expr)  >>  Function );
@@ -165,67 +165,67 @@ ExprGrammar::ExprGrammar() : Grammar(D)
   AddRule(Rule(3, Constant)  >>  T_Bool    );
 
   // Vector
-  AddRule(Rule(0, Vector) >> T_LBrace + Expr + T_Comma + Expr + T_RBrace);
-  AddRule(Rule(1, Vector) >> T_LBrace + Expr + T_Comma + Expr + T_Comma + Expr + T_RBrace);
+  AddRule(Rule(0, Vector) >> (T_LBrace + Expr + T_Comma + Expr + T_RBrace));
+  AddRule(Rule(1, Vector) >> (T_LBrace + Expr + T_Comma + Expr + T_Comma + Expr + T_RBrace));
 
   // List
-  AddRule(Rule(0, List)      >> T_LBracket + ListElems + T_RBracket);
+  AddRule(Rule(0, List)      >> (T_LBracket + ListElems + T_RBracket));
 
   // ListElems
-  AddRule(Rule(0, ListElems) >>  ListElems + T_Comma + ListElem);
+  AddRule(Rule(0, ListElems) >>  (ListElems + T_Comma + ListElem));
   AddRule(Rule(1, ListElems) >>  ListElem);
 
   // ListElem
   AddRule(Rule(0, ListElem)  >>  Expr);
-  AddRule(Rule(1, ListElem)  >>  Expr + T_Colon + Expr);
-  AddRule(Rule(2, ListElem)  >>  Expr + T_Colon + Expr + T_Colon + Expr);
+  AddRule(Rule(1, ListElem)  >>  (Expr + T_Colon + Expr));
+  AddRule(Rule(2, ListElem)  >>  (Expr + T_Colon + Expr + T_Colon + Expr));
 
   // Function
-  AddRule(Rule(0, Function)  >>  T_Ident + T_LParen + T_RParen);
-  AddRule(Rule(1, Function)  >>  T_Ident + T_LParen + Args + T_RParen);
+  AddRule(Rule(0, Function)  >>  (T_Ident + T_LParen + T_RParen));
+  AddRule(Rule(1, Function)  >>  (T_Ident + T_LParen + Args + T_RParen));
 
   // Args
-  AddRule(Rule(0, Args)     >> Args + T_Comma + Arg);
+  AddRule(Rule(0, Args)     >> (Args + T_Comma + Arg));
   AddRule(Rule(1, Args)     >> Arg);
 
   // Arg
   AddRule(Rule(0, Arg)      >> Expr);
-  AddRule(Rule(1, Arg)      >> T_Ident + T_Equal + Expr);
+  AddRule(Rule(1, Arg)      >> (T_Ident + T_Equal + Expr));
   AddRule(Rule(2, Arg)      >> List);
 
   // PathSpec
-  AddRule(Rule(0, PathSpec) >> PathSpec + MultiSlash + T_Ident);
-  AddRule(Rule(1, PathSpec) >> MultiSlash + T_Ident);
+  AddRule(Rule(0, PathSpec) >> (PathSpec + MultiSlash + T_Ident));
+  AddRule(Rule(1, PathSpec) >> (MultiSlash + T_Ident));
   AddRule(Rule(2, PathSpec) >> T_Ident);
 
   // MultiSlash
-  AddRule(Rule(0, MultiSlash) >> MultiSlash + T_Slash);
+  AddRule(Rule(0, MultiSlash) >> (MultiSlash + T_Slash));
   AddRule(Rule(1, MultiSlash) >> T_Slash);
-  AddRule(Rule(2, MultiSlash) >> MultiSlash + T_BackSlash);
+  AddRule(Rule(2, MultiSlash) >> (MultiSlash + T_BackSlash));
   AddRule(Rule(3, MultiSlash) >> T_BackSlash);
 
   // Variable
   AddRule(Rule(0, Variable) >> T_Ident );
-  AddRule(Rule(1, Variable) >> T_LCarat + PathSpec + T_RCarat );
-  AddRule(Rule(2, Variable) >> T_LCarat + DBSpec + T_Colon + PathSpec + T_RCarat );
+  AddRule(Rule(1, Variable) >> (T_LCarat + PathSpec + T_RCarat) );
+  AddRule(Rule(2, Variable) >> (T_LCarat + DBSpec + T_Colon + PathSpec + T_RCarat) );
 
   // Database
-  AddRule(Rule(0, Database) >> T_LCarat + DBSpec + T_Colon + T_RCarat );
+  AddRule(Rule(0, Database) >> (T_LCarat + DBSpec + T_Colon + T_RCarat) );
 
   // DBSpec
   AddRule(Rule(0, DBSpec)   >> PathSpec );
-  AddRule(Rule(1, DBSpec)   >> PathSpec + MachSpec);
+  AddRule(Rule(1, DBSpec)   >> (PathSpec + MachSpec));
   AddRule(Rule(2, DBSpec)   >> TimeSpec );
-  AddRule(Rule(3, DBSpec)   >> PathSpec + TimeSpec );
-  AddRule(Rule(4, DBSpec)   >> PathSpec + MachSpec + TimeSpec );
+  AddRule(Rule(3, DBSpec)   >> (PathSpec + TimeSpec) );
+  AddRule(Rule(4, DBSpec)   >> (PathSpec + MachSpec + TimeSpec) );
 
   // MachSpec
-  AddRule(Rule(0, MachSpec) >> T_At + T_Ident );
+  AddRule(Rule(0, MachSpec) >> (T_At + T_Ident) );
 
   // TimeSpec
-  AddRule(Rule(0, TimeSpec) >> T_LBracket + ListElems + T_RBracket + T_Ident);
-  AddRule(Rule(1, TimeSpec) >> T_LBracket + ListElems + T_RBracket);
-  AddRule(Rule(2, TimeSpec) >> T_LBracket + T_Pound + ListElems + T_RBracket);
+  AddRule(Rule(0, TimeSpec) >> (T_LBracket + ListElems + T_RBracket + T_Ident));
+  AddRule(Rule(1, TimeSpec) >> (T_LBracket + ListElems + T_RBracket));
+  AddRule(Rule(2, TimeSpec) >> (T_LBracket + T_Pound + ListElems + T_RBracket));
 
   // ----------------------------------------------------------------------
 
