@@ -69,6 +69,7 @@ public:
         _name(n), _parent(p), _id(i), _delegateType(dt)
     {
     }
+    virtual ~RowInfo() {}
 
     QString name() const             { return _name;   }
     int     parent() const           { return _parent; }
@@ -551,7 +552,7 @@ int
 KeyframeDataModel::currentIndex() const
 {
     int curIndex = -1;
-    for(int i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
+    for(size_t i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
     {
         if(windowInfo->GetTimeSliders()[i] == KF_TIME_SLIDER)
         {

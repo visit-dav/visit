@@ -93,15 +93,15 @@
 #include <icons/plot_add.xpm>
 #include <icons/plot_del.xpm>
 #include <icons/plot_var.xpm>
-#include <icons/plot_atts.xpm>
+//#include <icons/plot_atts.xpm>
 #include <icons/plot_hide.xpm>
 #include <icons/plot_draw.xpm>
 #include <icons/oper_add4.xpm>
-#include <icons/db_replace.xpm>
-#include <icons/db_overlay.xpm>
-#include <icons/db_open2.xpm>
-#include <icons/db_close2.xpm>
-#include <icons/db_reopen.xpm>
+//#include <icons/db_replace.xpm>
+//#include <icons/db_overlay.xpm>
+//#include <icons/db_open2.xpm>
+//#include <icons/db_close2.xpm>
+//#include <icons/db_reopen.xpm>
 
 #include <DebugStream.h>
 //#define DEBUG_PRINT
@@ -240,9 +240,11 @@ using std::vector;
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
-: QGroupBox(tr("Plots"),parent), GUIBase(), SimpleObserver(), menuPopulator(),
-  varMenuPopulator(), plotPlugins(), operatorPlugins(),
-  plotListBox(0), operatorMenu(0), varMenu(0)
+: QGroupBox(tr("Plots"),parent), GUIBase(), SimpleObserver(),
+  plotListBox(0), varMenu(0), operatorMenu(0),
+  menuPopulator(), varMenuPopulator(),
+  plotPlugins(), operatorPlugins()
+
 {
     plotList = 0;
     globalAtts = 0;
@@ -444,7 +446,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
 QvisPlotManagerWidget::~QvisPlotManagerWidget()
 {
-    for (int i = 0 ; i < plotPlugins.size() ; i++)
+    for (size_t i = 0 ; i < plotPlugins.size() ; i++)
         DestroyPlotMenuItem(i);
 
     if(plotList)
@@ -1802,14 +1804,14 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         // we can recreate the menu,
 #ifdef DELETE_MENU_TO_FREE_POPUPS
         plotMenu->clear();
-        for(int i = 0; i < plotPlugins.size(); ++i)
+        for(size_t i = 0; i < plotPlugins.size(); ++i)
             DestroyPlotMenuItem(i);
 #endif
 
         // Recreate the plot menu and update the menus so they have the right 
         // variables.
         this->maxVarCount = 0;
-        for(int i = 0; i < plotPlugins.size(); ++i)
+        for(size_t i = 0; i < plotPlugins.size(); ++i)
         {
 #ifdef DELETE_MENU_TO_FREE_POPUPS
             CreatePlotMenuItem(i);
@@ -1909,7 +1911,7 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
         // Look through the menus for the available plots to see how many
         // are enabled. If any are enabled, then consider that we may want
         // to enable the plot menu.
-        int i;
+        size_t i;
         bool somePlotMenusEnabled = false;
         for(i = 0; i < plotPlugins.size(); ++i)
             somePlotMenusEnabled |= (plotPlugins[i].varMenu->count() > 0);
@@ -2054,7 +2056,7 @@ QvisPlotManagerWidget::UpdateVariableMenu()
             bool changeVarLists = PopulateVariableLists(varMenuPopulator,
                 current.GetDatabaseName());
             int plotVarFlags = plotPlugins[current.GetPlotType()].varTypes;
-            for(int j = 0; j < current.GetOperators().size(); ++j)
+            for(size_t j = 0; j < current.GetOperators().size(); ++j)
             {
                 int opid = current.GetOperators()[j];
                 plotVarFlags &= operatorPlugins[opid].varMask;
@@ -2378,7 +2380,7 @@ QvisPlotManagerWidget::setActivePlots()
     intVector existingPlotSelection,     newPlotSelection;
     intVector existingOperatorSelection, newOperatorSelection;
     intVector existingExpandedPlots,     newExpandedPlots;
-    int firstSelectedFile = 0;
+    //int firstSelectedFile = 0;
     bool found = false;
  
     //
@@ -2394,7 +2396,7 @@ QvisPlotManagerWidget::setActivePlots()
             if(!found)
             {
                 found = true;
-                firstSelectedFile = i;
+                //firstSelectedFile = i;
             }
         }
 
@@ -2919,7 +2921,7 @@ QvisPlotManagerWidget::setActivePlot()
 {
     int i;
     intVector existingPlotSelection,     newPlotSelection;
-    int firstSelectedFile = 0;
+    //int firstSelectedFile = 0;
     bool found = false;
 
     //
@@ -2935,7 +2937,7 @@ QvisPlotManagerWidget::setActivePlot()
             if(!found)
             {
                 found = true;
-                firstSelectedFile = i;
+                //firstSelectedFile = i;
             }
         }
 

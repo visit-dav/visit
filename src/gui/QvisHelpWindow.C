@@ -295,13 +295,13 @@ QvisHelpWindow::CreateWindowContents()
     homeAction->setShortcut(QKeySequence(Qt::Key_Control, Qt::Key_Home));
 
     // buttons to change the font size.
-    QAction *upFontAction = tb->addAction(QIcon(fontUpIcon), tr("Larger font"), 
+    /*QAction *upFontAction =*/ tb->addAction(QIcon(fontUpIcon), tr("Larger font"),
         this, SLOT(increaseFontSize()));
 
-    QAction *downFontAction = tb->addAction(QIcon(fontDownIcon), tr("Smaller font"), 
+    /*QAction *downFontAction =*/ tb->addAction(QIcon(fontDownIcon), tr("Smaller font"),
         this, SLOT(decreaseFontSize()));
 
-    QAction *addBookmarkAction = tb->addAction(QIcon(openBookIcon), tr("Add bookmark"), 
+    /*QAction *addBookmarkAction =*/ tb->addAction(QIcon(openBookIcon), tr("Add bookmark"),
         this, SLOT(addBookmark()));
 
     // Create the Dismiss button

@@ -577,8 +577,8 @@ QvisAbstractOpacityBar::resizeEvent(QResizeEvent*)
     framerect.setRight(framerect.right()   -10);
     setFrameRect(framerect);
 
-    int w=contentsRect().width();
-    int h=contentsRect().height();
+    //int w=contentsRect().width();
+    //int h=contentsRect().height();
 
     imageDirty();
     update();

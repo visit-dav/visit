@@ -92,7 +92,7 @@ private:
      QString name;
      QString tabName;
      int  index;
-     VisItSimStripChart *StripChart;
+     //VisItSimStripChart *StripChart;
      QScrollArea *scrollView;
 };
 

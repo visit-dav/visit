@@ -477,7 +477,7 @@ QvisWindowBase::StringToDoubleList(const char *str, doubleVector &dv, int max)
             if(strlen(buf) > 0)
             {
                 double dtemp = (double)atof(buf);
-                if(dv.size() < max)
+                if(dv.size() < (size_t)max)
                     dv.push_back(dtemp);
                 else
                     offset = length * 2;

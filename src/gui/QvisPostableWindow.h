@@ -121,7 +121,8 @@ public slots:
     virtual void raise();
     virtual void show();
     virtual void hide();
-    virtual void post(bool avoid_scroll=false);
+    virtual void post() { post(false); } ///TODO: check on this fix for overloaded function
+    virtual void post(bool avoid_scroll);
     virtual void unpost();
     virtual void help();
 protected:

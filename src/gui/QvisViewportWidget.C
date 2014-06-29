@@ -504,11 +504,11 @@ QViewportItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 QvisViewportWidget::QvisViewportWidget(double aspect,
                                        int minw, int minh,
                                        QWidget *parent)
-: QGraphicsView(parent), aspect(aspect), minW(minw), minH(minh), 
+: QGraphicsView(parent), minW(minw), minH(minh), aspect(aspect),
   prevSelected(""), 
   dragViewportOutline(false), 
-  viewportOutline(0), 
-  dragMouseStart(QPointF(0.0,0.0))
+  dragMouseStart(QPointF(0.0,0.0)),
+  viewportOutline(0)
 {
     init();
 }

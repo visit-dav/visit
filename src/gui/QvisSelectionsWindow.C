@@ -795,7 +795,7 @@ QvisSelectionsWindow::GetCurrentValues(int which_widget)
             float r0, r1;
             cqLimits->getVariable(i)->getSelectedRange(r0, r1);
 
-            if(i < selectionProps.GetVariableMins().size())
+            if((size_t)i < selectionProps.GetVariableMins().size())
             {
                 selectionProps.GetVariableMins()[i] = r0;
                 selectionProps.GetVariableMaxs()[i] = r1;

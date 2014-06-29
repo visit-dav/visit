@@ -4340,7 +4340,7 @@ QvisHostProfileWindow::exportMachineProfile()
 
     std::string s = text;
 
-    for (int j=0; j<s.length(); j++)
+    for (size_t j=0; j<s.length(); j++)
     {
         if (s[j]>='A' && s[j]<='Z')
             s[j] += int('a')-int('A');

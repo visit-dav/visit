@@ -253,7 +253,7 @@ QvisSILSetSelector::FillCategoryBox()
         avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
         avtSILSet_p current = restriction->GetSILSet(silTopSet);
         const intVector &mapsOut = current->GetMapsOut();
-        for (int j = 0; j < mapsOut.size(); ++j)
+        for (size_t j = 0; j < mapsOut.size(); ++j)
         {
             int cIndex = mapsOut[j];
             avtSILCollection_p collection =restriction->GetSILCollection(cIndex);

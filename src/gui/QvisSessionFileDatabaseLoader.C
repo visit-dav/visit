@@ -223,7 +223,7 @@ QvisSessionFileDatabaseLoader::ProcessFile()
         ++index;
         if(!cancelledObserver->cancelled)
         {
-            if(index < databases.size())
+            if((size_t)index < databases.size())
             {
                 QTimer::singleShot(100, this, SLOT(ProcessFile()));
             }

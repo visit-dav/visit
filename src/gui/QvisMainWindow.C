@@ -1562,7 +1562,7 @@ QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
 
     // Simplify the names in the list.
     NameSimplifier simple;
-    int i;
+    size_t i;
     for(i = 0; i < sources.size(); ++i)
         simple.AddName(sources[i]);
     simple.GetSimplifiedNames(simpleNames);
@@ -1611,14 +1611,14 @@ QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
 void
 QvisMainWindow::UpdateWindowList(bool doList)
 {
-    int i;
+    size_t i;
     int index = globalAtts->GetActiveWindow();
     const intVector &indices = globalAtts->GetWindows();
 
     if(doList)
     {
         intVector oldIndices;
-        for(i = 0; i < activeWindowComboBox->count(); ++i)
+        for(i = 0; i < (size_t)activeWindowComboBox->count(); ++i)
             oldIndices.push_back(activeWindowComboBox->itemText(i).toInt());
 
         // Update the Active window combo box.
@@ -1651,7 +1651,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
         i =0;
         while(itr.hasNext())
         {
-            itr.next()->setChecked(index == i);
+            itr.next()->setChecked((size_t)index == i);
             i++;
         }
     }
@@ -1708,7 +1708,7 @@ QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
     //
     if(updateNumbers)
     {
-        int i, j, windowIndex = globalAtts->GetActiveWindow();        
+        size_t i, j, windowIndex = globalAtts->GetActiveWindow();
 
         // Update the copy menus
         for(i = 0; i < 5; ++i)
@@ -2093,7 +2093,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
 {
     const char *mName = "QvisMainWindow::SetFromNode: ";
 
-    DataNode *winNode = 0, *node = 0;
+    DataNode *winNode = 0/*, *node = 0*/;
     int w = width();
     int h = height();
     QList<int> splitterSizes;
@@ -2101,7 +2101,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
     if((winNode = parentNode->GetNode("MainWin")) != 0)
     {
         DataNode *node = 0;
-        bool xy_set = false, wh_set = false;
+        //bool xy_set = false, wh_set = false;
         int x = 0, y = 0;
 
         debug1 << mName << "Initializing the main window because it was "
@@ -2111,7 +2111,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
         if((node = winNode->GetNode("height")) != 0)
         {
             h = node->AsInt();
-            wh_set = true;
+            //wh_set = true;
         }
 
         // Override the settings in the file.
@@ -2122,8 +2122,8 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
             h = overrideGUISize[1];
             x = overrideGUILocation[0];
             y = overrideGUILocation[1];
-            wh_set = true;
-            xy_set = true;
+            //wh_set = true;
+            //xy_set = true;
         }
 
         // Make sure that the window will fit on the screen.
@@ -2137,7 +2137,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
             if(ss.size() >= 2)
             {
                 float sum = 0.;
-                int i;
+                size_t i;
                 for(i = 0; i < ss.size(); ++i)
                     sum += ss[i];
 
@@ -2337,7 +2337,7 @@ QvisMainWindow::reopenFile(QAction *action)
     int fileIndex = reopenPopup->actions().indexOf(action);
     const stringVector &sources = globalAtts->GetSources();
 
-    if(fileIndex >= 0 && fileIndex < sources.size())
+    if(fileIndex >= 0 && (size_t)fileIndex < sources.size())
     {
         //
         // Make the file that we reopened be the new open file. Since we're
@@ -2387,7 +2387,7 @@ QvisMainWindow::closeFile(QAction *action)
     int fileIndex = closePopup->actions().indexOf(action);
     const stringVector &sources = globalAtts->GetSources();
 
-    if(fileIndex >= 0 && fileIndex < sources.size())
+    if(fileIndex >= 0 && (size_t)fileIndex < sources.size())
     {
         //
         // Clear out the metadata and SIL for the file.

@@ -144,7 +144,7 @@ movie_format_info movieFormatInfo[] = {
 const char *
 FormatToMenuName(const char *format)
 {
-    for(int i = 0; i < N_MOVIE_FORMATS; ++i)
+    for(size_t i = 0; i < N_MOVIE_FORMATS; ++i)
     {
         if(strcmp(format, movieFormatInfo[i].format) == 0)
             return movieFormatInfo[i].menu_name;
@@ -169,7 +169,7 @@ FormatToMenuName(const char *format)
 const char *
 MenuNameToFormat(const char *menu_name)
 {
-    for(int i = 0; i < N_MOVIE_FORMATS; ++i)
+    for(size_t i = 0; i < N_MOVIE_FORMATS; ++i)
     {
         if(strcmp(menu_name, movieFormatInfo[i].menu_name) == 0)
             return movieFormatInfo[i].format;      
@@ -344,7 +344,7 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
 QvisSaveMovieWizard::~QvisSaveMovieWizard()
 {
     // Delete any custom pages that may be loaded.
-    for(int i = 0; i < sequencePages.size(); ++i)
+    for(size_t i = 0; i < sequencePages.size(); ++i)
         delete sequencePages[i].ui;
     sequencePages.clear();
 
@@ -618,7 +618,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             {
                 templateSpec->SetSources(page3_sessionSources->getSources());
                 debug1 << mName << "Setting template sources to:\n";
-                for(int i = 0; i < page3_sessionSources->getSources().size();++i)
+                for(size_t i = 0; i < page3_sessionSources->getSources().size();++i)
                     debug1 << "\t" << page3_sessionSources->getSources()[i] << endl;
             }
         }
@@ -1908,7 +1908,7 @@ int
 QvisSaveMovieWizard::NumSequencePages() const
 {
     int n = 0;
-    for(int i = 0; i < sequencePages.size(); ++i)
+    for(size_t i = 0; i < sequencePages.size(); ++i)
         n += (sequencePages[i].ui != 0) ? 1 : 0;
     return n;
 }
@@ -2334,7 +2334,7 @@ QvisSaveMovieWizard::page2_PopulateTemplates()
         // Read information about each of the movie templates and store it in the
         // title to info map.
         templateTitleToInfo.clear();
-        for(int i = 0; i < templateFiles.filenames.size(); ++i)
+        for(size_t i = 0; i < templateFiles.filenames.size(); ++i)
         {
             MovieTemplateData mtdata;
             mtdata.filename = templateFiles.filenames[i];
@@ -2790,7 +2790,7 @@ QvisSaveMovieWizard::page5_Update(int flags)
                 stringVector seqList;
                 if(templateSpec->ViewportGetSequenceList(vpName, seqList))
                 {
-                    for(int s = 0; s < seqList.size(); ++s)
+                    for(size_t s = 0; s < seqList.size(); ++s)
                     {
                         MovieSequence *seq = templateSpec->
                             GetSequence(seqList[s]);
@@ -2941,7 +2941,7 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
     const unsignedCharVector &useCurrent = movieAtts->GetUseCurrentSize();
     const doubleVector &scales = movieAtts->GetScales();
     QString s;
-    for(int i = 0; i < formats.size(); ++i)
+    for(size_t i = 0; i < formats.size(); ++i)
     {
         QString tmp;
         if(useCurrent[i] > 0)
@@ -3026,7 +3026,7 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
         const doubleVector &scales = movieAtts->GetScales();
         const unsignedCharVector  &useCurrent = movieAtts->GetUseCurrentSize();
 
-        for(int i = 0; i < formats.size(); ++i)
+        for(size_t i = 0; i < formats.size(); ++i)
         {
             QString res;
             if(useCurrent[i] > 0)
@@ -3235,8 +3235,9 @@ QvisSaveMovieWizard::page10_UpdateStartEndIndex()
 void
 QvisSaveMovieWizard::page11_UpdateButtons()
 {
-    bool e = (movieAtts->GetOutputName().size() > 0) &&
-             (GetMovieAttsOutputDir().size() > 0);
+    /// TODO: update doesn't seem to be doing anything
+    //bool e = (movieAtts->GetOutputName().size() > 0) &&
+    //         (GetMovieAttsOutputDir().size() > 0);
 }
 
 // ****************************************************************************
@@ -3355,7 +3356,7 @@ QvisSaveMovieWizard::UpdateCustomPagesWithDefaultValues()
             return;
         }
 
-        for(int i = 0; i < sequencePages.size(); ++i)
+        for(size_t i = 0; i < sequencePages.size(); ++i)
         {
             // Get the data node.
             const std::string &seqName = sequencePages[i].name;
@@ -3420,7 +3421,7 @@ QvisSaveMovieWizard::UpdateDefaultValuesFromCustomPages()
     // For each page, find widgets that have counterparts in the defaults
     // and for those that do have counterparts, read the widget values
     // and overwrite the values in the defaults.
-    for(int i = 0; i < sequencePages.size(); ++i)
+    for(size_t i = 0; i < sequencePages.size(); ++i)
     {
         // Get the data node.
         const std::string &seqName = sequencePages[i].name;
@@ -3506,7 +3507,7 @@ QvisSaveMovieWizard::AddSequencePages()
         if(templateSpec->ViewportGetNameForIndex(vpt, vpName) &&
            templateSpec->ViewportGetSequenceList(vpName, seqList))
         {
-            for(int i = 0; i < seqList.size(); ++i)
+            for(size_t i = 0; i < seqList.size(); ++i)
             {
                 // If we can't get the sequence then continue.
                 MovieSequence *s = templateSpec->
@@ -3519,7 +3520,7 @@ QvisSaveMovieWizard::AddSequencePages()
                 if(ui != 0)
                 {
                     // If there are not enough pages in the wizard, add a new page.
-                    if(uiCount >= sequencePages.size())
+                    if((size_t)uiCount >= sequencePages.size())
                     {
                         SequenceUI uiInfo;
                         uiInfo.page = new QvisCustomWizardPage(this);
@@ -3572,7 +3573,7 @@ QvisSaveMovieWizard::AddSequencePages()
     // Tell the user about any loading errors that happened.
     if(noLoadCount > 0)
     {
-        for(int i = 0; i < sequencePages.size(); ++i)
+        for(size_t i = 0; i < sequencePages.size(); ++i)
             delete sequencePages[i].ui;
         sequencePages.clear();
 
@@ -4296,7 +4297,7 @@ QvisSaveMovieWizard::page7_templateDescriptionChanged()
 void
 QvisSaveMovieWizard::page7_templateFileChanged(const QString &s)
 {
-    bool ret = templateSpec->SetTemplateFile(std::string(s.toStdString()));
+    /*bool ret =*/ templateSpec->SetTemplateFile(std::string(s.toStdString()));
 }
 
 void
@@ -4499,11 +4500,11 @@ QvisSaveMovieWizard::page9_removeOutput()
         intVector &stereoFlags = movieAtts->GetStereoFlags();
         bool screenCapture = movieAtts->GetUseScreenCapture();
 
-        int i, w, h, mStereo;
+        int w, h, mStereo;
         bool  useCurrent;
         float scale;
         bool  deleted = false;
-        for(i = 0; i < formats.size(); ++i)
+        for(size_t i = 0; i < formats.size(); ++i)
         {
             QString fmt(FormatToMenuName(formats[i].c_str()));
             QString res;  res.sprintf("%dx%d", widths[i], heights[i]);
@@ -4533,7 +4534,7 @@ QvisSaveMovieWizard::page9_removeOutput()
                 doubleVector::iterator ii3 = scales.begin();
                 unsignedCharVector::iterator  ii4 = useCurrents.begin();
                 intVector::iterator    ii5 = stereoFlags.begin();
-                for(int j = 0; j < i; ++j)
+                for(size_t j = 0; j < i; ++j)
                 { ++si; ++ii1; ++ii2; ++ii3; ++ii4; ++ii5;}
 
                 formats.erase(si);

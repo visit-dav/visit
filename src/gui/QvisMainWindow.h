@@ -245,6 +245,9 @@ class WindowInformation;
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
 {
     Q_OBJECT
+
+    using QvisWindowBase::SetFromNode;
+
 public:
     QvisMainWindow(int orientation, const char *captionString = 0);
     ~QvisMainWindow();

@@ -340,7 +340,7 @@ void
 QvisColorManagerWidget::setEntry(int index, const QString &name,
     const QColor &color, int opacity)
 {
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
     {
         ColorEntry *entry = colorEntries[index];
         QString tempName(" ");
@@ -384,7 +384,7 @@ QvisColorManagerWidget::setEntry(int index, const QString &name,
 void
 QvisColorManagerWidget::setAttributeName(int index, const QString &name)
 {
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
     {
         QString tempName(" ");
         tempName += name;
@@ -414,7 +414,7 @@ QvisColorManagerWidget::setAttributeName(int index, const QString &name)
 void
 QvisColorManagerWidget::setColor(int index, const QColor &color)
 {
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
     {
         colorEntries[index]->colorBox->setButtonColor(color);
         colorEntries[index]->opacitySlider->setGradientColor(color);
@@ -441,7 +441,7 @@ QvisColorManagerWidget::setColor(int index, const QColor &color)
 void
 QvisColorManagerWidget::setOpacity(int index, int opacity)
 {
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
     {
         colorEntries[index]->opacitySlider->setValue(opacity);
     }
@@ -553,7 +553,7 @@ QvisColorManagerWidget::name(int index) const
 {
     QString retval;
 
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
     {
         retval = colorEntries[index]->nameLabel->text();
     }
@@ -582,7 +582,7 @@ QvisColorManagerWidget::color(int index) const
 {
     QColor retval(0,0,0);
 
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
     {
         retval = colorEntries[index]->colorBox->buttonColor();
     }
@@ -611,7 +611,7 @@ QvisColorManagerWidget::opacity(const int index) const
 {
     int retval = 255;
 
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
     {
         retval = colorEntries[index]->opacitySlider->value();
     }
@@ -646,7 +646,7 @@ QvisColorManagerWidget::selectedColor(const QColor &color,
     int index = (int)((long)userData);
 
     // Change the gradient color of the opacity slider.
-    if(index >= 0 && index < colorEntries.size())
+    if(index >= 0 && (size_t)index < colorEntries.size())
         colorEntries[index]->opacitySlider->setGradientColor(color);
 
     // emit the colorChanged signal.

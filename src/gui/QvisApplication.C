@@ -266,7 +266,7 @@ QvisApplication::macEventFilter(EventHandlerCallRef er, EventRef event)
 
                 // Inject a Carbon event to make the application active.
                 CreateEvent(NULL, kEventClassApplication, kEventAppActivated, GetCurrentEventTime(),
-                     NULL, &request_make_app_active);
+                     0, &request_make_app_active);
                 PostEventToQueue(GetCurrentEventQueue(), request_make_app_active, kEventPriorityHigh);
                 // Inject a directive to exit a sub-event loop that we'll be creating.
                 QTimer::singleShot(10, this, SLOT(exitTheLoop()));
