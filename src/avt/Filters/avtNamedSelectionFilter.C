@@ -177,7 +177,7 @@ avtNamedSelectionFilter::SelectedData(vtkDataSet *in_ds,
         arr->SetName("_avt_thresh_var");
         for (vtkIdType i = 0 ; i < ncells ; i++)
             arr->SetValue(i, 0.);
-        for (vtkIdType i = 0 ; i < ids.size() ; i++)
+        for (vtkIdType i = 0 ; i < (vtkIdType)ids.size() ; i++)
             arr->SetValue(ids[i], 1.);
         ds->GetCellData()->AddArray(arr);
         arr->Delete();

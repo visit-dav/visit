@@ -97,11 +97,11 @@ bool sortImgByDepthIota(iotaMeta const& before, iotaMeta const& after){
 //
 // ****************************************************************************
 avtImgCommunicator::avtImgCommunicator(){
-  int ierr;
 
 #ifdef PARALLEL
-  ierr = MPI_Comm_size(VISIT_MPI_COMM, &num_procs);
-  ierr = MPI_Comm_rank(VISIT_MPI_COMM, &my_id);
+  /*int ierr;*/
+  /*ierr =*/ MPI_Comm_size(VISIT_MPI_COMM, &num_procs);
+  /*ierr =*/ MPI_Comm_rank(VISIT_MPI_COMM, &my_id);
 
   _img_mpi = createMetaDataType();
   MPI_Type_commit(&_img_mpi);
@@ -275,10 +275,10 @@ void avtImgCommunicator::syncAllProcs(){
 //
 // ****************************************************************************
 void avtImgCommunicator::gatherNumPatches(int numPatches){
-  int patchesProc[2];
-  patchesProc[0] = my_id; patchesProc[1] = numPatches;
 
   #ifdef PARALLEL
+    int patchesProc[2];
+    patchesProc[0] = my_id; patchesProc[1] = numPatches;
     int *tempRecvBuffer = NULL;
 
     if (my_id == 0){  
@@ -321,9 +321,9 @@ void avtImgCommunicator::gatherNumPatches(int numPatches){
 //
 // ****************************************************************************
 void avtImgCommunicator::gatherIotaMetaData(int arraySize, float *allIotaMetadata){
-  int *recvSizePerProc = NULL;
 
   #ifdef PARALLEL
+    int *recvSizePerProc = NULL;
     float *tempRecvBuffer = NULL;
     int *offsetBuffer = NULL;
 
@@ -398,7 +398,7 @@ void determinePatchesToCompositeLocally(const std::vector<iotaMeta>& all_patches
   iotaMeta delimiter;
   delimiter.patchNumber = -1;
 
-  for (int i=1; i < all_patches_sorted_avgZ_proc0.size(); ++i){
+  for (size_t i=1; i < all_patches_sorted_avgZ_proc0.size(); ++i){
     if(prev_data.procId == all_patches_sorted_avgZ_proc0[i].procId && all_patches_sorted_avgZ_proc0[i].procId != procToSend){
       if(!already_in) {
         patchesToCompositeLocallyVector[prev_data.procId].push_back(delimiter);
@@ -413,7 +413,7 @@ void determinePatchesToCompositeLocally(const std::vector<iotaMeta>& all_patches
     }
   }
 
-  for (int i=0; i < patchesToCompositeLocallyVector.size(); ++i){
+  for (size_t i=0; i < patchesToCompositeLocallyVector.size(); ++i){
     divisions[i].push_back(patchesToCompositeLocallyVector[i].size() + 1);
   }
 }
@@ -449,8 +449,8 @@ void determinePatchAdjacency(std::vector<iotaMeta>& allPatchesSorted, std::vecto
   iotaMeta prevPatch, currentPatch, nextPatch;
   int lower, upper;
 
-  for (int i=0; i < patchesToComposite.size(); ++i){
-    for(int k=0; k<divisions[i].size()-1; k++){
+  for (size_t i=0; i < patchesToComposite.size(); ++i){
+    for(size_t k=0; k<divisions[i].size()-1; k++){
 
       lower = divisions[i][k];
       upper = divisions[i][k+1]-1;
@@ -481,7 +481,7 @@ void determinePatchAdjacency(std::vector<iotaMeta>& allPatchesSorted, std::vecto
             it = std::find(patchesToComposite[i].begin(), patchesToComposite[i].end(), currentPatch);
             patchesToComposite[i].insert(it, delimiter);
 
-            for(int m = k; m < divisions[i].size() - 1; m++)
+            for(size_t m = k; m < divisions[i].size() - 1; m++)
               divisions[i][m+1]++;
             j++; upper++;
 
@@ -501,10 +501,10 @@ void determinePatchAdjacency(std::vector<iotaMeta>& allPatchesSorted, std::vecto
           // if this is the only remaining element, also remove the -1
           if(upper == lower+1){ 
             patchesToComposite[i].erase(--it);
-            for(int m = k; m < divisions[i].size() - 1; m++)
+            for(size_t m = k; m < divisions[i].size() - 1; m++)
               divisions[i][m+1] -= 2;
           }else{
-            for(int m = k; m < divisions[i].size() - 1; m++)
+            for(size_t m = k; m < divisions[i].size() - 1; m++)
               divisions[i][m+1]--;
             j--; upper--;
 
@@ -537,7 +537,7 @@ std::map<int,int> numPatchesPerProc;
 
   if (imgVector.size() == 0) return 0;
 
-  for (int i = 0; i < imgVector.size(); ++i){
+  for (size_t i = 0; i < imgVector.size(); ++i){
     const bool is_in = ((std::find(procsAlreadyInList.begin(), procsAlreadyInList.end(), imgVector[i].procId)) != (procsAlreadyInList.end()));
     if(!is_in){
       isPresent = numPatchesPerProc.insert (  std::pair<int,int>(imgVector[i].procId, imgVector[i].dims[0] * imgVector[i].dims[1]) );
@@ -547,7 +547,7 @@ std::map<int,int> numPatchesPerProc;
   }
 
   if(numPatchesPerProc.size() == 0){
-    for (int i = 0; i < imgVector.size(); ++i){
+    for (size_t i = 0; i < imgVector.size(); ++i){
       isPresent = numPatchesPerProc.insert (  std::pair<int,int>(imgVector[i].procId, imgVector[i].dims[0] * imgVector[i].dims[1]) );
       if(isPresent.second == false)     
         numPatchesPerProc[imgVector[i].procId] += imgVector[i].dims[0] * imgVector[i].dims[1];
@@ -661,10 +661,10 @@ void avtImgCommunicator::patchAllocationLogic(){
   for (int procId = 0; procId < num_procs; procId++)  patchesToRecvMap[procId].clear();
   
   // Populate recvMap and sendVec
-  for (int i = 0; i < all_patches_sorted_avgZ_proc0.size(); i++){
+  for (size_t i = 0; i < all_patches_sorted_avgZ_proc0.size(); i++){
 
     int destProcId = procToSend[i];
-    for (int j = 0; j < all_patches_sorted_avgZ_proc0[i].size(); j++){
+    for (size_t j = 0; j < all_patches_sorted_avgZ_proc0[i].size(); j++){
 
       int originProcId = all_patches_sorted_avgZ_proc0[i][j].procId;
       if(originProcId != destProcId){
@@ -965,11 +965,11 @@ void avtImgCommunicator::recvPointToPointImgData(imgMetaData recvMetaData, imgDa
 //
 // ****************************************************************************
 void avtImgCommunicator::gatherEncodingSizes(int *sizeEncoding, int numDivisions){
+
+  #ifdef PARALLEL
   int *offsetBuffer = NULL;
   int *recvSizePerProc = NULL;
   int totalDivisions = 0;
-
-  #ifdef PARALLEL
 
     // Only proc 0 receives data
     if (my_id == 0){
@@ -1048,13 +1048,13 @@ void avtImgCommunicator::gatherAndAssembleEncodedImages(int sizex, int sizey, in
       recvSizePerProc = new int[num_procs]; 
       offsetBuffer = new int[num_procs];  
 
-      int divCount = 0;
+      //int divCount = 0;
       for (int i=0; i<num_procs; i++){
         int numBoundsPerBlock = boundsPerBlockVec[i].size()/2;
         totalDivisions += numBoundsPerBlock;
         
         int sizeEncoded = 0;
-        for (int j=0; j<boundsPerBlockVec[i].size(); j+=2){
+        for (size_t j=0; j<boundsPerBlockVec[i].size(); j+=2){
           depthPartitions.insert( std::pair< float,int > ( (boundsPerBlockVec[i][j] + boundsPerBlockVec[i][j+1]) * 0.5, divIndex ) );   
           sizeEncoded += compressedSizePerDiv[divIndex]*5;
           divIndex++;

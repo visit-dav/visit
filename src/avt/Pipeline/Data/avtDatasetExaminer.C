@@ -238,7 +238,7 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
 bool
 avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
 {
-    int   i;
+    size_t   i;
  
     bool foundExtents = false;
     for (i = 0 ; i < 3 ; i++)

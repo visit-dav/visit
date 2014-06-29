@@ -214,7 +214,7 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     {
         if (validSample[z])
         {
-            float opacityValue, value, diffRGB, diffAlpha;
+            float opacityValue, value, diffRGB = 0, diffAlpha = 0;
             RGBA colorLow, colorHigh, opacLow, opacHigh;
 
             if (trilinearSampling == true){

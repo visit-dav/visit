@@ -499,7 +499,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     // succeed immediately.
     //
     vector<string> &preferred = defaultFileOpenOptions.GetPreferredIDs();
-    for (int i = 0 ; i < preferred.size() && rv == NULL ; i++)
+    for (size_t i = 0 ; i < preferred.size() && rv == NULL ; i++)
     {
         string formatid = preferred[i];
         if (!dbmgr->PluginAvailable(formatid))
@@ -607,7 +607,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     if (rv == NULL)
     {
         vector<string> succeeded;
-        for (int i = 0; i < fileMatchedIds.size(); i++)
+        for (size_t i = 0; i < fileMatchedIds.size(); i++)
         {
             // Skip this one if it was preferred -- if we got here, it
             // already failed on the previous pass
@@ -727,7 +727,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     // fallbacks, unless they are strictly unable to open the given
     // file without a matching filename.
     //
-    for (int i = 0 ; i < preferred.size() && rv == NULL ; i++)
+    for (size_t i = 0 ; i < preferred.size() && rv == NULL ; i++)
     {
         string formatid = preferred[i];
         if (!dbmgr->PluginAvailable(formatid))
@@ -960,7 +960,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
                             treatAllDBsAsTimeVarying);
             int nStates = md->GetNumStates();
             // Expectation is that nStates == times.size() or times.size() == 0
-            int nToDo = (nStates < times.size() ? nStates : times.size());
+            int nToDo = (nStates < (int)times.size() ? nStates : (int)times.size());
             for (int i = 0 ; i < nToDo ; i++)
             {
                 md->SetTime(i, times[i]);

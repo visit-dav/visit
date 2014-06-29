@@ -434,7 +434,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     if (maxDom == -1 || maxDom == pickAtts.GetDomain())
     {
         stringVector vars = pickAtts.GetVariables();
-        for (int i = 0; i < vars.size(); i++)
+        for (size_t i = 0; i < vars.size(); i++)
         {
             if (dataRequest->GetVariable() != vars[i]) 
             {
@@ -885,9 +885,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
     string vName;
     char buff[80];
     intVector incidentElements = pickAtts.GetIncidentElements();
-    double *temp;
+    double *temp = NULL;
     double mag;
-    int nComponents;
+    int nComponents = 0;
     bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone ||
                     pickAtts.GetPickType() == PickAttributes::DomainZone;
     bool zoneCent;
@@ -958,7 +958,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             if (zoneCent != zonePick)
             {
                 // data we want is associated with incidentElements
-                for (int k = 0; k < incidentElements.size(); k++)
+                for (size_t k = 0; k < incidentElements.size(); k++)
                 {
                     if (pickAtts.GetShowGlobalIds() && 
                         globalIncEl.size() == incidentElements.size())
@@ -1485,7 +1485,7 @@ avtPickQuery::GetCurrentNodeForOriginal(vtkDataSet *ds, const int origNode)
         unsigned int *on = origNodes->GetPointer(0);
         for (int i = 0; i < nTuples; i++)
         {
-            if (on[i*nComp+comp] == origNode)
+            if (on[i*nComp+comp] == (unsigned int)origNode)
             {
                 currentNode = i;
                 break;
@@ -1532,7 +1532,7 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const int origZone)
         unsigned int *oc = origCells->GetPointer(0);
         for (int i = 0; i < nTuples; i++)
         {
-            if (oc[i*nComp+comp] == origZone)
+            if (oc[i*nComp+comp] == (unsigned int)origZone)
             {
                 currentZone = i;
                 break;
@@ -1583,17 +1583,17 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds,
         int nTuples = origCells->GetNumberOfTuples();
         int nComp = origCells->GetNumberOfComponents();
         int comp = nComp -1;
-        int i, j;
+        size_t i, j;
         unsigned int *oc = origCells->GetPointer(0);
-        int nFound = 0;
+        size_t nFound = 0;
         bool *zoneFound = new bool[origZones.size()];
         for (i = 0; i < origZones.size(); i++)
             zoneFound[i] = false;
-        for (i = 0; i < nTuples && nFound < origZones.size(); i++)
+        for (i = 0; i < (size_t)nTuples && nFound < origZones.size(); i++)
         {
             for (j = 0; j < currentZones.size(); j++)
             {
-                if (!zoneFound[j] && oc[i*nComp+comp] == origZones[j])
+                if (!zoneFound[j] && oc[i*nComp+comp] == (unsigned int)origZones[j])
                 {
                     currentZones[j] = i; 
                     zoneFound[j]= true;
@@ -1641,7 +1641,7 @@ avtPickQuery::SetGlobalIds(vtkDataSet *ds, int element)
         if (globalZones)
             pickAtts.SetGlobalElement(globalZones->GetValue(element));
         if (globalNodes)
-            for (int i = 0; i < incEls.size(); i++)
+            for (size_t i = 0; i < incEls.size(); i++)
                 gie.push_back(globalNodes->GetValue(incEls[i]));
     
     }
@@ -1650,7 +1650,7 @@ avtPickQuery::SetGlobalIds(vtkDataSet *ds, int element)
         if (globalNodes)
             pickAtts.SetGlobalElement(globalNodes->GetValue(element));
         if (globalZones)
-            for (int i = 0; i < incEls.size(); i++)
+            for (size_t i = 0; i < incEls.size(); i++)
                 gie.push_back(globalZones->GetValue(incEls[i]));
     
     }
@@ -1675,7 +1675,7 @@ void
 avtPickQuery::ConvertElNamesToGlobal(void)
 {
     // var names were retrieved from DB, not global, so convert them. 
-    int i;
+    size_t i;
     char buff[24];
     stringVector globalElName;
     SNPRINTF(buff, 24, "(%d)", pickAtts.GetGlobalElement());
@@ -1692,7 +1692,7 @@ avtPickQuery::ConvertElNamesToGlobal(void)
     bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone ||
                     pickAtts.GetPickType() == PickAttributes::DomainZone;
 
-    for (i = 0; i < pickAtts.GetNumVarInfos(); i++)
+    for (i = 0; i < (size_t)pickAtts.GetNumVarInfos(); i++)
     { 
         if (zonePick)
         {
@@ -1737,7 +1737,7 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     int foundEl= pickAtts.GetElementNumber();
     intVector incEls = pickAtts.GetIncidentElements();
 
-    int i, j; 
+    size_t i, j;
     bool forCell = pickAtts.GetPickType() == PickAttributes::Zone || 
                    pickAtts.GetPickType() == PickAttributes::DomainZone;
     char fString[20], tmp[20];
@@ -1753,7 +1753,7 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     }
 
     // need to change the zone/node names stored in all PickVarInfo
-    int numVars = pickAtts.GetNumVarInfos();
+    size_t numVars = pickAtts.GetNumVarInfos();
     for (i = 0; i < numVars; i++)
     {
         if (pickAtts.GetVarInfo(i).GetVariableType() == "material")

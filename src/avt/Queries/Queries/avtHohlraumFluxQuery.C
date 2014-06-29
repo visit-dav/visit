@@ -448,7 +448,7 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         avtDataAttributes &dataAttr = GetInput()->GetInfo().GetAttributes();
         const std::vector<double> &binRange = dataAttr.GetVariableBinRanges( absVarName.c_str() );
     
-        if (binRange.size() != 0 && binRange.size() != numBins+1)
+        if (binRange.size() != 0 && binRange.size() != (size_t)numBins+1)
         {
             EXCEPTION1(VisItException, "Number of array components must equal number of bins + 1");
         }
@@ -537,7 +537,7 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
             lastMilestone = currentMilestone;
         }
     }
-    vtkCellArray *lines = output->GetLines();
+    //vtkCellArray *lines = output->GetLines();
 
     cpd->Delete();
     delete[] tmpBins;

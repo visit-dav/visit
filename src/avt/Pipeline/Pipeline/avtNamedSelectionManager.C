@@ -159,7 +159,7 @@ void
 avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob, 
     const SelectionProperties &selProps, avtNamedSelectionExtension *ext)
 {
-    const char *mName = "avtNamedSelectionManager::CreateNamedSelection: ";
+    //const char *mName = "avtNamedSelectionManager::CreateNamedSelection: ";
     StackTimer t0("CreateNamedSelection");
 
     if (strcmp(dob->GetType(), "avtDataset") != 0)
@@ -246,7 +246,7 @@ void
 avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
                                                bool shouldExpectSel)
 {
-    int i;
+    size_t i;
 
     int numToRemove = -1;
     for (i = 0 ; i < selList.size() ; i++)
@@ -269,7 +269,7 @@ avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
     delete selList[numToRemove];
 
     std::vector<avtNamedSelection *> newList(selList.size()-1);
-    for (i = 0 ; i < numToRemove ; i++)
+    for (i = 0 ; i < (size_t)numToRemove ; i++)
         newList[i] = selList[i];
     for (i = numToRemove+1 ; i < selList.size() ; i++)
         newList[i-1] = selList[i];
@@ -429,7 +429,7 @@ avtNamedSelectionManager::GetNamedSelection(const std::string &name)
 avtNamedSelection *
 avtNamedSelectionManager::IterateOverNamedSelections(const std::string &name)
 {
-    for (int i = 0 ; i < selList.size() ; i++)
+    for (size_t i = 0 ; i < selList.size() ; i++)
     {
         if (selList[i]->GetName() == name)
             return selList[i];

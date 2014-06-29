@@ -168,7 +168,7 @@ avtSILRestrictionTraverser::GetEnumerationCount()
 {
     int count = 0;
 
-    int  i;
+    size_t  i;
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
  
@@ -216,7 +216,7 @@ avtSILRestrictionTraverser::GetEnumerationMinMaxSetIds(int parentId, int *minId,
     if (mapsOut.size() == 0)
         return;
 
-    for (int i = 0 ; i < mapsOut.size() ; i++)
+    for (size_t i = 0 ; i < mapsOut.size() ; i++)
     {
         avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_ENUMERATION)
@@ -319,7 +319,7 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
 {
     int count = 0;
 
-    int  i, j;
+    size_t  i, j;
     enumList.clear();
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
@@ -343,7 +343,7 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
                 // look at each subset and determine if it is on or off.
                 //
                 name = coll->GetCategory();
-                int numElems = coll->GetNumberOfSubsets();
+                size_t numElems = coll->GetNumberOfSubsets();
                 enumList.resize(numElems);
                 for (j = 0 ; j < numElems ; j++)
                 {
@@ -407,7 +407,7 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
 bool
 avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
 {
-    int  i, j;
+    size_t  i, j;
     specList.clear();
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
@@ -426,7 +426,7 @@ avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
             // Now that we have found the species collection, look at each
             // of the species subsets and determine if it is on or off.
             //
-            int numElems = coll->GetNumberOfSubsets();
+            size_t numElems = coll->GetNumberOfSubsets();
             specList.resize(numElems);
             for (j = 0 ; j < numElems ; j++)
             {
@@ -519,7 +519,7 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
     int timingsHandle = visitTimer->StartTimer();
     list.clear();
  
-    int  i, j, k;
+    size_t  i, j, k;
  
     //
     // Throw in the identifiers of anything we are supposed to use.  Don't
@@ -540,7 +540,7 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
     {
         // Why go any further?  We know this is a multi-domain data set with 
         // all domains on.
-        int numSets = silr->GetNumSets();
+        size_t numSets = silr->GetNumSets();
         numSets -= 1; // for the top set.
         list.resize(numSets);
         for (i = 0 ; i < numSets ; i++)
@@ -593,7 +593,7 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
             {
                 avtSILCollection_p coll = silr->GetSILCollection(outmaps[j]);
                 const avtSILNamespace *ns = coll->GetSubsets();
-                int numElems = ns->GetNumberOfElements();
+                size_t numElems = ns->GetNumberOfElements();
                 setList.reserve(setList.size() + numElems);
                 for (k = 0 ; k < numElems ; k++)
                 {
@@ -661,7 +661,7 @@ avtSILRestrictionTraverser::UsesAllData(void)
     setList.push_back(silr->topSet);
  
     const vector<unsigned char> &useSet = silr->useSet;
-    for (int i = 0 ; i < setList.size() ; i++)
+    for (size_t i = 0 ; i < setList.size() ; i++)
     {
         int setId = setList[i];
         if (!useSet[setId])
@@ -679,7 +679,7 @@ avtSILRestrictionTraverser::UsesAllData(void)
         // Loop through each collection and each set coming out of that
         // collection.
         bool subMapDoesntUseAllData = false;
-        for (int j = 0; j < mapsOut.size(); j++)
+        for (size_t j = 0; j < mapsOut.size(); j++)
         {
             int collIndex = mapsOut[j];
             avtSILArray_p  pArray = NULL;
@@ -772,7 +772,7 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
 {
     int timingsHandle = visitTimer->StartTimer();
  
-    int   i;
+    size_t   i;
  
     //
     // Find the domains map coming out of the top level set.
@@ -808,7 +808,7 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
     // Determine how domains come off the top level set.  This is the maximum
     // domains possible.
     //
-    int nTargetDomains = domainCollection->GetNumberOfSubsets();
+    size_t nTargetDomains = domainCollection->GetNumberOfSubsets();
 
     //
     // Go through every one of the domains and see if it is being used.  If
@@ -891,7 +891,7 @@ avtSILRestrictionTraverser::GetMaterials(int chunk, bool &sms)
         return nomats;
     }
 
-    if (chunk < 0 || chunk >= materialListForChunk.size() ||
+    if (chunk < 0 || (size_t)chunk >= materialListForChunk.size() ||
         materialListForChunk[chunk] < 0)
     {
         debug1 << "They have asked for a chunk (" << chunk << ") that we "
@@ -971,7 +971,7 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
     setIsInProcessList[silr->topSet] = true;
  
     const vector<unsigned char> &useSet = silr->useSet;
-    for (int i = 0 ; i < setsToProcess.size() ; i++)
+    for (size_t i = 0 ; i < setsToProcess.size() ; i++)
     {
         if (useSet[setsToProcess[i]] == NoneUsed)
         {
@@ -985,7 +985,7 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
         avtSILSet_p currentSet = silr->GetSILSet(setsToProcess[i]);
         int chunk = currentSet->GetIdentifier();
         const vector<int> &mapsOut = currentSet->GetMapsOut();
-        for (int j = 0 ; j < mapsOut.size() ; j++)
+        for (size_t j = 0 ; j < mapsOut.size() ; j++)
         {
             avtSILArray_p  pArray = NULL;
             avtSILMatrix_p pMat = NULL;
@@ -1082,7 +1082,7 @@ void
 avtSILRestrictionTraverser::AddMaterialList(int chunk, MaterialList &l,
                                             bool shouldMatSel)
 {
-    while (chunk >= materialListForChunk.size())
+    while ((size_t)chunk >= materialListForChunk.size())
     {
         materialListForChunk.push_back(-1);
     }
@@ -1193,7 +1193,7 @@ avtSILRestrictionTraverser::UsesAllMaterials()
         return true;
     }
  
-    int  i, j;
+    size_t  i, j;
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
  
@@ -1211,7 +1211,7 @@ avtSILRestrictionTraverser::UsesAllMaterials()
             // Now that we have found the material collection, look at each
             // of the material subsets and determine if it is on or off.
             //
-            int numElems = coll->GetNumberOfSubsets();
+            size_t numElems = coll->GetNumberOfSubsets();
             for (j = 0 ; j < numElems && allUsed; j++)
             {
                 allUsed = (useSet[coll->GetSubset(j)] != NoneUsed); 

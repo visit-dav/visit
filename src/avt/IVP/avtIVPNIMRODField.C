@@ -175,10 +175,11 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
 
   if( array == 0 )
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "Variable " << varname
                << " does not exist"
                << endl;
+    }
     return 0;
   }
 
@@ -187,10 +188,11 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
   if( ntuples != array->GetNumberOfTuples() ||
       ncomponents != array->GetNumberOfComponents() )
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "Variable " << varname
                << " size does not equal the number elements and/or components"
                << endl;
+    }
     return 0;
   }
 
@@ -198,8 +200,9 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
 
   if( newptr == 0 )
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "Variable " << varname << " can not allocated" << endl;
+    }
     return 0;
   }
 
@@ -235,11 +238,12 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
   }
   else
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "avtIVPNIMRODField::SetDataPointer "
                << "Variable " << varname
                << " is not of type float - can not safely down cast"
                << endl;
+    }
     return 0;
   }
 }
@@ -409,11 +413,11 @@ avtIVPNIMRODField::ConvertToCylindrical(const avtVector& pt) const
 void avtIVPNIMRODField::lagrange_weights( unsigned int DEG, const double s, 
                                           double* w, double *d ) const
 {
-    for( int i=0; i<=DEG; ++i )
+    for( unsigned int i=0; i<=DEG; ++i )
     {
         double nom = 1.0, den = 1.0, dnom = 0.0;
 
-        for( int j=0; j<=DEG; ++j )
+        for( unsigned int j=0; j<=DEG; ++j )
         {
             if( i==j )
                 continue;
@@ -423,7 +427,7 @@ void avtIVPNIMRODField::lagrange_weights( unsigned int DEG, const double s,
             
             double dtmp = 1.0;
                     
-            for( int k=0; k<=DEG; ++k )
+            for( unsigned int k=0; k<=DEG; ++k )
             {
                 if( k==i || k==j )
                     continue;
@@ -448,7 +452,7 @@ void avtIVPNIMRODField::fourier_weights( unsigned int N, const double t,
     w[0] = 1.0;
     d[0] = 0.0;
      
-    for( int n=1, m=N-1; n<N/2; n++, m-- ) 
+    for( unsigned int n=1, m=N-1; n<N/2; n++, m-- )
     {
         double alpha = 2*M_PI*n;
         
@@ -511,11 +515,11 @@ void avtIVPNIMRODField::interpolate( double rad, double theta, double phi,
     // vec3 v  = vec3::Zero();
     // mat3 Dv = mat3::Zero();
 
-    for( int i=0; i<=Drad; ++i )
+    for( unsigned int i=0; i<=Drad; ++i )
     {
-        for( int j=0; j<=Dtheta; ++j )
+        for( unsigned int j=0; j<=Dtheta; ++j )
         {
-            for( int k=0; k<=Nphi-1; ++k )
+            for( unsigned int k=0; k<=Nphi-1; ++k )
             {
               vec3 data =
                 vec3( vecs +

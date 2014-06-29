@@ -244,7 +244,7 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int *ind)
 
 avtDataTree::avtDataTree(int n, vtkDataSet **ds, vector<int> &ind)
 {
-    if (ds == NULL || ind.size() != n || n == 0)
+    if (ds == NULL || ind.size() != (size_t)n || n == 0)
     {
         EXCEPTION0(NoInputException);
     }
@@ -333,7 +333,7 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind, vector<string> &l)
     // This code should be called *always* to ensure we don't walk off the
     // end of the vector since this method assumes that the length of the
     // l label vector is at least the size of n.
-    if(l.size() < n)
+    if(l.size() < (size_t)n)
     {
         EXCEPTION1(ImproperUseException, "The are fewer labels than expected!");
     }
@@ -1103,7 +1103,7 @@ avtDataTree::PruneTree(const vector<int> &list, vector<int> &goodIds)
 
     avtDataTree_p *treelist = new avtDataTree_p[list.size()];
     int count = 0;
-    for (int i = 0 ; i < list.size() ; i++)
+    for (size_t i = 0 ; i < list.size() ; i++)
     {
         success = false;
         pmap.chunkId = list[i];
@@ -1171,7 +1171,7 @@ avtDataTree::PruneTree(const vector<string> &labels)
 
     avtDataTree_p *treelist = new avtDataTree_p[labels.size()];
     int count = 0;
-    for (int i = 0 ; i < labels.size() ; i++)
+    for (size_t i = 0 ; i < labels.size() ; i++)
     {
         success = false;
         pmap.label = labels[i];
@@ -1244,7 +1244,7 @@ avtDataTree::PruneTree(const vector<string> &labels, vector<string> &goodLabels)
 
     avtDataTree_p *treelist = new avtDataTree_p[labels.size()];
     int count = 0;
-    for (int i = 0 ; i < labels.size() ; i++)
+    for (size_t i = 0 ; i < labels.size() ; i++)
     {
         success = false;
         pmap.label = labels[i];

@@ -207,19 +207,22 @@ avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex
     }
 
     debug5 << "avtRecenterExpression: recentering mode: ";
-    if (recenterMode == Toggle)
+    if (recenterMode == Toggle) {
         debug5 << "toggle" << endl;
-    if (recenterMode == Nodal)
+    }
+    if (recenterMode == Nodal) {
         debug5 << "nodal" << endl;
-    if (recenterMode == Zonal)
+    }
+    if (recenterMode == Zonal) {
         debug5 << "zonal" << endl;
+    }
 
     vtkDataArray *cell_data = in_ds->GetCellData()->GetArray(activeVariable);
     vtkDataArray *pt_data   = in_ds->GetPointData()->GetArray(activeVariable);
 
     vtkDataArray *rv = NULL;
 
-    avtCentering target;
+    avtCentering target = AVT_NO_VARIABLE; /// TODO: only var not used..
     switch(recenterMode)
     {
     case Nodal:

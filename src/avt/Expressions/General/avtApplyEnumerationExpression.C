@@ -151,7 +151,7 @@ avtApplyEnumerationExpression::DeriveVariable(vtkDataSet *in_ds, int currentDoma
                        "Cannot enumerate scalar because: "
                        "encountered a negative input value");
         }
-        if (ival >= enumeratedValues.size())
+        if ((size_t)ival >= enumeratedValues.size())
         {
             EXCEPTION2(ExpressionException, outputVariableName, 
                        "Cannot enumerate scalar because: "
@@ -218,7 +218,7 @@ avtApplyEnumerationExpression::ProcessArguments(ArgsExpr *args,
     ListExpr *list = dynamic_cast<ListExpr*>(listTree);
     std::vector<ListElemExpr*> *elems = list->GetElems();
     enumeratedValues.resize(elems->size());
-    for (int i = 0 ; i < elems->size() ; i++)
+    for (size_t i = 0 ; i < elems->size() ; i++)
     {
         if ((*elems)[i]->GetEnd())
         {

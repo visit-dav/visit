@@ -836,7 +836,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
                                                    SpatialPartition &spat_part)
 {
 #ifdef PARALLEL
-    int   i, j, k;
+    size_t   i, j, k;
     int   nProcs = PAR_Size();
 
     int t0 = visitTimer->StartTimer();
@@ -849,7 +849,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     {
         const int npts = pt_list_size[i];
         double   *pts  = pt_list[i];
-        for (j = 0 ; j < npts ; j++)
+        for (j = 0 ; j < (size_t)npts ; j++)
         {
             int proc = spat_part.GetProcessor(pts);
             pts += 3;
@@ -858,7 +858,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     }
     vector<int> grids(nProcs, 0);
     vector<int> total_size(nProcs, 0);
-    for (i = 0 ; i < num_rgrids ; i++) 
+    for (i = 0 ; i < (size_t)num_rgrids ; i++)
     {
         vector<int>    procId;
         vector<double> procBoundary;
@@ -890,7 +890,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     //
     int *sendcount = new int[nProcs];
     int  total_msg_size = 0;
-    for (j = 0 ; j < nProcs ; j++)
+    for (j = 0 ; j < (size_t)nProcs ; j++)
     {
         sendcount[j] = sizeof(int); // npts for non-rgrids;
         sendcount[j] += 3*sizeof(double)*pt_cts[j];
@@ -908,14 +908,14 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     char *big_send_msg = new char[total_msg_size];
     char **sub_ptr = new char*[nProcs];
     sub_ptr[0] = big_send_msg;
-    for (i = 1 ; i < nProcs ; i++)
+    for (i = 1 ; i < (size_t)nProcs ; i++)
         sub_ptr[i] = sub_ptr[i-1] + sendcount[i-1];
 
     //
     // Now add the initial header info ... "how many points I have for your
     // processor".
     //
-    for (j = 0 ; j < nProcs ; j++)
+    for (j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numFromMeToProcJ = pt_cts[j];
         memcpy(sub_ptr[j], (void *) &numFromMeToProcJ, sizeof(int));
@@ -929,7 +929,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     {
         const int npts = pt_list_size[i];
         double   *pts  = pt_list[i];
-        for (j = 0 ; j < npts ; j++)
+        for (j = 0 ; j < (size_t)npts ; j++)
         {
             double *pt = pts;
             pts += 3;
@@ -943,7 +943,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     // Now add the initial header info for "how many rgrids I have for your
     // processor".
     //
-    for (j = 0 ; j < nProcs ; j++)
+    for (j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numGridsFromMeToProcJ = grids[j];
         memcpy(sub_ptr[j], (void *) &numGridsFromMeToProcJ, sizeof(int));
@@ -953,7 +953,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     //
     // And add the actual information about the rgrid.
     //
-    for (i = 0 ; i < num_rgrids ; i++) 
+    for (i = 0 ; i < (size_t)num_rgrids ; i++)
     {
         vector<int>    procId;
         vector<double> procBoundary;
@@ -997,7 +997,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     int *recvdisp  = new int[nProcs];
     senddisp[0] = 0;
     recvdisp[0] = 0;
-    for (j = 1 ; j < nProcs ; j++)
+    for (j = 1 ; j < (size_t)nProcs ; j++)
     {
         senddisp[j] = sendcount[j-1] + senddisp[j-1];
         recvdisp[j] = recvcount[j-1] + recvdisp[j-1];
@@ -1014,18 +1014,18 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     // Set up the buffers so we can read the information out.
     //
     sub_ptr[0] = big_recv_msg;
-    for (i = 1 ; i < nProcs ; i++)
+    for (i = 1 ; i < (size_t)nProcs ; i++)
         sub_ptr[i] = sub_ptr[i-1] + recvcount[i-1];
 
     //
     // Translate the buffers we just received into the points we should look
     // at.
     //
-    int numPts = 0;
+    //int numPts = 0;
     pt_list_came_from.clear();
     vector<double *> new_pt_list;
     vector<int> new_pt_list_size;
-    for (j = 0 ; j < nProcs ; j++)
+    for (j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numFromProcJ = 0;
         memcpy((void *) &numFromProcJ, sub_ptr[j], sizeof(int));
@@ -1046,12 +1046,12 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     vector<double *> new_rgrid_pts;
     vector<int>     new_rgrid_pts_size;
     rgrid_came_from.clear();
-    for (j = 0 ; j < nProcs ; j++)
+    for (j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numGridsFromProcJToMe;
         memcpy((void *) &numGridsFromProcJToMe, sub_ptr[j], sizeof(int));
         sub_ptr[j] += sizeof(int);
-        for (k = 0 ; k < numGridsFromProcJToMe ; k++)
+        for (k = 0 ; k < (size_t)numGridsFromProcJToMe ; k++)
         {
             int nX, nY, nZ;
             memcpy((void *) &nX, sub_ptr[j], sizeof(int));
@@ -1137,8 +1137,8 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
                                                    SpatialPartition &spat_part)
 {
 #ifdef PARALLEL
-    int   i, j, k;
-    int   nProcs = PAR_Size();
+    size_t   i, j, k;
+    size_t   nProcs = PAR_Size();
 
     //
     // Clean up the current points and restore the "orig" points.
@@ -1244,18 +1244,18 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     {
         const int npts = pt_list_size[i];
         double   *pts  = pt_list[i];
-        for (j = 0 ; j < npts ; j++)
+        for (j = 0 ; j < (size_t)npts ; j++)
         {
             double *pt = pts;
             pts += 3;
             int proc = spat_part.GetProcessor(pt);
             double *p = (double *) recvmessages[proc];
-            for (k = 0 ; k < nComps ; k++)
+            for (k = 0 ; k < (size_t)nComps ; k++)
                 vals[idx++] = *p++;
             recvmessages[proc] += sizeof(double)*nComps;
         }
     }
-    for (i = 0 ; i < num_rgrids ; i++) 
+    for (i = 0 ; i < (size_t)num_rgrids ; i++)
     {
         int realNX = rgrid_pts_size[3*i];
         int realNY = rgrid_pts_size[3*i+1];
@@ -1286,7 +1286,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
                     {
                         int valIDX = yzoffset + x;
                         double *p = (double *) recvmessages[procId[j]];
-                        for (k = 0 ; k < nComps ; k++)
+                        for (k = 0 ; k < (size_t)nComps ; k++)
                             vals[idx + nComps*valIDX + k] = *p++;
                         recvmessages[procId[j]] += sizeof(double)*nComps;
                     }
@@ -1642,9 +1642,9 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
 #ifdef PARALLEL
     int  t0 = visitTimer->StartTimer();
 
-    int  i, j, k;
+    size_t  i, j, k;
 
-    int   nProcs = PAR_Size();
+    size_t   nProcs = PAR_Size();
 
     vtkUnstructuredGrid **meshForProcP = new vtkUnstructuredGrid*[nProcs];
     int                  *nCellsForP   = new int[nProcs];
@@ -1683,7 +1683,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         // message to each of the other processors containing the cells it
         // needs.
         //
-        for (j = 0 ; j < nCells ; j++)
+        for (j = 0 ; j < (size_t)nCells ; j++)
         {
             vtkCell *cell = mesh->GetCell(j);
             spat_part.GetProcessorList(cell, list);
@@ -2207,11 +2207,11 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
 
         double min, max;
 
-        int index = 0;
-        if (axis == Y_AXIS)
-            index = 2;
-        else if (axis == Z_AXIS)
-            index = 4;
+//        int index = 0;
+//        if (axis == Y_AXIS)
+//            index = 2;
+//        else if (axis == Z_AXIS)
+//            index = 4;
 
         if (firstBigger <= 0)
         {
@@ -2449,10 +2449,11 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             if (b_list[i]->IsLeaf())
             {
                 const double *b = b_list[i]->GetBoundary();
-                if (DebugStream::Level1())
+                if (DebugStream::Level1()) {
                     debug1 << "Boundary " << count++ << " = " << b[0] << "-" <<b[1]
                        << ", " << b[2] << "-" << b[3] << ", " << b[4] << "-"
                        << b[5] << endl;
+                }
             }
         }
 

@@ -226,7 +226,7 @@ PrecisionInBytes(vtkDataArray *var)
 static bool
 IsAdmissibleDataType(const vector<int>& admissibleTypes, const int type)
 {
-    for (int i = 0; i < admissibleTypes.size(); i++)
+    for (size_t i = 0; i < admissibleTypes.size(); i++)
     {
         if (admissibleTypes[i] == type)
             return true;
@@ -308,8 +308,9 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         void *oldBuf = oldArr->GetVoidPointer(0);
 
         debug1 << "avtTransformManager: Converting vktDataArray, ";
-        if (oldArr->GetName() != NULL)
+        if (oldArr->GetName() != NULL) {
                debug1 << "\"" << oldArr->GetName() << "\", ";
+        }
         debug1 << "with " << numTuples << " tuples and "
                << numComponents << " components from type \""
                << DataArrayTypeName(oldArr) << "\" to \"float\"" << endl;
@@ -412,8 +413,9 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
         void *oldBuf = oldArr->GetVoidPointer(0);
 
         debug1 << "avtTransformManager: Converting vktDataArray, ";
-        if (oldArr->GetName() != NULL)
+        if (oldArr->GetName() != NULL) {
                debug1 << "\"" << oldArr->GetName() << "\", ";
+        }
         debug1 << "with " << numTuples << " tuples and "
                << numComponents << " components from type \""
                << DataArrayTypeName(oldArr) << "\" to \"double\"" << endl;
@@ -790,9 +792,10 @@ ShouldIgnoreVariableForConversions(vtkDataArray *da,
             ignoreIt = true;
     }
 
-    if (ignoreIt)
+    if (ignoreIt) {
         debug4 << "Ignoring variable/array \"" << da->GetName()
                << "\" for type conversions" << endl;
+    }
 
     return ignoreIt;
 }
@@ -872,7 +875,7 @@ avtTransformManager::CoordinatesHaveExcessPrecision(vtkDataSet *ds,
         // to lose some precision.
         excessPrecision = !needNativePrecision  &&
             pType != AVT_PRECISION_NATIVE &&
-            (PrecisionInBytes(GetCoordDataType(ds)) > sizeof(float));
+            ((size_t)PrecisionInBytes(GetCoordDataType(ds)) > sizeof(float));
     }
 
     return excessPrecision;
@@ -916,7 +919,7 @@ avtTransformManager::CoordinatesHaveInsufficientPrecision(vtkDataSet *ds,
         // to increase precision.
         insufficientPrecision = !needNativePrecision &&
             pType != AVT_PRECISION_NATIVE  &&
-            (PrecisionInBytes(GetCoordDataType(ds)) < sizeof(double));
+            ((size_t)PrecisionInBytes(GetCoordDataType(ds)) < sizeof(double));
     }
 
     return insufficientPrecision;
@@ -962,7 +965,7 @@ avtTransformManager::DataHasExcessPrecision(vtkDataArray *da,
         // to lose some precision.
         excessPrecision = !needNativePrecision && 
             pType != AVT_PRECISION_NATIVE &&
-            (PrecisionInBytes(da) > sizeof(float));
+            ((size_t)PrecisionInBytes(da) > sizeof(float));
     }
 
     return excessPrecision;
@@ -1005,7 +1008,7 @@ avtTransformManager::DataHasInsufficientPrecision(vtkDataArray *da,
         // to lose some precision.
         insufficientPrecision = !needNativePrecision &&
              pType != AVT_PRECISION_NATIVE &&
-            (PrecisionInBytes(da) < sizeof(double));
+            ((size_t)PrecisionInBytes(da) < sizeof(double));
     }
 
     return insufficientPrecision;
@@ -1238,8 +1241,9 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             {
                 avtVarType vt = md->DetermineVarType(da->GetName());
                 ignore = (vt == AVT_MATERIAL || vt == AVT_MATSPECIES);
-                if (ignore)
+                if (ignore) {
                     debug4 << "Conversion to double ignored for " << "da->GetName()" << endl;
+                }
             }
             if(!ignore && (disallowedType || excessPrecision || insufficientPrecision))
             {
@@ -1660,7 +1664,6 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         int nY = (int) ((maxY - minY) / tol);
         int nZ = (int) ((maxZ - minZ) / tol);
 
-        int nDims = (nZ < 1) ? 2 : 3;
         int dims[3] = {nX, nY, nZ};
 
         if (nZ < 1)
@@ -1671,6 +1674,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         //
         int nXBlocks, nYBlocks, nZBlocks;
 #ifdef PARALLEL
+        int nDims = (nZ < 1) ? 2 : 3;
         if (nDims == 2)
         {
             //
@@ -1691,7 +1695,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         nZBlocks = 1;
 #endif
 
-        int nBlocks = nXBlocks * nYBlocks * nZBlocks;
+        //int nBlocks = nXBlocks * nYBlocks * nZBlocks;
 
         int deltaX = (nX + nXBlocks - 1) / nXBlocks;
         int deltaY = (nY + nYBlocks - 1) / nYBlocks;
@@ -2195,8 +2199,8 @@ vtkDataSet *ds, int dom)
         return ds;
 
     // Rule out any datasets that cannot possibly be curves.
-    int xvalsType;
-    vtkDataArray *xvals;
+    int xvalsType = 0;
+    vtkDataArray *xvals = NULL;
     switch (doType)
     {
         case VTK_POLY_DATA:

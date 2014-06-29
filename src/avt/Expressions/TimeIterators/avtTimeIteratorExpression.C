@@ -201,11 +201,11 @@ avtTimeIteratorExpression::ProcessArguments(ArgsExpr *args,
 void
 avtTimeIteratorExpression::AddInputVariableName(const char *v)
 {
-    if (varnames.size() < NumberOfVariables())
+    if (varnames.size() < (size_t)NumberOfVariables())
         varnames.push_back(v);
     else
     {
-        if (varnames.size() == NumberOfVariables() && cmfeType == POS_CMFE)
+        if (varnames.size() == (size_t)NumberOfVariables() && cmfeType == POS_CMFE)
         {
             // Need to remove quotes around the variable (if any), since that 
             // won't be parsed well.
@@ -536,7 +536,7 @@ avtTimeIteratorExpression::IsPointVariable(void)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     bool hasNodal = false;
     bool hasZonal = false;
-    for (int i = 0 ; i < varnames.size() ; i++)
+    for (size_t i = 0 ; i < varnames.size() ; i++)
     {
         if (!atts.ValidVariable(varnames[i]))
             return avtExpressionFilter::IsPointVariable();

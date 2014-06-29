@@ -711,16 +711,16 @@ DataRequest_TurnSimplifiedNestingRepresentationOn(PyObject *self, PyObject *args
 // Modifications:
 //
 // ****************************************************************************
-static PyObject *
-DataRequest_TurnSimplifiedNestingRepresentationOff(PyObject *self, PyObject *args)
-{
-    PyDataRequestObject *obj = (PyDataRequestObject *)self;
-    avtDataRequest_p request = *(obj->request);
+//static PyObject *
+//DataRequest_TurnSimplifiedNestingRepresentationOff(PyObject *self, PyObject *args)
+//{
+//    PyDataRequestObject *obj = (PyDataRequestObject *)self;
+//    avtDataRequest_p request = *(obj->request);
 
-    request->TurnSimplifiedNestingRepresentationOff();
+//    request->TurnSimplifiedNestingRepresentationOff();
 
-    Py_RETURN_NONE;
-}
+//    Py_RETURN_NONE;
+//}
 
 //
 // Structured Indices
@@ -781,7 +781,7 @@ DataRequest_SetNeedStructuredIndices(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1213,7 +1213,7 @@ DataRequest_SetMayRequireZones(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1281,7 +1281,7 @@ DataRequest_SetMayRequireNodes(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1349,7 +1349,7 @@ DataRequest_SetMaintainOriginalConnectivity(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1459,17 +1459,17 @@ DataRequest_GetDesiredGhostDataType(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
-static PyObject *
-DataRequest_NeedValidFaceConnectivity(PyObject *self, PyObject *args)
-{
-    PyDataRequestObject *obj = (PyDataRequestObject *)self;
-    avtDataRequest_p request = *(obj->request);
+//static PyObject *
+//DataRequest_NeedValidFaceConnectivity(PyObject *self, PyObject *args)
+//{
+//    PyDataRequestObject *obj = (PyDataRequestObject *)self;
+//    avtDataRequest_p request = *(obj->request);
 
-    if(request->NeedValidFaceConnectivity())
-        Py_RETURN_TRUE;
-    else
-        Py_RETURN_FALSE;
-}
+//    if(request->NeedValidFaceConnectivity())
+//        Py_RETURN_TRUE;
+//    else
+//        Py_RETURN_FALSE;
+//}
 
 // ****************************************************************************
 // Function: DataRequest_SetNeedValidFaceConnectivity
@@ -1500,7 +1500,7 @@ DataRequest_SetNeedValidFaceConnectivity(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1568,7 +1568,7 @@ DataRequest_SetUsesAllDomains(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1636,7 +1636,7 @@ DataRequest_SetNeedMixedVariableReconstruction(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1704,7 +1704,7 @@ DataRequest_SetNeedSmoothMaterialInterfaces(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -1773,7 +1773,7 @@ DataRequest_SetNeedCleanZonesOnly(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -2129,7 +2129,7 @@ DataRequest_SetSimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -2423,7 +2423,7 @@ DataRequest_SetNeedNativePrecision(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -2756,7 +2756,7 @@ DataRequest_SetDiscBoundaryOnly(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -2820,7 +2820,7 @@ DataRequest_SetPassNativeCSG(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -2889,7 +2889,7 @@ DataRequest_SetTransformVectorsDuringProject(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)
@@ -2958,7 +2958,7 @@ DataRequest_SetNeedPostGhostMaterialInfo(PyObject *self, PyObject *args)
     if(PyBool_Check(py_val) == 0)
         return NULL;
 
-    bool val;
+    bool val = true;
     if(py_val == Py_True)
         val = true;
     else if(py_val == Py_False)

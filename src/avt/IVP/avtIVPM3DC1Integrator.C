@@ -263,11 +263,11 @@ avtIVPM3DC1Integrator::vpstep(const avtIVPField* field,
   xin[1] = yCur[1];
   xin[2] = yCur[2];
 
-  if (res = partial_step(field,  xin, 0, 0.5*h, xout)) return res;
-  if (res = partial_step(field, xout, 1, 0.5*h, xout)) return res;
-  if (res = partial_step(field, xout, 2,     h, xout)) return res;
-  if (res = partial_step(field, xout, 1, 0.5*h, xout)) return res;
-  if (res = partial_step(field, xout, 0, 0.5*h, xout)) return res;
+  if ((res = partial_step(field,  xin, 0, 0.5*h, xout))) return res;
+  if ((res = partial_step(field, xout, 1, 0.5*h, xout))) return res;
+  if ((res = partial_step(field, xout, 2,     h, xout))) return res;
+  if ((res = partial_step(field, xout, 1, 0.5*h, xout))) return res;
+  if ((res = partial_step(field, xout, 0, 0.5*h, xout))) return res;
 
   yNew[0] = xout[0];
   yNew[1] = xout[1];

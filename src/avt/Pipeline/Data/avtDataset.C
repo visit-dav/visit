@@ -581,7 +581,7 @@ avtDataset::CalculateSpatialIntervalTree(bool acrossAllProcs)
     vector<int> ids;
     root->GetAllDomainIds(ids);
     int max = -1;
-    for (int i = 0 ; i < ids.size() ; i++)
+    for (size_t i = 0 ; i < ids.size() ; i++)
         max = (ids[i] > max ? ids[i] : max);
     if (acrossAllProcs)
         max = UnifyMaximumValue(max);
@@ -620,7 +620,7 @@ avtDataset::CalculateSpatialIntervalTree(bool acrossAllProcs)
         else
         { 
             int nc = curTree->GetNChildren();
-            if (trees.size() < idx+nc)
+            if (trees.size() < (size_t)idx+nc)
                 trees.resize(idx+nc);
             for (int j = 0 ; j < nc ; j++)
                 trees[idx++] = curTree->GetChild(j);
@@ -675,7 +675,7 @@ avtDataset::RenumberDomainIDs(bool acrossAllProcs)
     }
 
     // This should never execute, but better safe than sorry
-    while (labels.size() < numLeaves)
+    while (labels.size() < (size_t)numLeaves)
     {
         //debug1 << "Unexpected: less labels than leaves" << endl;
         labels.push_back("");

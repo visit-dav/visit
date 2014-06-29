@@ -132,7 +132,7 @@ avtSerialICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
 void
 avtSerialICAlgorithm::RestoreInitialize(std::vector<avtIntegralCurve *> &ics, int curTimeSlice)
 {
-    for (int i = 0; i < ics.size(); i++)
+    for (size_t i = 0; i < ics.size(); i++)
     {
         avtIntegralCurve *s = ics[i];
 

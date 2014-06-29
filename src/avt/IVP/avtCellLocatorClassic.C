@@ -95,8 +95,9 @@ void avtCellLocatorClassic::Build()
 
     if( !dataSet || (numCells = dataSet->GetNumberOfCells()) < 1 )
     {
-        if (DebugStream::Level5())
+        if (DebugStream::Level5()) {
             debug5 << "avtCellLocatorClassic::Build(): no cells to subdivide\n";
+        }
         return;
     }
 
@@ -264,7 +265,7 @@ vtkIdType avtCellLocatorClassic::FindCell( const double pos[3],
 
         if( ijk[j] < 0 )
             ijk[j] = 0;
-        else if( ijk[j] >= NumberOfDivisions )
+        else if( ijk[j] >= (int)NumberOfDivisions )
             ijk[j] = NumberOfDivisions-1;
     }
 
@@ -276,7 +277,7 @@ vtkIdType avtCellLocatorClassic::FindCell( const double pos[3],
     if( leafids == NULL )
          return -1;
 
-    unsigned int ntest = 0;
+//    unsigned int ntest = 0;
 
     for( int j=0; j < leafids->GetNumberOfIds(); j++ )
     {

@@ -681,7 +681,7 @@ avtVolume::GetVariables(double defaultVal, vtkDataArray **arrays, int nArrays,
     //
     int vH = hEnd-hStart;
     int vW = wEnd-wStart;
-    int nvals = vH*vW*volumeDepth;
+    //int nvals = vH*vW*volumeDepth;
     for (i = 0 ; i < nArrays ; i++)
         arrays[i]->SetNumberOfTuples(vW*vH*volumeDepth);
 
@@ -717,8 +717,8 @@ avtVolume::GetVariables(double defaultVal, vtkDataArray **arrays, int nArrays,
     //
     // Get all of the samples out of the rays and put them in out output.
     //
-    int vHeight = hEnd-hStart;
-    int vWidth  = wEnd-wStart;
+    //int vHeight = hEnd-hStart;
+    //int vWidth  = wEnd-wStart;
     for (i = hStart ; i < hEnd ; i++)
     {
         if (rays[i] != NULL)

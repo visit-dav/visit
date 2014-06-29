@@ -161,7 +161,7 @@ void
 avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
                                                         vtkDataSet *ds, int ts)
 {
-    int  i;
+    size_t  i;
 
     std::vector<vtkDataArray *> ds_vars;
     std::vector<vtkDataArray *> delete_vars;
@@ -169,7 +169,7 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
     bool haveZonal = false;
     bool haveNodal = false;
 
-    int nvars = varnames.size();
+    size_t nvars = varnames.size();
     if (cmfeType == POS_CMFE)
         nvars--;
     for (i = 0 ; i < nvars ; i++)
@@ -177,7 +177,7 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
         std::string vname = GetInternalVarname(i);
         vtkDataArray *cell_data1 = ds->GetCellData()->GetArray(vname.c_str());
         vtkDataArray *point_data1 = ds->GetPointData()->GetArray(vname.c_str());
-
+        (void) haveNodal; (void) point_data1;
         if (cell_data1 != NULL)
             haveZonal = true;
         else if (point_data1 != NULL)
@@ -255,7 +255,7 @@ avtTimeIteratorDataTreeIteratorExpression::InitializeOutput(void)
     avtDataTree_p topTree = GetInputDataTree();
     std::vector<avtDataTree_p> treesToProcess;
     treesToProcess.push_back(topTree);
-    int curIndex = 0;
+    size_t curIndex = 0;
     vars.clear();
     while (curIndex < treesToProcess.size())
     {

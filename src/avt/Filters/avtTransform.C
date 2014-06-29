@@ -62,21 +62,21 @@
 
 
 static bool IsIdentity(vtkMatrix4x4 *);
-static void TransformVecAsDisplacement(vtkMatrixToLinearTransform *t,
-                                       vtkDataArray *outVecs, 
-                                       vtkDataArray *inVecs,
-                                       vtkDataArray *x, 
-                                       vtkDataArray *y, 
-                                       vtkDataArray *z,
-                                       int *dims);
-static void TransformVecAsDirection(vtkMatrixToLinearTransform *t,
-                                    vtkDataArray *outVecs, 
-                                    vtkDataArray *inVecs,
-                                    vtkDataArray *x, 
-                                    vtkDataArray *y, 
-                                    vtkDataArray *z,
-                                    int *dims,
-                                    vtkPoints *pts);
+//static void TransformVecAsDisplacement(vtkMatrixToLinearTransform *t,
+//                                       vtkDataArray *outVecs,
+//                                       vtkDataArray *inVecs,
+//                                       vtkDataArray *x,
+//                                       vtkDataArray *y,
+//                                       vtkDataArray *z,
+//                                       int *dims);
+//static void TransformVecAsDirection(vtkMatrixToLinearTransform *t,
+//                                    vtkDataArray *outVecs,
+//                                    vtkDataArray *inVecs,
+//                                    vtkDataArray *x,
+//                                    vtkDataArray *y,
+//                                    vtkDataArray *z,
+//                                    int *dims,
+//                                    vtkPoints *pts);
 
 
 // START VTK WORKAROUND
@@ -819,46 +819,46 @@ IsIdentity(vtkMatrix4x4 *mat)
     return true;
 }
 
-void
-TransformVecAsDisplacement(vtkMatrixToLinearTransform *t, 
-                           vtkDataArray *outVecs, vtkDataArray *inVecs, 
-                           vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
-                           int *dims)
-{
-    int index = 0;
-    for (int k = 0; k < dims[2]; k++)
-    {
-        for (int j = 0; j < dims[1]; j++)
-        {
-            for (int i = 0; i < dims[0]; i++)
-            {
-                double inPt[3];
-                inPt[0] = x->GetComponent(i,0);
-                inPt[1] = y->GetComponent(j,0);
-                inPt[2] = z->GetComponent(k,0);
+//void
+//TransformVecAsDisplacement(vtkMatrixToLinearTransform *t,
+//                           vtkDataArray *outVecs, vtkDataArray *inVecs,
+//                           vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+//                           int *dims)
+//{
+//    int index = 0;
+//    for (int k = 0; k < dims[2]; k++)
+//    {
+//        for (int j = 0; j < dims[1]; j++)
+//        {
+//            for (int i = 0; i < dims[0]; i++)
+//            {
+//                double inPt[3];
+//                inPt[0] = x->GetComponent(i,0);
+//                inPt[1] = y->GetComponent(j,0);
+//                inPt[2] = z->GetComponent(k,0);
                 
-                double vec[3], vec2[3];
-                inVecs->GetTuple(index, vec);
-                vec[0] += inPt[0];
-                vec[1] += inPt[1];
-                vec[2] += inPt[2];
-                t->TransformVector(vec, vec2);
+//                double vec[3], vec2[3];
+//                inVecs->GetTuple(index, vec);
+//                vec[0] += inPt[0];
+//                vec[1] += inPt[1];
+//                vec[2] += inPt[2];
+//                t->TransformVector(vec, vec2);
 
-                vec2[0] -= inPt[0];
-                vec2[1] -= inPt[1];
-                vec2[2] -= inPt[2];
-                outVecs->SetTuple(index, vec2);
-                index++;
+//                vec2[0] -= inPt[0];
+//                vec2[1] -= inPt[1];
+//                vec2[2] -= inPt[2];
+//                outVecs->SetTuple(index, vec2);
+//                index++;
 
-                if (index < 10)
-                {
-                    t->Print(cout);
-                    cout<<"v: "<<vec[0]<<" "<<vec[1]<<" "<<vec[2]<<" ==> "<<vec2[0]<<" "<<vec2[1]<<" "<<vec2[2]<<endl;
-                }
-            }
-        }
-    }
-}
+//                if (index < 10)
+//                {
+//                    t->Print(cout);
+//                    cout<<"v: "<<vec[0]<<" "<<vec[1]<<" "<<vec[2]<<" ==> "<<vec2[0]<<" "<<vec2[1]<<" "<<vec2[2]<<endl;
+//                }
+//            }
+//        }
+//    }
+//}
 
 
 // ****************************************************************************
@@ -868,62 +868,62 @@ TransformVecAsDisplacement(vtkMatrixToLinearTransform *t,
 //
 // ****************************************************************************
 
-void
-TransformVecAsDirection(vtkMatrixToLinearTransform *t,
-                        vtkDataArray *outVecs, vtkDataArray *inVecs,
-                        vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
-                        int *dims,
-                        vtkPoints *pts)
-{
-    const double instantEps    = 1.e-5;
-    const double instantEpsInv = 1.e+5;
+//void
+//TransformVecAsDirection(vtkMatrixToLinearTransform *t,
+//                        vtkDataArray *outVecs, vtkDataArray *inVecs,
+//                        vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+//                        int *dims,
+//                        vtkPoints *pts)
+//{
+//    const double instantEps    = 1.e-5;
+//    const double instantEpsInv = 1.e+5;
     
-    int index = 0;
-    for (int k = 0; k < dims[2]; k++)
-    {
-        for (int j = 0; j < dims[1]; j++)
-        {
-            for (int i = 0; i < dims[0]; i++)
-            {
-                double inPt[3];
-                inPt[0] = x->GetComponent(i,0);
-                inPt[1] = y->GetComponent(j,0);
-                inPt[2] = z->GetComponent(k,0);
+//    int index = 0;
+//    for (int k = 0; k < dims[2]; k++)
+//    {
+//        for (int j = 0; j < dims[1]; j++)
+//        {
+//            for (int i = 0; i < dims[0]; i++)
+//            {
+//                double inPt[3];
+//                inPt[0] = x->GetComponent(i,0);
+//                inPt[1] = y->GetComponent(j,0);
+//                inPt[2] = z->GetComponent(k,0);
                 
-                double vec[3],  vec2[3];
-                inVecs->GetTuple(index, vec);
-                double mag = sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
-                if (mag == 0.)
-                {
-                    vec[0] = vec[1] = vec[2] = 0.;
-                }
-                else 
-                {
-                    vec[0] = vec[0] / mag;
-                    vec[1] = vec[1] / mag;
-                    vec[2] = vec[2] / mag;
-                }
+//                double vec[3],  vec2[3];
+//                inVecs->GetTuple(index, vec);
+//                double mag = sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+//                if (mag == 0.)
+//                {
+//                    vec[0] = vec[1] = vec[2] = 0.;
+//                }
+//                else
+//                {
+//                    vec[0] = vec[0] / mag;
+//                    vec[1] = vec[1] / mag;
+//                    vec[2] = vec[2] / mag;
+//                }
 
-                vec[0] = instantEps*vec[0] + inPt[0];
-                vec[1] = instantEps*vec[1] + inPt[1];
-                vec[2] = instantEps*vec[2] + inPt[2];
-                t->TransformVector(vec, vec2);
+//                vec[0] = instantEps*vec[0] + inPt[0];
+//                vec[1] = instantEps*vec[1] + inPt[1];
+//                vec[2] = instantEps*vec[2] + inPt[2];
+//                t->TransformVector(vec, vec2);
 
-                double outPt[3];
-                pts->GetPoint(index, outPt);
-                vec2[0] = (vec2[0]-outPt[0]) * instantEpsInv *mag;
-                vec2[1] = (vec2[1]-outPt[1]) * instantEpsInv *mag;
-                vec2[2] = (vec2[2]-outPt[2]) * instantEpsInv *mag;
+//                double outPt[3];
+//                pts->GetPoint(index, outPt);
+//                vec2[0] = (vec2[0]-outPt[0]) * instantEpsInv *mag;
+//                vec2[1] = (vec2[1]-outPt[1]) * instantEpsInv *mag;
+//                vec2[2] = (vec2[2]-outPt[2]) * instantEpsInv *mag;
 
-                outVecs->SetTuple(index, vec2);
-                index++;
+//                outVecs->SetTuple(index, vec2);
+//                index++;
 
-                if (index < 10)
-                {
-                    t->Print(cout);
-                    cout<<"v: "<<vec[0]<<" "<<vec[1]<<" "<<vec[2]<<" ==> "<<vec2[0]<<" "<<vec2[1]<<" "<<vec2[2]<<endl;
-                }
-            }
-        }
-    }
-}
+//                if (index < 10)
+//                {
+//                    t->Print(cout);
+//                    cout<<"v: "<<vec[0]<<" "<<vec[1]<<" "<<vec[2]<<" ==> "<<vec2[0]<<" "<<vec2[1]<<" "<<vec2[2]<<endl;
+//                }
+//            }
+//        }
+//    }
+//}

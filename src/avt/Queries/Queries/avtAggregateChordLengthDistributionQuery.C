@@ -318,10 +318,10 @@ avtAggregateChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
     for (int i = 0 ; i < hashSize ; i++)
     {
         std::vector<int> already_considered;
-        for (int j = 0 ; j < hashed_lineid_lookup[i].size() ; j++)
+        for (size_t j = 0 ; j < hashed_lineid_lookup[i].size() ; j++)
         {
              bool alreadyDoneLineId = false;
-             int  k;
+             size_t  k;
              for (k = 0 ; k < already_considered.size() ; k++)
                  if (hashed_lineid_lookup[i][j] == already_considered[k])
                      alreadyDoneLineId = true;

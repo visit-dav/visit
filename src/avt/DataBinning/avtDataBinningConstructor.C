@@ -166,6 +166,7 @@ class ValueRetriever
 {
   public:
     virtual double GetValue(int) = 0;
+    virtual ~ValueRetriever() {}
 };
 
 class VariableValueRetriever : public ValueRetriever
@@ -194,7 +195,7 @@ avtDataBinningConstructor::ConstructDataBinning(
                                          ConstructDataBinningAttributes *atts,
                                          avtContract_p spec, bool mustReExecute)
 {
-    int   i, j, k, l;
+    size_t   i, j, k, l;
 
     //
     // Certify the attributes.
@@ -292,10 +293,10 @@ avtDataBinningConstructor::ConstructDataBinning(
     //
     int nvars = atts->GetVarnames().size();
     float *minmax = new float[2*nvars];
-    for (i = 0 ; i < 2*nvars ; i++)
+    for (i = 0 ; i < (size_t)2*nvars ; i++)
         minmax[i] = atts->GetBinBoundaries()[i];
     int *nvals = new int[nvars];
-    for (i = 0 ; i < nvars ; i++)
+    for (i = 0 ; i < (size_t)nvars ; i++)
         nvals[i] = atts->GetNumBins()[i];
     avtBinningScheme *bs = new avtUniformBinningScheme(nvars, minmax, nvals);
     std::vector<std::string> varnames = atts->GetVarnames();
@@ -407,7 +408,7 @@ avtDataBinningConstructor::ConstructDataBinning(
             bool mixedCentering = false;
             if (nLeaves > 0)
             {
-                for (k = 0 ; k < nvars ; k++)
+                for (k = 0 ; k < (size_t)nvars ; k++)
                 {
                     avtDataBinningFunctionInfo::BinBasedOn bbo = 
                                                     info->GetBinBasedOnType(k);
@@ -440,14 +441,14 @@ avtDataBinningConstructor::ConstructDataBinning(
                     else
                         hasError = true;
 
-                    for (k = 0 ; k < nvars ; k++)
+                    for (k = 0 ; k < (size_t)nvars ; k++)
                         if (isNodal[k] != coDomIsNodal)
                             mixedCentering = true;
                 }
                 else
                 {
                     // still should check for mixed centering
-                    for (k = 1 ; k < nvars ; k++)
+                    for (k = 1 ; k < (size_t)nvars ; k++)
                         if (isNodal[k] != isNodal[0])
                             mixedCentering = true;
                 }
@@ -473,15 +474,15 @@ avtDataBinningConstructor::ConstructDataBinning(
             }
         
             ValueRetriever **val_ret = new ValueRetriever*[nvars];
-            for (k = 0 ; k < nvars ; k++)
+            for (k = 0 ; k < (size_t)nvars ; k++)
                  val_ret[k] = NULL;
             float        *args = new float[nvars];
-            for (j = 0 ; j < nLeaves ; j++)
+            for (j = 0 ; j < (size_t)nLeaves ; j++)
             {
                 vtkDataArray *codomain = (coDomIsNodal 
                         ? leaves[j]->GetPointData()->GetArray(codomain_varname)
                         : leaves[j]->GetCellData()->GetArray(codomain_varname));
-                for (k = 0 ; k < nvars ; k++)
+                for (k = 0 ; k < (size_t)nvars ; k++)
                 {
                     avtDataBinningFunctionInfo::BinBasedOn bbo = 
                                                     info->GetBinBasedOnType(k);
@@ -529,7 +530,7 @@ avtDataBinningConstructor::ConstructDataBinning(
                         leaves[j]->GetDataObjectType() == VTK_POLY_DATA)
                     {
                         useValue.resize(nvals, false);
-                        int ncells = leaves[j]->GetNumberOfCells();
+                        size_t ncells = leaves[j]->GetNumberOfCells();
                         for (l = 0 ; l < ncells ; l++)
                         {
                             vtkCell *cell = leaves[j]->GetCell(l);
@@ -542,7 +543,7 @@ avtDataBinningConstructor::ConstructDataBinning(
                     }
                 }
 
-                for (l = 0 ; l < nvals ; l++)
+                for (l = 0 ; l < (size_t)nvals ; l++)
                 {
                     if (useValue.size() > 0)
                         if (!useValue[l])
@@ -550,7 +551,7 @@ avtDataBinningConstructor::ConstructDataBinning(
 
                     if (!mixedCentering)
                     {
-                        for (k = 0 ; k < nvars ; k++)
+                        for (k = 0 ; k < (size_t)nvars ; k++)
                             args[k] = val_ret[k]->GetValue(l);
                         int binId = bs->GetBinId(args);
                         float cval = 0.;
@@ -565,7 +566,7 @@ avtDataBinningConstructor::ConstructDataBinning(
                         for (int p = 0 ; p < cell->GetNumberOfPoints() ; p++)
                         {
                             vtkIdType ptId = cell->GetPointId(p);
-                            for (k = 0 ; k < nvars ; k++)
+                            for (k = 0 ; k < (size_t)nvars ; k++)
                                 if (isNodal[k])
                                     args[k] = val_ret[k]->GetValue(ptId);
                                 else
@@ -582,7 +583,7 @@ avtDataBinningConstructor::ConstructDataBinning(
                     }
                 }
             }
-            for (j = 0 ; j < nvars ; j++)
+            for (j = 0 ; j < (size_t)nvars ; j++)
                 if (val_ret[j] != NULL)
                     delete val_ret[j];
             delete [] val_ret;

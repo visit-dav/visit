@@ -548,7 +548,7 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     {
         sums = std::vector<double>(ncomps,0.0);
     }
-    else if(sums.size() != ncomps)
+    else if(sums.size() != (size_t)ncomps)
     {
          debug3 << "Summation Query ran into a multi-component variable with "
                 << "an inconsistent number of components across domains!" << endl;

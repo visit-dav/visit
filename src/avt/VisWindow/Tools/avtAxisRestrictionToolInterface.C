@@ -112,7 +112,7 @@ avtAxisRestrictionToolInterface::SetAxisName(int i, const std::string &s)
 {
     AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
     stringVector &n = a->GetNames();
-    if (n.size() <= i)
+    if (n.size() <= (size_t)i)
     {
         // don't bother erroring, either exit or resize
         return;
@@ -141,7 +141,7 @@ avtAxisRestrictionToolInterface::SetAxisMin(int i, double x)
 {
     AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
     doubleVector &m = a->GetMinima();
-    if (m.size() <= i)
+    if (m.size() <= (size_t)i)
     {
         // don't bother erroring, either exit or resize
         return;
@@ -170,7 +170,7 @@ avtAxisRestrictionToolInterface::SetAxisMax(int i, double x)
 {
     AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
     doubleVector &m = a->GetMaxima();
-    if (m.size() <= i)
+    if (m.size() <= (size_t)i)
     {
         // don't bother erroring, either exit or resize
         return;
@@ -198,7 +198,7 @@ avtAxisRestrictionToolInterface::GetAxisName(int i) const
 {
     AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
     const stringVector &n = a->GetNames();
-    if (n.size() <= i)
+    if (n.size() <= (size_t)i)
     {
         return "";
     }
@@ -223,7 +223,7 @@ avtAxisRestrictionToolInterface::GetAxisMin(int i) const
 {
     AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
     const doubleVector &m = a->GetMinima();
-    if (m.size() <= i)
+    if (m.size() <= (size_t)i)
     {
         return -1e+37;
     }
@@ -248,7 +248,7 @@ avtAxisRestrictionToolInterface::GetAxisMax(int i) const
 {
     AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
     const doubleVector &m = a->GetMaxima();
-    if (m.size() <= i)
+    if (m.size() <= (size_t)i)
     {
         return +1e+37;
     }

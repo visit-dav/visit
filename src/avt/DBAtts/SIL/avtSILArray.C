@@ -452,7 +452,7 @@ avtSILArray::GetSetIndex(const std::string &name) const
     }
     if (names.size() != 0)
     {
-        int ii = 0;
+        size_t ii = 0;
         for (ii = 0; ii < names.size(); ii++)
         {
             if (names[ii] == name)
@@ -504,7 +504,7 @@ avtSILArray::IsCompatible(const avtSILArray *a) const
         return false;
     if (names.size() != a->names.size())
         return false;
-    for (int i = 0 ; i < names.size() ; i++)
+    for (size_t i = 0 ; i < names.size() ; i++)
     {
         if (names[i] != a->names[i])
             return false;

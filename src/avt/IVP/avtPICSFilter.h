@@ -155,6 +155,7 @@ class IVP_API avtPICSFilter :
     virtual public avtDatasetOnDemandFilter,
     virtual public avtDatasetToDatasetFilter
 {
+    using avtDatasetOnDemandFilter::GetDomain;
   public:
     enum CommunicationPattern
     {

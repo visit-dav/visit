@@ -71,12 +71,19 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_D
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpythonfilters_ser ${AVTPYTHON_FILTERS_SOURCES})
+# Python seems to have no way to get around the strict aliasing warnings
+# so disable them for python related targets only
+SET_TARGET_PROPERTIES(avtpythonfilters_ser PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
 TARGET_LINK_LIBRARIES(avtpythonfilters_ser visitcommon avtdbatts avtpipeline_ser ${PYTHON_LIBRARIES} )
 VISIT_INSTALL_TARGETS(avtpythonfilters_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpythonfilters_par ${AVTPYTHON_FILTERS_SOURCES})
+    # Python seems to have no way to get around the strict aliasing warnings
+    # so disable them for python related targets only
+    SET_TARGET_PROPERTIES(avtpythonfilters_par PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
+TARGET_LINK_LIBRARIES(avtpythonfilters_ser visitcommon avtdbatts avtpipeline_ser ${PYTHON_LIBRARIES} )
     TARGET_LINK_LIBRARIES(avtpythonfilters_par visitcommon avtdbatts avtpipeline_par ${PYTHON_LIBRARIES})
     VISIT_INSTALL_TARGETS(avtpythonfilters_par)
 ENDIF(VISIT_PARALLEL)

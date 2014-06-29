@@ -178,17 +178,17 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 vtkDataSet *
 avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
-    int  i, j, k;
+    size_t  i, j, k;
 
     vtkDataSet *newDS = (vtkDataSet *) inDS->NewInstance();
     newDS->ShallowCopy(inDS);
     vtkDataSet *outDS = newDS;
 
-    avtCentering centering
-                        = GetInput()->GetInfo().GetAttributes().GetCentering();
+    //avtCentering centering
+    //                   = GetInput()->GetInfo().GetAttributes().GetCentering();
     if (centeringTarget == AVT_NODECENT)
     {
-        int nArray = inDS->GetCellData()->GetNumberOfArrays();
+        size_t nArray = inDS->GetCellData()->GetNumberOfArrays();
         std::vector<std::string> arraysToSwap;
         
         for (i = 0 ; i < nArray ; i++)
@@ -211,7 +211,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         {
             dsToShift = (vtkDataSet *) inDS->NewInstance();
             dsToShift->ShallowCopy(inDS);
-            for (size_t k = arraysToSwap.size()-1 ; k >= 0 ; k--)
+            for (size_t k = arraysToSwap.size() ; k-- > 0 ;) ///TODO: check on change of condition to remove autological comparision warning
             {
                 vtkDataArray *arr = inDS->GetCellData()->GetArray(arraysToSwap[k].c_str());
                 vtkDataArray *fa = arr->NewInstance();
@@ -219,8 +219,8 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                 int ncomps = arr->GetNumberOfComponents();
                 fa->SetNumberOfComponents(ncomps);
                 fa->SetNumberOfTuples(ntups);
-                for (i = 0 ; i < ntups ; i++)
-                    for (j = 0 ; j < ncomps ; j++)
+                for (i = 0 ; i < (size_t)ntups ; i++)
+                    for (j = 0 ; j < (size_t)ncomps ; j++)
                         fa->SetComponent(i, j, arr->GetComponent(i, j));
                 fa->SetName(arr->GetName());
                 dsToShift->GetCellData()->RemoveArray(arr->GetName());
@@ -274,8 +274,8 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                 vtkDataArray *arr_out = outDS->GetPointData()
                                             ->GetArray(arraysToSwap[k].c_str());
                 
-                int ntups  = arr_out->GetNumberOfTuples();
-                int ncomps = arr_out->GetNumberOfComponents();
+                size_t ntups  = arr_out->GetNumberOfTuples();
+                size_t ncomps = arr_out->GetNumberOfComponents();
                 new_arr->SetNumberOfComponents(ncomps);
                 new_arr->SetNumberOfTuples(ntups);
                 for (i = 0 ; i < ntups ; i++)
@@ -302,7 +302,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     {
         // Detect if there are any integer type arrays and make them be floats for
         // recenting.
-        int nArray = inDS->GetPointData()->GetNumberOfArrays();
+        size_t nArray = inDS->GetPointData()->GetNumberOfArrays();
         std::vector<std::string> arraysToSwap;
         
         for (i = 0 ; i < nArray ; i++)
@@ -324,12 +324,12 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         {
             dsToShift = (vtkDataSet *) inDS->NewInstance();
             dsToShift->ShallowCopy(inDS);
-            for (size_t k = arraysToSwap.size()-1 ; k >= 0 ; k--)
+            for (size_t k = arraysToSwap.size(); k-- > 0 ;)
             {
                 vtkDataArray *arr = inDS->GetPointData()->GetArray(arraysToSwap[k].c_str());
                 vtkDataArray *fa = arr->NewInstance();
-                int ntups  = arr->GetNumberOfTuples();
-                int ncomps = arr->GetNumberOfComponents();
+                size_t ntups  = arr->GetNumberOfTuples();
+                size_t ncomps = arr->GetNumberOfComponents();
                 fa->SetNumberOfComponents(ncomps);
                 fa->SetNumberOfTuples(ntups);
                 for (i = 0 ; i < ntups ; i++)
@@ -379,8 +379,8 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
                 vtkDataArray *arr_out = outDS->GetCellData()
                                             ->GetArray(arraysToSwap[k].c_str());
-                int ntups  = arr_out->GetNumberOfTuples();
-                int ncomps = arr_out->GetNumberOfComponents();
+                size_t ntups  = arr_out->GetNumberOfTuples();
+                size_t ncomps = arr_out->GetNumberOfComponents();
                 new_arr->SetNumberOfComponents(ncomps);
                 new_arr->SetNumberOfTuples(ntups);
                 for (i = 0 ; i < ntups ; i++)

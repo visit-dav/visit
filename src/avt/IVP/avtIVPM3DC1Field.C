@@ -68,12 +68,11 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
                                     avtCellLocator* locator,
                                     double fact) : 
   avtIVPVTKField( dataset, locator ),
-  elements(0), trigtable(0), neighbors(0),
-  tElements(0), element_dimension(0),
-  nplanes(0), element_size(0), scalar_size(0),
+  elements(0), trigtable(0), neighbors(0), tElements(0),
+  element_dimension(0), nplanes(0),
+  element_size(0), scalar_size(0),
   reparameterize(false), factor(fact),
-  psi0(0), f0(0),
-  psinr(0), psini(0), fnr(0), fni(0),
+  psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0),
   I0(0), f(0), psi(0), I(0),
   eqsubtract(0), linflag(0), nelms(0), tmode(0),
   bzero(0), rzero(0), F0(0)
@@ -195,10 +194,12 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr,
                                     int nelements, int dim, int planes )
   : avtIVPVTKField( 0, 0 ),
     elements( elementsPtr ), neighbors(0),
-    f0(0), psi0(0), fnr(0), fni(0), psinr(0), psini(0),
+    element_dimension(dim), nplanes(planes),
+    psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0),
     I0(0), f(0), psi(0), I(0),
-    eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0),
-    nelms(nelements), element_dimension(dim), nplanes(planes)
+    eqsubtract(0),linflag(0),nelms(nelements), tmode(0),
+    bzero(0), rzero(0), F0(0)
+
 {
   if( element_dimension == 2 )
   {
@@ -289,10 +290,11 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
   if( array == 0 )
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "Variable " << varname
                << " does not exist"
                << endl;
+    }
     return 0;
   }
 
@@ -301,10 +303,11 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
   if( ntuples != nelms || ncomponents != component_size )
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "Variable " << varname
                << " size does not equal the number elements and/or components"
                << endl;
+    }
     return 0;
   }
 
@@ -318,8 +321,9 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
   if( newptr == 0 )
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "Variable " << varname << " can not allocated" << endl;
+    }
     return 0;
   }
 
@@ -361,11 +365,12 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
   }
   else
   {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "avtIVPM3DC1Field::SetDataPointer "
                << "Variable " << varname
                << " is not of type int/float/double - can not safely down cast"
                << endl;
+    }
     if( newptr )
         delete [] newptr;
     return 0;
@@ -509,7 +514,7 @@ int avtIVPM3DC1Field::register_vert(std::vector< vertex > &vlist,
 {
   const double tol=2.5e-13;
 
-  for( int i=0; i<vlist.size(); i++ )
+  for( size_t i=0; i<vlist.size(); i++ )
   {
     double dx = x - vlist[i].x;
     double dy = y - vlist[i].y;

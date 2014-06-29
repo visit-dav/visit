@@ -286,7 +286,7 @@ vtkLineLegend::BuildLine(vtkViewport *viewport)
   int *UR = this->GetPosition2Coordinate()->
                 GetComputedViewportValue(viewport);
   double width = UR[0] - LL[0];
-  double height = UR[1] - LL[1];
+  //double height = UR[1] - LL[1];
   double maxX = UR[0];
 
   // Need to account for the widest text to accurately calculate the width.
@@ -299,7 +299,7 @@ vtkLineLegend::BuildLine(vtkViewport *viewport)
 
   width = maxX - LL[0];
 
-  const double border = 4;
+  //const double border = 4;
   double pt[3];
   pt[0] = 0. - LEFT_OFFSET * viewSize[0];
   pt[1] = 0.;

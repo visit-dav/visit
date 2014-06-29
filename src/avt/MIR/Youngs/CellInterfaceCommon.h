@@ -17,7 +17,7 @@ Modifications history :
 */
 
 #ifndef SWIG
-const static char * CELL_INTERFACE_COMMON_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
+//const static char * CELL_INTERFACE_COMMON_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 #endif /*SWIG*/
 
 #include "CellInterfaceCUDA.h" // common CUDA definitions for CUDA and host compiler

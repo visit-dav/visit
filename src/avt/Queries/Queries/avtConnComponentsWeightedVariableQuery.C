@@ -388,7 +388,7 @@ avtConnComponentsWeightedVariableQuery::VerifyInput(void)
                                      ->GetFullDataRequest();
 
     // get the variable name
-    avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
+    //avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
     variableName = dataRequest->GetVariable();
 }
 

@@ -153,7 +153,7 @@ avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds, int currentDom
         vtkIdList *ptIds = vtkIdList::New();
         for (vtkIdType i = 0 ; i < ncells ; i++)
         {
-            double mostExtreme;
+            double mostExtreme = 0;
             if (coordinateType == CT_Radius)
                 mostExtreme = (getMinimum ? 1e+40 : 0.);
             else if (coordinateType == CT_Theta)
@@ -167,7 +167,7 @@ avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds, int currentDom
             {
                 double pt[3];
                 in_ds->GetPoint(ptIds->GetId(j), pt);
-                double thisPointsValue;
+                double thisPointsValue = 0;
                 if (coordinateType == CT_Radius)
                     thisPointsValue = sqrt(pt[0]*pt[0]+pt[1]*pt[1]+pt[2]*pt[2]);
                 else if (coordinateType == CT_Theta)

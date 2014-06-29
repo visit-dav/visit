@@ -237,7 +237,7 @@ avtConnComponentsVolumeQuery::Execute(vtkDataSet *ds, const int dom)
     for (int i = 0 ; i < ncells ; i++)
     {
         // get the cell  & and its component label
-        vtkCell *cell = ds->GetCell(i);
+        //vtkCell *cell = ds->GetCell(i);
         int comp_id = labels->GetValue(i);
 
         // get cell volume

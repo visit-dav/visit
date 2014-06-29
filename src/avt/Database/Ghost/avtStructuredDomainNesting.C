@@ -188,7 +188,7 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
                                 int a = i0 + i * mult;
                                 int b = j0 + j * mult;
                                 int c = k0 + k * mult;
-                                int idx;
+                                int idx = -1;
 
                                 // compute offset into ghost array assuming
                                 // a zone really exists at the logical index [a,b,c]
@@ -641,7 +641,7 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
             dims[2] = realDims->GetValue(5)-realDims->GetValue(4)+1;
         }
 
-        if (domains[i] >= domainNesting.size())
+        if ((size_t)domains[i] >= domainNesting.size())
         {
             debug1 << "Warning: avtStructuredDomainNesting failing ConfirmMesh"
                    << " because domain number " << domains[i] << " was bigger "
@@ -705,7 +705,7 @@ avtStructuredDomainNesting::GetRatiosForLevel(int level, int dom)
 {
     if (level < 0 || level >= (int)levelRatios.size())
         EXCEPTION2(BadIndexException, level, (int)levelRatios.size());
-    if (dom < 0 || dom >= domainNesting.size())
+    if (dom < 0 || (size_t)dom >= domainNesting.size())
         EXCEPTION2(BadIndexException, dom, (int)domainNesting.size());
 
     int myLevel        = domainNesting[dom].level;

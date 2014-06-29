@@ -99,7 +99,7 @@ avtDatasetToDatasetFilter::~avtDatasetToDatasetFilter()
         delete [] activeVariable;
         activeVariable = NULL;
     }
-    for (int i=0;i<secondaryVarList.size();i++)
+    for (size_t i=0;i<secondaryVarList.size();i++)
     {
         char *tmp = (char *)secondaryVarList[i];
         free(tmp);
@@ -199,7 +199,7 @@ avtDatasetToDatasetFilter::PostExecute(void)
     }
 
     // Iterate through the secondary variables, removing them when needed.
-    for (int i = 0; i < removeSecondaryVariable.size(); i++)
+    for (size_t i = 0; i < removeSecondaryVariable.size(); i++)
     {
         if (removeSecondaryVariable[i] == true)
         {
@@ -275,7 +275,7 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
             haveVariable = true;
         }
         const std::vector<CharStrRef> &var2nd = ds->GetSecondaryVariables();
-        for (int i = 0; i < var2nd.size(); i++)
+        for (size_t i = 0; i < var2nd.size(); i++)
         {
             const char *v2 = *(var2nd[i]);
             if (strcmp(v2, activeVariable) == 0)
@@ -306,7 +306,7 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
 
     // Iterate through the secondary variables.
     // Determine if the pipline already knows about each of them.
-    for (int i = 0; i < secondaryVarList.size(); i++)
+    for (size_t i = 0; i < secondaryVarList.size(); i++)
     {
         bool    haveVariable = false;
 
@@ -316,7 +316,7 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
         }
 
         const std::vector<CharStrRef> &var2nd = ds->GetSecondaryVariables();
-        for (int j = 0; j < var2nd.size(); j++)
+        for (size_t j = 0; j < var2nd.size(); j++)
         {
             const char *v2 = *(var2nd[j]);
             if (strcmp(v2, secondaryVarList[i]) == 0)
@@ -398,7 +398,7 @@ avtDatasetToDatasetFilter::AddSecondaryVariable(const char *var)
 
     // Search through the existing secondary variables and see if it's
     // already there.
-    for (int i=0;i<secondaryVarList.size();i++)
+    for (size_t i=0;i<secondaryVarList.size();i++)
     {
         if (strcmp(secondaryVarList[i],var) == 0)
             return;

@@ -246,7 +246,7 @@ vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius
     const double *fc)
 {
     int npts = (X_RES * (Y_RES-1) + 2);
-    int ncells = X_RES * Y_RES;
+    //int ncells = X_RES * Y_RES;
     float *coords = new float[npts * 3];
     float *tex_coords = new float[npts * 3];
     float *fptr = coords;
@@ -283,7 +283,7 @@ vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius
         {
             float texcoord_y = float(ip) / float(Y_RES-1);
             float poleAngle = texcoord_y * M_PI;
-            float sign = (poleAngle > M_PI_2) ? -1. : 1;
+            //float sign = (poleAngle > M_PI_2) ? -1. : 1;
             float y = radius * cos(poleAngle) * -1;
             float yrad = radius * sin(poleAngle);
 

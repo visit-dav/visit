@@ -362,7 +362,7 @@ void
 avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d, 
                           vector<vtkDataSetMapper *> &m, vector<vtkActor *> &a)
 {
-    if (ind >= datasets.size() || ind < 0)
+    if (ind < 0 || (size_t)ind >= datasets.size())
     {
         EXCEPTION2(BadIndexException, ind, (int)datasets.size());
     }
@@ -407,7 +407,7 @@ avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d,
 void
 avtTransparencyActor::RemoveInput(int ind)
 {
-    if (ind >= useActor.size() || ind < 0)
+    if (ind < 0 || (size_t)ind >= useActor.size())
     {
         EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
@@ -444,7 +444,7 @@ avtTransparencyActor::RemoveInput(int ind)
 void
 avtTransparencyActor::TurnOffInput(int ind)
 {
-    if (ind >= useActor.size() || ind < 0)
+    if (ind < 0 || (size_t)ind >= useActor.size())
     {
         EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
@@ -470,7 +470,7 @@ avtTransparencyActor::TurnOffInput(int ind)
 void
 avtTransparencyActor::TurnOnInput(int ind)
 {
-    if (ind >= useActor.size() || ind < 0)
+    if (ind < 0 || (size_t)ind >= useActor.size())
     {
         EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
@@ -496,7 +496,7 @@ avtTransparencyActor::TurnOnInput(int ind)
 void
 avtTransparencyActor::SetVisibility(int ind, bool val)
 {
-    if (ind >= useActor.size() || ind < 0)
+    if (ind < 0 || (size_t)ind >= useActor.size())
     {
         EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
@@ -1453,12 +1453,12 @@ avtTransparencyActor::DetermineTransparencies()
 {
     transparenciesExist = false;
     size_t numActors = datasets.size();
-    for (int i = 0 ; i < numActors && !transparenciesExist; i++)
+    for (size_t i = 0 ; i < numActors && !transparenciesExist; i++)
     {
         if (useActor[i] && visibility[i] == true)
         {
             size_t numParts = datasets[i].size();
-            for (int j = 0 ; j < numParts && !transparenciesExist; j++)
+            for (size_t j = 0 ; j < numParts && !transparenciesExist; j++)
             {
                 vtkDataSet       *in_ds  = datasets[i][j];
                 vtkActor         *actor  = actors[i][j];

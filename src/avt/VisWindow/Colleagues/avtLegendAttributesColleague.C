@@ -357,7 +357,7 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 void
 avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
 {
-    const char *mName = "avtLegendAttributesColleague::CustomizeLegend: ";
+    //const char *mName = "avtLegendAttributesColleague::CustomizeLegend: ";
 
     // Set the legend orientation.
     bool b0 = GetBool(atts,LEGEND_ORIENTATION0);

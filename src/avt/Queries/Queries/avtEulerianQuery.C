@@ -216,8 +216,8 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 
     set<edgepair> edges;
 
-    int i,j;
-    for (i = 0; i < nCells; i++)
+    size_t i,j;
+    for (i = 0; i < (size_t)nCells; i++)
     {
         vtkCell *cell=pds->GetCell(i);
         int numCellPoints = cell->GetNumberOfPoints();
@@ -255,7 +255,7 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
             case VTK_POLYGON:
                 edges.insert(edgepair(cell->GetPointId(0),
                                       cell->GetPointId(numCellPoints-1)));
-                for (j = 1; j < numCellPoints-1; j++)
+                for (j = 1; j < (size_t)numCellPoints-1; j++)
                     edges.insert(edgepair(cell->GetPointId(j),
                                           cell->GetPointId(j+1)));
                 break;
@@ -264,7 +264,7 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
         //before them, and two after. Since we don't repeat edges,
         //we can just count edges infront of us to get them all
             case VTK_TRIANGLE_STRIP:
-                for (j = 0; j < numCellPoints-2; j++)
+                for (j = 0; j < (size_t)numCellPoints-2; j++)
                 {
                     edges.insert(edgepair(cell->GetPointId(j),
                                           cell->GetPointId(j+1)));

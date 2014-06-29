@@ -56,7 +56,7 @@
 // ****************************************************************************
 
 avtIVPSolver::avtIVPSolver() : convertToCartesian(0), convertToCylindrical(0),
-                               order(1), tol(1e-8), h(1e-5), t(0.0), period(0)
+                               order(1), h(1e-5), tol(1e-8), t(0.0), period(0)
 {
 }
 

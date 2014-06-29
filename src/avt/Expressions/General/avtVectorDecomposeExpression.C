@@ -312,7 +312,7 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
             rv->SetNumberOfTuples(ntuples);
             for (vtkIdType i = 0 ; i < ntuples ; i++)
             {
-                double val1, val2, val3;
+                double val1 = 0, val2 = 0, val3 = 0;
                 switch (which_comp)
                 {
                     case 0:

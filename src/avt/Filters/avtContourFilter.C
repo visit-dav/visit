@@ -371,7 +371,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
             //
             // Make sure our array is big enough.
             //
-            while (list[j] >= useList.size())
+            while ((size_t)list[j] >= useList.size())
             {
                 useList.push_back(false);
             }

@@ -211,7 +211,7 @@ avtLineSamplerInfoQuery::PostExecute()
     std::string msg;
     char str[128];
     int i = 0, sz = lsData.size();
-    int endOfLineIdx = 3;
+    //int endOfLineIdx = 3;
     
     int lsIdx = 0;
     while (i < sz)
@@ -238,7 +238,7 @@ avtLineSamplerInfoQuery::PostExecute()
 
         if (dumpCoordinates || dumpValues)
         {
-            for (int j=0; j<nSamples; j++)
+            for (unsigned int j=0; j<nSamples; j++)
             {
                 if (dumpCoordinates)
                 {
@@ -294,7 +294,7 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     float *scalar =
       (float *) data->GetPointData()->GetScalars()->GetVoidPointer(0);
 
-    double pt[3], p0[3];
+    double pt[3] = {0,0,0}, p0[3] = {0,0,0};
 
     vtkIdType *vertPtr = verts;
 

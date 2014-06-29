@@ -361,7 +361,7 @@ avtLookupTable::SetColorTable(const char *ctName, bool validName,
         
         unsigned char *a = (unsigned char *) malloc( ct->GetNumColors() );
         
-        for( unsigned int i=0; i<ct->GetNumColors(); ++i )
+        for( unsigned int i=0; i<(unsigned int)ct->GetNumColors(); ++i )
           a[i] = (unsigned char)
             (rampOpacity * (double) i / (double) ct->GetNumColors() );
         

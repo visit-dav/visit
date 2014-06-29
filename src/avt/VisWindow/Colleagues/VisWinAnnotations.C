@@ -95,7 +95,7 @@ VisWinAnnotations::~VisWinAnnotations()
     // the actors are actually cleared by the VisWinPlots collague.
     actorList.clear();
 
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         delete annotations[i];
 }
 
@@ -106,14 +106,14 @@ VisWinAnnotations::~VisWinAnnotations()
 void
 VisWinAnnotations::SetBackgroundColor(double r, double g, double b)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->SetBackgroundColor(r, g, b);
 }
 
 void
 VisWinAnnotations::SetForegroundColor(double r, double g, double b)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->SetForegroundColor(r, g, b);
 
     // Update the legends so they get the right colors.
@@ -123,77 +123,77 @@ VisWinAnnotations::SetForegroundColor(double r, double g, double b)
 void
 VisWinAnnotations::StartCurveMode(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->StartCurveMode();
 }
 
 void
 VisWinAnnotations::Start2DMode(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->Start2DMode();
 }
 
 void
 VisWinAnnotations::Start3DMode(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->Start3DMode();
 }
 
 void
 VisWinAnnotations::StopCurveMode(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->StopCurveMode();
 }
 
 void
 VisWinAnnotations::Stop2DMode(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->Start2DMode();
 }
 
 void
 VisWinAnnotations::Stop3DMode(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->Start3DMode();
 }
 
 void
 VisWinAnnotations::HasPlots(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->HasPlots();
 }
 
 void
 VisWinAnnotations::NoPlots(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->NoPlots();
 }
 
 void
 VisWinAnnotations::MotionBegin(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->MotionBegin();
 }
 
 void
 VisWinAnnotations::MotionEnd(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->MotionEnd();
 }
 
 void
 VisWinAnnotations::UpdateView(void)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->UpdateView();
 }
 
@@ -218,12 +218,12 @@ VisWinAnnotations::UpdateView(void)
 void
 VisWinAnnotations::UpdatePlotList(std::vector<avtActor_p> &p)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->UpdatePlotList(p);
 
     // Save off the pointers to the actors.
     actorList.clear();
-    for(int j = 0; j < p.size(); ++j)
+    for(size_t j = 0; j < p.size(); ++j)
         actorList.push_back(*p[j]);
 
     UpdateLegends();
@@ -262,7 +262,7 @@ VisWinAnnotations::UpdateLegends()
     // Manage legend layout.
     //
     std::vector<avtActor*>::iterator it;
-    vtkRenderer *foreground = mediator.GetForeground();
+    //vtkRenderer *foreground = mediator.GetForeground();
     double yTop = 0.90;
     double xLeft = 0.05;
 
@@ -272,7 +272,7 @@ VisWinAnnotations::UpdateLegends()
         // Look in the annotation list for a suitable object that
         // can be used to set the legend for this actor.
         avtAnnotationColleague *annot = 0;
-        for(int i = 0; i < annotations.size(); ++i)
+        for(size_t i = 0; i < annotations.size(); ++i)
         {
             if(annotations[i]->GetName() == (*it)->GetActorName())
             {
@@ -343,7 +343,7 @@ VisWinAnnotations::SetFrameAndState(int nFrames,
     int startFrame, int curFrame, int endFrame,
     int startState, int curState, int endState)
 {
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         annotations[i]->SetFrameAndState(nFrames,
             startFrame, curFrame, endFrame,
@@ -393,7 +393,7 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
     //
     if(annotName != "")
     {
-        for(int i = 0; i < annotations.size(); ++i)
+        for(size_t i = 0; i < annotations.size(); ++i)
         {
             if(annotations[i]->GetName() == annotName)
             {
@@ -454,7 +454,7 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
                 newName = tmp;
 
                 found = false;
-                for(int i = 0; i < annotations.size(); ++i)
+                for(size_t i = 0; i < annotations.size(); ++i)
                 {
                     if(annotations[i]->GetName() == newName)
                     {
@@ -488,7 +488,7 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
         annot->AddToRenderer();
 
         // Make the new annotation be the active annotation.
-        for(int i = 0; i < annotations.size(); ++i)
+        for(size_t i = 0; i < annotations.size(); ++i)
              annotations[i]->SetActive(i == (annotations.size() - 1));
     }
 
@@ -511,14 +511,14 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
 void
 VisWinAnnotations::HideActiveAnnotationObjects()
 {
-    bool annotsHidden = false;
+    //bool annotsHidden = false;
 
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         if(annotations[i]->GetActive())
         {
             annotations[i]->Hide();
-            annotsHidden = true;
+            //annotsHidden = true;
         }
     }
 }
@@ -545,14 +545,14 @@ VisWinAnnotations::DeleteActiveAnnotationObjects()
     // If an annotation is active, then remove it from the renderer and
     // delete it. Otherwise, add the annotation onto a new list.
     //
-    bool annotsDeleted = false;
-    for(int i = 0; i < annotations.size(); ++i)
+    //bool annotsDeleted = false;
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         if(annotations[i]->GetActive())
         {
             annotations[i]->RemoveFromRenderer();
             delete annotations[i];
-            annotsDeleted = true;
+            //annotsDeleted = true;
         }
         else
             newList.push_back(annotations[i]);
@@ -583,8 +583,8 @@ VisWinAnnotations::DeleteActiveAnnotationObjects()
 bool
 VisWinAnnotations::DeleteAnnotationObject(const std::string &name)
 {
-    int i, index = -1;
-    for(i = 0; i < annotations.size(); ++i)
+    int index = -1;
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         if(annotations[i]->GetName() == name)
         {
@@ -593,8 +593,8 @@ VisWinAnnotations::DeleteAnnotationObject(const std::string &name)
         }
     }
 
-    for(i = 0; i < annotations.size(); ++i)
-        annotations[i]->SetActive(i == index);
+    for(size_t i = 0; i < annotations.size(); ++i)
+        annotations[i]->SetActive(i == (size_t)index);
 
     DeleteActiveAnnotationObjects();
 
@@ -617,13 +617,13 @@ VisWinAnnotations::DeleteAnnotationObject(const std::string &name)
 void
 VisWinAnnotations::DeleteAllAnnotationObjects()
 {
-    bool annotsDeleted = false;
+    //bool annotsDeleted = false;
 
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         annotations[i]->RemoveFromRenderer();
         delete annotations[i];
-        annotsDeleted = true;
+        //annotsDeleted = true;
     }
 
     annotations.clear();
@@ -646,7 +646,7 @@ VisWinAnnotations::DeleteAllAnnotationObjects()
 void
 VisWinAnnotations::RaiseActiveAnnotationObjects()
 {
-    int i;
+    size_t i;
     std::vector<avtAnnotationColleague *> newList;
 
     //
@@ -694,7 +694,7 @@ VisWinAnnotations::RaiseActiveAnnotationObjects()
 void
 VisWinAnnotations::LowerActiveAnnotationObjects()
 {
-    int i;
+    size_t i;
     std::vector<avtAnnotationColleague *> newList;
 
     //
@@ -746,7 +746,7 @@ VisWinAnnotations::LowerActiveAnnotationObjects()
 void
 VisWinAnnotations::SetAnnotationObjectOptions(const AnnotationObjectList &al)
 {
-    for(int i = 0; i < al.GetNumAnnotations(); ++i)
+    for(size_t i = 0; i < (size_t)al.GetNumAnnotations(); ++i)
     {
         const AnnotationObject &annot = al[i];
         if(i < annotations.size())
@@ -803,7 +803,7 @@ VisWinAnnotations::UpdateAnnotationObjectList(AnnotationObjectList &al)
     al.ClearAnnotations();
 
     std::vector<avtActor*>::iterator it;
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         AnnotationObject annot;
         annotations[i]->GetOptions(annot);
@@ -895,6 +895,6 @@ VisWinAnnotations::SetTimeScaleAndOffset(double scale, double offset)
     timeScale = scale;
     timeOffset = offset;
 
-    for(int i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->SetTimeScaleAndOffset(scale, offset);
 }

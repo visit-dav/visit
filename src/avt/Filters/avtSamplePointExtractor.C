@@ -901,7 +901,7 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
         //
         // Get all the zonal variables.
         //
-        int v;
+        size_t v;
         for (v = 0 ; v < li.cellDataIndex.size() ; v++)
         {
             if (li.cellDataIndex[v] < 0)

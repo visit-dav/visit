@@ -998,7 +998,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
         int nx = zdims[0];
         int ny = zdims[1];
-        int nz = zdims[2];
+        //int nz = zdims[2];
         int nxy = nx * ny;
 
         for (i = 0 ; i < linesForThisPass ; i++)
@@ -1170,12 +1170,12 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
         int nx = ndims[0];
         int ny = ndims[1];
-        int nz = ndims[2];
+        //int nz = ndims[2];
         int nxy = nx * ny;
 
         int nx2 = zdims[0];
         int ny2 = zdims[1];
-        int nz2 = zdims[2];
+        //int nz2 = zdims[2];
         int nxy2 = nx2 * ny2;
 
         for (i = 0 ; i < linesForThisPass ; i++)
@@ -1558,14 +1558,14 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     {
         vtkDataArray *da=dataArrays[i];
         int nComponents = da->GetNumberOfComponents();
-        int nTuples = da->GetNumberOfTuples();
+        //int nTuples = da->GetNumberOfTuples();
 
         T *outVals = new T[cells_matched.size()*nComponents];
         if (da->GetDataType() == VTK_FLOAT)
         {
             float *inVals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
             int ndx = 0;
-            for (int j = 0; j < cells_matched.size(); j++)
+            for (size_t j = 0; j < cells_matched.size(); j++)
                 for (int k = 0; k < nComponents; k++)
                     outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
         }
@@ -1573,7 +1573,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         {
             double *inVals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
             int ndx = 0;
-            for (int j = 0; j < cells_matched.size(); j++)
+            for (size_t j = 0; j < cells_matched.size(); j++)
                 for (int k = 0; k < nComponents; k++)
                     outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
         }
@@ -1701,7 +1701,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 if (inter.size() > 0)
                 {
                     std::sort(inter.begin(), inter.end());
-                    for (int l = 0 ; l < inter.size() / 2 ; l++)
+                    for (size_t l = 0 ; l < inter.size() / 2 ; l++)
                     {
                         cells_matched.push_back(id);
                         dist.push_back(inter[2*l]*lineLength);
@@ -1742,14 +1742,14 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
     {
         vtkDataArray *da=dataArrays[i];
         int nComponents = da->GetNumberOfComponents();
-        int nTuples = da->GetNumberOfTuples();
+        //int nTuples = da->GetNumberOfTuples();
         T *outVals = new T[cells_matched.size()*nComponents];
 
         if (da->GetDataType() == VTK_FLOAT)
         {
             float *inVals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
             int ndx = 0;
-            for (int j = 0; j < cells_matched.size(); j++)
+            for (size_t j = 0; j < cells_matched.size(); j++)
                 for (int k = 0; k < nComponents; k++)
                     outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
         }
@@ -1757,7 +1757,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
         {
             double *inVals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
             int ndx = 0;
-            for (int j = 0; j < cells_matched.size(); j++)
+            for (size_t j = 0; j < cells_matched.size(); j++)
                 for (int k = 0; k < nComponents; k++)
                     outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
         }
@@ -2601,7 +2601,7 @@ avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
                 displs[j]++;
             }
         }
-        int i = nImageFragments - 1;
+        //int i = nImageFragments - 1;
         for (int j = 0; j < nProcs-1; j++)
         {
             for (int k = 0; k < pixelsForLastPassFirstProc*numBins; k++)
@@ -2914,7 +2914,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     // if no cells intersect the line of interest.
     //
     int nCells = 0;
-    for (int i = 0; i < line_id.size(); i++)
+    for (size_t i = 0; i < line_id.size(); i++)
         if (line_id[i] == strip_id)
             nCells++;
     
@@ -2936,16 +2936,16 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
     vtkPoints *points = ugrid->GetPoints();
 
-    vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
+    //vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
     vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
     vtkCellArray *cells = ugrid->GetCells();
 
     vtkIdType *nl = cells->GetPointer();
-    unsigned char *ct = cellTypes->GetPointer(0);
+    //unsigned char *ct = cellTypes->GetPointer(0);
     vtkIdType *cl = cellLocations->GetPointer(0);
 
     double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
-    for (int i = 0; i < cells_matched.size(); i++)
+    for (size_t i = 0; i < cells_matched.size(); i++)
     {
         if (line_id[i] == strip_id)
         {
@@ -2965,7 +2965,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     fprintf(f, "\n");
     fprintf(f, "CELLS %d %d\n", nCells, nCells*9);
     int j = 0;
-    for (int i = 0; i < cells_matched.size(); i++)
+    for (size_t i = 0; i < cells_matched.size(); i++)
         if (line_id[i] == strip_id)
         {
             fprintf(f, "8 %d %d %d %d %d %d %d %d\n",
@@ -2990,7 +2990,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     if (da->GetDataType() == VTK_FLOAT)
     {
         float *vals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
-        for (int i = 0; i < cells_matched.size(); i++)
+        for (size_t i = 0; i < cells_matched.size(); i++)
             if (line_id[i] == strip_id)
             {
                 fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);
@@ -2999,7 +2999,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     else // if (da->GetDataType() == VTK_DOUBLE)
     {
         double *vals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
-        for (int i = 0; i < cells_matched.size(); i++)
+        for (size_t i = 0; i < cells_matched.size(); i++)
             if (line_id[i] == strip_id)
             {
                 fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);
@@ -3009,7 +3009,8 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     //
     // Output the first component of the emissivities.
     //
-    fprintf(f, "SCALARS emissivity float\n", nCells);
+    /// TODO: extra args warning
+    fprintf(f, "SCALARS emissivity float\n"/*, nCells*/);
     fprintf(f, "LOOKUP_TABLE default\n");
 
     da = dataArrays[1];
@@ -3017,7 +3018,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     if (da->GetDataType() == VTK_FLOAT)
     {
         float *vals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
-        for (int i = 0; i < cells_matched.size(); i++)
+        for (size_t i = 0; i < cells_matched.size(); i++)
             if (line_id[i] == strip_id)
             {
                 fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);
@@ -3026,7 +3027,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     else // if (da->GetDataType() == VTK_DOUBLE)
     {
         double *vals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
-        for (int i = 0; i < cells_matched.size(); i++)
+        for (size_t i = 0; i < cells_matched.size(); i++)
             if (line_id[i] == strip_id)
             {
                 fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);

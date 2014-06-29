@@ -461,9 +461,9 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     unsigned long saveSerializeFlags = serializeFlags | _serializeFlags;
     buff.io(mode, saveSerializeFlags);
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"  avtStateRecorderIntegralCurve::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<" saveSerializeFlags= "<<saveSerializeFlags<<endl;
-    
+    }
     // R/W the steps.
     if (saveSerializeFlags & SERIALIZE_STEPS)
         buff.io(mode, history);
@@ -481,8 +481,9 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     else
         buff.io(mode, sequenceCnt);
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5 << "DONE: avtStateRecorderIntegralCurve::Serialize. sz= "<<buff.len() << endl;
+    }
 }
 
 

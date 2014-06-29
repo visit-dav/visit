@@ -205,7 +205,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     }
 
     int grouping = visitTimer->StartTimer();
-    int lineOffset = input->GetVerts()->GetNumberOfCells();
+    //int lineOffset = input->GetVerts()->GetNumberOfCells();
     int ptsBufSize = 200;
     pts = new vtkIdType[ptsBufSize];
     while(!freeEdges.empty())
@@ -271,7 +271,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         if(shape.size() > 2)
         {
             // We have a connected shape, add it to the new cells
-            if(shape.size() > ptsBufSize)
+            if(shape.size() > (size_t)ptsBufSize)
             {
                 delete [] pts;
                 ptsBufSize = shape.size();

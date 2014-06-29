@@ -234,7 +234,8 @@ avtWholeImageCompositerNoZ::~avtWholeImageCompositerNoZ()
 void
 avtWholeImageCompositerNoZ::Execute(void)
 {
-    int i, numRows, numCols;
+    size_t i = 0;
+    int numRows = 0, numCols = 0;
     unsigned char *iorgb = NULL, *riorgb = NULL;
     vtkImageData *mergedLocalImage = NULL, *mergedGlobalImage = NULL;
 

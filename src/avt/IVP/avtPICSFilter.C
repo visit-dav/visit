@@ -267,7 +267,7 @@ avtPICSFilter::ComputeRankList(const vector<int> &domList,
     ranks.resize(0);
     
     vector<int> r;
-    for (int i = 0; i < domList.size(); i++)
+    for (size_t i = 0; i < domList.size(); i++)
     {
         int dom = domList[i];
         BlockIDType d(dom, 0);
@@ -277,10 +277,10 @@ avtPICSFilter::ComputeRankList(const vector<int> &domList,
     }
 
     //Filter out any duplicates....
-    for (int i = 0; i < r.size(); i++)
+    for (size_t i = 0; i < r.size(); i++)
     {
         bool addIt = true;
-        for (int j = 0; j < ranks.size(); j++)
+        for (size_t j = 0; j < ranks.size(); j++)
         {
             if (ranks[j] == r[i])
             {
@@ -356,7 +356,7 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
     intervalTree->GetElementsListFromRange(xyz0, xyz1, doms);
     
     bool blockLoaded = false;
-    for (int i = 0; i < doms.size(); i++)
+    for (size_t i = 0; i < doms.size(); i++)
     {
         BlockIDType curr(doms[i], timeStep);
 
@@ -454,8 +454,9 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
                ds->GetCellData()->SetActiveAttribute(velocityName.c_str(), vtkDataSetAttributes::VECTORS);
             else
             {
-                if (DebugStream::Level1())
+                if (DebugStream::Level1()) {
                     debug1 << "Unable to locate velocity variable for pathlines.\n";
+                }
             }
         }
     }
@@ -491,7 +492,7 @@ inline void PrintTreeExtents( avtIntervalTree * intervalTree, int curTimeSlice, 
         for (int i = 0 ; i < nDomains ; i++)
         {
             double  e[6] = {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0 };
-            int    domain = intervalTree->GetLeafExtents(i, e);
+            /*int    domain =*/ intervalTree->GetLeafExtents(i, e);
         }
     }
 }
@@ -602,9 +603,9 @@ avtPICSFilter::CheckIfRestart( int &timeStep )
     DIR *pDIR;
     struct dirent *entry;
 
-    if( pDIR = opendir(".") )
+    if( (pDIR = opendir(".")) )
     {
-        while( entry = readdir(pDIR) )
+        while( (entry = readdir(pDIR)) )
         {
             if( strncmp(entry->d_name, restartFilename, sizeof(restartFilename)-1) == 0 )
             {
@@ -701,7 +702,7 @@ avtPICSFilter::LoadNextTimeSlice()
         curTimeSlice++;
 
         // When going forwards can not use the lasst time slice.
-        if ( period > 0 && curTimeSlice >= domainTimeIntervals.size())
+        if ( period > 0 && curTimeSlice >= (int)domainTimeIntervals.size())
         {
             curTimeSlice = 0;
             rollover = true;
@@ -711,9 +712,9 @@ avtPICSFilter::LoadNextTimeSlice()
     // std::cerr << "LoadNextTimeSlice() " << curTimeSlice << " tsMax= " << domainTimeIntervals.size() <<"  " << period << std::endl;
 
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<endl;
-    
+    }
     avtContract_p new_contract;
     if (OperatingOnDemand())
     {
@@ -768,7 +769,7 @@ avtPICSFilter::LoadNextTimeSlice()
         GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
 
         // Release all the old dataSets.
-        for (int i = 0; i < dataSets.size(); i++)
+        for (size_t i = 0; i < dataSets.size(); i++)
         {
             if(dataSets[i])
             {
@@ -780,7 +781,7 @@ avtPICSFilter::LoadNextTimeSlice()
         // Load the dataSets map with the new datasets for the next time step.
         numDomains = intervalTree->GetNLeaves();
         dataSets.resize(numDomains, NULL);
-        for (int i = 0; i < ds_list.domains.size(); i++)
+        for (size_t i = 0; i < ds_list.domains.size(); i++)
         {
             vtkDataSet *ds = ds_list.datasets[i];
             ds->Register(NULL);
@@ -828,7 +829,7 @@ avtPICSFilter::GetTimeStep(double t) const
 {
     if (doPathlines)
     {
-        for (int i = 0; i < domainTimeIntervals.size(); i++)
+        for (size_t i = 0; i < domainTimeIntervals.size(); i++)
         {
             if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             {
@@ -1159,8 +1160,9 @@ avtPICSFilter::CheckOnDemandViability(void)
     // If we don't want on demand, don't provide it.
     if (method == PICS_PARALLEL_OVER_DOMAINS)
     {
-        if (DebugStream::Level1())
+        if (DebugStream::Level1()) {
             debug1 << "avtPICSFilter::CheckOnDemandViability(): = 0\n";
+        }
         return false;
     }
     
@@ -1170,8 +1172,9 @@ avtPICSFilter::CheckOnDemandViability(void)
         avtIntervalTree *it = GetMetaData()->GetSpatialExtents(curTimeSlice);
         val = (it == NULL ? val : true);
     }
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "avtPICSFilter::CheckOnDemandViability(): = " << val <<endl;
+    }
     return val;
 }
 
@@ -1237,8 +1240,9 @@ avtPICSFilter::Execute(void)
     if (emptyDataset)
     {
         avtCallback::IssueWarning("There was no data to advect over.");
-        if (DebugStream::Level1())
+        if (DebugStream::Level1()) {
             debug1 << "No data for PICS filter.  Bailing out early." << endl;
+        }
         return;
     }
 
@@ -1316,7 +1320,7 @@ avtPICSFilter::Execute(void)
 
       while (1)
       {
-        for (int i = 0; i < domainTimeIntervals.size(); i++)
+        for (size_t i = 0; i < domainTimeIntervals.size(); i++)
         {
             icAlgo->Execute();
                 
@@ -1552,16 +1556,17 @@ avtPICSFilter::Initialize()
         {
             vector<int> myDoms;
             myDoms.resize(numDomains, 0);
-            for (int i = 0; i < ds_list.domains.size(); i++)
+            for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
             SumIntArrayAcrossAllProcessors(&myDoms[0],&domainToRank[0],numDomains);
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
+            }
         }
         else
             domainToRank[0] = rank;
 #endif
-        for (int i = 0; i < ds_list.domains.size(); i++)
+        for (size_t i = 0; i < ds_list.domains.size(); i++)
         {
             vtkDataSet *ds = ds_list.datasets[i];
             ds->Register(NULL);
@@ -1580,16 +1585,18 @@ avtPICSFilter::Initialize()
     
     if ( ! OperatingOnDemand() )
     {
-        if (DebugStream::Level1())
+        if (DebugStream::Level1()) {
             debug1 << "Not operating on demand, using parallel static domains instead." << endl;
+        }
         actualMethod = PICS_PARALLEL_OVER_DOMAINS;
     }
 
     // Parallel and one domains, use the serial algorithm.
     if (numDomains == 1)
     {
-        if (DebugStream::Level1())
+        if (DebugStream::Level1()) {
             debug1 << "Forcing load-on-demand because there is only one domain." << endl;
+        }
         actualMethod = PICS_SERIAL;
     }
 
@@ -1654,8 +1661,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         int numTimes = md->GetTimes().size() - 1;
         if (numTimes == 0)
         {
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5 << "Pathlines - Only one time slice in the data sett, two or more are needed\n";
+            }
             EXCEPTION1(VisItException, "Pathlines - Only one time slice in the data sett, two or more are needed.");
         }
 
@@ -1709,8 +1717,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
           }
         }
           
-        if (DebugStream::Level5())
+        if (DebugStream::Level5()) {
             debug5<<"Times: [";
+        }
 
 
         for (int i = 0; i < numTimes; i++)
@@ -1729,8 +1738,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             intv[0] = md->GetTimes()[i];
             intv[1] = md->GetTimes()[i+1];
             
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5<<" ("<<intv[0]<<", "<<intv[1]<<")";
+            }
             if (intv[0] >= intv[1])
             {
                 EXCEPTION1(VisItException, "Pathlines - Found two adjacent steps that are not increasing or equal in time.");
@@ -1743,8 +1753,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
             domainTimeIntervals.push_back(intv);
         }
-        if (DebugStream::Level5())
+        if (DebugStream::Level5()) {
             debug5<<"]"<<endl;
+        }
         
         // Check if we have a restart.
         if( restart == -1 )
@@ -1770,7 +1781,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
             // No restart, so set seedTimeStep0.
             seedTimeStep0 = -1;
-            for (int i = 0; i < domainTimeIntervals.size(); i++)
+            for (size_t i = 0; i < domainTimeIntervals.size(); i++)
             {
                 if (integrationDirection == VTK_INTEGRATE_BACKWARD)
                 {
@@ -1797,8 +1808,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
         if (seedTimeStep0 == -1)
         {
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5 << "Did not find starting interval for seedTime0: " << seedTime0 << endl;
+            }
             EXCEPTION1(VisItException, "Invalid pathline starting time value.");
         }
     }
@@ -1954,7 +1966,7 @@ avtPICSFilter::ReleaseData(void)
     avtDatasetOnDemandFilter::ReleaseData();
     avtDatasetToDatasetFilter::ReleaseData();
 
-    for (int i = 0; i < dataSets.size(); i++)
+    for (size_t i = 0; i < dataSets.size(); i++)
     {
         if (dataSets[i] != NULL)
         {
@@ -2303,7 +2315,7 @@ bool
 avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
 {
     avtVector pt = ic->CurrentLocation();
-    double t = ic->CurrentTime();
+    //double t = ic->CurrentTime();
     
     vtkDataSet *ds = GetDomain(block, pt);
 
@@ -2622,11 +2634,12 @@ avtPICSFilter::ComputeDomainToRankMapping()
         {
             vector<int> myDoms;
             myDoms.resize(numDomains, 0);
-            for (int i = 0; i < ds_list.domains.size(); i++)
+            for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
             SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
+            }
         }
         else
             domainToRank[0] = rank;
@@ -2652,7 +2665,7 @@ avtPICSFilter::ComputeDomainToRankMapping()
 int
 avtPICSFilter::DomainToRank(BlockIDType &domain)
 {
-    if (domain.domain < 0 || domain.domain >= domainToRank.size())
+    if (domain.domain < 0 || (size_t)domain.domain >= domainToRank.size())
         EXCEPTION1(ImproperUseException, "Domain out of range.");
 
     return domainToRank[domain.domain];
@@ -3021,7 +3034,7 @@ avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *>
     std::vector<avtVector> seedVels = GetInitialVelocities();
 
     // Make sure the velocity list size matches the point list size.
-    for( int i=seedVels.size(); i<seedPts.size(); ++i )
+    for( size_t i=seedVels.size(); i<seedPts.size(); ++i )
       // Use the last velocity if available or initalize to be zero.
       seedVels.push_back( seedVels.empty() ? avtVector(0,0,0) : seedVels[i-1]);
 
@@ -3083,7 +3096,7 @@ avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
                              std::vector<avtVector> &vels,
                              std::vector<std::vector<avtIntegralCurve *> > &ics)
 {
-    for (int i = 0; i < pts.size(); i++)
+    for (size_t i = 0; i < pts.size(); i++)
     {
         vector<avtIntegralCurve *> icsFromPt;
         AddSeedPoint(pts[i], vels[i], icsFromPt);
@@ -3133,13 +3146,13 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
     if (DebugStream::Level5())
     {
         debug5<<"number of IC to generate: "<<pts.size()<<endl;
-        for (int i = 0; i < pts.size(); i++)
+        for (size_t i = 0; i < pts.size(); i++)
         {
             debug5 << "point: " << pts[i] << endl;
         }
     }
 
-    for (int i = 0; i < pts.size(); i++)
+    for (size_t i = 0; i < pts.size(); i++)
     {
         avtVector seedPt;
         avtVector seedVel = vels[i];
@@ -3238,7 +3251,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
     if (DebugStream::Level5())
     {
         debug5<<"curves.size(): "<<curves.size()<<endl;
-        for (int i = 0; i < curves.size(); i++)
+        for (size_t i = 0; i < curves.size(); i++)
         {
             avtIntegralCurve *ic = curves[i];
             avtVector loc = ic->CurrentLocation();
@@ -3384,7 +3397,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
     if (doPathlines)
     {
-        bool needExpr = true;
+        //bool needExpr = true;
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
         // Remove a previous expression, as it might have the wrong definition.

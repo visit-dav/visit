@@ -74,10 +74,10 @@ Colleagues/avtText2DColleague.C
 Colleagues/avtText3DColleague.C
 Colleagues/avtTimeSliderColleague.C
 )
-IF(APPLE)
-    SET(COLLEAGUES_SOURCES ${COLLEAGUES_SOURCES} Colleagues/VisWinRenderingCocoaHideWindow.mm)
-    SET(OBJC_LIBS objC)
-ENDIF(APPLE)
+#IF(APPLE)
+#    SET(COLLEAGUES_SOURCES ${COLLEAGUES_SOURCES} Colleagues/VisWinRenderingCocoaHideWindow.mm)
+#    SET(OBJC_LIBS objC)
+#ENDIF(APPLE)
 
 IF (NOT WIN32)
     IF(MESA_FOUND)

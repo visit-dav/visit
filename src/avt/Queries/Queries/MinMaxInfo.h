@@ -62,6 +62,8 @@
 
 class QUERY_API MinMaxInfo : public AttributeSubject
 {
+    using AttributeSubject::SetValue;
+    using AttributeSubject::GetValue;
 public:
     // These constructors are for objects of this class
     MinMaxInfo();

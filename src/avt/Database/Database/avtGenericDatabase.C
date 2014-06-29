@@ -3202,7 +3202,7 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
     rv.nList = domains.size();
     rv.list = new void_ref_ptr[rv.nList];
 
-    for (int i = 0 ; i < domains.size() ; i++)
+    for (size_t i = 0 ; i < domains.size() ; i++)
     {
         //
         // See if we already have the data lying around for this timestep or
@@ -3784,14 +3784,14 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         vector<avtMixedVariable *> mvl2 = mvl;
         if (material_used->ReorderedMaterials())
         {
-            for (int i = 0 ; i < mvl2.size() ; i++)
+            for (size_t i = 0 ; i < mvl2.size() ; i++)
                 mvl2[i] = material_used->ReorderMixedVariable(mvl[i]);
         }
         out_ds[d] = mir->GetDataset(selMats, ds, mvl2, setUpMaterialVariable,
                                     mat);
         if (material_used->ReorderedMaterials())
         {
-            for (int i = 0 ; i < mvl2.size() ; i++)
+            for (size_t i = 0 ; i < mvl2.size() ; i++)
                 delete mvl2[i];
         }
         if (out_ds[d] != NULL && out_ds[d]->GetNumberOfCells() == 0)
@@ -4007,7 +4007,7 @@ avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, stringVector &mn,
     for (int i = 0 ; i < nstr ; i++)
     {
         bool foundMatch = false;
-        for (int j = 0 ; j < matlist.size() ; j++)
+        for (size_t j = 0 ; j < matlist.size() ; j++)
         {
             if (mn[i] == matlist[j])
             {
@@ -5074,7 +5074,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     //
     const char *real_var = GetOriginalVariableName(md, var);
     vector<CharStrRef> real_vars2nd;
-    int i;
+    size_t i;
     for (i = 0 ; i < vars2nd.size() ; i++)
     {
         const char *str = GetOriginalVariableName(md, *(vars2nd[i]));
@@ -5128,7 +5128,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 
     ds.SetVar(var);
     ds.SetVars2nd(vars2nd);
-    for (i = 0 ; i < nDomains ; i++)
+    for (i = 0 ; i < (size_t)nDomains ; i++)
     {
         stringVector labels;
         stringVector matnames;
@@ -5155,7 +5155,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                 bool hasmixvar = cache.HasVoidRef(var,
                                                   AUXILIARY_DATA_MIXED_VARIABLE,
                                                   ts, domains[i]);
-                for (int kk = 0 ; kk < vars2nd.size() && !hasmixvar ; kk++)
+                for (size_t kk = 0 ; kk < vars2nd.size() && !hasmixvar ; kk++)
                 {
                     hasmixvar |= cache.HasVoidRef(*(vars2nd[kk]),
                                                   AUXILIARY_DATA_MIXED_VARIABLE,
@@ -5276,7 +5276,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                 {
                     ds.AddMixVar(i, vr);
                 }
-                for (int kk = 0 ; kk < vars2nd.size() ; kk++)
+                for (size_t kk = 0 ; kk < vars2nd.size() ; kk++)
                 {
                     vr = cache.GetVoidRef(*(vars2nd[kk]),
                                           AUXILIARY_DATA_MIXED_VARIABLE, ts,
@@ -5318,7 +5318,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                     ds.AddMixVar(i, vr);
                 }
                 
-                for (int kk = 0 ; kk < vars2nd.size() ; kk++)
+                for (size_t kk = 0 ; kk < vars2nd.size() ; kk++)
                 {
                     vr = cache.GetVoidRef(*(vars2nd[kk]),
                                             AUXILIARY_DATA_MIXED_VARIABLE, ts,
@@ -5526,7 +5526,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 {
     int portion1 = visitTimer->StartTimer();
 
-    int  i;
+    size_t  i;
 
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
@@ -5777,7 +5777,7 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
     if (confirmInputMeshHasRightSize)
     {
         vector<vtkDataSet *> confirmlist;
-        for (int i = 0 ; i < doms.size() ; i++)
+        for (size_t i = 0 ; i < doms.size() ; i++)
         {
             confirmlist.push_back(ds.GetDataset(i, 0));
         }
@@ -5953,7 +5953,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                       avtDatasetCollection &ds, intVector &doms,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
-    int   i, j, k;
+    size_t   i, j, k;
 
     int t1 = visitTimer->StartTimer();
 
@@ -6071,7 +6071,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     for (i = 0 ; i < doms.size() ; i++)
     {
         vtkFieldData *fd = list[i]->GetFieldData();
-        for (k = 0; k < fd->GetNumberOfArrays(); k++)
+        for (k = 0; k < (size_t)fd->GetNumberOfArrays(); k++)
         {
             newList[i]->GetFieldData()->AddArray(fd->GetArray(k));
         }
@@ -6335,10 +6335,10 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         {
             src->DatabaseProgress(localstage++, nlocalstage,
                                   "Creating ghost zones for mixed vars");
-            for (i = 0 ; i < nummixvars ; i++)
+            for (i = 0 ; i < (size_t)nummixvars ; i++)
             {
                 vector<avtMixedVariable*> mixvarList;
-                int numDomains = doms.size();
+                size_t numDomains = doms.size();
                 for (j = 0 ; j < numDomains ; j++)
                 {
                     avtMaterial *mat = matList[j];
@@ -6564,7 +6564,7 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
     }
 
     vector<vtkDataSet *> list;
-    for (int i = 0 ; i < doms.size() ; i++)
+    for (size_t i = 0 ; i < doms.size() ; i++)
         list.push_back(ds.GetDataset(i, 0));
     dbi->CreateGhostNodes(doms, list, allDomains);
 
@@ -6620,7 +6620,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     // The game plan here is to create a domain boundaries object using the
     // global node ids.
     //
-    int   i, j, k, l;
+    size_t   i, j, k, l;
 
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
@@ -6661,7 +6661,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         vtkDataArray *gn = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
         copy->GetPointData()->AddArray(gn);
         vtkIntArray *ln = vtkIntArray::New();
-        int npts = gn->GetNumberOfTuples();
+        size_t npts = gn->GetNumberOfTuples();
         ln->SetNumberOfTuples(npts);
         int *ptr = ln->GetPointer(0);
         for (j = 0 ; j < npts ; j++)
@@ -6708,7 +6708,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         vtkIntArray *int_gni = gni[i];
         int *ptr = int_gni->GetPointer(0);
         int nvals = int_gni->GetNumberOfTuples();
-        for (j = 0 ; j < nvals ; j++)
+        for (j = 0 ; j < (size_t)nvals ; j++)
             maxId = (maxId < ptr[j] ? ptr[j] : maxId);
     }
 
@@ -6757,7 +6757,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         vtkIntArray *int_lni = lni[i];
         int *ptr  = int_gni->GetPointer(0);
         int *ptr2 = int_lni->GetPointer(0);
-        int nvals = int_gni->GetNumberOfTuples();
+        size_t nvals = int_gni->GetNumberOfTuples();
         for (j = 0 ; j < nvals ; j++)
         {
             if (ptr[j] < myMin || ptr[j] >= myMax)
@@ -6809,7 +6809,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     int *sendcount = new int[num_procs];
     int *recvcount = new int[num_procs];
     int totalSend = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         sendcount[i] = 3*global_ids_for_proc[i].size();
         totalSend += sendcount[i];
@@ -6818,7 +6818,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     int totalRecv = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         totalRecv += recvcount[i];
     }
@@ -6827,7 +6827,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     int *recvdisp = new int[num_procs];
     senddisp[0] = 0;
     recvdisp[0] = 0;
-    for (i = 1 ; i < num_procs ; i++)
+    for (i = 1 ; i < (size_t)num_procs ; i++)
     {
         senddisp[i] = senddisp[i-1] + sendcount[i-1];
         recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
@@ -6835,7 +6835,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
 
     int *big_send_buffer = new int[totalSend];
     int idx = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         for (j = 0 ; j < global_ids_for_proc[i].size() ; j++)
         {
@@ -6864,9 +6864,9 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     }
     intVector Domain2Proc(numDomains, -1);
     int index = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
-        for (j = 0 ; j < recvcount[i] ; j += 3)
+        for (j = 0 ; j < (size_t)recvcount[i] ; j += 3)
         {
             int glob_id = big_recv_buffer[index];
             int dom_id = big_recv_buffer[index+1];
@@ -6909,7 +6909,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     vector< intVector > pairs(numDomains);
     vector< vector< intVector > > first_val(numDomains);
     vector< vector< intVector > > second_val(numDomains);
-    for (i = myMin ; i < myMax ; i++)
+    for (i = (size_t)myMin ; i < (size_t)myMax ; i++)
     {
         int idx = i-myMin;
         int indirection_index = index_for_node[idx];
@@ -6961,13 +6961,13 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     //
     // First, decide the size of what we are going to send to each processor.
     //
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
         sendcount[i] = 0;
-    for (i = 0 ; i < numDomains ; i++)
+    for (i = 0 ; i < (size_t)numDomains ; i++)
     {
         int proc = Domain2Proc[i];
         int numPairs = pairs[i].size();
-        for (j = 0 ; j < numPairs ; j++)
+        for (j = 0 ; j < (size_t)numPairs ; j++)
         {
             int domain2 = pairs[i][j];
             int proc2 = Domain2Proc[domain2];
@@ -6980,7 +6980,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     }
     
     totalSend = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         totalSend += sendcount[i];
     }
@@ -6988,14 +6988,14 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     totalRecv = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         totalRecv += recvcount[i];
     }
 
     senddisp[0] = 0;
     recvdisp[0] = 0;
-    for (i = 1 ; i < num_procs ; i++)
+    for (i = 1 ; i < (size_t)num_procs ; i++)
     {
         senddisp[i] = senddisp[i-1] + sendcount[i-1];
         recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
@@ -7005,14 +7005,14 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     big_send_buffer = new int[totalSend];
     idx = 0;
     int *curDisp = new int[num_procs];
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
         curDisp[i] = senddisp[i];
 
-    for (i = 0 ; i < numDomains ; i++)
+    for (i = 0 ; i < (size_t)numDomains ; i++)
     {
         int proc = Domain2Proc[i];
         int numPairs = pairs[i].size();
-        for (j = 0 ; j < numPairs ; j++)
+        for (j = 0 ; j < (size_t)numPairs ; j++)
         {
             int domain2 = pairs[i][j];
             int proc2 = Domain2Proc[domain2];
@@ -7024,9 +7024,9 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
                 buffer[0] = i;
                 buffer[1] = domain2;
                 buffer[2] = numShared;
-                for (k = 0 ; k < numShared ; k++)
+                for (k = 0 ; k < (size_t)numShared ; k++)
                     buffer[k+3] = first_val[i][j][k];
-                for (k = 0 ; k < numShared ; k++)
+                for (k = 0 ; k < (size_t)numShared ; k++)
                     buffer[k+3+numShared] = second_val[i][j][k];
             }
             if (proc2 >= 0 && proc2 != proc)
@@ -7036,9 +7036,9 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
                 buffer[0] = i;
                 buffer[1] = domain2;
                 buffer[2] = numShared;
-                for (k = 0 ; k < numShared ; k++)
+                for (k = 0 ; k < (size_t)numShared ; k++)
                     buffer[k+3] = first_val[i][j][k];
-                for (k = 0 ; k < numShared ; k++)
+                for (k = 0 ; k < (size_t)numShared ; k++)
                     buffer[k+3+numShared] = second_val[i][j][k];
             }
         }
@@ -7058,7 +7058,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     // Now add the shared points to the domain boundary information that comes
     // from other processors.
     //
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         int ap = 0; // ap => amountProcessed
         int amountToProcess = recvcount[i];
@@ -7098,9 +7098,9 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
             first_val[domain1][match].resize(newNumVals);
             second_val[domain1][match].resize(newNumVals);
 
-            for (j = 0 ; j < numShared ; j++)
+            for (j = 0 ; j < (size_t)numShared ; j++)
                 first_val[domain1][match][numCurVals+j] = buffer[ap++];
-            for (j = 0 ; j < numShared ; j++)
+            for (j = 0 ; j < (size_t)numShared ; j++)
                 second_val[domain1][match][numCurVals+j] = buffer[ap++];
         }
     }
@@ -7120,7 +7120,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     //
     avtUnstructuredPointBoundaries upb;
     upb.SetTotalNumberOfDomains(numDomains);
-    for (i = 0 ; i < numDomains ; i++)
+    for (i = 0 ; i < (size_t)numDomains ; i++)
     {
         for (j = 0 ; j < pairs[i].size() ; j++)
         {
@@ -7198,7 +7198,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
                       avtDatasetCollection &ds, intVector &doms, 
                       avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
-    int   i, j;
+    size_t   i, j;
 
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
@@ -7214,7 +7214,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
         vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
         vtkIntArray *int_gni = (vtkIntArray *) gni;
         int *ptr = int_gni->GetPointer(0);
-        int nvals = int_gni->GetNumberOfTuples();
+        size_t nvals = int_gni->GetNumberOfTuples();
         for (j = 0 ; j < nvals ; j++)
             maxId = (maxId < ptr[j] ? ptr[j] : maxId);
     }
@@ -7244,7 +7244,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     //
     int mySize = myMax-myMin;
     int *allIds = new int[mySize];
-    for (i = 0 ; i < mySize ; i++)
+    for (i = 0 ; i < (size_t)mySize ; i++)
         allIds[i] = 0;
 
     //
@@ -7257,7 +7257,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
         vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
         vtkIntArray *int_gni = (vtkIntArray *) gni;
         int *ptr = int_gni->GetPointer(0);
-        int nvals = int_gni->GetNumberOfTuples();
+        size_t nvals = int_gni->GetNumberOfTuples();
         for (j = 0 ; j < nvals ; j++)
         {
             if (ptr[j] < myMin || ptr[j] >= myMax)
@@ -7278,7 +7278,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     int *sendcount = new int[num_procs];
     int *recvcount = new int[num_procs];
     int totalSend = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         sendcount[i] = ids_for_proc[i].size();
         totalSend += sendcount[i];
@@ -7287,7 +7287,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     int totalRecv = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
     {
         totalRecv += recvcount[i];
     }
@@ -7296,7 +7296,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     int *recvdisp = new int[num_procs];
     senddisp[0] = 0;
     recvdisp[0] = 0;
-    for (i = 1 ; i < num_procs ; i++)
+    for (i = 1 ; i < (size_t)num_procs ; i++)
     {
         senddisp[i] = senddisp[i-1] + sendcount[i-1];
         recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
@@ -7304,7 +7304,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 
     int *big_send_buffer = new int[totalSend];
     int idx = 0;
-    for (i = 0 ; i < num_procs ; i++)
+    for (i = 0 ; i < (size_t)num_procs ; i++)
         for (j = 0 ; j < ids_for_proc[i].size() ; j++)
             big_send_buffer[idx++] = ids_for_proc[i][j];
 
@@ -7321,7 +7321,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     // Now take everything in the receive buffer and add update our
     // node list counters with it.
     //
-    for (i = 0 ; i < totalRecv ; i++)
+    for (i = 0 ; i < (size_t)totalRecv ; i++)
     {
         if (big_recv_buffer[i] < myMin || big_recv_buffer[i] >= myMax)
         {
@@ -7350,7 +7350,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     char *new_big_send_buffer = new char[new_totalSend];
     char *new_big_recv_buffer = new char[new_totalRecv];
 
-    for (i = 0 ; i < new_totalSend ; i++)
+    for (i = 0 ; i < (size_t)new_totalSend ; i++)
         new_big_send_buffer[i] = 
                             (allIds[big_recv_buffer[i]-myMin] > 1 ? 1 : 0);
 
@@ -7374,7 +7374,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
         vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
         vtkIntArray *int_gni = (vtkIntArray *) gni;
         int *ptr = int_gni->GetPointer(0);
-        int nvals = int_gni->GetNumberOfTuples();
+        size_t nvals = int_gni->GetNumberOfTuples();
         vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
         ghost_nodes->SetName("avtGhostNodes");
         ghost_nodes->SetNumberOfTuples(nvals);
@@ -7504,7 +7504,7 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
     int shouldStop = 0;
     if (*vr != NULL)
     {
-        int  i;
+        size_t  i;
         for (i = 0 ; i < doms.size() ; i++)
         {
             list.push_back(ds.GetDataset(i, 0));
@@ -7688,7 +7688,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
         {
             vector<avtMixedVariable *> mvl;
             vector<void_ref_ptr> &vrl = ds.GetAllMixVars(i);
-            for (int j = 0 ; j < vrl.size() ; j++)
+            for (size_t j = 0 ; j < vrl.size() ; j++)
             {
                 avtMixedVariable *mv = (avtMixedVariable *) *vrl[j];
                 mvl.push_back(mv);
@@ -7947,7 +7947,7 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
                         avtStructuredDomainBoundaries *dbi,
                         avtGhostDataType gt)
 {
-    int   d, i, j, k, l;
+    size_t   d, i, j, k, l;
 
     //
     // This will retrieve:
@@ -8135,7 +8135,7 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     // remove them as we find that they are nested out by children.
     //
     bool *useCell = new bool[numCells];
-    for (i = 0 ; i < numCells ; i++)
+    for (i = 0 ; i < (size_t)numCells ; i++)
         useCell[i] = true;
 
     for (d = 0 ; d < childDomains.size() ; d++)
@@ -8221,9 +8221,9 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
         // Now take out all cells (from our mesh that is made up of elements
         // from [IJK]list).
         //
-        for (i = listIlo ; i < listIhi ; i++)
+        for (i = (size_t)listIlo ; i < (size_t)listIhi ; i++)
         {
-            for (j = listJlo ; j < listJhi ; j++)
+            for (j = (size_t)listJlo ; j < (size_t)listJhi ; j++)
             {
                 if (dims[2] == 1)
                 {
@@ -8232,9 +8232,9 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
                 }
                 else
                 {
-                    for (k = listKlo ; k < listKhi ; k++)
+                    for (k = (size_t)listKlo ; k < (size_t)listKhi ; k++)
                     {
-                        int idx = k*(numJlist-1)*(numIlist-1) 
+                        size_t idx = k*(numJlist-1)*(numIlist-1)
                                 + j*(numIlist-1) + i;
                         useCell[idx] = false;
                     }
@@ -8248,7 +8248,7 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     // Now we have the voxels/quads, let's build the unstructured mesh.
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     int nRealCells = 0;
-    for (i = 0 ; i < numCells ; i++)
+    for (i = 0 ; i < (size_t)numCells ; i++)
         if (useCell[i])
             nRealCells++;
     int cellSize = (dims[2] == 1 ? 5 : 9);
@@ -8345,11 +8345,11 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     int realdims[3];
     rgrid->GetDimensions(realdims);  // this should be the same as dims,
                                      // unless we have ghost data...
-    for (k = 0 ; k < numKlist ; k++)
+    for (k = 0 ; k < (size_t)numKlist ; k++)
     {
-        for (j = 0 ; j < numJlist ; j++)
+        for (j = 0 ; j < (size_t)numJlist ; j++)
         {
-            for (i = 0 ; i < numIlist ; i++)
+            for (i = 0 ; i < (size_t)numIlist ; i++)
             {
                 //
                 // Get the point in the indexing scheme
@@ -8742,7 +8742,7 @@ avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
         intVector domains;
         trav.GetDomainList(domains);
     
-        for (int i = 0 ; i < domains.size() ; i++)
+        for (size_t i = 0 ; i < domains.size() ; i++)
         {
             bool needMatSelForThisDom;
             trav.GetMaterials(domains[i], needMatSelForThisDom);
@@ -8861,7 +8861,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
                                  PickVarInfo &varInfo, const bool zonePick)
 {
     bool rv = false;
-    int i;
+    size_t i;
     if (varInfo.GetValues().empty())
     {
         doubleVector vals;
@@ -8949,7 +8949,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
         stringVector mN;
         doubleVector mV;
         intVector nMats;
-        int i, j, nMatsPerZone;
+        size_t i, j, nMatsPerZone;
         bool mixed = false;
         
         if (zonePick)
@@ -8963,7 +8963,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
             }
             matInfo = mat->ExtractCellMatInfo(element);
             nMatsPerZone = 0;
-            for (int i = 0; i < matInfo.size(); i++)
+            for (size_t i = 0; i < matInfo.size(); i++)
             { 
                 if (matInfo[i].mix_index != -1)
                 {
@@ -9125,7 +9125,7 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
                 if (zonePick != zoneCent) 
                 { 
                     // info we're after is associated with incidentElements
-                    for (int k = 0; k < incidentElements.size(); k++)
+                    for (size_t k = 0; k < incidentElements.size(); k++)
                     {
                         sprintf(buff, "(%d)", incidentElements[k]); 
                         names.push_back(buff); 
@@ -9268,7 +9268,7 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
                 if (zonePick != zoneCent) 
                 { 
                     // info we're after is associated with incidentElements
-                    for (int k = 0; k < incidentElements.size(); k++)
+                    for (size_t k = 0; k < incidentElements.size(); k++)
                     {
                         sprintf(buff, "(%d)", incidentElements[k]); 
                         names.push_back(buff); 
@@ -9388,7 +9388,7 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
                 if (zonePick != zoneCent) 
                 { 
                     // info we're after is associated with incidentElements
-                    for (int k = 0; k < incidentElements.size(); k++)
+                    for (size_t k = 0; k < incidentElements.size(); k++)
                     {
                         sprintf(buff, "(%d)", incidentElements[k]); 
                         names.push_back(buff); 
@@ -9516,7 +9516,7 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
                 if (zonePick != zoneCent) 
                 { 
                     // info we're after is associated with incidentElements
-                    for (int k = 0; k < incidentElements.size(); k++)
+                    for (size_t k = 0; k < incidentElements.size(); k++)
                     {
                         sprintf(buff, "(%d)", incidentElements[k]); 
                         names.push_back(buff); 
@@ -9625,7 +9625,7 @@ avtGenericDatabase::QueryLabels(const string &varName, const int dom,
                 if (zonePick != zoneCent) 
                 { 
                     // info we're after is associated with incidentElements
-                    for (int k = 0; k < incidentElements.size(); k++)
+                    for (size_t k = 0; k < incidentElements.size(); k++)
                     {
                         sprintf(buff, "(%d)", incidentElements[k]); 
                         names.push_back(buff); 
@@ -9712,7 +9712,7 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
     intVector    nMats;
     vector<CellMatInfo> matInfo; 
     avtMaterial *mat = GetMaterial(dom, varName.c_str(), ts);
-    int i, j;
+    size_t i, j;
     if (mat == NULL)
     {
         return false;
@@ -10096,7 +10096,7 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
         sprintf(temp, "%s ", mesh.c_str());
         meshInfo += temp;
     }
-    if (mmd->numGroups > 0 && dom < mmd->groupIds.size())
+    if (mmd->numGroups > 0 && (size_t)dom < mmd->groupIds.size())
     {
         if (strstr(mmd->groupPieceName.c_str(), "%") != NULL)
         {
@@ -10738,7 +10738,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
     doubleVector vals = varInfo.GetValues();
     stringVector names;
     char buff[80];
-    int i, j, k;
+    size_t i, j, k;
     varInfo.SetCentering(PickVarInfo::Zonal);
     bool getVal = (vals.size() == 0);
 
@@ -11186,7 +11186,7 @@ avtGenericDatabase::QueryGlobalIds(const int dom, const string &var, const int t
         if (globalZones)
             globalElement = globalZones->GetValue(element);
         if (globalNodes)
-            for (int i = 0; i < incEls.size(); i++)
+            for (size_t i = 0; i < incEls.size(); i++)
                 globalIncEls.push_back(globalNodes->GetValue(incEls[i]));
     }
     else 
@@ -11194,7 +11194,7 @@ avtGenericDatabase::QueryGlobalIds(const int dom, const string &var, const int t
         if (globalNodes)
             globalElement = globalNodes->GetValue(element);
         if (globalZones)
-            for (int i = 0; i < incEls.size(); i++)
+            for (size_t i = 0; i < incEls.size(); i++)
                 globalIncEls.push_back(globalZones->GetValue(incEls[i]));
     }
 }
@@ -11391,7 +11391,7 @@ avtGenericDatabase::CreateAMRIndices(avtDatasetCollection &dsc,
         }
         vtkIntArray *amrDims = vtkIntArray::New();
         amrDims->SetNumberOfTuples(rv.size());
-        for (int j = 0; j < rv.size(); j++)
+        for (size_t j = 0; j < rv.size(); j++)
         {
             amrDims->SetValue(j, rv[j]);
         }

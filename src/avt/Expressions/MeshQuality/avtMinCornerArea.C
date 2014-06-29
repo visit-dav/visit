@@ -145,7 +145,7 @@ avtMinCornerArea::GetMinCornerArea(vtkCell *cell)
 
     for (vtkIdType i = 0 ; i < nPts ; i++)
     {
-        vtkIdType ID = cell->GetPointId(i);
+        //vtkIdType ID = cell->GetPointId(i);
         cell->GetPoints()->GetPoint(i, ptV);
         ptX[i] = ptV[0];
         ptY[i] = ptV[1];

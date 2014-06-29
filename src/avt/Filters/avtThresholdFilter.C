@@ -634,7 +634,7 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 
     vtkIdType zoneCount = in_ds->GetNumberOfCells();
     vtkIdType pointCount = in_ds->GetNumberOfPoints();
-    int curVarNum;
+    size_t curVarNum;
     vtkIdType zoneNum, pointNum;
 
     std::vector<avtStructuredMeshChunker::ZoneDesignation> curVarZDs(zoneCount);
@@ -871,10 +871,10 @@ avtThresholdFilter::PreExecute(void)
     inputVarCount = (int)inputVarNames.size();
     bool allScalars = true;
     stringVector curListedVarNames = atts.GetListedVarNames();
-    for (int i = 0 ; i < curListedVarNames.size() ; i++)
+    for (size_t i = 0 ; i < curListedVarNames.size() ; i++)
     {
          bool foundMatch = false;
-         for (int j = 0 ; j < inputVarNames.size() ; j++)
+         for (size_t j = 0 ; j < inputVarNames.size() ; j++)
              if (inputVarNames[j] == curListedVarNames[i])
                  foundMatch = true;
          if (! foundMatch)
@@ -903,7 +903,7 @@ avtThresholdFilter::PreExecute(void)
     doubleVector curUpperBounds    = atts.GetUpperBounds();
 
     std::string listVarName;
-    int listVarNum;
+    size_t listVarNum;
     bool changedTheList;
     bool atLeast1Change = false;
     
@@ -1025,7 +1025,7 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
     const std::vector<CharStrRef> curSecondaryVars =
         outSpec->GetDataRequest()->GetSecondaryVariables();
     const stringVector curListedVars = atts.GetListedVarNames();
-    int listedVarNum, secVarNum;
+    size_t listedVarNum, secVarNum;
 
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
@@ -1051,7 +1051,7 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 
     bool atLeastOneTree = false;
     avtIntervalTree *it;
-    int varDomNum, curDomNum, curDomain;
+    size_t varDomNum, curDomNum, curDomain;
     intVector varDomains;
     intVector curDomains;
     intVector outDomains;
@@ -1079,7 +1079,7 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
                     {
                         for (varDomNum=0; varDomNum<varDomains.size(); varDomNum++)
                         {
-                            if (varDomains[varDomNum] == curDomain) break;
+                            if ((size_t)varDomains[varDomNum] == curDomain) break;
                         }
 
                         if (varDomNum >= varDomains.size())
@@ -1183,7 +1183,7 @@ avtThresholdFilter::CreateNamedSelection(avtContract_p c, const std::string &s)
     doubleVector curUpperBounds = atts.GetUpperBounds();
     double lowerBound, upperBound;
 
-    for (int listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
+    for (size_t listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
         lowerBound = curLowerBounds[listedVarNum];
         upperBound = curUpperBounds[listedVarNum];
@@ -1208,7 +1208,7 @@ avtThresholdFilter::CreateNamedSelection(avtContract_p c, const std::string &s)
     // own this reference.
     // delete ids;
 
-    for (int i = 0 ; i < drs.size() ; i++)
+    for (size_t i = 0 ; i < drs.size() ; i++)
         delete drs[i];
 
     return rv;

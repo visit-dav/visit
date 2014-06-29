@@ -152,9 +152,9 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
     int numStiff = 0;
     int numCritPts = 0;
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
-
+    }
     //See how many pts, ics we have so we can preallocate everything.
     for (int i = 0; i < numICs; i++)
     {
@@ -308,7 +308,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
 
         //cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
 
-        for (int j = 0; j < numSamps; j++)
+        for (size_t j = 0; j < numSamps; j++)
         {
             avtStateRecorderIntegralCurve::Sample s = ic->GetSample(j);
             line->GetPointIds()->SetId(j, pIdx);
@@ -520,7 +520,7 @@ avtStreamlinePolyDataFilter::ComputeCorrelationDistance(int idx,  avtStateRecord
 
 static avtStateRecorderIntegralCurve * icFromID(int id, std::vector<avtIntegralCurve *> &ics)
 {
-    for (int i = 0; i < ics.size(); i++)
+    for (size_t i = 0; i < ics.size(); i++)
     {
         if (ics[i]->id == id)
             return dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
@@ -545,7 +545,7 @@ static avtStateRecorderIntegralCurve * icFromID(int id, std::vector<avtIntegralC
 void
 avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCurve *> &ics)
 {
-    for (int i = 0; i < fwdBwdICPairs.size(); i++)
+    for (size_t i = 0; i < fwdBwdICPairs.size(); i++)
     {
         avtStateRecorderIntegralCurve *ic[2] = {icFromID(fwdBwdICPairs[i].first, ics),
                                                 icFromID(fwdBwdICPairs[i].second, ics)};
@@ -559,7 +559,7 @@ avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegr
         for (int i = 0; i < 2; i++)
         {
             size_t n = ic[i]->GetNumberOfSamples();
-            for (int j = 0; j < n; j++)
+            for (size_t j = 0; j < n; j++)
             {
                 avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
                 if (s.secondarys[2] < range[0])
@@ -574,7 +574,7 @@ avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegr
         for (int i = 0; i < 2; i++)
         {
             size_t n = ic[i]->GetNumberOfSamples();
-            for (int j = 0; j < n; j++)
+            for (size_t j = 0; j < n; j++)
             {
                 avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
                 s.secondarys[2] = (s.secondarys[2]-range[0])/dRange;

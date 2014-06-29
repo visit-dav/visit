@@ -233,7 +233,7 @@ avtParICAlgorithm::RecvData(int tag, std::vector<MemStream *> &buffers,
     if (RecvData(setTag, b, blockAndWait))
     {
         buffers.resize(b.size());
-        for (int i = 0; i < b.size(); i++)
+        for (size_t i = 0; i < b.size(); i++)
             buffers[i] = b[i].second;
         return true;
     }

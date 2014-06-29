@@ -377,7 +377,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     //
     // Determine if the plots have the same database information.
     //
-    int    cycle;
+    int    cycle = 0;
     double dtime;
     string filename;
     bool   haveSetData = false;
@@ -438,7 +438,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
             dbname = VisWinPathTracker::Instance()
                         ->GetSmartDirectory(atts.GetFullDBName());
         }
-        bool hasTime = CreateDatabaseInfo(info,dbname,atts);
+        //bool hasTime = CreateDatabaseInfo(info,dbname,atts);
         dbInfoActor->SetInput(info);
         dbInfoActor->SetTextHeight(dbInfoHeight * dbInfoTextAttributes.scale);    
         

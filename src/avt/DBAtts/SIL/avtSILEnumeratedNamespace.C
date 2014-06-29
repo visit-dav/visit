@@ -63,7 +63,7 @@ avtSILEnumeratedNamespace::avtSILEnumeratedNamespace(const vector<int> &els)
 {
     elements = els;
     sequentialElems = true;
-    int ii;
+    size_t ii;
     for (ii = 1; ii < els.size(); ii++)
     {
         if (els[ii-1]+1 != els[ii])
@@ -156,7 +156,7 @@ avtSILEnumeratedNamespace::ContainsElement(int e) const
     }
     else
     {
-        for (int ii = 0; ii < elements.size(); ii++)
+        for (size_t ii = 0; ii < elements.size(); ii++)
         {
             if (elements[ii] == e)
                 return true;

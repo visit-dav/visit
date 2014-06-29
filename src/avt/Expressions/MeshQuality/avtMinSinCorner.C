@@ -147,7 +147,7 @@ avtMinSinCorner::GetMinSinCorner(vtkCell *cell)
         // Counter-ClockWise ordering:
         for (vtkIdType i = 0 ; i < nPts ; i++)
         {
-            vtkIdType ID = cell->GetPointId(i);
+            //vtkIdType ID = cell->GetPointId(i);
             cell->GetPoints()->GetPoint(i, ptV);
             ptX[i] = ptV[0];
             ptY[i] = ptV[1];
@@ -156,7 +156,7 @@ avtMinSinCorner::GetMinSinCorner(vtkCell *cell)
         // ClockWise ordering:
         for (vtkIdType i = 0 ; i < nPts ; i++)
         {
-            vtkIdType ID = cell->GetPointId(i);
+            //vtkIdType ID = cell->GetPointId(i);
             cell->GetPoints()->GetPoint((3-i), ptV);
             ptX[i] = ptV[0];
             ptY[i] = ptV[1];

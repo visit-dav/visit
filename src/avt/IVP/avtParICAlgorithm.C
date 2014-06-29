@@ -333,7 +333,7 @@ avtParICAlgorithm::CheckPendingSendRequests()
     int num = 0, *indices = new int[req.size()];
     MPI_Status *status = new MPI_Status[req.size()];
     int err = MPI_Testsome(req.size(), &req[0], &num, indices, status);
-
+    (void) err; ///ignore err..
     for (int i = 0; i < num; i++)
     {
         MPI_Request r = copy[indices[i]];
@@ -399,7 +399,7 @@ avtParICAlgorithm::PrepareForSend(int tag, MemStream *buff, vector<unsigned char
     header.rank = rank;
     header.id = msgID;
     header.numPackets = 1;
-    if (buff->len() > maxDataLen)
+    if (buff->len() > (unsigned int)maxDataLen)
         header.numPackets += buff->len() / maxDataLen;
     
     header.packet = 0;
@@ -455,13 +455,14 @@ avtParICAlgorithm::SendData(int dst, int tag, MemStream *buff)
     PrepareForSend(tag, buff, bufferList);
     
     avtParICAlgorithm::Header header;
-    for (int i = 0; i < bufferList.size(); i++)
+    for (size_t i = 0; i < bufferList.size(); i++)
     {
         memcpy(&header, bufferList[i], sizeof(header));
 
         MPI_Request req;
         int err = MPI_Isend(bufferList[i], header.packetSz, MPI_BYTE, dst,
                             tag, VISIT_MPI_COMM, &req);
+        (void) err;
         BytesCnt.value += header.packetSz;
     
         //Add it to sendBuffers
@@ -563,7 +564,7 @@ void
 avtParICAlgorithm::ProcessReceivedBuffers(vector<unsigned char*> &incomingBuffers,
                                           vector<pair<int, MemStream *> > &buffers)
 {
-    for (int i = 0; i < incomingBuffers.size(); i++)
+    for (size_t i = 0; i < incomingBuffers.size(); i++)
     {
         unsigned char *buff = incomingBuffers[i];
         
@@ -599,7 +600,7 @@ avtParICAlgorithm::ProcessReceivedBuffers(vector<unsigned char*> &incomingBuffer
                 i2->second.push_back(buff);
 
                 // The last packet came in, merge into one MemStream.
-                if (i2->second.size() == header.numPackets)
+                if (i2->second.size() == (size_t)header.numPackets)
                 {
                     //Sort the packets into proper order.
                     i2->second.sort(avtParICAlgorithm::PacketCompare);
@@ -737,7 +738,7 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
 
     int timerHandle = visitTimer->StartTimer();
 
-    for (int i = 0; i < buffers.size(); i++)
+    for (size_t i = 0; i < buffers.size(); i++)
     {
         if (buffers[i].first == avtParICAlgorithm::MESSAGE_TAG)
         {
@@ -829,12 +830,12 @@ void
 avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
 {
     int timerHandle = visitTimer->StartTimer();
-    for (int i = 0; i < ics.size(); i++)
+    for (size_t i = 0; i < ics.size(); i++)
         ics[i]->PrepareForSend();
 
     DoSendICs(dst, ics);
     
-    for (int i = 0; i < ics.size(); i++)
+    for (size_t i = 0; i < ics.size(); i++)
         ics[i]->ResetAfterSend();
     
     communicatedICs.insert(communicatedICs.end(), ics.begin(), ics.end());
@@ -961,7 +962,7 @@ avtParICAlgorithm::DoSendICs(int dst, vector<avtIntegralCurve*> &ics)
     int num = ics.size();
     buff->write(num);
     
-    for (int i = 0; i < ics.size(); i++)
+    for (size_t i = 0; i < ics.size(); i++)
         ics[i]->Serialize(MemStream::WRITE, *buff, GetSolver(), avtIntegralCurve::SERIALIZE_NO_OPT);
     
     SendData(dst, avtParICAlgorithm::STREAMLINE_TAG, buff);
@@ -993,13 +994,13 @@ avtParICAlgorithm::SendDS(int dst, vector<vtkDataSet *> &ds, vector<BlockIDType>
     int timerHandle = visitTimer->StartTimer();
 
     //Serialize the data sets.
-    for (int i = 0; i < ds.size(); i++)
+    for (size_t i = 0; i < ds.size(); i++)
     {
         MemStream *dsBuff = new MemStream;
 
         dsBuff->write(doms[i]);
         dsBuff->write(ds[i]);
-        int dsLen = dsBuff->len();
+        //int dsLen = dsBuff->len();
         int totalLen = dsBuff->len();
         
         MemStream *msgBuff = new MemStream(2*sizeof(int));
@@ -1147,11 +1148,11 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 void
 avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
 {
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"RestoreIntegralCurveSequence: communicatedICs: "
               <<communicatedICs.size()
               <<" terminatedICs: "<<terminatedICs.size()<<endl;
-
+    }
     //Create larger streamline buffers.
 
     CleanupRequests(avtParICAlgorithm::STREAMLINE_TAG);
@@ -1268,7 +1269,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
             {
                 DoSendICs(owners[i], sendICs[i]);
 
-                for (int j = 0; j < sendICs[i].size(); j++)
+                for (size_t j = 0; j < sendICs[i].size(); j++)
                     delete sendICs[i][j];
             }
         }
@@ -1368,11 +1369,11 @@ avtParICAlgorithm::RestoreIntegralCurveToOriginatingProcessor()
 void
 avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
 {
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"RestoreIntegralCurveSequenceAssembleUniformly: communicatedICs: "
           <<communicatedICs.size()
           <<" terminatedICs: "<<terminatedICs.size()<<endl;
-
+    }
     //Create larger streamline buffers.
     CleanupRequests(avtParICAlgorithm::STREAMLINE_TAG);
     messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = pair<int,int>(numSLRecvs, 512*1024);
@@ -1406,7 +1407,7 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
         N = numSeedPoints;
     
     long *idBuffer = new long[N], *myIDs = new long[N];
-    int *sendList, *mySendList;
+    int *sendList = NULL, *mySendList = NULL;
     if (!uniformlyDistrubute)
     {
         sendList = new int[nProcs];
@@ -1531,7 +1532,7 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
                 //debug1<<"SendIC : "<<s_it->second[0]->id<<" to "<<s_it->first<<" num= "<<s_it->second.size()<<endl;
                 DoSendICs(s_it->first, s_it->second);
 
-                for (int i = 0; i < s_it->second.size(); i++)
+                for (size_t i = 0; i < s_it->second.size(); i++)
                     delete s_it->second[i];
             }
         }
@@ -1642,7 +1643,7 @@ avtParICAlgorithm::MergeTerminatedICSequences()
     terminatedICs.clear();
     
     // Merge the sequences together, put them into terminated list.
-    for (int i = 0; i < seqs.size(); i++)
+    for (size_t i = 0; i < seqs.size(); i++)
     {
         avtIntegralCurve *s = seqs[i][0]->MergeIntegralCurveSequence(seqs[i]);
         terminatedICs.push_back(s);

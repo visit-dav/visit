@@ -144,7 +144,7 @@ avtStaggeringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     case VTK_STRUCTURED_GRID:
     {
       vtkStructuredGrid* grid = vtkStructuredGrid::SafeDownCast(inDS);
-      int* dimensions = grid->GetDimensions();
+      //int* dimensions = grid->GetDimensions();
       
       vtkStructuredGrid* newGrid = vtkStructuredGrid::New();
       newGrid->ShallowCopy(grid);

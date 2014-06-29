@@ -534,7 +534,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 #ifdef PARALLEL
     MPI_Datatype mpi_datatype = GetMPIDataType<T>();
 
-    int mpiMsgTag = GetUniqueMessageTag();
+    //int mpiMsgTag = GetUniqueMessageTag();
 
     int rank;
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
@@ -551,12 +551,12 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
         recvcount[i] = 0;
     }
 
-    for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
         Boundary *bi = &sdb->boundary[d1];
 
         // find matching neighbors
-        for (int n=0; n<bi->neighbors.size(); n++)
+        for (size_t n=0; n<bi->neighbors.size(); n++)
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
@@ -596,12 +596,12 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
     T **tmp_ptr = new T*[nprocs];
     for (i = 0 ; i < nprocs ; i++)
         tmp_ptr[i] = sendbuff + senddisp[i];
-    for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
         Boundary *bi = &sdb->boundary[d1];
 
         // find matching neighbors
-        for (int n=0; n<bi->neighbors.size(); n++)
+        for (size_t n=0; n<bi->neighbors.size(); n++)
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
@@ -624,14 +624,14 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
                   recvbuff, recvcount, recvdisp, mpi_datatype,
                   VISIT_MPI_COMM);
 
-    for (i = 0 ; i < nprocs ; i++)
+    for (i = 0 ; i < (size_t)nprocs ; i++)
         tmp_ptr[i] = recvbuff + recvdisp[i];
-    for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
         Boundary *bi = &sdb->boundary[d1];
 
         // find matching neighbors
-        for (int n=0; n<bi->neighbors.size(); n++)
+        for (size_t n=0; n<bi->neighbors.size(); n++)
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
@@ -734,16 +734,16 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
 
     int mpiMsgTag = GetUniqueMessageTag();
 
-    for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
         Boundary *bi = &sdb->boundary[d1];
 
         // find matching neighbors
-        for (int n=0; n<bi->neighbors.size(); n++)
+        for (size_t n=0; n<bi->neighbors.size(); n++)
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
-            int mi = n1->match;
+            //int mi = n1->match;
 
             if (domain2proc[d1] != domain2proc[d2])
             {
@@ -765,16 +765,16 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
     int mpiBndMixMatTag  = GetUniqueMessageTag();
     int mpiBndMixZoneTag = GetUniqueMessageTag();
 
-    for (int d1 = 0; d1 < sdb->boundary.size(); d1++)
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
         Boundary *bi = &sdb->boundary[d1];
 
         // find matching neighbors
-        for (int n=0; n<bi->neighbors.size(); n++)
+        for (size_t n=0; n<bi->neighbors.size(); n++)
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
-            int mi = n1->match;
+            //int mi = n1->match;
             int size = bndmixlen[d1][n];
 
             if (domain2proc[d1] != domain2proc[d2])
@@ -1534,7 +1534,7 @@ avtStructuredDomainBoundaries::SetNumDomains(int nd)
 void
 avtStructuredDomainBoundaries::SetExtents(int domain, int e[6])
 {
-    if (domain >= wholeBoundary.size())
+    if ((size_t)domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
                    "targeted domain more than number of domains");
@@ -1577,7 +1577,7 @@ avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3],
                                            const std::vector<int>& ref_ratio,
                                            NeighborRelationship nr)
 {
-    if (domain >= wholeBoundary.size())
+    if ((size_t)domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
                    "targeted domain more than number of domains");
@@ -1601,7 +1601,7 @@ avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3],
 void
 avtStructuredDomainBoundaries::Finish(int domain)
 {
-    if (domain >= wholeBoundary.size())
+    if ((size_t)domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
                    "targeted domain more than number of domains");
@@ -2703,7 +2703,7 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
 {
     for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
-        if (domainNum[i] < 0 || domainNum[i] >= wholeBoundary.size())
+        if (domainNum[i] < 0 || (size_t)domainNum[i] >= wholeBoundary.size())
         {
             //
             // This mesh is referencing a domain that is not valid for the
@@ -3476,7 +3476,7 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
                    "computation of neighbors from index extents");
     }
 
-    if (domain >= levels.size())
+    if ((size_t)domain >= levels.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
                    "targeted domain more than number of domains");
@@ -3569,7 +3569,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
         int t0 = visitTimer->StartTimer();
 
-        int i, j, l;
+        size_t i, j, l;
 
         if (!shouldComputeNeighborsFromExtents)
         {
@@ -3579,7 +3579,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                     "computation of neighbors from index extents");
         }
 
-        for (l = 0 ; l < maxAMRLevel ; l++)
+        for (l = 0 ; l < (size_t)maxAMRLevel ; l++)
         {
             vector<int> doms_at_this_level;
             int ndoms;
@@ -3593,10 +3593,10 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
             {
                 renumberForEachAMRLevel = true;
 
-                int totalNDoms = levels.size();
+                size_t totalNDoms = levels.size();
                 for (i = 0 ; i < totalNDoms ; i++)
                 {
-                    if (levels[i] == l)
+                    if ((size_t)levels[i] == l)
                         doms_at_this_level.push_back(i);
                 }
                 ndoms = doms_at_this_level.size();
@@ -3604,7 +3604,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
             avtIntervalTree itree(ndoms, 3);
             double extf[6];
-            for (i = 0 ; i < ndoms ; i++)
+            for (i = 0 ; i < (size_t)ndoms ; i++)
             {
                 for (j = 0 ; j < 6 ; j++)
                 {
@@ -3616,7 +3616,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
             itree.Calculate(true);
 
             vector<int> neighbors(ndoms, 0);
-            for (i = 0 ; i < ndoms ; i++)
+            for (i = 0 ; i < (size_t)ndoms ; i++)
             {
                 double min_vec[3], max_vec[3];
                 int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
@@ -3637,7 +3637,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                 for (size_t j = 0 ; j < list.size() ; j++)
                 {
-                    if (i == list[j])
+                    if (i == (size_t)list[j])
                         continue; // Not interested in self-intersection.
 
                     int orientation[3] = { 1, 2, 3 }; // this doesn't really
@@ -3693,7 +3693,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
         int totalNumDomains = wholeBoundary.size();
         vector<int> numNeighbors(totalNumDomains, 0);
 
-        int i, j, l;
+        size_t i, j, l;
 
         if (!shouldComputeNeighborsFromExtents)
         {
@@ -3712,31 +3712,31 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
         //
         for (int iteration = 0 ; iteration < 2 ; iteration++)
         {
-            bool wellFormedAMR = ref_ratios.size() > 0 && ref_ratios.size() == maxAMRLevel-1;
+            bool wellFormedAMR = ref_ratios.size() > 0 && ref_ratios.size() == (size_t)maxAMRLevel-1;
             if (iteration == 0 && !wellFormedAMR)
                 continue;
 
             int maxLevel = (iteration == 0 ? maxAMRLevel-1 : maxAMRLevel);
-            for (l = 0 ; l < maxLevel ; l++)
+            for (l = 0 ; l < (size_t)maxLevel ; l++)
             {
                 std::vector<int> refrat(3, 1);
                 if (iteration == 0)
-                    for (int d = 0; d < std::min(ref_ratios[l].size(), size_t(3)); ++d)
+                    for (size_t d = 0; d < std::min(ref_ratios[l].size(), size_t(3)); ++d)
                         refrat[d] = ref_ratios[l][d];
                 vector<int> doms;
-                int totalNDoms = levels.size();
+                size_t totalNDoms = levels.size();
                 for (i = 0 ; i < totalNDoms ; i++)
                 {
                     if (iteration == 0)
                     {
-                        if (levels[i] == l || levels[i] == l+1)
+                        if ((size_t)levels[i] == l || (size_t)levels[i] == l+1)
                         {
                             doms.push_back(i);
                         }
                     }
                     else
                     {
-                        if (levels[i] == l)
+                        if ((size_t)levels[i] == l)
                         {
                             doms.push_back(i);
                         }
@@ -3746,13 +3746,13 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                 avtIntervalTree itree(ndoms, 3);
                 double extf[6];
-                for (i = 0 ; i < ndoms ; i++)
+                for (i = 0 ; i < (size_t)ndoms ; i++)
                 {
 
                     for (j = 0 ; j < 6 ; j++)
                     {
                         int dom = doms[i];
-                        if (levels[dom] == l)
+                        if ((size_t)levels[dom] == l)
                             extf[j] = (double) (refrat[j/2]*extents[6*dom+j]);
                         else
                             extf[j] = (double) extents[6*dom+j];
@@ -3761,10 +3761,10 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                 }
                 itree.Calculate(true);
 
-                for (i = 0 ; i < ndoms ; i++)
+                for (i = 0 ; i < (size_t)ndoms ; i++)
                 {
                     int d1 = doms[i];
-                    if (levels[d1] != l) // next refinement level.  We'll get this later
+                    if ((size_t)levels[d1] != l) // next refinement level.  We'll get this later
                         continue;
 
                     double min_vec[3], max_vec[3];
@@ -3789,7 +3789,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                     for (size_t j = 0 ; j < list.size() ; j++)
                     {
-                        if (i == list[j])
+                        if (i == (size_t)list[j])
                             continue; // Not interested in self-intersection.
 
                         int orientation[3] = { 1, 2, 3 }; // this doesn't really
@@ -3803,7 +3803,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                         }
                         else
                         {
-                            if (levels[d2] != (l)) // at different refinement level
+                            if ((size_t)levels[d2] != (l)) // at different refinement level
                                 // and we want the same
                                 continue;
                         }
@@ -3995,7 +3995,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 void
 avtStructuredDomainBoundaries::GetExtents(int domain, int e[6])
 {
-    if (domain >= wholeBoundary.size())
+    if ((size_t)domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
                    "targeted domain more than number of domains");

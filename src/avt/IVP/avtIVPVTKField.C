@@ -73,10 +73,12 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
     if( ds )
         ds->Register( NULL );
 
-    if( velData = ds->GetPointData()->GetVectors() )
+    if( (velData = ds->GetPointData()->GetVectors()) ) {
         velCellBased = false;
-    else if( velData = ds->GetCellData()->GetVectors() )
+    }
+    else if( (velData = ds->GetCellData()->GetVectors()) ) {
         velCellBased = true;
+    }
     else 
     {
         velData = 0;
@@ -409,10 +411,12 @@ avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
     vtkDataArray* data;
     bool cellBased;
 
-    if( data = ds->GetPointData()->GetScalars( name.c_str() ) )
+    if( (data = ds->GetPointData()->GetScalars( name.c_str() )) ) {
         cellBased = false;
-    else if( data = ds->GetCellData()->GetScalars( name.c_str() ) )
+    }
+    else if( (data = ds->GetCellData()->GetScalars( name.c_str() )) ) {
         cellBased = true;
+    }
     else 
         EXCEPTION1( ImproperUseException, 
                     "avtIVPVTKField: Can't locate scalar \"" + name + 

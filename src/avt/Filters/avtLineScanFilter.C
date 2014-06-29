@@ -707,7 +707,7 @@ avtLineScanFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
 vtkDataSet *
 avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
 {
-    int  i, j;
+    size_t  i, j;
 
     vtkVisItCellLocator *locator = vtkVisItCellLocator::New();
     locator->SetDataSet(ds);
@@ -728,7 +728,7 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
     UpdateProgress(extraMsg*currentNode, totalProg);
     int lastMilestone = 0;
 
-    for (i = 0 ; i < nLines ; i++)
+    for (i = 0 ; i < (size_t)nLines ; i++)
     {
         double pt1[3];
         pt1[0] = lines[6*i];
@@ -741,7 +741,7 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
         int success = locator->IntersectWithLine(pt1, pt2, ipts, cpts, cells);
         if (success == 0)
             continue;  // No intersection
-        int nCells = cells->GetNumberOfIds();
+        size_t nCells = cells->GetNumberOfIds();
         for (j = 0 ; j < nCells ; j++)
         {
             vtkIdType id = cells->GetId(j);
@@ -873,7 +873,7 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
         int    subId;
         double pcoords[3];
         double dist2;
-        for (int i = 0 ; i < dist.size() ; i++)
+        for (size_t i = 0 ; i < dist.size() ; i++)
         {
             int cellId = cells_matched[i/2];
             ds->GetCellPoints(cellId, ids);
@@ -895,7 +895,7 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
     vtkIntArray *vtk_line_id = vtkIntArray::New();
     vtk_line_id->SetNumberOfTuples(cells_matched.size());
     vtk_line_id->SetName("avtLineID");
-    for (int i = 0 ; i < cells_matched.size() ; i++)
+    for (size_t i = 0 ; i < cells_matched.size() ; i++)
     {
         vtkIdType ids[2];
         ids[0] = 2*i;
@@ -931,13 +931,13 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
 vtkDataSet *
 avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
 {
-    int  i, j;
+    size_t  i, j;
 
     //
     // Set up an interval tree over the cells, which well help us locate
     // the cells when we cast the lines over the axially-symmetric mesh.
     //
-    int nCells = ds->GetNumberOfCells();
+    size_t nCells = ds->GetNumberOfCells();
     int dims   = 2;
     avtIntervalTree tree(nCells, dims);
     double bounds[6];
@@ -962,7 +962,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
     int lastMilestone = 0;
 
     vector<int> list;
-    for (i = 0 ; i < nLines ; i++)
+    for (i = 0 ; i < (size_t)nLines ; i++)
     {
         double pt1[3];
         pt1[0] = lines[6*i];
@@ -977,7 +977,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
         dir[1] = pt2[1]-pt1[1];
         dir[2] = pt2[2]-pt1[2];
         tree.GetElementsFromAxiallySymmetricLineIntersection(pt1, dir, list);
-        int nCells = list.size();
+        size_t nCells = list.size();
         if (nCells == 0)
             continue;  // No intersection
 
@@ -1012,7 +1012,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
                 if (inter.size() > 0)
                 {
                     std::sort(inter.begin(), inter.end());
-                    for (int l = 0 ; l < inter.size() / 2 ; l++)
+                    for (size_t l = 0 ; l < inter.size() / 2 ; l++)
                     {
                         cells_matched.push_back(id);
                         dist.push_back(inter[2*l]);
@@ -1075,7 +1075,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
         int    subId;
         double pcoords[3];
         double dist2;
-        for (int i = 0 ; i < dist.size() ; i++)
+        for (size_t i = 0 ; i < dist.size() ; i++)
         {
             int cellId = cells_matched[i/2];
             ds->GetCellPoints(cellId, ids);
@@ -1102,7 +1102,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
     vtkIntArray *vtk_line_id = vtkIntArray::New();
     vtk_line_id->SetNumberOfTuples(cells_matched.size());
     vtk_line_id->SetName("avtLineID");
-    for (int i = 0 ; i < cells_matched.size() ; i++)
+    for (size_t i = 0 ; i < cells_matched.size() ; i++)
     {
         vtkIdType ids[2];
         ids[0] = 2*i;

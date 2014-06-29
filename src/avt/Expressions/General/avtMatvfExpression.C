@@ -171,7 +171,7 @@ avtMatvfExpression::PreExecute(void)
 vtkDataArray *
 avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
-    int    i, j;
+    size_t    i, j;
 
     int ncells = in_ds->GetNumberOfCells();
 
@@ -218,7 +218,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         debug1 << "Could not find a material object." << endl;
         vtkDoubleArray *dummy = vtkDoubleArray::New();
         dummy->SetNumberOfTuples(ncells);
-        for (i = 0 ; i < ncells ; i++)
+        for (i = 0 ; i < (size_t)ncells ; i++)
             dummy->SetTuple1(i, 0.);
         return dummy;
     }
@@ -236,7 +236,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     // Try to match up the materials in the avtMaterial object with the
     // materials requested by the users.
     //
-    int nmats = mat->GetNMaterials();
+    size_t nmats = mat->GetNMaterials();
     std::vector<bool>  useMat(nmats, false);
     std::vector<bool>  matchedMatName(matNames.size(), false);
     std::vector<bool>  matchedMatIndex(matIndices.size(), false);
@@ -362,7 +362,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     const int *mixmat = mat->GetMixMat();
     const float *mixvf = mat->GetMixVF();
     const int *mix_next = mat->GetMixNext();
-    for (i = 0 ; i < norigcells ; i++)
+    for (i = 0 ; i < (size_t)norigcells ; i++)
     {
         double vf = 0.;
         if (matlist[i] >= 0)
@@ -428,7 +428,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         }
         int ncomps = ids->GetNumberOfComponents();
         unsigned int *ptr = ids->GetPointer(0);
-        for (i = 0 ; i < ncells ; i++)
+        for (i = 0 ; i < (size_t)ncells ; i++)
         {
              //
              // The id's are poorly arranged.  There may be one or two
@@ -532,7 +532,7 @@ avtMatvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
         // It's a list.  Process all of them.
         ListExpr *list = dynamic_cast<ListExpr*>(secondTree);
         std::vector<ListElemExpr*> *elems = list->GetElems();
-        for(int i=0;i<elems->size();i++)
+        for(size_t i=0;i<elems->size();i++)
         {
             if ((*elems)[i]->GetEnd())
             {

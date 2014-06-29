@@ -583,7 +583,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 
         vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
         avtExpressionFilter *f = NULL;
-        if (filters.size() == numFiltersLastTime)
+        if (filters.size() == (size_t)numFiltersLastTime)
         {
             // The only way we can get here is if we have an expression of 
             // the form "A = B".
@@ -934,7 +934,7 @@ avtExpressionEvaluatorFilter::FilterUnderstandsTransformedRectMesh()
     // If all of the created filters can understand a transformed
     // rectilinear mesh, then return true.
     vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
-    for (int i=0; i<filters.size(); i++)
+    for (size_t i=0; i<filters.size(); i++)
     {
         if (!filters[i]->FilterUnderstandsTransformedRectMesh())
             return false;

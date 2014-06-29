@@ -253,7 +253,7 @@ void
 avtLabeledCurveMapper::SetScale(double s)
 {
     scale = s;
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         actors[i]->SetScale(s);
     }
@@ -280,7 +280,7 @@ avtLabeledCurveMapper::SetLabelColor(double col[3])
     labelColor[0] = col[0];
     labelColor[1] = col[1];
     labelColor[2] = col[2];
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         actors[i]->SetForegroundColor(labelColor);
     }
@@ -310,7 +310,7 @@ avtLabeledCurveMapper::SetLabelColor(double r, double g, double b)
     labelColor[0] = r; 
     labelColor[1] = g; 
     labelColor[2] = b; 
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         actors[i]->SetForegroundColor(labelColor);
     }
@@ -340,7 +340,7 @@ void
 avtLabeledCurveMapper::SetLabel(std::string &l)
 {
     label = l;
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         actors[i]->SetDesignator(l.c_str());
     }
@@ -371,14 +371,14 @@ avtLabeledCurveMapper::SetLabelVisibility(bool labelsOn)
    labelVis = labelsOn;
    if (labelsOn)
    {
-       for (int i = 0; i < actors.size(); i++)
+       for (size_t i = 0; i < actors.size(); i++)
        {
            actors[i]->UnHide();
        }
    } 
    else 
    {
-       for (int i = 0; i < actors.size(); i++)
+       for (size_t i = 0; i < actors.size(); i++)
        {
            actors[i]->Hide();
        }
@@ -405,7 +405,7 @@ void
 avtLabeledCurveMapper::SetLabels(std::vector<std::string> &l)
 {
     labels = l;
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         actors[i]->SetDesignator(labels[actorsInputNum[i]].c_str());
     }

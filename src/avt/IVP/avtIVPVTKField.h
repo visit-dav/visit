@@ -111,7 +111,9 @@ class IVP_API avtIVPVTKField: public avtIVPField
     { return FAIL; }
 
     virtual bool      FindValue(vtkDataArray* vectorData, avtVector &vel) const;
-
+    virtual bool      FindValue(vtkDataArray *vectorData, avtVector &vel,
+                                double t, const avtVector &p) const 
+                                { return FindValue(vectorData, vel); }
     virtual avtVector ConvertToCartesian(const avtVector& pt) const;
     virtual avtVector ConvertToCylindrical(const avtVector& pt) const;
 
