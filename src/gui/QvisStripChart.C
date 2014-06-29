@@ -86,7 +86,7 @@ VisItSimStripChart::VisItSimStripChart(QWidget *parent, int winX, int winY )
     pal.setColor(QPalette::Background, Qt::white);
     setPalette(pal);
 
-    down = false;
+    down = FALSE;
     delta = 0;
     vdelta = 0;
     winXSize = winX;
@@ -96,7 +96,7 @@ VisItSimStripChart::VisItSimStripChart(QWidget *parent, int winX, int winY )
     minData = std::numeric_limits<double>::max();
     maxData = -std::numeric_limits<double>::max();
     resize(winX,winY);
-    enableLogScale = false;
+    enableLogScale = FALSE;
      
     // set the timeshift offset to start at the right side of the 
     // window.
@@ -107,7 +107,7 @@ VisItSimStripChart::VisItSimStripChart(QWidget *parent, int winX, int winY )
     outOfBandLimitsEnabled = 0;
     // Used to scale up and down the y axis in the strip chart
     zoom =1.0;
-    center = false;
+    center = FALSE;
     // controls maximum amount you can zoom out.
     zoomOutLimit = 0.001;
     pointSize = 14;
@@ -175,7 +175,7 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
     if ( center )
     {
       paint.translate( 0,points.back().y());
-      center = false;
+      center = FALSE;
     }
     // start drawing the data n times step away from the right
     // hand edge of the window.
@@ -332,7 +332,7 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
 
 void VisItSimStripChart::mousePressEvent( QMouseEvent * )
 {
-    down = true;
+    down = TRUE;
     // erase widget contents
     //erase();
 }
@@ -364,7 +364,7 @@ void VisItSimStripChart::mousePressEvent( QMouseEvent * )
 bool VisItSimStripChart::addDataPoint( double x, double y )
 {
     float additionalMargin;
-    bool outOfBounds = false;
+    bool outOfBounds = FALSE;
     currentData = y;
     currentCycle = x;
     // special startup processing
@@ -399,7 +399,7 @@ bool VisItSimStripChart::addDataPoint( double x, double y )
      if ( outOfBandLimitsEnabled )
      {
          if (data.y() > maxYLimit || data.y() < minYLimit )
-         outOfBounds = true;
+         outOfBounds = TRUE;
      }
     return outOfBounds;
 }
@@ -735,7 +735,8 @@ void VisItSimStripChart::setFontSize()
 
 void VisItSimStripChart::zoomOut()
 {
-    if (zoom > 0.5) zoom = zoom -= 0.25;
+    /// TODO if (zoom > 0.5) zoom = zoom -= 0.25; is incorrect
+    if (zoom > 0.5) zoom -= 0.25;
     else  zoom = zoom/2.0;
     if (zoom <= zoomOutLimit ) zoom = zoomOutLimit;
     setFontSize();
@@ -770,7 +771,7 @@ void VisItSimStripChart::reset()
     currentCycle = 0;
     currentScaledY=0;
     
-    //enableLogScale = false;
+    //enableLogScale = FALSE;
    
     // set the timeshift offset to start at the right side of the 
     // window.
@@ -783,7 +784,7 @@ void VisItSimStripChart::reset()
     outOfBandLimitsEnabled = 0;
     // Used to scale up and down the y axis in the strip chart
     zoom =1.0;
-    center = false;
+    center = FALSE;
     // controls maximum amount you can zoom out.
     zoomOutLimit = 0.001;
     pointSize = 14;

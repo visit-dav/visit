@@ -558,7 +558,7 @@ QvisRenderingWindow::CreateInformationPage()
 void
 QvisRenderingWindow::CreateWindowContents()
 {
-    int row = 0;
+    //int row = 0;
 
     QTabWidget *topTab = new QTabWidget(central);
     topLayout->addWidget(topTab);
@@ -900,8 +900,8 @@ void
 QvisRenderingWindow::UpdateWindowSensitivity()
 {
     bool multiresolutionOn = renderAtts->GetMultiresolutionMode();
-    bool scalableAlways =
-        renderAtts->GetScalableActivationMode() == RenderingAttributes::Always;
+    //bool scalableAlways =
+    //    renderAtts->GetScalableActivationMode() == RenderingAttributes::Always;
     bool scalableAuto =
         renderAtts->GetScalableActivationMode() == RenderingAttributes::Auto;
     bool compactAuto =

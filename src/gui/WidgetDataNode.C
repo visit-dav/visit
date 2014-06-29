@@ -556,7 +556,7 @@ InitializeQComboBoxFromDataNode(QComboBox *co, DataNode *node)
     }
     else if(node->GetNodeType() == STRING_NODE)
     {
-        int index = 0;
+        //int index = 0;
         for(int i = 0; i < co->count(); ++i)
         {
             if(co->itemText(i).toStdString() == node->AsString())

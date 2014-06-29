@@ -490,7 +490,7 @@ QvisFileSelectionWindow::UpdateSelectedFileList()
     QualifiedFilenameVector::const_iterator pos;
     bool needsHost = false;
     bool needsPath = false;
-    int i;
+    size_t i;
 
     //
     // Search through the list of selected files and see if we'll need to
@@ -614,7 +614,7 @@ QvisFileSelectionWindow::setEnabled(bool val)
 void
 QvisFileSelectionWindow::okClicked()
 {
-    int i;
+    size_t i;
 
     // Hide the remove path window.
     recentPathsRemovalWindow->hide();

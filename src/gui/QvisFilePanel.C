@@ -843,7 +843,7 @@ QvisFilePanel::UpdateWindowInfo(bool doAll)
         //
         // Try and find a correlation for the active time slider.
         //
-        int activeTS = windowInfo->GetActiveTimeSlider();
+        //int activeTS = windowInfo->GetActiveTimeSlider();
     
         // activeSource changed.  Update the file server.
         if(windowInfo->IsSelected(WindowInformation::ID_activeSource) || doAll)
@@ -1175,7 +1175,7 @@ QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisFilePanelItem *ite
         // Get the virtual file definition instead of reading the metadata.
         stringVector files(fileServer->GetVirtualFileDefinition(item->file));
 
-        for(int i = 0; i < files.size(); ++i)
+        for(size_t i = 0; i < files.size(); ++i)
         {
             QString label(files[i].c_str());
             QvisFilePanelItem *fi = new QvisFilePanelItem(item, label, item->file,
@@ -1233,7 +1233,7 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
 
     if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles)
     {
-        int cycle = (ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
+        int cycle = ((size_t)ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
         if(useVirtualDBInformation && md->GetIsVirtualDatabase())
         {
             QualifiedFilename name(md->GetTimeStepNames()[ts]);
@@ -1245,8 +1245,8 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
     }
     else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
     {
-        double t = (ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
-        bool   accurate = (ts < md->GetTimes().size()) ?
+        double t = ((size_t)ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
+        bool   accurate = ((size_t)ts < md->GetTimes().size()) ?
                           md->IsTimeAccurate(ts) : false;
         if(useVirtualDBInformation && md->GetIsVirtualDatabase())
         {
@@ -1260,9 +1260,9 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
     }
     else if(timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
     {
-        int    cycle = (ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
-        double t = (ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
-        bool   accurate = (ts < md->GetTimes().size()) ?
+        int    cycle = ((size_t)ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
+        double t = ((size_t)ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
+        bool   accurate = ((size_t)ts < md->GetTimes().size()) ?
                           md->IsTimeAccurate(ts) : false;
         if(useVirtualDBInformation && md->GetIsVirtualDatabase())
         {
@@ -3603,7 +3603,7 @@ FileTree::FileTreeNode::HasChildrenOfType(int type)
 bool
 FileTree::FileTreeNode::HasNodeNameExceeding(int len) const
 {
-    if(nodeName.size() > len)
+    if(nodeName.size() > (size_t)len)
         return true;
 
     // Check the children.

@@ -174,10 +174,10 @@ QvisRecentPathRemovalWindow::UpdateWindow(bool doAll)
 
         // Display the file paths for all of the hosts.
         stringVector hosts(fileServer->GetRecentHosts());
-        for(int i = 0; i < hosts.size(); ++i)
+        for(size_t i = 0; i < hosts.size(); ++i)
         {
             const stringVector &p = fileServer->GetRecentPaths(hosts[i]);
-            for(int j = 0; j < p.size(); ++j)
+            for(size_t j = 0; j < p.size(); ++j)
                 paths.push_back(QualifiedFilename(hosts[i], p[j], "a"));
         }
 
@@ -211,7 +211,7 @@ QvisRecentPathRemovalWindow::UpdateWidgets()
     removalListBox->clear();
 
     // Display the file paths for all of the hosts.
-    for(int i = 0; i < paths.size(); ++i)
+    for(size_t i = 0; i < paths.size(); ++i)
     {
         QString f;
         f.sprintf("%s:%s", paths[i].host.c_str(), paths[i].path.c_str());
@@ -347,7 +347,7 @@ QvisRecentPathRemovalWindow::applyDismiss()
 {
     // Clear out the recent path list.
     fileServer->ClearRecentPathList();
-    for(int i = 0; i < paths.size(); ++i)
+    for(size_t i = 0; i < paths.size(); ++i)
     {
         fileServer->AddPathToRecentList(paths[i].host, paths[i].path);
     }

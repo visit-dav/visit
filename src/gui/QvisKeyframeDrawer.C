@@ -235,7 +235,7 @@ QRect
 QvisKeyframeDrawer::handleRect(int id, int padding) const
 {
     int x = getX(id);
-    int h=rect.height();
+    //int h=rect.height();
     int y=rect.y() + rect.height()/2;
     return QRect(x-2-padding, y-8-padding, 5+2*padding, 17+2*padding);
 }

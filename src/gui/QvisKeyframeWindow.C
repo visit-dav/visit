@@ -321,7 +321,7 @@ QvisKeyframeWindow::GetCurrentFrame() const
 {
     int curFrame = 0;
 
-    for(int i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
+    for(size_t i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
     {
         if(windowInfo->GetTimeSliders()[i] == KeyframeDataModel::KF_TIME_SLIDER)
         {
@@ -374,7 +374,7 @@ QvisKeyframeWindow::UpdateWindowInformation()
     // "Keyframe animation". Look for it in the time slider list and get
     // the number of frames from the keyframe attributes.
     //
-    int curFrame = GetCurrentFrame();
+    //int curFrame = GetCurrentFrame();
 
     //
     // Get the number of frames from the keyframe atts.
@@ -383,7 +383,7 @@ QvisKeyframeWindow::UpdateWindowInformation()
     if (numFrames == 0)
     {
         numFrames = 1;
-        curFrame = 0;
+        //curFrame = 0;
     }
     temp.sprintf("%d", numFrames);
     nFrames->blockSignals(true);

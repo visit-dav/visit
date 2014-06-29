@@ -218,7 +218,7 @@ QvisSessionSourceChangerDialog::SplitPrompt(const QString &s) const
                 r += " ";
             r += QString(words[i].c_str());
             len += words[i].size();
-            if(len >= MAX_PROMPT_LENGTH)
+            if(len >= (size_t)MAX_PROMPT_LENGTH)
             {
                 r += "\n";
                 len = 0;

@@ -100,7 +100,7 @@ QvisDatabaseCorrelationListWindow::~QvisDatabaseCorrelationListWindow()
 {
     correlationList = 0;
 
-    int i;
+    size_t i;
     for(i = 0; i < windowsToDelete.size(); ++i)
         delete windowsToDelete[i];
     windowsToDelete.clear();
@@ -256,7 +256,7 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         // of correlation names.
         //
         NameSimplifier simplifier;
-        int i, nC = correlationList->GetNumCorrelations();
+        size_t i, nC = correlationList->GetNumCorrelations();
         for(i = 0; i < nC; ++i)
         {
             const DatabaseCorrelation &c = correlationList->GetCorrelations(i);
@@ -432,7 +432,7 @@ QvisDatabaseCorrelationListWindow::showMinimized()
     QvisPostableWindowObserver::showMinimized();
 
     // Show any correlation windows minimized too.
-    for(int i = 0; i < activeCorrelationWindows.size(); ++i)
+    for(size_t i = 0; i < activeCorrelationWindows.size(); ++i)
         activeCorrelationWindows[i]->showMinimized();
 }
 
@@ -457,7 +457,7 @@ QvisDatabaseCorrelationListWindow::showNormal()
     QvisPostableWindowObserver::showNormal();
 
     // Show any correlation windows minimized too.
-    for(int i = 0; i < activeCorrelationWindows.size(); ++i)
+    for(size_t i = 0; i < activeCorrelationWindows.size(); ++i)
         activeCorrelationWindows[i]->showNormal();
 }
 
@@ -689,7 +689,7 @@ QvisDatabaseCorrelationListWindow::deleteWindow(QvisWindowBase *win)
 void
 QvisDatabaseCorrelationListWindow::delayedDeleteWindows()
 {
-    for(int i = 0; i < windowsToDelete.size(); ++i)
+    for(size_t i = 0; i < windowsToDelete.size(); ++i)
         delete windowsToDelete[i];
     windowsToDelete.clear();
 }

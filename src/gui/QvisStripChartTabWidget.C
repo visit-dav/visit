@@ -496,7 +496,7 @@ QvisStripChartTabWidget::getEnableLogScale()
 bool 
 QvisStripChartTabWidget::addDataPoint(const QString &name, double x, double y)
 {
-    bool outOfBounds = true;
+    bool outOfBounds = TRUE;
     int ST_Index = nameToIndex(name);
     if (ST_Index >= 0 )
        outOfBounds = stripCharts[ST_Index]->addDataPoint(x,y);

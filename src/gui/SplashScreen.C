@@ -570,7 +570,7 @@ SplashScreen::nextPicture()
     if (pictures.size() > 1)
     {
         ++curPicture;
-        if (curPicture >= pictures.size())
+        if (curPicture >= (int)pictures.size())
             curPicture = 0;
 
         pictureLabel->setPixmap(pictures[curPicture]);

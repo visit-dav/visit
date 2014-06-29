@@ -364,7 +364,7 @@ QvisTimeSliderControlWidget::UpdateAnimationControls(bool doAll)
         //
         if(activeTS >= 0)
         {
-            int i;
+            size_t i;
             activeTimeSlider->blockSignals(true);
             activeTimeSlider->clear();
             const stringVector &tsNames = windowInfo->GetTimeSliders();
@@ -387,7 +387,7 @@ QvisTimeSliderControlWidget::UpdateAnimationControls(bool doAll)
             for(i = 0; i < tsNames.size(); ++i)
             {
                 int index = -1;
-                for(int j = 0; j < sources.size(); ++j)
+                for(size_t j = 0; j < sources.size(); ++j)
                 { 
                     if(sources[j] == tsNames[i])
                     {
@@ -591,7 +591,7 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
                    timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
                 {
                     const intVector &cycles = correlation->GetDatabaseCycles();
-                    if(timeState < cycles.size())
+                    if((size_t)timeState < cycles.size())
                         timeString = FormattedCycleString(cycles[timeState]);
                 }
                 else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
@@ -611,7 +611,7 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
                     else
                         timeString = "?";
 #else
-                    if(timeState < times.size())
+                    if((size_t)timeState < times.size())
                     {
                         timeString = FormattedTimeString(times[timeState], true);
                     }
@@ -1232,7 +1232,7 @@ QvisTimeSliderControlWidget::processTimeText()
         // Loop through the times for the current file while the
         // time that was entered is greater than or equal to the
         // time in the list.
-        if(md->GetTimes().size() == md->GetNumStates())
+        if(md->GetTimes().size() == (size_t)md->GetNumStates())
         {
             for(int i = 0; i < md->GetNumStates(); ++i)
             {
@@ -1298,7 +1298,7 @@ QvisTimeSliderControlWidget::changeActiveTimeSlider(int tsIndex)
     if(windowInfo->GetTimeSliders().size() > 1)
     {
         const stringVector &tsNames = windowInfo->GetTimeSliders();
-        if(tsIndex >= 0 && tsIndex < tsNames.size())
+        if(tsIndex >= 0 && (size_t)tsIndex < tsNames.size())
             GetViewerMethods()->SetActiveTimeSlider(tsNames[tsIndex]);
     }
 }

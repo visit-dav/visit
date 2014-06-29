@@ -130,7 +130,7 @@ QvisKeyframeDelegate::paint(QPainter *p, const QStyleOptionViewItem &option,
             if(it.value() != -1)
                 pts.append(it.value());
 
-        bool diamond = delegateType(index) == KeyframeDataModel::PlotAttsDelegate;
+        //bool diamond = delegateType(index) == KeyframeDataModel::PlotAttsDelegate;
         drawer->setCurrentIndex(s.currentIndex);
         drawer->setNumFrames(s.numFrames);
         if(delegateType(index) == KeyframeDataModel::CurrentFrameDelegate)

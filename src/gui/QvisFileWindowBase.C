@@ -380,7 +380,7 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
     cb->clear();
 
     // Populate the combo box.
-    int i;
+    size_t i;
     for(i = 0; i < s.size(); ++i)
         cb->addItem(s[i].c_str());
 
@@ -720,7 +720,7 @@ QvisFileWindowBase::UpdateHostComboBox()
         else
             hostNames = p.SplitHostPattern(p.GetHost());
 
-        for (int k = 0; k < hostNames.size(); ++k)
+        for (size_t k = 0; k < hostNames.size(); ++k)
         {
             if(std::find(hosts.begin(), hosts.end(), hostNames[k]) == hosts.end())
                 hosts.push_back(hostNames[k]);
@@ -732,7 +732,7 @@ QvisFileWindowBase::UpdateHostComboBox()
     //
     if(invalidHosts.size() > 0)
     {
-        for(int i = 0; i < invalidHosts.size(); ++i)
+        for(size_t i = 0; i < invalidHosts.size(); ++i)
         {
             stringVector::iterator pos = std::find(hosts.begin(), hosts.end(),
                 invalidHosts[i]);
@@ -1537,7 +1537,7 @@ QvisFileWindowBase::GetVirtualDatabaseDefinitions(
 
     // Add the definitions for all virtual files to the map.
     defs.clear();
-    for(int i = 0; i < files.size(); ++i)
+    for(size_t i = 0; i < files.size(); ++i)
     {
         if(files[i].IsVirtual())
         {
@@ -1580,7 +1580,7 @@ QvisFileWindowBase::CheckForNewStates()
     // See if the open file is in the intermediate file list and if it is
     // in there and it is a virtual file, check for new states on the viewer.
     //
-    for(int i = 0; i < intermediateFileList.size(); ++i)
+    for(size_t i = 0; i < intermediateFileList.size(); ++i)
     {
         if(intermediateFileList[i].IsVirtual())
         {
@@ -1785,7 +1785,7 @@ QvisFileWindowBase::changeDirectory(QListWidgetItem *item)
                 }
                 else 
                 {
-                    int separatorPos = newPath.rfind(separator);
+                    size_t separatorPos = newPath.rfind(separator);
                     // If the last character is a slash, remove it.
                     if(separatorPos == newPath.size() - 1)
                         newPath = newPath.substr(separatorPos);

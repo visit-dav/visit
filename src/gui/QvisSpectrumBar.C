@@ -1455,7 +1455,7 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 
     p.setPen(pen);
     p.setBrush(brush);
-    p.setWorldMatrix(matrix, true);   // set transformation matrix
+    p.setWorldMatrix(matrix, TRUE);   // set transformation matrix
     p.drawPolygon(bFill);             // fill arrow
     p.setBrush(Qt::NoBrush);          // don't fill
 
@@ -2869,7 +2869,7 @@ ControlPointList::operator [](int index) const
 float
 ControlPointList::Position(int index) const
 {
-    if(nels == 0 || list == NULL || index < 0 || index >= nels)
+    if(nels == 0 || list == NULL || index < 0 || (size_t)index >= nels)
         return 0.;
     else
         return list[index].position;

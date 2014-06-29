@@ -525,7 +525,7 @@ QvisPluginWindow::UpdateWindow(bool doAll)
         dbAddToPreferedButton->setEnabled(false);
 
         listPreferredDBs->clear();
-        for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+        for (size_t i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
         {
             string id = fileOpenOptions->GetPreferredIDs()[i];
             QListWidgetItem *item = new QListWidgetItem(id.c_str(),listPreferredDBs);
@@ -584,7 +584,7 @@ QvisPluginWindow::Apply(bool dontIgnore)
     bool dirty = pluginAtts->GetEnabled() != enabledPlugins;
 
     // See if the database plugin enabled states changed.
-    for (int i=0; i<databaseItems.size(); i++)
+    for (size_t i=0; i<databaseItems.size(); i++)
     {
         bool newvalue = databaseItems[i]->checkState(0);
         int &value = fileOpenOptions->GetEnabled()[i];
@@ -868,7 +868,7 @@ QvisPluginWindow::databaseSelectedItemChanged(QTreeWidgetItem *item,
 void
 QvisPluginWindow::selectAllReadersButtonClicked()
 {
-    for (int i=0; i<databaseItems.size(); i++)
+    for (size_t i=0; i<databaseItems.size(); i++)
         databaseItems[i]->setCheckState(0,Qt::Checked);
 }
 
@@ -896,7 +896,7 @@ QvisPluginWindow::selectAllReadersButtonClicked()
 void
 QvisPluginWindow::unSelectAllReadersButtonClicked()
 {
-    for (int i=0; i<databaseItems.size(); i++)
+    for (size_t i=0; i<databaseItems.size(); i++)
         databaseItems[i]->setCheckState(0,Qt::Unchecked);
 }
 
@@ -969,7 +969,7 @@ QvisPluginWindow::dbPreferredUpButtonClicked()
     fileOpenOptions->SelectPreferredIDs();
 
     listPreferredDBs->clear();
-    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+    for (size_t i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
     {
         QListWidgetItem *item = new QListWidgetItem(preferred[i].c_str(),
                                                     listPreferredDBs);
@@ -1003,7 +1003,7 @@ QvisPluginWindow::dbPreferredDownButtonClicked()
 {
     vector<string> &preferred = fileOpenOptions->GetPreferredIDs();
     int index = getCurrentlySelectedPreferredIndex();
-    if (index < 0 || index >= preferred.size() - 1)
+    if (index < 0 || (size_t)index >= preferred.size() - 1)
         return;
     string id = preferred[index];
     preferred[index] = preferred[index+1];
@@ -1011,7 +1011,7 @@ QvisPluginWindow::dbPreferredDownButtonClicked()
     fileOpenOptions->SelectPreferredIDs();
 
     listPreferredDBs->clear();
-    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+    for (size_t i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
     {
         QListWidgetItem *item = new QListWidgetItem(preferred[i].c_str(),
                                                     listPreferredDBs);
@@ -1047,13 +1047,13 @@ QvisPluginWindow::dbPreferredRemoveButtonClicked()
     int index = getCurrentlySelectedPreferredIndex();
     if (index < 0)
         return;
-    for (int i=index; i<preferred.size()-1; i++)
+    for (size_t i=index; i<preferred.size()-1; i++)
         preferred[i] = preferred[i+1];
     preferred.pop_back();
     fileOpenOptions->SelectPreferredIDs();
     
     listPreferredDBs->clear();
-    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+    for (size_t i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
     {
         QListWidgetItem *item = new QListWidgetItem(preferred[i].c_str(),
                                                     listPreferredDBs);
@@ -1085,7 +1085,7 @@ QvisPluginWindow::getCurrentlySelectedDBIndex()
         return -1;
 
     int index = -1;
-    for (int i=0; i<databaseItems.size(); i++)
+    for (size_t i=0; i<databaseItems.size(); i++)
     {
         if (item == databaseItems[i])
         {
@@ -1119,7 +1119,7 @@ QvisPluginWindow::getCurrentlySelectedPreferredIndex()
         return -1;
 
     int index = -1;
-    for (int i=0; i<preferred.size(); i++)
+    for (size_t i=0; i<preferred.size(); i++)
     {
         if (preferred[i] == item->text().toStdString())
         {
@@ -1147,7 +1147,7 @@ QvisPluginWindow::getCurrentlySelectedPreferredIndex()
 bool
 QvisPluginWindow::preferredOptionsContainsID(const string &id)
 {
-    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+    for (size_t i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
     {
         if (fileOpenOptions->GetPreferredIDs()[i] == id)
             return true;
@@ -1202,7 +1202,7 @@ QvisPluginWindow::UpdateWidgetSensitivites()
     dbPreferredRemoveButton->setEnabled(pindex != -1);
     dbPreferredUpButton->setEnabled(pindex > 0);
     dbPreferredDownButton->setEnabled(pindex >= 0 &&
-                                      pindex < preferred.size() - 1);        
+                                      (size_t)pindex < preferred.size() - 1);
 
     int dbindex = getCurrentlySelectedDBIndex();
     if (dbindex >= 0)

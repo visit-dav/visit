@@ -193,7 +193,7 @@ QvisSessionSourceChanger::updateControls(int ci)
 
     useList->clear();
 
-    if(ci >= 0 && ci < sources.size())
+    if(ci >= 0 && (size_t)ci < sources.size())
     {
         if(sources.size() > 0)
             fileLineEdit->setText(sources[ci].c_str());

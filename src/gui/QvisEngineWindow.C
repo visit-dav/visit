@@ -74,7 +74,7 @@ QvisEngineWindow::QvisEngineWindow(EngineList *engineList,
     const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(engineList, caption, shortName, notepad,
                                QvisPostableWindowObserver::NoExtraButtons),
-    activeEngine(""), statusMap()
+    statusMap(), activeEngine("")
 {
     engines = engineList;
     caller = engines;
@@ -346,7 +346,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         engineCombo->blockSignals(true);
         engineCombo->clear();
         int current = -1;
-        for(int i = 0; i < host.size(); ++i)
+        for(size_t i = 0; i < host.size(); ++i)
         {
             QString temp(host[i].c_str());
             if (!sim[i].empty())

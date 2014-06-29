@@ -443,7 +443,7 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
           case ExportDBAttributes::ID_db_type:
             {
                 fileFormatComboBox->blockSignals(true);
-                int count = fileFormatComboBox->count();
+                //int count = fileFormatComboBox->count();
                 fileFormatComboBox->clear();
                 int nTypes = dbPluginInfoAtts->GetTypes().size();
                 int curItem = -1;
@@ -510,7 +510,7 @@ QvisExportDBWindow::UpdateVariablesList()
 {
     const stringVector &vars = exportDBAtts->GetVariables();
     std::string allVars;
-    for (int i = 0; i < vars.size(); i++)
+    for (size_t i = 0; i < vars.size(); i++)
     {
         allVars += vars[i];
         if(i < vars.size()-1)
