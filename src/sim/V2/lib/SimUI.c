@@ -58,8 +58,8 @@ sim_ui_handle(const char *name, char *args)
     {
         /* Get the arguments. */
         char *cptr = NULL;
-        char *className = NULL, *signalName = NULL, *value = NULL;
-        className = cptr = args;
+        char *signalName = NULL, *value = NULL;
+        cptr = args;
         while(*cptr != ';')
             cptr++;
         *cptr++ = '\0';

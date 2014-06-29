@@ -234,7 +234,7 @@ f_visit_internal_commandcallback(const char *cmd, int intdata, float floatdata,
         char *end = NULL;
         if((end = strstr(cmd, ";QPushButton;Simulations;NONE")) != NULL)
         {
-            int i;
+            //int i;
             lcmd = end - cmd - 10;
             realcmd = ALLOC(char, lcmd + 1);
             memset(realcmd, 0, lcmd + 1);
@@ -2352,7 +2352,7 @@ F_VISITMESHPOINT2(int *meshid, int *ndims, int *nnodes, float *x, float *y,
     VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
     if(mesh)
     {
-         int i;
+         //int i;
          mesh->meshType = VISIT_MESHTYPE_POINT;
          mesh->pmesh = ALLOC(VisIt_PointMesh,1);
          memset(mesh->pmesh, 0, sizeof(VisIt_PointMesh));
@@ -2412,7 +2412,7 @@ F_VISITMESHUNSTRUCTURED2(int *meshid, int *ndims, int *nnodes, int *nzones,
     VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
     if(mesh)
     {
-         int i;
+         //int i;
          mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
          mesh->umesh = ALLOC(VisIt_UnstructuredMesh,1);
          memset(mesh->umesh, 0, sizeof(VisIt_UnstructuredMesh));
@@ -2845,7 +2845,7 @@ F_VISITMATERIALADDCLEAN(int *mhandle, int *cell, int *matno)
         }
         else
         {
-            int i, cellid = -1;
+            int cellid = -1;
             if(ml->ndims == 1)
                 cellid = cell[0]-1;
             else if(ml->ndims == 2)
@@ -2906,7 +2906,7 @@ F_VISITMATERIALADDMIXED(int *mhandle, int *cell, int *matnos, float *matvf,
         }
         else
         {
-            int i, cellid = -1;
+            int cellid = -1;
             if(ml->ndims == 1)
                 cellid = cell[0]-1;
             else if(ml->ndims == 2)

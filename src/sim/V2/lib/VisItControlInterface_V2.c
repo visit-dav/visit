@@ -3002,7 +3002,7 @@ VisItGetSockets(VISIT_SOCKET *lSocket, VISIT_SOCKET *cSocket)
 *******************************************************************************/
 int VisItAttemptToCompleteConnection(void)
 {
-    VISIT_SOCKET socket;
+    VISIT_SOCKET socket = -1; //TODO: verify initialization is safe
 
     LIBSIM_API_ENTER(VisItAttemptToCompleteConnection);
 
@@ -3932,7 +3932,6 @@ VisItGetMemory(double *m_size, double *m_rss)
 {
   int retval = VISIT_ERROR;
     
-    unsigned long tmp1, tmp2;
     LIBSIM_API_ENTER(VisItGetMemory);
     /* Make sure the function exists before using it. - not sure if this is required, need to talk to
      Brad */
@@ -3950,6 +3949,7 @@ VisItGetMemory(double *m_size, double *m_rss)
     *m_rss = (unsigned long)m.bytes_total; // not quite accurate but this should be the total
                                            // amount allocated by malloc.
 #elif !defined(_WIN32)
+    unsigned long tmp1, tmp2;
     FILE *file = fopen("/proc/self/statm", "r");
     if (file == NULL)
     {

@@ -1177,7 +1177,7 @@ int  VisItDetectInput(int blocking, int consoleFileDescriptor)
 *******************************************************************************/
 int VisItAttemptToCompleteConnection(void)
 {
-    int socket;
+    int socket = -1; /// TODO: check if initialization is correct
     /* wait for a connection -- only process 0 does this */
     if (parallelRank == 0)
     {
