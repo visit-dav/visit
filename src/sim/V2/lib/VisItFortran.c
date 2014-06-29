@@ -37,7 +37,7 @@ void
 visit_cstring_to_fstring(const char *src, char *dest, int len)
 {
     int i;
-    char *c = dest;
+    //char *c = dest;
     for(i = 0; i < len; ++i)
     {
         if(*src != '\0')

@@ -157,7 +157,7 @@ simv2_NameList_getName(visit_handle h, int i, char **val)
     }
     int retval = VISIT_ERROR;
     VisIt_NameList *obj = GetObject(h, "simv2_NameList_getName");
-    if(obj != NULL && i >= 0 && i < obj->names.size())
+    if(obj != NULL && i >= 0 && i < (int)obj->names.size())
     {
         *val = (char *)malloc(obj->names[i].size() + 1);
         strcpy(*val, obj->names[i].c_str());

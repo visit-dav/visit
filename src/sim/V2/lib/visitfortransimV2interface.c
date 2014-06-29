@@ -414,7 +414,7 @@ F_VISITGETENV(VISIT_F77STRING env, int *lenv)
 
     if(src != NULL)
     {
-        size_t len, sz;
+        size_t len, sz = 1; /// TODO: WARNING sz was uninitalized setting to 1 so the sz == 0 gets triggered if it needs to be (CHECK)
         len = strlen(src);
         sz = (len < *lenv) ? (sz - 1) : (*lenv - 1);
         if(sz == 0)
