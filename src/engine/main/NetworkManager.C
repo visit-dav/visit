@@ -685,7 +685,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                 _getcwd(tmpcwd, 1023);
 #else
-                getcwd(tmpcwd, 1023);
+                char* res = getcwd(tmpcwd, 1023); (void) res;
 #endif
                 tmpcwd[1023] = '\0';
 
@@ -705,7 +705,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                     _chdir(path.c_str());
 #else
-                    chdir(path.c_str());
+                    int res = chdir(path.c_str()); (void) res;
 #endif
                 }
                 // look for files that match pattern
@@ -726,7 +726,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                     _chdir(oldPath.c_str());
 #else
-                    chdir(oldPath.c_str());
+                    int res = chdir(oldPath.c_str()); (void) res;
 #endif
                 }
             
@@ -1671,7 +1671,7 @@ NetworkManager::EndNetwork(int windowID)
     {
         const std::string &selName = workingNet->GetSelectionName();
         std::vector<Netnode *> netnodes = workingNet->GetNodeList();
-        for (int i = 0 ; i < netnodes.size() ; i++)
+        for (size_t i = 0 ; i < netnodes.size() ; i++)
         {
             avtFilter *filt = netnodes[i]->GetFilter();
             if (filt == NULL)
@@ -1763,7 +1763,7 @@ NetworkManager::UseNetwork(int id)
         EXCEPTION0(ImproperUseException);
     }
 
-    if (id >= networkCache.size())
+    if ((size_t)id >= networkCache.size())
     {
         debug1 << "Internal error: asked to reuse network ID (" << id
             << " >= num saved networks (" << networkCache.size() << ")"
@@ -2077,7 +2077,7 @@ NetworkManager::GetShouldUseCompression(int windowID) const
 void
 NetworkManager::DoneWithNetwork(int id)
 {
-    if (id >= networkCache.size())
+    if ((size_t)id >= networkCache.size())
     {
         debug1 << "Internal error: Done with network ID (" << id
             << " >= num saved networks (" << networkCache.size() << ")"
@@ -2100,7 +2100,7 @@ NetworkManager::DoneWithNetwork(int id)
         bool otherNetsUseThisWindow = false;
         for (size_t i = 0; i < networkCache.size(); i++)
         {
-            if (i == id)
+            if (i == (size_t)id)
                 continue;
             if (networkCache[i] && (thisNetworksWinID ==
                                     networkCache[i]->GetWinID()))
@@ -2156,7 +2156,7 @@ NetworkManager::DoneWithNetwork(int id)
 void
 NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 {
-    if (id >= networkCache.size())
+    if ((size_t)id >= networkCache.size())
     {
         debug1 << "Internal error: asked to reuse network ID (" << id
             << ") >= num saved networks (" << networkCache.size() << ")"
@@ -2845,7 +2845,7 @@ NetworkManager::SaveWindow(const intVector &ids,
                 if(networkCache.size() > 0)
                 {
                     DataNetwork *net = networkCache[networkIds[0]];
-                    int id = net->GetNetID();
+                    //int id = net->GetNetID();
 
                     // We need to update the view so we can see what we have. This is
                     // not quite the method I wanted to use to get the data attributes
@@ -3608,7 +3608,7 @@ NetworkManager::StopQueryMode(void)
 void
 NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 {
-    if (id >= networkCache.size())
+    if ((size_t)id >= networkCache.size())
     {
         debug1 << "Internal error:  asked to use network ID (" << id << ") >= "
                << "num saved networks (" << networkCache.size() << ")" << endl;
@@ -3967,7 +3967,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     for (size_t i = 0 ; i < ids.size() ; i++)
     {
         int id = ids[i];
-        if (id >= networkCache.size())
+        if ((size_t)id >= networkCache.size())
         {
             debug1 << "Internal error:  asked to use network ID (" << id 
                    << ") >= num saved networks ("
@@ -4113,7 +4113,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
     {
         // The selection source is a plot that has been executed.
 
-        if (id >= networkCache.size())
+        if ((size_t)id >= networkCache.size())
         {
             debug1 << mName << "Internal error:  asked to use network ID (" << id 
                    << ") >= num saved networks ("
@@ -4402,7 +4402,7 @@ NetworkManager::SaveNamedSelection(const std::string &selName)
 void
 NetworkManager::ConstructDataBinning(int id, ConstructDataBinningAttributes *atts)
 {
-    if (id >= networkCache.size())
+    if ((size_t)id >= networkCache.size())
     {
         debug1 << "Internal error:  asked to use network ID (" << id 
                << ") >= num saved networks ("
@@ -4598,7 +4598,7 @@ NetworkManager::ExportDatabases(const intVector &ids, ExportDBAttributes *atts)
 void
 NetworkManager::ExportSingleDatabase(int id, ExportDBAttributes *atts)
 {
-    if (id >= networkCache.size())
+    if ((size_t)id >= networkCache.size())
     {
         debug1 << "Internal error:  asked to use network ID (" << id 
                << ") >= num saved networks ("
@@ -4798,7 +4798,7 @@ NetworkManager::CloneNetwork(const int id)
         EXCEPTION1(ImproperUseException,error);
     }
 
-    if (id >= networkCache.size())
+    if ((size_t)id >= networkCache.size())
     {
         debug1 << "Internal error:  asked to clone network ID (" << id 
                << ") >= num saved networks (" << networkCache.size() << ")" 
@@ -5331,7 +5331,7 @@ BuildBlankImageVector(avtImage_p img)
     MPI_Bcast(rcv, PAR_Size(), MPI_INT, src_node, VISIT_MPI_COMM);
 
     data.reserve(PAR_Size());
-    for(size_t i = 0 ; i < PAR_Size(); ++i)
+    for(size_t i = 0 ; i < (size_t)PAR_Size(); ++i)
     {
         data.push_back(rcv[i]);
     }
@@ -5577,7 +5577,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
     bool needRender = false;
     for (size_t i = 0; i < ids.size(); i++)
     {
-        if (ids[i] >= networkCache.size())
+        if ((size_t)ids[i] >= networkCache.size())
         {
             debug1 << "Internal error:  asked to use network ID (" 
                    << ids[i] << ") >= " << "num saved networks (" 

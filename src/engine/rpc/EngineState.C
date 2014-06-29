@@ -45,7 +45,7 @@ EngineState::SetupComponentRPCs(Xfer* xfer)
     //
     // Add RPCs to the transfer object.
     //
-    for(int i = 0; i < GetNumStateObjects(); ++i)
+    for(size_t i = 0; i < GetNumStateObjects(); ++i)
         xfer->Add(GetStateObject(i));
     //xfer->Add(&exprList); TODO: PUT THIS BACK when Engine.C xfer->Add(l->GetList()); is fixed..
 }
@@ -59,7 +59,7 @@ EngineState::GetNumStateObjects()
 VisItRPC*
 EngineState::GetStateObject(int i)
 {
-    return (i >= 0 && i < objVector.size()) ?
+    return (i >= 0 && (size_t)i < objVector.size()) ?
            objVector[i] : 0;
 }
 

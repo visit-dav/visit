@@ -603,6 +603,7 @@ LoadBalancer::Reduce(avtContract_p input)
     // data replication.
     //
     bool dataReplicationRequested = input->ReplicateSingleDomainOnAllProcessors();
+    (void) dataReplicationRequested; /// variable used in parallel env..
     input->SetReplicateSingleDomainOnAllProcessors(false);
 
     //
@@ -649,7 +650,7 @@ LoadBalancer::Reduce(avtContract_p input)
             UpdateProgress(pipelineInfo[input->GetPipelineIndex()].current,
                            (int)list.size());
             pipelineInfo[input->GetPipelineIndex()].current++;
-            if (pipelineInfo[input->GetPipelineIndex()].current == list.size())
+            if (pipelineInfo[input->GetPipelineIndex()].current == (int)list.size())
                 pipelineInfo[input->GetPipelineIndex()].complete = true;
             return new_data;
         }
@@ -707,7 +708,7 @@ LoadBalancer::Reduce(avtContract_p input)
         UpdateProgress(pipelineInfo[input->GetPipelineIndex()].current,
                        domainListForStreaming.size());
         pipelineInfo[input->GetPipelineIndex()].current++;
-        if (pipelineInfo[input->GetPipelineIndex()].current == domainListForStreaming.size())
+        if (pipelineInfo[input->GetPipelineIndex()].current == (int)domainListForStreaming.size())
         {
             pipelineInfo[input->GetPipelineIndex()].complete = true;
             domainListForStreaming.clear();
@@ -762,15 +763,15 @@ LoadBalancer::Reduce(avtContract_p input)
         }
         else if (theScheme == LOAD_BALANCE_STRIDE_ACROSS_BLOCKS)
         {
-            for (int j = 0 ; j < list.size() ; j++)
+            for (size_t j = 0 ; j < list.size() ; j++)
             {
-                if (j % nProcs == rank)
+                if (j % nProcs == (size_t)rank)
                     mylist.push_back(list[j]);
             }
         }
         else if (theScheme == LOAD_BALANCE_ABSOLUTE)
         {
-            for (int j = 0 ; j < list.size() ; j++)
+            for (size_t j = 0 ; j < list.size() ; j++)
             {
                 if (list[j] % nProcs == rank)
                     mylist.push_back(list[j]);
@@ -782,9 +783,9 @@ LoadBalancer::Reduce(avtContract_p input)
             IOInfo &ioInfo(ioMap[lbInfo.db]);
             const HintList &hints(ioInfo.ioInfo.GetHints());
 
-            for (int j = 0 ; j < list.size() ; j++)
+            for (size_t j = 0 ; j < list.size() ; j++)
             {
-                if (hints.size() >= rank)
+                if (hints.size() >= (size_t)rank)
                 {
                     const vector<int> &doms = hints[rank];
                     int ndoms = doms.size();
@@ -804,7 +805,7 @@ LoadBalancer::Reduce(avtContract_p input)
             // all procs randomly jumble the list of domain ids
             // all procs compute same jumbled list due to same seed
             // [ which won't be true on a heterogeneous platform ]
-            int j;
+            size_t j;
             vector<int> jumbledList = list;
             srand(0xDeadBeef);
             for (j = 0 ; j < list.size() * 5; j++)
@@ -818,7 +819,7 @@ LoadBalancer::Reduce(avtContract_p input)
             // now, do round-robin assignment from the jumbled list
             for (j = 0 ; j < list.size() ; j++)
             {
-                if (j % nProcs == rank)
+                if (j % nProcs == (size_t)rank)
                     mylist.push_back(jumbledList[j]);
             }
         }
@@ -854,7 +855,7 @@ LoadBalancer::Reduce(avtContract_p input)
             trav.GetDomainList(domainList);
 
             // Make a work list and a completed list
-            int         totaldomains = domainList.size();
+            size_t         totaldomains = domainList.size();
             deque<int>  incomplete(domainList.begin(), domainList.end());
             vector<int> complete;
 
@@ -934,7 +935,7 @@ LoadBalancer::Reduce(avtContract_p input)
                         // count the number of processors which have
                         // this file opened
                         int nopen = 0;
-                        for (int j=0; j<ioInfo.files.size(); j++)
+                        for (size_t j=0; j<ioInfo.files.size(); j++)
                             if (ioInfo.files[j].count(fileno) > 0)
                                 nopen++;
                         if (nopen < minopen)
@@ -1082,18 +1083,19 @@ LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr, int time)
     debug4 << "LoadBalancer::AddDatabase - db=" << db.c_str() << endl;
     debug4 << "    iohints=[";
     const HintList &hints = io.GetHints();
-    for (int i=0; i<hints.size(); i++)
+    for (size_t i=0; i<hints.size(); i++)
     {
         debug4 << " {";
-        for (int j=0; j<hints[i].size(); j++)
+        for (size_t j=0; j<hints[i].size(); j++)
         {
             ioMap[db].fileMap[hints[i][j]] = i;
             debug4 << hints[i][j];
-            if (j<hints[i].size()-1) debug4 << ",";
+            if (j<hints[i].size()-1) { debug4 << ","; }
         }
         debug4 << "}";
-        if (i<hints.size()-1)
+        if (i<hints.size()-1) {
             debug4 << "\n             ";
+        }
     }
     debug4 << "]  " << endl;
 }
@@ -1141,7 +1143,7 @@ LoadBalancer::AddPipeline(const string &db)
 void
 LoadBalancer::ResetPipeline(int index)
 {
-    if (index < 0 || index >= pipelineInfo.size())
+    if (index < 0 || (size_t)index >= pipelineInfo.size())
     {
         debug1 << "Given an invalid pipeline index to reset (" << index << ")."
                << endl;

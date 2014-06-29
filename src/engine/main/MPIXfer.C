@@ -267,7 +267,7 @@ MPIXfer::Process()
         {
             if(PAR_UIProcess())
             {
-                int i, msgLength = curLength + sizeof(int)*2;
+                size_t i, msgLength = curLength + sizeof(int)*2;
 #ifdef VISIT_BLUE_GENE_P
                 // Make the buffer be 32-byte aligned
                 unsigned char *buf = 0;
@@ -464,8 +464,9 @@ MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
     if (nanoSecsOfSleeps <= 0)
     {
         static bool first = true;
-        if (first)
+        if (first) {
             debug5 << "Using MPI's Bcast; not VisIt_MPI_Bcast" << endl;
+        }
         first = false;
         MPI_Bcast(buf, count, datatype, root, comm);
         return 2;
@@ -539,9 +540,10 @@ MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
             double idleTime = TOA_THIS_LINE - startedIdlingAt;
             if (idleTime > secsOfSpinBeforeSleeps)
             {
-                if (first)
+                if (first) {
                     debug5 << "VisIt_MPI_Bcast started using " << nanoSecsOfSleeps / 1.0e9
                            << " seconds of nanosleep" << endl;
+                }
                 first = false;
 #if defined(_WIN32)
                 SleepEx((DWORD)(nanoSecsOfSleeps/1e6), false);

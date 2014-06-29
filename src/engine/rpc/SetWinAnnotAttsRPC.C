@@ -335,7 +335,7 @@ SetWinAnnotAttsRPC::SetVisualCueList(const VisualCueList* cueList)
 void
 SetWinAnnotAttsRPC::SetFrameAndState(const int *frameAndState)
 {
-    for (int i = 0; i < sizeof(fands)/sizeof(fands[0]); i++)
+    for (size_t i = 0; i < sizeof(fands)/sizeof(fands[0]); i++)
         fands[i] = frameAndState[i];
     Select(5, (void*)fands, sizeof(fands)/sizeof(fands[0]));
 }
@@ -351,7 +351,7 @@ SetWinAnnotAttsRPC::SetFrameAndState(const int *frameAndState)
 void
 SetWinAnnotAttsRPC::SetViewExtents(const double *viewExtents)
 {
-    for (int i = 0; i < sizeof(vexts)/sizeof(vexts[0]); i++)
+    for (size_t i = 0; i < sizeof(vexts)/sizeof(vexts[0]); i++)
         vexts[i] = viewExtents[i];
     Select(6, (void*)vexts, sizeof(vexts)/sizeof(vexts[0]));
 }

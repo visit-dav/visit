@@ -336,8 +336,9 @@ EngineMain(int argc, char *argv[])
         }
     }
 
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "ENGINE exited." << endl;
+    }
     engine->Finalize();
 
 #ifdef DEBUG_MEMORY_LEAKS

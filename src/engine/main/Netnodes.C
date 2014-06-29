@@ -251,7 +251,7 @@ NetnodeFilter::ReleaseData(void)
     filter->ReleaseData();
 
     // Release the data for my inputs.
-    for (int i = 0; i < inputNodes.size(); i++)
+    for (size_t i = 0; i < inputNodes.size(); i++)
         inputNodes[i]->ReleaseData();
 }
 
