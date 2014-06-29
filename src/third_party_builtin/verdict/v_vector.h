@@ -91,7 +91,7 @@ inline double length_squared (double vec[] )
 
 inline double interior_angle( double vec1[], double vec2[] )
 {
-	double len1, len2, cosAngle, angleRad;
+	double len1, len2, cosAngle = 0, angleRad = 0; //TODO: check if fix for uninitialized parameter
 
 	if (  ((len1 = length(vec1)) > 0 ) && ((len2 = length(vec2)) > 0 ) )
 	{

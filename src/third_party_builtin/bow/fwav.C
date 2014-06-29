@@ -256,11 +256,11 @@ void fwav_atran_x(fwav fw,float *ba0,int dx,int dy,int dz)
 
 void fwav_atran_y(fwav fw,float *b0,int dx,int dy,int dz)
 {
-    int j,dy2,y,z;
+    int j/*,dy2*/,y,z;
     float *ba0,*ba1,*ba2,*bb,v1,td0,td1;
 
     td0=fw->td0; td1=fw->td1;
-    dy2=HALF(dy); bb=fw->bt;
+    /*dy2=HALF(dy);*/ bb=fw->bt;
     for (z=0;z<dz;z++) {
         for (y=0;y+1<dy;y+=2) {
             ba0=b0+(z*dy+y)*dx;
@@ -285,11 +285,11 @@ void fwav_atran_y(fwav fw,float *b0,int dx,int dy,int dz)
 
 void fwav_atran_z(fwav fw,float *b0,int dx,int dy,int dz)
 {
-    int j,dz2,y,z,dd,d;
+    int j/*,dz2*/,y,z,dd/*,d*/;
     float *ba0,*ba1,*ba2,*bb,v1,td0,td1;
 
     td0=fw->td0; td1=fw->td1;
-    dz2=HALF(dz); dd=dx*dy; d=dx*dy*dz2;
+    /*dz2=HALF(dz);*/ dd=dx*dy; /*d=dx*dy*dz2;*/
     bb=fw->bt;
     for (z=0;z+1<dz;z+=2) {
         for (y=0;y<dy;y++) {

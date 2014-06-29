@@ -78,31 +78,18 @@ static void tensor_mtxv(double *y, uint ny,
      v is a scalar
   --------------------------------------------------------------------------*/
 
-static double tensor_i1(const double *Jr, uint nr, const double *u)
-{
-  return tensor_dot(Jr,u,nr);
-}
+double tensor_i1(const double *Jr, uint nr, const double *u);
 
 /* work holds ns doubles */
-static double tensor_i2(const double *Jr, uint nr,
+double tensor_i2(const double *Jr, uint nr,
                         const double *Js, uint ns,
-                        const double *u, double *work)
-{
-  tensor_mtxv(work,ns, u, Jr,nr);
-  return tensor_dot(Js,work,ns);
-}
+                        const double *u, double *work);
 
 /* work holds ns*nt + nt doubles */
-static double tensor_i3(const double *Jr, uint nr,
+double tensor_i3(const double *Jr, uint nr,
                         const double *Js, uint ns,
                         const double *Jt, uint nt,
-                        const double *u, double *work)
-{
-  double *work2 = work+nt;
-  tensor_mtxv(work2,ns*nt,   u,     Jr,nr);
-  tensor_mtxv(work ,nt   ,   work2, Js,ns);
-  return tensor_dot(Jt,work,nt);
-}
+                        const double *u, double *work);
 
 /*--------------------------------------------------------------------------
    1-,2-,3-d Tensor Application of Row Vectors
@@ -121,43 +108,22 @@ static double tensor_i3(const double *Jr, uint nr,
      v is a scalar, g is an array of 3 doubles
   --------------------------------------------------------------------------*/
 
-static double tensor_ig1(double g[1],
+double tensor_ig1(double g[1],
                          const double *wtr, uint nr,
-                         const double *u)
-{
-  g[0] = tensor_dot(wtr+nr,u,nr);
-  return tensor_dot(wtr   ,u,nr);
-}
+                         const double *u);
 
 /* work holds 2*nr doubles */
-static double tensor_ig2(double g[2],
+double tensor_ig2(double g[2],
                          const double *wtr, uint nr,
                          const double *wts, uint ns,
-                         const double *u, double *work)
-{
-  tensor_mxm(work,nr, u,ns, wts,2);
-  g[0] = tensor_dot(wtr+nr,work   ,nr);
-  g[1] = tensor_dot(wtr   ,work+nr,nr);
-  return tensor_dot(wtr   ,work   ,nr);
-}
+                         const double *u, double *work);
 
 /* work holds 2*nr*ns + 3*nr doubles */
-static double tensor_ig3(double g[3],
+double tensor_ig3(double g[3],
                          const double *wtr, uint nr,
                          const double *wts, uint ns,
                          const double *wtt, uint nt,
-                         const double *u, double *work)
-{
-  const uint nrs = nr*ns;
-  double *a = work, *b = work+2*nrs, *c=b+2*nr;
-  tensor_mxm(a,nrs, u,nt, wtt,2);
-  tensor_mxm(b,nr,  a,ns, wts,2);
-  tensor_mxv(c,nr, a+nrs, wts,ns);
-  g[0] = tensor_dot(b   , wtr+nr, nr);
-  g[1] = tensor_dot(b+nr, wtr   , nr);
-  g[2] = tensor_dot(c   , wtr   , nr);
-  return tensor_dot(b   , wtr   , nr);
-}
+                         const double *u, double *work);
 
 /*
   out - nr x ns
@@ -165,14 +131,10 @@ static double tensor_ig3(double g[3],
   Jrt - mr x nr, Jst - ms x ns
   work - nr x ms
 */
-static void tensor_2t(double *out,
+void tensor_2t(double *out,
                       const double *Jrt, uint nr, uint mr,
                       const double *Jst, uint ns, uint ms,
-                      const double *u, double *work)
-{
-  tensor_mtxm(work,nr, Jrt,mr, u,ms);
-  tensor_mxm(out,nr, work,ms, Jst,ns);
-}
+                      const double *u, double *work);
 
 /*
   out - nr x ns x nt
@@ -180,20 +142,10 @@ static void tensor_2t(double *out,
   Jrt - mr x nr, Jst - ms x ns, Jtt - mt x nt
   work - nr*ms*mt + nr*ns*mt = nr*(ms+ns)*mt
 */
-static void tensor_3t(double *out,
+void tensor_3t(double *out,
                       const double *Jrt, uint nr, uint mr,
                       const double *Jst, uint ns, uint ms,
                       const double *Jtt, uint nt, uint mt,
-                      const double *u, double *work)
-{
-  const uint nrs=nr*ns, mst=ms*mt, nrms=nr*ms;
-  uint k;
-  double *work2 = work+nr*mst;
-  double *p; const double *q;
-  tensor_mtxm(work,nr, Jrt,mr, u,mst);
-  for(k=0,p=work2,q=work;k<mt;++k,p+=nrs,q+=nrms)
-    tensor_mxm(p,nr, q,ms, Jst,ns);
-  tensor_mxm(out,nrs, work2,mt, Jtt,nt);
-}
+                      const double *u, double *work);
 
 #endif

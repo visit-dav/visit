@@ -79,6 +79,7 @@ fail.c
 comm.c
 gs_local.c
 findpts_local.c
+mem.c
 ext/findpts_local_ext.c
 )
 

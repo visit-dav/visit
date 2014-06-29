@@ -66,48 +66,18 @@ void obbox_calc_3(struct obbox_3 *out,
                   const unsigned m[3], const double tol);
 
 /* positive when possibly inside */
-static double obbox_axis_test_2(const struct obbox_2 *const b,
-                                const double x[2])
-{
-  const double bx =  (x[0]-b->x[0].min)*(b->x[0].max-x[0]);
-  return bx<0 ? bx : (x[1]-b->x[1].min)*(b->x[1].max-x[1]);
-}
+extern double obbox_axis_test_2(const struct obbox_2 *const b,
+                                const double x[2]);
 
 /* positive when possibly inside */
-static double obbox_test_2(const struct obbox_2 *const b, const double x[2])
-{
-  const double bxy = obbox_axis_test_2(b,x);
-  if(bxy<0) return bxy; else {
-    const double dx = x[0]-b->c0[0], dy = x[1]-b->c0[1];
-    const double r = b->A[0]*dx + b->A[1]*dy,
-                 s = b->A[2]*dx + b->A[3]*dy;
-    const double br = (r+1)*(1-r);
-    return br<0 ? br : (s+1)*(1-s);
-  }
-}
+extern double obbox_test_2(const struct obbox_2 *const b, const double x[2]);
 
 /* positive when possibly inside */
-static double obbox_axis_test_3(const struct obbox_3 *const b,
-                                const double x[3])
-{
-  const double               bx = (x[0]-b->x[0].min)*(b->x[0].max-x[0]);
-  const double               by = (x[1]-b->x[1].min)*(b->x[1].max-x[1]);
-  return bx<0 ? bx : (by<0 ? by : (x[2]-b->x[2].min)*(b->x[2].max-x[2]));
-}
+extern double obbox_axis_test_3(const struct obbox_3 *const b,
+                                const double x[3]);
 
 /* positive when possibly inside */
-static double obbox_test_3(const struct obbox_3 *const b, const double x[3])
-{
-  const double bxyz = obbox_axis_test_3(b,x);
-  if(bxyz<0) return bxyz; else {
-    const double dx = x[0]-b->c0[0], dy = x[1]-b->c0[1], dz = x[2]-b->c0[2];
-    const double r = b->A[0]*dx + b->A[1]*dy + b->A[2]*dz,
-                 s = b->A[3]*dx + b->A[4]*dy + b->A[5]*dz,
-                 t = b->A[6]*dx + b->A[7]*dy + b->A[8]*dz;
-    const double br = (r+1)*(1-r), bs = (s+1)*(1-s);
-    return br<0 ? br : (bs<0 ? bs : (t+1)*(1-t));
-  }
-}
+extern double obbox_test_3(const struct obbox_3 *const b, const double x[3]);
 
 #endif
 

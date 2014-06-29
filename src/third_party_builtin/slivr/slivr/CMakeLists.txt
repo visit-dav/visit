@@ -249,7 +249,11 @@ ELSE(NOT SCIRUN_SLIVR_BUILD)
 #        SET_TARGET_PROPERTIES(slivrG PROPERTIES LINK_FLAGS "-framework AGL")
 #        SET_TARGET_PROPERTIES(slivrV PROPERTIES LINK_FLAGS "-framework AGL")
 #    ENDIF(APPLE)
-    
+   
+    IF(APPLE) 
+        # TODO: slivr is using deprecated AGL functions, UPDATE!
+        SET_TARGET_PROPERTIES(slivrV PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
+    ENDIF(APPLE)
     VISIT_INSTALL_TARGETS(slivrG slivrV)
 
   ENDIF(NOT MINIMAL_CORE)

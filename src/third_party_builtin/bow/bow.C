@@ -125,7 +125,8 @@ extern char **libenvp;
     COUT((K>>8)&0xff) COUT(K&0xff)                                          \
 }
 
-#define FOUT(X) { int fout_i; f=(X); fout_i= *((int *)(&f)); IOUT(fout_i) }
+//#define FOUT(X) { int fout_i; f=(X); fout_i= *((int *)(&f)); IOUT(fout_i) }
+#define FOUT(X) { union { float f; int i; } fout; fout.f=(X); IOUT(fout.i) }
 
 #define HEADOUT {                                                           \
     IOUT(n) IOUT(ti) IOUT(bi) SOUT(vi) FOUT(v0) FOUT(v1)                    \
@@ -140,7 +141,8 @@ extern char **libenvp;
 #define IIN(X) { K= *ub++; K=(K<<8)|(*ub++); K=(K<<8)|(*ub++); \
     K=(K<<8)|(*ub++); (X)=K; }
 
-#define FIN(X) { int fin_i; IIN(fin_i) (X)= *((float *)(&fin_i)); }
+//#define FIN(X) { int fin_i; IIN(fin_i) (X)= *((float *)(&fin_i)); }
+#define FIN(X) { union { float f; int i; } fin; IIN(fin.i) (X)= fin.f; }
 
 #define HEADIN {                                                            \
     IIN(n) IIN(ti) IIN(bi) SIN(vi) FIN(v0) FIN(v1)                          \
@@ -151,7 +153,7 @@ extern char **libenvp;
 static void find_tmpdir(char *tmpdir);
 static char *fioX_read(bowglobal bg,char *pathsrc);
 static int fioX_write(char *pathdst,char *buf,int size);
-static int fioX_size(const char *pathsrc);
+//static int fioX_size(const char *pathsrc);
 static int fioX_isdir(const char *pathsrc);
 static int my_floor(float f);
 static void bowglobal_adderror(bowglobal bg);
@@ -343,7 +345,7 @@ int bof2bow(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
 
 float *bow2bof(bowglobal bg,char *bow,int bowi)
 {
-    int size,offset,notran,ti,bi,vi,xs,ys,zs,x0,y0,z0;
+    int size,offset,notran/*,ti,bi,vi*/,xs,ys,zs/*,x0,y0,z0*/;
     int i,j,k,n,bigcnt,ibig[256],kio;
     int ntab[40],nti,ntimax,s;
     short *vshrt;
@@ -365,8 +367,8 @@ float *bow2bof(bowglobal bg,char *bow,int bowi)
 
     
 #define XCOP(X) { X=binf->X[bowi]; }
-    XCOP(size) XCOP(offset) XCOP(notran) XCOP(ti) XCOP(bi) XCOP(vi)
-    XCOP(xs) XCOP(ys) XCOP(zs) XCOP(x0) XCOP(y0) XCOP(z0) XCOP(v0) XCOP(v1)
+    XCOP(size) XCOP(offset) XCOP(notran) /*XCOP(ti) XCOP(bi) XCOP(vi)*/
+    XCOP(xs) XCOP(ys) XCOP(zs) /*XCOP(x0) XCOP(y0) XCOP(z0)*/ XCOP(v0) XCOP(v1)
 
     ub=(unsigned char *)(bow+(offset+4+HEADSIZE));
     bigcnt= *ub++;
@@ -384,7 +386,7 @@ float *bow2bof(bowglobal bg,char *bow,int bowi)
         sprintf(tmpnamegz,"%s.gz",tmpname);
         fioX_write(tmpnamegz,(char *)ub,size-FULLHEADSIZE);
         sprintf(cmd,"gunzip %s",tmpnamegz);
-        system(cmd);
+        int res = system(cmd); (void)res;
         unlink(tmpnamegz);
         vshrt=(short *)fioX_read(bg,tmpname);
         unlink(tmpname);
@@ -486,7 +488,7 @@ float *bow2bof(bowglobal bg,char *bow,int bowi)
 
 bowinfo bow_getbowinfo(bowglobal bg,char *bow)
 {
-    int i,n,ti,bi,vi,xs,ys,zs,x0,y0,z0,iscat,nb,size,offset,notran;
+    int i,n,ti,bi,vi,xs,ys,zs,x0,y0,z0/*,iscat*/,nb,size,offset,notran;
     int kio,ksio;
     float v0,v1;
     bowinfo binf;
@@ -507,8 +509,8 @@ bowinfo bow_getbowinfo(bowglobal bg,char *bow)
     ub=(unsigned char *)(bow+4);
     HEADIN
     if (n<0)
-        { iscat=1; nb= -n; ub=(unsigned char *)(bow+8); offset=8+nb*HEADSIZE; }
-    else { iscat=0; nb=1; ub=(unsigned char *)(bow+4); offset=0; }
+        { /*iscat=1;*/ nb= -n; ub=(unsigned char *)(bow+8); offset=8+nb*HEADSIZE; }
+    else { /*iscat=0;*/ nb=1; ub=(unsigned char *)(bow+4); offset=0; }
 
 
     /*...more: test all these alloc calls for failure, deal with it */
@@ -550,7 +552,7 @@ char *bow_cat(bowglobal bg,int numbow,char **bowtab)
 {
     int bowi,nbow,size,k,ks,js,ii,kio,ksio;
     int b,n,nb,ti,bi,vi,xs,ys,zs,x0,y0,z0;
-    float v0,v1,f;
+    float v0,v1/*,f*/;
     char *bow,*buf;
     unsigned char *ub;
 
@@ -760,21 +762,21 @@ typedef off_t VisItOff_t;
 //
 // ****************************************************************************
 
-static int
-VisItStat(const char *file_name, VisItStat_t *buf)
-{
-#if defined(_WIN32)
-   return _stat(file_name, buf);
-#else
+//static int
+//VisItStat(const char *file_name, VisItStat_t *buf)
+//{
+//#if defined(_WIN32)
+//   return _stat(file_name, buf);
+//#else
 
-#if SIZEOF_OFF64_T > 4
-    return stat64(file_name, buf);
-#else
-    return stat(file_name, buf);
-#endif
+//#if SIZEOF_OFF64_T > 4
+//    return stat64(file_name, buf);
+//#else
+//    return stat(file_name, buf);
+//#endif
 
-#endif
-}
+//#endif
+//}
 
 // ****************************************************************************
 // Method: VisItFStat 
@@ -849,14 +851,14 @@ static int fioX_write(char *pathdst,char *buf,int size)
 
 /* return size of file or -1 on error */
 
-static int fioX_size(const char *pathsrc)
-{
-    static VisItStat_t st_store;
-    static VisItStat_t *st = &st_store;
+//static int fioX_size(const char *pathsrc)
+//{
+//    static VisItStat_t st_store;
+//    static VisItStat_t *st = &st_store;
 
-    if (VisItStat(pathsrc,st)) return -1;
-    return st->st_size;
-}
+//    if (VisItStat(pathsrc,st)) return -1;
+//    return st->st_size;
+//}
 
 
 /* return 1 if dir and exists, 0 otherwise */
@@ -874,7 +876,13 @@ static int fioX_isdir(const char *pathsrc)
 static int my_floor(float f)
 {
     f=(f-0.25f)+(float)0x00600000;
-    return ((*((int *)(&f)))>>1)-0x25600000;
+    union {
+        float a;
+        int b;
+    } x;
+    x.a = f;
+    return (x.b>>1)-0x25600000;
+    //return ((*((int *)(&f)))>>1)-0x25600000;
 }
 
 
