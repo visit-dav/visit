@@ -92,7 +92,7 @@ Split(const std::string &varName, stringVector &pieces)
     int         parenthesis = 0;
 
     // Iterate through the characters in the word splitting
-    for(int i = 0; i < varName.size(); ++i)
+    for(size_t i = 0; i < varName.size(); ++i)
     {
         char c = varName[i];
         if(c == '(')
@@ -426,8 +426,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 
     // Do stuff with the metadata
     id = visitTimer->StartTimer(); 
-    int i;
-    for (i = 0; i < md->GetNumMeshes(); ++i)
+    size_t i;
+    for (i = 0; i < (size_t)md->GetNumMeshes(); ++i)
     {
         const avtMeshMetaData &mmd = md->GetMeshes(i);
         if (!mmd.hideFromGUI)
@@ -437,48 +437,48 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     {
         meshVars.AddVariable(VisItInit::CatchAllMeshName, true);
     }
-    for (i = 0; i < md->GetNumScalars(); ++i)
+    for (i = 0; i < (size_t)md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData &smd = md->GetScalars(i);
         if (!smd.hideFromGUI)
             scalarVars.AddVariable(smd.name, smd.validVariable);
     }
-    for (i = 0; i < md->GetNumVectors(); ++i)
+    for (i = 0; i < (size_t)md->GetNumVectors(); ++i)
     {
         const avtVectorMetaData &vmd = md->GetVectors(i);
         if (!vmd.hideFromGUI)
             vectorVars.AddVariable(vmd.name, vmd.validVariable);
     }
-    for (i = 0; i < md->GetNumSpecies(); ++i)
+    for (i = 0; i < (size_t)md->GetNumSpecies(); ++i)
     {
         const avtSpeciesMetaData &smd = md->GetSpecies(i);
         speciesVars.AddVariable(smd.name, smd.validVariable);
     }
-    for (i = 0; i < md->GetNumCurves(); ++i)
+    for (i = 0; i < (size_t)md->GetNumCurves(); ++i)
     {
         const avtCurveMetaData &cmd = md->GetCurves(i);
         if (!cmd.hideFromGUI)
             curveVars.AddVariable(cmd.name, cmd.validVariable);
     }
-    for (i = 0; i < md->GetNumTensors(); ++i)
+    for (i = 0; i < (size_t)md->GetNumTensors(); ++i)
     {
         const avtTensorMetaData &tmd = md->GetTensors(i);
         if (!tmd.hideFromGUI)
             tensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
-    for (i = 0; i < md->GetNumSymmTensors(); ++i)
+    for (i = 0; i < (size_t)md->GetNumSymmTensors(); ++i)
     {
         const avtSymmetricTensorMetaData &tmd = md->GetSymmTensors(i);
         if (!tmd.hideFromGUI)
             symmTensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
-    for (i = 0; i < md->GetNumLabels(); ++i)
+    for (i = 0; i < (size_t)md->GetNumLabels(); ++i)
     {
         const avtLabelMetaData &lmd = md->GetLabels(i);
         if (!lmd.hideFromGUI)
             labelVars.AddVariable(lmd.name, lmd.validVariable);
     }
-    for (i = 0; i < md->GetNumArrays(); ++i)
+    for (i = 0; i < (size_t)md->GetNumArrays(); ++i)
     {
         const avtArrayMetaData &amd = md->GetArrays(i);
         if (!amd.hideFromGUI)
@@ -499,7 +499,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
         int tsIndex = topSets[i];
         avtSILSet_p pTopset = sil->GetSILSet(tsIndex);
         const intVector &maps = pTopset->GetMapsOut();
-        for (int j = 0; j < maps.size(); ++j)
+        for (size_t j = 0; j < maps.size(); ++j)
         {
             int idx = maps[j];
             int role = (int)sil->GetSILCollection(idx)->GetRole();
@@ -529,7 +529,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 
         
         string setName("(" + meshName + ")");
-        for(int j = 0; j < maps.size(); ++j)
+        for(size_t j = 0; j < maps.size(); ++j)
         {
             int     idx = maps[j];
 
@@ -586,7 +586,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     // Add the expressions from the cached expression list.
     //
     id = visitTimer->StartTimer(); 
-    int nexp = cachedExpressionList.GetNumExpressions();
+    size_t nexp = cachedExpressionList.GetNumExpressions();
     for(i = 0; i < nexp; ++i)
     {
         const Expression &expr = cachedExpressionList[i];
@@ -1124,7 +1124,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
 
     // Add each variable to the variable menu.
     std::map <std::string, QvisVariablePopupMenu *> popups;
-    int j;
+    size_t j;
     std::string var;
     bool        validVar;
     const StringStringMap &originalNameToGroupedName = ginfo->grouping;
@@ -1438,7 +1438,7 @@ VariableMenuPopulator::VariableList::Contains(const std::string &var) const
         return (sortedVariables.find(var) != sortedVariables.end());
     else
     {
-        for(int i = 0; i < unsortedVariableNames.size(); ++i)
+        for(size_t i = 0; i < unsortedVariableNames.size(); ++i)
             if(unsortedVariableNames[i] == var)
                 return true;
     }
@@ -1502,7 +1502,7 @@ VariableMenuPopulator::VariableList::GetNextVariable(std::string &var, bool &val
     }
     else
     {
-        retval = (unsortedVariableIndex < unsortedVariableNames.size());
+        retval = ((size_t)unsortedVariableIndex < unsortedVariableNames.size());
         if(retval)
         {
             var = unsortedVariableNames[unsortedVariableIndex];
@@ -1616,7 +1616,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
             }
             else if(pathvar.size() > 1)
             {
-                for (int j = 0; j < pathvar.size()-1; j++)
+                for (size_t j = 0; j < pathvar.size()-1; j++)
                     path = path + "/" + pathvar[j];
                 INCPATH
             }
@@ -1651,7 +1651,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         Split(var, pathvar);
 
         string path;
-        for (int j = 0; j < pathvar.size(); j++)
+        for (size_t j = 0; j < pathvar.size(); j++)
         {
             // Get an iterator to the named set.
             StringStringSetMap::iterator p2 = entriesAtPath.find(path);
@@ -1710,7 +1710,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
             // If the set of strings at path is greater than the curoff then
             // we should break up entriesAtPath[path] into a list of smaller
             // groups of names so we can have smaller menus.
-            if (entriesAtPath[path].size() > GROUPING_CUTOFF)
+            if (entriesAtPath[path].size() > (size_t)GROUPING_CUTOFF)
             {
                 if (groupsAtPath.find(path) == groupsAtPath.end())
                 {
@@ -1728,7 +1728,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
                     // pathvar[j]. If we find a StringSet that contains 
                     // pathvar[j] then we need to augment the path because 
                     // some grouping has taken place.
-                    for(int k = 0; k < g->second.size(); ++k)
+                    for(size_t k = 0; k < g->second.size(); ++k)
                     {
                         if(g->second[k].find(pathvar[j]) != g->second[k].end())
                         {
