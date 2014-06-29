@@ -271,7 +271,7 @@ LauncherApplication::~LauncherApplication()
     delete launchExecutor;
     delete connectSimExecutor;
 
-    for(int i = 0; i < childOutput.size(); ++i)
+    for(size_t i = 0; i < childOutput.size(); ++i)
         delete childOutput[i];
 }
 
@@ -505,7 +505,7 @@ LauncherApplication::MainLoop()
         ConnectionGroup connGroup;
         connGroup.AddConnection(parent.GetWriteConnection());
 #ifndef _WIN32
-        for(int i = 0; i < childOutput.size(); ++i)
+        for(size_t i = 0; i < childOutput.size(); ++i)
             connGroup.AddConnection(childOutput[i]);
 #endif
         // Check the connections for input that needs to be processed.
@@ -539,7 +539,7 @@ LauncherApplication::MainLoop()
                 bool        *valid = new bool[childOutput.size()];
 
                 // Gather all of the output from each child in sequence.
-                for(int i = 0; i < childOutput.size(); ++i)
+                for(size_t i = 0; i < childOutput.size(); ++i)
                 {
                     valid[i] = true;
                     if(connGroup.NeedsRead(i + 1))
@@ -583,7 +583,7 @@ LauncherApplication::MainLoop()
                 // it.
                 std::string completeOutput;
                 std::vector<Connection *> validConnections;
-                for(int i = 0; i < childOutput.size(); ++i)
+                for(size_t i = 0; i < childOutput.size(); ++i)
                 {
                     // Append the output to a complete output that we'll send 
                     // to the client.
@@ -591,7 +591,7 @@ LauncherApplication::MainLoop()
                     {
                         debug5 << "CHILD OUTPUT[" << i << "]: " << outputs[i].c_str() << endl;
                         completeOutput += outputs[i];
-                        if(outputs[i][outputs[i].size()-1] != '\n' && i < childOutput.size()-1)
+                        if(outputs[i][outputs[i].size()-1] != '\n' && (size_t)i < childOutput.size()-1)
                             completeOutput += std::string("\n");
                     }
 
