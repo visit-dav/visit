@@ -238,7 +238,7 @@ SetAppearance(QApplication *app, AppearanceAttributes *aa)
         if(v >= 255 - 50)
         {
             base = btn.dark(150);
-            bright_mode = true;
+            bright_mode = TRUE;
         }
 
         QPalette pal(fg, btn, btn.light(),

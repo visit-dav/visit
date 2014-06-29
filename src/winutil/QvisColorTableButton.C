@@ -131,7 +131,7 @@ QvisColorTableButton::~QvisColorTableButton()
     --numInstances;
 
     // Remove the "this" pointer from the vector.
-    size_t index;
+    size_t index = 0;
     bool notFound = true;
     for(size_t i = 0; i < buttons.size() && notFound; ++i)
     {
@@ -367,7 +367,7 @@ QvisColorTableButton::popupPressed()
 
         // Show the popup menu.         
         colorTableMenu->exec(QPoint(menuX, menuY));
-        setDown(false);
+        setDown(FALSE);
     }
 }
 
