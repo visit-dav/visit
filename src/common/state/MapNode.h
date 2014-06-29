@@ -65,6 +65,8 @@
 
 class STATE_API MapNode : public Variant
 {
+    //using Variant::ToXML;
+    //using Variant::ToJSON; ///TODO: handle ambiguous ToXML & ToJSON
   public:
     enum {
         MapNodeType = Variant::ID__LAST,
@@ -134,6 +136,7 @@ class STATE_API MapNode : public Variant
     void  SetValue(const XMLNode &, bool decodeString = true);
     void  SetValue(const JSONNode &, bool decodeString = true);
     void  SetValue(const JSONNode& data, const JSONNode& metadata,bool decodeString);
+    void  SetValue(const JSONNode* data, const JSONNode* metadata,bool decodeString);
     std::map<std::string,MapNode> entries;
 };
 

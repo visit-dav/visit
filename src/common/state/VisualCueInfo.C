@@ -825,7 +825,7 @@ void
 VisualCueInfo::SetPointF(int i, const float *pt)
 {
     // extend vector of points as necessary
-    while (points.size() < 3*(i+1))
+    while ((int)points.size() < 3*(i+1))
         points.push_back(0.0);
 
     points[3*i+0] = pt[0];
@@ -850,7 +850,7 @@ VisualCueInfo::SetPointF(int i, const float *pt)
 bool
 VisualCueInfo::GetPointF(int i, float *pt) const
 {
-    if (points.size() < 3*i)
+    if ((int)points.size() < 3*i)
         return false;
 
     pt[0] = (float) points[3*i+0];
@@ -907,7 +907,7 @@ void
 VisualCueInfo::SetPointD(int i, const double *pt)
 {
     // extend vector of points as necessary
-    while (points.size() < 3*(i+1))
+    while ((int)points.size() < 3*(i+1))
         points.push_back(0.0);
 
     points[3*i+0] = pt[0];
@@ -932,7 +932,7 @@ VisualCueInfo::SetPointD(int i, const double *pt)
 bool
 VisualCueInfo::GetPointD(int i, double *pt) const
 {
-    if (points.size() < 3*i)
+    if ((int)points.size() < 3*i)
         return false;
 
     pt[0] = points[3*i+0];

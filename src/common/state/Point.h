@@ -60,6 +60,8 @@
 
 class STATE_API Point : public AttributeSubject
 {
+    using AttributeSubject::SetValue;
+    using AttributeSubject::GetValue;
 public:
     enum ValueType
     {

@@ -2339,7 +2339,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &remoteUs
                 stringVector args2;
                 args2.reserve( args.size() + 2 ); //one more
 
-                for(int i = 0; i < args.size(); ++i)
+                for(size_t i = 0; i < args.size(); ++i)
                 {
                     //replace..
                     std::string var = args[i];

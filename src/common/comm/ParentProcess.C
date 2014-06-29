@@ -279,7 +279,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
     const char *mName = "ParentProcess::Connect: ";
     char **argv2 = *argv;
     bool rhostSpecified = false;
-    bool nWriteSpecified = false, nReadSpecified = false;
+    //bool nWriteSpecified = false, nReadSpecified = false;
     int  i, deleteCount = 0, port = 0;
 
     // Log the arguments.
@@ -290,8 +290,9 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
     for (i = 0; i < *argc ; ++i)
     {
         debug5 << argv2[i];
-        if(i < *argc-1)
+        if(i < *argc-1) {
            debug5 << ", ";
+        }
     }
     debug5 << "})" << endl;
 
@@ -372,7 +373,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
         if(numRead > 0)
         {
             debug5 << mName << "Creating read sockets" << endl;
-            nReadSpecified = true;
+            //nReadSpecified = true;
             writeConnections = new Connection*[numRead];
             for(int j = 0; j < numRead; ++j)
             {
@@ -388,7 +389,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
         if(numWrite > 0)
         {
             debug5 << mName << "Creating write sockets" << endl;
-            nWriteSpecified = true;
+            //nWriteSpecified = true;
             readConnections = new Connection*[numWrite];
             for(int j = 0; j < numWrite; ++j)
             {

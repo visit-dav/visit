@@ -631,7 +631,7 @@ ClientInformation::GetMethodIndex(const std::string &name) const
 std::string
 ClientInformation::GetMethod(int i) const
 {
-    if(i >= 0 && i < methodNames.size())
+    if(i >= 0 && (size_t)i < methodNames.size())
         return methodNames[i];
     return "";
 }
@@ -639,7 +639,7 @@ ClientInformation::GetMethod(int i) const
 std::string
 ClientInformation::GetMethodPrototype(int i) const
 {
-    if(i >= 0 && i < methodPrototypes.size())
+    if(i >= 0 && (size_t)i < methodPrototypes.size())
         return methodPrototypes[i];
     return "";
 }

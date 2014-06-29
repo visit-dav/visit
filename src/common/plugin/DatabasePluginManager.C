@@ -453,7 +453,7 @@ DatabasePluginManager::PluginHasWriter(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < names.size())
+        if((size_t)index < names.size())
             retval = haswriter[index];
     }
 
@@ -480,7 +480,7 @@ DatabasePluginManager::PluginFilePatterns(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < names.size())
+        if((size_t)index < names.size())
             retval = filePatterns[index];
     }
 
@@ -508,7 +508,7 @@ DatabasePluginManager::PluginFilePatternsAreStrict(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < names.size())
+        if((size_t)index < names.size())
             retval = filePatternsAreStrict[index];
     }
 
@@ -536,7 +536,7 @@ DatabasePluginManager::PluginOpensWholeDirectory(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < names.size())
+        if((size_t)index < names.size())
             retval = opensWholeDirectory[index];
     }
 

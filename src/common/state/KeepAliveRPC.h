@@ -61,6 +61,8 @@
 
 class STATE_API KeepAliveRPC : public BlockingRPC
 {
+    using BlockingRPC::SetValue;
+    using BlockingRPC::GetValue;
 public:
     KeepAliveRPC();
     virtual ~KeepAliveRPC();

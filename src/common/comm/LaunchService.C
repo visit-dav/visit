@@ -334,8 +334,9 @@ LaunchService::Launch(const stringVector &origLaunchArgs, bool doBridge,
     {
         args[i] = new char[launchArgs[i].size() + 1];
         strcpy(args[i], launchArgs[i].c_str());
-        if(i > 0)
+        if(i > 0) {
             debug1 << launchArgs[i].c_str() << " ";
+        }
     }
     debug1 << ")" << endl;
 

@@ -1005,7 +1005,7 @@ const char *NameschemeAttributes::GetName(int n) const
 
     // First, see if we have ALL explicit names defined and, if so,
     // ensure 'n' is in correct range for it.
-    if (n < allExplicitNames.size())
+    if ((size_t)n < allExplicitNames.size())
         return allExplicitNames[n].c_str();
         
     // Next, see if we have an explicit names map for this object.

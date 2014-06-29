@@ -1171,7 +1171,7 @@ ColorTableAttributes::GetColorTableIndex(const std::string &name) const
 const ColorControlPointList *
 ColorTableAttributes::GetColorControlPoints(int index) const
 {
-    if(index >= 0 && index < colorTables.size())
+    if(index >= 0 && (size_t)index < colorTables.size())
         return ((ColorControlPointList *)colorTables[index]);
     else
         return 0;
@@ -1204,7 +1204,7 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 {
     int index = GetColorTableIndex(name);
 
-    if(index >= 0 && index < colorTables.size())
+    if(index >= 0 && (size_t)index < colorTables.size())
         return ((ColorControlPointList *)colorTables[index]);
     else
         return 0;
@@ -1324,7 +1324,7 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 void
 ColorTableAttributes::RemoveColorTable(int index)
 {
-    if(index >= 0 && index < names.size())
+    if(index >= 0 && (size_t)index < names.size())
     {
         // Determine if the color table is active.
         bool isActiveContinuous, isActiveDiscrete;

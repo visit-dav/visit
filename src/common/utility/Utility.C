@@ -277,7 +277,7 @@ PrintCallStack(ostream &out, const char *file, int line)
     const int N = 100;
     void *stackAddrs[N];
  
-    size_t stackDepth = backtrace(stackAddrs, N);
+    (void) backtrace(stackAddrs, N);
     int nfuncs = backtrace(stackAddrs, N);
     char **stackStrings = backtrace_symbols(stackAddrs, nfuncs);
     

@@ -243,7 +243,7 @@ XMLNode::GetAttributeNames(stringVector &result) const
 XMLNode *
 XMLNode::GetChild(int index) const
 {
-    if(index < 0 || index >= children.size())
+    if(index < 0 || (size_t)index >= children.size())
         return NULL;
     return children[index];
 }
@@ -303,7 +303,7 @@ XMLNode::AddChild(const XMLNode &node)
 XMLNode *
 XMLNode::TakeChild(int index)
 {
-    if(index < 0 || index >= children.size())
+    if(index < 0 || (size_t)index >= children.size())
         return 0;
         
     XMLNode *child = children[index];
@@ -325,7 +325,7 @@ XMLNode::TakeChild(int index)
 bool 
 XMLNode::DeleteChild(int index)
 {
-    if(index < 0 || index >= children.size())
+    if(index < 0 || (size_t)index >= children.size())
         return false;
         
     XMLNode *child = children[index];
@@ -355,7 +355,7 @@ XMLNode::FindIndex(const string &name, int start) const
 {
     if(start < 0)
         start = 0;
-    if(start > children.size())
+    if((size_t)start > children.size())
         return -1;
         
     for(size_t i=start; i<children.size(); i++)

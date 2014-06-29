@@ -326,7 +326,7 @@ ExprScanner::ScanOneToken()
     {
         // Get the next character
         char lookahead = 0;
-        if (pos < text.length())
+        if ((size_t)pos < text.length())
             lookahead = text[pos];
 
         // If it was a backslash, just use quoting
@@ -334,7 +334,7 @@ ExprScanner::ScanOneToken()
         if (backslashEscape)
         {
             lookahead = 0;
-            if (pos+1 < text.length())
+            if ((size_t)pos+1 < text.length())
             {
                 lookahead = text[pos+1];
                 if(lookahead == 'n')

@@ -257,7 +257,7 @@ PluginManager::GetPluginName(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < names.size())
+        if((size_t)index < names.size())
             retval = names[index];
     }
 
@@ -289,7 +289,7 @@ PluginManager::GetPluginVersion(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < versions.size())
+        if((size_t)index < versions.size())
             retval = versions[index];
     }
 
@@ -434,7 +434,7 @@ PluginManager::DisablePlugin(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < enabled.size())
+        if((size_t)index < enabled.size())
             enabled[index] = false;
     }
 }
@@ -464,7 +464,7 @@ PluginManager::EnablePlugin(const string &id)
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
-        if(index < enabled.size())
+        if((size_t)index < enabled.size())
             enabled[index] = true;
     }
 }
@@ -544,7 +544,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 #define PLUGIN_MAX(A,B) (((A) < (B)) ? (B) : (A))
 
             // Ignore it if it does not end in the correct extension
-            if (filename.length() < PLUGIN_MAX((1 + prefixLen),extLen) ||
+            if (filename.length() < (size_t)PLUGIN_MAX((1 + prefixLen),extLen) ||
                 !(filename.substr(filename.length()-extLen,extLen) == ext))
             {
                 continue;
@@ -1680,9 +1680,9 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
 #endif
 
     // If the symbol was not found, print the error message if appropriate.
-    if (retval == 0 && !noError)
+    if (retval == 0 && !noError) {
         debug5 << PluginError() << endl;
-
+    }
     return retval;
 }
 

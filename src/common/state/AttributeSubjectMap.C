@@ -865,8 +865,8 @@ AttributeSubjectMap::SetFromNode(DataNode *parentNode,
     //
     const intVector &iv = indicesNode->AsIntVector();
     DataNode **attsObjects = attsNode->GetChildren();
-    const int numAtts = attsNode->GetNumChildren();
-    for(int i = 0; i < iv.size(); ++i)
+    const size_t numAtts = (size_t)attsNode->GetNumChildren();
+    for(size_t i = 0; i < iv.size(); ++i)
     {
         if(i < numAtts)
         {
@@ -932,8 +932,8 @@ AttributeSubjectMap::ProcessOldVersions(DataNode *parentNode,
     //
     const intVector &iv = indicesNode->AsIntVector();
     DataNode **attsObjects = attsNode->GetChildren();
-    const int numAtts = attsNode->GetNumChildren();
-    for(int i = 0; i < iv.size(); ++i)
+    const size_t numAtts = (size_t)attsNode->GetNumChildren();
+    for(size_t i = 0; i < iv.size(); ++i)
     {
         if(i < numAtts)
             obj->ProcessOldVersions(attsObjects[i], configVersion.c_str());

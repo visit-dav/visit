@@ -210,7 +210,7 @@ AttributeGroup::IsSelected(int i) const
     bool retval = false;
 
     // If the index is valid, check the selected flag.
-    if(i >= 0 && i < typeMap.size())
+    if(i >= 0 && (size_t)i < typeMap.size())
     {
          retval = typeMap[i].selected;
     }
@@ -536,12 +536,12 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
                 AttributeGroupVector &a2 =*(AttributeGroupVector*)addr2;
                 size_t l0 = out.size();
                 size_t l1 = a1.size();
-                int l2 = a2.size();
-                int lmax = (l1 > l2) ? l1 : l2;
+                size_t l2 = a2.size();
+                size_t lmax = (l1 > l2) ? l1 : l2;
                 out.resize(lmax);
                 if (lmax > l0)
                 {
-                    for (int j=l0; j<lmax; j++)
+                    for (size_t j=l0; j<lmax; j++)
                     {
                         out[j] = CreateSubAttributeGroup(i);
                     }
@@ -2323,7 +2323,7 @@ AttributeGroup::CreateSubAttributeGroup(int)
 void
 AttributeGroup::Select(int index, void *address, int length)
 {
-    if(index < typeMap.size())
+    if((size_t)index < typeMap.size())
     {
         typeMap[index].address = address;
         typeMap[index].selected = true;
@@ -2350,7 +2350,7 @@ AttributeGroup::Select(int index, void *address, int length)
 void
 AttributeGroup::SelectField(int index)
 {
-    if(index >= 0 && index < typeMap.size())
+    if(index >= 0 && (size_t)index < typeMap.size())
     {
         if(typeMap[index].address != 0)
             typeMap[index].selected = true;
@@ -2385,7 +2385,7 @@ AttributeGroup::SelectFields(const std::vector<int> &indices)
         for(size_t i = 0; i < indices.size(); ++i)
         {
             int index = indices[i];
-            if(index >= 0 && index < typeMap.size())
+            if(index >= 0 && (size_t)index < typeMap.size())
                 typeMap[index].selected = true;
         }
     }
@@ -2782,7 +2782,7 @@ AttributeGroup::Read(Connection &conn)
 
         // Read the attribute if the attrIndex is valid. Indicate that
         // it is selected.
-        if(attrIndex < typeMap.size())
+        if((size_t)attrIndex < typeMap.size())
         {
             ReadType(conn, i, typeMap[attrIndex]);
             typeMap[attrIndex].selected = true;
@@ -3471,7 +3471,7 @@ AttributeGroup::GetFieldTypeName(int index) const
     "MapNode"
     };
     std::string retval("<UNKNOWN type>");
-    if(index >= 0 && index < typeMap.size())
+    if(index >= 0 && (size_t)index < typeMap.size())
     { 
         // Get around calling some non-const methods for now.
         AttributeGroup *THIS = const_cast<AttributeGroup *>(this);

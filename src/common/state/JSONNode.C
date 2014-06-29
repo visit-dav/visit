@@ -282,7 +282,7 @@ JSONNode::ToString(const std::string &indent) const
     if(type == JSONARRAY)
     {
         std::string output = "[";
-        for(int i = 0; i < json.array.size(); ++i)
+        for(size_t i = 0; i < json.array.size(); ++i)
         {
             output += json.array[i].ToString();
 
@@ -298,7 +298,7 @@ JSONNode::ToString(const std::string &indent) const
     {
         std::string output = "{";
 
-        int index = 0;
+        size_t index = 0;
         for(JSONObject::const_iterator itr = json.object.begin();
               itr != json.object.end(); ++itr)
         {
@@ -568,16 +568,18 @@ JSONNode::ParseVariant(std::istream &iss)
 std::string
 JSONNode::EscapeString(const std::string &val) const
 {
-    // replace with standard JSON entities:
-    // \"
-    // \\
-    // \/
-    // \b
-    // \f
-    // \n
-    // \r
-    // \t
-    // \u four-hex-digits
+    /*
+     replace with standard JSON entities:
+     \"
+     \\
+     \/
+     \b
+     \f
+     \n
+     \r
+     \t
+     \u four-hex-digits
+    */
     
     std::string res="";
     size_t ssize = val.size();
@@ -775,7 +777,7 @@ JSONNode::convertArray(const T& v) {
 
     json.array.resize(v.size());
 
-    for(int i = 0; i < v.size(); ++i)
+    for(size_t i = 0; i < v.size(); ++i)
         json.array[i] = v[i];
 
     return *this;
@@ -866,7 +868,7 @@ JSONNode::operator[](int index)
             if(index < 0) index = 0;
         }
 
-        if(index < json.array.size())
+        if((size_t)index < json.array.size())
             return json.array[index];
         else
         {
@@ -1037,7 +1039,7 @@ JSONNode::AsString() const{
     JSONType type = GetType();
 
     if(type == JSONBOOL)
-        res << GetBool() ? "true" : "false";
+        res << std::string(GetBool() ? "true" : "false");
     else if(type == JSONINTEGER)
         res << (double) GetLong();
     else if(type == JSONDOUBLE)

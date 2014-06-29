@@ -89,7 +89,7 @@ void maccess_init()
     sprintf(buf, "/proc/%d/maps", getpid());
     FILE            *fp = fopen(buf, "re");
     rend = rngv;
-    while (0 < fscanf(fp, "%x-%x %4s %*[^\n]",
+    while (0 < fscanf(fp, "%lx-%lx %4s %*[^\n]",
                           &rend->alpha, &rend->omega, buf)) {
         if (buf[1] == '-' || rend->alpha < brk)
             continue;
@@ -466,7 +466,7 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
 {
     regex_t cre;
     regmatch_t pm;
-    int reerr;
+    //int reerr;
 
     if (regcomp(&cre, re, REG_EXTENDED))
         return FindError;
@@ -478,7 +478,7 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
     if (rval == REG_NOMATCH)
         return FindNone;
 
-    if (pm.rm_so >= strlen(strToSearch))
+    if (pm.rm_so >= (int)strlen(strToSearch))
         return FindError;
 
     if (pm.rm_so < 0)
