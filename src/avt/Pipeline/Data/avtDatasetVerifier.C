@@ -436,7 +436,7 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr,
                 {
                     char msg[1024];
                     sprintf(msg, "In domain %d, your connectivity array (%s) "
-                                 "has a bad value. Cell %d references point %d "
+                                 "has a bad value. Cell %d references point %lld "
                                  "and the maximum value is %d.  Note that "
                                  "only the first error encountered is reported.",
                             dom, name, i, *ptr, nTotalPts);

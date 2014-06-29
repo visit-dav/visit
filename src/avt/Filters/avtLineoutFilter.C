@@ -603,9 +603,9 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
        (vtkUnsignedCharArray *)in_ds->GetCellData()->GetArray("avtGhostZones");
 
     vtkCellIntersections *cellIntersections = NULL;
-    vtkGenericCell *cell;
+    vtkGenericCell *cell = NULL;
     double isect[3], p1[3], t;
-    bool endPointInCell = false;
+    //bool endPointInCell = false;
     if (!rgrid)
     {
         cellIntersections = vtkCellIntersections::New();
@@ -613,7 +613,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         cell = vtkGenericCell::New();
     }
     
-    for (int i = 0; i < lineCells.size(); i++)
+    for (size_t i = 0; i < lineCells.size(); i++)
     {
         //
         // Want to skip ghost zones!!
@@ -688,7 +688,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         if (doMore)
         {
             bool dupFound = false; 
-            for (int j = 0; j < isectedCells.size() && !dupFound; j++)
+            for (size_t j = 0; j < isectedCells.size() && !dupFound; j++)
             {
                 double p2[3];
                 p2[0] = isectedPts[j*3];
@@ -714,7 +714,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     vtkIdList *cells = vtkIdList::New();
     vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
     double cpt[3];
-    for (int i = 0; i < isectedCells.size(); i++)
+    for (size_t i = 0; i < isectedCells.size(); i++)
     {
         cpt[0] = isectedPts[i*3];
         cpt[1] = isectedPts[i*3+1];
@@ -910,8 +910,8 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
         }
     }
 
-    int i, j, k;
-    int npts = pts->GetNumberOfPoints();
+    size_t i, j, k;
+    size_t npts = pts->GetNumberOfPoints();
     vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
         ds->GetCellData()->GetArray("avtOriginalCellNumbers"));
 
@@ -992,7 +992,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
         else
         {
             sum = 0.;
-            for (j = 0; j < nDups; j++)
+            for (j = 0; j < (size_t)nDups; j++)
             {
               sum += vtkMath::Distance2BetweenPoints(pt1, cellInfo.isect[j].x);
             }
@@ -1010,7 +1010,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
                 sum = 0;
                 ds->GetCellPoints(cellInfoList[i].currCell[0], ptIds);
                 int numCellPts = ptIds->GetNumberOfIds();
-                for (j = 0; j < numCellPts; j++)
+                for (j = 0; j < (size_t)numCellPts; j++)
                     sum += scalars->GetTuple1(ptIds->GetId(j));
                 if (numCellPts > 0)
                    sum /= (double) numCellPts;
@@ -1020,11 +1020,11 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
             {
                 sum = 0;
                 std::set<int> uniquePts;
-                for (j = 0; j < nDups; j++)
+                for (j = 0; j < (size_t)nDups; j++)
                 { 
                     ds->GetCellPoints(cellInfoList[i].currCell[j], ptIds); 
                     int numCellPts = ptIds->GetNumberOfIds();
-                    for (k = 0; k < numCellPts; k++)
+                    for (k = 0; k < (size_t)numCellPts; k++)
                     { 
                         if (uniquePts.count(ptIds->GetId(k)) == 0)
                         { 
@@ -1047,7 +1047,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
             else
             {
                 newVal = 0.;
-                for (j = 0; j < nDups; j++)
+                for (j = 0; j < (size_t)nDups; j++)
                     newVal += scalars->GetTuple1(cellInfoList[i].currCell[j]);
                 newVal /= (double) cellInfoList[i].currCell.size();
             }
@@ -1064,7 +1064,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
         vtkDataArray *sortedVal = outVal->NewInstance();
         DoubleIntMap sortedIds;
         double x;
-        for (i = 0; i < outXC->GetNumberOfTuples(); i++)
+        for (i = 0; i < (size_t)outXC->GetNumberOfTuples(); i++)
         {
             x = outXC->GetTuple1(i);
             sortedIds.insert(DoubleIntMap::value_type(x, i));

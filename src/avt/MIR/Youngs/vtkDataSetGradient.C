@@ -5,7 +5,7 @@
 // Commissariat a l'Energie Atomique, (CEA)
 // BP12, 91297 Arpajon, France
 
-const static char * VTK_DATA_SET_GRADIENT__C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
+//const static char * VTK_DATA_SET_GRADIENT__C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 
 #include "vtkDataSetGradient.h"
 

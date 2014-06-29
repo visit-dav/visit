@@ -2044,7 +2044,7 @@ VisWinPlots::GetTransparencyActor()
 void
 VisWinPlots::SuspendOpaqueGeometry()
 {
-    for(int i=0; i<plots.size(); i++)
+    for(size_t i=0; i<plots.size(); i++)
     {
         if( plots[i]->IsVisible() )
         {
@@ -2089,7 +2089,7 @@ VisWinPlots::SuspendTranslucentGeometry()
 void
 VisWinPlots::ResumeOpaqueGeometry()
 {
-    for(int i=0; i<plots.size(); i++)
+    for(size_t i=0; i<plots.size(); i++)
     {
         if( plots[i]->IsVisible() )
         {
@@ -2205,7 +2205,7 @@ VisWinPlots::GetMaxZShift()
 bool
 VisWinPlots::DoAllPlotsAxesHaveSameUnits()
 {
-    int i;
+    size_t i;
     bool first = true;
     std::string theUnits = "";
     for (i = 0; i < plots.size(); i++)

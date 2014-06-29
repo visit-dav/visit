@@ -97,7 +97,7 @@ vtkStandardNewMacro(vtkParallelImageSpaceRedistributor);
 //  Creation:    September  1, 2004
 //
 // ****************************************************************************
-
+#ifdef PARALLEL
 static void
 AreaOwned(int rank, int size, int w, int h,
           int &x1,int &y1, int &x2,int &y2)
@@ -107,7 +107,7 @@ AreaOwned(int rank, int size, int w, int h,
     y1 = (h*rank)/size;
     y2 = ((h*(rank+1))/size);
 }
-
+#endif
 // ****************************************************************************
 //  Constructor: vtkParallelImageSpaceRedistributor()
 //
@@ -468,7 +468,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
             }
             else if (dest == -1)
             {
-                for (int k=0; k<dests.size(); k++)
+                for (size_t k=0; k<dests.size(); k++)
                 {
                     int cnt;
                     cnt = outgoingPolyData[dests[k]]->InsertNextCell(cellType,
@@ -628,7 +628,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
     //
     delete[] big_send_buffer;
 
-    for (i=0; i<sendString.size(); i++)
+    for (i=0; i< (int)sendString.size(); i++)
     {
         delete[] sendString[i];
     }

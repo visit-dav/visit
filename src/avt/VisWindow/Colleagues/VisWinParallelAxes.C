@@ -241,7 +241,7 @@ VisWinParallelAxes::VisWinParallelAxes(VisWindowColleagueProxy &p) :
 
 VisWinParallelAxes::~VisWinParallelAxes()
 {
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->Delete();
         if (i > 0)
@@ -281,7 +281,7 @@ VisWinParallelAxes::SetForegroundColor(double fr_, double fg_, double fb_)
     fr = fr_;
     fg = fg_;
     fb = fb_;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->GetProperty()->SetColor(fr, fg, fb);
         if (i > 0)
@@ -356,7 +356,7 @@ VisWinParallelAxes::UpdateView(void)
             axes[0].axis->SetMajorTickLabelScale(1.);
     }
 
-    for (int i=1; i < axes.size(); i++)
+    for (size_t i=1; i < axes.size(); i++)
     {
         double dx = (vxmax - vxmin) / (xmax - xmin);
         double dy = (vymax - vymin) / (xmax - xmin);
@@ -716,7 +716,7 @@ VisWinParallelAxes::SetTitleVisibility(int vis)
     {
         axes[0].axis->SetTitleVisibility(titleVisibility);
     }
-    for (int i=1; i < axes.size(); i++)
+    for (size_t i=1; i < axes.size(); i++)
     {
         axes[i].axisCap1->SetTitleVisibility(titleVisibility);
     }
@@ -741,7 +741,7 @@ void
 VisWinParallelAxes::SetVisibility(int vis)
 {
     axisVisibility = vis;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetVisibility(axisVisibility);
         if (i > 0)
@@ -772,7 +772,7 @@ VisWinParallelAxes::SetTickVisibility(bool vis, bool labelvis)
 {
     tickVisibility = vis;
     tickLabelVisibility = labelvis;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMinorTicksVisible(tickVisibility);
         axes[i].axis->SetTickVisibility(tickVisibility || tickLabelVisibility);
@@ -800,7 +800,7 @@ void
 VisWinParallelAxes::SetAutoSetTicks(int autoset)
 {
     autoSetTicks = autoset;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetAdjustLabels(autoSetTicks);
     }
@@ -825,7 +825,7 @@ void
 VisWinParallelAxes::SetMajorTickMinimum(double majorMinimum)
 {
     majorTickMinimum = majorMinimum;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMajorTickMinimum(majorTickMinimum);
     }
@@ -851,7 +851,7 @@ void
 VisWinParallelAxes::SetMajorTickMaximum(double majorMaximum)
 {
     majorTickMaximum = majorMaximum;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMajorTickMaximum(majorTickMaximum);
     }
@@ -876,7 +876,7 @@ void
 VisWinParallelAxes::SetMajorTickSpacing(double majorSpacing)
 {
     majorTickSpacing = majorSpacing;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMajorTickSpacing(majorTickSpacing);
     }
@@ -901,7 +901,7 @@ void
 VisWinParallelAxes::SetMinorTickSpacing(double minorSpacing)
 {
     minorTickSpacing = minorSpacing;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMinorTickSpacing(minorTickSpacing);
     }
@@ -965,7 +965,7 @@ VisWinParallelAxes::SetTitleFontHeight(double height)
     {
         axes[0].axis->SetTitleFontHeight(titleFontHeight);
     }
-    for (int i=1; i < axes.size(); i++)
+    for (size_t i=1; i < axes.size(); i++)
     {
         axes[i].axisCap1->SetTitleFontHeight(titleFontHeight);
     }
@@ -990,7 +990,7 @@ void
 VisWinParallelAxes::SetLineWidth(int width)
 {
     lineWidth = width;
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->GetProperty()->SetLineWidth(lineWidth);
         if (i > 0)
@@ -1133,7 +1133,7 @@ VisWinParallelAxes::SetNumberOfAxes(int n)
         RemoveAxesFromWindow();
     }
 
-    if (n < axes.size())
+    if ((size_t)n < axes.size())
     {
         for (int i=1; i<n; i++)
         {
@@ -1142,7 +1142,7 @@ VisWinParallelAxes::SetNumberOfAxes(int n)
             axes[i].axisCap2->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
             axes[i].axisCap2->SetMajorTickMaximum(floor(30./(n-1.)-1.));
         }
-        for (int i=n; i<axes.size(); i++)
+        for (size_t i=n; i<axes.size(); i++)
         {
             axes[i].axis->Delete();
             if (i > 0)
@@ -1153,16 +1153,16 @@ VisWinParallelAxes::SetNumberOfAxes(int n)
         }
         axes.resize(n);
     }
-    else if (n > axes.size())
+    else if ((size_t)n > axes.size())
     {
-        for (int i=1; i<axes.size(); i++)
+        for (size_t i=1; i<axes.size(); i++)
         {
             axes[i].axisCap1->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
             axes[i].axisCap1->SetMajorTickMaximum(floor(30./(n-1.)-1.));
             axes[i].axisCap2->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
             axes[i].axisCap2->SetMajorTickMaximum(floor(30./(n-1.)-1.));
         }
-        for (int i=axes.size(); i<n; i++)
+        for (size_t i=axes.size(); i<(size_t)n; i++)
         {
             vtkVisItAxisActor2D *ax;
             ax = vtkVisItAxisActor2D::New();
@@ -1404,7 +1404,7 @@ VisWinParallelAxes::AddAxesToWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         foreground->AddActor2D(axes[i].axis);
         if (i > 0)
@@ -1438,7 +1438,7 @@ VisWinParallelAxes::RemoveAxesFromWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    for (int i=0; i < axes.size(); i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         foreground->RemoveActor2D(axes[i].axis);
         if (i > 0)
@@ -1561,7 +1561,7 @@ VisWinParallelAxes::UpdateTitleTextAttributes(double fr, double fg, double fb)
         // Pass the opacity in the line offset.
         axis->GetTitleTextProperty()->SetLineOffset(titleTextAttributes.color[3]);
     }
-    for(int i = 1; i < axes.size(); ++i)
+    for(size_t i = 1; i < axes.size(); ++i)
     {
         vtkVisItAxisActor2D *axis = axes[i].axisCap1;
         // Set the colors

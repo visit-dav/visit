@@ -598,7 +598,7 @@ avtDatabaseWriter::GetVariables(const std::string &meshname,
                     const Expression *expr = md->GetExpression(i);
                     if (expr->GetAutoExpression())
                         continue;
-                    bool shouldAdd = false;
+                    //bool shouldAdd = false;
                     bool canAdd = false;
                     std::string varname = expr->GetName();
                     //
@@ -817,12 +817,14 @@ avtDatabaseWriter::Write(const std::string &plotName,
     {
         bool scalarsCausedChange = false, vectorsCausedChange = false;
         spec = ApplyVariablesToContract(spec, meshname, scalarList, scalarsCausedChange);
-        if(scalarsCausedChange)
+        if(scalarsCausedChange) {
             debug5 << mName << "SCALARS CAUSED CHANGE TO PIPELINE" << endl;
+        }
 
         spec = ApplyVariablesToContract(spec, meshname, vectorList, vectorsCausedChange);
-        if(vectorsCausedChange)
+        if(vectorsCausedChange) {
             debug5 << mName << "VECTORS CAUSED CHANGE TO PIPELINE" << endl;
+        }
 
         needsExecute |= (scalarsCausedChange || vectorsCausedChange);
     }
@@ -836,8 +838,9 @@ avtDatabaseWriter::Write(const std::string &plotName,
         // Let materials contribute to the contract.
         bool materialsCausedChange = false;
         spec = ApplyMaterialsToContract(spec, meshname, materialList, materialsCausedChange);
-        if(materialsCausedChange)
+        if(materialsCausedChange) {
             debug5 << mName << "MATERIALS CAUSED CHANGE TO PIPELINE" << endl;
+        }
 
         needsExecute |= materialsCausedChange;
     }
@@ -1006,7 +1009,7 @@ avtDatabaseWriter::Write(const std::string &plotName,
         std::vector<avtDataTree_p> nodelist;
         nodelist.push_back(rootnode);
         int chunkID = startIndex;
-        for (int cur_index = 0 ; cur_index < nodelist.size() ; cur_index++)
+        for (size_t cur_index = 0 ; cur_index < nodelist.size() ; cur_index++)
         {
             avtDataTree_p dt = nodelist[cur_index];
             if (*dt == NULL)
@@ -1126,7 +1129,7 @@ avtDatabaseWriter::CreateNormals() const
 vtkPolyData *
 avtDatabaseWriter::CreateSinglePolyData(avtDataTree_p root)
 {
-    vtkPolyData *combinedPD = NULL;
+    //vtkPolyData *combinedPD = NULL;
 
     // Get all of the leaves.
     int nds = 0;

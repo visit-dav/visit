@@ -112,9 +112,9 @@ avtTimeExpression::~avtTimeExpression()
  
 void
 avtTimeExpression::DoOperation(vtkDataArray *, vtkDataArray *out,
-                               int ncomponents, int ntuples)
+                               int /*ncomponents*/, int ntuples)
 {
-    double val;
+    double val = 0;
     switch (mode)
     {
       case MODE_TIME:

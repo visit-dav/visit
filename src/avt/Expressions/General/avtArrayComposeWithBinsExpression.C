@@ -213,7 +213,7 @@ avtArrayComposeWithBinsExpression::ProcessArguments(ArgsExpr *args,
                    " size 3: [L0, L1, L2].  V1's bin goes from L0 to L1, "
                    "and V2's bin goes from L1 to L2.");
     }
-    for (int i = 0 ; i < elems->size() ; i++)
+    for (size_t i = 0 ; i < elems->size() ; i++)
     {
         if ((*elems)[i]->GetEnd())
         {

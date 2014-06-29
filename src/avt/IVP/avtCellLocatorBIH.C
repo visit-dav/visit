@@ -349,8 +349,8 @@ private:
         }
         
         float cost = std::numeric_limits<float>::max();
-        float plane;
-        unsigned int dim;
+        float plane = 0;
+        unsigned int dim = 0;
 
         for( unsigned int d=0; d<3; ++d )    
         {
@@ -365,7 +365,7 @@ private:
                     if( b[d][m].max > lmax )
                         lmax = b[d][m].max;
                 
-                for( unsigned int m=n+1; m<nbuckets; ++m )
+                for( unsigned int m=n+1; m< (unsigned int)nbuckets; ++m )
                     if( b[d][m].min < rmin )
                         rmin = b[d][m].min;
                 

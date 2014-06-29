@@ -327,11 +327,11 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
         return;
     }
 
-    for (inputNum = 0; inputNum < inputs.size(); inputNum++)
+    for (inputNum = 0; inputNum < (int)inputs.size(); inputNum++)
     {
         if (inputs[inputNum] == ds) break;
     }
-    if (inputNum >= inputs.size())
+    if (inputNum >= (int)inputs.size())
     {
         inputs.push_back(ds);
         surfaceModified.push_back(true);
@@ -571,7 +571,7 @@ avtSurfaceAndWireframeRenderer::SetLookupTable(vtkLookupTable *lut)
     if (LUT != lut)
     {
         LUT = lut; 
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = edgesModified[i] = true;
     }
 }
@@ -597,7 +597,7 @@ avtSurfaceAndWireframeRenderer::ResolveTopologyOn()
 {
     if (!resolveTopology) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = edgesModified[i] = true;
     }
     resolveTopology = true;    
@@ -624,7 +624,7 @@ avtSurfaceAndWireframeRenderer::ResolveTopologyOff()
 {
     if (resolveTopology) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = edgesModified[i] = true;
     }
     resolveTopology = false;    
@@ -652,7 +652,7 @@ avtSurfaceAndWireframeRenderer::ScalarVisibilityOff()
 {
     if (scalarVisibility) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = edgesModified[i] = true;
     }
     scalarVisibility = false;    
@@ -680,7 +680,7 @@ avtSurfaceAndWireframeRenderer::ScalarVisibilityOn()
 {
     if (!scalarVisibility) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = edgesModified[i] = true;
     }
     scalarVisibility = true;    
@@ -707,7 +707,7 @@ avtSurfaceAndWireframeRenderer::SurfaceVertsOn()
 {
     if (!drawSurfaceVerts) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfaceVerts = true;    
@@ -733,7 +733,7 @@ avtSurfaceAndWireframeRenderer::SurfaceVertsOff()
 {
     if (drawSurfaceVerts) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfaceVerts = false;    
@@ -759,7 +759,7 @@ avtSurfaceAndWireframeRenderer::SurfaceLinesOn()
 {
     if (!drawSurfaceLines) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfaceLines = true;    
@@ -785,7 +785,7 @@ avtSurfaceAndWireframeRenderer::SurfaceLinesOff()
 {
     if (drawSurfaceLines) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfaceLines = false;    
@@ -812,7 +812,7 @@ avtSurfaceAndWireframeRenderer::SurfaceStripsOn()
 {
     if (!drawSurfaceStrips) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfaceStrips = true;    
@@ -838,7 +838,7 @@ avtSurfaceAndWireframeRenderer::SurfaceStripsOff()
 {
     if (drawSurfaceStrips) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfaceStrips = false;    
@@ -865,7 +865,7 @@ avtSurfaceAndWireframeRenderer::SurfacePolysOn()
 {
     if (!drawSurfacePolys) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfacePolys = true;    
@@ -891,7 +891,7 @@ avtSurfaceAndWireframeRenderer::SurfacePolysOff()
 {
     if (drawSurfacePolys) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             surfaceModified[i] = true;
     }
     drawSurfacePolys = false;    
@@ -915,7 +915,7 @@ avtSurfaceAndWireframeRenderer::EdgeVertsOn()
 {
     if (!drawEdgeVerts) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgeVerts = true;    
@@ -939,7 +939,7 @@ avtSurfaceAndWireframeRenderer::EdgeVertsOff()
 {
     if (drawEdgeVerts) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgeVerts = false;    
@@ -966,7 +966,7 @@ avtSurfaceAndWireframeRenderer::EdgeLinesOn()
 {
     if (!drawEdgeLines) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgeLines = true;    
@@ -992,7 +992,7 @@ avtSurfaceAndWireframeRenderer::EdgeLinesOff()
 {
     if (drawEdgeLines) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgeLines = false;    
@@ -1019,7 +1019,7 @@ avtSurfaceAndWireframeRenderer::EdgeStripsOn()
 {
     if (!drawEdgeStrips) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgeStrips = true;    
@@ -1045,7 +1045,7 @@ avtSurfaceAndWireframeRenderer::EdgeStripsOff()
 {
     if (drawEdgeStrips) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgeStrips = false;    
@@ -1072,7 +1072,7 @@ avtSurfaceAndWireframeRenderer::EdgePolysOn()
 {
     if (!drawEdgePolys) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgePolys = true;    
@@ -1099,7 +1099,7 @@ avtSurfaceAndWireframeRenderer::EdgePolysOff()
 {
     if (drawEdgePolys) 
     {
-        for (int i = 0; i < inputs.size(); i++)
+        for (size_t i = 0; i < inputs.size(); i++)
             edgesModified[i] = true;
     }
     drawEdgePolys = false;    

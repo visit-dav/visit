@@ -291,7 +291,7 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     history[0] = vCur;
 
     // Calculate the new velocity using the Adams-Bashforth algorithm
-    for (size_t i = 0; i < abNSteps; ++i)
+    for (int i = 0; i < abNSteps; ++i)
         vNew += bashforth[abStep][i] * history[i];
 
     // Calculate the new position.

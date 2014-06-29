@@ -2298,7 +2298,7 @@ VisitPlaneTool::DoTransformations()
 {
     avtMatrix M = TMtx * RMtx * SMtx;
 
-    for (int i=0; i<hotPoints.size(); i++)
+    for (size_t i=0; i<hotPoints.size(); i++)
         hotPoints[i].pt = M * origHotPoints[i].pt;
 
 

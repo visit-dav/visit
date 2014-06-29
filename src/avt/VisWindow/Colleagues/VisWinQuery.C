@@ -1151,7 +1151,7 @@ void
 VisWinQuery::GetVisualCues(const VisualCueInfo::CueType cueType,
     std::vector<const VisualCueInfo*>& cues) const
 {
-    int i;
+    size_t i;
 
     if ((cueType == VisualCueInfo::PickPoint) ||
         (cueType == VisualCueInfo::Unknown))

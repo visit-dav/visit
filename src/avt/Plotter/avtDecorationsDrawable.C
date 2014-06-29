@@ -130,7 +130,7 @@ void
 avtDecorationsDrawable::Add(vtkRenderer *ren)
 {
     renderer = ren;
-    for (int i = 0 ; i < actors.size() ; i++)
+    for (size_t i = 0 ; i < actors.size() ; i++)
     {
         actors[i]->Add(ren); 
     }
@@ -159,7 +159,7 @@ avtDecorationsDrawable::Remove(vtkRenderer *ren)
         EXCEPTION0(ImproperUseException);
     }
 
-    for (int i = 0 ; i < actors.size() ; i++)
+    for (size_t i = 0 ; i < actors.size() ; i++)
     {
         actors[i]->Remove();
     }
@@ -181,7 +181,7 @@ avtDecorationsDrawable::Remove(vtkRenderer *ren)
 void
 avtDecorationsDrawable::VisibilityOn(void)
 {
-    for (int i = 0 ; i < actors.size() ; i++)
+    for (size_t i = 0 ; i < actors.size() ; i++)
     {
         actors[i]->UnHide();
     }
@@ -202,7 +202,7 @@ avtDecorationsDrawable::VisibilityOn(void)
 void
 avtDecorationsDrawable::VisibilityOff(void)
 {
-    for (int i = 0 ; i < actors.size() ; i++)
+    for (size_t i = 0 ; i < actors.size() ; i++)
     {
         actors[i]->Hide();
     }
@@ -255,7 +255,7 @@ avtDecorationsDrawable::ScaleByVector(const double vec[3])
     // change their position according to the way the curve line 
     // was scaled.
     //
-    for (int i = 0 ; i < actors.size(); i++)
+    for (size_t i = 0 ; i < actors.size(); i++)
     {
         actors[i]->Shift(vec);
     }
@@ -305,7 +305,7 @@ avtDecorationsDrawable::UpdateScaleFactor()
         //  the scale for all the other actors.
         //
         double scale = actors[0]->ComputeScaleFactor();
-        for (int i = 1 ; i < actors.size(); i++)
+        for (size_t i = 1 ; i < actors.size(); i++)
         {
             actors[i]->SetScale(scale);
         }

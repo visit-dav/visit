@@ -70,7 +70,7 @@
 NavigateAxisArray::NavigateAxisArray(VisWindowInteractorProxy &v) : VisitInteractor(v)
 {
     shiftKeyDown = controlKeyDown = false;
-    VisWindow *win = v;
+    //VisWindow *win = v;
     axisOrientation = Vertical;
     domainOrientation = Horizontal;
 }
@@ -458,8 +458,8 @@ NavigateAxisArray::ZoomCamera(const int x, const int y)
         //
         double dyf = MotionFactor * (double)(y - OldY) /
                          (double)(Center[1]);
-        double dxf = MotionFactor * (double)(x - OldX) /
-                         (double)(Center[0]);
+        //double dxf = MotionFactor * (double)(x - OldX) /
+        //                 (double)(Center[0]);
 
         //
         // Perform zoom
@@ -522,7 +522,7 @@ NavigateAxisArray::ZoomCamera(const int x, const int y)
 void
 NavigateAxisArray::ZoomHorizontal(double f)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     //
     // Calculate the zoom factor.
@@ -561,7 +561,7 @@ NavigateAxisArray::ZoomHorizontal(double f)
 void
 NavigateAxisArray::ZoomHorizontalFixed(double f)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     VisWindow *vw = proxy;
 
@@ -594,7 +594,7 @@ NavigateAxisArray::ZoomHorizontalFixed(double f)
 void
 NavigateAxisArray::ZoomVertical(double f)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     //
     // Calculate the zoom factor.
@@ -633,7 +633,7 @@ NavigateAxisArray::ZoomVertical(double f)
 void
 NavigateAxisArray::ZoomVerticalFixed(double f)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     VisWindow *vw = proxy;
 

@@ -168,7 +168,7 @@ avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds, int curre
             // accumulate at all points within "spread" units of a dp of 1.0,
             // weighted by dot product squared
             int maxindex = -1;
-            double maxvlen = -1e9;
+            //double maxvlen = -1e9;
             double maxdp = -1e9;
             for (int j=0; j<geodesic_sphere_npts; j++)
             {
@@ -179,7 +179,7 @@ avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds, int curre
                     if (dp > maxdp)
                     {
                         maxdp = dp;
-                        maxvlen = vlen;
+                        //maxvlen = vlen;
                         maxindex = j;
                     }
                 }

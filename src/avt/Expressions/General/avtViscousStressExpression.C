@@ -106,11 +106,12 @@ avtViscousStressExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
         avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
         topo_dim = atts.GetTopologicalDimension();
 
-        if(topo_dim == 2)
-        if(GetInput()->GetInfo().GetAttributes().GetMeshCoordType()== AVT_XY)
-        {rz_mesh = false;}
-        else
-        {rz_mesh = true;}
+        if(topo_dim == 2) { /// TODO: Check the parens
+            if(GetInput()->GetInfo().GetAttributes().GetMeshCoordType()== AVT_XY)
+            {rz_mesh = false;}
+            else
+            {rz_mesh = true;}
+        }
 
         if(topo_dim != 2)
         {

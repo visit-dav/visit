@@ -156,7 +156,7 @@ avtSILMatrix::Initialize(const vector<int> &s1, SILCategoryRole r1,
     role2       = r2;
     category2   = n2;
 
-    int ii;
+    size_t ii;
     set1IsSequential = true;
     for (ii = 1; ii < set1.size(); ii++)
     {
@@ -313,7 +313,7 @@ avtSILMatrix::GetSILCollection(int index) const
     string name;
     SILCategoryRole role;
 
-    if (index < set1.size())
+    if ((size_t)index < set1.size())
     {
         int row    = index;
 
@@ -322,7 +322,7 @@ avtSILMatrix::GetSILCollection(int index) const
         role = role2;
 
         vector<int> s;
-        for (int i = 0 ; i < set2.size() ; i++)
+        for (size_t i = 0 ; i < set2.size() ; i++)
         {
             s.push_back(setsStartAt + row*static_cast<int>(set2.size()) + i);
         }
@@ -337,7 +337,7 @@ avtSILMatrix::GetSILCollection(int index) const
         role = role1;
 
         vector<int> s;
-        for (int i = 0 ; i < set1.size() ; i++)
+        for (size_t i = 0 ; i < set1.size() ; i++)
         {
             s.push_back(setsStartAt + i*set2.size() + column);
         }
@@ -624,10 +624,10 @@ avtSILMatrix::GetNumCollections(void) const
 int
 avtSILMatrix::SetIsInCollection(int set) const
 {
-    int ii;
+    size_t ii;
     if (set1IsSequential)
     {
-        if (set1[0] <= set && set < set1[0]+set1.size())
+        if (set1[0] <= set && (size_t)set < set1[0]+set1.size())
             return (GetStartCollection() + set - set1[0]);
     }
     else
@@ -640,7 +640,7 @@ avtSILMatrix::SetIsInCollection(int set) const
     }
     if (set2IsSequential)
     {
-        if (set2[0] <= set && set < set2[0]+set2.size())
+        if (set2[0] <= set && (size_t)set < set2[0]+set2.size())
             return (GetStartCollection() + static_cast<int>(set1.size()) + set - set2[0]);
     }
     else

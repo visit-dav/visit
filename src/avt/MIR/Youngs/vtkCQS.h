@@ -7,7 +7,7 @@
 #define VTK_C_Q_S_H
 
 #ifndef SWIG
-const static char * VTK_C_Q_S_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
+//const static char * VTK_C_Q_S_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 #endif /*SWIG*/
 
 #include <vtkObjectFactory.h>

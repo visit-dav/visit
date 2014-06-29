@@ -160,7 +160,7 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         bool shouldSkip = false;
         if (entry_size == 2)
         {
-            if (ptr[entry_size*i + 0] != currentDomainsIndex)
+            if (ptr[entry_size*i + 0] != (unsigned int)currentDomainsIndex)
             {
                 nmats = 1;
                 shouldSkip = true;

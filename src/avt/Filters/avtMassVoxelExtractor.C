@@ -805,7 +805,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
                                     std::vector<std::string> &varorder,
                                     std::vector<int> &varsize)
 {
-    int  i, j, k;
+    size_t  i, j, k;
 
     rgrid->GetDimensions(dims);
     if (X != NULL)
@@ -818,13 +818,13 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     // dims is the size of each of the small 3D patches e.g. 52x16x16 (or grid)
     // X, Y & Z store the "real" coordinates each point in the grid (the above grid) e.g. 0.61075, 0.19536, 0.01936 for 0,0,0
     X = new double[dims[0]];
-    for (i = 0 ; i < dims[0] ; i++)
+    for (i = 0 ; i < (size_t)dims[0] ; i++)
         X[i] = rgrid->GetXCoordinates()->GetTuple1(i);
     Y = new double[dims[1]];
-    for (i = 0 ; i < dims[1] ; i++)
+    for (i = 0 ; i < (size_t)dims[1] ; i++)
         Y[i] = rgrid->GetYCoordinates()->GetTuple1(i);
     Z = new double[dims[2]];
-    for (i = 0 ; i < dims[2] ; i++)
+    for (i = 0 ; i < (size_t)dims[2] ; i++)
         Z[i] = rgrid->GetZCoordinates()->GetTuple1(i);
 
     vtkDataArray *arr = rgrid->GetCellData()->GetArray("avtGhostZones");
@@ -834,7 +834,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
         ghosts = NULL;
 
     ncell_arrays = 0;
-    for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
         const char *name = arr->GetName();
@@ -858,7 +858,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     }
 
     npt_arrays = 0;
-    for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
         const char *name = arr->GetName();
@@ -894,13 +894,13 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     // a 5% performance boost.
     //
     divisors_X = new double[dims[0]-1];
-    for (i = 0 ; i < dims[0] - 1 ; i++)
+    for (i = 0 ; i < (size_t)dims[0] - 1 ; i++)
         divisors_X[i] = (X[i+1] == X[i] ? 1. : 1./(X[i+1]-X[i]));
     divisors_Y = new double[dims[1]-1];
-    for (i = 0 ; i < dims[1] - 1 ; i++)
+    for (i = 0 ; i < (size_t)dims[1] - 1 ; i++)
         divisors_Y[i] = (Y[i+1] == Y[i] ? 1. : 1./(Y[i+1]-Y[i]));
     divisors_Z = new double[dims[2]-1];
-    for (i = 0 ; i < dims[2] - 1 ; i++)
+    for (i = 0 ; i < (size_t)dims[2] - 1 ; i++)
         divisors_Z[i] = (Z[i+1] == Z[i] ? 1. : 1./(Z[i+1]-Z[i]));
 }
 
@@ -1499,7 +1499,7 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
     int  count = 0;
 
     avtRay *ray = volume->GetRay(w, h);
-    int myInd[3];
+    //int myInd[3];
     bool calc_cell_index = ((ncell_arrays > 0) || (ghosts != NULL));
 
     double dest_rgb[4] = {0.0,0.0,0.0, 0.0};     // to store the computed color
@@ -1827,7 +1827,7 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
 
                                     double gradVals[8];
                                     int indexGrad[8], gradInd[3], gradIndices[6];
-                                    float xRight, yTop, zBack;
+                                    float xRight, yTop, zBack = 0;
 
                                 
 
@@ -2078,15 +2078,15 @@ avtMassVoxelExtractor::computePixelColor(double source_rgb[4], double dest_rgb[4
     // Phong Shading
     if (lighting == true){
         float dir[3];           // The view "right" vector.
-        double view_right[3];   // view_direction cross view_up
+        //double view_right[3];   // view_direction cross view_up
                                 
         dir[0] = -view_direction[0];
         dir[1] = -view_direction[1];
         dir[2] = -view_direction[2];
         
-        double gradientDouble[3], transformedGradient[3];
-        for (int i=0; i<3; i++)
-            transformedGradient[i] = gradientDouble[i] = gradient[i];
+//        double gradientDouble[3], transformedGradient[3];
+//        for (int i=0; i<3; i++)
+//            transformedGradient[i] = gradientDouble[i] = gradient[i];
 
         // cos(angle) = a.b;  angle between normal and light
         float normal_dot_light = dot(gradient,dir);   // angle between light and normal;
@@ -2506,12 +2506,12 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
     std::vector<int>     cell_vartypes;
     std::vector<int>     cell_size;
     std::vector<int>     cell_index;
-    for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
         const char *name = arr->GetName();
         int idx = -1;
-        for (j = 0 ; j < varnames.size() ; j++)
+        for (j = 0 ; j < (int)varnames.size() ; j++)
         {
             if (varnames[j] == name)
             {
@@ -2533,12 +2533,12 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
     std::vector<int>     pt_vartypes;
     std::vector<int>     pt_size;
     std::vector<int>     pt_index;
-    for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
         const char *name = arr->GetName();
         int idx = -1;
-        for (j = 0 ; j < varnames.size() ; j++)
+        for (j = 0 ; j < (int)varnames.size() ; j++)
         {
             if (varnames[j] == name)
             {
@@ -2645,8 +2645,8 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                     FindRange(zarray, zind, zc, z_front, z_back);
                 }
 
-                int var_index = 0;
-                for (l = 0 ; l < cell_arrays.size() ; l++)
+                //int var_index = 0;
+                for (l = 0 ; l < (int)cell_arrays.size() ; l++)
                 {
                     int index = zind*((nX-1)*(nY-1)) + yind*(nX-1) + xind;
                     for (m = 0 ; m < cell_size[l] ; m++)
@@ -2665,7 +2665,7 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                     index[5] = (zind+1)*nX*nY + (yind)*nX + (xind+1);
                     index[6] = (zind+1)*nX*nY + (yind+1)*nX + (xind);
                     index[7] = (zind+1)*nX*nY + (yind+1)*nX + (xind+1);
-                    for (l = 0 ; l < pt_arrays.size() ; l++)
+                    for (l = 0 ; l < (int)pt_arrays.size() ; l++)
                     {
                         void  *pt_array = pt_arrays[l];
                         int    s        = pt_size[l];

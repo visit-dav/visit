@@ -366,7 +366,7 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
     }
     else 
     {
-        int ii;
+        size_t ii;
         
         avtContract_p orig_contract = dob->GetOriginatingSource()->
             GetGeneralContract();

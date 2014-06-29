@@ -433,7 +433,7 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
     if (multipleBlocks && meshes.size() == 1)
         bFullDomainInfo = (nDomains == (meshes[0]->GetNumberOfPoints()/ptsPerDomain));
     else
-        bFullDomainInfo = (nDomains == meshes.size());
+        bFullDomainInfo = ((size_t)nDomains == meshes.size());
 
 #else
     int jj;
@@ -805,7 +805,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
         gn = NULL;
     }
 
-    for (size_t ii = 0; ii < numToIterate; ii++)
+    for (size_t ii = 0; ii < (size_t)numToIterate; ii++)
     {
         int dom = domainNum[ii];
     
@@ -836,7 +836,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
             bool bMarkFace = false;
             if (bAllDomainsSequential)
             {
-                if (allDomains[0] <= iNeighborDomain && iNeighborDomain < allDomains[0]+allDomains.size())
+                if (allDomains[0] <= iNeighborDomain && (size_t)iNeighborDomain < allDomains[0]+allDomains.size())
                     bMarkFace = true;
             }
             else if (bAllDomainsSorted)

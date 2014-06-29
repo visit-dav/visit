@@ -363,7 +363,7 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     else //(matDS.size() > 1)
     {
         vtkAppendFilter *append = vtkAppendFilter::New();
-        for (int i=0; i<matDS.size(); i++)
+        for (size_t i=0; i<matDS.size(); i++)
             append->AddInputData(matDS[i]);
 
         retval = append->GetOutput();
@@ -388,7 +388,7 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         int currcount = 0;
         for (int i=0; i<ncells; i++)
         {
-            if (matindex < matDS.size() &&
+            if ((size_t)matindex < matDS.size() &&
                 currcount >= matDS[matindex]->GetNumberOfCells())
             {
                 matindex++;

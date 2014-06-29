@@ -700,7 +700,7 @@ avtConnComponentsExpression::LabelBoundaryNeighbors(vtkDataSet *data_set)
                                   true, true, NULL);
     delete flf;
     clone_ds->Delete();
-    vtkDataSet *ds = tree->GetSingleLeaf();
+    //vtkDataSet *ds = tree->GetSingleLeaf();
     // we do not need to Delete ds because it is contained by tree
     // we do not need to delete tree, since it is a ref_ptr
 
@@ -952,7 +952,7 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
         vtkIntArray  *src_labels   = labels[i];
 
         // get intersection between set i and possible matches
-        for (int m = 0 ; m < possible_matches.size() ; m++)
+        for (size_t m = 0 ; m < possible_matches.size() ; m++)
         {
             j = possible_matches[m];
             // self intersection test not necessary
@@ -1105,7 +1105,7 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
         vtkIntArray  *src_labels   = labels[i];
 
         // get intersection between set i and possible matches
-        for (int m = 0 ; m < possible_matches.size() ; m++)
+        for (size_t m = 0 ; m < possible_matches.size() ; m++)
         {
             j = possible_matches[m];
             // self intersection test not necessary
@@ -1278,9 +1278,9 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
     std::vector<vtkIntArray*> labels;
 
     // get the id of the local processor
-    int procid = PAR_Rank();
+    //int procid = PAR_Rank();
     // get the number of local datasets
-    int n_local_sets = local_sets.size();
+    //int n_local_sets = local_sets.size();
 
     // To create the spatial partition, we first need to know the bounds of 
     // the entire dataset.
@@ -1369,7 +1369,7 @@ avtConnComponentsExpression::GlobalUnion(int num_comps,
 
     // get the number of processors and the current processor id
     int nprocs = PAR_Size();
-    int procid = PAR_Rank();
+    //int procid = PAR_Rank();
 
     // create a union find data structure for resolving the labels
     // (in this case all union representatives are valid)
@@ -1547,8 +1547,8 @@ avtConnComponentsExpression::ModifyContract(avtContract_p in_spec)
 
 avtConnComponentsExpression::UnionFind::UnionFind(int num_items,
                                                   bool all_valid)
-: parents(num_items,-1),
-  ranks(num_items,0),
+: ranks(num_items,0),
+  parents(num_items,-1),
   valid(num_items,all_valid),
   finalLabels(num_items,-1)
 {
@@ -1900,7 +1900,7 @@ void
 avtConnComponentsExpression::BoundarySet::Finalize()
 {
     // loop indices
-    int i, j;
+    size_t i, j;
 
     // set bounds defaults
     bounds[0] =  DBL_MAX;
@@ -1935,7 +1935,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
 
     itrees.resize(nsets);
 
-    for(i = 0; i < nsets ; i++)
+    for(i = 0; i < (size_t)nsets ; i++)
     {
         // for each data set
         double curr_bounds[6];
@@ -1965,7 +1965,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
         {
             avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,(is2D ? 2 : 3));
 
-            for(j = 0; j< curr_ncells; j++)
+            for(j = 0; j< (size_t)curr_ncells; j++)
             {
                 // add each cell's bounds to the interval tree
                 vtkCell *cell = curr_set->GetCell(j);
@@ -2364,7 +2364,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
 
     // get the current processor id and the # of processors
     int nprocs = PAR_Size();
-    int procid = PAR_Rank();
+    //int procid = PAR_Rank();
 
     char *snd_msg = NULL;
     int *snd_count = new int[nprocs];
@@ -2976,11 +2976,11 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
 
         float min, max;
 
-        int index = 0;
-        if (axis == Y_AXIS)
-            index = 2;
-        else if (axis == Z_AXIS)
-            index = 4;
+//        int index = 0;
+//        if (axis == Y_AXIS)
+//            index = 2;
+//        else if (axis == Z_AXIS)
+//            index = 4;
 
         if (firstBigger <= 0)
         {
@@ -3054,7 +3054,7 @@ void
 avtConnComponentsExpression::SpatialPartition::CreatePartition
 (const BoundarySet &bset, double *bounds)
 {
-    int   i, j;
+    size_t   i, j;
     int t0 = visitTimer->StartTimer();
 
     if (itree != NULL)
@@ -3116,7 +3116,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         }
         else
         {
-            for (j = 0 ; j < ncells ; j++)
+            for (j = 0 ; j < (size_t)ncells ; j++)
             {
                 if(gzn_ptr[j]==1)
                     total_cells++;
@@ -3146,7 +3146,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             if (gzn_array)
                 gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
 
-            for (j = 0 ; j < ncells ; j++)
+            for (j = 0 ; j < (size_t)ncells ; j++)
             {
                 if(gzn_ptr != NULL && gzn_ptr[j]!=1)
                         continue;
@@ -3175,7 +3175,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             int t5 = visitTimer->StartTimer();
             // Figure out how many boundaries need to keep going.
             int nBins = 0;
-            for (i = 0 ; i < listSize ; i++)
+            for (i = 0 ; i < (size_t)listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                 {
                     bin_lookup[nBins] = i;
@@ -3183,7 +3183,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 }
 
             // Calculate how many points fall within each region.
-            for (i = 0 ; i < listSize ; i++)
+            for (i = 0 ; i < (size_t)listSize ; i++)
             {
                 if (b_list[i]->IsDone())
                     continue;
@@ -3201,7 +3201,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
 
             // See which boundaries found a suitable pivot and can now split.
             PartitionBoundary::PrepareSplitQuery(b_list, listSize);
-            int numAtStartOfLoop = listSize;
+            size_t numAtStartOfLoop = listSize;
             for (i = 0 ; i < numAtStartOfLoop ; i++)
             {
                 if (b_list[i]->IsDone())
@@ -3218,7 +3218,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             // Obviously, all the boundaries that were just split need more 
             // processing, because they haven't done any yet.
             keepGoing = false;
-            for (i = 0 ; i < listSize ; i++)
+            for (i = 0 ; i < (size_t)listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                     keepGoing = true;
             visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
@@ -3236,7 +3236,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             int t5 = visitTimer->StartTimer();
             // Figure out how many boundaries need to keep going.
             int nBins = 0;
-            for (i = 0 ; i < listSize ; i++)
+            for (i = 0 ; i < (size_t)listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                 {
                     bin_lookup[nBins] = i;
@@ -3244,12 +3244,12 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 }
 
             // Calculate how many points fall within each region.
-            for (i = 0 ; i < listSize ; i++)
+            for (i = 0 ; i < (size_t)listSize ; i++)
             {
                 if (b_list[i]->IsDone())
                     continue;
                 int nregions = b_list[i]->GetNumberOfRegions();
-                for (int j = 0 ; j < nregions ; j++)
+                for (int j = 0 ; j < (size_t)nregions ; j++)
                 {
                     b_list[i]->SetNumberOfPointsForRegion(j, 0);
                 }
@@ -3257,7 +3257,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
 
             // See which boundaries found a suitable pivot and can now split.
             PartitionBoundary::PrepareSplitQuery(b_list, listSize);
-            int numAtStartOfLoop = listSize;
+            size_t numAtStartOfLoop = listSize;
             for (i = 0 ; i < numAtStartOfLoop ; i++)
             {
                 if (b_list[i]->IsDone())
@@ -3274,7 +3274,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             // Obviously, all the boundaries that were just split need more 
             // processing, because they haven't done any yet.
             keepGoing = false;
-            for (i = 0 ; i < listSize ; i++)
+            for (i = 0 ; i < (size_t)listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                     keepGoing = true;
             visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
@@ -3285,7 +3285,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     // contains the actual spatial partitioning.
     itree = new avtIntervalTree(nProcs, (is2D ? 2 : 3));
     int count = 0;
-    for (i = 0 ; i < listSize ; i++)
+    for (i = 0 ; i < (size_t)listSize ; i++)
     {
         if (b_list[i]->IsLeaf())
         {
@@ -3299,7 +3299,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     itree->Calculate(true);
 
     // Clean up.
-    for (i = 0 ; i < listSize ; i++)
+    for (i = 0 ; i < (size_t)listSize ; i++)
         delete b_list[i];
     delete [] b_list;
     delete [] bin_lookup;

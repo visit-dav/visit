@@ -165,9 +165,9 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     result_node["num_zones"] = (int)tz[0];
  
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of zones is %ld.", tz[0]);
+        SNPRINTF(msg, 200, "The original number of zones is %lld.", tz[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of zones is %ld.", tz[0]);
+        SNPRINTF(msg, 200, "The actual number of zones is %lld.", tz[0]);
     
     if (gt != AVT_HAS_GHOSTS)
     {
@@ -177,7 +177,7 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     else
     {
         char msg2[200];
-        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %ld.", msg, tz[1]);
+        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %lld.", msg, tz[1]);
         double results[2] = {(double) tz[0], (double) tz[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);

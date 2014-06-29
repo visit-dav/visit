@@ -2,7 +2,7 @@
 // Commissariat a l'Energie Atomique, (CEA)
 // BP12, 91297 Arpajon, France
 
-const static char * VTK_C_Q_S__C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
+//const static char * VTK_C_Q_S__C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 
 #include "vtkCQS.h"
 
@@ -89,6 +89,7 @@ int vtkCQS::RequestData(vtkInformation *request,
     }
 
     // detect dimensionality
+    /*
     int dimension = 3;
     {
         double bounds[6];
@@ -101,6 +102,7 @@ int vtkCQS::RequestData(vtkInformation *request,
             dimension = 2;
         }
     }
+    */
 
     vtkIdType nCells = _input->GetNumberOfCells();
     vtkIdType nCellNodes = 0;

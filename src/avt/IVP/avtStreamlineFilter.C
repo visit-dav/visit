@@ -1031,24 +1031,24 @@ typedef struct
     int domain, id;
 } seedPtDomain;
 
-static int comparePtDom(const void *a, const void *b)
-{
-    seedPtDomain *pdA = (seedPtDomain *)a, *pdB = (seedPtDomain *)b;
+//static int comparePtDom(const void *a, const void *b)
+//{
+//    seedPtDomain *pdA = (seedPtDomain *)a, *pdB = (seedPtDomain *)b;
     
-    if (pdA->domain < pdB->domain)
-        return -1;
-    else if (pdA->domain > pdB->domain)
-        return 1;
-    return 0;
-}
+//    if (pdA->domain < pdB->domain)
+//        return -1;
+//    else if (pdA->domain > pdB->domain)
+//        return 1;
+//    return 0;
+//}
 
 
-static float
-randMinus1_1()
-{
-    float r = 2.0 * ((float)rand() / (float)RAND_MAX);
-    return (r-1.0);
-}
+//static float
+//randMinus1_1()
+//{
+//    float r = 2.0 * ((float)rand() / (float)RAND_MAX);
+//    return (r-1.0);
+//}
 
 
 // ****************************************************************************

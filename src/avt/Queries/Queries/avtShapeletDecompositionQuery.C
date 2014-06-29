@@ -379,7 +379,7 @@ avtShapeletDecompositionQuery::ComputeError(vtkRectilinearGrid *a,
     if(!a_arr || !b_arr)
         return 1.0;
     int a_len = a_arr->GetNumberOfTuples();
-    int b_len = b_arr->GetNumberOfTuples();
+    //int b_len = b_arr->GetNumberOfTuples();
     
     if(!a_arr || !b_arr)
         return 1.0;

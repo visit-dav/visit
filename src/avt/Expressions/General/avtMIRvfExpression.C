@@ -229,7 +229,7 @@ avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 void
 avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomainsIndex)
 {
-    int    i, j;
+    size_t    i, j;
 
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
@@ -252,7 +252,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
     // Try to match up the materials in the avtMaterial object with the
     // materials requested by the users.
     //
-    int nmats = mat->GetNMaterials();
+    size_t nmats = mat->GetNMaterials();
     useMat.resize(nmats, false);
     std::vector<bool>  matchedMatName(matNames.size(), false);
     std::vector<bool>  matchedMatIndex(matIndices.size(), false);
@@ -442,7 +442,7 @@ avtMIRvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
         // It's a list.  Process all of them.
         ListExpr *list = dynamic_cast<ListExpr*>(fourthTree);
         std::vector<ListElemExpr*> *elems = list->GetElems();
-        for(int i=0;i<elems->size();i++)
+        for(size_t i=0;i<elems->size();i++)
         {
             if ((*elems)[i]->GetEnd())
             {

@@ -360,7 +360,7 @@ avtDataAttributes::DestructSelf(void)
         thisProcsActualSpatial = NULL;
     }
 
-    for (int i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
     {
         if (variables[i]->originalData != NULL)
         {
@@ -646,7 +646,7 @@ avtDataAttributes::Print(ostream &out)
     if (labels.size() > 0)
     {
         out << "The labels are: ";
-        for (int i = 0 ; i < labels.size() ; i++)
+        for (size_t i = 0 ; i < labels.size() ; i++)
         {
             out << labels[i].c_str();
             if (i < labels.size()-1)
@@ -691,7 +691,7 @@ avtDataAttributes::Print(ostream &out)
         thisProcsActualSpatial->Print(out);
     }
 
-    int i;
+    size_t i;
     for (i = 0 ; i < variables.size() ; i++)
     {
         out << "Variable = " << variables[i]->varname.c_str() << endl;
@@ -737,7 +737,7 @@ avtDataAttributes::Print(ostream &out)
         if (variables[i]->subnames.size() != 0)
         {
             out << "Variable subnames = " << endl;
-            for (int j = 0 ; j < variables[i]->subnames.size() ; j++)
+            for (size_t j = 0 ; j < variables[i]->subnames.size() ; j++)
             {
                 out << variables[i]->subnames[j].c_str();
                 if (j < variables[i]->subnames.size()-1)
@@ -748,7 +748,7 @@ avtDataAttributes::Print(ostream &out)
         if (variables[i]->binRange.size() != 0)
         {
             out << "Bin ranges = " << endl;
-            for (int j = 0 ; j < variables[i]->binRange.size() ; j++)
+            for (size_t j = 0 ; j < variables[i]->binRange.size() ; j++)
             {
                 out << variables[i]->binRange[j];
                 if (j < variables[i]->binRange.size()-1)
@@ -1117,7 +1117,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(thisProcsActualSpatial)  = *(di.thisProcsActualSpatial);
 
     canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
-    for (int i = 0 ; i < di.variables.size() ; i++)
+    for (size_t i = 0 ; i < di.variables.size() ; i++)
     {
         const char *vname = di.variables[i]->varname.c_str();
         AddVariable(vname, di.variables[i]->varunits);
@@ -1331,7 +1331,7 @@ void
 avtDataAttributes::Merge(const avtDataAttributes &da,
    bool ignoreThis, bool ignoreThat)
 {
-    int   i;
+    size_t   i;
 
     if (ignoreThat)
     {
@@ -1396,7 +1396,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
                        (int) variables[i]->subnames.size(),
                        (int) da.variables[i]->subnames.size());
         }
-        for (int j = 0 ; j < variables[i]->subnames.size() ; j++)
+        for (size_t j = 0 ; j < variables[i]->subnames.size() ; j++)
             if (variables[i]->subnames[j] != da.variables[i]->subnames[j])
             {
                 EXCEPTION0(InvalidMergeException);
@@ -1408,7 +1408,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
                        (int) variables[i]->binRange.size(),
                        (int) da.variables[i]->binRange.size());
         }
-        for (int j = 0 ; j < variables[i]->binRange.size() ; j++)
+        for (size_t j = 0 ; j < variables[i]->binRange.size() ; j++)
             if (variables[i]->binRange[j] != da.variables[i]->binRange[j])
             {
                 EXCEPTION0(InvalidMergeException);
@@ -1483,7 +1483,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     }
     else
     {
-        for (int i = 0; i < selectionsApplied.size(); i++)
+        for (size_t i = 0; i < selectionsApplied.size(); i++)
         {
             if (selectionsApplied[i] != da.selectionsApplied[i])
             {
@@ -2865,7 +2865,7 @@ void
 avtDataAttributes::Write(avtDataObjectString &str,
                          const avtDataObjectWriter *wrtr)
 {
-    int   i, j;
+    size_t   i, j;
 
     int varSize = 7;
     int numVals = 35 + static_cast<int>(varSize*variables.size());
@@ -3607,7 +3607,7 @@ avtDataAttributes::MergeLabels(const vector<string> &l)
     if (labels.size() == l.size())
     {
         bool foundDifference = false;
-        for (int i = 0 ; i < labels.size() ; i++)
+        for (size_t i = 0 ; i < labels.size() ; i++)
             if (labels[i] != l[i])
             {
                 foundDifference = true;
@@ -3621,8 +3621,8 @@ avtDataAttributes::MergeLabels(const vector<string> &l)
     vector<string> list2 = labels;
     sort(list1.begin(), list1.end());
     sort(list2.begin(), list2.end());
-    int list1_counter = 0;
-    int list2_counter = 0;
+    size_t list1_counter = 0;
+    size_t list2_counter = 0;
     vector<string> master_list;
     while ((list1_counter < list1.size()) || (list2_counter < list2.size()))
     {
@@ -3736,7 +3736,7 @@ avtDataAttributes::SetLabels(const vector<string> &l)
         labels.clear();
     }
 
-    for (int i = 0; i < l.size(); i++)
+    for (size_t i = 0; i < l.size(); i++)
     {
         labels.push_back(l[i]);
     }
@@ -3765,7 +3765,7 @@ avtDataAttributes::GetLabels(vector<string> &l)
         l.clear();
     }
 
-    for (int i = 0; i < labels.size(); i++)
+    for (size_t i = 0; i < labels.size(); i++)
     {
         l.push_back(labels[i]);
     }
@@ -4028,7 +4028,7 @@ avtDataAttributes::GetNumberOfVariables(void) const
 void
 avtDataAttributes::SetActiveVariable(const char *v)
 {
-    for (int i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
     {
         if (variables[i]->varname == v)
         {
@@ -4111,7 +4111,7 @@ avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
 bool
 avtDataAttributes::ValidVariable(const std::string &vname) const
 {
-    for (int i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
     {
         if (variables[i]->varname == vname)
         {
@@ -4139,7 +4139,7 @@ avtDataAttributes::ValidVariable(const std::string &vname) const
 bool
 avtDataAttributes::ValidActiveVariable(void) const
 {
-    if ((activeVariable >= 0) && (activeVariable < variables.size()))
+    if ((activeVariable >= 0) && ((size_t)activeVariable < variables.size()))
         return true;
 
     return false;
@@ -4206,7 +4206,7 @@ avtDataAttributes::VariableNameToIndex(const char *vname) const
     if (vname[0] == '\0')
         return activeVariable;
 
-    for (int i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
     {
         if (variables[i]->varname == vname)
             return i;
@@ -4598,7 +4598,7 @@ avtDataAttributes::ReadTransform(char *input)
 void
 avtDataAttributes::ClearAllUseForAxis()
 {
-    for (int i=0; i<variables.size(); i++)
+    for (size_t i=0; i<variables.size(); i++)
         variables[i]->useForAxis = -1;
 }
 
@@ -4783,7 +4783,7 @@ avtDataAttributes::SetSelectionsApplied(std::vector<bool> &selsApplied)
 bool
 avtDataAttributes::GetSelectionApplied(int selID) const
 {
-    if (selID < 0 || selID >= selectionsApplied.size())
+    if (selID < 0 || (size_t)selID >= selectionsApplied.size())
         return false;
     else
         return selectionsApplied[selID];
@@ -5154,7 +5154,7 @@ static void ExtentsToString(avtExtents *exts, char *str, int maxlen)
         for (int i=0; i<dim; i++)
         {
             SNPRINTF(tmp, 1000, "%e -> %e", e[i*2+0], e[i*2+1]);
-            if (strlen(tmp)+strlen(str)+6 > maxlen)
+            if (strlen(tmp)+strlen(str)+6 > (size_t)maxlen)
             {
                 strcat(str, "...");
                 break;
@@ -5245,7 +5245,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                             YesOrNo(origElementsRequiredForPick));
     webpage->AddTableEntry2("Is the file format reader doing domain decomposition?",
                             YesOrNo(dynamicDomainDecomposition));
-    SNPRINTF(str, 4096, "%d", levelsOfDetail);
+    SNPRINTF(str, 4096, "%ld", levelsOfDetail);
     webpage->AddTableEntry2("Levels of detail", str);
     ExtentsToString(multiresExtents, str, 4096);
     webpage->AddTableEntry2("Multires extents", str);
@@ -5307,7 +5307,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     if (labels.size() > 0)
     {
         std::string l = "";
-        for (int i = 0 ; i < labels.size() ; i++)
+        for (size_t i = 0 ; i < labels.size() ; i++)
             l += labels[i] + "; ";
         webpage->AddTableEntry2("Labels", l.c_str());
     }
@@ -5358,10 +5358,10 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     {
         webpage->StartTable();
         webpage->AddTableHeader3("Variable", "Field", "Value");
-        for (int i = 0 ; i < variables.size() ; i++)
+        for (size_t i = 0 ; i < variables.size() ; i++)
         {
             webpage->AddTableEntry3(variables[i]->varname.c_str(), NULL, NULL);
-            webpage->AddTableEntry3(NULL, "ActiveVar", YesOrNo(i == activeVariable));
+            webpage->AddTableEntry3(NULL, "ActiveVar", YesOrNo(i == (size_t)activeVariable));
             webpage->AddTableEntry3(NULL, "Type", 
                                    avtVarTypeToString(variables[i]->vartype).c_str());
             webpage->AddTableEntry3(NULL, "Units", variables[i]->varunits.c_str());
@@ -5396,9 +5396,9 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Component extents", str);
             if (variables[i]->subnames.size() != 0)
             {
-                for (int j = 0 ; j < variables[i]->subnames.size() ; j++)
+                for (size_t j = 0 ; j < variables[i]->subnames.size() ; j++)
                 {
-                    SNPRINTF(str, 4096, "Variable subname[%d]", j);
+                    SNPRINTF(str, 4096, "Variable subname[%ld]", j);
                     webpage->AddTableEntry3(NULL, str,
                                             variables[i]->subnames[j].c_str());
                 }

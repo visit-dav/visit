@@ -311,8 +311,8 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         else
         {
             avtOriginatingSource *src = GetInput()->GetOriginatingSource();
-            int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-            int dom         = domain  - blockOrigin;
+            //int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+            //int dom         = domain  - blockOrigin;
             int ts          = queryAtts.GetTimeStep();
             string var      = queryAtts.GetVariables()[0];
             string domainName;
@@ -366,7 +366,7 @@ avtZoneCenterQuery::FindGlobalCenter(double coord[3])
     bool success = false;
 
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
-    for (int i = 0; i < dlist.size() && !success; ++i) 
+    for (size_t i = 0; i < dlist.size() && !success; ++i)
     {
         success = src->QueryCoords(var, dlist[i], element, ts, coord, true, true);
     }
@@ -431,7 +431,7 @@ avtZoneCenterQuery::FindLocalCenter(double coord[3])
     intVector dAllProc;
     trav.GetDomainListAllProcs(dAllProc);
     bool domainUsed = false;
-    for (int j = 0; j < dAllProc.size() && !domainUsed; j++)
+    for (size_t j = 0; j < dAllProc.size() && !domainUsed; j++)
     {
         if (dAllProc[j] == dom)
             domainUsed = true;
@@ -440,7 +440,7 @@ avtZoneCenterQuery::FindLocalCenter(double coord[3])
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     if (domainUsed)
     {
-        for (int i = 0; i < dlist.size() && !success; ++i) 
+        for (size_t i = 0; i < dlist.size() && !success; ++i)
         {
             if (dlist[i] == dom)
             {

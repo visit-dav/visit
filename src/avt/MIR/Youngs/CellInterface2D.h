@@ -17,7 +17,7 @@ Modifications history :
 */
 
 #ifndef SWIG
-const static char * CELL_INTERFACE2_D_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
+//const static char * CELL_INTERFACE2_D_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 #endif /*SWIG*/
 
 extern

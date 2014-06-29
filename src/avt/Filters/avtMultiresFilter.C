@@ -215,7 +215,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     //
     // Get the desired frustum and the spatial extents for the mesh.
     //
-    avtMetaData *md = GetMetaData();
+    //avtMetaData *md = GetMetaData();
     avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
     nDims = dataAtts.GetSpatialDimension();
     if (nDims == 2)
@@ -369,7 +369,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
         }
     }
 
-    int numLevels = maxLevel + 1;
+    //int numLevels = maxLevel + 1;
     int topLogicalWidth[3];
     for (int i = 0; i < nDims; ++i)
         topLogicalWidth[i] = maxTopLogicalExtents[i] - minTopLogicalExtents[i] + 1;
@@ -385,7 +385,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     int nVisible = 0;
     for(int dom=0; dom < max_domain; ++dom)
     {
-        int level = sdn->GetDomainLevel(dom);
+        //int level = sdn->GetDomainLevel(dom);
         std::vector<int> ratios = sdn->GetRatiosForLevel(0, dom);
         std::vector<int> logicalExtents = sdn->GetDomainLogicalExtents(dom);
 

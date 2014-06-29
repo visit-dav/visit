@@ -132,7 +132,7 @@ avtMeshCoordinateExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomain
         vtkDataArray *Y = rg->GetYCoordinates();
         vtkDataArray *Z = rg->GetZCoordinates();
 
-        int npts = dims[0]*dims[1]*dims[2];    
+        //int npts = dims[0]*dims[1]*dims[2];
 
 #define EXTRACT_COORDS(dtype) \
 { \

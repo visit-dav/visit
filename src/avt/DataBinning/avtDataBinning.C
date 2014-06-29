@@ -189,6 +189,7 @@ class ValueRetriever
 {
   public:
     virtual double GetValue(int) = 0;
+    virtual ~ValueRetriever() {}  /// TODO: check remove warning on deleting non virtual destructor
 };
 
 class VariableValueRetriever : public ValueRetriever

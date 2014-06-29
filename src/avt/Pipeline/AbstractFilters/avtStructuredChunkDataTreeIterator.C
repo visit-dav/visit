@@ -157,7 +157,7 @@ avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domai
     // as the single unstructured mesh.
     //
     vtkDataSet **out_ds = new vtkDataSet*[grids.size()+1];
-    for (int i = 0 ; i < grids.size() ; i++)
+    for (size_t i = 0 ; i < grids.size() ; i++)
         out_ds[i] = grids[i];
     out_ds[grids.size()] = out_ugrid;
     avtDataTree_p rv = new avtDataTree((int)grids.size()+1, out_ds, domain, label);

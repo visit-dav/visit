@@ -188,8 +188,9 @@ vtkDataSet *
 avtDatasetOnDemandFilter::GetDomain(int domainId,
                                     int timeStep)
 {
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"avtDatasetOnDemandFilter::GetDomain("<<domainId<<", "<<timeStep<<");"<<endl;
+    }
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
 
@@ -241,8 +242,9 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     avtDataRequest_p new_dr = new avtDataRequest(firstContract->GetDataRequest(), silr);
     avtContract_p new_contract = new avtContract(firstContract, new_dr);
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"     Update->GetDomain "<<domainId<<" time= "<<timeStep<<endl;
+    }
     std::vector<int> domains;
     domains.push_back(domainId);
     new_contract->GetDataRequest()->GetRestriction()->TurnOnAll();
@@ -277,13 +279,15 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     unsigned long long B =  ((unsigned long long)domainId);
     unsigned long long idx = A | B;
 
-    if (domainLoadCount.find(idx) == domainLoadCount.end())
+    if (domainLoadCount.find(idx) == domainLoadCount.end()) {
         domainLoadCount[idx] = 1;
-    else
+    }
+    else {
         domainLoadCount[idx] ++;
+    }
 
     domainQueue.push_front(entry);
-    if ( domainQueue.size() > maxQueueLength )
+    if ( domainQueue.size() > (size_t)maxQueueLength )
     {
         DomainCacheEntry tmp = domainQueue.back();
         PurgeDomain( tmp.domainID, tmp.timeStep );
@@ -343,8 +347,9 @@ vtkDataSet *
 avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
                                              int timeStep)
 {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1<<"avtDatasetOnDemandFilter::GetDataAroundPoint("<<X<<", "<<Y<<", "<<Z<<", "<<timeStep<<");"<<endl;
+    }
     if ( ! OperatingOnDemand() )
     {
         EXCEPTION0(ImproperUseException);
@@ -355,9 +360,9 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
     // the following for loop to test *all* cache entries whether they contain the point location.
     // This strategy is not very efficient, but better than a pipeline re-execute.
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"Look in cache: "<<domainId<<" sz= "<<domainQueue.size()<<endl;
-
+    }
     //See if it's in the cache.
     std::list<DomainCacheEntry>::iterator it;
     int foundPos = 0;
@@ -370,9 +375,9 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
             //Do a bbox check.
             double bbox[6];
             it->ds->GetBounds(bbox);
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5<<"BBOX ["<<bbox[0]<<", "<<bbox[1]<<"]["<<bbox[2]<<", "<<bbox[3]<<"]["<<bbox[4]<<", "<<bbox[5]<<"]"<<endl;
-
+            }
             if (! (X >= bbox[0] && X <= bbox[1] &&
                    Y >= bbox[2] && Y <= bbox[3] &&
                    Z >= bbox[4] && Z <= bbox[5]))
@@ -386,9 +391,9 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
             else
             {
                 //Do a cell check....
-                if (DebugStream::Level5())
+                if (DebugStream::Level5()) {
                     debug5<<"It's in the bbox. Check the cell.\n";
-
+                }
                 vtkVisItCellLocator *cellLocator = it->cl;
                 if ( cellLocator == NULL )
                 {
@@ -408,15 +413,17 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
                                                               foundCell, subId, dist))
                 {
                     foundIt = true;
-                    if (DebugStream::Level5())
+                    if (DebugStream::Level5()) {
                         debug5<<"Cell locate: We found the domain!\n";
+                    }
                 }
             }
 
             if (foundIt)
             {
-                if (DebugStream::Level5())
+                if (DebugStream::Level5()) {
                     debug5<<"Found data in cace, returning cache entry " << foundPos << std::endl;
+                }
                 DomainCacheEntry entry;
                 entry = *it;
 
@@ -428,8 +435,9 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
         }
     }
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5<<"     Update->GetDataAroundPoint, time= "<<timeStep<<endl;
+    }
     avtContract_p new_contract = new avtContract(firstContract);
     new_contract->GetDataRequest()->GetRestriction()->TurnOnAll();
     avtPointSelection *ptsel = new avtPointSelection;
@@ -457,7 +465,7 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
         loadDSCount++;
 
         domainQueue.push_front(entry);
-        if ( domainQueue.size() > maxQueueLength )
+        if ( domainQueue.size() > (size_t)maxQueueLength )
         {
             DomainCacheEntry tmp = domainQueue.back();
             PurgeDomain( tmp.domainID, tmp.timeStep );
@@ -519,8 +527,9 @@ avtDatasetOnDemandFilter::DomainLoaded(int domainID, int timeStep) const
 void
 avtDatasetOnDemandFilter::GetLoadedDomains(std::vector<std::vector<int> > &domains)
 {
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1<<"avtDatasetOnDemandFilter::GetLoadedDomains()\n";
+    }
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
 

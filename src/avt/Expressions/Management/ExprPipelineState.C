@@ -86,7 +86,7 @@ ExprPipelineState::ExprPipelineState()
 
 ExprPipelineState::~ExprPipelineState() 
 {
-    for (int i = 0; i < filters.size(); ++i)
+    for (size_t i = 0; i < filters.size(); ++i)
     {
         delete filters[i];
     }
@@ -131,7 +131,7 @@ ExprPipelineState::PopName()
 void 
 ExprPipelineState::ReleaseData()
 {
-    for (int i = 0; i < filters.size(); ++i)
+    for (size_t i = 0; i < filters.size(); ++i)
         filters[i]->ReleaseData();
 }
 
@@ -150,7 +150,7 @@ ExprPipelineState::ReleaseData()
 void
 ExprPipelineState::Clear()
 {
-    for (int i = 0; i < filters.size(); ++i)
+    for (size_t i = 0; i < filters.size(); ++i)
         delete filters[i];
     filters.clear();
     name_stack.clear();

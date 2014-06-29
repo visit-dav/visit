@@ -854,7 +854,7 @@ avtFileFormat::RegisterFile(int fileIndex)
     avtFileDescriptorManager *man = avtFileDescriptorManager::Instance();
     int manIndex = man->RegisterFile(FileFormatCloseFileCallback, this);
  
-    while (fileIndex >= fileIndicesForDescriptorManager.size())
+    while ((size_t)fileIndex >= fileIndicesForDescriptorManager.size())
     {
         fileIndicesForDescriptorManager.push_back(-1);
     }

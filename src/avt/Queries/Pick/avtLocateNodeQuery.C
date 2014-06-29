@@ -421,7 +421,7 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
     vtkIdList *nodesFromCells = vtkIdList::New();
     vtkIdList *cellPts = vtkIdList::New();
 
-    for (int i = 0; i < cells.size(); i++)
+    for (size_t i = 0; i < cells.size(); i++)
     {
         ds->GetCellPoints(cells[i], cellPts);
         for (int j = 0; j < cellPts->GetNumberOfIds(); j++)

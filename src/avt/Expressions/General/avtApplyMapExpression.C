@@ -77,8 +77,9 @@ using namespace std;
 // ****************************************************************************
 
 avtApplyMapExpression::avtApplyMapExpression()
-: mapType(0), maxStringLength(0), 
-  numericDefault(-1.0), stringDefault("<undefined>")
+: mapType(0),
+  numericDefault(-1.0), stringDefault("<undefined>"),
+  maxStringLength(0)
 {}
 
 
@@ -401,15 +402,15 @@ avtApplyMapExpression::BuildMap(ListExpr *to_list,
 
         for(unsigned int i=0; i < from_size; i++)
         {
-            unsigned slen = string_vals[i].size();
-            if(slen > maxStringLength) 
+            int slen = (int)string_vals[i].size();
+            if(slen > maxStringLength)
                 maxStringLength = slen;
             stringMap[from_vals[i]] = string_vals[i];
         }
         maxStringLength++;
 
         // make sure we can hold the default string if necessary
-        if(maxStringLength < stringDefault.size())
+        if(maxStringLength < (int)stringDefault.size())
             maxStringLength= stringDefault.size() + 1;
     }
     else

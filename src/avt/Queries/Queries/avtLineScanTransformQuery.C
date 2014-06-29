@@ -238,7 +238,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
     double pt1[3];   //Endpoints of current segment
     double pt2[3];
 
-    bool bHaveLineEq = false;
+    //bool bHaveLineEq = false;
 
     double binSize = (maxLength - minLength) / (numBins - 1);
 
@@ -292,7 +292,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
     int amtPerMsg = npts / extraMsg + 1;
     UpdateProgress(extraMsg*currentNode+2*extraMsg/3, totalProg);
     int lastMilestone = 0;
-    int i, j, k;
+    size_t i, j, k;
 
     int hashSize = 10000;
     vector< vector<int> >    hashedLineidLookup(hashSize);
@@ -301,7 +301,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
 
     // After this loop completes, a set of line endpoints and ids will fill 
     // the hash tables.
-    for (i = 0 ; i < npts ; i++)
+    for (i = 0 ; i < (size_t)npts ; i++)
     {
         // glue segments into one long line
         if (usedPoint[i])
@@ -366,7 +366,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
 
     vector< double > projectedSegments;
 
-    for (i = 0 ; i < hashSize ; i++)
+    for (i = 0 ; i < (size_t)hashSize ; i++)
     {
         while (1)
         {
@@ -451,7 +451,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
                     {
                         endBin = (int)floor( (segLen - minLength) / binSize );
                     }
-                    for ( j = startBin ; j <= endBin ; j++ )
+                    for ( int j = startBin ; j <= endBin ; j++ )
                     {
                         lengths[j] += incr;
                     }

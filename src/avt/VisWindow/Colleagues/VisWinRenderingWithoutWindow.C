@@ -50,30 +50,6 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
-#ifdef EXTERNAL_VTK_BUILD
-#if __APPLE__
-#include <vtkCocoaRenderWindow.h>
-#include "VisWinRenderingCocoaHideWindow.h"
-void UnMapWindow(vtkRenderWindow* v)
-{
-    vtkCocoaRenderWindow* vx=dynamic_cast<vtkCocoaRenderWindow*>(v);
-    if(vx) VisWinRenderingCocoa::HideRenderWindow(vx->GetRootWindow());
-}
-#elif __unix__
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <vtkXOpenGLRenderWindow.h>
-void UnMapWindow(vtkRenderWindow* v)
-{
-    vtkXOpenGLRenderWindow* vx = dynamic_cast<vtkXOpenGLRenderWindow*>(v);
-    if(vx) XUnmapWindow(vx->GetDisplayId(),vx->GetWindowId());
-}
-#else //TODO: Hide Window if using External VTK
-void UnMapWindow(vtkRenderWindow* v) { /*do nothing..*/  }
-#endif
-
-#endif
-
 #define DS_NOT_CHECKED    0
 #define DS_NOT_AVAILABLE  1
 #define DS_AVAILABLE      2
@@ -111,13 +87,7 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     // Mesa that we are getting, but we don't care.
     //
     renWin = vtkRenderWindow::New();
-#ifdef EXTERNAL_VTK_BUILD
-    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow" || 
-       std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow")
-        renWin->OffScreenRenderingOn();
-#else
-        renWin->OffScreenRenderingOn();
-#endif
+    renWin->OffScreenRenderingOn();
     InitializeRenderWindow(renWin);
 
     displayStatus = DS_NOT_CHECKED;
@@ -263,11 +233,6 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
       renWin->SetSize(300,300);
   }
   RenderRenderWindow();
-
-#ifdef EXTERNAL_VTK_BUILD
-  std::string cname = renWin->GetClassName();
-  if(cname != "vtkOSOpenGLRenderWindow") UnMapWindow(renWin);
-#endif
 }
 
 // ****************************************************************************

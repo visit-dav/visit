@@ -151,7 +151,7 @@ REAL findTriangleSetCuttingPlane(
     // integration des fonctions et recherche de la fonction utile
     REAL sum = 0;
     REAL3 surfaceFunction = make_REAL3(0,0,0);
-    REAL xmin ;
+    REAL xmin = 0;
     REAL xmax = dot( vertices[index[0]], normal ) ;
     int s = -1;
     while( sum<y && s<(nv-2) )

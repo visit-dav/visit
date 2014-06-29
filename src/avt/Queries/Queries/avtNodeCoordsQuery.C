@@ -393,7 +393,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     intVector dAllProc;
     trav.GetDomainListAllProcs(dAllProc);
     bool domainUsed = false;
-    for (int j = 0; j < dAllProc.size() && !domainUsed; j++)
+    for (size_t j = 0; j < dAllProc.size() && !domainUsed; j++)
     {
         if (dAllProc[j] == dom)
             domainUsed = true;
@@ -402,7 +402,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     if (domainUsed)
     {
-        for (int i = 0; i < dlist.size() && !success; ++i)
+        for (size_t i = 0; i < dlist.size() && !success; ++i)
         {
             if (dlist[i] == dom)
             {
@@ -462,7 +462,7 @@ avtNodeCoordsQuery::FindGlobalCoord(double coord[3])
     bool success = false;
 
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
-    for (int i = 0; i < dlist.size() && !success; ++i)
+    for (size_t i = 0; i < dlist.size() && !success; ++i)
     {
         success = src->QueryCoords(var, dlist[i], node, ts, coord, false, true);
     }

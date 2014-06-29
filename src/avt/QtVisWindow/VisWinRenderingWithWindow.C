@@ -650,7 +650,7 @@ void *
 VisWinRenderingWithWindow::CreateToolbar(const char *name)
 {
     void *t = (void *)renWin->addToolBar(name);
-    bool vertical = false;
+    //bool vertical = false;
     if(strcmp(name, "Plots") == 0 || strcmp(name, "Operators") == 0) // hack for now
     {
         renWin->addToolBar(Qt::LeftToolBarArea, (QToolBar *)t);

@@ -147,7 +147,7 @@ int
 avtSamplePoints::GetNumberOfVariables(void)
 {
     int nv = 0;
-    for (int i = 0 ; i < varsize.size() ; i++)
+    for (size_t i = 0 ; i < varsize.size() ; i++)
         nv += varsize[i];
     return nv;
 }
@@ -315,7 +315,7 @@ avtSamplePoints::DebugDump(avtWebpage *webpage, const char *prefix)
     webpage->StartTable();
     webpage->AddTableHeader2("Name", "Size");
     char str[1024];
-    for (int i = 0 ; i < varnames.size() ; i++)
+    for (size_t i = 0 ; i < varnames.size() ; i++)
     {
         SNPRINTF(str, 1024, "%d", varsize[i]);
         webpage->AddTableEntry2(varnames[i].c_str(), str);

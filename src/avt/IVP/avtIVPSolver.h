@@ -499,9 +499,9 @@ protected:
     unsigned int order;
 
     avtVector yCur;
-    double t;
     double h, h_max;
     double tol;
+    double t;
 
     double period;
     double baseTime, maxTime;

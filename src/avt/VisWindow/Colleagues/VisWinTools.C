@@ -449,7 +449,7 @@ VisWinTools::GetHotPoint(int x, int y, HotPoint &h) const
         if(tools[i]->IsEnabled())
         {
             const HotPointVector &pts = tools[i]->HotPoints();
-            for(int j = 0; j < pts.size(); ++j)
+            for(size_t j = 0; j < pts.size(); ++j)
             {
                 // Use the background renderer to compute the normalized
                 // device coordinate of the hotpoint from the world space
@@ -1055,7 +1055,7 @@ vtkHighlightActor2D::RegenerateHighlight()
         if(tools[i]->IsEnabled() && tools[i]->ShowsHotPointHighlights())
         {
             const HotPointVector &hpts = tools[i]->HotPoints();
-            for(int j = 0; j < hpts.size(); ++j)
+            for(size_t j = 0; j < hpts.size(); ++j)
             {
                 // Use the background renderer to compute the normalized
                 // device coordinate of the hotpoint from the world space

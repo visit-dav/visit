@@ -756,14 +756,14 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename)
 
     ofstream ofile(filename, ios::out);
     vtkPoints *pts = pd->GetPoints();
-    for (int i = 0 ; i < line_segments.size() ; i++)
+    for (size_t i = 0 ; i < line_segments.size() ; i++)
     {
         if (line_segments.size() <= 1)
             ofile << "# curve" << endl;
         else
             ofile << "# curve" << i << endl;
 
-        for (int j = 0 ; j < line_segments[i].size() ; j++)
+        for (size_t j = 0 ; j < line_segments[i].size() ; j++)
         {
             double pt[3]; 
             pts->GetPoint(line_segments[i][j], pt);
@@ -1005,7 +1005,7 @@ avtDatasetFileWriter::GenerateName(const char *label, const char *desc,
             SNPRINTF(tmp, 1024, "%s%d", attempt, idx);
             idx++;
         }
-        for (int i = 0 ; i < namesUsed.size() ; i++)
+        for (size_t i = 0 ; i < namesUsed.size() ; i++)
         {
             if (namesUsed[i] == tmp)
             {

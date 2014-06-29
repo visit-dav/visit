@@ -75,7 +75,7 @@ avtDataBinningFunctionInfo::avtDataBinningFunctionInfo(avtBinningScheme *bs,
     }
 
     binningScheme = bs;
-    for (int i = 0 ; i < bn.size() ; i++)
+    for (size_t i = 0 ; i < bn.size() ; i++)
         binBasedOn.push_back((BinBasedOn) bn[i]);
     tupleNames = tn;
     codomainVariable = cv;

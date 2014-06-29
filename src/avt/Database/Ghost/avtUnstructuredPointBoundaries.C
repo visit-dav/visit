@@ -160,9 +160,9 @@ avtUnstructuredPointBoundaries::ConfirmMesh(vector<int>       domainNum,
 bool
 avtUnstructuredPointBoundaries::CheckGenerated(int d1, int d2)
 {
-    if (d1 >= generated.size())
+    if ((size_t)d1 >= generated.size())
         generated.resize(d1 + 1);
-    if (d2 >= generated[d1].size())
+    if ((size_t)d2 >= generated[d1].size())
         generated[d1].resize(d2 + 1, false);
     return generated[d1][d2];
 }

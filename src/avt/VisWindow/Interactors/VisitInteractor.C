@@ -1181,10 +1181,10 @@ VisitInteractor::PanCamera3D(const int x, const int y)
         // Determine the size of the window.
         //
         int       size[2];
-        int       width, height;
+        int       /*width,*/ height;
 
         rwi->GetSize(size);
-        width = size[0];
+        //width = size[0];
         height = size[1];
 
         //
@@ -1295,7 +1295,7 @@ VisitInteractor::PanCamera3D(const int x, const int y)
 void
 VisitInteractor::ZoomImage3D(double f)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     //
     // Calculate the zoom factor.
@@ -1377,7 +1377,7 @@ VisitInteractor::ZoomImage3D(const int x, const int y)
 void
 VisitInteractor::DollyCameraTowardFocus3D(const int x, const int y)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     if (OldY != y)
     {
@@ -1422,7 +1422,7 @@ VisitInteractor::DollyCameraTowardFocus3D(const int x, const int y)
 void
 VisitInteractor::DollyCameraAndFocus3D(const int x, const int y)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     if (OldY != y)
     {

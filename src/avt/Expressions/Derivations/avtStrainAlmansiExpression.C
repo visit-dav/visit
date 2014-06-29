@@ -109,7 +109,7 @@ avtStrainAlmansiExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     double detF;                     // Determinant of element
                                      // deformation gradient.
     double strain[6];                // Calculated strain.
-    int i, j, k;
+    size_t i, j, k;
     std::vector<int> cellsToIgnore;
     double avgTensor[9];             // ghost zone value
     int nTensors = 0;                // number of tensors in average
@@ -138,7 +138,7 @@ avtStrainAlmansiExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     out->SetNumberOfTuples(nCells);
     for (j = 0; j < 9; j++) 
         avgTensor[j] = 0.0;
-    for (i = 0; i < nCells; i++)
+    for (i = 0; i < (size_t)nCells; i++)
     {   // Check Voxel format
         int cellType = in_usg->GetCellType(i);
         // ignore everything but hexes

@@ -386,7 +386,7 @@ VisWinAxesArray::UpdateView(void)
     for (int i=0; i < axisCount; i++)
     {
         double dx = vx / rx;
-        double dy = vy / ry;
+        //double dy = vy / ry;
 
         double amin = axes[i].range[0];
         double amax = axes[i].range[1];
@@ -494,7 +494,7 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
         e->CopyTo(extents);
         for (int k=0; k<dim; k++)
         {
-            if (bins.size() > k)
+            if (bins.size() > (size_t)k)
                 axes[k].xpos = (bins[k]+bins[k+1])/2;
             else
                 axes[k].xpos = k;
@@ -523,7 +523,7 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
                 if (axis == -1)
                     continue;
 
-                avtExtents *ext = atts.GetThisProcsOriginalDataExtents(var);
+                //avtExtents *ext = atts.GetThisProcsOriginalDataExtents(var);
                 // note: we already checked above that ext exists
 
                 atts.GetThisProcsOriginalDataExtents(var)->CopyTo(axes[axis].range);
@@ -1134,17 +1134,17 @@ VisWinAxesArray::SetNumberOfAxes(int n)
         RemoveAxesFromWindow();
     }
 
-    if (n < axes.size())
+    if ((size_t)n < axes.size())
     {
-        for (int i=n; i<axes.size(); i++)
+        for (size_t i=n; i<axes.size(); i++)
         {
             axes[i].axis->Delete();
         }
         axes.resize(n);
     }
-    else if (n > axes.size())
+    else if ((size_t)n > axes.size())
     {
-        for (int i=axes.size(); i<n; i++)
+        for (size_t i=axes.size(); i<(size_t)n; i++)
         {
             vtkVisItAxisActor2D *ax;
             ax = vtkVisItAxisActor2D::New();
@@ -1173,7 +1173,7 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             //}
 
             AxisInfo a(ax, 0, 3, 0, 0);
-            SNPRINTF(a.title, 8,  "Axis%02d", i);
+            SNPRINTF(a.title, 8,  "Axis%02ld", i);
             axes.push_back(a);
 
             // Update the properties of this new axis
@@ -1222,7 +1222,7 @@ VisWinAxesArray::SetNumberOfAxes(int n)
 void
 VisWinAxesArray::SetTitles(void)
 {
-    for (int i=0; i<axes.size(); i++)
+    for (size_t i=0; i<axes.size(); i++)
     {
         char buffer[1024];
         if (axes[i].pow == 0)
@@ -1313,7 +1313,7 @@ VisWinAxesArray::SetLabelTextAttributes(const VisWinTextAttributes &att)
 void
 VisWinAxesArray::UpdateTitleTextAttributes(double fr, double fg, double fb)
 {
-    for(int i = 0; i < axes.size(); ++i)
+    for(size_t i = 0; i < axes.size(); ++i)
     {
         vtkVisItAxisActor2D *axis = axes[i].axis;
         // Set the colors
@@ -1353,7 +1353,7 @@ VisWinAxesArray::UpdateTitleTextAttributes(double fr, double fg, double fb)
 void
 VisWinAxesArray::UpdateLabelTextAttributes(double fr, double fg, double fb)
 {
-    for(int i = 0; i < axes.size(); ++i)
+    for(size_t i = 0; i < axes.size(); ++i)
     {
         vtkVisItAxisActor2D *axis = axes[i].axis;
         // Set the colors

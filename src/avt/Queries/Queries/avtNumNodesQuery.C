@@ -157,9 +157,9 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
     MapNode result_node;
     result_node["num_nodes"] = (int)tn[0];
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of nodes is %ld.", tn[0]);
+        SNPRINTF(msg, 200, "The original number of nodes is %lld.", tn[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of nodes is %ld.", tn[0]);
+        SNPRINTF(msg, 200, "The actual number of nodes is %lld.", tn[0]);
 
 
     if (gzt != AVT_HAS_GHOSTS)
@@ -170,7 +170,7 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
     else
     {
         char msg2[200];
-        SNPRINTF(msg2, 200, "%s\nThe number of ghost nodes is %ld.", msg, tn[1]);
+        SNPRINTF(msg2, 200, "%s\nThe number of ghost nodes is %lld.", msg, tn[1]);
         double results[2] = {(double) tn[0], (double) tn[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);

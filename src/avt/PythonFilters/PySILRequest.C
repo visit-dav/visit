@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#include <PyDataRequest.h>
 #include <Python.h>
+#include <PyDataRequest.h>
 #include <PySILRestrictionBase.h>
 
 // ****************************************************************************

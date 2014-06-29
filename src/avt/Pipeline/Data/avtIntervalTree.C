@@ -591,7 +591,7 @@ avtIntervalTree::ConstructTree(void)
 
     int currentOffset, currentSize, currentDepth, leftSize, currentNode;
     int count = 0;
-    int thresh = (nElements > 10 ? nElements/10 : 1);
+    //int thresh = (nElements > 10 ? nElements/10 : 1);
     while (stackCount > 0)
     {
         count++;

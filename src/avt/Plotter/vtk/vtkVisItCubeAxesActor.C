@@ -1574,7 +1574,7 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
   double pts[8][3], d2, d2Min, min, max;
   int i, idx = 0;
   int xIdx, yIdx = 0, zIdx = 0, zIdx2;
-  int xAxes = 0, yAxes, zAxes, xloc, yloc, zloc;
+  int xAxes = 0, yAxes, zAxes, xloc = 0, yloc = 0, zloc = 0;
  
   if (this->FlyMode == VTK_FLY_STATIC_EDGES) 
     {
@@ -2023,13 +2023,13 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
   const double majorTickMinimum = axes[0]->GetMajorTickMinimum();
   const double majorTickMaximum = axes[0]->GetMajorTickMaximum();
   const double majorTickSpacing = axes[0]->GetMajorTickSpacing();
-  double firstVal, deltaVal, lastVal, val;
+  double firstVal, deltaVal, lastVal = 0, val;
   double extents = range[1] - range[0];
-  bool mustAdjustValue;
-  int lastPow;
+  bool mustAdjustValue = true;
+  int lastPow = 0;
   
   vector<string> labels; 
-  const char *format; 
+  const char *format = NULL;
   switch (axes[0]->GetAxisType())
     {
     case VTK_AXIS_TYPE_X : 

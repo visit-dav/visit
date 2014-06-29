@@ -237,7 +237,7 @@ avtIsenburgSGG::StreamDataset(vtkDataSet *ds)
     Ghost3Dblock *block = blocks + curBlock;
     int origin_out[3];
     int size_out[3];
-    int sz = ds->GetNumberOfPoints();
+    //int sz = ds->GetNumberOfPoints();
     
     vtkDataArray *in_array  = rg_in->GetPointData()->GetScalars();
     void *data = in_array->GetVoidPointer(0);

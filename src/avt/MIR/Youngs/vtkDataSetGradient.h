@@ -36,7 +36,7 @@ Modifications history :
 */
 
 #ifndef SWIG
-const static char * VTK_DATA_SET_GRADIENT_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
+//const static char * VTK_DATA_SET_GRADIENT_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 #endif /*SWIG*/
 
 #include <vtkObjectFactory.h>

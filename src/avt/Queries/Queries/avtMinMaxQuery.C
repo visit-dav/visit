@@ -285,7 +285,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     {
         return;
     }
-    int i;
+    size_t i;
     vtkUnsignedCharArray *ghostZones = 
            (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("avtGhostZones");
     vtkUnsignedCharArray *ghostNodes = 

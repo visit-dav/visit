@@ -128,7 +128,7 @@ avtOpenGLSurfaceAndWireframeRenderer::ReleaseGraphicsResources()
     if (VTKRen == NULL)
         return;
 
-    int i;
+    size_t i;
 
     VTKRen->GetRenderWindow()->MakeCurrent();
 
@@ -1700,7 +1700,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
     //
     //  Make sure we have a display list index for this input. 
     //
-    if (inputNum >= setupListId.size())
+    if ((size_t)inputNum >= setupListId.size())
         setupListId.push_back(0);
 
     VTKRen->GetRenderWindow()->MakeCurrent();
@@ -1924,7 +1924,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
     //
     //  Make sure we have a display list index for this input.
     //
-    if (inputNum >= surfaceListId.size())
+    if ((size_t)inputNum >= surfaceListId.size())
         surfaceListId.push_back(0);
 
     VTKRen->GetRenderWindow()->MakeCurrent();
@@ -2295,7 +2295,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
     //
     //  Make sure we have a display list index for this input. 
     //
-    if (inputNum >= edgesListId.size())
+    if ((size_t)inputNum >= edgesListId.size())
         edgesListId.push_back(0);
 
     VTKRen->GetRenderWindow()->MakeCurrent();

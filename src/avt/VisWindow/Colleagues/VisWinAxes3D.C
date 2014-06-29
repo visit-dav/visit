@@ -494,9 +494,9 @@ VisWinAxes3D::SetBounds(double bounds[6], double scales[3])
        //
        // if the limits are initialized to +- DBL_MAX then doing math
        // with them will cause an excepton so check them first.
-       if ( bounds[1] == -DBL_MAX  && bounds[0] ==  DBL_MAX ||
-            bounds[3] == -DBL_MAX  && bounds[2] ==  DBL_MAX ||
-            bounds[5] == -DBL_MAX  && bounds[4] ==  DBL_MAX)
+       if ( (bounds[1] == -DBL_MAX  && bounds[0] ==  DBL_MAX) ||
+            (bounds[3] == -DBL_MAX  && bounds[2] ==  DBL_MAX) ||
+            (bounds[5] == -DBL_MAX  && bounds[4] ==  DBL_MAX))
        {
          fudgeX = 0.001;
          fudgeY = 0.001;

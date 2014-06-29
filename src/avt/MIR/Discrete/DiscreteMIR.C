@@ -384,7 +384,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
     nMaterials   = mat->GetNMaterials();
 
     int nCells  = mesh->GetNumberOfCells();
-    int nPoints = mesh->GetNumberOfPoints();
+    //int nPoints = mesh->GetNumberOfPoints();
 
     // extract coordinate arrays
     SetUpCoords();
@@ -844,9 +844,9 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
             Cell cell(*iter);
             int cellid = id(cell);
 
-            int basex = DX * cell.m_i,
-                basey = DY * cell.m_j,
-                basez = DZ * cell.m_k;
+            //int basex = DX * cell.m_i,
+            //    basey = DY * cell.m_j,
+            //    basez = DZ * cell.m_k;
 
             // Insert zone centroid.
             ReconstructedCoord coord;
@@ -1422,7 +1422,7 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         if(origCoordType == VTK_FLOAT)
         {
             float *pts_buff = (float *) outPts->GetVoidPointer(0);
-            int outIndex = 0;
+            //int outIndex = 0;
             for (int i=0; i<origNPoints; i++)
             {
                 *pts_buff++ = static_cast<float>(origXCoords[i]);
@@ -1910,7 +1910,7 @@ void DiscreteMIR::optimize()
     // Two sites.
     int r, r2, i, j, k, i2, j2, k2;
 
-    int iterationK = 0;
+    //int iterationK = 0;
     time_t starttime = time(NULL);
     while(time(NULL) - starttime < options.annealingTime)
     {

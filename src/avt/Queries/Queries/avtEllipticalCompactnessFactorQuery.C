@@ -219,7 +219,7 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
         double Cmax = ((bounds[5] - bounds[4]) / 2.)*1.5;
         double Amin = sqrt(total_volume * 0.75 / (M_PI*Bmax*Cmax));
         double Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Cmax));
-        double Cmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Bmax));
+        //double Cmin = sqrt(total_volume * 0.75 / (M_PI*Amax*Bmax));
         // Get integer square root.
         int dims = (int) ceil(sqrt(numGuesses-0.1));
         for (int i = 0 ; i < dims ; i++)

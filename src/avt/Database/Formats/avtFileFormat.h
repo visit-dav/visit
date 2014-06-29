@@ -143,10 +143,13 @@ class DATABASE_API avtFileFormat
 
 
     virtual void          ActivateTimestep(void);
+    virtual void          ActivateTimestep(int) { ActivateTimestep(); }
 
     virtual void          FreeUpResources(void);
     void                  RegisterDatabaseMetaData(avtDatabaseMetaData *);
     virtual void          PopulateIOInformation(avtIOInformation &);
+    virtual void          PopulateIOInformation(int,avtIOInformation & io)
+                            { PopulateIOInformation(io); }
     void                  SetCache(avtVariableCache *);
 
     void                  SetStrictMode(bool v) { strictMode = v;    }

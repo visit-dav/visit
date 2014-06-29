@@ -1040,7 +1040,7 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     {
         return false;
     }
-    int i;
+    size_t i;
     for (i = 0 ; i < secondaryVariables.size() ; i++)
     {
         const char *my_str  = *(secondaryVariables[i]);
@@ -1232,7 +1232,7 @@ avtDataRequest::AddSecondaryVariable(const char *var)
 bool
 avtDataRequest::HasSecondaryVariable(const char *var)
 {
-    for (int i = 0 ; i < secondaryVariables.size() ; i++)
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
     {
         if (strcmp(var, *(secondaryVariables[i])) == 0)
         {
@@ -1262,7 +1262,7 @@ void
 avtDataRequest::RemoveSecondaryVariable(const char *var)
 {
     vector<CharStrRef> newList;
-    for (int i = 0 ; i < secondaryVariables.size() ; i++)
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
     {
         if (strcmp(var, *(secondaryVariables[i])) != 0)
         {
@@ -1308,7 +1308,7 @@ avtDataRequest::VariablesAreTheSame(const avtDataRequest &ds)
     {
         return false;
     }
-    for (int i = 0 ; i < secondaryVariables.size() ; i++)
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
     {
         const char *my_str  = *(secondaryVariables[i]);
         const char *his_str = *(ds.secondaryVariables[i]);
@@ -1346,7 +1346,7 @@ vector<CharStrRef>
 avtDataRequest::GetSecondaryVariablesWithoutDuplicates(void)
 {
     vector<CharStrRef> newList;
-    for (int i = 0 ; i < secondaryVariables.size() ; i++)
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
     {
         bool duplicate = false;
 
@@ -1358,7 +1358,7 @@ avtDataRequest::GetSecondaryVariablesWithoutDuplicates(void)
 
         // don't allow duplicates of other secondary variables; just take
         // the first instance of it
-        for (int j = 0 ; j < i && !duplicate; j++)
+        for (size_t j = 0 ; j < i && !duplicate; j++)
         {
             if (strcmp(*(secondaryVariables[i]),*(secondaryVariables[j])) == 0)
             {
@@ -1457,7 +1457,7 @@ avtDataRequest::RemoveAllDataSelections()
 const avtDataSelection_p
 avtDataRequest::GetDataSelection(int id) const
 {
-    if (id < 0 || id >= selList.size())
+    if (id < 0 || (size_t)id >= selList.size())
         return 0;
     return selList[id];
 }
@@ -1962,7 +1962,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     if (secondaryVariables.size() > 0)
     {
         webpage->AddTableEntry2("Secondary variables", "");
-        for (int i = 0 ; i < secondaryVariables.size() ; i++)
+        for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
             webpage->AddTableEntry2("", *(secondaryVariables[i]));
     }
     else

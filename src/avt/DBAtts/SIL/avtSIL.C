@@ -123,7 +123,8 @@ avtSIL::avtSIL(const SILAttributes &atts)
     setTable.push_back(0);
     collTable.push_back(0);
 
-    int ii, iCurrSet = 0, iCurrMat = 0, iCurrArray = 0, iCurrCol = 0;
+    size_t ii = 0;
+    int iCurrSet = 0, iCurrMat = 0, iCurrArray = 0, iCurrCol = 0;
     const intVector      &attsOrder = atts.GetOrder();
 
     const vector<string> &setNames = atts.GetSetNames();
@@ -231,7 +232,7 @@ avtSIL::operator=(const avtSIL &sil)
     if (this == &sil)
         return *this;
     
-    int  i;
+    size_t  i;
     //
     // First, clear out what we have in this object.
     //
@@ -849,7 +850,7 @@ avtSIL::SILSetHasMapsOut(int index) const
         EXCEPTION2(BadIndexException, index, GetNumSets());
 
     EntryType t;
-    int iLocalIndex, iLocalSubIndex, jj;
+    int iLocalIndex, iLocalSubIndex;
 
     if (!FindSet(index, t, iLocalIndex, iLocalSubIndex))
     {
@@ -861,7 +862,7 @@ avtSIL::SILSetHasMapsOut(int index) const
         case SUBSET:
             return (sets[iLocalIndex]->GetMapsOut().size() > 0);
         case ARRAY:
-            for (jj = 0; jj < matrices.size(); jj++)
+            for (size_t jj = 0; jj < matrices.size(); jj++)
             {
                 int col = matrices[jj]->SetIsInCollection(index);
                 if (col >= 0)
@@ -896,7 +897,7 @@ void
 avtSIL::AddMapsToTemporarySet(avtSILSet_p pSet, int setIndex) const
 {
     //Add maps out for a SILSet created on demand, and contained by a matrix
-    int ii;
+    size_t ii;
     for (ii = 0; ii < matrices.size(); ii++)
     {
         int col = matrices[ii]->SetIsInCollection(setIndex);
@@ -1004,7 +1005,7 @@ avtSIL::GetSILCollection(int index) const
 int
 avtSIL::GetSetIndex(const std::string &name, int collID) const
 {
-    for (int ii = 0; ii < setTable.size()-1; ii+=3)
+    for (size_t ii = 0; ii < setTable.size()-1; ii+=3)
     {
         EntryType t = (EntryType)setTable[ii+1];
         int iGlobalIndex = setTable[ii], iLocalIndex = setTable[ii+2];
@@ -1090,7 +1091,7 @@ int
 avtSIL::GetCollectionIndex(std::string name, int superset) const
 {
     avtSILCollection_p  pCol;
-    for (int ii = 0; ii < collTable.size()-1; ii+=3)
+    for (size_t ii = 0; ii < collTable.size()-1; ii+=3)
     {
         EntryType t = (EntryType)collTable[ii+1];
         int iGlobalIndex = collTable[ii], iLocalIndex = collTable[ii+2];
@@ -1216,7 +1217,7 @@ SILAttributes *
 avtSIL::MakeSILAttributes(void) const
 {
     int t0 = visitTimer->StartTimer();
-    int   i;
+    size_t   i;
 
     SILAttributes *rv = new SILAttributes;
 
@@ -1233,7 +1234,7 @@ avtSIL::MakeSILAttributes(void) const
     rv->SetNSets(nSets);
     vector<string> names;
     vector<int>    ids;
-    for (i = 0 ; i < nSets ; i++)
+    for (i = 0 ; i < (size_t)nSets ; i++)
     {
         avtSILSet_p s = sets[i];
         names.push_back(s->GetName());
@@ -1250,7 +1251,7 @@ avtSIL::MakeSILAttributes(void) const
     vector<string> cats;
     vector<int> roles;
     vector<int> supersets;
-    for (i = 0 ; i < nCols ; i++)
+    for (i = 0 ; i < (size_t)nCols ; i++)
     {
         avtSILCollection_p col = collections[i];
         cats.push_back(col->GetCategory());
@@ -1336,12 +1337,12 @@ avtSIL::Print(ostream &out,
     std::vector< std::string > perCollInfo,
     std::vector< std::string > perMatInfo) const
 {
-    int  i;
+    size_t  i;
     bool useInfo;
 
-    useInfo = perSetInfo.size() == GetNumSets();
-    int idx = 0;
-    for (int i = 0 ; i < setTable.size()/3 ; i++)
+    useInfo = perSetInfo.size() == (size_t)GetNumSets();
+    //int idx = 0;
+    for (size_t i = 0 ; i < setTable.size()/3 ; i++)
     {
         switch (setTable[3*i+1])
         {
@@ -1491,7 +1492,7 @@ avtSIL::FindColl(int iColl, EntryType &outType,
 bool
 avtSIL::IsCompatible(const avtSIL *sil2) const
 {
-    int   i, j;
+    size_t   i, j;
 
     if (wholesList.size() != sil2->wholesList.size())
         return false;

@@ -499,6 +499,7 @@ ZoomInteractor::ForceCoordsToViewport(int &x, int &y)
 //
 // ****************************************************************************
 
+#if !defined(__APPLE__) && !defined(__WIN32__)
 static inline void
 GetSegment(int a, int l, int n, int &outl, int &newl)
 {
@@ -521,7 +522,7 @@ GetSegment(int a, int l, int n, int &outl, int &newl)
         outl += offset;
     }
 }
-
+#endif
 
 // ****************************************************************************
 //  Method: ZoomInteractor::UpdateRubberBand

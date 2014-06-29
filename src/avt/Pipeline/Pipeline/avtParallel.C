@@ -1663,7 +1663,7 @@ void BroadcastString(string &s, int myrank)
     if (myrank==0)
         len = s.length();
     MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
-    if (broadcastBuffer.size() < len+1)
+    if (broadcastBuffer.size() < (size_t)len+1)
         broadcastBuffer.resize(len+1);
 
     if (myrank==0)
@@ -1840,7 +1840,7 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
     int rank;
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     int red_val = 10000000;
-    if (vars.size() == total)
+    if (vars.size() == (size_t)total)
         red_val = rank;
 
     int mpiSizeTag = GetUniqueMessageTag();

@@ -700,7 +700,7 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         // Look for the first plot that uses a database with multiple time
         // states. If one is not found then we will use the first plot.
         int plotIndex = 0;
-        for(int i = 0; i < lst.size(); ++i)
+        for(size_t i = 0; i < lst.size(); ++i)
         {
             avtDataAttributes &atts = lst[i]->GetBehavior()->GetInfo().GetAttributes();
             if(atts.GetNumStates() > 1)

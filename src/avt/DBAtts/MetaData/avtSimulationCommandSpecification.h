@@ -60,6 +60,8 @@
 
 class DBATTS_API avtSimulationCommandSpecification : public AttributeSubject
 {
+    using AttributeSubject::SetValue;
+    using AttributeSubject::GetValue;
 public:
     enum RunMode
     {

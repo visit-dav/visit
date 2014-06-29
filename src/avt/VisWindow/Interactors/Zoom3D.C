@@ -504,7 +504,7 @@ Zoom3D::ZoomCamera(void)
 void
 Zoom3D::ZoomCamera(const int x, const int y)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
+    //vtkRenderWindowInteractor *rwi = Interactor;
 
     if (OldY != y)
     {

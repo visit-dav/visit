@@ -312,7 +312,7 @@ Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
         {
             int d = neighbors[j].domain;
             int entry = neighbors[j].match;
-            if (entry >= 0 && entry < wholelist[d].neighbors.size())
+            if (entry >= 0 && (size_t)entry < wholelist[d].neighbors.size())
                 wholelist[d].neighbors[entry].match--;
             neighbors[j-1] = neighbors[j];
         }

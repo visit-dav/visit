@@ -172,7 +172,7 @@ avtPolygonToTrianglesTesselator::avtPolygonToTrianglesTesselator(vtkPoints *pts)
 {
     tessMemAllocated = 0;
     tessMemAllocator = new TESSalloc();
-    memset(tessMemAllocator,0,sizeof(tessMemAllocator));
+    memset(tessMemAllocator,0,sizeof(TESSalloc));
     tessMemAllocator->memalloc      = tess_std_alloc;
     tessMemAllocator->memfree       = tess_std_free;
     tessMemAllocator->userData      = (void*)&tessMemAllocated;

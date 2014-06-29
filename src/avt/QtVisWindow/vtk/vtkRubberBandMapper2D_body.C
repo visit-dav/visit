@@ -11,7 +11,7 @@
     int cellNum = 0;
     int lastX, lastY, X, Y; 
     int currSize = 1024;
-
+    (void) currSize; /// suppress warning
     vtkDebugMacro (<< "vtkRubberBandMapper2D::RenderOverlay");
 
     if ( input == NULL ) 

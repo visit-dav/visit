@@ -317,8 +317,8 @@ avtFacelistFilter::FindFaces(vtkDataSet *in_ds, int domain, std::string label,
                              bool mustCreatePolyData, avtFacelist *fl)
 {
     int tDim = info.GetAttributes().GetTopologicalDimension();
-    int sDim = info.GetAttributes().GetSpatialDimension();
-    int dis_elem = info.GetValidity().GetDisjointElements();
+    //int sDim = info.GetAttributes().GetSpatialDimension();
+    //int dis_elem = info.GetValidity().GetDisjointElements();
 
     vtkDataSet *orig_in_ds = in_ds;
     bool shouldDeleteInDs = false;

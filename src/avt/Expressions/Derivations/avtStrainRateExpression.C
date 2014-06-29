@@ -115,7 +115,7 @@ avtStrainRateExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
     double detF;                     // Determinant of element
                                      // deformation gradient.
     double strain[6];                // Calculated strain.
-    int i, j, k;
+    size_t i, j, k;
     std::vector<int> cellsToIgnore;
     double avgTensor[9];             // ghost zone value
     int nTensors = 0;                // number of tensors in average
@@ -127,7 +127,7 @@ avtStrainRateExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
                    "only operates on unstructured grids.");
     }
     vtkUnstructuredGrid *in_usg = vtkUnstructuredGrid::SafeDownCast(in_ds);
-    int nCells = in_usg->GetNumberOfCells();
+    size_t nCells = in_usg->GetNumberOfCells();
     vtkDataArray *vel_data = in_ds->GetPointData()->GetArray(varnames[1]);
     if (vel_data == NULL) 
     {           

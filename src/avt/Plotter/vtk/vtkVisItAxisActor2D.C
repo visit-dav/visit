@@ -1438,9 +1438,9 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
 
   nDecades = (int)lv2 - (int)lv1 + 1;
 
-  double dr = v2 - v1;
-  double a = v1;
-  double b = 1.;
+  //double dr = v2 - v1;
+  //double a = v1;
+  //double b = 1.;
   double dlv = fabs(lv1-lv2);
   if (dlv > 1)
     {

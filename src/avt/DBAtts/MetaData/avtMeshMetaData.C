@@ -1804,6 +1804,8 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //          default:
 //            out << "The logical bounds are not applicable." << std::endl;
 //            break;
+           default:
+              break;
         }
     }
 
@@ -1828,11 +1830,13 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //          default:
 //            out << "The number of cells is not applicable." << std::endl;
 //            break;
+          default:
+            break;
         }
     }
 
 
-    if (blockNames.size() == numBlocks)
+    if (blockNames.size() == (size_t)numBlocks)
     {
         Indent(out, indent);
         out << "Block names: " << std::endl;
