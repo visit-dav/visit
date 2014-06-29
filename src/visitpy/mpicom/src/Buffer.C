@@ -420,7 +420,7 @@ Buffer::MPIType()
         return MPI_DOUBLE;
     else if(type_id  == STRING || type_id == OBJECT)
         return MPI_CHAR;
-    return NULL;
+    return MPI_CHAR; ///TODO: check on fix on return warning returned NULL
 }
 
 
