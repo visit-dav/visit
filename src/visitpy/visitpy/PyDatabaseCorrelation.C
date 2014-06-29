@@ -109,23 +109,23 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
              str += tmpStr;
         }
 
-    int i, j, index = 0;
+    size_t i, j, index = 0;
     const stringVector &databaseNames = correlation.GetDatabaseNames();
     for(i = 0; i < databaseNames.size(); ++i)
     {
-        SNPRINTF(tmpStr, 1000, "database[%d]=%s\n", i, databaseNames[i].c_str());
+        SNPRINTF(tmpStr, 1000, "database[%ld]=%s\n", i, databaseNames[i].c_str());
         str += tmpStr;
         SNPRINTF(tmpStr, 1000, "    numStates=%d\n", correlation.GetDatabaseNStates()[i]);
         str += tmpStr;
         str += "    times={";
-        for(j = 0; j < correlation.GetDatabaseNStates()[i]; ++j)
+        for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
         {
             SNPRINTF(tmpStr, 1000, "%g, ", correlation.GetDatabaseTimes()[index+j]);
             str += tmpStr;
         }
         str += "}\n";
         str += "    cycles={";
-        for(j = 0; j < correlation.GetDatabaseNStates()[i]; ++j)
+        for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
         {
             SNPRINTF(tmpStr, 1000, "%d, ", correlation.GetDatabaseCycles()[index+j]);
             str += tmpStr;
@@ -135,7 +135,7 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
         index += correlation.GetDatabaseNStates()[i];
 
         str += "    indices={";
-        for(j = 0; j < correlation.GetNumStates(); ++j)
+        for(j = 0; j < (size_t)correlation.GetNumStates(); ++j)
         {
             SNPRINTF(tmpStr, 1000, "%d, ", correlation.GetIndices()[i*correlation.GetNumStates() + j]);
             str += tmpStr;
@@ -209,7 +209,7 @@ DatabaseCorrelation_GetDatabaseNames(PyObject *self, PyObject *args)
     // Allocate a tuple the with enough entries to hold the databaseNames.
     const stringVector &databaseNames = obj->data->GetDatabaseNames();
     PyObject *retval = PyTuple_New(databaseNames.size());
-    for(int i = 0; i < databaseNames.size(); ++i)
+    for(size_t i = 0; i < databaseNames.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyString_FromString(databaseNames[i].c_str()));
     return retval;
 }
@@ -221,7 +221,7 @@ DatabaseCorrelation_GetDatabaseNStates(PyObject *self, PyObject *args)
     // Allocate a tuple the with enough entries to hold the databaseNStates.
     const intVector &databaseNStates = obj->data->GetDatabaseNStates();
     PyObject *retval = PyTuple_New(databaseNStates.size());
-    for(int i = 0; i < databaseNStates.size(); ++i)
+    for(size_t i = 0; i < databaseNStates.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(databaseNStates[i])));
     return retval;
 }
@@ -250,7 +250,7 @@ DatabaseCorrelation_GetCorrelatedTimeStates(PyObject *self, PyObject *args)
         // Allocate a tuple the with enough entries to hold the correlated
         // time states.
         retval = PyTuple_New(states.size());
-        for(int i = 0; i < states.size(); ++i)
+        for(size_t i = 0; i < states.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyLong_FromLong(states[i]));
     }
     else
@@ -318,7 +318,7 @@ DatabaseCorrelation_GetDatabaseCycleForState(PyObject *self, PyObject *args)
     int index = 0;
     if(state >= 0)
     {
-        for(int i = 0; i < databaseNames.size(); ++i)
+        for(size_t i = 0; i < databaseNames.size(); ++i)
         {
             if(databaseNames[i] == db)
             {
@@ -349,7 +349,7 @@ DatabaseCorrelation_GetDatabaseTimeForState(PyObject *self, PyObject *args)
     int index = 0;
     if(state >= 0)
     {
-        for(int i = 0; i < databaseNames.size(); ++i)
+        for(size_t i = 0; i < databaseNames.size(); ++i)
         {
             if(databaseNames[i] == db)
             {
@@ -619,7 +619,7 @@ PyDatabaseCorrelation_GetLogString()
 static void
 PyDatabaseCorrelation_CallLogRoutine(Subject *subj, void *data)
 {
-    DatabaseCorrelation *atts = (DatabaseCorrelation *)subj;
+    DatabaseCorrelation *atts = (DatabaseCorrelation *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

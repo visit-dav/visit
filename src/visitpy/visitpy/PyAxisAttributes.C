@@ -473,7 +473,7 @@ PyAxisAttributes_GetLogString()
 static void
 PyAxisAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisAttributes *atts = (AxisAttributes *)subj;
+    AxisAttributes *atts = (AxisAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -109,7 +109,7 @@ ExpressionList_GetExpressions(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetExpressions().size())
+    if(index < 0 || (size_t)index >= obj->data->GetExpressions().size())
     {
         char msg[200];
         if(obj->data->GetExpressions().size() == 0)
@@ -430,7 +430,7 @@ PyExpressionList_GetLogString()
 static void
 PyExpressionList_CallLogRoutine(Subject *subj, void *data)
 {
-    ExpressionList *atts = (ExpressionList *)subj;
+    ExpressionList *atts = (ExpressionList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -271,7 +271,7 @@ FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetOpenOptions().size())
+    if(index < 0 || (size_t)index >= obj->data->GetOpenOptions().size())
     {
         char msg[200];
         if(obj->data->GetOpenOptions().size() == 0)
@@ -728,7 +728,7 @@ PyFileOpenOptions_GetLogString()
 static void
 PyFileOpenOptions_CallLogRoutine(Subject *subj, void *data)
 {
-    FileOpenOptions *atts = (FileOpenOptions *)subj;
+    FileOpenOptions *atts = (FileOpenOptions *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

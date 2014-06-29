@@ -407,7 +407,7 @@ PyColorControlPoint_GetLogString()
 static void
 PyColorControlPoint_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorControlPoint *atts = (ColorControlPoint *)subj;
+    ColorControlPoint *atts = (ColorControlPoint *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

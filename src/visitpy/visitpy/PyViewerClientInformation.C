@@ -125,7 +125,7 @@ ViewerClientInformation_GetVars(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetVars().size())
+    if(index < 0 || (size_t)index >= obj->data->GetVars().size())
     {
         char msg[200];
         if(obj->data->GetVars().size() == 0)
@@ -501,7 +501,7 @@ PyViewerClientInformation_GetLogString()
 static void
 PyViewerClientInformation_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerClientInformation *atts = (ViewerClientInformation *)subj;
+    ViewerClientInformation *atts = (ViewerClientInformation *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

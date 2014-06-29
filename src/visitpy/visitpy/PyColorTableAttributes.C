@@ -178,7 +178,7 @@ ColorTableAttributes_GetColorTables(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetColorTables().size())
+    if(index < 0 || (size_t)index >= obj->data->GetColorTables().size())
     {
         char msg[200];
         if(obj->data->GetColorTables().size() == 0)
@@ -565,7 +565,7 @@ PyColorTableAttributes_GetLogString()
 static void
 PyColorTableAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorTableAttributes *atts = (ColorTableAttributes *)subj;
+    ColorTableAttributes *atts = (ColorTableAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

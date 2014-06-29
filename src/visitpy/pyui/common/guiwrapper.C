@@ -123,7 +123,7 @@ int QvisGUIApplicationDerived::GetPlotWindowSize()
 
 QMainWindow* QvisGUIApplicationDerived::GetPlotWindow(int index)
 {
-    if(index >= plotWindows.size() || index < 0)
+    if(index >= (int)plotWindows.size() || index < 0)
         return NULL;
 
     ActivatePlotWindow(index);
@@ -157,7 +157,7 @@ int QvisGUIApplicationDerived::GetOperatorWindowSize() {
 
 QMainWindow* QvisGUIApplicationDerived::GetOperatorWindow(int index)
 {
-    if(index >= operatorWindows.size() || index < 0)
+    if(index >= (int)operatorWindows.size() || index < 0)
         return NULL;
 
     ActivateOperatorWindow(index);

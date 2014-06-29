@@ -109,7 +109,7 @@ GaussianControlPointList_GetControlPoints(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetControlPoints().size())
+    if(index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
     {
         char msg[200];
         if(obj->data->GetControlPoints().size() == 0)
@@ -430,7 +430,7 @@ PyGaussianControlPointList_GetLogString()
 static void
 PyGaussianControlPointList_CallLogRoutine(Subject *subj, void *data)
 {
-    GaussianControlPointList *atts = (GaussianControlPointList *)subj;
+    GaussianControlPointList *atts = (GaussianControlPointList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

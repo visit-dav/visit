@@ -1436,7 +1436,7 @@ PyRenderingAttributes_GetLogString()
 static void
 PyRenderingAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RenderingAttributes *atts = (RenderingAttributes *)subj;
+    RenderingAttributes *atts = (RenderingAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

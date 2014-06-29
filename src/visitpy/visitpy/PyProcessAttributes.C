@@ -655,7 +655,7 @@ PyProcessAttributes_GetLogString()
 static void
 PyProcessAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ProcessAttributes *atts = (ProcessAttributes *)subj;
+    ProcessAttributes *atts = (ProcessAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

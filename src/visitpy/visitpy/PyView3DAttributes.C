@@ -1358,7 +1358,7 @@ PyView3DAttributes_GetLogString()
 static void
 PyView3DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    View3DAttributes *atts = (View3DAttributes *)subj;
+    View3DAttributes *atts = (View3DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

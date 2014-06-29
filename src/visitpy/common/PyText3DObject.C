@@ -91,7 +91,7 @@ struct Text3DObjectObject
 //
 // Internal prototypes
 //
-static PyObject *NewText3DObject(int);
+static PyObject *NewText3DObject(); ///TODO: check fix for function signature update
 
 std::string
 PyText3DObject_ToString(const AnnotationObject *atts, const char *prefix)

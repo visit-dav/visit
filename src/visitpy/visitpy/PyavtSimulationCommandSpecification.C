@@ -657,7 +657,7 @@ PyavtSimulationCommandSpecification_GetLogString()
 static void
 PyavtSimulationCommandSpecification_CallLogRoutine(Subject *subj, void *data)
 {
-    avtSimulationCommandSpecification *atts = (avtSimulationCommandSpecification *)subj;
+    avtSimulationCommandSpecification *atts = (avtSimulationCommandSpecification *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

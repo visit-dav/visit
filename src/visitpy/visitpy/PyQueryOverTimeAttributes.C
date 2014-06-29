@@ -620,7 +620,7 @@ static Observer *QueryOverTimeAttributesObserver = 0;
 std::string
 PyQueryOverTimeAttributes_GetLogString()
 {
-    std::string s("QueryOverTimeAtts = GetQueryOverTimeAttributes()\n");
+    std::string s("QueryOverTimeAtts = QueryOverTimeAttributes()\n");
     if(currentAtts != 0)
         s += PyQueryOverTimeAttributes_ToString(currentAtts, "QueryOverTimeAtts.");
     return s;
@@ -629,13 +629,13 @@ PyQueryOverTimeAttributes_GetLogString()
 static void
 PyQueryOverTimeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    QueryOverTimeAttributes *atts = (QueryOverTimeAttributes *)subj;
+    QueryOverTimeAttributes *atts = (QueryOverTimeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 
     if(cb != 0)
     {
-        std::string s("QueryOverTimeAtts = GetQueryOverTimeAttributes()\n");
+        std::string s("QueryOverTimeAtts = QueryOverTimeAttributes()\n");
         s += PyQueryOverTimeAttributes_ToString(currentAtts, "QueryOverTimeAtts.");
         cb(s);
     }

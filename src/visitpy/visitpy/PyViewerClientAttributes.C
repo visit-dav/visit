@@ -639,7 +639,7 @@ PyViewerClientAttributes_GetLogString()
 static void
 PyViewerClientAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerClientAttributes *atts = (ViewerClientAttributes *)subj;
+    ViewerClientAttributes *atts = (ViewerClientAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -1075,7 +1075,7 @@ PyPickVarInfo_GetLogString()
 static void
 PyPickVarInfo_CallLogRoutine(Subject *subj, void *data)
 {
-    PickVarInfo *atts = (PickVarInfo *)subj;
+    PickVarInfo *atts = (PickVarInfo *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

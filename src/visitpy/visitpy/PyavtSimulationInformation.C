@@ -350,7 +350,7 @@ avtSimulationInformation_GetGenericCommands(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetGenericCommands().size())
+    if(index < 0 || (size_t)index >= obj->data->GetGenericCommands().size())
     {
         char msg[200];
         if(obj->data->GetGenericCommands().size() == 0)
@@ -498,7 +498,7 @@ avtSimulationInformation_GetCustomCommands(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetCustomCommands().size())
+    if(index < 0 || (size_t)index >= obj->data->GetCustomCommands().size())
     {
         char msg[200];
         if(obj->data->GetCustomCommands().size() == 0)
@@ -869,7 +869,7 @@ PyavtSimulationInformation_GetLogString()
 static void
 PyavtSimulationInformation_CallLogRoutine(Subject *subj, void *data)
 {
-    avtSimulationInformation *atts = (avtSimulationInformation *)subj;
+    avtSimulationInformation *atts = (avtSimulationInformation *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

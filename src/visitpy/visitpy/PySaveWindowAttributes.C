@@ -1091,7 +1091,7 @@ PySaveWindowAttributes_GetLogString()
 static void
 PySaveWindowAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SaveWindowAttributes *atts = (SaveWindowAttributes *)subj;
+    SaveWindowAttributes *atts = (SaveWindowAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

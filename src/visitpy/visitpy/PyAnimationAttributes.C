@@ -523,7 +523,7 @@ PyAnimationAttributes_GetLogString()
 static void
 PyAnimationAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AnimationAttributes *atts = (AnimationAttributes *)subj;
+    AnimationAttributes *atts = (AnimationAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

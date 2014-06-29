@@ -113,7 +113,7 @@ SILRestriction_Categories(PyObject *self, PyObject *args)
     // Allocate a tuple the with enough entries to hold the Collection name list.
     PyObject *retval = PyTuple_New(mapsOut.size());
 
-    for(int i = 0; i < mapsOut.size(); ++i)
+    for(size_t i = 0; i < mapsOut.size(); ++i)
     {
         int cIndex = mapsOut[i];
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
@@ -736,7 +736,7 @@ SILRestriction_Wholes(PyObject *self, PyObject *args)
     // Allocate a tuple the with enough entries to hold the wholes.
     PyObject *retval = PyTuple_New(silr->GetWholes().size());
 
-    for(int i = 0; i < silr->GetWholes().size(); ++i)
+    for(size_t i = 0; i < silr->GetWholes().size(); ++i)
     {
         PyObject *dval = PyLong_FromLong((long)silr->GetWholes()[i]);
         if(dval == NULL)

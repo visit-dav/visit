@@ -361,7 +361,7 @@ PyavtVectorMetaData_GetLogString()
 static void
 PyavtVectorMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtVectorMetaData *atts = (avtVectorMetaData *)subj;
+    avtVectorMetaData *atts = (avtVectorMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

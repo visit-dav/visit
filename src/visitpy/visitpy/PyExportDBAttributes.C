@@ -536,7 +536,7 @@ PyExportDBAttributes_GetLogString()
 static void
 PyExportDBAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExportDBAttributes *atts = (ExportDBAttributes *)subj;
+    ExportDBAttributes *atts = (ExportDBAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

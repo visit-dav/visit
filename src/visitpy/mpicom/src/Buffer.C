@@ -217,7 +217,7 @@ Buffer::Init(int buffer_size)
         Reset();
 
     // Any buffer size smaller than the header is invalid.
-    if(buffer_size >= (2 * sizeof(int) ))
+    if((size_t)buffer_size >= (2 * sizeof(int) ))
     {
         this->size = buffer_size;
         buffer = (void*) new char[this->size];

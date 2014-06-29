@@ -1472,7 +1472,7 @@ PyLaunchProfile_GetLogString()
 static void
 PyLaunchProfile_CallLogRoutine(Subject *subj, void *data)
 {
-    LaunchProfile *atts = (LaunchProfile *)subj;
+    LaunchProfile *atts = (LaunchProfile *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

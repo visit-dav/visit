@@ -1186,7 +1186,7 @@ PyPlot_GetLogString()
 static void
 PyPlot_CallLogRoutine(Subject *subj, void *data)
 {
-    Plot *atts = (Plot *)subj;
+    Plot *atts = (Plot *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

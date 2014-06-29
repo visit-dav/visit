@@ -457,7 +457,7 @@ PyAxisTickMarks_GetLogString()
 static void
 PyAxisTickMarks_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisTickMarks *atts = (AxisTickMarks *)subj;
+    AxisTickMarks *atts = (AxisTickMarks *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

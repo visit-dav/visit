@@ -2083,7 +2083,7 @@ ViewerRPC_GetToolUpdateMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerRPC_SetQueryParams(PyObject *self, PyObject *args)
 {
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+    ViewerRPCObject *obj = (ViewerRPCObject *)self; (void) obj;
 
     // NOT IMPLEMENTED!!!
     // name=queryParams, type=MapNode
@@ -2095,7 +2095,7 @@ ViewerRPC_SetQueryParams(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerRPC_GetQueryParams(PyObject *self, PyObject *args)
 {
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+    ViewerRPCObject *obj = (ViewerRPCObject *)self; (void) obj;
     // NOT IMPLEMENTED!!!
     // name=queryParams, type=MapNode
     PyObject *retval = NULL;
@@ -2897,7 +2897,7 @@ PyViewerRPC_GetLogString()
 static void
 PyViewerRPC_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerRPC *atts = (ViewerRPC *)subj;
+    ViewerRPC *atts = (ViewerRPC *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

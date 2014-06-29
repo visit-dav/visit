@@ -802,7 +802,7 @@ static bool LineObjectEnableLogging = true;
 static void
 PyLineObject_WriteLog(Subject *subj, void *data)
 {
-    AnnotationObject *atts = (AnnotationObject *)subj;
+    AnnotationObject *atts = (AnnotationObject *)subj; (void) atts;
     FILE *logFile = (FILE *)data;
 
     if(!LineObjectEnableLogging || (logFile == NULL))

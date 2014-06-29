@@ -109,7 +109,7 @@ ColorAttributeList_GetColors(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetColors().size())
+    if(index < 0 || (size_t)index >= obj->data->GetColors().size())
     {
         char msg[200];
         if(obj->data->GetColors().size() == 0)
@@ -430,7 +430,7 @@ PyColorAttributeList_GetLogString()
 static void
 PyColorAttributeList_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorAttributeList *atts = (ColorAttributeList *)subj;
+    ColorAttributeList *atts = (ColorAttributeList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

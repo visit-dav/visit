@@ -379,7 +379,7 @@ PyDBOptionsAttributes_GetLogString()
 static void
 PyDBOptionsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DBOptionsAttributes *atts = (DBOptionsAttributes *)subj;
+    DBOptionsAttributes *atts = (DBOptionsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

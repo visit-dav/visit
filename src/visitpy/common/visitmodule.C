@@ -679,7 +679,7 @@ DeprecatedMessage(const char *deprecatedFunction, const char *ver,
             "***\n",
             deprecatedFunction, ver, deprecatedFunction, newFunction);
 }
-
+#if 0
 // ****************************************************************************
 // Method: StringVectorToTupleString
 //
@@ -721,6 +721,7 @@ StringVectorToTupleString(const stringVector &s)
 
     return str;
 }
+#endif
 
 // ****************************************************************************
 // Method: GetStringVectorFromPyObject
@@ -2140,7 +2141,7 @@ visit_GetTimeSliders(PyObject *self, PyObject *args)
 
     // Create a dictionary object and put the time sliders in it.
     PyObject *dict = PyDict_New();
-    for(int i = 0; i < timeSliders.size(); ++i)
+    for(size_t i = 0; i < timeSliders.size(); ++i)
     {
         PyObject *tsName = PyString_FromString(timeSliders[i].c_str());
         PyObject *tsValue = PyInt_FromLong(timeSliderStates[i]);
@@ -3792,7 +3793,7 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
          {
              const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
              const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
-             for (int i=0; i<engines.size(); i++)
+             for (size_t i=0; i<engines.size(); i++)
              {
                  if (engines[i] == engineName)
                  {
@@ -4997,7 +4998,7 @@ visit_SaveSession(PyObject *self, PyObject *args)
 
     std::string session_file(filename);
     // check for ".session" extension
-    int rpos = session_file.rfind(".session");
+    size_t rpos = session_file.rfind(".session");
     if( rpos  == std::string::npos || rpos != session_file.size() - 8)
         session_file += ".session";
         
@@ -5034,7 +5035,7 @@ visit_GetEngineList(PyObject *self, PyObject *args)
     // Allocate a tuple the with enough entries to hold the engine list.
     const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
     PyObject *retval = PyTuple_New(engines.size());
-    for(int i = 0; i < engines.size(); ++i)
+    for(size_t i = 0; i < engines.size(); ++i)
     {
         PyObject *name = PyString_FromString(engines[i].c_str());
         if(name == NULL)
@@ -5530,7 +5531,7 @@ visit_SetMachineProfile(PyObject *self, PyObject *args)
             rmhosts.push_back(i);
     }
 
-    for(int i = 0; i < rmhosts.size(); ++i)
+    for(size_t i = 0; i < rmhosts.size(); ++i)
         hpl->RemoveMachines(rmhosts[rmhosts.size() - 1 - i]);
 
     hpl->AddMachines(ma);
@@ -5604,7 +5605,7 @@ visit_RemoveMachineProfile(PyObject *self, PyObject *args)
             rmhosts.push_back(i);
     }
 
-    for(int i = 0; i < rmhosts.size(); ++i)
+    for(size_t i = 0; i < rmhosts.size(); ++i)
         hpl->RemoveMachines(rmhosts[rmhosts.size() - 1 - i]);
     hpl->Notify();
 
@@ -5640,7 +5641,7 @@ visit_GetMachineProfileNames(PyObject *self, PyObject *args)
     MUTEX_UNLOCK();
 
     PyObject *retval = PyTuple_New(names.size());
-    for(int i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < names.size(); ++i)
     {
         PyObject *s = PyString_FromString(names[i].c_str());
         PyTuple_SET_ITEM(retval, i, s);
@@ -6021,7 +6022,7 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
     const stringVector &types = dbplugininfo->GetTypes();
     bool foundMatch = false;
     bool hasWriter = false;
-    for (int i = 0 ; i < types.size() ; i++)
+    for (size_t i = 0 ; i < types.size() ; i++)
     {
         if (types[i] == db_type)
         {
@@ -6107,7 +6108,7 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
     const stringVector &types = dbplugininfo->GetTypes();
     bool foundMatch = false;
     bool hasWriter = false;
-    for (int i = 0 ; i < types.size() ; i++)
+    for (size_t i = 0 ; i < types.size() ; i++)
     {
         if (types[i] == plugin)
         {
@@ -6185,7 +6186,7 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     PyObject *dict = NULL;
     const stringVector &types = foo->GetTypeNames();
     bool foundMatch = false;
-    for (int i = 0 ; i < types.size() ; i++)
+    for (size_t i = 0 ; i < types.size() ; i++)
     {
         if (types[i] == plugin)
         {
@@ -6252,7 +6253,7 @@ visit_SetDefaultFileOpenOptions(PyObject *self, PyObject *args)
 
     const stringVector &types = foo->GetTypeNames();
     bool foundMatch = false;
-    for (int i = 0 ; i < types.size() ; i++)
+    for (size_t i = 0 ; i < types.size() ; i++)
     {
         if (types[i] == plugin)
         {
@@ -6312,7 +6313,7 @@ visit_GetPreferredFileFormats(PyObject *self, PyObject *args)
     const stringVector &ids = foo->GetPreferredIDs();
     PyObject *retval = PyTuple_New(ids.size());
 
-    for(int i = 0; i < ids.size(); ++i)
+    for(size_t i = 0; i < ids.size(); ++i)
     {
         PyObject *s = PyString_FromString(ids[i].c_str());
         PyTuple_SET_ITEM(retval, i, s);
@@ -6355,9 +6356,9 @@ visit_SetPreferredFileFormats(PyObject *self, PyObject *args)
     // match names to ids if necessary
     const stringVector &allnames = foo->GetTypeNames();
     const stringVector &allids = foo->GetTypeIDs();
-    for (int i = 0 ; i < newIDs.size() ; i++)
+    for (size_t i = 0 ; i < newIDs.size() ; i++)
     {
-        for (int j = 0 ; j < allnames.size() ; j++)
+        for (size_t j = 0 ; j < allnames.size() ; j++)
         {
             if (newIDs[i] == allnames[j])
             {
@@ -7335,7 +7336,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
              char tmpStr[2048];
              size_t  strLen = 0;
 
-             int j;
+             size_t j;
              SNPRINTF(tmpStr, sizeof(tmpStr),
                  "Plot[%d]|id=%d;type=\"%s\";database=\"%s\";var=%s;active=%d;"
                  "hidden=%d;framerange=(%d, %d);keyframes={", i,
@@ -7377,13 +7378,13 @@ visit_ListPlots(PyObject *self, PyObject *args)
              strLen = strlen(tmpStr);
 
              // Print out the plot operators.
-             for(j = 0; j < plot.GetNumOperators(); ++j)
+             for(j = 0; j < (size_t)plot.GetNumOperators(); ++j)
              {
                  int op = plot.GetOperator(j);
                  SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "\"%s\"",
                      GetViewerProxy()->GetOperatorPluginManager()->GetEnabledID(op).c_str());
                  strLen = strlen(tmpStr);
-                 if(j < plot.GetNumOperators() - 1)
+                 if(j < (size_t)plot.GetNumOperators() - 1)
                      SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
                  strLen = strlen(tmpStr);
              }
@@ -7707,7 +7708,7 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
     bool okayToSet = false;
     MUTEX_LOCK();
     intVector activePlots;
-    for(int j = 0; j < vec.size(); ++j)
+    for(size_t j = 0; j < vec.size(); ++j)
     {
         if(vec[j] < 0 || vec[j] >= GetViewerState()->GetPlotList()->GetNumPlots())
         {
@@ -8581,7 +8582,7 @@ visit_GetOperatorOptions(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &operatorIndex))
         return NULL;
 
-    int plotIndex = 0, plotType = -1, operatorType = 0;
+    int plotIndex = 0, plotType = -1, operatorType = 0; (void) plotType;
     PyObject *retval = 0;
     MUTEX_LOCK();
         PlotList plCopy(*GetViewerState()->GetPlotList());
@@ -8601,7 +8602,7 @@ visit_GetOperatorOptions(PyObject *self, PyObject *args)
             }
 
             // Let's check that the operator index that was passed is in range.
-            if(operatorIndex < 0 || operatorIndex >= plCopy[plotIndex].GetOperators().size())
+            if(operatorIndex < 0 || (size_t)operatorIndex >= plCopy[plotIndex].GetOperators().size())
             {
                 VisItErrorFunc("The supplied operator index was out of range.");
             }
@@ -8612,7 +8613,7 @@ visit_GetOperatorOptions(PyObject *self, PyObject *args)
                 const Plot &p = plCopy[plotIndex];
                 int opCount = 0;
                 operatorType = p.GetOperators()[operatorIndex];
-                for(int op = 0; op < p.GetOperators().size(); ++op)
+                for(size_t op = 0; op < p.GetOperators().size(); ++op)
                 {
                     if(p.GetOperators()[op] == operatorType)
                         ++opCount;
@@ -8892,7 +8893,7 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
     else
     {
         PyObject *tuple = PyTuple_New(vals.size());
-        for(int j = 0; j < vals.size(); ++j)
+        for(size_t j = 0; j < vals.size(); ++j)
         {
             PyObject *item = PyFloat_FromDouble(vals[j]);
             if(item == NULL)
@@ -9215,7 +9216,7 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
 
                     if(names.size() > 0)
                     {
-                        for(int j = 0; j < names.size(); ++j)
+                        for(size_t j = 0; j < names.size(); ++j)
                         {
                             bool nameMatched = false;
                             for(int k = 0; k < nsets; ++k)
@@ -9585,7 +9586,7 @@ visit_ColorTableNames(PyObject *self, PyObject *args)
     const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetNames();
     PyObject *retval = PyTuple_New(ctNames.size());
 
-    for(int i = 0; i < ctNames.size(); ++i)
+    for(size_t i = 0; i < ctNames.size(); ++i)
     {
         PyObject *dval = PyString_FromString(ctNames[i].c_str());
         if(dval == NULL)
@@ -10045,7 +10046,7 @@ visit_Queries(PyObject *self, PyObject *args)
     // We only want to include Database queries, so count them.
     intVector types = GetViewerState()->GetQueryList()->GetTypes();
     int nQueries = 0;
-    for(int i = 0; i < types.size(); ++i)
+    for(size_t i = 0; i < types.size(); ++i)
     {
         if (types[i] == QueryList::DatabaseQuery)
             nQueries++;
@@ -10054,7 +10055,7 @@ visit_Queries(PyObject *self, PyObject *args)
     // Allocate a tuple with enough entries to hold the queries name list.
     PyObject *retval = PyTuple_New(nQueries);
 
-    for(int j = 0, k = 0; j < queries.size(); ++j)
+    for(size_t j = 0, k = 0; j < queries.size(); ++j)
     {
         if (types[j] == QueryList::DatabaseQuery)
         {
@@ -10100,7 +10101,7 @@ visit_QueriesOverTime(PyObject *self, PyObject *args)
     intVector types = GetViewerState()->GetQueryList()->GetTypes();
     intVector mode = GetViewerState()->GetQueryList()->GetQueryMode();
     int nQueries = 0;
-    for(int i = 0; i < types.size(); ++i)
+    for(size_t i = 0; i < types.size(); ++i)
     {
         if (types[i] == QueryList::DatabaseQuery &&
             mode[i] != QueryList::QueryOnly )
@@ -10110,7 +10111,7 @@ visit_QueriesOverTime(PyObject *self, PyObject *args)
     // Allocate a tuple with enough entries to hold the queries name list.
     PyObject *retval = PyTuple_New(nQueries);
 
-    for(int j = 0, k = 0; j < queries.size(); ++j)
+    for(size_t j = 0, k = 0; j < queries.size(); ++j)
     {
         if (types[j] == QueryList::DatabaseQuery &&
             mode[j] != QueryList::QueryOnly)
@@ -11079,7 +11080,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     int arg1 = 0, arg2 = 0;
     double darg;
     doubleVector darg1(3), darg2(2), darg3(2); 
-    bool dumpSteps = false;
+    //bool dumpSteps = false;
     PyObject *tuple = NULL;
     
     bool parse_success = false;
@@ -11528,14 +11529,14 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *py_vars_tuple = NULL;
     PyObject *py_args       = NULL;
 
-    static char *kwlist[] = {"source", "file", "vars","args",NULL};
+    static const char *kwlist[] = {"source", "file", "vars","args",NULL};
 
     // keyword arguments
     // source: string containg the python filter source
     // file: string containing the location of a script file
     // vars: tuple containing variable names
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ssOO", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ssOO", const_cast<char**>(kwlist),
                                      &source_text, &source_file,
                                      &py_vars_tuple,
                                      &py_args))
@@ -11626,19 +11627,19 @@ visit_DefinePythonExpression(PyObject *self, PyObject *args, PyObject *kwargs)
     ENSURE_VIEWER_EXISTS();
 
     char     *var_name      = NULL;
-    char     *var_type      = "scalar";
+    const char     *var_type      = "scalar";
     PyObject *args_tuple    = NULL;
     char     *source_text   = NULL;
     char     *source_file   = NULL;
 
-    static char *kwlist[] = {"name","args","source", "file", "type", NULL};
+    static const char *kwlist[] = {"name","args","source", "file", "type", NULL};
 
     // keyword arguments
     // source: string containg the python filter source
     // file: string containing the location of a script file
     // vars: tuple containing variable names
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|sss", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|sss", const_cast<char**>(kwlist),
                                      &var_name, &args_tuple,
                                      &source_text,
                                      &source_file, &var_type))
@@ -13967,7 +13968,7 @@ visit_Lineout(PyObject *self, PyObject *args, PyObject *kwargs)
 
     bool parse_success = true;
     MapNode queryParams;
-    PyObject *repr = NULL; 
+    PyObject *repr = NULL;  (void) repr;
 
 
     if (args == NULL)
@@ -14432,7 +14433,7 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
     const char *mName = "visit_GetAnnotationObject: ";
     ENSURE_VIEWER_EXISTS();
 
-    bool useIndex = true;
+    //bool useIndex = true;
     char *annotName = NULL;
 
     if(!PyArg_ParseTuple(args, "s", &annotName))
@@ -14998,7 +14999,7 @@ visit_LoadNamedSelection(PyObject *self, PyObject *args)
         {
             const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
             const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
-            for (int i=0; i<engines.size(); i++)
+            for (size_t i=0; i<engines.size(); i++)
             {
                 if (engines[i] == engineName)
                 {
@@ -15041,8 +15042,8 @@ visit_SaveNamedSelection(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *selName;
-    bool useFirstEngine = false;
-    bool useFirstSimulation = false;
+    //bool useFirstEngine = false;
+    //bool useFirstSimulation = false;
     const char *engineName = 0;
     const char *simulationName = 0;
 
@@ -15474,7 +15475,7 @@ visit_ClientMethod(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *name = 0;
-    char *arg1 = 0;
+    //char *arg1 = 0;
     const char *CMError = "The tuple passed as the arguments to the"
                           "client method must contain only int, long, "
                           " float, tuples, or lists.";
@@ -15602,7 +15603,7 @@ visit_ExecuteMacro(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *name = 0;
-    PyObject *obj = 0;
+    //PyObject *obj = 0;
 
     if (!PyArg_ParseTuple(args, "s", &name))
         return NULL;
@@ -15757,7 +15758,7 @@ visit_GetCallbackNames(PyObject *, PyObject *args)
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
     PyObject *retval = PyTuple_New(names.size());
-    for(int i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < names.size(); ++i)
     {
         PyObject *dval = PyString_FromString(names[i].c_str());
         if(dval == NULL)
@@ -15796,7 +15797,7 @@ visit_GetCallbackArgumentCount(PyObject *, PyObject *args)
     callbackMgr->GetCallbackNames(names);
     bool failed = true;
     int retval = 0;
-    for(int i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < names.size(); ++i)
     {
         if(names[i] == name)
         {
@@ -15896,7 +15897,7 @@ visit_RegisterCallback(PyObject *, PyObject *args)
         stringVector names;
         callbackMgr->GetCallbackNames(names);
         failed = true;
-        for(int i = 0; i < names.size(); ++i)
+        for(size_t i = 0; i < names.size(); ++i)
         {
             if(names[i] == name)
             {
@@ -17826,7 +17827,7 @@ NeedToLoadPlugins(Subject *, void *)
 static int
 InitializeModule()
 {
-    bool ret = false;
+    bool ret = false; (void) ret;
 
     // Register a close-down function to close the viewer.
     Py_AtExit(terminatevisit);
@@ -18019,7 +18020,7 @@ ReadVisItPluginDir(const char *visitProgram)
 
     while(!feof(p))
     {
-        fgets(line, 2000, p);
+        char* res = fgets(line, 2000, p); (void) res;
         if(strncmp(line, vpd, vpdLen) == 0)
         {
             char *value = NULL, *end = NULL;
@@ -18568,9 +18569,9 @@ void initvisitmodule()
 void
 initvisit()
 {
-    int initCode = 0;
+    int initCode = 0; (void) initCode;
     PyObject *main_module = NULL;
-    PyObject *gdict = NULL;
+    PyObject *gdict = NULL; (void) gdict;
     PyEval_InitThreads();
     // save a pointer to the main PyThreadState object
     mainThreadState = PyThreadState_Get();

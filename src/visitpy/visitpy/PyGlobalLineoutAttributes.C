@@ -651,7 +651,7 @@ PyGlobalLineoutAttributes_GetLogString()
 static void
 PyGlobalLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    GlobalLineoutAttributes *atts = (GlobalLineoutAttributes *)subj;
+    GlobalLineoutAttributes *atts = (GlobalLineoutAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

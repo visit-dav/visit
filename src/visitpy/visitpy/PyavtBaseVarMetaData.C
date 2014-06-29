@@ -460,7 +460,7 @@ PyavtBaseVarMetaData_GetLogString()
 static void
 PyavtBaseVarMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtBaseVarMetaData *atts = (avtBaseVarMetaData *)subj;
+    avtBaseVarMetaData *atts = (avtBaseVarMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

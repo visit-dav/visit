@@ -794,7 +794,7 @@ PyNameschemeAttributes_GetLogString()
 static void
 PyNameschemeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    NameschemeAttributes *atts = (NameschemeAttributes *)subj;
+    NameschemeAttributes *atts = (NameschemeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

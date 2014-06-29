@@ -797,7 +797,7 @@ mpicom_gather(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    int rcv_idx = 0;
+    //int rcv_idx = 0;
     for(int i=0;i<nprocs;i++)
     {
         Buffer obj_buff((void*)&rcv_buffer[rcv_displacements[i]]);
@@ -1023,7 +1023,7 @@ mpicom_alltoall(PyObject *self, PyObject *args)
     }
 
 
-    PyObject *res= NULL;
+    //PyObject *res= NULL;
 
     if(PySequence_Check(py_obj) == 0)
     {
