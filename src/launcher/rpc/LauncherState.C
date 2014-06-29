@@ -19,7 +19,7 @@ LauncherState::SetupComponentRPCs(Xfer* xfer)
     //
     // Connect the RPCs to the xfer object.
     //
-    for(int i = 0; i < GetNumStateObjects(); ++i)
+    for(size_t i = 0; i < GetNumStateObjects(); ++i)
         xfer->Add(GetStateObject(i));
 }
 
@@ -32,7 +32,7 @@ LauncherState::GetNumStateObjects()
 VisItRPC*
 LauncherState::GetStateObject(int i)
 {
-    return (i >= 0 && i < objVector.size()) ?
+    return (i >= 0 && (size_t)i < objVector.size()) ?
            objVector[i] : 0;
 }
 
