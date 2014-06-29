@@ -336,7 +336,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
         int nVerts = *connPtrL++;
         vtkIdType *cell = connPtrL;
 
-        double v0[3], v1[3], v2[3];
+        double v0[3], v1[3]/*, v2[3]*/;
         double normal[3] = {0, 0, 1};
         if (nVerts == 2)
         {

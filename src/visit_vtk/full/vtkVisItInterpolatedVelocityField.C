@@ -191,7 +191,7 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
         double resPt[3]={0.0,0.0,0.0};
         int subId = 0;
         locator->IgnoreGhostsOff();
-        int success = locator->FindClosestPointWithinRadius(pt, rad, resPt,
+        /*int success = */ locator->FindClosestPointWithinRadius(pt, rad, resPt,
                                                             cell, subId, dist);
     }
    

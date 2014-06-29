@@ -1019,7 +1019,7 @@ vtkPolyDataOnionPeelFilter::FindCellsCorrespondingToOriginal(
         for (int i = comp; i < n; i+=nc )
         {
             int id = i / nc;
-            if (oc[i] == orig && group->IsId(id) == -1)
+            if (oc[i] == (unsigned int)orig && group->IsId(id) == -1)
                 group->InsertNextId(id);
         }
     }
