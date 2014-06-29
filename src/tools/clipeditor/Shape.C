@@ -565,7 +565,7 @@ Shape::Init()
                 zc[i] = .5;
                 int index = (n - 'p') + 1;
                 int found = 0;
-                for (int s=0; s<dataset->shapes.size() && found<index; s++)
+                for (size_t s=0; s<dataset->shapes.size() && found<index; s++)
                 {
                     if (dataset->shapes[s].shapeType == ST_POINT)
                     {
@@ -785,7 +785,7 @@ Shape::DrawPolyData(Vector &up, Vector &right)
         char ci2 = parentNodes[tris[i][2]];
 
         bool duplicate = false;
-        for (int s=1; s<dataset->shapes.size() && !duplicate; s++)
+        for (size_t s=1; s<dataset->shapes.size() && !duplicate; s++)
         {
             if (&dataset->shapes[s] == this)
                 continue;
@@ -845,7 +845,7 @@ Shape::DrawPolyData(Vector &up, Vector &right)
         char ci3 = parentNodes[quads[i][3]];
 
         bool duplicate = false;
-        for (int s=1; s<dataset->shapes.size() && !duplicate; s++)
+        for (size_t s=1; s<dataset->shapes.size() && !duplicate; s++)
         {
             if (&dataset->shapes[s] == this)
                 continue;

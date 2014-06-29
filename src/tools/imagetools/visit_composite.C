@@ -68,7 +68,7 @@ struct ViewportInfo
         coordinates[2] = coordinates[3] = 1.f;
         opacity = 1.;
         opaqueMode = M_OPAQUE;
-        transparentColor[0] = transparentColor[0] = transparentColor[0] = 255;
+        transparentColor[0] = transparentColor[1] = transparentColor[2] = 255;
         hasDropShadow = false;
         file = 0;
     }
@@ -80,17 +80,18 @@ struct ViewportInfo
 
     void ReadParameters(FILE *f)
     {
-        fscanf(f, "%s\n", imageName);
-        fscanf(f, "%g %g %g %g\n", &coordinates[0], &coordinates[1],
+        int result = 0; (void) result;
+        result = fscanf(f, "%s\n", imageName);
+        result = fscanf(f, "%g %g %g %g\n", &coordinates[0], &coordinates[1],
                &coordinates[2], &coordinates[3]);
-        fscanf(f, "%d\n", &opaqueMode);
-        fscanf(f, "%g\n", &opacity);
+        result = fscanf(f, "%d\n", &opaqueMode);
+        result = fscanf(f, "%g\n", &opacity);
         int tmp[3];
-        fscanf(f, "%d %d %d\n", &tmp[0], &tmp[1], &tmp[2]);
+        result = fscanf(f, "%d %d %d\n", &tmp[0], &tmp[1], &tmp[2]);
         transparentColor[0] = (unsigned char)tmp[0];
         transparentColor[1] = (unsigned char)tmp[1];
         transparentColor[2] = (unsigned char)tmp[2];
-        fscanf(f, "%d\n", &tmp[0]);
+        result = fscanf(f, "%d\n", &tmp[0]);
         hasDropShadow = tmp[0] > 0;
     }
 
@@ -143,19 +144,20 @@ struct CompositeParameters
     {
         bool retval = false;
         FILE *f = fopen(filename, "rt");
+        int result = 0; (void) result;
         if(f != 0)
         {
-            fscanf(f, "%d\n", &nViewports);
-            fscanf(f, "%d %d\n", &outputSize[0], &outputSize[1]);
+            result = fscanf(f, "%d\n", &nViewports);
+            result = fscanf(f, "%d %d\n", &outputSize[0], &outputSize[1]);
             int tmp[3];
-            fscanf(f, "%d %d %d\n", &tmp[0], &tmp[1], &tmp[2]);
+            result = fscanf(f, "%d %d %d\n", &tmp[0], &tmp[1], &tmp[2]);
             outputBackground[0] = (unsigned char)tmp[0];
             outputBackground[1] = (unsigned char)tmp[1];
             outputBackground[2] = (unsigned char)tmp[2];
-            fscanf(f, "%s\n", outputFile);
-            fscanf(f, "%s\n", backgroundFile);
-            fscanf(f, "%g %g\n", &shadowOffsetX, &shadowOffsetY);
-            fscanf(f, "%g\n", &shadowBlurRadius);
+            result = fscanf(f, "%s\n", outputFile);
+            result = fscanf(f, "%s\n", backgroundFile);
+            result = fscanf(f, "%g %g\n", &shadowOffsetX, &shadowOffsetY);
+            result = fscanf(f, "%g\n", &shadowBlurRadius);
 
             viewports = new ViewportInfo*[nViewports];
             for(int i = 0; i < nViewports; ++i)
@@ -218,7 +220,7 @@ CreateDropShadowMask(const ViewportInfo *vpInfo, int offx, int offy, int r)
 
     // Create the blur image
     float *blur = new float[rx2 * rx2];
-    float root2 = sqrt(2.);
+    //float root2 = sqrt(2.);
     float blurSum = 0.;
     for (int i=0; i<rx2; i++)
     {

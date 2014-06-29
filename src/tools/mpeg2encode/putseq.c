@@ -35,7 +35,7 @@
 void putseq()
 {
   /* this routine assumes (N % M) == 0 */
-  int i, j, k, f, f0, n, np, nb, sxf, syf, sxb, syb;
+  int i, j, k, f, f0, n, np, nb, sxf = -1, syf = -1, sxb, syb; /* TODO: check on sxf and syf giving uninitialized warnings */
   int ipflag;
   char name[256];
   unsigned char *neworg[3], *newref[3];

@@ -141,7 +141,7 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
                 cerr << endl;
             stringVector enumValues = opts->GetEnumStrings(name);
             if (PAR_Rank() == 0)
-                for (int k=0; k<enumValues.size(); k++)
+                for (size_t k=0; k<enumValues.size(); k++)
                     cerr << "    ("<<k<<" = "<<enumValues[k]<<")\n";
             if (PAR_Rank() == 0)
                 cerr << " (integer, default="<<opts->GetEnum(name)<<"):\n";
@@ -429,7 +429,7 @@ int main(int argc, char *argv[])
     int target_chunks = -1;
     bool outputZonal = false;
     long long target_zones = -1;
-    EngineDatabasePluginInfo *edpir = NULL;
+    //EngineDatabasePluginInfo *edpir = NULL;
     if (argc > 4)
     {
         for (int i = 4 ; i < argc ; i++)
@@ -524,7 +524,7 @@ int main(int argc, char *argv[])
     {
         if (PAR_Rank() == 0)
             cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
-        for (int i = 0 ; i < pluginList.size() ; i++)
+        for (size_t i = 0 ; i < pluginList.size() ; i++)
         {
             if (PAR_Rank() == 0)
             {
@@ -606,7 +606,7 @@ int main(int argc, char *argv[])
     // Assume MetaData for timestep 0 is sufficient for what we need here
     //
     const avtDatabaseMetaData *md = db->GetMetaData(0);
-    const avtMeshMetaData *mmd = NULL;
+    //const avtMeshMetaData *mmd = NULL;
     string meshname = "";
     if (md->GetNumMeshes() >= 1)
     {

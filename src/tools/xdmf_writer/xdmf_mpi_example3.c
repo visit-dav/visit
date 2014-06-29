@@ -210,10 +210,10 @@ int main(int argc, char *argv[])
     varCentering[0] = XDMF_CELL_CENTER;
     varCentering[1] = XDMF_NODE_CENTER;
     varCentering[2] = XDMF_NODE_CENTER;
-    int gridDims[3];
-    gridDims[0] = zoneDims[0];
-    gridDims[1] = zoneDims[1];
-    gridDims[2] = zoneDims[2];
+    //int gridDims[3];
+    //gridDims[0] = zoneDims[0];
+    //gridDims[1] = zoneDims[1];
+    //gridDims[2] = zoneDims[2];
 
     //
     // Write the meta data to the XML file.
@@ -258,4 +258,6 @@ int main(int argc, char *argv[])
     free(varCentering);
 
     MPI_Finalize();
+
+    return 0; /// TODO: check if return value of 0 is correct
 }

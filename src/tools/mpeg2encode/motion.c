@@ -144,7 +144,7 @@ int i,j,sxf,syf,sxb,syb;
 struct mbinfo *mbi;
 {
   int imin,jmin,iminf,jminf,iminr,jminr;
-  int imint,jmint,iminb,jminb;
+  int imint = -1,jmint,iminb,jminb;
   int imintf,jmintf,iminbf,jminbf;
   int imintr,jmintr,iminbr,jminbr;
   int var,v0;
@@ -152,8 +152,8 @@ struct mbinfo *mbi;
   int dmcfield,dmcfieldf,dmcfieldr,dmcfieldi;
   int tsel,bsel,tself,bself,tselr,bselr;
   unsigned char *mb;
-  int imins[2][2],jmins[2][2];
-  int imindp,jmindp,imindmv,jmindmv,dmc_dp,vmc_dp;
+  int imins[2][2] = {{-1,-1},{-1,-1}},jmins[2][2] = {{-1, -1}, {-1, -1}};
+  int imindp = -1,jmindp = -1 ,imindmv = -1,jmindmv = -1,dmc_dp,vmc_dp;
 
   mb = cur + i + width*j;
 
@@ -490,11 +490,11 @@ int secondfield,ipflag;
 {
   int w2;
   unsigned char *mb, *toporg, *topref, *botorg, *botref;
-  int var,vmc,v0,dmc,dmcfieldi,dmc8i;
+  int var,vmc,v0,/*dmc = -1 ,*/dmcfieldi,dmc8i;
   int imin,jmin,imin8u,jmin8u,imin8l,jmin8l,dmcfield,dmc8,sel,sel8u,sel8l;
   int iminf,jminf,imin8uf,jmin8uf,imin8lf,jmin8lf,dmcfieldf,dmc8f,self,sel8uf,sel8lf;
   int iminr,jminr,imin8ur,jmin8ur,imin8lr,jmin8lr,dmcfieldr,dmc8r,selr,sel8ur,sel8lr;
-  int imins,jmins,ds,imindmv,jmindmv,vmc_dp,dmc_dp;
+  int imins,jmins,ds,imindmv = -1,jmindmv = -1,vmc_dp,dmc_dp; /* TODO: check on unitialized variables */
 
   w2 = width<<1;
 
@@ -543,7 +543,7 @@ int secondfield,ipflag;
     {
       /* Dual Prime prediction */
       mbi->motion_type = MC_DMV;
-      dmc = dmc_dp;     /* L1 metric */
+      //dmc = dmc_dp;     /* L1 metric */
       vmc = vmc_dp;     /* we already calculated L2 error for Dual */
 
     }
@@ -984,7 +984,7 @@ int *dmcp,*vmcp;
 {
   int pref,ppred,delta_x,delta_y;
   int is,js,it,jt,ib,jb,it0,jt0,ib0,jb0;
-  int imins,jmins,imint,jmint,iminb,jminb,imindmv,jmindmv;
+  int imins = -1,jmins = -1,imint = -1,jmint = -1,iminb = -1,jminb = -1,imindmv = -1,jmindmv = -1 ; /* TODO: check on fix for unintialized variables */
   int vmc,local_dist;
 
   /* Calculate Dual Prime distortions for 9 delta candidates
@@ -1144,7 +1144,7 @@ int *dmcp,*vmcp;
 {
   unsigned char *sameref, *oppref;
   int io0,jo0,io,jo,delta_x,delta_y,mvxs,mvys,mvxo0,mvyo0;
-  int imino,jmino,imindmv,jmindmv,vmc_dp,local_dist;
+  int imino = -1,jmino = -1 ,imindmv,jmindmv,vmc_dp,local_dist; /* TODO: uninitialized warning errors fixed with -1 (needs check) */
 
   /* Calculate Dual Prime distortions for 9 delta candidates */
   /* Note: only for P pictures! */

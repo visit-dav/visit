@@ -1515,7 +1515,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         fields.clear();
     }
 
-    virtual void Print(QTextStream &out)
+    virtual void Print(QTextStream &out) const
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << Endl;
         out << "        exportAPI=" << exportAPI << Endl;

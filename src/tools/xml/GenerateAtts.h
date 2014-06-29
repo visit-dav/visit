@@ -1680,7 +1680,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         fields.clear();
     }
 
-    virtual void Print(QTextStream &out)
+    virtual void Print(QTextStream &out) const
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << Endl;
         out << "        exportAPI=" << exportAPI << Endl;
@@ -2375,7 +2375,7 @@ private:
         // Write the initializers.
         if(nInitializers > 0)
         {
-            bool Endline;
+            bool Endline = false; /// TODO: check on uninitialized warning
             c << "," << Endl << "    ";
             for(size_t i = 0, j = 0; i < fields.size(); ++i)
             {

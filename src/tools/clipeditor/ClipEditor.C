@@ -513,7 +513,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             else
             {
                 datasets[caseindex]->selectedShape++;
-                if (datasets[caseindex]->selectedShape >= datasets[caseindex]->shapes.size())
+                if (datasets[caseindex]->selectedShape >= (int)datasets[caseindex]->shapes.size())
                     datasets[caseindex]->selectedShape = 0;
                 cerr << "Selected subshape: ";
                 if (datasets[caseindex]->selectedShape==0)
@@ -531,7 +531,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             else
             {
                 if (datasets[caseindex]->selectedShape > 0 && 
-                    datasets[caseindex]->selectedShape < datasets[caseindex]->shapes.size())
+                    datasets[caseindex]->selectedShape < (int)datasets[caseindex]->shapes.size())
                 {
                     if (datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].shapeType == ST_POINT)
                     {
@@ -572,7 +572,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             else
             {
                 if (datasets[caseindex]->selectedShape > 0 && 
-                    datasets[caseindex]->selectedShape < datasets[caseindex]->shapes.size())
+                    datasets[caseindex]->selectedShape < (int)datasets[caseindex]->shapes.size())
                 {
                     datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].Invert();
                 }
@@ -601,11 +601,11 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             else
             {
                 if (datasets[caseindex]->selectedShape > 0 && 
-                    datasets[caseindex]->selectedShape < datasets[caseindex]->shapes.size())
+                    datasets[caseindex]->selectedShape < (int)datasets[caseindex]->shapes.size())
                 {
                     cerr << "Deleting shape\n";
                     std::vector<Shape> &shapes = datasets[caseindex]->shapes;
-                    for (int i=datasets[caseindex]->selectedShape; i<shapes.size(); i++)
+                    for (size_t i=datasets[caseindex]->selectedShape; i<shapes.size(); i++)
                     {
                         shapes[i] = shapes[i+1];
                     }
@@ -777,7 +777,7 @@ void
 ClipEditor::LoadFromFile()
 {
     char fname[200];
-    const char *lower, *upper;
+    const char *lower = NULL, *upper = NULL; ///TODO: check sometimes uninitialized warning
     switch (shapetype)
     {
       case ST_HEX:     lower="Hex"; upper="HEX"; break;
@@ -796,6 +796,7 @@ ClipEditor::LoadFromFile()
       case ST_POLY8:   lower="Poly8"; upper="POLY8"; break;
       default: cerr << "Error\n"; break;
     }
+    (void) upper;
     sprintf(fname, "ClipCases%s.C", lower);
 
     ifstream in(fname, ios::in);
@@ -886,7 +887,7 @@ ClipEditor::LoadFromFile()
         in >> buff;
         in.getline(buff,200);
 
-        for (int j=1; j<d->shapes.size(); j++)
+        for (size_t j=1; j<d->shapes.size(); j++)
         {
             ShapeType st;
             int nv;
@@ -1016,7 +1017,7 @@ ClipEditor::SaveToFile()
     }
 
     char fname[200];
-    const char *lower, *upper;
+    const char *lower = NULL, *upper = NULL; ///TODO: check on fix for uninitialized pointer
     switch (shapetype)
     {
       case ST_HEX:     lower="Hex"; upper="HEX"; break;
@@ -1035,6 +1036,7 @@ ClipEditor::SaveToFile()
       case ST_POLY8:   lower="Poly8"; upper="POLY8"; break;
       default: cerr << "Error\n"; break;
     }
+    (void) upper;
     sprintf(fname, "ClipCases%s.C", lower);
 
     ifstream in(fname, ios::in);
@@ -1056,7 +1058,7 @@ ClipEditor::SaveToFile()
             {
                 char cmd[256];
                 sprintf(cmd, "cp %s %s", fname, bakname);
-                system(cmd);
+                int result = system(cmd); (void) result;
                 cerr << "backed up "<<fname<<" to " << bakname << endl;
                 backedup = true;
             }
@@ -1116,7 +1118,7 @@ ClipEditor::SaveToFile()
         for (int c2=0; c2<c; c2++)
         {
             DataSet *d = datasets[c2];
-            for (int i=1; i<d->shapes.size(); i++)
+            for (size_t i=1; i<d->shapes.size(); i++)
             {
                 Shape *s = &(d->shapes[i]);
                 index += 2 + s->nverts;
@@ -1159,7 +1161,7 @@ ClipEditor::SaveToFile()
         }
 
         int ptcounter = 0;
-        for (int i=1; i<d->shapes.size(); i++)
+        for (size_t i=1; i<d->shapes.size(); i++)
         {
             Shape *s = &(d->shapes[i]);
             if (s->shapeType == ST_POINT)
@@ -1187,7 +1189,7 @@ ClipEditor::SaveToFile()
 
         for (int pass = 0; pass <= 1 ; pass++)
         {
-            for (int i=1; i<d->shapes.size(); i++)
+            for (size_t i=1; i<d->shapes.size(); i++)
             {
                 Shape *s = &(d->shapes[i]);
                 if (s->color != pass)

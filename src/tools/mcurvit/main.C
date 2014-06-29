@@ -78,12 +78,13 @@ MCVMain(int argc, char *argv[])
     char **argv2 = new char*[5];
     argv2[0] = argv[0];
     int argc2 = 1;
+    char nowin_str[] = "-nowin";
     for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "-G") == 0)
         {
             nowin = true;
-            argv2[argc2++] = "-nowin";
+            argv2[argc2++] = nowin_str;
         }
         else if (strcmp(argv[i], "-f") == 0)
         {

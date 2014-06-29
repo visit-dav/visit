@@ -51,9 +51,12 @@ static int compare_timers(void *av, void *bv)
 	    return +1;
     }
 #else    
-    if (a->fn < b->fn)
+    ///TODO: why this piece comparing function pointers?
+    ///changing it to void* comparison so that the unordered function
+    ///function pointer warning goes away.
+    if ((void*)a->fn < (void*)b->fn)
 	return -1;
-    else if (a->fn > b->fn)
+    else if ((void*)a->fn > (void*)b->fn)
 	return +1;
 #endif
 

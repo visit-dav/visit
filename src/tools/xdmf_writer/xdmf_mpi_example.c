@@ -237,4 +237,6 @@ int main(int argc, char *argv[])
     free(varCentering);
 
     MPI_Finalize();
+
+    return 0; /// TODO: check if the return type of 0 is correct
 }

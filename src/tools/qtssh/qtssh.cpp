@@ -286,7 +286,7 @@ int qtssh_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
 {
     int ret = -1; // unhandled value
 
-    for(int i = 0; i < p->n_prompts; ++i)
+    for(size_t i = 0; i < p->n_prompts; ++i)
     {
         if (strstr(p->prompts[i]->prompt, "assword") != NULL)
             ret = qtssh_handle_password(p, i, in, inlen, false);

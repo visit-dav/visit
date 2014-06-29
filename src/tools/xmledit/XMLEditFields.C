@@ -794,7 +794,7 @@ XMLEditFields::typeChanged(int typeindex)
 
     for (size_t i=0; i<a->fields.size(); i++)
     {
-        if (i == index)
+        if (i == (size_t)index)
             continue;
 
         if (a->fields[i]->enabler == f)
@@ -1311,7 +1311,7 @@ XMLEditFields::fieldlistDown()
     if (index == -1)
         return;
 
-    if (index > a->fields.size() - 2)
+    if ((size_t)index > a->fields.size() - 2)
         return;
 
     Field *f = a->fields[index];

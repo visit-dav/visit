@@ -70,7 +70,7 @@ DataSet::DataSet(ShapeType st, int sc)
 void
 DataSet::DrawPolyData(Vector &up, Vector &right)
 {
-    if (selectedShape > shapes.size())
+    if (selectedShape > (int)shapes.size())
         selectedShape = 0;
 
     if (selectedShape > 0)
@@ -80,7 +80,7 @@ DataSet::DrawPolyData(Vector &up, Vector &right)
     }
     else
     {
-        for (int i=0; i<shapes.size(); i++)
+        for (size_t i=0; i<shapes.size(); i++)
         {
             shapes[i].DrawPolyData(up, right);
         }
@@ -93,7 +93,7 @@ DataSet::ReInit()
     if (copyOfDataset)
     {
         shapes.resize(copyOfDataset->shapes.size());
-        for (int i=1; i<copyOfDataset->shapes.size(); i++)
+        for (size_t i=1; i<copyOfDataset->shapes.size(); i++)
         {
             shapes[i] = Shape(&copyOfDataset->shapes[i],
                               transformNumber,
@@ -102,7 +102,7 @@ DataSet::ReInit()
         }
     }
 
-    for (int i=1; i<shapes.size(); i++)
+    for (size_t i=1; i<shapes.size(); i++)
     {
         shapes[i].parentShape = &shapes[0];
         shapes[i].Init();

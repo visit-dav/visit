@@ -148,7 +148,7 @@ MultiCurveProcessor::ProcessBatchFile(const char *fileName, const char *dataFile
     cerr << "Saving images with the base file name " << saveFile << endl;
     cerr << "Data file: " << openFile << endl;
     cerr << "Creating plots of variables:" << endl;
-    for (int i = 0; i < plotVars.size(); i++)
+    for (size_t i = 0; i < plotVars.size(); i++)
         cerr << "   " << plotVars[i] << endl;
 
     //
@@ -157,7 +157,7 @@ MultiCurveProcessor::ProcessBatchFile(const char *fileName, const char *dataFile
     if (openFile != "")
     {
         commandList.push_back(COMMAND_OPEN_DATABASE);
-        for (int i = 0; i < plotVars.size(); i++)
+        for (size_t i = 0; i < plotVars.size(); i++)
         {
             commandList.push_back(COMMAND_CREATE_PLOT);
             commandList.push_back(COMMAND_FINISH_PLOT);
@@ -695,7 +695,7 @@ MultiCurveProcessor::execCommand()
     //
     // Execute the next command, if there is one.
     //
-    if (iCommand >= commandList.size())
+    if (iCommand >= (int)commandList.size())
     {
         disconnect(sync, SIGNAL(synchronized()),
                    this, SLOT(execCommand()));
