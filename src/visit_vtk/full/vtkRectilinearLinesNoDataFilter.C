@@ -215,7 +215,7 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     // Set up some objects that we will be using throughout the process.
     //
     vtkPolyData        *outPD        = vtkPolyData::New();
-    vtkCellData        *inCellData   = input->GetCellData();
+    //vtkCellData        *inCellData   = input->GetCellData();
     vtkPointData       *inPointData  = input->GetPointData();
     vtkCellData        *outCellData  = outPD->GetCellData();
     vtkPointData       *outPointData = outPD->GetPointData();

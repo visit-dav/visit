@@ -253,7 +253,7 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
 
     // find diagonal of grad box most orthogonal to vector vg 
     double mindotp = DBL_MAX;
-    int dmxmin, dmymin;
+    int dmxmin = 0, dmymin = 0;
     for (int d = 0; d < 4; d++)
     {
         int dmx = (d & 0x01) ? -1 : 1;
@@ -286,9 +286,9 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     double theta = acos(cos_theta);
 
     // compute length of spatial box diagonal
-    double db =  sqrt((upper(X)-lower(X)) * (upper(X)-lower(X)) +
-                      (upper(Y)-lower(Y)) * (upper(Y)-lower(Y)) +
-                      (upper(Z)-lower(Z)) * (upper(Z)-lower(Z)));
+//    double db =  sqrt((upper(X)-lower(X)) * (upper(X)-lower(X)) +
+//                      (upper(Y)-lower(Y)) * (upper(Y)-lower(Y)) +
+//                      (upper(Z)-lower(Z)) * (upper(Z)-lower(Z)));
 
     //if (((1-cos(theta/2)) / (2*sin(theta/2))) < tol)
     //    return true;
@@ -1121,6 +1121,7 @@ static void PlanePPPToQuadric(const double *const plane, double *quadric)
     coeffs[5] = xprod[2];
     PlanePNToQuadric(coeffs, quadric);
 }
+#if 0
 static void BoxXYZXYZToQuadric(const double *const box, double *quadric)
 {
     PlaneXToQuadric(&box[0], &quadric[0*NUM_QCOEFFS]);
@@ -1130,12 +1131,13 @@ static void BoxXYZXYZToQuadric(const double *const box, double *quadric)
     PlaneYToQuadric(&box[4], &quadric[4*NUM_QCOEFFS]);
     PlaneZToQuadric(&box[5], &quadric[5*NUM_QCOEFFS]);
 }
+#endif
 static void CylinderPNLRToQuadric(const double *const cyl, double *quadric)
 {
     // point
-    double px = cyl[0];
-    double py = cyl[1];
-    double pz = cyl[2];
+//    double px = cyl[0];
+//    double py = cyl[1];
+//    double pz = cyl[2];
 
     // normal
     double nx = cyl[3];
@@ -1189,9 +1191,9 @@ static void CylinderPPRToQuadric(const double *const cyl, double *quadric)
 static void ConePNLAToQuadric(const double *const cone, double *quadric)
 {
     // point
-    double px = cone[0];
-    double py = cone[1];
-    double pz = cone[2];
+//    double px = cone[0];
+//    double py = cone[1];
+//    double pz = cone[2];
 
     // normal
     double nx = cone[3];
@@ -2401,7 +2403,7 @@ vtkCSGGrid::DoMultiPassDiscretization(int specificZone,
         regionBounds = new double[10*bounds.size()];
         int lastGridBound = -1;
         int iRegionBounds = 0;
-        for (int i = 0; i < bounds.size(); i++)
+        for (size_t i = 0; i < bounds.size(); i++)
         {
             if (bounds[i] != lastGridBound)
             {
@@ -2594,12 +2596,12 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
         GetRegionBounds(zone, bounds);
         std::sort(bounds.begin(), bounds.end());
 
-        for (int i = 0; i < bounds.size(); i++)
+        for (size_t i = 0; i < bounds.size(); i++)
             zoneMap[bounds[i]] = i;
     }
 
     // Evaluate the cell tags against this region
-    int ncells = rv->GetNumberOfCells();
+    //int ncells = rv->GetNumberOfCells();
     vtkIntArray *in = vtkIntArray::New();
     in->SetNumberOfComponents(1);
     in->SetNumberOfTuples(rv->GetNumberOfCells());
@@ -3132,8 +3134,9 @@ vtkCSGGrid::DiscretizeSpace3(
                     MakeMeshZonesByCuttingBox4(curBox, boundaryToStateMap,
                          boundaryToSenseMap, gridZones[specificZone],
                          points, ugrid, nodemap);
-                if (!flatNessHandledIt)
+                if (!flatNessHandledIt) {
                     debug1 << "vtkCSGGrid: Flatness passed; Cutter4 failed. Subdividing..." << endl; 
+                }
             }
 
             if (flatNessHandledIt)

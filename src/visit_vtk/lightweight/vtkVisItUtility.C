@@ -571,8 +571,8 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
             return -1;
         }
 
-        vtkIdType ptId, cellId;
-        vtkCell *cell;
+        vtkIdType ptId = 0, cellId = 0;
+        vtkCell *cell = NULL;
         int walk, found = -1, subId;
         double pcoords[3], *weights = new double[8], diagLen, tol;
         double closestPoint[3], dist2;

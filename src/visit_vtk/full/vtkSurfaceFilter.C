@@ -251,7 +251,7 @@ vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg,
     outPoints->SetPoint(i, point);
   }
 
-  vtkCell * aCell;
+  vtkCell * aCell = NULL;
   for (int j = 0; j < numCells; ++j)
   {
     aCell = rg->GetCell(j);
@@ -323,7 +323,7 @@ vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps, vtkUnstructuredGrid *output)
   int numCells = ps->GetNumberOfCells();
   int *cellTypes = new int [numCells];
   vtkCellArray *cells = vtkCellArray::New();
-  vtkCell * aCell;
+  vtkCell * aCell = NULL; /// TODO: is switch handling all cases?
   for (int j = 0; j < numCells; ++j)
   {
     switch(ps->GetDataObjectType())

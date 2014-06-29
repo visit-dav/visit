@@ -89,7 +89,7 @@ int vtkVisItProbeFilter::RequestData(
   vtkDataSet *output = vtkDataSet::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  vtkIdType ptId, numPts, cnt = 0;
+  vtkIdType ptId, numPts/*, cnt = 0*/;
   double x[3], tol2;
   vtkCell *cell;
   vtkPointData *pd, *outPD;

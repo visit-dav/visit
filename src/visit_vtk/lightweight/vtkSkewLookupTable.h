@@ -92,7 +92,7 @@ public:
 
   // Description:
   // Map one value through the lookup table.
-  unsigned char *MapValue(float v);
+  unsigned char *MapValue(double v);
 
   // Description:
   // map a set of scalars through the lookup table

@@ -216,7 +216,7 @@ vtkVolumeFromCSGVolume::ConstructDataSet(vtkCellData *inCD,
     for (int i = 0 ; i < nshapes ; i++)
     {
         vector<vtkCSGFixedLengthBitField> *tagList = shapeTags[i];
-        for (int j = 0; j < tagList->size(); j++)
+        for (size_t j = 0; j < tagList->size(); j++)
         {
             if (tagList->operator[](j).TestBit(VTK_CSG_MAX_BITS) == false)
                tags->push_back(tagList->operator[](j));
