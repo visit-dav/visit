@@ -229,7 +229,8 @@ ENDFUNCTION(PYSIDE_ADD_HYBRID_MODULE)
 FUNCTION(PYSIDE_ADD_GENERATOR_TARGET 
             target_name gen_sources gen_include_paths gen_global gen_typesystem)
 
-set(PYSIDE_GENERATOR_EXTRA_FLAGS --generator-set=shiboken 
+set(PYSIDE_GENERATOR_EXTRA_FLAGS --silent 
+                                 --generator-set=shiboken 
                                  --enable-parent-ctor-heuristic 
                                  --enable-return-value-heuristic 
                                  --avoid-protected-hack)
