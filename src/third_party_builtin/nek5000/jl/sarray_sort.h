@@ -80,10 +80,12 @@ void sarray_permute_buf_(
   sarray_permute_buf(T,A,n, buf); \
 } while (0)
 
+/*
 static void sarray_perm_invert(
   uint *const pinv, const uint *const perm, const uint n)
 {
   uint i; for(i=0;i<n;++i) pinv[perm[i]] = i;
 }
+*/
 
 #endif

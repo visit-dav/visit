@@ -45,7 +45,7 @@
 #define FALSE 0
 
 #define Dot(u,v)    (u[0]*v[0] + u[1]*v[1] + u[2]*v[2])
-
+#if defined(FOR_TRITE_TEST_PROGRAM) || defined(TRUE_PROJECT)
 static void Normalize( TESSreal v[3] )
 {
     TESSreal len = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
@@ -56,7 +56,7 @@ static void Normalize( TESSreal v[3] )
     v[1] /= len;
     v[2] /= len;
 }
-
+#endif
 #define ABS(x)    ((x) < 0 ? -(x) : (x))
 
 static int LongAxis( TESSreal v[3] )
@@ -610,7 +610,7 @@ void OutputPolymesh( TESStesselator *tess, TESSmesh *mesh, int elementType, int 
         }
         while (edge != f->anEdge);
 
-        if(faceVerts > polySize ) continue;
+        if(faceVerts > (TESSindex)polySize ) continue;
 
         f->n = maxFaceCount;
         ++maxFaceCount;
@@ -678,7 +678,7 @@ void OutputPolymesh( TESStesselator *tess, TESSmesh *mesh, int elementType, int 
         }
         while (edge != f->anEdge);
         // Fill unused.
-        for (i = faceVerts; i < polySize; ++i)
+        for (i = faceVerts; i < (TESSindex)polySize; ++i)
             *elements++ = TESS_UNDEF;
 
         // Store polygon connectivity
@@ -692,7 +692,7 @@ void OutputPolymesh( TESStesselator *tess, TESSmesh *mesh, int elementType, int 
             }
             while (edge != f->anEdge);
             // Fill unused.
-            for (i = faceVerts; i < polySize; ++i)
+            for (i = faceVerts; i < (TESSindex)polySize; ++i)
                 *elements++ = TESS_UNDEF;
         }
     }

@@ -16,6 +16,129 @@ uint comm_gbl_id=0, comm_gbl_np=1;
 GS_DEFINE_IDENTITIES()
 GS_DEFINE_DOM_SIZES()
 
+void comm_init(struct comm *c, comm_ext ce)
+{
+#ifdef MPI
+  int i;
+  MPI_Comm_dup(ce, &c->c);
+  MPI_Comm_rank(c->c,&i), comm_gbl_id=c->id=i;
+  MPI_Comm_size(c->c,&i), comm_gbl_np=c->np=i;
+#else
+  c->id = 0, c->np = 1;
+#endif
+}
+
+void comm_init_check_(struct comm *c, MPI_Fint ce, uint np,
+                             const char *file, unsigned line)
+{
+#ifdef MPI
+  comm_init(c,MPI_Comm_f2c(ce));
+  if(c->np != np)
+    fail(1,file,line,"comm_init_check: passed P=%u, "
+                     "but MPI_Comm_size gives P=%u",
+                     (unsigned)np,(unsigned)c->np);
+#else
+  comm_init(c,0);
+  if(np != 1)
+    fail(1,file,line,"comm_init_check: passed P=%u, "
+                     "but not compiled with -DMPI",(unsigned)np);
+#endif
+}
+
+#define comm_init_check(c,ce,np) comm_init_check_(c,ce,np,__FILE__,__LINE__)
+
+void comm_dup_(struct comm *d, const struct comm *s,
+                      const char *file, unsigned line)
+{
+  d->id = s->id, d->np = s->np;
+#ifdef MPI
+  MPI_Comm_dup(s->c,&d->c);
+#else
+  if(s->np!=1) fail(1,file,line,"%s not compiled with -DMPI\n",file);
+#endif
+}
+#define comm_dup(d,s) comm_dup_(d,s,__FILE__,__LINE__)
+
+void comm_free(struct comm *c)
+{
+#ifdef MPI
+  MPI_Comm_free(&c->c);
+#endif
+}
+
+double comm_time(void)
+{
+#ifdef MPI
+  return MPI_Wtime();
+#else
+  return 0;
+#endif
+}
+
+void comm_barrier(const struct comm *c)
+{
+#ifdef MPI
+  MPI_Barrier(c->c);
+#endif
+}
+
+void comm_recv(const struct comm *c, void *p, size_t n,
+                      uint src, int tag)
+{
+#ifdef MPI
+# ifndef MPI_STATUS_IGNORE
+  MPI_Status stat;
+  MPI_Recv(p,n,MPI_UNSIGNED_CHAR,src,tag,c->c,&stat);
+# else
+  MPI_Recv(p,n,MPI_UNSIGNED_CHAR,src,tag,c->c,MPI_STATUS_IGNORE);
+# endif
+#endif
+}
+
+void comm_send(const struct comm *c, void *p, size_t n,
+                      uint dst, int tag)
+{
+#ifdef MPI
+  MPI_Send(p,n,MPI_UNSIGNED_CHAR,dst,tag,c->c);
+#endif
+}
+
+void comm_irecv(comm_req *req, const struct comm *c,
+                       void *p, size_t n, uint src, int tag)
+{
+#ifdef MPI
+  MPI_Irecv(p,n,MPI_UNSIGNED_CHAR,src,tag,c->c,req);
+#endif
+}
+
+void comm_isend(comm_req *req, const struct comm *c,
+                       void *p, size_t n, uint dst, int tag)
+{
+#ifdef MPI
+  MPI_Isend(p,n,MPI_UNSIGNED_CHAR,dst,tag,c->c,req);
+#endif
+}
+
+void comm_wait(comm_req *req, int n)
+{
+#ifdef MPI
+# ifndef MPI_STATUSES_IGNORE
+  MPI_Status status[8];
+  while(n>=8) MPI_Waitall(8,req,status), req+=8, n-=8;
+  if(n>0) MPI_Waitall(n,req,status);
+# else
+  MPI_Waitall(n,req,MPI_STATUSES_IGNORE);
+# endif
+#endif
+}
+
+void comm_bcast(const struct comm *c, void *p, size_t n, uint root)
+{
+#ifdef MPI
+  MPI_Bcast(p,n,MPI_UNSIGNED_CHAR,root,c->c);
+#endif
+}
+
 static void scan_imp(void *scan, const struct comm *com, gs_dom dom, gs_op op,
                      const void *v, uint vn, void *buffer)
 {
@@ -64,7 +187,7 @@ static void scan_imp(void *scan, const struct comm *com, gs_dom dom, gs_op op,
 }
 
 
-static void allreduce_imp(const struct comm *com, gs_dom dom, gs_op op,
+void allreduce_imp(const struct comm *com, gs_dom dom, gs_op op,
                           void *v, uint vn, void *buf)
 {
   size_t total_size = vn*gs_dom_size[dom];

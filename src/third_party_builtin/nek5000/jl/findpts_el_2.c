@@ -191,6 +191,19 @@ void findpts_el_setup_2(struct findpts_el_data_2 *const fd,
     fd->edge[3].dxdn[d] = fd->sides + 8*ns + (2+d)*nr;
 }
 
+void findpts_el_start_2(struct findpts_el_data_2 *const fd,
+                               const double *const x[2])
+{
+  fd->side_init=0,fd->x[0]=x[0],fd->x[1]=x[1];
+}
+
+struct findpts_el_pt_2 *findpts_el_points_2(
+  struct findpts_el_data_2 *const fd)
+{
+  return fd->p;
+}
+
+
 void findpts_el_free_2(struct findpts_el_data_2 *const fd)
 {
   free(fd->p);

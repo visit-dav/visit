@@ -246,7 +246,8 @@ airOneLinify(char *s) {
 
   /* lose trailing white space */
   len = airStrlen(s);
-  for (i=len-1; i>=0 && ' ' == s[i]; i--) {
+  /*for (i=len-1; i>=0 && ' ' == s[i]; i--) { */
+  for (i=len; i-- > 0 && ' ' == s[i]; i--) { /* TODO: check on fix for autological compare */
     s[i] = '\0';
   }
 

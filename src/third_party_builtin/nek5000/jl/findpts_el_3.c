@@ -280,6 +280,18 @@ void findpts_el_setup_3(struct findpts_el_data_3 *const fd,
   #undef SET_EDGE1
 }
 
+void findpts_el_start_3(struct findpts_el_data_3 *const fd,
+                               const double *const x[3])
+{
+  fd->side_init=0,fd->x[0]=x[0],fd->x[1]=x[1],fd->x[2]=x[2];
+}
+
+struct findpts_el_pt_3 *findpts_el_points_3(
+  struct findpts_el_data_3 *const fd)
+{
+  return fd->p;
+}
+
 void findpts_el_free_3(struct findpts_el_data_3 *const fd)
 {
   free(fd->p);

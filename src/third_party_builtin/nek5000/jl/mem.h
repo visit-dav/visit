@@ -42,51 +42,16 @@
    Memory Allocation Wrappers to Catch Out-of-memory
   --------------------------------------------------------------------------*/
 
-static inline void *smalloc(size_t size, const char *file, unsigned line)
-{
-  void *restrict res = malloc(size);
-  #if PRINT_MALLOCS
-  fprintf(stdout,"MEM: proc %04d: %p = malloc(%ld) @ %s(%u)\n",
-          (int)comm_gbl_id,res,(long)size,file,line), fflush(stdout);
-  #endif
-  if(!res && size)
-    fail(1,file,line,"allocation of %ld bytes failed\n",(long)size);
-  return res;
-}
+void *smalloc(size_t size, const char *file, unsigned line);
 
-static inline void *scalloc(
-  size_t nmemb, size_t size, const char *file, unsigned line)
-{
-  void *restrict res = calloc(nmemb, size);
-  #if PRINT_MALLOCS
-  fprintf(stdout,"MEM: proc %04d: %p = calloc(%ld) @ %s(%u)\n",
-          (int)comm_gbl_id,res,(long)size*nmemb,file,line), fflush(stdout);
-  #endif
-  if(!res && nmemb)
-    fail(1,file,line,"allocation of %ld bytes failed\n",
-           (long)size*nmemb);
-  return res;
-}
 
-static inline void *srealloc(
-  void *restrict ptr, size_t size, const char *file, unsigned line)
-{
-  void *restrict res = realloc(ptr, size);
-  #if PRINT_MALLOCS
-  if(res!=ptr) {
-    if(ptr)
-      fprintf(stdout,"MEM: proc %04d: %p freed by realloc @ %s(%u)\n",
-              (int)comm_gbl_id,ptr,file,line), fflush(stdout);
-    fprintf(stdout,"MEM: proc %04d: %p = realloc of %p to %lu @ %s(%u)\n",
-            (int)comm_gbl_id,res,ptr,(long)size,file,line), fflush(stdout);
-  } else
-    fprintf(stdout,"MEM: proc %04d: %p realloc'd to %lu @ %s(%u)\n",
-            (int)comm_gbl_id,res,(long)size,file,line), fflush(stdout);
-  #endif
-  if(!res && size)
-    fail(1,file,line,"allocation of %ld bytes failed\n",(long)size);
-  return res;
-}
+void *scalloc(
+  size_t nmemb, size_t size, const char *file, unsigned line);
+
+
+void *srealloc(
+  void *restrict ptr, size_t size, const char *file, unsigned line);
+
 
 #define tmalloc(type, count) \
   ((type*) smalloc((count)*sizeof(type),__FILE__,__LINE__) )
@@ -96,12 +61,7 @@ static inline void *srealloc(
   ((type*) srealloc((ptr),(count)*sizeof(type),__FILE__,__LINE__) )
 
 #if PRINT_MALLOCS
-static inline void sfree(void *restrict ptr, const char *file, unsigned line)
-{
-  free(ptr);
-  fprintf(stdout,"MEM: proc %04d: %p freed @ %s(%u)\n",
-          (int)comm_gbl_id,ptr,file,line), fflush(stdout);
-}
+void sfree(void *restrict ptr, const char *file, unsigned line);
 #define free(x) sfree(x,__FILE__,__LINE__)
 #endif
 
@@ -110,40 +70,20 @@ static inline void sfree(void *restrict ptr, const char *file, unsigned line)
   --------------------------------------------------------------------------*/
 struct array { void *ptr; size_t n,max; };
 #define null_array {0,0,0}
-static void array_init_(struct array *a, size_t max, size_t size,
-                        const char *file, unsigned line)
-{
-  a->n=0, a->max=max, a->ptr=smalloc(max*size,file,line);
-}
-static void array_resize_(struct array *a, size_t max, size_t size,
-                          const char *file, unsigned line)
-{
-  a->max=max, a->ptr=srealloc(a->ptr,max*size,file,line);
-}
-static void *array_reserve_(struct array *a, size_t min, size_t size,
-                            const char *file, unsigned line)
-{
-  size_t max = a->max;
-  if(max<min) {
-    max+=max/2+1;
-    if(max<min) max=min;
-    array_resize_(a,max,size,file,line);
-  }
-  return a->ptr;
-}
+void array_init_(struct array *a, size_t max, size_t size,
+                 const char *file, unsigned line);
+void array_resize_(struct array *a, size_t max, size_t size,
+                   const char *file, unsigned line);
+void *array_reserve_(struct array *a, size_t min, size_t size,
+                     const char *file, unsigned line);
 
 #define array_free(a) (free((a)->ptr))
 #define array_init(T,a,max) array_init_(a,max,sizeof(T),__FILE__,__LINE__)
 #define array_resize(T,a,max) array_resize_(a,max,sizeof(T),__FILE__,__LINE__)
 #define array_reserve(T,a,min) array_reserve_(a,min,sizeof(T),__FILE__,__LINE__)
 
-static void array_cat_(size_t size, struct array *d, const void *s, size_t n,
-                       const char *file, unsigned line)
-{
-  char *out = array_reserve_(d,d->n+n,size, file,line);
-  memcpy(out+d->n*size, s, n*size);
-  d->n+=n;
-}
+void array_cat_(size_t size, struct array *d, const void *s, size_t n,
+                       const char *file, unsigned line);
 
 #define array_cat(T,d,s,n) array_cat_(sizeof(T),d,s,n,__FILE__,__LINE__)
 
@@ -161,7 +101,7 @@ typedef struct array buffer;
    Alignment routines
   --------------------------------------------------------------------------*/
 #define ALIGNOF(T) offsetof(struct { char c; T x; }, x)
-static size_t align_as_(size_t a, size_t n) { return (n+a-1)/a*a; }
+size_t align_as_(size_t a, size_t n) ;
 #define align_as(T,n) align_as_(ALIGNOF(T),n)
 #define align_ptr(T,base,offset) ((T*)((char*)(base)+align_as(T,offset)))
 #endif

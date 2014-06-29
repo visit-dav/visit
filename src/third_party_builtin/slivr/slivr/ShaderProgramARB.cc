@@ -126,8 +126,8 @@ ShaderProgramARB::init_shaders_supported(std::string& error, bool forceIntel)
       {
         GLint width = 0;
         if( glTexImage3D == NULL ) {
-          const GLubyte* glVersionString;
-          glVersionString = glGetString(GL_VERSION);
+          //const GLubyte* glVersionString;
+          //glVersionString = glGetString(GL_VERSION);
 
           // Removed exit() statement, a library should never call exit()
           // Report an error and let the user of the slivr library decide what

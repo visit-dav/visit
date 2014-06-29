@@ -425,8 +425,14 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin,
   }
   strcpy(buff1, "");
   for (ai=0; ai<nin->dim; ai++) {
+#ifdef __APPLE__
+    ///TODO: check fix
+    sprintf(buff2, "%s[" _AIR_PTRDIFF_T_CNV "," _AIR_PTRDIFF_T_CNV "]", 
+            (ai ? "x" : ""), (int)min[ai], (int)max[ai]);
+#else
     sprintf(buff2, "%s[" _AIR_PTRDIFF_T_CNV "," _AIR_PTRDIFF_T_CNV "]", 
             (ai ? "x" : ""), min[ai], max[ai]);
+#endif
     strcat(buff1, buff2);
   }
   if (nrrdBoundaryPad == boundary) {
