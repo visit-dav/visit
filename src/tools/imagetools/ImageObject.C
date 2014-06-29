@@ -133,14 +133,14 @@ ImageObject::Write(const char *filename)
 
     // Check the extension.
     bool retval = true;
-    int len = (int) strlen(filename);
-    int writeType = 0;
-    if(len > 4)
-    {
-        const char *ext = filename + len - 4;
-        if(strcmp(ext, ".ppm") == 0)
-            writeType = 1;
-    }
+    //int len = (int) strlen(filename);
+    //int writeType = 0;
+    //if(len > 4)
+    //{
+        //const char *ext = filename + len - 4;
+        //if(strcmp(ext, ".ppm") == 0)
+        //    writeType = 1;
+    //}
 
     FILE *ppm = fopen(filename, "wb");
     retval = (ppm != NULL);
@@ -181,22 +181,23 @@ ImageObject::Read(const char *filename)
 {
     FILE *ppm = fopen(filename, "rb");
     bool retval = (ppm != NULL);
+    char* result = NULL; (void) result;
     if(ppm)
     {
         char line[1000];
         // Figure out the header and write it to the file.
-        fgets(line, 1000, ppm);
-        fgets(line, 1000, ppm);
+        result = fgets(line, 1000, ppm);
+        result = fgets(line, 1000, ppm);
         if(line[0] == '#')
-            fgets(line, 1000, ppm);
+            result = fgets(line, 1000, ppm);
         sscanf(line, "%d %d\n", &w, &h);
-        fgets(line, 1000, ppm);
+        result = fgets(line, 1000, ppm);
 
         if(pixels != 0)
             delete [] pixels;
         depth = 3;
         pixels = new unsigned char[w * h * 3];
-        fread(pixels, 3 * w * h, 1, ppm);
+        size_t res = fread(pixels, 3 * w * h, 1, ppm); (void) res;
         fclose(ppm);
     }
     return retval;

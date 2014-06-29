@@ -1276,11 +1276,11 @@ DrawCharacters(int nstr, char *str[],
             // Each character is made up of multiple triangles.  Add the
             // triangles to the output one at a time.
             //
-            int ntri = nice_triangle_ntriangles[ch];
+            int ntri = nice_triangle_ntriangles[(int)ch];
             unsigned char *xptr = 
-                          &nice_triangle_x_index[(int)nice_triangle_start[ch]];
+                          &nice_triangle_x_index[(int)nice_triangle_start[(int)ch]];
             unsigned char *yptr = 
-                          &nice_triangle_y_index[(int)nice_triangle_start[ch]];
+                          &nice_triangle_y_index[(int)nice_triangle_start[(int)ch]];
             for (int j = 0 ; j < ntri ; j++)
             {
                 Vector pt0 = ((nice_font_x[xptr[3*j+0]] + char_base_x) *right +
@@ -1298,7 +1298,7 @@ DrawCharacters(int nstr, char *str[],
                 glVertex3f(pt2.x, pt2.y, pt2.z);
             }
             double scale_factor = 1.1;
-            char_base_x += (scale_factor * nice_triangle_spacing[ch]);
+            char_base_x += (scale_factor * nice_triangle_spacing[(int)ch]);
         }
     }
 }

@@ -856,7 +856,7 @@ HdfParallelCreate(const char *fileName, int nFiles)
                             H5P_DEFAULT);
 
         herr_t    status;
-        status = H5Fclose(file_id);
+        status = H5Fclose(file_id); (void) status;
 
         free(fName);
     }
@@ -890,10 +890,10 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, int coordDataType, float *coords,
 
     HDFFileParallel *hdfFile = (HDFFileParallel *) hdfFileIn;
 
-    int iProc = hdfFile->iProc;
-    int nProcs = hdfFile->nProcs;
-    int nFiles = hdfFile->nFiles;
-    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+    //int iProc = hdfFile->iProc;
+    //int nProcs = hdfFile->nProcs;
+    //int nFiles = hdfFile->nFiles;
+    //int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
 
     int newDims[3];
     float *newCoords = NULL;
@@ -907,6 +907,10 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, int coordDataType, float *coords,
     gettimeofday(&hdf5_put_multi_ghost_created, NULL);
 
 #ifdef PARALLEL
+    int iProc = hdfFile->iProc;
+    int nProcs = hdfFile->nProcs;
+    int nFiles = hdfFile->nFiles;
+    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
     //
     // Wait for my turn to write the data.
     //
@@ -941,6 +945,7 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, int coordDataType, float *coords,
     gettimeofday(&hdf5_put_multi_write_end, NULL);
 
 #ifdef PARALLEL
+
     //
     // Let the next processor write the data.
     //
@@ -970,10 +975,10 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
 
     HDFFileParallel *hdfFile = (HDFFileParallel *) hdfFileIn;
 
-    int iProc = hdfFile->iProc;
-    int nProcs = hdfFile->nProcs;
-    int nFiles = hdfFile->nFiles;
-    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+    //int iProc = hdfFile->iProc;
+    //int nProcs = hdfFile->nProcs;
+    //int nFiles = hdfFile->nFiles;
+    //int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
 
     //
     // Create the ghost zone data.
@@ -1000,6 +1005,11 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
     gettimeofday(&hdf5_put_multi_ghost_created, NULL);
 
 #ifdef PARALLEL
+    int iProc = hdfFile->iProc;
+    int nProcs = hdfFile->nProcs;
+    int nFiles = hdfFile->nFiles;
+    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+
     //
     // Wait for my turn to write the data.
     //
@@ -1065,12 +1075,17 @@ HdfPutUcdMultiMesh(HDFFile *hdfFileIn, int coordDataType, float *coords,
 
     HDFFileParallel *hdfFile = (HDFFileParallel *) hdfFileIn;
 
+    //int iProc = hdfFile->iProc;
+    //int nProcs = hdfFile->nProcs;
+    //int nFiles = hdfFile->nFiles;
+    //int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+
+#ifdef PARALLEL
     int iProc = hdfFile->iProc;
     int nProcs = hdfFile->nProcs;
     int nFiles = hdfFile->nFiles;
     int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
 
-#ifdef PARALLEL
     //
     // Wait for my turn to write the data.
     //
@@ -1132,12 +1147,17 @@ HdfPutUcdMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
 
     HDFFileParallel *hdfFile = (HDFFileParallel *) hdfFileIn;
 
+    //int iProc = hdfFile->iProc;
+    //int nProcs = hdfFile->nProcs;
+    //int nFiles = hdfFile->nFiles;
+    //int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+
+#ifdef PARALLEL
     int iProc = hdfFile->iProc;
     int nProcs = hdfFile->nProcs;
     int nFiles = hdfFile->nFiles;
     int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
 
-#ifdef PARALLEL
     //
     // Wait for my turn to write the data.
     //
@@ -1199,10 +1219,14 @@ HdfParallelClose(HDFFile *hdfFileIn)
 
     int iProc = hdfFile->iProc;
     int nProcs = hdfFile->nProcs;
-    int nFiles = hdfFile->nFiles;
-    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+    //int nFiles = hdfFile->nFiles;
+    //int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
 
 #ifdef PARALLEL
+    //int iProc = hdfFile->iProc;
+    //int nProcs = hdfFile->nProcs;
+    int nFiles = hdfFile->nFiles;
+    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
     //
     // Wait for batton from the last processor in the group.
     //
@@ -1318,7 +1342,7 @@ HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
         ((hdfFile->nProcs + hdfFile->nFiles - 1) / hdfFile->nFiles);
 
     hid_t     file_id, dataspace_id, dataset_id;
-    hsize_t   nvdims, vdims[4];
+    hsize_t   /*nvdims,*/ vdims[4];
     herr_t    status;
 
     char str[1024];
@@ -1349,6 +1373,8 @@ HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
     status = H5Sclose(dataspace_id);
 
     status = H5Fclose(file_id);
+
+    (void) status;
 }
 
 void
@@ -1415,6 +1441,8 @@ HdfWriteCurvVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
     }
 
     status = H5Fclose(file_id);
+
+    (void) status;
 }
 
 void
@@ -1498,6 +1526,8 @@ HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
     }
 
     status = H5Fclose(file_id);
+
+    (void) status;
 }
 
 void
@@ -1508,7 +1538,7 @@ HdfWriteUcdMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
         ((hdfFile->nProcs + hdfFile->nFiles - 1) / hdfFile->nFiles);
 
     hid_t     file_id, dataspace_id, dataset_id;
-    hsize_t   nvdims, vdims[4];
+    hsize_t   /*nvdims,*/ vdims[4];
     herr_t    status;
 
     char str[1024];
@@ -1557,6 +1587,8 @@ HdfWriteUcdMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
     status = H5Sclose(dataspace_id);
 
     status = H5Fclose(file_id);
+
+    (void) status;
 }
 
 void
@@ -1618,6 +1650,8 @@ HdfWriteUcdVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
     }
 
     status = H5Fclose(file_id);
+
+    (void) status;
 }
 
 void
@@ -3854,6 +3888,8 @@ HdfPutCoords(HDFFile *hdfFileIn, const char *coordName,
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
+
+    (void) status;
 }
 
 void
@@ -3893,6 +3929,8 @@ HdfPutConnectivity(HDFFile *hdfFileIn, const char *connectivityName,
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
+
+    (void) status;
 }
 
 void
@@ -3956,6 +3994,8 @@ HdfPutCurvVar(HDFFile *hdfFileIn, const char *varName, int varType,
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
+
+    (void) status;
 }
 
 void
@@ -4014,6 +4054,8 @@ HdfPutUcdVar(HDFFile *hdfFileIn, const char *varName, int varType,
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
+
+    (void) status;
 }
 
 void
@@ -4028,6 +4070,6 @@ HdfClose(HDFFile *hdfFileIn)
 
     herr_t    status;
     status = H5Fclose(hdfFile->fileId);
-
+    (void) status;
     free(hdfFile);
 }

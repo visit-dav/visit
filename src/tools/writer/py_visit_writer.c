@@ -149,7 +149,7 @@ static char writeUnstructuredMeshDoc[] =
 
 static PyObject *writeUnstructuredMesh( PyObject *self, PyObject *args ) {
 
-    int useBinary, npts, nvars, *vardim, *centering, ncells, *cellTypes, *conn;
+    int useBinary, npts, nvars, *vardim, *centering, ncells, *cellTypes = NULL, *conn;
     char *fileName, **varnames;
     float *pts = NULL, **vars = NULL;
     PyObject *pts_py, *nameDimAndVarList, *cellTypeConnections;

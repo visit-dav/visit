@@ -187,4 +187,6 @@ int main(int argc, char *argv[])
     free(varTypes);
     free(varDataTypes);
     free(varCentering);
+
+    return 0; /* TODO: check on return value */
 }

@@ -981,7 +981,7 @@ void ssh_rsakex_encrypt(const struct ssh_hash *h, unsigned char *in, int inlen,
 {
     Bignum b1, b2;
     struct RSAKey *rsa = (struct RSAKey *) key;
-    int k, i;
+    int k, i; (void) k;
     char *p;
     const int HLEN = h->hlen;
 

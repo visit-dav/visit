@@ -1745,7 +1745,7 @@ class JavaGeneratorAttribute : public GeneratorBase
         fields.clear();
     }
 
-    void Print(QTextStream &out)
+    void Print(QTextStream &out) const
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
         out << "        exportAPI=" << exportAPI << endl;

@@ -1140,7 +1140,7 @@ static int alloc_channel_id(Ssh ssh)
      * largest ID in the initial sequence.
      */
     {
-	unsigned i = low + 1 + CHANNEL_NUMBER_OFFSET;
+	unsigned i = low + 1 + CHANNEL_NUMBER_OFFSET; (void) i;
 	assert(NULL == find234(ssh->channels, &i, ssh_channelfind));
     }
     return low + 1 + CHANNEL_NUMBER_OFFSET;
@@ -4358,7 +4358,7 @@ static void ssh_rportfwd_succfail(Ssh ssh, struct Packet *pktin, void *ctx)
 	logeventf(ssh, "Remote port forwarding from %s refused",
 		  pf->sportdesc);
 
-	rpf = del234(ssh->rportfwds, pf);
+	rpf = del234(ssh->rportfwds, pf); (void) rpf;
 	assert(rpf == pf);
 	pf->pfrec->remote = NULL;
 	free_rportfwd(pf);

@@ -69,6 +69,7 @@ unsigned char *frame[];
   int chrom_hsize, chrom_vsize;
   char name[128];
   FILE *fd;
+  size_t result = 0; (void) result;
 
   chrom_hsize = (chroma_format==CHROMA444) ? horizontal_size
                                            : horizontal_size>>1;
@@ -82,7 +83,7 @@ unsigned char *frame[];
     error(errortext);
   }
   for (i=0; i<vertical_size; i++)
-    fread(frame[0]+i*width,1,horizontal_size,fd);
+    result = fread(frame[0]+i*width,1,horizontal_size,fd);
   fclose(fd);
   border_extend(frame[0],horizontal_size,vertical_size,width,height);
 
@@ -93,7 +94,7 @@ unsigned char *frame[];
     error(errortext);
   }
   for (i=0; i<chrom_vsize; i++)
-    fread(frame[1]+i*chrom_width,1,chrom_hsize,fd);
+    result = fread(frame[1]+i*chrom_width,1,chrom_hsize,fd);
   fclose(fd);
   border_extend(frame[1],chrom_hsize,chrom_vsize,chrom_width,chrom_height);
 
@@ -104,7 +105,7 @@ unsigned char *frame[];
     error(errortext);
   }
   for (i=0; i<chrom_vsize; i++)
-    fread(frame[2]+i*chrom_width,1,chrom_hsize,fd);
+    result = fread(frame[2]+i*chrom_width,1,chrom_hsize,fd);
   fclose(fd);
   border_extend(frame[2],chrom_hsize,chrom_vsize,chrom_width,chrom_height);
 }
@@ -117,6 +118,7 @@ unsigned char *frame[];
   int chrom_hsize, chrom_vsize;
   char name[128];
   FILE *fd;
+  size_t result = 0; (void) result;
 
   chrom_hsize = (chroma_format==CHROMA444) ? horizontal_size
                                            : horizontal_size>>1;
@@ -132,17 +134,17 @@ unsigned char *frame[];
 
   /* Y */
   for (i=0; i<vertical_size; i++)
-    fread(frame[0]+i*width,1,horizontal_size,fd);
+    result = fread(frame[0]+i*width,1,horizontal_size,fd);
   border_extend(frame[0],horizontal_size,vertical_size,width,height);
 
   /* Cb */
   for (i=0; i<chrom_vsize; i++)
-    fread(frame[1]+i*chrom_width,1,chrom_hsize,fd);
+    result = fread(frame[1]+i*chrom_width,1,chrom_hsize,fd);
   border_extend(frame[1],chrom_hsize,chrom_vsize,chrom_width,chrom_height);
 
   /* Cr */
   for (i=0; i<chrom_vsize; i++)
-    fread(frame[2]+i*chrom_width,1,chrom_hsize,fd);
+    result = fread(frame[2]+i*chrom_width,1,chrom_hsize,fd);
   border_extend(frame[2],chrom_hsize,chrom_vsize,chrom_width,chrom_height);
 
   fclose(fd);

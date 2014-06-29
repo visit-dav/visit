@@ -44,7 +44,7 @@ unsigned char *frame;
   int mb_type;
   int PMV[2][2][2];
   int prev_mquant;
-  int cbp, MBAinc;
+  int cbp, MBAinc = -1; /* TODO: check on MBAinc variable giving uninitialized warning*/
 
   rc_init_pict(frame); /* set up rate control */
 

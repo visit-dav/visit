@@ -168,12 +168,13 @@ char *fname;
   int h,m,s,f;
   FILE *fd;
   char line[256];
-  char *commentBegin = NULL;
-  int len = 0;
+  //char *commentBegin = NULL;
+  //int len = 0;
   static double ratetab[8]=
     {24000.0/1001.0,24.0,25.0,30000.0/1001.0,30.0,50.0,60000.0/1001.0,60.0};
   extern int r,Xi,Xb,Xp,d0i,d0p,d0b; /* rate control */
   extern double avg_act; /* rate control */
+  char* result = NULL; (void) result;
 
   if (!(fd = fopen(fname,"r")))
   {
@@ -181,11 +182,11 @@ char *fname;
     error(errortext);
   }
 
-  fgets(id_string,254,fd);
+  result = fgets(id_string,254,fd);
 #ifndef WIN32
-  fgets(line,254,fd); sscanf(line,"%s",tplorg);
+  result = fgets(line,254,fd); sscanf(line,"%s",tplorg);
 #else
-  fgets(line,254,fd); 
+  result = fgets(line,254,fd); 
   commentBegin = strstr(line, "/*");
   len = strlen(line) - strlen(commentBegin);
   strncpy(tplorg, line, len);
@@ -193,13 +194,13 @@ char *fname;
 	  len--;
   tplorg[len] = '\0';
 #endif
-  fgets(line,254,fd); sscanf(line,"%s",tplref);
-  fgets(line,254,fd); sscanf(line,"%s",iqname);
-  fgets(line,254,fd); sscanf(line,"%s",niqname);
+  result = fgets(line,254,fd); sscanf(line,"%s",tplref);
+  result = fgets(line,254,fd); sscanf(line,"%s",iqname);
+  result = fgets(line,254,fd); sscanf(line,"%s",niqname);
 #ifndef WIN32
-  fgets(line,254,fd); sscanf(line,"%s",statname);
+  result = fgets(line,254,fd); sscanf(line,"%s",statname);
 #else
-  fgets(line,254,fd); 
+  result = fgets(line,254,fd); 
   commentBegin = strstr(line, "/*");
   len = strlen(line) - strlen(commentBegin);
   strncpy(statname, line, len);
@@ -207,59 +208,59 @@ char *fname;
 	  len--;
   statname[len] = '\0';
 #endif
-  fgets(line,254,fd); sscanf(line,"%d",&inputtype);
-  fgets(line,254,fd); sscanf(line,"%d",&nframes);
-  fgets(line,254,fd); sscanf(line,"%d",&frame0);
-  fgets(line,254,fd); sscanf(line,"%d:%d:%d:%d",&h,&m,&s,&f);
-  fgets(line,254,fd); sscanf(line,"%d",&N);
-  fgets(line,254,fd); sscanf(line,"%d",&M);
-  fgets(line,254,fd); sscanf(line,"%d",&mpeg1);
-  fgets(line,254,fd); sscanf(line,"%d",&fieldpic);
-  fgets(line,254,fd); sscanf(line,"%d",&horizontal_size);
-  fgets(line,254,fd); sscanf(line,"%d",&vertical_size);
-  fgets(line,254,fd); sscanf(line,"%d",&aspectratio);
-  fgets(line,254,fd); sscanf(line,"%d",&frame_rate_code);
-  fgets(line,254,fd); sscanf(line,"%lf",&bit_rate);
-  fgets(line,254,fd); sscanf(line,"%d",&vbv_buffer_size);   
-  fgets(line,254,fd); sscanf(line,"%d",&low_delay);     
-  fgets(line,254,fd); sscanf(line,"%d",&constrparms);
-  fgets(line,254,fd); sscanf(line,"%d",&profile);
-  fgets(line,254,fd); sscanf(line,"%d",&level);
-  fgets(line,254,fd); sscanf(line,"%d",&prog_seq);
-  fgets(line,254,fd); sscanf(line,"%d",&chroma_format);
-  fgets(line,254,fd); sscanf(line,"%d",&video_format);
-  fgets(line,254,fd); sscanf(line,"%d",&color_primaries);
-  fgets(line,254,fd); sscanf(line,"%d",&transfer_characteristics);
-  fgets(line,254,fd); sscanf(line,"%d",&matrix_coefficients);
-  fgets(line,254,fd); sscanf(line,"%d",&display_horizontal_size);
-  fgets(line,254,fd); sscanf(line,"%d",&display_vertical_size);
-  fgets(line,254,fd); sscanf(line,"%d",&dc_prec);
-  fgets(line,254,fd); sscanf(line,"%d",&topfirst);
-  fgets(line,254,fd); sscanf(line,"%d %d %d",
-    frame_pred_dct_tab,frame_pred_dct_tab+1,frame_pred_dct_tab+2);
+  result = fgets(line,254,fd); sscanf(line,"%d",&inputtype);
+  result = fgets(line,254,fd); sscanf(line,"%d",&nframes);
+  result = fgets(line,254,fd); sscanf(line,"%d",&frame0);
+  result = fgets(line,254,fd); sscanf(line,"%d:%d:%d:%d",&h,&m,&s,&f);
+  result = fgets(line,254,fd); sscanf(line,"%d",&N);
+  result = fgets(line,254,fd); sscanf(line,"%d",&M);
+  result = fgets(line,254,fd); sscanf(line,"%d",&mpeg1);
+  result = fgets(line,254,fd); sscanf(line,"%d",&fieldpic);
+  result = fgets(line,254,fd); sscanf(line,"%d",&horizontal_size);
+  result = fgets(line,254,fd); sscanf(line,"%d",&vertical_size);
+  result = fgets(line,254,fd); sscanf(line,"%d",&aspectratio);
+  result = fgets(line,254,fd); sscanf(line,"%d",&frame_rate_code);
+  result = fgets(line,254,fd); sscanf(line,"%lf",&bit_rate);
+  result = fgets(line,254,fd); sscanf(line,"%d",&vbv_buffer_size);   
+  result = fgets(line,254,fd); sscanf(line,"%d",&low_delay);     
+  result = fgets(line,254,fd); sscanf(line,"%d",&constrparms);
+  result = fgets(line,254,fd); sscanf(line,"%d",&profile);
+  result = fgets(line,254,fd); sscanf(line,"%d",&level);
+  result = fgets(line,254,fd); sscanf(line,"%d",&prog_seq);
+  result = fgets(line,254,fd); sscanf(line,"%d",&chroma_format);
+  result = fgets(line,254,fd); sscanf(line,"%d",&video_format);
+  result = fgets(line,254,fd); sscanf(line,"%d",&color_primaries);
+  result = fgets(line,254,fd); sscanf(line,"%d",&transfer_characteristics);
+  result = fgets(line,254,fd); sscanf(line,"%d",&matrix_coefficients);
+  result = fgets(line,254,fd); sscanf(line,"%d",&display_horizontal_size);
+  result = fgets(line,254,fd); sscanf(line,"%d",&display_vertical_size);
+  result = fgets(line,254,fd); sscanf(line,"%d",&dc_prec);
+  result = fgets(line,254,fd); sscanf(line,"%d",&topfirst);
+  result = fgets(line,254,fd); sscanf(line,"%d %d %d",
+  frame_pred_dct_tab,frame_pred_dct_tab+1,frame_pred_dct_tab+2);
   
-  fgets(line,254,fd); sscanf(line,"%d %d %d",
+  result = fgets(line,254,fd); sscanf(line,"%d %d %d",
     conceal_tab,conceal_tab+1,conceal_tab+2);
   
-  fgets(line,254,fd); sscanf(line,"%d %d %d",
+  result = fgets(line,254,fd); sscanf(line,"%d %d %d",
     qscale_tab,qscale_tab+1,qscale_tab+2);
 
-  fgets(line,254,fd); sscanf(line,"%d %d %d",
+  result = fgets(line,254,fd); sscanf(line,"%d %d %d",
     intravlc_tab,intravlc_tab+1,intravlc_tab+2);
-  fgets(line,254,fd); sscanf(line,"%d %d %d",
+  result = fgets(line,254,fd); sscanf(line,"%d %d %d",
     altscan_tab,altscan_tab+1,altscan_tab+2);
-  fgets(line,254,fd); sscanf(line,"%d",&repeatfirst);
-  fgets(line,254,fd); sscanf(line,"%d",&prog_frame);
+  result = fgets(line,254,fd); sscanf(line,"%d",&repeatfirst);
+  result = fgets(line,254,fd); sscanf(line,"%d",&prog_frame);
 /* intra slice interval refresh period */  
-  fgets(line,254,fd); sscanf(line,"%d",&P);
-  fgets(line,254,fd); sscanf(line,"%d",&r);
-  fgets(line,254,fd); sscanf(line,"%lf",&avg_act);
-  fgets(line,254,fd); sscanf(line,"%d",&Xi);
-  fgets(line,254,fd); sscanf(line,"%d",&Xp);
-  fgets(line,254,fd); sscanf(line,"%d",&Xb);
-  fgets(line,254,fd); sscanf(line,"%d",&d0i);
-  fgets(line,254,fd); sscanf(line,"%d",&d0p);
-  fgets(line,254,fd); sscanf(line,"%d",&d0b);
+  result = fgets(line,254,fd); sscanf(line,"%d",&P);
+  result = fgets(line,254,fd); sscanf(line,"%d",&r);
+  result = fgets(line,254,fd); sscanf(line,"%lf",&avg_act);
+  result = fgets(line,254,fd); sscanf(line,"%d",&Xi);
+  result = fgets(line,254,fd); sscanf(line,"%d",&Xp);
+  result = fgets(line,254,fd); sscanf(line,"%d",&Xb);
+  result = fgets(line,254,fd); sscanf(line,"%d",&d0i);
+  result = fgets(line,254,fd); sscanf(line,"%d",&d0p);
+  result = fgets(line,254,fd); sscanf(line,"%d",&d0b);
 
   if (N<1)
     error("N must be positive");
@@ -274,14 +275,14 @@ char *fname;
 
   for (i=0; i<M; i++)
   {
-    fgets(line,254,fd);
+    result = fgets(line,254,fd);
     sscanf(line,"%d %d %d %d",
       &motion_data[i].forw_hor_f_code, &motion_data[i].forw_vert_f_code,
       &motion_data[i].sxf, &motion_data[i].syf);
 
     if (i!=0)
     {
-      fgets(line,254,fd);
+      result = fgets(line,254,fd);
       sscanf(line,"%d %d %d %d",
         &motion_data[i].back_hor_f_code, &motion_data[i].back_vert_f_code,
         &motion_data[i].sxb, &motion_data[i].syb);
@@ -548,7 +549,7 @@ static void readquantmat()
 
     for (i=0; i<64; i++)
     {
-      fscanf(fd,"%d",&v);
+      int res = fscanf(fd,"%d",&v); (void) res;
       if (v<1 || v>255)
         error("invalid value in quant matrix");
       intra_q[i] = v;
@@ -576,7 +577,7 @@ static void readquantmat()
 
     for (i=0; i<64; i++)
     {
-      fscanf(fd,"%d",&v);
+      int res = fscanf(fd,"%d",&v); (void) res;
       if (v<1 || v>255)
         error("invalid value in quant matrix");
       inter_q[i] = v;

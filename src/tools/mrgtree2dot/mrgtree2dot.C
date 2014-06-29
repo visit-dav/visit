@@ -73,7 +73,7 @@ create_dot_output(int nlvls,
     std::ofstream ofs(ofname.c_str());
     ofs << "digraph mrgTree {" << endl;
 
-    for(int i=0; i < edges_fro.size(); i++)
+    for(size_t i=0; i < edges_fro.size(); i++)
     {
         ofs  << " \"" << nodes[edges_to[i]] << "\" -> " " \""
              << nodes[edges_fro[i]] << "\";" <<endl;
@@ -83,7 +83,7 @@ create_dot_output(int nlvls,
     for(int i=0; i < nlvls; i++)
     {
         ofs << " { rank = same; " <<endl;
-        for(int j=0; j < lvls_map.size(); j++)
+        for(size_t j=0; j < lvls_map.size(); j++)
         {
             if(lvls_map[j] == i)
             {

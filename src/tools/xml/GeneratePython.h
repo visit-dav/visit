@@ -2811,7 +2811,7 @@ class PythonGeneratorAttribute : public GeneratorBase
                 out << functions[i]->def;
     }
 
-    void Print(QTextStream &out)
+    void Print(QTextStream &out) const
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << Endl;
         size_t i;
@@ -3169,7 +3169,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << mName << "(const "<<name<<" *atts, const char *prefix)" << Endl;
         c << "{" << Endl;
         c << "    std::string str; " << Endl;
-        c << "    char tmpStr[1000]; " << Endl;
+        c << "    char tmpStr[1000]; (void)tmpStr;" << Endl;
         c << Endl;
         if (custombase)
         {
@@ -3372,7 +3372,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "static void" << Endl;
             c << CallLogRoutine << "(Subject *subj, void *data)" << Endl;
             c << "{" << Endl;
-            c << "    "<<name<<" *atts = ("<<name<<" *)subj;" << Endl;
+            c << "    "<<name<<" *atts = ("<<name<<" *)subj; (void) atts; " << Endl;
             if(HasCode(CallLogRoutine, 0))
                 PrintCode(c, CallLogRoutine, 0);
             c << "    typedef void (*logCallback)(const std::string &);" << Endl;
@@ -3630,7 +3630,7 @@ class PythonGeneratorPlugin : public PluginBase
     {
     }
 
-    void Print(QTextStream &out)
+    void Print(QTextStream &out) const
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< Endl;
         if (atts)

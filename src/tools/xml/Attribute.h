@@ -130,7 +130,7 @@ class Attribute : public AttributeBase
         fields.clear();
     }
 
-    virtual void Print(QTextStream &out)
+    virtual void Print(QTextStream &out) const
     {
         size_t i;
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;

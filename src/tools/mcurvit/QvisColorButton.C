@@ -115,7 +115,7 @@ QvisColorButton::QvisColorButton(QWidget *parent, const void *data) :
 QvisColorButton::~QvisColorButton()
 {
     // Remove the "this" pointer from the vector.
-    int index;
+    int index = -1;
     bool notFound = true;
     for(size_t i = 0; i < buttons.size() && notFound; ++i)
     {
@@ -464,7 +464,7 @@ QvisColorButton::popupPressed()
         // Show the popup menu.         
         popup->move(menuX, menuY);
         popup->show();
-        setDown(false);
+        setDown(FALSE);
     }
 }
 
