@@ -1105,7 +1105,7 @@ PyConstructDataBinningAttributes_GetLogString()
 static void
 PyConstructDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ConstructDataBinningAttributes *atts = (ConstructDataBinningAttributes *)subj;
+    ConstructDataBinningAttributes *atts = (ConstructDataBinningAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

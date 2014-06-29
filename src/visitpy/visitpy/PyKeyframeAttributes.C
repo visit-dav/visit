@@ -396,7 +396,7 @@ PyKeyframeAttributes_GetLogString()
 static void
 PyKeyframeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    KeyframeAttributes *atts = (KeyframeAttributes *)subj;
+    KeyframeAttributes *atts = (KeyframeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

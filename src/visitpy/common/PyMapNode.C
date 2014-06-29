@@ -128,7 +128,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
     if (!PyDict_Check(obj))
         return false;
 
-    bool success = true;
+    //bool success = true;
     Py_ssize_t pos = 0;
     PyObject *key = NULL;
     PyObject *value = NULL;

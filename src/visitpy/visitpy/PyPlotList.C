@@ -109,7 +109,7 @@ PlotList_GetPlots(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetPlots().size())
+    if(index < 0 || (size_t)index >= obj->data->GetPlots().size())
     {
         char msg[200];
         if(obj->data->GetPlots().size() == 0)
@@ -430,7 +430,7 @@ PyPlotList_GetLogString()
 static void
 PyPlotList_CallLogRoutine(Subject *subj, void *data)
 {
-    PlotList *atts = (PlotList *)subj;
+    PlotList *atts = (PlotList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

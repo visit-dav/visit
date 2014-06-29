@@ -454,7 +454,7 @@ PyGaussianControlPoint_GetLogString()
 static void
 PyGaussianControlPoint_CallLogRoutine(Subject *subj, void *data)
 {
-    GaussianControlPoint *atts = (GaussianControlPoint *)subj;
+    GaussianControlPoint *atts = (GaussianControlPoint *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -1012,7 +1012,7 @@ PyViewAttributes_GetLogString()
 static void
 PyViewAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewAttributes *atts = (ViewAttributes *)subj;
+    ViewAttributes *atts = (ViewAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

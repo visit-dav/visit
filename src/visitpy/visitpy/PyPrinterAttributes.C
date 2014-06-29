@@ -623,7 +623,7 @@ PyPrinterAttributes_GetLogString()
 static void
 PyPrinterAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PrinterAttributes *atts = (PrinterAttributes *)subj;
+    PrinterAttributes *atts = (PrinterAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

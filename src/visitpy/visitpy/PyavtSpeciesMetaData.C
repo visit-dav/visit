@@ -268,7 +268,7 @@ avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetSpecies().size())
+    if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
     {
         char msg[200];
         if(obj->data->GetSpecies().size() == 0)
@@ -625,7 +625,7 @@ PyavtSpeciesMetaData_GetLogString()
 static void
 PyavtSpeciesMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtSpeciesMetaData *atts = (avtSpeciesMetaData *)subj;
+    avtSpeciesMetaData *atts = (avtSpeciesMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

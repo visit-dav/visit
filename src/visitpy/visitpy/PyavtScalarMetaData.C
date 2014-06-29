@@ -1118,7 +1118,7 @@ PyavtScalarMetaData_GetLogString()
 static void
 PyavtScalarMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtScalarMetaData *atts = (avtScalarMetaData *)subj;
+    avtScalarMetaData *atts = (avtScalarMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

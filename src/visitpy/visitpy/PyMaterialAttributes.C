@@ -742,7 +742,7 @@ PyMaterialAttributes_GetLogString()
 static void
 PyMaterialAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MaterialAttributes *atts = (MaterialAttributes *)subj;
+    MaterialAttributes *atts = (MaterialAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

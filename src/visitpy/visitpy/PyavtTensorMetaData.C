@@ -361,7 +361,7 @@ PyavtTensorMetaData_GetLogString()
 static void
 PyavtTensorMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtTensorMetaData *atts = (avtTensorMetaData *)subj;
+    avtTensorMetaData *atts = (avtTensorMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

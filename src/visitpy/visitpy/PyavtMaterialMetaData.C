@@ -503,7 +503,7 @@ PyavtMaterialMetaData_GetLogString()
 static void
 PyavtMaterialMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtMaterialMetaData *atts = (avtMaterialMetaData *)subj;
+    avtMaterialMetaData *atts = (avtMaterialMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

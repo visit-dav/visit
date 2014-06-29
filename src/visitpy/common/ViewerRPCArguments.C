@@ -121,6 +121,7 @@ PyTuple_FromIntVector(const intVector &vec)
     return tuple;
 }
 
+#if 0
 static PyObject *
 PyTuple_FromDoubleVector(const doubleVector &vec)
 {
@@ -138,6 +139,7 @@ PyTuple_FromDoubleVector(const doubleVector &vec)
     }
     return tuple;
 }
+#endif 
 
 static PyObject *
 PyTuple_FromDoubleArray(const double *vec, int len)

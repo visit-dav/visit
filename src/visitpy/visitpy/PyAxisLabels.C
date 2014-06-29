@@ -409,7 +409,7 @@ PyAxisLabels_GetLogString()
 static void
 PyAxisLabels_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisLabels *atts = (AxisLabels *)subj;
+    AxisLabels *atts = (AxisLabels *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

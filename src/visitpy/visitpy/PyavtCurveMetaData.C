@@ -588,7 +588,7 @@ PyavtCurveMetaData_GetLogString()
 static void
 PyavtCurveMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtCurveMetaData *atts = (avtCurveMetaData *)subj;
+    avtCurveMetaData *atts = (avtCurveMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

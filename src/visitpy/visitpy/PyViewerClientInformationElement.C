@@ -524,7 +524,7 @@ PyViewerClientInformationElement_GetLogString()
 static void
 PyViewerClientInformationElement_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerClientInformationElement *atts = (ViewerClientInformationElement *)subj;
+    ViewerClientInformationElement *atts = (ViewerClientInformationElement *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

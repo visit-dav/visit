@@ -670,7 +670,7 @@ PyAxes2D_GetLogString()
 static void
 PyAxes2D_CallLogRoutine(Subject *subj, void *data)
 {
-    Axes2D *atts = (Axes2D *)subj;
+    Axes2D *atts = (Axes2D *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

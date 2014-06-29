@@ -514,7 +514,7 @@ PyAxesArray_GetLogString()
 static void
 PyAxesArray_CallLogRoutine(Subject *subj, void *data)
 {
-    AxesArray *atts = (AxesArray *)subj;
+    AxesArray *atts = (AxesArray *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

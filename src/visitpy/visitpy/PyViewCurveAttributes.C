@@ -616,7 +616,7 @@ PyViewCurveAttributes_GetLogString()
 static void
 PyViewCurveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewCurveAttributes *atts = (ViewCurveAttributes *)subj;
+    ViewCurveAttributes *atts = (ViewCurveAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

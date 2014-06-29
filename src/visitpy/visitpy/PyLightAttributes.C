@@ -589,7 +589,7 @@ PyLightAttributes_GetLogString()
 static void
 PyLightAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LightAttributes *atts = (LightAttributes *)subj;
+    LightAttributes *atts = (LightAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

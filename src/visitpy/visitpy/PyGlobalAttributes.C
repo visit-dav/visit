@@ -1314,7 +1314,7 @@ PyGlobalAttributes_GetLogString()
 static void
 PyGlobalAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    GlobalAttributes *atts = (GlobalAttributes *)subj;
+    GlobalAttributes *atts = (GlobalAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

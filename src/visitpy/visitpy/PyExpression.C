@@ -705,7 +705,7 @@ PyExpression_GetLogString()
 static void
 PyExpression_CallLogRoutine(Subject *subj, void *data)
 {
-    Expression *atts = (Expression *)subj;
+    Expression *atts = (Expression *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

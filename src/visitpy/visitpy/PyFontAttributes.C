@@ -583,7 +583,7 @@ PyFontAttributes_GetLogString()
 static void
 PyFontAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FontAttributes *atts = (FontAttributes *)subj;
+    FontAttributes *atts = (FontAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

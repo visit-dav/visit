@@ -2587,7 +2587,7 @@ PyavtMeshMetaData_GetLogString()
 static void
 PyavtMeshMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtMeshMetaData *atts = (avtMeshMetaData *)subj;
+    avtMeshMetaData *atts = (avtMeshMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

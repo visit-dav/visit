@@ -1409,7 +1409,7 @@ PyAnnotationAttributes_GetLogString()
 static void
 PyAnnotationAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AnnotationAttributes *atts = (AnnotationAttributes *)subj;
+    AnnotationAttributes *atts = (AnnotationAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

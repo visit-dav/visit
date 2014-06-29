@@ -206,11 +206,16 @@ main(int argc, char *argv[])
     bool verbose = false, s_found = false;
     bool pyside = false;
     bool pyside_gui = false,pyside_viewer = false;
-    char *runFile = 0, *loadFile = 0, tmpArg[512];
+    char *runFile = 0, *loadFile = 0;
     char **argv2 = new char *[argc];
     char **argv_after_s = new char *[argc];
     int  argc2 = 0, argc_after_s = 0; 
     char* uifile = 0;
+    const char* pyuiembedded_str = "-pyuiembedded"; //pass it along to client
+
+#ifdef WIN32
+    char tmpArg[512];
+#endif
 
 #ifdef IGNORE_HUPS
     signal(SIGHUP, SIG_IGN);
@@ -345,19 +350,19 @@ main(int argc, char *argv[])
         {
             pyside_gui = true;
             pyside_viewer = true;
-            argv2[argc2++] = "-pyuiembedded"; //pass it along to client
+            argv2[argc2++] = const_cast<char*>(pyuiembedded_str); //pass it along to client
         }
         else if(strcmp(argv[i], "-pysideclient") == 0)
         {
             pyside_gui = true;
-            argv2[argc2++] = "-pyuiembedded"; //pass it along to client
+            argv2[argc2++] = const_cast<char*>(pyuiembedded_str); //pass it along to client
         }
         else if(strcmp(argv[i], "-uifile") == 0)
         {
             pyside_gui = true;
             uifile = argv[i+1];
             ++i;
-            argv2[argc2++] = "-pyuiembedded"; //pass it along to client
+            argv2[argc2++] = const_cast<char*>(pyuiembedded_str); //pass it along to client
         }
         else if(strcmp(argv[i], "-dv") == 0)
         {

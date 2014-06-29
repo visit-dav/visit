@@ -1491,7 +1491,7 @@ PyWindowInformation_GetLogString()
 static void
 PyWindowInformation_CallLogRoutine(Subject *subj, void *data)
 {
-    WindowInformation *atts = (WindowInformation *)subj;
+    WindowInformation *atts = (WindowInformation *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

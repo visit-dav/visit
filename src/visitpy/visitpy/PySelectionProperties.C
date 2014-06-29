@@ -1115,7 +1115,7 @@ PySelectionProperties_GetLogString()
 static void
 PySelectionProperties_CallLogRoutine(Subject *subj, void *data)
 {
-    SelectionProperties *atts = (SelectionProperties *)subj;
+    SelectionProperties *atts = (SelectionProperties *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -466,7 +466,7 @@ PySelectionVariableSummary_GetLogString()
 static void
 PySelectionVariableSummary_CallLogRoutine(Subject *subj, void *data)
 {
-    SelectionVariableSummary *atts = (SelectionVariableSummary *)subj;
+    SelectionVariableSummary *atts = (SelectionVariableSummary *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -327,7 +327,7 @@ QueryAttributes_GetXmlResult(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetQueryInputParams(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    QueryAttributesObject *obj = (QueryAttributesObject *)self; (void) obj;
 
     // NOT IMPLEMENTED!!!
     // name=queryInputParams, type=MapNode
@@ -339,7 +339,7 @@ QueryAttributes_SetQueryInputParams(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetQueryInputParams(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    QueryAttributesObject *obj = (QueryAttributesObject *)self; (void) obj;
     // NOT IMPLEMENTED!!!
     // name=queryInputParams, type=MapNode
     PyObject *retval = NULL;
@@ -598,7 +598,7 @@ PyQueryAttributes_GetLogString()
 static void
 PyQueryAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    QueryAttributes *atts = (QueryAttributes *)subj;
+    QueryAttributes *atts = (QueryAttributes *)subj; (void) atts; 
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

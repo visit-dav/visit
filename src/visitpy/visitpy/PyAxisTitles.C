@@ -511,7 +511,7 @@ PyAxisTitles_GetLogString()
 static void
 PyAxisTitles_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisTitles *atts = (AxisTitles *)subj;
+    AxisTitles *atts = (AxisTitles *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

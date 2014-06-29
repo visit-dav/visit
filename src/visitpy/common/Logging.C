@@ -1359,7 +1359,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                 MapNode *t_o = queryParams.GetEntry("time_options");
                 stringVector t_o_names;
                 t_o->GetEntryNames(t_o_names);
-                for (size_t j = 0; j < t_o->GetNumEntries(); ++j)
+                for (size_t j = 0; j < (size_t)t_o->GetNumEntries(); ++j)
                 {
                     if (numPrinted > 0)
                         s += ", ";

@@ -1181,7 +1181,7 @@ PyPickAttributes_GetLogString()
 static void
 PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PickAttributes *atts = (PickAttributes *)subj;
+    PickAttributes *atts = (PickAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -68,10 +68,11 @@ IF(VISIT_PARALLEL)
                              "${MPICOM_PY_SOURCES}"
                              ${MPICOM_SOURCES})
 
+    SET_TARGET_PROPERTIES(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
 
     IF(UNIX)
         IF(VISIT_PARALLEL_CXXFLAGS)
-            SET(PAR_COMPILE_FLAGS "")
+            SET(PAR_COMPILE_FLAGS "-fno-strict-aliasing")
             FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
                 SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
             ENDFOREACH (X ${VISIT_PARALLEL_CXXFLAGS})

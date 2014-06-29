@@ -564,7 +564,7 @@ PyInteractorAttributes_GetLogString()
 static void
 PyInteractorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    InteractorAttributes *atts = (InteractorAttributes *)subj;
+    InteractorAttributes *atts = (InteractorAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

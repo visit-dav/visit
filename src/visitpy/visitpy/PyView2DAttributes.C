@@ -819,7 +819,7 @@ PyView2DAttributes_GetLogString()
 static void
 PyView2DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    View2DAttributes *atts = (View2DAttributes *)subj;
+    View2DAttributes *atts = (View2DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

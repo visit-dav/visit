@@ -803,7 +803,7 @@ static bool ImageObjectEnableLogging = true;
 static void
 PyImageObject_WriteLog(Subject *subj, void *data)
 {
-    AnnotationObject *atts = (AnnotationObject *)subj;
+    AnnotationObject *atts = (AnnotationObject *)subj; (void) atts;
     FILE *logFile = (FILE *)data;
 
     if(!ImageObjectEnableLogging || (logFile == NULL))

@@ -375,7 +375,7 @@ PyColorAttribute_GetLogString()
 static void
 PyColorAttribute_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorAttribute *atts = (ColorAttribute *)subj;
+    ColorAttribute *atts = (ColorAttribute *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -1100,7 +1100,7 @@ avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetMeshes().size())
+    if(index < 0 || (size_t)index >= obj->data->GetMeshes().size())
     {
         char msg[200];
         if(obj->data->GetMeshes().size() == 0)
@@ -1215,7 +1215,7 @@ avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetSubsets().size())
+    if(index < 0 || (size_t)index >= obj->data->GetSubsets().size())
     {
         char msg[200];
         if(obj->data->GetSubsets().size() == 0)
@@ -1330,7 +1330,7 @@ avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetScalars().size())
+    if(index < 0 || (size_t)index >= obj->data->GetScalars().size())
     {
         char msg[200];
         if(obj->data->GetScalars().size() == 0)
@@ -1445,7 +1445,7 @@ avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetVectors().size())
+    if(index < 0 || (size_t)index >= obj->data->GetVectors().size())
     {
         char msg[200];
         if(obj->data->GetVectors().size() == 0)
@@ -1560,7 +1560,7 @@ avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetTensors().size())
+    if(index < 0 || (size_t)index >= obj->data->GetTensors().size())
     {
         char msg[200];
         if(obj->data->GetTensors().size() == 0)
@@ -1675,7 +1675,7 @@ avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetSymmTensors().size())
+    if(index < 0 || (size_t)index >= obj->data->GetSymmTensors().size())
     {
         char msg[200];
         if(obj->data->GetSymmTensors().size() == 0)
@@ -1790,7 +1790,7 @@ avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetArrays().size())
+    if(index < 0 || (size_t)index >= obj->data->GetArrays().size())
     {
         char msg[200];
         if(obj->data->GetArrays().size() == 0)
@@ -1905,7 +1905,7 @@ avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetMaterials().size())
+    if(index < 0 || (size_t)index >= obj->data->GetMaterials().size())
     {
         char msg[200];
         if(obj->data->GetMaterials().size() == 0)
@@ -2020,7 +2020,7 @@ avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetSpecies().size())
+    if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
     {
         char msg[200];
         if(obj->data->GetSpecies().size() == 0)
@@ -2135,7 +2135,7 @@ avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetCurves().size())
+    if(index < 0 || (size_t)index >= obj->data->GetCurves().size())
     {
         char msg[200];
         if(obj->data->GetCurves().size() == 0)
@@ -2250,7 +2250,7 @@ avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetLabels().size())
+    if(index < 0 || (size_t)index >= obj->data->GetLabels().size())
     {
         char msg[200];
         if(obj->data->GetLabels().size() == 0)
@@ -2365,7 +2365,7 @@ avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetDefaultPlots().size())
+    if(index < 0 || (size_t)index >= obj->data->GetDefaultPlots().size())
     {
         char msg[200];
         if(obj->data->GetDefaultPlots().size() == 0)
@@ -3040,7 +3040,7 @@ PyavtDatabaseMetaData_GetLogString()
 static void
 PyavtDatabaseMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtDatabaseMetaData *atts = (avtDatabaseMetaData *)subj;
+    avtDatabaseMetaData *atts = (avtDatabaseMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

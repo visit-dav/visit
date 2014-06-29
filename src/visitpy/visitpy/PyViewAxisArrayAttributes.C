@@ -522,7 +522,7 @@ PyViewAxisArrayAttributes_GetLogString()
 static void
 PyViewAxisArrayAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewAxisArrayAttributes *atts = (ViewAxisArrayAttributes *)subj;
+    ViewAxisArrayAttributes *atts = (ViewAxisArrayAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

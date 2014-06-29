@@ -899,7 +899,7 @@ PyAxes3D_GetLogString()
 static void
 PyAxes3D_CallLogRoutine(Subject *subj, void *data)
 {
-    Axes3D *atts = (Axes3D *)subj;
+    Axes3D *atts = (Axes3D *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

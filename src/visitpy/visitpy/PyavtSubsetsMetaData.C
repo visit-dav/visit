@@ -919,7 +919,7 @@ PyavtSubsetsMetaData_GetLogString()
 static void
 PyavtSubsetsMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtSubsetsMetaData *atts = (avtSubsetsMetaData *)subj;
+    avtSubsetsMetaData *atts = (avtSubsetsMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 
