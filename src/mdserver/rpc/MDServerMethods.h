@@ -73,9 +73,9 @@ public:
         int           size;
 
         bool          CanAccess() const    { return (flag & 1) == 1; }
-        void          SetAccess(bool val)  { flag = (flag & 0xfe | (val?1:0)); }
+        void          SetAccess(bool val)  { flag = ((flag & 0xfe) | (val?1:0)); }
         bool          IsVirtual() const    { return (flag & 2) == 2; }
-        void          SetVirtual(bool val) { flag = (flag & 0xfd | (val?2:0)); }
+        void          SetVirtual(bool val) { flag = ((flag & 0xfd) | (val?2:0)); }
     private:
         // Access  is bit 0
         // Virtual is bit 1

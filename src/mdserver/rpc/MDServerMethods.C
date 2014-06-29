@@ -181,7 +181,7 @@ MDServerMethods::GetFileList(const std::string &filter,
 #endif
 
     int vfIndex = 0; int fileIndex = 0;
-    for (int i = 0; i < fl->names.size(); ++i)
+    for (size_t i = 0; i < fl->names.size(); ++i)
     {
         FileEntry tmpentry;
         tmpentry.name = fl->names[i];

@@ -47,7 +47,7 @@ MDServerState::DetermineSeparator()
     std::string d = getDirectoryRPC();
 
     // Determine the separator to use in filenames.
-    for(int i = 0; i < d.length(); ++i)
+    for(size_t i = 0; i < d.length(); ++i)
     {
         if(d[i] == '/')
         {
@@ -69,7 +69,7 @@ MDServerState::SetupComponentRPCs(Xfer* xfer)
     // Connect the RPCs to the xfer object.
     //
 
-    for(int i = 0; i < GetNumStateObjects(); ++i)
+    for(size_t i = 0; i < GetNumStateObjects(); ++i)
         xfer->Add(GetStateObject(i));
 
 }
@@ -83,6 +83,6 @@ MDServerState::GetNumStateObjects()
 VisItRPC*
 MDServerState::GetStateObject(int i)
 {
-    return (i >= 0 && i < objVector.size()) ?
+    return (i >= 0 && (size_t)i < objVector.size()) ?
            objVector[i] : 0;
 }
