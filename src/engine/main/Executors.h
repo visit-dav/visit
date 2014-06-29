@@ -1409,7 +1409,7 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
            << ", time=" << rpc->GetTime()
            << ", numStates=" << rpc->GetDatabaseFiles().size()
            << endl;
-    for (int i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
+    for (size_t i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
         debug5 << "file["<<i<<"]="<<rpc->GetDatabaseFiles()[i].c_str() << endl;
 
     TRY
@@ -1495,7 +1495,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 
     debug2 << "Executing RenderRPC for the following plots" << endl;
     debug2 << "   ";
-    for (int i = 0; i < rpc->GetIDs().size(); i++)
+    for (size_t i = 0; i < rpc->GetIDs().size(); i++)
        debug2 << rpc->GetIDs()[i] << ", ";
     debug2 << endl;
 

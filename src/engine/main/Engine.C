@@ -216,6 +216,7 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 
 class ViewerRemoteProcess : public RemoteProcess
 {
+    using RemoteProcess::Launch;
 public:
     ViewerRemoteProcess(const std::string &p) : RemoteProcess(p)
     {
@@ -622,8 +623,9 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     std::set_new_handler(Engine::NewHandler);
 #endif
 
-    if (DebugStream::Level1())
+    if (DebugStream::Level1()) {
         debug1 << "ENGINE started. pid: " << getpid() << endl;
+    }
 #ifdef PARALLEL
     {
         char msg[1024];
@@ -805,9 +807,10 @@ Engine::InitializeCompute()
     {
         std::ostringstream s;
         s << "Setting up " << this->nDisplays << " GPUs for HW rendering";
-        if (DebugStream::Level3())
+        if (DebugStream::Level3()) {
             debug3 << "Setting up X displays for " << this->nDisplays << " GPUs."
                << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
+        }
         TimedCodeBlock(s.str(), this->SetupDisplay());
     }
     avtCallback::SetNowinMode(true);
@@ -819,14 +822,16 @@ Engine::InitializeCompute()
 #if defined(PARALLEL) && defined(HAVE_ICET)
     if(this->useIceT)
     {
-        if (DebugStream::Level2())
+        if (DebugStream::Level2()) {
             debug2 << "Using IceT network manager." << std::endl;
+        }
         netmgr = new IceTNetworkManager;
     }
     else
     {
-        if (DebugStream::Level2())
+        if (DebugStream::Level2()) {
             debug2 << "Using standard network manager." << std::endl;
+        }
         netmgr = new NetworkManager;
     }
 #else
@@ -1447,8 +1452,9 @@ Engine::ConnectViewer(int *argc, char **argv[])
     }
     CATCH(IncompatibleVersionException)
     {
-        if (DebugStream::Level1())
+        if (DebugStream::Level1()) {
             debug1 << "The engine has a different version than its client." << endl;
+        }
         noFatalExceptions = false;
     }
     CATCH(CouldNotConnectException)
@@ -1579,8 +1585,9 @@ Engine::PAR_EventLoop()
             overrideTimeoutEnabled = false;
 
             idleTimeoutEnabled = true;
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+            }
             ResetTimeout(idleTimeoutMins * 60);
 
             // Get the next message length.
@@ -1603,8 +1610,9 @@ Engine::PAR_EventLoop()
 
             // We have work to do, so reset the alarm.
             idleTimeoutEnabled = false;
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
+            }
             ResetTimeout(executionTimeoutMins * 60);
 
             // Process the state information.
@@ -1732,8 +1740,9 @@ Engine::EventLoop()
         overrideTimeoutEnabled = false;
 
         idleTimeoutEnabled = true;
-        if (DebugStream::Level5())
+        if (DebugStream::Level5()) {
             debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+        }
         ResetTimeout(idleTimeoutMins * 60);
 
         //
@@ -1748,16 +1757,18 @@ Engine::EventLoop()
             {
                 // We've got some work to do.  Reset the alarm.
                 idleTimeoutEnabled = false;
-                if (DebugStream::Level5())
+                if (DebugStream::Level5()) {
                      debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
+                }
                 ResetTimeout(executionTimeoutMins * 60);
 
                 // Process input.
                 ProcessInput();
 
                 idleTimeoutEnabled = true;
-                if (DebugStream::Level5())
+                if (DebugStream::Level5()) {
                     debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+                }
                 ResetTimeout(idleTimeoutMins * 60);
             }
             CATCH(LostConnectionException)
@@ -1982,10 +1993,11 @@ Engine::ProcessCommandLine(int argc, char **argv)
             if(!StringHelpers::str_to_u_numeric<size_t>(argv[i+1],
                                                         &this->nDisplays))
             {
-                if (DebugStream::Level1())
+                if (DebugStream::Level1()) {
                     debug1 << "Could not parse '-n-gpus-per-node' argument "
                        << "'" << argv[i+1] << "'. "
                        << "Disabling hardware acceleration!" << std::endl;
+                }
                 this->nDisplays = 0;
                 haveHWAccel = false;
             }
@@ -2040,8 +2052,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
                     {
                         if (!PAR_Rank())
                             cerr << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
-                        if (DebugStream::Level1())
+                        if (DebugStream::Level1()) {
                             debug1 << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
+                        }
                         idleTimeoutMins = (int) to;
                     }
                     else if (strcmp(argv[i], "-idle-timeout") == 0)
@@ -2053,8 +2066,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 {
                     if (!PAR_Rank())
                         cerr << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
-                    if (DebugStream::Level1())
+                    if (DebugStream::Level1()) {
                         debug1 << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
+                    }
                 }
                 i++;
             }
@@ -2062,8 +2076,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
             {
                 if (!PAR_Rank())
                     cerr << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
-                if (DebugStream::Level1())
+                if (DebugStream::Level1()) {
                     debug1 << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
+                }
             }
         }
         else if (strcmp(argv[i], "-ui-bcast-thresholds") == 0)
@@ -2093,6 +2108,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
                     }
 #ifdef PARALLEL
                     MPIXfer::SetUIBcastThresholds(nanoSecsOfSleeps, secsOfSpinBeforeSleeps);
+#else
+                    (void) secsOfSpinBeforeSleeps;
 #endif
                 }
                 else
@@ -2205,9 +2222,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
             }
             else
             {
-              if (DebugStream::Level1())
+              if (DebugStream::Level1()) {
                   debug1 << "Ignoring IceT request: currently incompatible with "
                             "parallel HW acceleration.\n";
+              }
             }
         }
         else if (strcmp(argv[i], "-no-icet") == 0)
@@ -2354,9 +2372,10 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
     rpc->SendReply(totalSize);
     int writeData = visitTimer->StartTimer();
     int nStrings = do_str.GetNStrings();
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5 << "sending " << totalSize << " bytes to the viewer " << nStrings
                << " from strings." << endl;
+    }
 
     const int buff_size = 4096;
     unsigned char buffer[buff_size];
@@ -2407,8 +2426,9 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
         }
     }
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5 << "Number of actual direct writes = " << strings_written << endl;
+    }
 
     char info[124];
     SNPRINTF(info, 124, "Writing %d bytes to socket", totalSize);     
@@ -2907,9 +2927,10 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             (currentTotalGlobalCellCount + currentCellCount 
                   > scalableThreshold))
         {
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5 << "exceeded scalable threshold of " << scalableThreshold 
                        << endl;
+            }
             thresholdExceeded = true; 
         }
 
@@ -2934,8 +2955,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                     if (DebugStream::Level5())
                     {
                         debug5 << "Exceeded scalable threshold of " << scalableThreshold << endl;
-                        if (reducedCurrentCellCount == INT_MAX-1)
+                        if (reducedCurrentCellCount == INT_MAX-1) {
                             debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
+                        }
                     }
                 }
                 thresholdExceeded = true;
@@ -2961,8 +2983,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             if (thresholdExceeded && !sendDataAnyway)
             {
                 // dummy a null data object message to send to viewer
-                if (DebugStream::Level2())
+                if (DebugStream::Level2()) {
                     debug2 << "Sending back null dataset message.\n";
+                }
                 avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
                 CopyTo(ui_dob, nullData);
             }
@@ -2988,8 +3011,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
         }
         else
         {
-            if (DebugStream::Level1())
+            if (DebugStream::Level1()) {
                 debug1 << "Sending error: " << v.GetErrorMessage() << std::endl;
+            }
             rpc->SendError(v.GetErrorMessage());
         }
 
@@ -3030,9 +3054,10 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
         }
         else
         {
-            if (DebugStream::Level5())
+            if (DebugStream::Level5()) {
                 debug5 << "not sending data to proc 0 because the data object "
                        << "does not require parallel streams." << endl;
+            }
         }
     }
 
@@ -3400,9 +3425,10 @@ Engine::EngineInitializeProgressCallback(void *data, int nStages)
     }
     else
     {
-        if (DebugStream::Level1())
+        if (DebugStream::Level1()) {
             debug1 << "ERROR: EngineInitializeProgressCallback called "
                    << "with nStages == 0" << endl;
+        }
     }
 }
 
@@ -3786,13 +3812,13 @@ ProcessAttributes *
 Engine::GetProcessAttributes()
 {
     // Only allocate procAtts once.  
-    if (procAtts == NULL)
+    if (procAtts == NULL) {
         procAtts = new ProcessAttributes;
-
+    }
     // Populate procAtts.
     {
         unsigned long m_size, m_rss;
-        double m_size_mb, m_rss_mb;
+        double m_size_mb/*, m_rss_mb*/;
         intVector pids;
         intVector ppids;
         intVector memusage;
@@ -3807,6 +3833,7 @@ Engine::GetProcessAttributes()
 #endif
 
 #ifdef PARALLEL
+
         char myHost[2*MPI_MAX_PROCESSOR_NAME];
         int strLen;
         MPI_Get_processor_name(myHost, &strLen); 
@@ -3819,13 +3846,13 @@ Engine::GetProcessAttributes()
 
         //Convert to megabytes
         m_size_mb = ( (double)m_size / 1048576.0);
-        m_rss_mb  = ( (double)m_rss  / 1048576.0);
+        //m_rss_mb  = ( (double)m_rss  / 1048576.0);
 
         // collect pids and host names
-        int *allPids;
-        int *allPpids;
-        char *allHosts;
-        int *allMemusage;
+        int *allPids = NULL;
+        int *allPpids = NULL;
+        char *allHosts = NULL;
+        int *allMemusage = NULL;
         if (PAR_Rank() == 0)
         {
             allPids = new int[PAR_Size()];
@@ -3859,6 +3886,7 @@ Engine::GetProcessAttributes()
             delete [] allHosts;
             delete [] allMemusage;
         }
+
 #else
 
         pids.push_back(myPid);
@@ -3872,7 +3900,7 @@ Engine::GetProcessAttributes()
 
         //Convert to megabytes
         m_size_mb = ( (double)m_size / 1048576.0);
-        m_rss_mb  = ( (double)m_rss  / 1048576.0);
+        //m_rss_mb  = ( (double)m_rss  / 1048576.0);
         memusage.push_back(m_size_mb);
         bool isParallel = false;
 #endif
@@ -3882,9 +3910,11 @@ Engine::GetProcessAttributes()
         procAtts->SetHosts(hosts);
         procAtts->SetMemory(memusage);
         procAtts->SetIsParallel(isParallel);
+
     }
 
     return procAtts;
+
 }
 
 // ****************************************************************************
@@ -4055,9 +4085,10 @@ Engine::SetupDisplay()
     }
     else
     {
-        if (DebugStream::Level1())
+        if (DebugStream::Level1()) {
             debug1 << "Display initialization failed.  Rendering in this state "
                    << "has undefined results ..." << std::endl;
+        }
     }
 }
 
@@ -4083,8 +4114,9 @@ ResetEngineTimeout(void *p, int secs)
     e->SetOverrideTimeout(secs*60);
     if (e->IsIdleTimeoutEnabled() == false)
     {
-        if (DebugStream::Level5())
+        if (DebugStream::Level5()) {
             debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
+        }
     }
     else
     {
