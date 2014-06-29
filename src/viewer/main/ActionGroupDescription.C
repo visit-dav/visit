@@ -705,7 +705,7 @@ ActionGroupDescription::GetAction(int index) const
 {
     ViewerRPC::ViewerRPCType retval = ViewerRPC::MaxRPC;
 
-    if(index >= 0 && index < actions.size())
+    if(index >= 0 && index < (int)actions.size())
     {
         ViewerRPC::ViewerRPCType_FromString(actions[index], retval);
     }

@@ -52,6 +52,7 @@
 #include <QTime>
 class QWsSocket : public QAbstractSocket
 {
+    using QAbstractSocket::close;
     Q_OBJECT
 
 public:
@@ -87,7 +88,7 @@ public:
 
     QTcpSocket* internalSocket() { return tcpSocket; }
 public slots:
-    virtual void close( QString reason = QString() );
+    virtual void close( QString reason );
     void ping();
 
 signals:

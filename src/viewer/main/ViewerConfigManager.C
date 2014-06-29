@@ -629,7 +629,7 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
                         {
                             char tmp[100];
                             SNPRINTF(tmp, 100, "SOURCE%02d", i);
-                            if(i < sources.size())
+                            if(i < (int)sources.size())
                             {
                                 source = sources[i];
                             }

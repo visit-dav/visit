@@ -136,7 +136,7 @@ AnimationStopAction::Execute()
     if (DDTManager::isDDTSim(window))
     {
         const EngineKey &key = window->GetPlotList()->GetEngineKey();
-        const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+        //const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
         ViewerEngineManager::Instance()->SendSimulationCommand(key, DDTSIM_CMD_STOP, "");
     }
     else

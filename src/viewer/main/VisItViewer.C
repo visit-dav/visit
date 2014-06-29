@@ -313,12 +313,15 @@ VisItViewer::ProcessCommandLine(int argc, char **argv, bool addForceVersion)
         // VisIt environment variables will be set.
         int argc2 = argc + 4;
         char **argv2 = new char*[argc2 + 1];
+        char dir[] = "-dir";
+        char forceversion[] = "-forceversion";
+        char visitversion[] = VISIT_VERSION;
         for(int i = 0; i < argc; ++i)
             argv2[i] = argv[i];
-        argv2[argc    ] = "-dir";
+        argv2[argc    ] = dir;
         argv2[argc + 1] = dirName;
-        argv2[argc + 2] = "-forceversion";
-        argv2[argc + 3] = VISIT_VERSION;
+        argv2[argc + 2] = forceversion;
+        argv2[argc + 3] = visitversion;
         argv2[argc + 4] = NULL;
         if (!addForceVersion)
         {
@@ -336,10 +339,12 @@ VisItViewer::ProcessCommandLine(int argc, char **argv, bool addForceVersion)
         // VisIt environment variables will be set.
         int argc2 = argc + 2;
         char **argv2 = new char*[argc2 + 1];
+        char forceversion[] = "-forceversion";
+        char visitversion[] = VISIT_VERSION;
         for(int i = 0; i < argc; ++i)
             argv2[i] = argv[i];
-        argv2[argc    ] = "-forceversion";
-        argv2[argc + 1] = VISIT_VERSION;
+        argv2[argc    ] = forceversion;
+        argv2[argc + 1] = visitversion;
         argv2[argc + 2] = NULL;
         if (!addForceVersion)
         {
@@ -929,6 +934,7 @@ ViewerWarningCallback(void *ptr, const char *msg)
     ((ViewerSubject *)ptr)->Warning(msg);
 }
 
+#if !defined(_WIN32) && ! (defined(Q_WS_MACX) || defined(Q_OS_MAC))
 // ****************************************************************************
 //  Function: Log output from a piped system command to debug logs
 //
@@ -965,7 +971,7 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
     }
 #endif
 }
-
+#endif
 // ****************************************************************************
 //  Function: Log output from xdpyinfo and glxinfo commands w/truncation 
 //

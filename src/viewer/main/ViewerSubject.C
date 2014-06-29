@@ -1269,7 +1269,7 @@ ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
         // statusAtts, metaData, silAtts.
         if(subj->GetGuido() >= GetViewerState()->FreelyExchangedState())
         {
-            for(int i = 0; i < clients.size(); ++i)
+            for(size_t i = 0; i < clients.size(); ++i)
             {
                 if(clients[i] != client)
                     clients[i]->BroadcastToClient(subj);
@@ -1331,7 +1331,7 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
         // check to see if all other clients are remote, if they are then quit since
         // all admin clients have quit
         bool adminClient = false;
-        for(int i = 0; i < clients.size(); ++i)
+        for(size_t i = 0; i < clients.size(); ++i)
         {
             if(!clients[i]->GetViewerClientAttributes().GetExternalClient())
             {
@@ -1403,11 +1403,10 @@ ViewerSubject::InitializePluginManagers()
     // not available to the viewer
     //
     bool done = false;
-    int i;
     while (!done)
     {
         done = true;
-        for (i=0; i<pluginAtts->GetId().size(); i++)
+        for (size_t i=0; i<pluginAtts->GetId().size(); i++)
         {
             std::string id = pluginAtts->GetId()[i];
             if ((pluginAtts->GetType()[i] == "plot"     &&
@@ -1427,7 +1426,7 @@ ViewerSubject::InitializePluginManagers()
     // to be disabled in the plugin managers and enable the ones
     // specified to be enabled.
     //
-    for (i=0; i<pluginAtts->GetId().size(); i++)
+    for (size_t i=0; i<pluginAtts->GetId().size(); i++)
     {
         std::string id = pluginAtts->GetId()[i];
         if (pluginAtts->GetEnabled()[i] == false)
@@ -1462,7 +1461,7 @@ ViewerSubject::InitializePluginManagers()
     // Now add those to the atts that are in the manager but not yet listed
     // List them as enabled or disabled by their default state
     //
-    for (i=0; i<pmgr->GetNAllPlugins(); i++)
+    for (int i=0; i<pmgr->GetNAllPlugins(); i++)
     {
         std::string id = pmgr->GetAllID(i);
         if (pluginAtts->GetIndexByID(id) < 0)
@@ -1472,7 +1471,7 @@ ViewerSubject::InitializePluginManagers()
                                   pmgr->PluginEnabled(id));
         }
     }
-    for (i=0; i<omgr->GetNAllPlugins(); i++)
+    for (int i=0; i<omgr->GetNAllPlugins(); i++)
     {
         std::string id = omgr->GetAllID(i);
         if (pluginAtts->GetIndexByID(id) < 0)
@@ -2180,6 +2179,10 @@ ViewerSubject::InitializeWorkArea()
         // class to fill in the blanks.
         //
         int wmBorder[4], wmShift[2], wmScreen[4];
+
+        ///TODO: override uninitialized warnings
+        wmScreen[0] = wmScreen[1] = wmScreen[2] = wmScreen[3] = 0;
+
         if(GetViewerProperties()->GetWindowBorders().size() == 0 ||
            GetViewerProperties()->GetWindowShift().size() == 0 ||
            GetViewerProperties()->GetWindowPreShift().size() == 0 || 
@@ -3169,9 +3172,9 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
     stringVector databases;
     intVector    wIds;
     // Get the ids of the windows that currently exist.
-    int i, nWin, *windowIndices;
+    int nWin, *windowIndices;
     windowIndices = wM->GetWindowIndices(&nWin);
-    for(i = 0; i < nWin; ++i)
+    for(int i = 0; i < nWin; ++i)
         wIds.push_back(windowIndices[i]);
     delete [] windowIndices;
 
@@ -3184,7 +3187,7 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
     char keyName[100];
     std::map<std::string, std::string> dbToSource;
     DataNode *sourceMapNode = new DataNode("SourceMap");
-    for(i = 0; i < databases.size(); ++i)
+    for(int i = 0; i < (int)databases.size(); ++i)
     {
         SNPRINTF(keyName, 100, "SOURCE%02d", i);
         std::string key(keyName);
@@ -3660,7 +3663,7 @@ ViewerSubject::ExportWindow()
 
     int resultId = -1;
     /// Broadcast directly to client..
-    for(int i = 0; i < clients.size(); ++i) {
+    for(size_t i = 0; i < clients.size(); ++i) {
         ViewerClientAttributes& client = clients[i]->GetViewerClientAttributes();
         if(client.GetId() == clientId) {
             resultId = i;
@@ -3683,12 +3686,12 @@ ViewerSubject::ExportWindow()
 
     qatts->ClearVars();
 
-    for(int i = 0; i < windowIds.size(); ++i)
+    for(size_t i = 0; i < windowIds.size(); ++i)
     {
         ViewerWindow* vwin = ViewerWindowManager::Instance()->GetWindow(i);
 
         bool match = false;
-        for(int j = 0; j < windowIds.size(); ++j)
+        for(size_t j = 0; j < windowIds.size(); ++j)
         {
             if(windowIds[j] == vwin->GetWindowId()+1)
             {
@@ -3702,7 +3705,7 @@ ViewerSubject::ExportWindow()
         GetSerializedData(i, clatts.GetImageWidth(), clatts.GetImageHeight(), clatts.GetImageResolutionPcnt(), of, elementList);
     }
 
-    for(int i = 0; i < elementList.size(); ++i)
+    for(size_t i = 0; i < elementList.size(); ++i)
         qatts->AddVars(elementList[i]);
 
     client->BroadcastToClient(qatts);
@@ -4003,7 +4006,7 @@ int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int node
         }
     }
 
-    if (tokens.size() != length)
+    if (tokens.size() != (size_t)length)
         tokens.clear();
 
     return (int)tokens.size();
@@ -4036,7 +4039,7 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
     float fval;
     double dval;
 
-    for(int i=0; i < dp->plotAttributes.size(); i++) 
+    for(size_t i=0; i < dp->plotAttributes.size(); i++) 
     {
         nodeTypeToken = getToken(dp->plotAttributes[i], true);  
         if(sscanf(nodeTypeToken.c_str(), "%d", &nodeType) != 1)
@@ -6491,7 +6494,7 @@ ViewerSubject::WriteConfigFile()
     {
         MachineProfile &pl = hpl->GetMachines(i);
         string s = pl.GetHostNickname();
-        for (int j=0; j<s.length(); j++)
+        for (size_t j=0; j<s.length(); j++)
         {
             if (s[j]>='A' && s[j]<='Z')
                 s[j] += int('a')-int('A');
@@ -7340,7 +7343,7 @@ ViewerSubject::ConnectToMetaDataServer()
            << " to connect to another client." << endl;
     debug1 << "Arguments:" << endl;
     const stringVector &sv = GetViewerState()->GetViewerRPC()->GetProgramOptions();
-    for(int i = 0; i < sv.size(); ++i)
+    for(size_t i = 0; i < sv.size(); ++i)
          debug1 << "\t" << sv[i].c_str() << endl;
 
     //
@@ -8931,7 +8934,7 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
     bool shouldBroadCastAdvancedImage = false;
     bool shouldBroadCastAdvancedData = false;
 
-    for(int i = 0; i < clients.size(); ++i)
+    for(size_t i = 0; i < clients.size(); ++i)
     {
         if(clients[i]->GetViewerClientAttributes().GetRenderingType() == ViewerClientAttributes::Image)
             shouldBroadCastAdvancedImage = true;
@@ -8946,7 +8949,7 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
 
     ViewerWindowManager* manager = ViewerWindowManager::Instance();
 
-    for(int x = 0; x < clients.size(); ++x)
+    for(size_t x = 0; x < clients.size(); ++x)
     {
         const ViewerClientAttributes& clatts = clients[x]->GetViewerClientAttributes();
 
@@ -8969,7 +8972,7 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
                 ViewerWindow* vwin = manager->GetWindow(i);
 
                 bool match = false;
-                for(int j = 0; j < activeWindows.size(); ++j)
+                for(size_t j = 0; j < activeWindows.size(); ++j)
                 {
                     if(activeWindows[j] == vwin->GetWindowId()+1)
                     {
@@ -9007,7 +9010,7 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
                 ViewerWindow* vwin = manager->GetWindow(i);
 
                 bool match = false;
-                for(int j = 0; j < activeWindows.size(); ++j)
+                for(size_t j = 0; j < activeWindows.size(); ++j)
                 {
                     if(activeWindows[j] == vwin->GetWindowId()+1)
                     {
@@ -9050,7 +9053,7 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
     ViewerClientInformation* qatts = GetViewerState()->GetViewerClientInformation();
 
     /// I am clearing memory through the ClearVars() operations..
-    for(int i = 0; i < clients.size(); ++i)
+    for(size_t i = 0; i < clients.size(); ++i)
     {
         ViewerClientAttributes& clatts = clients[i]->GetViewerClientAttributes();
 
@@ -9077,7 +9080,7 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
                 qatts->ClearVars();
 
                 ViewerClientInformationElementList& elementList = geometryElementMap[dimensions];
-                for(int k = 0; k < elementList.size(); ++k) {
+                for(size_t k = 0; k < elementList.size(); ++k) {
                     qatts->AddVars(elementList[k]);
                 }
                 clients[i]->BroadcastToClient(qatts);
@@ -9341,7 +9344,7 @@ ViewerSubject::ProcessSpecialOpcodes(int opcode)
         EngineList *engines = eM->GetEngineList();
         const stringVector &hosts = engines->GetEngineName();
         const stringVector &sims  = engines->GetSimulationName();
-        for(int i = 0; i < hosts.size(); ++i)
+        for(size_t i = 0; i < hosts.size(); ++i)
             eM->InterruptEngine(EngineKey(hosts[i], sims[i]));
     }
     else if(opcode == animationStopOpcode)
@@ -9380,7 +9383,7 @@ ViewerSubject::BroadcastToAllClients(void *data1, Subject *data2)
     if(This != 0)
     {
         AttributeSubject *subj = (AttributeSubject *)data2;
-        for(int i = 0; i < This->clients.size(); ++i)
+        for(size_t i = 0; i < This->clients.size(); ++i)
             This->clients[i]->BroadcastToClient(subj);
 
         This->BroadcastAdvanced(subj);
@@ -9524,7 +9527,7 @@ ViewerSubject::HandleClientInformation()
             debug3 << "client["<< i << "] = " << client.GetClientName().c_str()
                    << endl;
             debug3 << "methods:" << endl;
-            for(int j = 0; j < client.GetMethodNames().size(); ++j)
+            for(size_t j = 0; j < client.GetMethodNames().size(); ++j)
             {
                 debug3 << "\t" << client.GetMethod(j).c_str() << "("
                        << client.GetMethodPrototype(j).c_str() << ")" << endl;
@@ -9961,7 +9964,7 @@ ViewerSubject::OpenClient()
         cbData[0] = (void *)this;
         cbData[1] = (void *)dialog;
         stringVector args(clientArguments);
-        for(int i = 0; i < programOptions.size(); ++i)
+        for(size_t i = 0; i < programOptions.size(); ++i)
             args.push_back(programOptions[i]);
         newClient->LaunchClient(program, args, 0, 0, LaunchProgressCB, cbData);
         clients.push_back(newClient);
@@ -10473,7 +10476,7 @@ ViewerSubject::HasInterpreter() const
         ++i)
     {
         const ClientInformation &client = GetViewerState()->GetClientInformationList()->GetClients(i);
-        for(int j = 0; j < client.GetMethodNames().size() && !hasInterpreter; ++j)
+        for(size_t j = 0; j < client.GetMethodNames().size() && !hasInterpreter; ++j)
             hasInterpreter = client.GetMethod(j) == "Interpret" &&
                              client.GetMethodPrototype(j) == "s";
     }
@@ -10883,7 +10886,7 @@ ViewerSubject::ApplyNamedSelection()
     //
     TRY
     {
-        for(int i = 0; i < ePlotIDs.size(); ++i)
+        for(size_t i = 0; i < ePlotIDs.size(); ++i)
         {
             ViewerPlot *plot = plist->GetPlot(ePlotIDs[i]);
             plot->SetNamedSelection(selName);
@@ -11943,7 +11946,7 @@ ViewerSubject::OpenWithEngine(const std::string &remoteHost,
 
 void ViewerSubject::DDTConnect()
 {
-    const bool connect = (bool) GetViewerState()->GetViewerRPC()->GetIntArg1();
+    //const bool connect = (bool) GetViewerState()->GetViewerRPC()->GetIntArg1();
 
     DDTManager* manager = DDTManager::getInstance();
     DDTSession* ddt = manager->getSessionNC();

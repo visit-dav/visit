@@ -714,7 +714,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                              addme.push_back(nq);
                          }
                      }
-                     for (i = 0; i < addme.size(); i++)
+                     for (i = 0; i < (int)addme.size(); i++)
                      {
                          AddQuery(addme[i]);
                      }

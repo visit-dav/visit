@@ -142,9 +142,9 @@ void QWsSocket::dataReceived()
     BA = tcpSocket->read(1);
     byte = BA[0];
     quint8 FIN = (byte >> 7);
-    quint8 RSV1 = ((byte & 0x7F) >> 6);
-    quint8 RSV2 = ((byte & 0x3F) >> 5);
-    quint8 RSV3 = ((byte & 0x1F) >> 4);
+    //quint8 RSV1 = ((byte & 0x7F) >> 6);
+    //quint8 RSV2 = ((byte & 0x3F) >> 5);
+    //quint8 RSV3 = ((byte & 0x1F) >> 4);
     EOpcode Opcode = (EOpcode)(byte & 0x0F);
 
     // Mask, PayloadLength
@@ -231,7 +231,7 @@ void QWsSocket::dataReceivedAll()
     QByteArray BA; // ReadBuffer
     quint8 byte; // currentByteBuffer
 
-    size_t offset = 0;
+    int offset = 0;
 
     while(offset < data.size())
     {
@@ -452,7 +452,7 @@ void QWsSocket::close( QString reason )
     }
 
     // Compose and send close frame
-    quint64 messageSize = reason.size();
+    //quint64 messageSize = reason.size();
     QByteArray BA;
 
     QByteArray header = QWsSocket::composeHeader( true, OpClose, 0 );
@@ -885,7 +885,7 @@ WebSocketConnection::closeConnection()
     QObject::disconnect(socket,SIGNAL(frameReceived(QByteArray)),this, SLOT(ReadFrame(QByteArray)));
     QObject::disconnect(socket,SIGNAL(frameReceived(QString)),this, SLOT(ReadFrame(QString)));
     QObject::disconnect(socket,SIGNAL(aboutToClose()),this, SLOT(closeConnection()));
-    socket->close();
+    socket->close("closing the connection");
     socket->internalSocket()->close();
 }
 
@@ -928,7 +928,7 @@ WebSocketConnection::ReadFrame(const QString &str)
 
 WebSocketConnection::~WebSocketConnection()
 {
-    socket->close();
+    socket->close("closing the connection");
     delete socket;
 }
 
