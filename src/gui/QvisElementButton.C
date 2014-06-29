@@ -299,7 +299,7 @@ QvisElementButton::popupPressed()
         // Show the popup menu.         
         sharedpopup->move(menuX, menuY);
         sharedpopup->show();
-        setDown(FALSE);
+        setDown(false);
     }
 }
 
