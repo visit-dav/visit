@@ -2341,7 +2341,7 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
 
     // Add the different databases to the correlation.
     QString msg;
-    for(int i = 0; i < dbs.size(); ++i)
+    for(size_t i = 0; i < dbs.size(); ++i)
     {
         //
         // Split the database name into host and database components
@@ -2502,7 +2502,7 @@ ViewerFileServer::GetMostSuitableCorrelation(const stringVector &dbs) const
         const DatabaseCorrelation &c = databaseCorrelationList->
             GetCorrelations(i);
         scores[c.GetName()] = 0;
-        for(int j = 0; j < dbs.size(); ++j)
+        for(size_t j = 0; j < dbs.size(); ++j)
         {
             if(c.UsesDatabase(dbs[j]))
                 ++scores[c.GetName()];
@@ -2542,7 +2542,7 @@ ViewerFileServer::GetMostSuitableCorrelation(const stringVector &dbs) const
     // since it means that it is not a trivial correlation.
     //
     DatabaseCorrelation *retval = 0;
-    if(dbs.size() == score || score > 1)
+    if((int)dbs.size() == score || score > 1)
         retval = databaseCorrelationList->FindCorrelation(correlationName);
 
     return retval;
@@ -2604,10 +2604,10 @@ ViewerFileServer::PreviouslyDeclinedCorrelationCreation(
     const stringVector &dbs) const
 {
     int index = 0;
-    for(int fileSet = 0; fileSet < declinedFilesLength.size();
+    for(size_t fileSet = 0; fileSet < declinedFilesLength.size();
         ++fileSet)
     {
-        if(declinedFilesLength[fileSet] == dbs.size())
+        if(declinedFilesLength[fileSet] == (int)dbs.size())
         {
             bool same = true;
             for(int i = 0; i < declinedFilesLength[fileSet] && same; ++i, ++index)
@@ -2927,7 +2927,7 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
             // Map database names to source names.
             const stringVector &dbNames = corr.GetDatabaseNames();
             stringVector sourceIds;
-            for(int j = 0; j < dbNames.size(); ++j)
+            for(size_t j = 0; j < dbNames.size(); ++j)
             {
                 std::map<std::string, std::string>::const_iterator pos =
                     dbToSource.find(dbNames[j]);
@@ -3055,7 +3055,7 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
                 // database names using the sourceToDB map.
                 stringVector dbNames;
                 const stringVector &sourceNames = corr.GetDatabaseNames();
-                for(int j = 0; j < sourceNames.size(); ++j)
+                for(size_t j = 0; j < sourceNames.size(); ++j)
                 {
                     std::map<std::string,std::string>::const_iterator pos =
                         sourceToDB.find(sourceNames[j]);

@@ -94,7 +94,7 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
         virtual void Append(const unsigned char *buf, int count){}
         virtual long DirectRead(unsigned char *buf, long len){ return 0; }
         virtual long DirectWrite(const unsigned char *buf, long len) {return 0;}
-        virtual int GetDescriptor(){ return -1; }
+        virtual int GetDescriptor() const { return -1; }
         virtual bool NeedsRead(bool blocking = false) const;
     };
 

@@ -220,7 +220,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     //
     // Make sure the state is not negative.
     //
-    int state = (plotState < 0) ? 0 : plotState;
+    //int state = (plotState < 0) ? 0 : plotState;
 
     //
     // Initialize some values.
@@ -1670,7 +1670,7 @@ ViewerPlot::SetVariableName(const std::string &name)
                     avtSILRestriction_p new_sil = 
                                                new avtSILRestriction(silr);
                     int topSet = 0;
-                    for (int i = 0; i < new_sil->GetWholes().size(); i++)
+                    for (size_t i = 0; i < new_sil->GetWholes().size(); i++)
                     {
                         current = 
                                new_sil->GetSILSet(new_sil->GetWholes()[i]);
@@ -1742,7 +1742,7 @@ ViewerPlot::SetVariableName(const std::string &name)
     OperatorPluginManager *oPM = GetOperatorPluginManager();
     for (int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
-        const std::string &mesh = GetMeshName();
+        //const std::string &mesh = GetMeshName();
         std::string id = oPM->GetEnabledID(j);
         CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
         const avtDatabaseMetaData *md = GetMetaData();

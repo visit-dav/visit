@@ -194,21 +194,21 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             debug1 << "See warning message for possible causes" << endl;
             EXCEPTION0(CouldNotConnectException);
         }
-
+        size_t result = 0; (void) result;
         // Write output to stderr
-        write(STDERR_FILENO, pbuf, nread);
+        result = write(STDERR_FILENO, pbuf, nread);
 
         pbuf += nread;
         *pbuf = '\0';
 
         if (strstr(buffer, "continue connecting (yes/no)?"))
         {
-            write(fd, "yes\n", 4);
+            result = write(fd, "yes\n", 4);
             pbuf = buffer;
         }
         else if (strstr(buffer, "continue connecting(yes/no)?"))
         {
-            write(fd, "yes\n", 4);
+            result = write(fd, "yes\n", 4);
             pbuf = buffer;
         }
         else if (strstr(buffer, "assword") ||
@@ -233,8 +233,8 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
                 }
             }
 
-            write(fd, passwd.c_str(), passwd.size());
-            write(fd, "\n", 1);
+            result = write(fd, passwd.c_str(), passwd.size());
+            result = write(fd, "\n", 1);
             pbuf = buffer;
 
             // We put up the password window, have zero timeout for
@@ -260,8 +260,8 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
                 }
             }
 
-            write(fd, passphr.c_str(), passphr.size());
-            write(fd, "\n", 1);
+            result = write(fd, passphr.c_str(), passphr.size());
+            result = write(fd, "\n", 1);
             pbuf = buffer;
 
             // We put up the password window, have zero timeout for

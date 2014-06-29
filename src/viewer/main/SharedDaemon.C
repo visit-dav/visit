@@ -365,7 +365,7 @@ void SharedDaemon::handleConnection()
     {
         const JSONNode::JSONArray& array = jo["windowIds"].GetArray();
 
-        for(int i = 0; i < array.size(); ++i)
+        for(size_t i = 0; i < array.size(); ++i)
         {
             const JSONNode& node = array[i];
 
@@ -509,7 +509,7 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
         if(wsocket->internalSocket()->state() != QAbstractSocket::UnconnectedState)
             wsocket->internalSocket()->waitForBytesWritten();
 
-        wsocket->close();
+        wsocket->close("");
         wsocket->internalSocket()->disconnectFromHost();
         if(wsocket->internalSocket()->state() != QAbstractSocket::UnconnectedState)
             wsocket->internalSocket()->waitForDisconnected();

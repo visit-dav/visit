@@ -1146,7 +1146,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
         // for queries.  Regenerate them with SLB.
         //
         bool clearedActor = false;
-        for (int i = 0 ; i < plotIds.size() ; i++)
+        for (size_t i = 0 ; i < plotIds.size() ; i++)
         {
             int plotId = plotIds[i];
             ViewerPlot *plot = plist->GetPlot(plotId);
@@ -1272,7 +1272,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
     {
         retry = false;
         intVector networkIds;
-        for (int i = 0 ; i < plotIds.size() ; i++)
+        for (size_t i = 0 ; i < plotIds.size() ; i++)
         {
             int plotId = plotIds[i];
             ViewerPlot *oplot = plist->GetPlot(plotId);
@@ -1332,7 +1332,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
                 // is created. This situation requires re-execution of the
                 // plot that is being queried.
                 //
-                for (int i = 0 ; i < plotIds.size() ; i++)
+                for (size_t i = 0 ; i < plotIds.size() ; i++)
                     plist->GetPlot(plotIds[i])->ClearCurrentActor();
                 win->GetPlotList()->UpdateFrame();
                 numAttempts++;
@@ -1388,7 +1388,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
         ViewerPlotList *plist = win->GetPlotList();
         intVector plotIDs;
         plist->GetActivePlotIDs(plotIDs);
-        for (int i = 0 ; i < plotIDs.size() ; i++)
+        for (size_t i = 0 ; i < plotIDs.size() ; i++)
         {
             int plotId = plotIDs[i];
             ViewerPlot *plot = plist->GetPlot(plotId);
@@ -2139,7 +2139,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         GetUniqueVars(useTheseVars, activeVar, uniqueVars, plot->GetMetaData());
         stringVector validVars;
         stringVector invalidVars;
-        for (int i = 0; i < uniqueVars.size(); i++)
+        for (size_t i = 0; i < uniqueVars.size(); i++)
         {
             if (plot->GetVarType(uniqueVars[i]) != AVT_UNKNOWN_TYPE)
                 validVars.push_back(uniqueVars[i]);
@@ -2458,10 +2458,10 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 if (!GetPlotPluginManager()->PluginAvailable(
                                                             "Spreadsheet_1.0"))
                 {
-                    static bool issuedWarning = false;
+                    //static bool issuedWarning = false;
                     Error(tr("Could not create a spreadsheet with the pick, "
                           "because the spreadsheet plugin is not available."));
-                    issuedWarning = true;
+                    //issuedWarning = true;
                     return retval;
                 }
 
@@ -2633,7 +2633,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             }
             if (haveArray)
             {
-                int winId = win->GetWindowId();
+                //int winId = win->GetWindowId();
                 ViewerWindow *resWin =
                        ViewerWindowManager::Instance()->GetTimeQueryWindow(-1);
                 if (resWin == NULL)
@@ -2646,11 +2646,11 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 if (!GetPlotPluginManager()->PluginAvailable(
                                                               "Histogram_1.0"))
                 {
-                    static bool issuedWarning = false;
+                    //static bool issuedWarning = false;
                     Error(tr("Could not create a histogram of the array "
                              "variable, because the Histogram plugin is not "
                              "available."));
-                    issuedWarning = true;
+                    //issuedWarning = true;
                     return retval;
                 }
 
@@ -3351,7 +3351,7 @@ void
 ViewerQueryManager::HandlePickCache()
 {
     handlingCache = true;
-    for (int i = 0; i < pickCache.size(); i++)
+    for (size_t i = 0; i < pickCache.size(); i++)
     {
         Pick(&pickCache[i]);
     }
@@ -3878,7 +3878,7 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
         uniqueVars.push_back(activeVar);
         return;
     }
-    int i, j;
+    size_t i, j;
     set<string> uniqueVarsSet;
     for (i = 0; i < vars.size(); i++)
     {
@@ -4253,7 +4253,7 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
     int allowedTypes = queryTypes->AllowedVarsForQuery(qName);
     if (allowedTypes > 0)
     {
-        for (i = 0; i < varTypes.size() && badIndex == -1; i++)
+        for (i = 0; i < (int)varTypes.size() && badIndex == -1; i++)
         {
            int vt = (int) pow(2.0, varTypes[i]);
            if (!(allowedTypes & vt))
@@ -5224,7 +5224,7 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
             // to be modified to potentially use a different state for each
             // dbname/var pair.
             //
-            for (int j = 0; j < uniqueVars.size(); j++)
+            for (size_t j = 0; j < uniqueVars.size(); j++)
             {
                 varTypes.push_back((int)
                     fs->DetermineVarType(host, dbname, uniqueVars[j], state));
@@ -5241,7 +5241,7 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
                 CATCH_RETURN2(1, false);
             }
         }
-        int nv = queryTypes->NumberOfVarsForQuery(qName);
+        size_t nv = queryTypes->NumberOfVarsForQuery(qName);
         if (nv > 1 && nv != uniqueVars.size())
         {
             queryClientAtts->Notify();
@@ -5329,7 +5329,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         // Make sure the number of active plots jives with the expected number
         // of inputs for the query.
         //
-        if (plotIds.size() != numInputs)
+        if (plotIds.size() != (size_t)numInputs)
         {
             queryClientAtts->Notify();
             QString msg = tr("%1 requires exactly %2 plots to be selected, "
@@ -5344,7 +5344,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         //
         // Determine if the engineKeys for all inputs match.
         //
-        for (int i = 0 ; i < plotIds.size() ; i++)
+        for (size_t i = 0 ; i < plotIds.size() ; i++)
         {
             int plotId = plotIds[i];
             ViewerPlot *oplot = plist->GetPlot(plotId);
@@ -5542,7 +5542,7 @@ ViewerQueryManager::FinishLineQuery()
 {
     if (lineoutCache.origWin != NULL)
     {
-        for (int i = 0; i < lineoutCache.vars.size(); i++)
+        for (size_t i = 0; i < lineoutCache.vars.size(); i++)
         {
             lineoutCache.line.SetVarName(lineoutCache.vars[i]);
             AddQuery(lineoutCache.origWin, &lineoutCache.line,

@@ -3609,7 +3609,7 @@ ViewerWindowManager::AskForCorrelationPermission(const QString &msg,
         // Pop up a Qt dialog to ask the user whether or not to correlate
         // the specified databases.
         QString text(msg); text += "\n";
-        for(int i = 0; i < dbs.size(); ++i)
+        for(size_t i = 0; i < dbs.size(); ++i)
             text += (QString(dbs[i].c_str()) + QString("\n"));
 
         viewerSubject->BlockSocketSignals(true);
@@ -3667,7 +3667,7 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
         // number of databases in the dbs list then ask the user if the
         // correlation should be modfified.
         //
-        if(correlation->GetNumDatabases() < dbs.size())
+        if((size_t)correlation->GetNumDatabases() < dbs.size())
         {
             msg = tr("Would you like to modify the %1 correlation so "
                      "it correlates the following databases?").
@@ -3798,7 +3798,7 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
         // old time slider in each window to set the state for the new 
         // time slider.
         //
-        for(int i = 0; i < windowIds.size(); ++i)
+        for(size_t i = 0; i < windowIds.size(); ++i)
         {
             ViewerPlotList *pl = windows[windowIds[i]]->GetPlotList();
             if(correlation != 0 && pl->HasActiveTimeSlider())
@@ -3938,7 +3938,7 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
             // window that has locked time and copy its time.
             //
             int winner = -1;
-            for (int i = 0; i < windowIds.size(); ++i)
+            for (size_t i = 0; i < windowIds.size(); ++i)
             {
                 if (windowIds[i] != index)
                 {
@@ -6043,7 +6043,7 @@ ViewerWindowManager::SynchronizeTimeLockedWindows(int windowIndex, int state)
     {
         QString badList;
         char tmp[50];
-        for (int j = 0; j < badWindowIds.size(); ++j)
+        for (size_t j = 0; j < badWindowIds.size(); ++j)
         {
             SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
             badList += tmp;
@@ -6503,7 +6503,7 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
                         if(dbs.size() > 0)
                         {
                             bool usedAll = true;
-                            for(int j = 0; j < dbs.size() && usedAll; ++j)
+                            for(size_t j = 0; j < dbs.size() && usedAll; ++j)
                                 usedAll &= correlation->UsesDatabase(dbs[j]);
                             if(!usedAll)
                                 badWindowIds.push_back(i);
@@ -6528,7 +6528,7 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
             {
                 QString badList;
                 char tmp[50];
-                for (int j = 0; j < badWindowIds.size(); ++j)
+                for (size_t j = 0; j < badWindowIds.size(); ++j)
                 {
                     SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
                     badList += tmp;
@@ -6885,7 +6885,7 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
     ViewerFileServer *fs = ViewerFileServer::Instance();
     DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
  
-    for(int i = 0; i < windowIds.size(); ++i)
+    for(size_t i = 0; i < windowIds.size(); ++i)
     {
         int index = windowIds[i];
         if(index >= 0 && index < maxWindows && windows[index] != 0)
@@ -7131,8 +7131,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
     //
     stringVector sources(fs->GetOpenDatabases());
     bool usingDatabase = false;
-    int i;
-    for(i = 0; i < sources.size() && !usingDatabase; ++i)
+    for(size_t i = 0; i < sources.size() && !usingDatabase; ++i)
     {
         debug4 << "source[" << i << "] = " << sources[i].c_str() << endl;
         usingDatabase |= (sources[i] == hDB);
@@ -7158,7 +7157,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
 
             debug4 << mName << "Current time steps for " << hDB.c_str()
                    << ": " << endl;
-            for(i = 0; i < originalTSNames.size(); ++i)
+            for(size_t i = 0; i < originalTSNames.size(); ++i)
                 debug4 << originalTSNames[i].c_str() << ", " << endl;
             debug4 << endl;
 
@@ -7167,7 +7166,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
             // state from the database that we're essentially reopening.
             //
             int timeState = 0;
-            for(i = 0; i < maxWindows; ++i)
+            for(int i = 0; i < maxWindows; ++i)
             {
                 if(windows[i] != 0)
                 {
@@ -7200,7 +7199,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
 
                 debug4 << mName << "New time steps for " << hDB.c_str()
                        << ": " << endl;
-                for(i = 0; i < newTSNames.size(); ++i)
+                for(size_t i = 0; i < newTSNames.size(); ++i)
                     debug4 << newTSNames[i].c_str() << ", " << endl;
                 debug4 << endl;
 
@@ -7210,7 +7209,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                 //
                 DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
                 stringVector alteredCorrelations;
-                for(i = 0; i < cL->GetNumCorrelations(); ++i)
+                for(int i = 0; i < cL->GetNumCorrelations(); ++i)
                 {
                     DatabaseCorrelation &correlation = cL->operator[](i);
                     if(correlation.UsesDatabase(hDB))
@@ -7254,14 +7253,14 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                 // and cache sizes.
                 //
                 bool clearCache = true;
-                bool oneTSPerFile = (originalTSNames.size() == originalNStates &&
-                   newTSNames.size() == newNStates);
+                bool oneTSPerFile = (originalTSNames.size() == (size_t)originalNStates &&
+                   newTSNames.size() == (size_t)newNStates);
                 if(oneTSPerFile)
                 {
                     int n = static_cast<int>((originalTSNames.size() < newTSNames.size()) ? 
                     originalTSNames.size() : newTSNames.size());
                     bool same = true;
-                    for(i = 0; i < n && same; ++i)
+                    for(int i = 0; i < n && same; ++i)
                         same &= (originalTSNames[i] == newTSNames[i]);
                     clearCache = !same;
                     debug4 << mName << "Need to clear actor cache: "
@@ -7294,7 +7293,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                 // sure to adjust their cache sizes if needed.
                 //
                 bool expressionListUpdated = false;
-                for(i = 0; i < maxWindows; ++i)
+                for(int i = 0; i < maxWindows; ++i)
                 {
                     if(windows[i] != 0)
                     { 
@@ -9737,7 +9736,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
     if(windowsNode == 0)
         return;
 
-    int i, c;
+    int i;
     DataNode *sizeNode = 0;
     DataNode *locationNode = 0;
 
@@ -9796,7 +9795,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
 
     // Loop over the windows we have and set their sizes and locations.
     int windowSizeIdx = 0;
-    for(i = 0, c = 0; i < maxWindows; ++i)
+    for(i = 0; i < maxWindows; ++i)
     {
         if(windows[i] != 0 && windowSizeIdx < nWindowSizeLoc)
         {
@@ -9943,7 +9942,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
                 windows[i]->GetPlotList()->UpdateFrameForPlots(origPlots);
 
                 // Now create the selections that use those originating plots.
-                for(int j = 0; j < origPlots.size(); ++j)
+                for(size_t j = 0; j < origPlots.size(); ++j)
                 {
                     TRY
                     {

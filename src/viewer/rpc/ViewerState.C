@@ -182,7 +182,7 @@ ViewerState::ViewerState(const ViewerState &vs) : objVector()
 ViewerState::~ViewerState()
 {
     // Delete the objects through the objVector.
-    for(int i = 0; i < objVector.size(); ++i)
+    for(size_t i = 0; i < objVector.size(); ++i)
     {
         if(objVector[i].owns)
             delete objVector[i].object;
@@ -212,14 +212,14 @@ ViewerState::~ViewerState()
 AttributeSubject *
 ViewerState::GetStateObject(int i)
 {
-    return (i >= 0 && i < objVector.size()) ?
+    return (i >= 0 && (size_t)i < objVector.size()) ?
            objVector[i].object : 0;
 }
 
 const AttributeSubject *
 ViewerState::GetStateObject(int i) const
 {
-    return (i >= 0 && i < objVector.size()) ?
+    return (i >= 0 && (size_t)i < objVector.size()) ?
            objVector[i].object : 0;
 }
 
@@ -242,7 +242,7 @@ ViewerState::GetStateObject(int i) const
 bool
 ViewerState::GetPartialSendFlag(int i) const
 {
-    return (i >= 0 && i < objVector.size()) ?
+    return (i >= 0 && (size_t)i < objVector.size()) ?
            objVector[i].partialSend : false;
 }
 
@@ -353,7 +353,7 @@ void
 ViewerState::UpdatePointer(AttributeSubject *oldValue, AttributeSubject *newValue,
     bool owns)
 {
-    for(int i = 0; i < objVector.size(); ++i)
+    for(size_t i = 0; i < objVector.size(); ++i)
     {
         if(objVector[i].object == oldValue)
         {
@@ -501,7 +501,7 @@ AttributeSubject *
 ViewerState::GetPlotAttributes(int n) const
 {
     int count = 0;
-    for(int i = 0; i < objVector.size(); ++i)
+    for(size_t i = 0; i < objVector.size(); ++i)
     {
         if(objVector[i].objPurpose == PlotState)
         {
@@ -537,7 +537,7 @@ PlotInfoAttributes *
 ViewerState::GetPlotInformation(int n) const
 {
     int count = 0;
-    for(int i = 0; i < objVector.size(); ++i)
+    for(size_t i = 0; i < objVector.size(); ++i)
     {
         if(objVector[i].objPurpose == PlotInformation)
         {
@@ -573,7 +573,7 @@ AttributeSubject *
 ViewerState::GetOperatorAttributes(int type) const
 {
     int count = 0;
-    for(int i = 0; i < objVector.size(); ++i)
+    for(size_t i = 0; i < objVector.size(); ++i)
     {
         if(objVector[i].objPurpose == OperatorState)
         {

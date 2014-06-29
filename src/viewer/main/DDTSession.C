@@ -67,7 +67,7 @@
 // ****************************************************************************
 
 DDTSession::DDTSession(const QString server) :
-    mErrorText(QString::null), mServer(server), mSocket(NULL)
+    mSocket(NULL), mErrorText(QString::null), mServer(server)
 {
     mSocket = new QLocalSocket(this);
 

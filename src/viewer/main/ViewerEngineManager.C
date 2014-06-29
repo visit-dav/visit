@@ -572,7 +572,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
     stringVector eArgs;
     if (newEngine.profile.GetActiveLaunchProfile()) 
         eArgs = newEngine.profile.GetActiveLaunchProfile()->GetArguments();
-    for(int s = 0; s < args.size(); ++s)
+    for(size_t s = 0; s < args.size(); ++s)
         eArgs.push_back(args[s]);
     if (newEngine.profile.GetActiveLaunchProfile()) 
         newEngine.profile.GetActiveLaunchProfile()->SetArguments(eArgs);
@@ -875,7 +875,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
            << " ek.originalhostname=" << ek.OriginalHostName()
            << " ek.SimName=" << ek.SimName();
     debug1 << " args={";
-    for(int i = 0; i < args.size(); ++i)
+    for(size_t i = 0; i < args.size(); ++i)
         debug1 << args[i] << ", ";
     debug1 << "} simHost=" << simHost << " simPort=" << simPort
            << " simSecurityKey=" << simSecurityKey << endl;
@@ -1557,7 +1557,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                                     int windowID)
 {
     // break-out individual members of the request info
-    const vector<string> &plotNames                  = reqInfo.plotNames;
+    //const vector<string> &plotNames                  = reqInfo.plotNames;
     const vector<const char*>& pluginIDsList         = reqInfo.pluginIDsList;
     const vector<EngineKey>& engineKeysList          = reqInfo.engineKeysList;
     const vector<int>& plotIdsList                   = reqInfo.plotIdsList;
@@ -1578,7 +1578,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
     map<EngineKey,vector<int> > perEnginePlotIds;
 
     // make a pass over list of plots to make sure all associated engines exist
-    for (int i = 0; i < engineKeysList.size(); i++)
+    for (size_t i = 0; i < engineKeysList.size(); i++)
     {
         if (!EngineExists(engineKeysList[i]))
             return false;
@@ -1592,7 +1592,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 #endif
 
         // build list of per-engine plot ids
-        int i;
+        size_t i;
         for (i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
@@ -2731,7 +2731,7 @@ ViewerEngineManager::UpdateEngineList()
     EngineList newEL;
 
     // Add the other information about the engine.
-    for(i = 0; i < ids.size(); ++i) 
+    for(i = 0; i < (int)ids.size(); ++i) 
     {
         EngineKey ek = ids[i];
         if (EngineExists(ek))

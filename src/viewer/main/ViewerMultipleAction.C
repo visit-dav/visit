@@ -66,8 +66,8 @@
 // ****************************************************************************
 
 ViewerMultipleAction::ViewerMultipleAction(ViewerWindow *win) : 
-    ViewerActionBase(win), children(), text(), menuText(),
-    toolTip(), icon()
+    ViewerActionBase(win), text(), menuText(),
+    toolTip(), icon(), children()
 {
     iconSpecified = false;
     activeAction = 0;
@@ -157,7 +157,7 @@ bool
 ViewerMultipleAction::Enabled() const
 {
     bool someEnabled = false;
-    for(int i = 0; i < children.size() && !someEnabled; ++i)
+    for(size_t i = 0; i < children.size() && !someEnabled; ++i)
         someEnabled |= ChoiceEnabled(i);
 
     return someEnabled;
@@ -279,7 +279,7 @@ ViewerMultipleAction::Update()
 
     // Update the child actions
     bool foundTrue = false;
-    for(int i = 0; i < children.size(); ++i)
+    for(size_t i = 0; i < children.size(); ++i)
     {
         bool choiceShouldBeEnabled = actionShouldBeEnabled ? ChoiceEnabled(i) : false;
         if(choiceShouldBeEnabled)
@@ -533,7 +533,7 @@ ViewerMultipleAction::ConstructMenu(QMenu *menu)
     else
         actionMenu = menu->addMenu(menuText);
 
-    for(int i = 0; i < children.size(); ++i)
+    for(size_t i = 0; i < children.size(); ++i)
         actionMenu->addAction(children[i]);
 }
 
@@ -558,7 +558,7 @@ ViewerMultipleAction::RemoveFromMenu(QMenu *menu)
 {
     if(actionMenu != 0)
     {
-        for(int i = 0; i < children.size(); ++i)
+        for(size_t i = 0; i < children.size(); ++i)
             actionMenu->removeAction(children[i]);
         delete actionMenu;
     }

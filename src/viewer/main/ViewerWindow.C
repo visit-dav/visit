@@ -345,7 +345,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     // Callback for render information.
     //
     visWindow->SetRenderInfoCallback(ViewerWindowManager::RenderInformationCallback,
-        (void *)windowIndex);
+        (void *)((size_t)windowId)); ///TODO: check if cast to size_t to remove int-to-pointer-cast warning is proper
 
     //
     // Callback for pick.
@@ -5479,12 +5479,13 @@ ViewerWindow::UpdateViewCurve(const double *limits)
     // The recentering uses the current limits or the merged limits from
     // the previous plots based on the mergeViewLimits flag.
     //
+    //TODO: check on fixed parentheses warning
     else if (centeringValidCurve == false ||
-             maintainView == false && viewModifiedCurve == false &&
+             (maintainView == false && viewModifiedCurve == false &&
              (limits[0] != boundingBoxCurve[0] ||
               limits[1] != boundingBoxCurve[1] ||
               limits[2] != boundingBoxCurve[2] ||
-              limits[3] != boundingBoxCurve[3]))
+              limits[3] != boundingBoxCurve[3])))
     {
         if (centeringValidCurve == true && mergeViewLimits == true)
         {
@@ -5636,10 +5637,11 @@ ViewerWindow::UpdateView2d(const double *limits)
     // The recentering uses the current limits or the merged limits from
     // the previous plots based on the mergeViewLimits flag.
     //
+    // TODO: check on fixed parentheses warning
     else if (centeringValid2d == false ||
-             maintainView == false && viewModified2d == false &&
+             (maintainView == false && viewModified2d == false &&
              (limits[0] != boundingBox2d[0] || limits[1] != boundingBox2d[1] ||
-              limits[2] != boundingBox2d[2] || limits[3] != boundingBox2d[3]))
+              limits[2] != boundingBox2d[2] || limits[3] != boundingBox2d[3])))
     {
         if (centeringValid2d == true && mergeViewLimits == true)
         {
@@ -5784,10 +5786,11 @@ ViewerWindow::UpdateView3d(const double *limits)
     // limits or the merged limits from the previous plots based on the
     // mergeViewLimits flag.
     //
-    else if (centeringValid3d == false || maintainView == false &&
+    // TODO: check on fix for parentheses warning
+    else if (centeringValid3d == false || (maintainView == false &&
              (limits[0] != boundingBox3d[0] || limits[1] != boundingBox3d[1] ||
               limits[2] != boundingBox3d[2] || limits[3] != boundingBox3d[3] ||
-              limits[4] != boundingBox3d[4] || limits[5] != boundingBox3d[5]))
+              limits[4] != boundingBox3d[4] || limits[5] != boundingBox3d[5])))
     {
         if (centeringValid3d == true && mergeViewLimits == true)
         {
@@ -5857,7 +5860,7 @@ ViewerWindow::UpdateViewAxisArray(const double *limits)
 
         boundingBoxValidAxisArray = true;
         centeringValidAxisArray   = true;
-        const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
+        //const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
 
         if (!viewSetInAxisArray)
         {
@@ -5879,12 +5882,13 @@ ViewerWindow::UpdateViewAxisArray(const double *limits)
     // The recentering uses the current limits or the merged limits from
     // the previous plots based on the mergeViewLimits flag.
     //
+    // TODO: check on fixed parentheses warning
     else if (centeringValidAxisArray == false ||
-             maintainView == false && viewModifiedAxisArray == false &&
+             (maintainView == false && viewModifiedAxisArray == false &&
              (limits[0] != boundingBoxAxisArray[0] ||
               limits[1] != boundingBoxAxisArray[1] ||
               limits[2] != boundingBoxAxisArray[2] ||
-              limits[3] != boundingBoxAxisArray[3]))
+              limits[3] != boundingBoxAxisArray[3])))
     {
         if (centeringValidAxisArray == true && mergeViewLimits == true)
         {
@@ -5913,7 +5917,7 @@ ViewerWindow::UpdateViewAxisArray(const double *limits)
     //
     else
     {
-        const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
+        //const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
         visWindow->UpdateView();
     }
 
@@ -6746,7 +6750,7 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
         if (ViewerEngineManager::Instance()->EngineExists(key))
         {
             intVector netIds;
-            for (int i = 0; i < plotIds.size(); i++)
+            for (size_t i = 0; i < plotIds.size(); i++)
             {
                 netIds.push_back(plist->GetPlot(plotIds[i])->GetNetworkID());
             }
@@ -9060,7 +9064,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     if((node = windowNode->GetNode("activeTools")) != 0)
     {
         const stringVector &activeTools = node->AsStringVector();
-        for(int i = 0; i < activeTools.size(); ++i)
+        for(size_t i = 0; i < activeTools.size(); ++i)
         {
             for(int j = 0; j < GetNumTools(); ++j)
             {
@@ -9411,7 +9415,7 @@ void
 ViewerWindow::UpdateLastExternalRenderRequestInfo(
     const ExternalRenderRequestInfo &newRequest)
 {
-    int i = 0;
+    size_t i = 0;
 
     // delete any old copies of plot attributes
     for (i = 0; i < lastExternalRenderRequest.plotIdsList.size(); i++)
@@ -9589,7 +9593,7 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         return false;
 
     bool sameFrameAndState = true;
-    int i;
+    size_t i;
     for (i = 0; i < 7; i++)
     {
         if (thisRequest.frameAndState[i] != lastRequest.frameAndState[i])
@@ -9621,7 +9625,7 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     {
         // search for index of current plot in last list
         int indexOfPlotInLastList = -1;
-        for (int j = 0; j < lastRequest.plotIdsList.size(); j++)
+        for (size_t j = 0; j < lastRequest.plotIdsList.size(); j++)
         {
             if ((lastRequest.plotIdsList[j] == thisRequest.plotIdsList[i]) &&
                 (lastRequest.engineKeysList[j] == thisRequest.engineKeysList[i]))
@@ -9838,7 +9842,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
         int numCols = thisRequest.winAtts.GetSize()[0];
 
         imageCompositer.SetOutputImageSize(numRows, numCols);
-        for (int i = 0; i < imgList.size(); i++)
+        for (size_t i = 0; i < imgList.size(); i++)
             imageCompositer.AddImageInput(imgList[i], 0, 0);
         imageCompositer.Execute();
         dob = imageCompositer.GetOutput();
@@ -10092,7 +10096,7 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 void
 ViewerWindow::ViewChangedCallback(void *data)
 {
-    unsigned char* argsBuf = (unsigned char*) data;
+    //unsigned char* argsBuf = (unsigned char*) data;
     ViewerWindow *win;
 
     win = (ViewerWindow *)data;
