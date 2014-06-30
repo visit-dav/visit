@@ -73,8 +73,8 @@ static PyObject *NewKeyframeAttributes(int);
 std::string
 PyKeyframeAttributes_ToString(const KeyframeAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetEnabled())
         SNPRINTF(tmpStr, 1000, "%senabled = 1\n", prefix);

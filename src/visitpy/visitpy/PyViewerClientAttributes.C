@@ -73,8 +73,8 @@ static PyObject *NewViewerClientAttributes(int);
 std::string
 PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     const char *renderingType_names = "None, Image, Data";
     switch (atts->GetRenderingType())

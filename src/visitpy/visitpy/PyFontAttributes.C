@@ -74,8 +74,8 @@ static PyObject *NewFontAttributes(int);
 std::string
 PyFontAttributes_ToString(const FontAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     const char *font_names = "Arial, Courier, Times";
     switch (atts->GetFont())

@@ -73,8 +73,8 @@ static PyObject *NewGlobalAttributes(int);
 std::string
 PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const stringVector &sources = atts->GetSources();
         SNPRINTF(tmpStr, 1000, "%ssources = (", prefix);

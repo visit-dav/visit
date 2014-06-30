@@ -73,8 +73,8 @@ static PyObject *NewPrinterAttributes(int);
 std::string
 PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sprinterName = \"%s\"\n", prefix, atts->GetPrinterName().c_str());
     str += tmpStr;

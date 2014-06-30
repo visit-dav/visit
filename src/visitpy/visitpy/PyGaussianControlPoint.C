@@ -73,8 +73,8 @@ static PyObject *NewGaussianControlPoint(int);
 std::string
 PyGaussianControlPoint_ToString(const GaussianControlPoint *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sx = %g\n", prefix, atts->GetX());
     str += tmpStr;

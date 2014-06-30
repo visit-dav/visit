@@ -73,8 +73,8 @@ static PyObject *NewSaveSubWindowAttributes(int);
 std::string
 PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const int *position = atts->GetPosition();
         SNPRINTF(tmpStr, 1000, "%sposition = (", prefix);

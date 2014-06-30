@@ -74,8 +74,8 @@ static PyObject *NewLightAttributes(int);
 std::string
 PyLightAttributes_ToString(const LightAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetEnabledFlag())
         SNPRINTF(tmpStr, 1000, "%senabledFlag = 1\n", prefix);

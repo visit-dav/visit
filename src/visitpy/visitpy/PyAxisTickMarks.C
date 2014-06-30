@@ -73,8 +73,8 @@ static PyObject *NewAxisTickMarks(int);
 std::string
 PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);

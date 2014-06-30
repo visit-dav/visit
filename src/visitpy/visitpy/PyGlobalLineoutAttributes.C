@@ -73,8 +73,8 @@ static PyObject *NewGlobalLineoutAttributes(int);
 std::string
 PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetDynamic())
         SNPRINTF(tmpStr, 1000, "%sDynamic = 1\n", prefix);

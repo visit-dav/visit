@@ -74,8 +74,8 @@ static PyObject *NewPickAttributes(int);
 std::string
 PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const stringVector &variables = atts->GetVariables();
         SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);

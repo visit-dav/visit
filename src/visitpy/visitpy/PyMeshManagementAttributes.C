@@ -73,8 +73,8 @@ static PyObject *NewMeshManagementAttributes(int);
 std::string
 PyMeshManagementAttributes_ToString(const MeshManagementAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const doubleVector &discretizationTolerance = atts->GetDiscretizationTolerance();
         SNPRINTF(tmpStr, 1000, "%sdiscretizationTolerance = (", prefix);

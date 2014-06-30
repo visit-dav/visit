@@ -73,8 +73,8 @@ static PyObject *NewThresholdOpAttributes(int);
 std::string
 PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%soutputMeshType = %d\n", prefix, atts->GetOutputMeshType());
     str += tmpStr;

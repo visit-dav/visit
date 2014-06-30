@@ -74,8 +74,8 @@ static PyObject *NewGaussianControlPointList(int);
 std::string
 PyGaussianControlPointList_ToString(const GaussianControlPointList *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     { // new scope
         int index = 0;

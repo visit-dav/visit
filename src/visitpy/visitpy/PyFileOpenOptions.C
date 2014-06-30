@@ -74,8 +74,8 @@ static PyObject *NewFileOpenOptions(int);
 std::string
 PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const stringVector &typeNames = atts->GetTypeNames();
         SNPRINTF(tmpStr, 1000, "%stypeNames = (", prefix);

@@ -74,8 +74,8 @@ static PyObject *NewRenderingAttributes(int);
 std::string
 PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetAntialiasing())
         SNPRINTF(tmpStr, 1000, "%santialiasing = 1\n", prefix);

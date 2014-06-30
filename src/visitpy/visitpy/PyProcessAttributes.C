@@ -73,8 +73,8 @@ static PyObject *NewProcessAttributes(int);
 std::string
 PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const intVector &pids = atts->GetPids();
         SNPRINTF(tmpStr, 1000, "%spids = (", prefix);

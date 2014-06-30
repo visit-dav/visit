@@ -75,8 +75,8 @@ static PyObject *NewAxes2D(int);
 std::string
 PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);

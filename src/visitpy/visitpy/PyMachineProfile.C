@@ -74,8 +74,8 @@ static PyObject *NewMachineProfile(int);
 std::string
 PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;

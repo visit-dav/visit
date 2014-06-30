@@ -73,8 +73,8 @@ static PyObject *NewInteractorAttributes(int);
 std::string
 PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetShowGuidelines())
         SNPRINTF(tmpStr, 1000, "%sshowGuidelines = 1\n", prefix);

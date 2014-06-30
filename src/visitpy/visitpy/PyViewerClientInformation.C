@@ -74,8 +74,8 @@ static PyObject *NewViewerClientInformation(int);
 std::string
 PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     { // new scope
         int index = 0;

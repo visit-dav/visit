@@ -74,8 +74,8 @@ static PyObject *NewColorTableAttributes(int);
 std::string
 PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const stringVector &names = atts->GetNames();
         SNPRINTF(tmpStr, 1000, "%snames = (", prefix);

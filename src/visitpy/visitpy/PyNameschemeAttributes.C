@@ -73,8 +73,8 @@ static PyObject *NewNameschemeAttributes(int);
 std::string
 PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%snamescheme = \"%s\"\n", prefix, atts->GetNamescheme().c_str());
     str += tmpStr;
