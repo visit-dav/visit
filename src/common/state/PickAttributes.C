@@ -4599,8 +4599,6 @@ PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
 #endif
     }
 
-    //char buff[512];
-   
     std::string fileName; 
     size_t pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
