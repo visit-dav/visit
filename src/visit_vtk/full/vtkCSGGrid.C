@@ -285,46 +285,10 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     if (cos_theta < 0.0) cos_theta = -cos_theta;
     double theta = acos(cos_theta);
 
-    // compute length of spatial box diagonal
-//    double db =  sqrt((upper(X)-lower(X)) * (upper(X)-lower(X)) +
-//                      (upper(Y)-lower(Y)) * (upper(Y)-lower(Y)) +
-//                      (upper(Z)-lower(Z)) * (upper(Z)-lower(Z)));
-
-    //if (((1-cos(theta/2)) / (2*sin(theta/2))) < tol)
-    //    return true;
     if (2*sin(theta/2) < tol)
         return true;
+
     return false;
-
-#if 0
-    // compute estimate of radius of curvature of this surface
-    double r = (db / 2.0) / sin(theta / 2.0);
-
-    if (r > tol)
-        return true;
-    return false;
-#endif
-
-#if 0
-    // square of length of box diagonal 
-    double db =  (upper(gradX)-lower(gradX)) * (upper(gradX)-lower(gradX)) +
-                 (upper(gradY)-lower(gradY)) * (upper(gradY)-lower(gradY)) +
-                 (upper(gradZ)-lower(gradZ)) * (upper(gradZ)-lower(gradZ));
-
-    // square of distance to center of box 
-    double dc = ((upper(gradX)+lower(gradX)) * (upper(gradX)+lower(gradX)) +
-                 (upper(gradY)+lower(gradY)) * (upper(gradY)+lower(gradY)) +
-                 (upper(gradZ)+lower(gradZ)) * (upper(gradZ)+lower(gradZ))) / 4.0;
-
-    if (dc < 0.0) dc = -dc;
-    if (dc > 0.0)
-    {
-        if (db / dc < tol)
-            return true;
-    }
-    return false;
-#endif
-
 #else
     return false;
 #endif
@@ -1134,11 +1098,6 @@ static void BoxXYZXYZToQuadric(const double *const box, double *quadric)
 #endif
 static void CylinderPNLRToQuadric(const double *const cyl, double *quadric)
 {
-    // point
-//    double px = cyl[0];
-//    double py = cyl[1];
-//    double pz = cyl[2];
-
     // normal
     double nx = cyl[3];
     double ny = cyl[4];

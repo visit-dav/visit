@@ -273,8 +273,6 @@ vtkVisItStructuredGridNormals::ExecuteCell(vtkStructuredGrid *input,
     // Get all the input and output objects we'll need to reference
     output->ShallowCopy(input);
 
-    //vtkPoints    *inPts = input->GetPoints();
-
     int dims[3];
     input->GetDimensions(dims);
     int nCells  = input->GetNumberOfCells();
@@ -285,7 +283,6 @@ vtkVisItStructuredGridNormals::ExecuteCell(vtkStructuredGrid *input,
     newNormals->SetNumberOfComponents(3);
     newNormals->SetNumberOfTuples(nCells);
     newNormals->SetName("Normals");
-    //float *newNormalPtr = (float*)newNormals->GetPointer(0);
 
     int fastDim, slowDim;
     if (dims[0] <= 1)

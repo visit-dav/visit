@@ -2176,7 +2176,7 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
   int bestDir, cellIsGhost;
   double stopDist, currDist;
   double length, maxLength = 0.0;
-  double tempT, tempX[3]/*, pc[3] = {0., 0., 0.}*/;
+  double tempT, tempX[3];
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
 
