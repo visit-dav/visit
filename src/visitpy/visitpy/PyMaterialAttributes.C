@@ -73,8 +73,8 @@ static PyObject *NewMaterialAttributes(int);
 std::string
 PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetSmoothing())
         SNPRINTF(tmpStr, 1000, "%ssmoothing = 1\n", prefix);

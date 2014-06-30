@@ -75,8 +75,8 @@ static PyObject *NewSelectionList(int);
 std::string
 PySelectionList_ToString(const SelectionList *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetAutoApplyUpdates())
         SNPRINTF(tmpStr, 1000, "%sautoApplyUpdates = 1\n", prefix);

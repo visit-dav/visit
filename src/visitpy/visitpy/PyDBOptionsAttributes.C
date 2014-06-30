@@ -73,8 +73,8 @@ static PyObject *NewDBOptionsAttributes(int);
 std::string
 PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const intVector &types = atts->GetTypes();
         SNPRINTF(tmpStr, 1000, "%stypes = (", prefix);

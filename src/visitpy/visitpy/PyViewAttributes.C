@@ -73,8 +73,8 @@ static PyObject *NewViewAttributes(int);
 std::string
 PyViewAttributes_ToString(const ViewAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const double *viewNormal = atts->GetViewNormal();
         SNPRINTF(tmpStr, 1000, "%sviewNormal = (", prefix);

@@ -73,8 +73,8 @@ static PyObject *NewView2DAttributes(int);
 std::string
 PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const double *windowCoords = atts->GetWindowCoords();
         SNPRINTF(tmpStr, 1000, "%swindowCoords = (", prefix);

@@ -74,8 +74,8 @@ static PyObject *NewSelectionSummary(int);
 std::string
 PySelectionSummary_ToString(const SelectionSummary *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;

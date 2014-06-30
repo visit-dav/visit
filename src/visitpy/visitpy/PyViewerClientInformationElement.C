@@ -73,8 +73,8 @@ static PyObject *NewViewerClientInformationElement(int);
 std::string
 PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sdata = \"%s\"\n", prefix, atts->GetData().c_str());
     str += tmpStr;

@@ -76,8 +76,8 @@ static PyObject *NewAxisAttributes(int);
 std::string
 PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     { // new scope
         std::string objPrefix(prefix);

@@ -74,8 +74,8 @@ static PyObject *NewSaveWindowAttributes(int);
 std::string
 PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetOutputToCurrentDirectory())
         SNPRINTF(tmpStr, 1000, "%soutputToCurrentDirectory = 1\n", prefix);

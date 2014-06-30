@@ -74,8 +74,8 @@ static PyObject *NewAxisLabels(int);
 std::string
 PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);

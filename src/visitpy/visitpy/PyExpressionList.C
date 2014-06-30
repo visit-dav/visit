@@ -74,8 +74,8 @@ static PyObject *NewExpressionList(int);
 std::string
 PyExpressionList_ToString(const ExpressionList *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     { // new scope
         int index = 0;

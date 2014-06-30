@@ -73,8 +73,8 @@ static PyObject *NewColorControlPoint(int);
 std::string
 PyColorControlPoint_ToString(const ColorControlPoint *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const unsigned char *colors = atts->GetColors();
         SNPRINTF(tmpStr, 1000, "%scolors = (", prefix);

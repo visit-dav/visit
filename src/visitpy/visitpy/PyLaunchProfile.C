@@ -73,8 +73,8 @@ static PyObject *NewLaunchProfile(int);
 std::string
 PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sprofileName = \"%s\"\n", prefix, atts->GetProfileName().c_str());
     str += tmpStr;

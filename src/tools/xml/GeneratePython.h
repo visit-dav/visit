@@ -2137,7 +2137,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "    int index;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
         c << "        return NULL;" << Endl;
-        c << "    if(index < 0 || index >= obj->data->Get" << Name << "().size())" << Endl;
+        c << "    if(index < 0 || (size_t)index >= obj->data->Get" << Name << "().size())" << Endl;
         c << "    {" << Endl;
         c << "        char msg[200];" << Endl;
         c << "        if(obj->data->Get" << Name << "().size() == 0)" << Endl;
@@ -3168,7 +3168,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "std::string" << Endl;
         c << mName << "(const "<<name<<" *atts, const char *prefix)" << Endl;
         c << "{" << Endl;
-        c << "    std::string str; " << Endl;
+        c << "    std::string str;" << Endl;
         c << "    char tmpStr[1000]; (void)tmpStr;" << Endl;
         c << Endl;
         if (custombase)
@@ -3372,7 +3372,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "static void" << Endl;
             c << CallLogRoutine << "(Subject *subj, void *data)" << Endl;
             c << "{" << Endl;
-            c << "    "<<name<<" *atts = ("<<name<<" *)subj; (void) atts; " << Endl;
+            c << "    "<<name<<" *atts = ("<<name<<" *)subj; (void) atts;" << Endl;
             if(HasCode(CallLogRoutine, 0))
                 PrintCode(c, CallLogRoutine, 0);
             c << "    typedef void (*logCallback)(const std::string &);" << Endl;

@@ -73,8 +73,8 @@ static PyObject *NewPlot(int);
 std::string
 PyPlot_ToString(const Plot *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     const char *stateType_names = "NewlyCreated, Pending, Completed, Error";
     switch (atts->GetStateType())

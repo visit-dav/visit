@@ -89,8 +89,8 @@ static PyObject *NewSaveSubWindowsAttributes(int);
 std::string
 PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; (void) tmpStr;
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     { // new scope
         std::string objPrefix(prefix);

@@ -73,8 +73,8 @@ static PyObject *NewColorAttribute(int);
 std::string
 PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const unsigned char *color = atts->GetColor();
         SNPRINTF(tmpStr, 1000, "%scolor = (", prefix);

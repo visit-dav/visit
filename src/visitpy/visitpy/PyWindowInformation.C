@@ -73,8 +73,8 @@ static PyObject *NewWindowInformation(int);
 std::string
 PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sactiveSource = \"%s\"\n", prefix, atts->GetActiveSource().c_str());
     str += tmpStr;

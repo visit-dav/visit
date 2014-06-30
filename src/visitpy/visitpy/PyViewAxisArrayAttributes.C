@@ -73,8 +73,8 @@ static PyObject *NewViewAxisArrayAttributes(int);
 std::string
 PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     {   const double *domainCoords = atts->GetDomainCoords();
         SNPRINTF(tmpStr, 1000, "%sdomainCoords = (", prefix);

@@ -74,8 +74,8 @@ static PyObject *NewColorAttributeList(int);
 std::string
 PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     { // new scope
         int index = 0;

@@ -73,8 +73,8 @@ static PyObject *NewAnimationAttributes(int);
 std::string
 PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     const char *animationMode_names = "ReversePlayMode, StopMode, PlayMode";
     switch (atts->GetAnimationMode())

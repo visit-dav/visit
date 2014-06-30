@@ -82,8 +82,8 @@ static PyObject *NewAnnotationAttributes(int);
 std::string
 PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     { // new scope
         std::string objPrefix(prefix);

@@ -73,8 +73,8 @@ static PyObject *NewPickVarInfo(int);
 std::string
 PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%svariableName = \"%s\"\n", prefix, atts->GetVariableName().c_str());
     str += tmpStr;
