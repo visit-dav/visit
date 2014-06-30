@@ -168,8 +168,10 @@ char *fname;
   int h,m,s,f;
   FILE *fd;
   char line[256];
-  //char *commentBegin = NULL;
-  //int len = 0;
+#ifdef WIN32
+  char *commentBegin = NULL;
+  int len = 0;
+#endif
   static double ratetab[8]=
     {24000.0/1001.0,24.0,25.0,30000.0/1001.0,30.0,50.0,60000.0/1001.0,60.0};
   extern int r,Xi,Xb,Xp,d0i,d0p,d0b; /* rate control */
