@@ -1795,7 +1795,6 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
         else
         {
             MapNode n;
-            //int mixOffset = 0; 
             for (size_t i = 0; i < names.size(); ++i)
             {
                 std::string stripName = names[i].substr(1, names[i].size() -2);
@@ -1878,6 +1877,7 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                 m[variableName] = n;
                 
 #if 0
+            int mixOffset = 0; 
             if (mixVar)
             {
                 int nMats = numMatsPerZone[i];
