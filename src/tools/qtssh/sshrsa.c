@@ -670,7 +670,7 @@ static void *rsa2_createkey(unsigned char *pub_blob, int pub_len,
     struct RSAKey *rsa;
     char *pb = (char *) priv_blob;
 
-    rsa = rsa2_newkey((char *) pub_blob, pub_len);
+    rsa = (struct RSAKey *)rsa2_newkey((char *) pub_blob, pub_len);
     rsa->private_exponent = getmp(&pb, &priv_len);
     rsa->p = getmp(&pb, &priv_len);
     rsa->q = getmp(&pb, &priv_len);
@@ -750,7 +750,7 @@ static int rsa2_pubkey_bits(void *blob, int len)
     struct RSAKey *rsa;
     int ret;
 
-    rsa = rsa2_newkey((char *) blob, len);
+    rsa = (struct RSAKey*)rsa2_newkey((char *) blob, len);
     ret = bignum_bitcount(rsa->modulus);
     rsa2_freekey(rsa);
 
@@ -981,9 +981,10 @@ void ssh_rsakex_encrypt(const struct ssh_hash *h, unsigned char *in, int inlen,
 {
     Bignum b1, b2;
     struct RSAKey *rsa = (struct RSAKey *) key;
-    int k, i; (void) k;
+    int k, i;
     char *p;
     const int HLEN = h->hlen;
+    (void) k;
 
     /*
      * Here we encrypt using RSAES-OAEP. Essentially this means:
