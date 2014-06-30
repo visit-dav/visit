@@ -438,7 +438,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
             dbname = VisWinPathTracker::Instance()
                         ->GetSmartDirectory(atts.GetFullDBName());
         }
-        //bool hasTime = CreateDatabaseInfo(info,dbname,atts);
+        CreateDatabaseInfo(info,dbname,atts);
         dbInfoActor->SetInput(info);
         dbInfoActor->SetTextHeight(dbInfoHeight * dbInfoTextAttributes.scale);    
         
