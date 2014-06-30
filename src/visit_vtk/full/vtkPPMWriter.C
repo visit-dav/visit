@@ -61,9 +61,7 @@ void vtkPPMWriter::WriteFileHeader(ofstream *file, vtkImageData *cache, int wExt
   int min0 = wExt[0], 
       max0 = wExt[1], 
       min1 = wExt[2], 
-      max1 = wExt[3]/*,
-      min2 = wExt[4],
-      max2 = wExt[5]*/;
+      max1 = wExt[3];
   int width, height;
   
   width = (max0 - min0 + 1);
