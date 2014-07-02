@@ -14,9 +14,21 @@
 
 # Create our simulation object.
 sim = TestSimulation("updateplots", "updateplots.sim2")
+sim.addargument("-echo")
 
 # Test that we can start and connect to the simulation.
 started, connected = TestSimStartAndConnect("updateplots00", sim)
+
+def step(sim):
+    sim.consolecommand("step")
+    # Read from stderr to look for the echoed command. Sync.
+    keepGoing = True
+    while keepGoing:
+        buf = sim.p.stderr.readline()
+        print buf
+        if "Command 'step'" in buf:
+            keepGoing = False
+
 
 # Perform our tests.
 if connected:
@@ -39,9 +51,9 @@ if connected:
     times = "Times:\n"
     Query("Time")
     times = times + str(GetQueryOutputValue()) + "\n"
-    for outer in xrange(5):
-        for inner in xrange(5):
-            sim.consolecommand("step")
+    for outer in xrange(6):
+        for inner in xrange(3):
+            step(sim)
         Query("Time")
         times = times + str(GetQueryOutputValue()) + "\n"
         Test("updateplots%02d"%i)
