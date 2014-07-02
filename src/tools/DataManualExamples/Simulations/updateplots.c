@@ -91,6 +91,7 @@ typedef struct
 
     int      pcId;
     int      meshId;
+    int      echo;
 } simulation_data;
 
 void
@@ -111,6 +112,7 @@ simulation_data_ctor(simulation_data *sim)
 
     sim->pcId = -1;
     sim->meshId = -1;
+    sim->echo = 0;
 }
 
 void
@@ -353,6 +355,12 @@ ProcessConsoleCommand(simulation_data *sim)
     else if(strcmp(cmd, "export") == 0)
         sim->export = 1;
 #endif
+
+    if(sim->echo && sim->par_rank == 0)
+    {
+        fprintf(stderr, "Command '%s' completed.\n", cmd);
+        fflush(stderr);
+    }
 }
 
 /******************************************************************************
@@ -526,8 +534,12 @@ int main(int argc, char **argv)
 
     /* Check for command line arguments. */
     for(i = 1; i < argc; ++i)
+    {
         if(strcmp(argv[i], "-batch") == 0)
             sim.batch = 1;
+        else if(strcmp(argv[i], "-echo") == 0)
+            sim.echo = 1;
+    }
 
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
