@@ -419,7 +419,6 @@ static int
 Listen(int port, struct sockaddr_in &sin)
 {
     int  on = 1;
-    //bool portFound = false;
 
     // Open a socket.
     int listenSock = socket(AF_INET, SOCK_STREAM, 0);

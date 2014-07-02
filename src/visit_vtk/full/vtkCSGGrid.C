@@ -1149,10 +1149,6 @@ static void CylinderPPRToQuadric(const double *const cyl, double *quadric)
 }
 static void ConePNLAToQuadric(const double *const cone, double *quadric)
 {
-    // point
-//    double px = cone[0];
-//    double py = cone[1];
-//    double pz = cone[2];
 
     // normal
     double nx = cone[3];
@@ -2560,7 +2556,6 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
     }
 
     // Evaluate the cell tags against this region
-    //int ncells = rv->GetNumberOfCells();
     vtkIntArray *in = vtkIntArray::New();
     in->SetNumberOfComponents(1);
     in->SetNumberOfTuples(rv->GetNumberOfCells());
@@ -3093,7 +3088,8 @@ vtkCSGGrid::DiscretizeSpace3(
                     MakeMeshZonesByCuttingBox4(curBox, boundaryToStateMap,
                          boundaryToSenseMap, gridZones[specificZone],
                          points, ugrid, nodemap);
-                if (!flatNessHandledIt) {
+                if (!flatNessHandledIt)
+                {
                     debug1 << "vtkCSGGrid: Flatness passed; Cutter4 failed. Subdividing..." << endl; 
                 }
             }

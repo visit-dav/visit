@@ -73,8 +73,8 @@ static PyObject *NewavtMaterialMetaData(int);
 std::string
 PyavtMaterialMetaData_ToString(const avtMaterialMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     str = PyavtBaseVarMetaData_ToString(atts, prefix);
 

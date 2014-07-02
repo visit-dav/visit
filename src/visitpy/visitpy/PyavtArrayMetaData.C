@@ -73,8 +73,8 @@ static PyObject *NewavtArrayMetaData(int);
 std::string
 PyavtArrayMetaData_ToString(const avtArrayMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 

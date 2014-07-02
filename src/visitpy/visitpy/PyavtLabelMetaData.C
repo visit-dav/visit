@@ -73,8 +73,8 @@ static PyObject *NewavtLabelMetaData(int);
 std::string
 PyavtLabelMetaData_ToString(const avtLabelMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; (void) tmpStr;
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 

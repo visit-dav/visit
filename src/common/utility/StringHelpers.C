@@ -466,7 +466,6 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
 {
     regex_t cre;
     regmatch_t pm;
-    //int reerr;
 
     if (regcomp(&cre, re, REG_EXTENDED))
         return FindError;

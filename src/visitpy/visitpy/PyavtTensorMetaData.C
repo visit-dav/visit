@@ -73,8 +73,8 @@ static PyObject *NewavtTensorMetaData(int);
 std::string
 PyavtTensorMetaData_ToString(const avtTensorMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 

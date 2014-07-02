@@ -78,8 +78,8 @@ static PyObject *NewavtMeshMetaData(int);
 std::string
 PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
     str += tmpStr;

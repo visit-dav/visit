@@ -75,8 +75,8 @@ static PyObject *NewavtSimulationInformation(int);
 std::string
 PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;
