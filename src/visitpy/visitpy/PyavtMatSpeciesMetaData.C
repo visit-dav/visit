@@ -73,8 +73,8 @@ static PyObject *NewavtMatSpeciesMetaData(int);
 std::string
 PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%snumSpecies = %d\n", prefix, atts->numSpecies);
     str += tmpStr;

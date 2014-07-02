@@ -87,8 +87,8 @@ static PyObject *NewavtDatabaseMetaData(int);
 std::string
 PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     if(atts->GetHasTemporalExtents())
         SNPRINTF(tmpStr, 1000, "%shasTemporalExtents = 1\n", prefix);

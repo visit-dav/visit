@@ -11080,7 +11080,6 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     int arg1 = 0, arg2 = 0;
     double darg;
     doubleVector darg1(3), darg2(2), darg3(2); 
-    //bool dumpSteps = false;
     PyObject *tuple = NULL;
     
     bool parse_success = false;

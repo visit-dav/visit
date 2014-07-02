@@ -90,6 +90,8 @@
     </Function>
     <Function name="SetFormatCanDoDomainDecomposition" user="false" member="true">
     </Function>
+    <Function name="SetFormatCanDoMultires" user="false" member="true">
+    </Function>
     <Function name="SetCycle" user="true" member="true">
     </Function>
     <Function name="SetCycleIsAccurate" user="true" member="true">

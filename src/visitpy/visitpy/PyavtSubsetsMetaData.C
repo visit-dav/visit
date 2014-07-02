@@ -74,8 +74,8 @@ static PyObject *NewavtSubsetsMetaData(int);
 std::string
 PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 

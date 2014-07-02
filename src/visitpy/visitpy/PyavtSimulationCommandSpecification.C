@@ -73,8 +73,8 @@ static PyObject *NewavtSimulationCommandSpecification(int);
 std::string
 PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecification *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
@@ -504,6 +504,8 @@ PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

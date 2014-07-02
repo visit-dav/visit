@@ -175,7 +175,6 @@ vtkVisItStructuredGridNormals::ExecutePoint(vtkStructuredGrid *input,
         for (i = 0 ; i < fastDim ; i++)
         {
             float normal[3] = { 0, 0, 0 };
-            //int nQuads = 0;
 
             double anchor[3];
             int idx = j*fastDim + i;

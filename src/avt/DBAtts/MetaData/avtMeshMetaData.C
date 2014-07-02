@@ -1800,12 +1800,10 @@ avtMeshMetaData::Print(ostream &out, int indent) const
             out << "The logical cell bound are not set." << std::endl;
             break;
 
-//          Report nothing as the logical bounds are not applicable
-//          default:
-//            out << "The logical bounds are not applicable." << std::endl;
-//            break;
-           default:
-              break;
+          // Report nothing as the logical bounds are not applicable
+          default:
+            // out << "The logical bounds are not applicable." << std::endl;
+            break;
         }
     }
 
@@ -1826,11 +1824,9 @@ avtMeshMetaData::Print(ostream &out, int indent) const
             out << "The number of cells is not set." << std::endl;
             break;
 
-//          Report nothing as the number of cells is not applicable
-//          default:
-//            out << "The number of cells is not applicable." << std::endl;
-//            break;
+          // Report nothing as the number of cells is not applicable
           default:
+            // out << "The number of cells is not applicable." << std::endl;
             break;
         }
     }
@@ -1965,7 +1961,7 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
                             const std::vector<int> &patchesPerLevel)
 {
     int  i;
-    int  nlevels = patchesPerLevel.size();
+    int  nlevels = (int)patchesPerLevel.size();
 
     // Basic setup stuff
     int  numBlocks = 0;

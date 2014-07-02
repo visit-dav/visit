@@ -73,8 +73,8 @@ static PyObject *NewavtDefaultPlotMetaData(int);
 std::string
 PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     SNPRINTF(tmpStr, 1000, "%spluginID = \"%s\"\n", prefix, atts->pluginID.c_str());
     str += tmpStr;

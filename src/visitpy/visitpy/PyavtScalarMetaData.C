@@ -73,8 +73,8 @@ static PyObject *NewavtScalarMetaData(int);
 std::string
 PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000]; (void)tmpStr;
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
