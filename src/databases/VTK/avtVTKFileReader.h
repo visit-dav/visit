@@ -156,8 +156,8 @@ class avtVTKFileReader
 
     std::map<std::string, vtkRectilinearGrid *> vtkCurves;
 
-    void                  ReadInFile(void);
-    void                  ReadInDataset(int);
+    void                  ReadInFile(int _domain=-1);
+    void                  ReadInDataset(int domain);
     vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *,
                                                          int *);
     void                  CreateCurves(vtkRectilinearGrid *rgrid);
