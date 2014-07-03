@@ -568,23 +568,13 @@ avtVTKFileReader::ReadInDataset(int domain)
 
             vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::SafeDownCast(dataset);
 
-            // Only do this for grids with more than 1,000,000 points.
-            if (ugrid->GetNumberOfPoints() < 1000000) continue;
+            // Detect the "fully disconnected" case
+            if (ugrid->GetCells()->GetSize() - ugrid->GetNumberOfCells() < ugrid->GetNumberOfPoints()) continue;
+           
+            debug1 << "In avtVTKFileReader::ReadInDataset, the unstructured grid is fully disconnected..." << endl;
+            debug1 << "...detecting and removing any spatial duplicate points to re-connect mesh." << endl;
 
-            // Only do this for grids where cells do not appear to have a lot of points in common 
-            if (ugrid->GetNumberOfPoints() < 3 * ugrid->GetNumberOfCells()) continue;
-
-            debug1 << "After reading a dataset, duplicate node detection and removal triggered..." << endl;
-            debug1 << "...unstructured grid, and " << endl;
-            debug1 << "...more than 1,000,000 points, and" << endl;
-            debug1 << "...number of points is more than 3x the number of cells." << endl;
-            debug1 << "This is highly indicative of a mesh with many duplicate nodes." << endl;
-
-            //
-            // Search, initially among just the firt 10% of points, to detect presence of duplicates.
-            // If we find in the first 10% of points, less than 1/3rd are unique, we decide to process
-            // the whole grid.
-            //
+            // build list of unique points
             vtkPoints *pts = ugrid->GetPoints();
             std::map<double, std::map<double, std::map<double, vtkIdType> > > uniqpts;
             int n = 0;
@@ -606,10 +596,8 @@ avtVTKFileReader::ReadInDataset(int domain)
                 uniqpts[pt[0]][pt[1]][pt[2]] = n++;
             }
 
-            // If more than 33% of all points are unique, skip it
-            if (3 * n > pts->GetNumberOfPoints()) continue;
-
-            debug1 << "Discovered " << 100.0 * n / pts->GetNumberOfPoints() << "% of points are unique. Uniqifying..." << endl;
+            debug1 << "...discovered " << 100.0 * n / pts->GetNumberOfPoints() << "% of points are spatially unique." << endl;
+            debug1 << "...now reconnecting mesh using unique points." << endl;
 
             for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
             {
