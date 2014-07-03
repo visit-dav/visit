@@ -39,6 +39,7 @@
 SET(PY_TESTS
     amr
     aresamr
+    csg
     curve
     domainbounds
     ghostcells
