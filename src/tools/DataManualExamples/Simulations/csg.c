@@ -63,6 +63,7 @@ typedef struct
     double  time;
     int     runMode;
     int     done;
+    int     echo;
 } simulation_data;
 
 void
@@ -72,6 +73,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->time = 0.;
     sim->runMode = SIM_STOPPED;
     sim->done = 0;
+    sim->echo = 0;
 }
 
 void
@@ -79,7 +81,7 @@ simulation_data_dtor(simulation_data *sim)
 {
 }
 
-const char *cmd_names[] = {"halt", "step", "run", "addplot", "saveimage"};
+const char *cmd_names[] = {"halt", "step", "run", "update", "saveimage"};
 
 void simulate_one_timestep(simulation_data *sim);
 void read_input_deck(void) { }
@@ -222,6 +224,12 @@ ProcessConsoleCommand(simulation_data *sim)
         else
             printf("The image could not be saved to %s\n", filename);
     }
+
+    if (sim->echo)
+    {
+        fprintf(stderr, "Command '%s' completed.\n", cmd);
+        fflush(stderr);
+    }
 }
 
 /* SIMULATE ONE TIME STEP */
@@ -267,23 +275,21 @@ void simulate_one_timestep(simulation_data *sim)
  * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
+ *    Kathleen Biagas, Wed Jul  2 15:17:23 MST 2014
+ *    Move construction of simulation to main, send simulation_data as arg.
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
-
-    /* Set up some simulation data. */
-    simulation_data sim;
-    simulation_data_ctor(&sim);
 
     /* main loop */
     fprintf(stderr, "command> ");
     fflush(stderr);
     do
     {
-        blocking = (sim.runMode == SIM_RUNNING) ? 0 : 1;
+        blocking = (sim->runMode == SIM_RUNNING) ? 0 : 1;
         /* Get input from VisIt or timeout so the simulation can run. */
         visitstate = VisItDetectInput(blocking, fileno(stdin));
 
@@ -296,19 +302,19 @@ void mainloop(void)
         else if(visitstate == 0)
         {
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep(&sim);
+            simulate_one_timestep(sim);
         }
         else if(visitstate == 1)
         {
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
-                sim.runMode = SIM_STOPPED;
+                sim->runMode = SIM_STOPPED;
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback, (void*)&sim);
+                VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
 
-                VisItSetGetMetaData(SimGetMetaData, (void*)&sim);
-                VisItSetGetMesh(SimGetMesh, (void*)&sim);
+                VisItSetGetMetaData(SimGetMetaData, (void*)sim);
+                VisItSetGetMesh(SimGetMesh, (void*)sim);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -321,7 +327,7 @@ void mainloop(void)
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                sim.runMode = SIM_RUNNING;
+                sim->runMode = SIM_RUNNING;
             }
         }
         else if(visitstate == 3)
@@ -330,14 +336,11 @@ void mainloop(void)
              * NOTE: you can't get here unless you pass a file descriptor to
              * VisItDetectInput instead of -1.
              */
-            ProcessConsoleCommand(&sim);
+            ProcessConsoleCommand(sim);
             fprintf(stderr, "command> ");
             fflush(stderr);
         }
-    } while(!sim.done && err == 0);
-
-    /* Clean up */
-    simulation_data_dtor(&sim);
+    } while(!sim->done && err == 0);
 }
 
 /******************************************************************************
@@ -352,28 +355,44 @@ void mainloop(void)
  *   argv : The command line arguments.
  *
  * Modifications:
+ *   Kathleen Biagas, Wed Jul  2 15:18:18 PDT 2014
+ *   Construct/destruct simulation_data here.
  *
  *****************************************************************************/
 
 int main(int argc, char **argv)
 {
+    int i;
+    /* Set up some simulation data. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
+
     VisItOpenTraceFile("csg_trace.txt");
 
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
+    for(i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "-echo") == 0)
+            sim.echo = 1;
+    }
+
     /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("csg",
         "Demonstrates creating a csg mesh",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, NULL, SimulationFilename());
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
+
+    /* Clean up */
+    simulation_data_dtor(&sim);
 
     VisItCloseTraceFile();
 

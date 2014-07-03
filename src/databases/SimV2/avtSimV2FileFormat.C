@@ -270,6 +270,9 @@ avtSimV2FileFormat::ActivateTimestep()
 //   Brad Whitlock, Wed Aug  8 14:19:31 PDT 2012
 //   Always assume that the number of groupIds is equal to the number of domains.
 //
+//   Kathleen Biagas, Wed Jul  2 15:20:32 MST 2014
+//   Don't add group info unless there is at least 1 group.
+//
 // ****************************************************************************
 
 void
@@ -367,33 +370,34 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
         }
     }
 
-    int nGroups = 1;
+    int nGroups = 0;
     if(simv2_MeshMetaData_getNumGroups(h, &nGroups) == VISIT_OKAY)
         mesh->numGroups = nGroups;
 
-    char *groupTitle = NULL;
-    if(nGroups > 0 &&
-       simv2_MeshMetaData_getGroupTitle(h, &groupTitle) == VISIT_OKAY)
+    if (nGroups > 0)
     {
-        mesh->groupTitle = std::string(groupTitle);
-        free(groupTitle);
-    }
+        char *groupTitle = NULL;
+        if(simv2_MeshMetaData_getGroupTitle(h, &groupTitle) == VISIT_OKAY)
+        {
+            mesh->groupTitle = std::string(groupTitle);
+            free(groupTitle);
+        }
 
-    char *groupPieceName = NULL;
-    if(nGroups > 0 &&
-       simv2_MeshMetaData_getGroupPieceName(h, &groupPieceName) == VISIT_OKAY)
-    {
-        mesh->groupPieceName = std::string(groupPieceName);
-        free(groupPieceName);
-    }
+        char *groupPieceName = NULL;
+        if(simv2_MeshMetaData_getGroupPieceName(h, &groupPieceName) == VISIT_OKAY)
+        {
+            mesh->groupPieceName = std::string(groupPieceName);
+            free(groupPieceName);
+        }
 
-    int groupLen = mesh->numBlocks;
-    mesh->groupIds.resize(groupLen);
-    for (int g = 0; g<groupLen; g++)
-    {
-        int id = 0;
-        simv2_MeshMetaData_getGroupId(h, g, &id);
-        mesh->groupIds[g] = id;
+        int groupLen = mesh->numBlocks;
+        mesh->groupIds.resize(groupLen);
+        for (int g = 0; g<groupLen; g++)
+        {
+            int id = 0;
+            simv2_MeshMetaData_getGroupId(h, g, &id);
+            mesh->groupIds[g] = id;
+        }
     }
 
     // Get axis labels
