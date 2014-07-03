@@ -587,43 +587,26 @@ avtVTKFileReader::ReadInDataset(int domain)
             //
             vtkPoints *pts = ugrid->GetPoints();
             std::map<double, std::map<double, std::map<double, vtkIdType> > > uniqpts;
-            int n;
-            double fracMult = 1 / 7.0;  // look at 1/7th of the points
-            for (int pass = 0; pass < 2; pass++)
+            int n = 0;
+            for (int i = 0; i < pts->GetNumberOfPoints(); i++)
             {
-                n = 0;
-                for (int k = 0, i = 0; i < pts->GetNumberOfPoints() * fracMult; i++, k+=7)
+                double pt[3];
+                pts->GetPoint(i, pt);
+                std::map<double, std::map<double, std::map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
+                if (e0it != uniqpts.end())
                 {
-                    double pt[3];
-                    pts->GetPoint(pass==0?k:i, pt);
-                    std::map<double, std::map<double, std::map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
-                    if (e0it != uniqpts.end())
+                    std::map<double, std::map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
+                    if (e1it != e0it->second.end())
                     {
-                        std::map<double, std::map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
-                        if (e1it != e0it->second.end())
-                        {
-                            std::map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
-                            if (e2it != e1it->second.end())
-                                continue;
-                        }
+                        std::map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
+                        if (e2it != e1it->second.end())
+                            continue;
                     }
-                    uniqpts[pt[0]][pt[1]][pt[2]] = n++;
                 }
-
-                if (pass == 0)
-                {
-                    if (pts->GetNumberOfPoints() > 3 * n)
-                        fracMult = 1.0;
-                    else
-                        fracMult = 0.0;
-                    uniqpts.clear();
-                }
+                uniqpts[pt[0]][pt[1]][pt[2]] = n++;
             }
 
-            // If in first pass, we didn't find a sufficient proportion of duplicates, skip it
-            if (fracMult == 0.0) continue;
-
-            // If in second pass, more than 33% of all points are unique, skip it
+            // If more than 33% of all points are unique, skip it
             if (3 * n > pts->GetNumberOfPoints()) continue;
 
             debug1 << "Discovered " << 100.0 * n / pts->GetNumberOfPoints() << "% of points are unique. Uniqifying..." << endl;
