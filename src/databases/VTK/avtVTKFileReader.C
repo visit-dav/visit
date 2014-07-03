@@ -48,6 +48,7 @@
 #include <avtMaterial.h>
 #include <avtVTKFileReader.h>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetReader.h>
@@ -176,6 +177,75 @@ avtVTKFileReader::avtVTKFileReader(const char *fname, DBOptionsAttributes *)
 
 
 // ****************************************************************************
+//  Method: avtVTKFileReader::FreeUpResources
+//
+//  Purpose:
+//      Frees up resources.  Since this module does not keep an open file, that
+//      only means deleting the dataset.  Since this is all reference counted,
+//      there is no worry that we will be deleting something that is being
+//      used.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 23, 2001
+//
+//  Modifications:
+//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
+//    Freed matvarname
+//
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
+//    Mark C. Miller, Wed Jul  2 17:27:35 PDT 2014
+//    Delete everything even VTK datasets read.
+// ****************************************************************************
+void
+avtVTKFileReader::FreeUpResources(void)
+{
+    debug4 << "VTK file " << filename << " forced to free up resources." << endl;
+
+    if (matvarname != NULL)
+    {
+        free(matvarname);
+        matvarname = NULL;
+    }
+    if (pieceFileNames != NULL)
+    {
+        for (int i = 0; i < nblocks; i++)
+            delete [] pieceFileNames[i];
+        delete [] pieceFileNames;
+        pieceFileNames = 0;
+    }
+    if (pieceDatasets != NULL)
+    {
+        for (int i = 0; i < nblocks; i++)
+        {
+            if (pieceDatasets[i] != NULL)
+                pieceDatasets[i]->Delete();
+        }
+        delete [] pieceDatasets;
+        pieceDatasets = 0;
+    }
+    if (pieceExtents != NULL)
+    {
+        for (int i = 0; i < nblocks; i++)
+        {
+            if (pieceExtents[i] != NULL)
+                delete [] pieceExtents[i];
+        }
+        delete [] pieceExtents;
+        pieceExtents = 0;
+    }
+    for(std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
+        pos != vtkCurves.end(); ++pos)
+    {
+        pos->second->Delete();
+    }
+    vtkCurves.clear();
+
+    readInDataset = false;
+}
+
+// ****************************************************************************
 //  Method: avtVTKFileReader destructor
 //
 //  Programmer: Hank Childs
@@ -200,41 +270,9 @@ avtVTKFileReader::avtVTKFileReader(const char *fname, DBOptionsAttributes *)
 avtVTKFileReader::~avtVTKFileReader()
 {
     free(filename);
-    if (matvarname != NULL)
-    {
-        free(matvarname);
-        matvarname = NULL;
-    }
-    if (pieceFileNames != NULL)
-    {
-        for (int i = 0; i < nblocks; i++)
-            delete [] pieceFileNames[i];
-        delete [] pieceFileNames;
-    }
-    if (pieceDatasets != NULL)
-    {
-        for (int i = 0; i < nblocks; i++)
-        {
-            if (pieceDatasets[i] != NULL)
-                pieceDatasets[i]->Delete();
-        }
-        delete [] pieceDatasets;
-    }
-    if (pieceExtents != NULL)
-    {
-        for (int i = 0; i < nblocks; i++)
-        {
-            if (pieceExtents[i] != NULL)
-                delete [] pieceExtents[i];
-        }
-        delete [] pieceExtents;
-    }
-    for(std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
-        pos != vtkCurves.end(); ++pos)
-    {
-        pos->second->Delete();
-    }
+    FreeUpResources();
 }
+
 
 // ****************************************************************************
 // Method: avtVTKFileReader::GetNumberOfDomains
@@ -279,8 +317,10 @@ avtVTKFileReader::GetNumberOfDomains()
 // ****************************************************************************
 
 void
-avtVTKFileReader::ReadInFile(void)
+avtVTKFileReader::ReadInFile(int _domain)
 {
+    int domain = _domain == -1 ? 0 : _domain;
+
     if (fileExtension == "pvtu" || fileExtension == "pvts" ||
         fileExtension == "pvtr" || fileExtension == "pvti" ||
         fileExtension == "pvtp")
@@ -340,7 +380,7 @@ avtVTKFileReader::ReadInFile(void)
         pieceExtension = fileExtension;
     }
 
-    ReadInDataset(0);
+    ReadInDataset(domain);
 
     readInDataset = true;
 }
@@ -399,6 +439,9 @@ avtVTKFileReader::ReadInFile(void)
 //    I modified the reading of pvti, pvtr and pvts files to handle the case
 //    where the piece extent was a subset of the whole extent.
 //
+//    Mark C. Miller, Wed Jul  2 17:28:24 PDT 2014
+//    Add duplicate node removal (special case). Controlling logic should
+//    ensure it is rarely triggered.
 // ****************************************************************************
 
 void
@@ -509,6 +552,121 @@ avtVTKFileReader::ReadInDataset(int domain)
         }
         dataset->Register(NULL);
         reader->Delete();
+
+        //
+        // Try to remove duplicate nodes in datasets meeting the following criteria...
+        //    a) unstructured grid, and
+        //    b) more than 1,000,000 points, and
+        //    c) number of points is 3x more than number of cells
+        // The do/while(false) construct allows us to use 'continue' statements to skip out early.
+        //
+#ifndef MDSERVER
+        do {
+
+            // Only do this for unstructured grids
+            if (dataset->GetDataObjectType() != VTK_UNSTRUCTURED_GRID) continue;
+
+            vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::SafeDownCast(dataset);
+
+            // Only do this for grids with more than 1,000,000 points.
+            if (ugrid->GetNumberOfPoints() < 1000000) continue;
+
+            // Only do this for grids where cells do not appear to have a lot of points in common 
+            if (ugrid->GetNumberOfPoints() < 3 * ugrid->GetNumberOfCells()) continue;
+
+            debug1 << "After reading a dataset, duplicate node detection and removal triggered..." << endl;
+            debug1 << "...unstructured grid, and " << endl;
+            debug1 << "...more than 1,000,000 points, and" << endl;
+            debug1 << "...number of points is more than 3x the number of cells." << endl;
+            debug1 << "This is highly indicative of a mesh with many duplicate nodes." << endl;
+
+            //
+            // Search, initially among just the firt 10% of points, to detect presence of duplicates.
+            // If we find in the first 10% of points, less than 1/3rd are unique, we decide to process
+            // the whole grid.
+            //
+            vtkPoints *pts = ugrid->GetPoints();
+            std::map<double, std::map<double, std::map<double, vtkIdType> > > uniqpts;
+            int n;
+            double fracMult = 1 / 7.0;  // look at 1/7th of the points
+            for (int pass = 0; pass < 2; pass++)
+            {
+                n = 0;
+                for (int k = 0, i = 0; i < pts->GetNumberOfPoints() * fracMult; i++, k+=7)
+                {
+                    double pt[3];
+                    pts->GetPoint(pass==0?k:i, pt);
+                    std::map<double, std::map<double, std::map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
+                    if (e0it != uniqpts.end())
+                    {
+                        std::map<double, std::map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
+                        if (e1it != e0it->second.end())
+                        {
+                            std::map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
+                            if (e2it != e1it->second.end())
+                                continue;
+                        }
+                    }
+                    uniqpts[pt[0]][pt[1]][pt[2]] = n++;
+                }
+
+                if (pass == 0)
+                {
+                    if (pts->GetNumberOfPoints() > 3 * n)
+                        fracMult = 1.0;
+                    else
+                        fracMult = 0.0;
+                    uniqpts.clear();
+                }
+            }
+
+            // If in first pass, we didn't find a sufficient proportion of duplicates, skip it
+            if (fracMult == 0.0) continue;
+
+            // If in second pass, more than 33% of all points are unique, skip it
+            if (3 * n > pts->GetNumberOfPoints()) continue;
+
+            debug1 << "Discovered " << 100.0 * n / pts->GetNumberOfPoints() << "% of points are unique. Uniqifying..." << endl;
+
+            for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
+            {
+                vtkIdType nCellPts=0, *cellPts=0;
+                ugrid->GetCellPoints(i, nCellPts, cellPts);
+                for (int j = 0; j < nCellPts; j++)
+                {
+                    double pt[3];
+                    pts->GetPoint(cellPts[j], pt);
+                    std::map<double, std::map<double, std::map<double, vtkIdType> > >::const_iterator e0it = uniqpts.find(pt[0]);
+                    if (e0it == uniqpts.end())
+                        continue;
+                    std::map<double, std::map<double, vtkIdType> >::const_iterator e1it = e0it->second.find(pt[1]);
+                    if (e1it == e0it->second.end())
+                        continue;
+                    std::map<double, vtkIdType>::const_iterator e2it = e1it->second.find(pt[2]);
+                    if (e2it == e1it->second.end())
+                        continue;
+                    cellPts[j] = e2it->second;
+                }
+                ugrid->ReplaceCell(i, nCellPts, cellPts);
+            }
+
+            pts->Initialize();
+            pts->SetNumberOfPoints(n);
+            std::map<double, std::map<double, std::map<double, vtkIdType> > >::iterator e0it;
+            for (e0it = uniqpts.begin(); e0it != uniqpts.end(); e0it++)
+            {
+                std::map<double, std::map<double, vtkIdType> >::iterator e1it;
+                for (e1it = e0it->second.begin(); e1it != e0it->second.end(); e1it++)
+                {
+                    std::map<double, vtkIdType>::iterator e2it;
+                    for (e2it = e1it->second.begin(); e2it != e1it->second.end(); e2it++)
+                        pts->SetPoint(e2it->second, e0it->first, e1it->first, e2it->first);
+                }
+            }
+
+        } while (false); // only want to execute above block once
+#endif
+
     } 
     else
     {
@@ -673,7 +831,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
         {
             if (!readInDataset)
             {
-                ReadInFile();
+                ReadInFile(domain);
             }
 
             if (pieceDatasets[domain] == NULL)
@@ -793,11 +951,11 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
 vtkDataSet *
 avtVTKFileReader::GetMesh(int domain, const char *mesh)
 {
-    debug5 << "Getting mesh from VTK file " << filename << endl;
+    debug5 << "Getting mesh from VTK file \"" << filename << "\", domain = " << domain << endl;
 
     if (!readInDataset)
     {
-        ReadInFile();
+        ReadInFile(domain);
     }
 
     if (pieceDatasets[domain] == NULL)
@@ -871,7 +1029,7 @@ avtVTKFileReader::GetVar(int domain, const char *real_name)
 
     if (!readInDataset)
     {
-        ReadInFile();
+        ReadInFile(domain);
     }
 
     if (pieceDatasets[domain] == NULL)
@@ -968,52 +1126,6 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 }
 
 
-// ****************************************************************************
-//  Method: avtVTKFileReader::FreeUpResources
-//
-//  Purpose:
-//      Frees up resources.  Since this module does not keep an open file, that
-//      only means deleting the dataset.  Since this is all reference counted,
-//      there is no worry that we will be deleting something that is being
-//      used.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 23, 2001
-//
-//  Modifications:
-//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
-//    Freed matvarname
-//
-//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
-//    I enhanced the reader so that it can read parallel VTK files.
-//
-// ****************************************************************************
-
-void
-avtVTKFileReader::FreeUpResources(void)
-{
-    debug4 << "VTK file " << filename << " forced to free up resources."
-           << endl;
-
-    if (pieceDatasets != NULL)
-    {
-        for (int i = 0; i < nblocks; i++)
-        {
-            if (pieceDatasets[i] != NULL)
-                pieceDatasets[i]->Delete();
-        }
-        delete [] pieceDatasets;
-        pieceDatasets = NULL;
-    }
-    if (matvarname != NULL)
-    {
-        free(matvarname);
-        matvarname = NULL;
-    }
-
-    readInDataset = false;
-}
-
 
 // ****************************************************************************
 //  Method: avtVTKFileReader::PopulateDatabaseMetaData
@@ -1097,6 +1209,10 @@ avtVTKFileReader::FreeUpResources(void)
 //    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
 //    I enhanced the reader so that it can read parallel VTK files.
 //
+//    Mark C. Miller, Wed Jul  2 17:26:44 PDT 2014
+//    FreeUpResources before leaving. This is to ensure mdserver and non-zero
+//    mpi-ranks don't hang onto the VTK data read here solely for purposes
+//    of populating md.
 // ****************************************************************************
 
 void
@@ -1430,6 +1546,10 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         nvars++;
     }
+
+    // Don't hang on to all the data we've read. We might not even need it
+    // if we're in mdserver or of on non-zero mpi-rank.
+    FreeUpResources();
 }
 
 
