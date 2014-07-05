@@ -629,7 +629,7 @@ PyQueryOverTimeAttributes_GetLogString()
 static void
 PyQueryOverTimeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    QueryOverTimeAttributes *atts = (QueryOverTimeAttributes *)subj;
+    QueryOverTimeAttributes *atts = (QueryOverTimeAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

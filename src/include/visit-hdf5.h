@@ -152,7 +152,7 @@ static herr_t VisIt_H5Fclose(hid_t fid)
         H5Fget_obj_ids(fid, obj_flags, noo, ooids);
 #endif
         n = strlen(msg);
-        for (int i = 0; i < noo && n < sizeof(msg); i++)
+        for (int i = 0; i < noo && (size_t)n < sizeof(msg); i++)
         {
             char name[256], tmp[256];
             H5Iget_name(ooids[i], name, sizeof(name));
