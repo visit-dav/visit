@@ -260,14 +260,14 @@ void
 QvisOnionPeelWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    int i, j;
+    size_t i, j;
     intVector ivec;
 
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
-    for(i = 0; i < atts->NumAttributes(); ++i)
+    for(i = 0; i < (size_t)atts->NumAttributes(); ++i)
     {
         if(!doAll)
         {

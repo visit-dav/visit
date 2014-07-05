@@ -204,14 +204,15 @@ avtExtractPointFunction2DFilter::ExecuteData(vtkDataSet *in_ds, int domain, std:
     int iMax = base_index[0] + dims[0] - 1;
     int jMin = base_index[1];
     int jMax = base_index[1] + dims[1] - 1;
-    int kMin = base_index[2];
-    int kMax = base_index[2] + dims[2] - 1;
+    //int kMin = base_index[2];
+    //int kMax = base_index[2] + dims[2] - 1;
 
     int avtRealDims[6] = { 0, 0, 0, 0, 0, 0 };
     if (arr)
         for (int d = 0; d < 6; ++d)
             avtRealDims[d] = arr->GetValue(d);
 
+    (void) avtRealDims; ///suppress unused warning
     // FIXME: Take avtRealDims into account
     if (iMin <= atts.GetI() && atts.GetI() <= iMax && jMin <= atts.GetJ() && atts.GetJ() <= jMax)
     {

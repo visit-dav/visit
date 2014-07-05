@@ -348,14 +348,14 @@ QvisModelFitWindow::UpdateWindow(bool doAll)
 
     guiVarNames.clear();
     int cur_pos = 0;
-    for(int i = 0; i < numVars.size(); i++)
+    for(size_t i = 0; i < numVars.size(); i++)
         for(int j = 0; j < numVars[i]; j++)
             guiVarNames.insert(std::pair<int, string>(i, Vars[cur_pos++]));
     
     theTable.clear();
     char tableString[20];
     cur_pos = 0;
-    for(int i = 0; i < numVars.size(); i++)
+    for(size_t i = 0; i < numVars.size(); i++)
         for(int j = 0; j < numVars[i]; j++)
             for(int k = 0; k < numPoints[i]; k++)
             {
@@ -510,7 +510,7 @@ QvisModelFitWindow::addRelationship()
     models->setCurrentCell(nrows, 0);
 
     num_relats++;
-    if(num_relats != input_space.size())
+    if(num_relats != (int)input_space.size())
     {
         selection_type.push_back(0);
         distance_type.push_back(0);

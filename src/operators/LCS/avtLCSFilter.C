@@ -882,9 +882,9 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                   global_bounds[0]*(1.0-xpcnt) +
                   global_bounds[1]*xpcnt;
                 
-                size_t index =
-                  (global_resolution[1]*global_resolution[0]*k) +
-                  (global_resolution[0]*j)+i;
+                //size_t index =
+                //  (global_resolution[1]*global_resolution[0]*k) +
+                //  (global_resolution[0]*j)+i;
 
                 seedPoints[l++].set(x,y,z);
             }
@@ -1069,7 +1069,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
         {
             size_t index = ics[idx]->id;
             size_t l = (index-offset);
-            if(l >= 0 && l < remapPoints.size())
+            if(l < remapPoints.size()) ///TODO: l >=0 is always true
             {
                 iHavePoint[l] = 1;
             }
@@ -1078,7 +1078,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
         UnifyMaximumValue(iHavePoint, anyoneHasPoint);
         avtVector zero;
         zero.x = zero.y = zero.z = 0.;
-        for (size_t i = 0; i < nTuples; i++)
+        for (size_t i = 0; i < (size_t)nTuples; i++)
             if (PAR_Rank() == 0 && !anyoneHasPoint[i])
                 remapPoints[i] = seedPoints.at(offset + i);
             else
@@ -1091,12 +1091,12 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
             remapPoints[i] = seedPoints.at(offset + i);
     }
 
-    for(int i = 0; i < ics.size(); ++i)
+    for(size_t i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
         int l = (index-offset);
         //std::cout << "l = " << l << " " << nTuples << std::endl;
-        if(0 <= l && l < remapPoints.size())
+        if(l >= 0 && (size_t)l < remapPoints.size())
         {
           // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
           //                ((avtLCSIC*)ics[i])->GetStartPoint();
@@ -1141,7 +1141,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     {
       for(int i = 0; i < 3; ++i)
       {
-        for(size_t j = 0; j < nTuples; ++j)
+        for(size_t j = 0; j < (size_t)nTuples; ++j)
             component->SetTuple1(j, remapPoints[j][i]);
 
         if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
@@ -1172,7 +1172,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     {
       int index = atts.GetOperationType() - 1;
 
-      for(size_t j = 0; j < nTuples; ++j)
+      for(size_t j = 0; j < (size_t)nTuples; ++j)
         component->SetTuple1(j, remapPoints[j][index]);
     }
 
@@ -1391,7 +1391,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
         // std::cout << "total number integrated: " << total << std::endl;
 
-        for(int j = 0,k = 0; j < total; ++j, k += 3)
+        for(size_t j = 0,k = 0; j < total; ++j, k += 3)
         {
             size_t index = all_indices[j];
 
@@ -1723,7 +1723,7 @@ avtLCSFilter::CreateIterativeCalcDataTree(avtDataTree_p inDT)
         // active scalars.
 //      out_ds->GetPointData()->SetActiveScalars(var.c_str());
 
-        for (size_t i = 0; i < nTuples; i++)
+        for (size_t i = 0; i < (size_t)nTuples; i++)
           exponents->SetTuple1(i, std::numeric_limits<float>::min() );
 
         vtkFloatArray *component = vtkFloatArray::New();
@@ -2060,7 +2060,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         {
             size_t index = ics[idx]->id;
             size_t l = (index-offset);
-            if(l >= 0 && l < remapPoints.size())
+            if(l < remapPoints.size()) ///l >= 0 is always true
             {
                 iHavePoint[l] = 1;
             }
@@ -2069,7 +2069,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         UnifyMaximumValue(iHavePoint, anyoneHasPoint);
         avtVector zero;
         zero.x = zero.y = zero.z = 0.;
-        for (size_t i = 0; i < nTuples; i++)
+        for (size_t i = 0; i < (size_t)nTuples; i++) {
             if (PAR_Rank() == 0 && !anyoneHasPoint[i])
             {
                 remapPoints[i] = seedPoints.at(offset + i);
@@ -2080,6 +2080,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
                 remapPoints[i] = zero;
                 remapTimes[i] = 0;
             }
+        }
     }
     else
     {
@@ -2091,7 +2092,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         }
     }
 
-    for(int i = 0; i < ics.size(); ++i)
+    for(size_t i = 0; i < ics.size(); ++i)
     {
         avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
@@ -2099,7 +2100,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         int l = (index-offset);
 
         //std::cout << "l = " << l << " " << nTuples << std::endl;
-        if(0 <= l && l < remapPoints.size())
+        if(l >= 0 && (size_t)l < remapPoints.size())
         {
           // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
           //                ((avtLCSIC*)ics[i])->GetStartPoint();
@@ -2120,7 +2121,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
     // Note the mesh is uniform with all distances being one.
     for(int i = 0; i < 3; ++i)
     {
-        for(size_t j = 0; j < nTuples; ++j)
+        for(size_t j = 0; j < (size_t)nTuples; ++j)
             component->SetTuple1(j, remapPoints[j][i]);
 
         if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
@@ -2138,7 +2139,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
     }
 
     // Store the times for the exponent.
-    for(size_t l = 0; l < nTuples; ++l)
+    for(size_t l = 0; l < (size_t)nTuples; ++l)
     {
       times->SetTuple1(l, remapTimes[l]);
     }
@@ -2167,7 +2168,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
       size_t index = ic->id;
       int l = (index-offset);
 
-      if( ic->maxSteps < maxSteps )
+      if( ic->maxSteps < (unsigned int)maxSteps )
       {
         ic->maxSteps++;
         ic->status.ClearTerminationMet();
@@ -2175,7 +2176,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
 
       // Check to see if all exponents have been found.
       if( exponents->GetTuple1(l) == std::numeric_limits<float>::min() &&
-          ic->maxSteps < maxSteps )
+          ic->maxSteps < (unsigned int)maxSteps )
         haveAllExponents = false;
     }
     
@@ -2320,7 +2321,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
 
         // std::cout << "total number integrated: " << total << std::endl;
 
-        for(int j=0, k=0; j<total; ++j, k+=3)
+        for(size_t j=0, k=0; j<total; ++j, k+=3)
         {
             size_t index = all_indices[j];
 
@@ -2370,7 +2371,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
               avtGradientExpression::CalculateGradient(fsle_ds, "component");
         }
 
-        for (int i = 0; i < nTuples; i++)
+        for (size_t i = 0; i < nTuples; i++)
           component->SetTuple1(i, std::numeric_limits<float>::epsilon());
 
         //now have the jacobian - 3 arrays with 3 components.
@@ -2392,7 +2393,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
         {
           avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
-          if( ic->maxSteps < maxSteps )
+          if( ic->maxSteps < (unsigned int)maxSteps )
           {
             ic->maxSteps++;
             ic->status.ClearTerminationMet();
@@ -2402,7 +2403,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
 
           // Check to see if all exponents have been found.
           if( exponents->GetTuple1(l) == std::numeric_limits<float>::min() &&
-              ic->maxSteps < maxSteps )
+              ic->maxSteps < (unsigned int)maxSteps )
             haveAllExponents = false;
         }
 
@@ -2985,8 +2986,9 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     int numStiff = 0;
     int numCritPts = 0;
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
+    }
 
     //See how many pts, ics we have so we can preallocate everything.
     for (int i = 0; i < numICs; i++)
@@ -3248,7 +3250,7 @@ avtLCSFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
         //
         // there is only one dataset to process
         //
-        vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
+        //vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
         int dom = inDT->GetDataRepresentation().GetDomain();
         std::string label = inDT->GetDataRepresentation().GetLabel();
         std::string str = CreateCacheString();

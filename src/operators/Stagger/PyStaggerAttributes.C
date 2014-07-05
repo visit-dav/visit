@@ -390,7 +390,7 @@ PyStaggerAttributes_GetLogString()
 static void
 PyStaggerAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    StaggerAttributes *atts = (StaggerAttributes *)subj;
+    StaggerAttributes *atts = (StaggerAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

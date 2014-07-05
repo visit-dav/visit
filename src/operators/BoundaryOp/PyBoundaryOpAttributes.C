@@ -326,7 +326,7 @@ PyBoundaryOpAttributes_GetLogString()
 static void
 PyBoundaryOpAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    BoundaryOpAttributes *atts = (BoundaryOpAttributes *)subj;
+    BoundaryOpAttributes *atts = (BoundaryOpAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

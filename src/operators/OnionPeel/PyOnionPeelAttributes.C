@@ -663,7 +663,7 @@ PyOnionPeelAttributes_GetLogString()
 static void
 PyOnionPeelAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    OnionPeelAttributes *atts = (OnionPeelAttributes *)subj;
+    OnionPeelAttributes *atts = (OnionPeelAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

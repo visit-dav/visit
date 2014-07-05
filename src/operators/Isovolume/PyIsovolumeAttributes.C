@@ -390,7 +390,7 @@ PyIsovolumeAttributes_GetLogString()
 static void
 PyIsovolumeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IsovolumeAttributes *atts = (IsovolumeAttributes *)subj;
+    IsovolumeAttributes *atts = (IsovolumeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

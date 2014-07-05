@@ -1012,7 +1012,7 @@ PyIndexSelectAttributes_GetLogString()
 static void
 PyIndexSelectAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IndexSelectAttributes *atts = (IndexSelectAttributes *)subj;
+    IndexSelectAttributes *atts = (IndexSelectAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

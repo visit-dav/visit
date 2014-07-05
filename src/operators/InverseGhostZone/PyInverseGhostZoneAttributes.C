@@ -539,7 +539,7 @@ PyInverseGhostZoneAttributes_GetLogString()
 static void
 PyInverseGhostZoneAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    InverseGhostZoneAttributes *atts = (InverseGhostZoneAttributes *)subj;
+    InverseGhostZoneAttributes *atts = (InverseGhostZoneAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

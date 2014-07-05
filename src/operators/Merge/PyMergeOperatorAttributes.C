@@ -361,7 +361,7 @@ PyMergeOperatorAttributes_GetLogString()
 static void
 PyMergeOperatorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MergeOperatorAttributes *atts = (MergeOperatorAttributes *)subj;
+    MergeOperatorAttributes *atts = (MergeOperatorAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

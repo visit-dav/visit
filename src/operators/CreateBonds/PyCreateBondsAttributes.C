@@ -1101,7 +1101,7 @@ PyCreateBondsAttributes_GetLogString()
 static void
 PyCreateBondsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CreateBondsAttributes *atts = (CreateBondsAttributes *)subj;
+    CreateBondsAttributes *atts = (CreateBondsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

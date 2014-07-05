@@ -706,7 +706,7 @@ PyPersistentParticlesAttributes_GetLogString()
 static void
 PyPersistentParticlesAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PersistentParticlesAttributes *atts = (PersistentParticlesAttributes *)subj;
+    PersistentParticlesAttributes *atts = (PersistentParticlesAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

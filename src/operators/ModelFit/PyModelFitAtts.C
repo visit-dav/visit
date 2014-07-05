@@ -1215,7 +1215,7 @@ PyModelFitAtts_GetLogString()
 static void
 PyModelFitAtts_CallLogRoutine(Subject *subj, void *data)
 {
-    ModelFitAtts *atts = (ModelFitAtts *)subj;
+    ModelFitAtts *atts = (ModelFitAtts *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

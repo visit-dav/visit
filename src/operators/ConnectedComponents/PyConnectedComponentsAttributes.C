@@ -329,7 +329,7 @@ PyConnectedComponentsAttributes_GetLogString()
 static void
 PyConnectedComponentsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ConnectedComponentsAttributes *atts = (ConnectedComponentsAttributes *)subj;
+    ConnectedComponentsAttributes *atts = (ConnectedComponentsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

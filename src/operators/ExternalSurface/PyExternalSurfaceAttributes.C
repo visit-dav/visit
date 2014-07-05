@@ -364,7 +364,7 @@ PyExternalSurfaceAttributes_GetLogString()
 static void
 PyExternalSurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExternalSurfaceAttributes *atts = (ExternalSurfaceAttributes *)subj;
+    ExternalSurfaceAttributes *atts = (ExternalSurfaceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

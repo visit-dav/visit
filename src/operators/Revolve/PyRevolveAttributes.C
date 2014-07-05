@@ -572,7 +572,7 @@ PyRevolveAttributes_GetLogString()
 static void
 PyRevolveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RevolveAttributes *atts = (RevolveAttributes *)subj;
+    RevolveAttributes *atts = (RevolveAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

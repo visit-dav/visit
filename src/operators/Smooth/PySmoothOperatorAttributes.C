@@ -524,7 +524,7 @@ PySmoothOperatorAttributes_GetLogString()
 static void
 PySmoothOperatorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SmoothOperatorAttributes *atts = (SmoothOperatorAttributes *)subj;
+    SmoothOperatorAttributes *atts = (SmoothOperatorAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

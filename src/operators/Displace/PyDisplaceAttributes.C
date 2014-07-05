@@ -358,7 +358,7 @@ PyDisplaceAttributes_GetLogString()
 static void
 PyDisplaceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DisplaceAttributes *atts = (DisplaceAttributes *)subj;
+    DisplaceAttributes *atts = (DisplaceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

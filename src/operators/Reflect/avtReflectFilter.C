@@ -981,12 +981,12 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         return;
     }
 
-    int   i, j;
+    size_t   i, j;
 
     // First identify which variables are vectors.  Point vectors only.
     std::vector<vtkDataArray *> pt_vectors;
     vtkPointData *pd = ds->GetPointData();
-    for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)pd->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *da = pd->GetArray(i);
         if (da->GetNumberOfComponents() == 3)
@@ -1003,7 +1003,7 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         vtkDataArray *da = pt_vectors[i]->NewInstance();
         da->DeepCopy(pt_vectors[i]);
         da->SetName(pt_vectors[i]->GetName());
-        const int ntups = da->GetNumberOfTuples();
+        const size_t ntups = da->GetNumberOfTuples();
         for (j = 0 ; j < ntups ; j++)
         {
             if (dim & 1)
@@ -1024,7 +1024,7 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
     {
         vtkUnsignedCharArray *gn = (vtkUnsignedCharArray *) pd->GetArray("avtGhostNodes");
         double zeroVel[3] = { 0,0,0 };
-        int npts = ds->GetNumberOfPoints();
+        size_t npts = ds->GetNumberOfPoints();
         for (i = 0 ; i < npts ; i++)
         {
             if (gn->GetValue(i) != 0)
@@ -1054,7 +1054,7 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
     // First identify which variables are vectors.  Now the cell vectors
     std::vector<vtkDataArray *> cell_vectors;
     vtkCellData *cd = ds->GetCellData();
-    for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)cd->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *da = cd->GetArray(i);
         if (da->GetNumberOfComponents() == 3)
@@ -1069,7 +1069,7 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         vtkDataArray *da = cell_vectors[i]->NewInstance();
         da->DeepCopy(cell_vectors[i]);
         da->SetName(cell_vectors[i]->GetName());
-        const int ntups = da->GetNumberOfTuples();
+        const size_t ntups = da->GetNumberOfTuples();
         for (j = 0 ; j < ntups ; j++)
         {
             if (dim & 1)
@@ -1093,12 +1093,12 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
                << "for performance issues, this is the place to look." << endl;
         vtkUnsignedCharArray *gn = (vtkUnsignedCharArray *) pd->GetArray("avtGhostNodes");
         double zeroVel[3] = { 0,0,0 };
-        int ncells = ds->GetNumberOfCells();
+        size_t ncells = ds->GetNumberOfCells();
         for (i = 0 ; i < ncells ; i++)
         {
             vtkCell *cell = ds->GetCell(i);
             vtkIdList *ids = cell->GetPointIds();
-            int nids = ids->GetNumberOfIds();
+            size_t nids = ids->GetNumberOfIds();
             bool touchesBoundary = false;
             for (j = 0 ; j < nids ; j++)
             {

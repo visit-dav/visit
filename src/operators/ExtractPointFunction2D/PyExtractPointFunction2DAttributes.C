@@ -358,7 +358,7 @@ PyExtractPointFunction2DAttributes_GetLogString()
 static void
 PyExtractPointFunction2DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExtractPointFunction2DAttributes *atts = (ExtractPointFunction2DAttributes *)subj;
+    ExtractPointFunction2DAttributes *atts = (ExtractPointFunction2DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

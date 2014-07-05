@@ -513,7 +513,7 @@ vtkDataSet *
 avtReplicateFilter::ReplicateRectilinear(vtkRectilinearGrid *ds, double offset[3])
 {
     vtkRectilinearGrid *out = (vtkRectilinearGrid *) ds->NewInstance();
-    int nPts = ds->GetNumberOfPoints();
+    //int nPts = ds->GetNumberOfPoints();
     int dims[3];
     ds->GetDimensions(dims);
     out->GetFieldData()->ShallowCopy(ds->GetFieldData());
@@ -762,7 +762,7 @@ vtkPolyData *
 avtReplicateFilter::ReplicateAndShiftUnitCellAtoms(vtkPolyData *in)
 {
     bool replicate = atts.GetReplicateUnitCellAtoms();
-    bool shift     = atts.GetShiftPeriodicAtomOrigin();
+    //bool shift     = atts.GetShiftPeriodicAtomOrigin();
 
     // Make sure we have molecular data; if there are polygons
     // in here, some of our assumptions will be wrong.

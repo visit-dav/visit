@@ -661,7 +661,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
 
           //Copy the pointdata from the input mesh to the output mesh
           vtkPointData* allData = particlePathData->GetPointData();
-          for( unsigned int j=0 ; j<allData->GetNumberOfArrays() ; j++) {
+          for( unsigned int j=0 ; j< (unsigned int)allData->GetNumberOfArrays() ; j++) {
             allData->GetArray(j)->
               InsertTuple( newPointIndex,
                            currData->GetArray(j)->GetTuple(i) );
@@ -678,7 +678,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
             
             //Copy the celldata from the input mesh to the output mesh
             vtkCellData* allCellData = particlePathData->GetCellData();
-            for( unsigned int j=0 ; j<allCellData->GetNumberOfArrays() ; j++) {
+            for( unsigned int j=0 ; j<(unsigned int)allCellData->GetNumberOfArrays() ; j++) {
               allCellData->GetArray(j)->
                 InsertTuple( newCellIndex,
                              currCellData->GetArray(j)->GetTuple(i) );
@@ -699,7 +699,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
 
             //Copy the celldata from the input mesh to the output mesh
             vtkCellData* allCellData = particlePathData->GetCellData();
-            for( unsigned int j=0 ; j<allCellData->GetNumberOfArrays() ; j++) {
+            for( unsigned int j=0 ; j<(unsigned int)allCellData->GetNumberOfArrays() ; j++) {
                allCellData->GetArray(j)->
                  InsertTuple( newCellIndex,
                               currCellData->GetArray(j)->GetTuple(i) );

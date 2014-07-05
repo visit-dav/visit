@@ -513,7 +513,7 @@ PyCylinderAttributes_GetLogString()
 static void
 PyCylinderAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CylinderAttributes *atts = (CylinderAttributes *)subj;
+    CylinderAttributes *atts = (CylinderAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

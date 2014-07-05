@@ -443,7 +443,7 @@ PyCartographicProjectionAttributes_GetLogString()
 static void
 PyCartographicProjectionAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CartographicProjectionAttributes *atts = (CartographicProjectionAttributes *)subj;
+    CartographicProjectionAttributes *atts = (CartographicProjectionAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

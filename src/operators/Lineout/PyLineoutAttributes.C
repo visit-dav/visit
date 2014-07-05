@@ -618,7 +618,7 @@ PyLineoutAttributes_GetLogString()
 static void
 PyLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LineoutAttributes *atts = (LineoutAttributes *)subj;
+    LineoutAttributes *atts = (LineoutAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

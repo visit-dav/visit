@@ -125,7 +125,7 @@ void DIR_Graph::trim_leafs()
   std::vector<GraphEdge> tmp_elist;
   std::vector<GraphNode> tmp_nlist;
 
-  int i;
+  size_t i;
   for (i=0; i<elist.size(); i++)
   {
     GraphEdge &e=elist[i];
@@ -139,7 +139,7 @@ void DIR_Graph::trim_leafs()
   {
     GraphEdge &e=tmp_elist[i];
     bool add=true;
-    for (int j=0; j<tmp_nlist.size(); j++)
+    for (size_t j=0; j<tmp_nlist.size(); j++)
     {
       if (tmp_nlist[j].pre_node_id == e.node1)
       {
@@ -156,7 +156,7 @@ void DIR_Graph::trim_leafs()
     }
     
     add=true;
-    for (int j=0; j<tmp_nlist.size(); j++)
+    for (size_t j=0; j<tmp_nlist.size(); j++)
     {
       if (tmp_nlist[j].pre_node_id == e.node2)
       {
@@ -178,7 +178,7 @@ void DIR_Graph::trim_leafs()
   {
     GraphEdge &e=tmp_elist[i];
     
-    for (int j=0; j<tmp_nlist.size(); j++)
+    for (size_t j=0; j<tmp_nlist.size(); j++)
     {
       if (tmp_nlist[j].pre_node_id == e.node1)
       {
@@ -188,7 +188,7 @@ void DIR_Graph::trim_leafs()
       }
     }
     
-    for (int j=0; j<tmp_nlist.size(); j++)
+    for (size_t j=0; j<tmp_nlist.size(); j++)
     {
       if (tmp_nlist[j].pre_node_id == e.node2)
       {
@@ -295,7 +295,7 @@ void DIR_Graph::Dijkstra_path_between(int n1, int n2, std::vector<int> &path)
 void DIR_Graph::search_shortest_paths_between_pairs_of_leafs()
 {
   std::vector<int> leaf_nodes;
-  int i, j;
+  size_t i, j;
   
   for (i=0; i<nlist.size(); i++)
   {
@@ -317,7 +317,7 @@ void DIR_Graph::search_shortest_paths_between_pairs_of_leafs()
 void DIR_Graph::get_the_longest_shortest_path()
 {
   std::vector<float> path_lens;
-  int i, j;
+  size_t i, j;
 
   for (i=0; i<all_paths_between_leafs.size(); i++)
   {
@@ -362,7 +362,7 @@ Skeleton::Point DIR_Graph::get_centroid()
   search_shortest_paths_between_pairs_of_leafs();
   get_the_longest_shortest_path();
 
-  int i;
+  size_t i;
   float half_len = longest_length/2.;
 
   float cur_len = 0;
@@ -386,4 +386,6 @@ Skeleton::Point DIR_Graph::get_centroid()
       return Skeleton::Point(cx, cy);
     }
   }
+
+  return Skeleton::Point(INFINITY, INFINITY); ///TODO: check on fix for no return-type?
 }

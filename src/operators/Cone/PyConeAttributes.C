@@ -686,7 +686,7 @@ PyConeAttributes_GetLogString()
 static void
 PyConeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ConeAttributes *atts = (ConeAttributes *)subj;
+    ConeAttributes *atts = (ConeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

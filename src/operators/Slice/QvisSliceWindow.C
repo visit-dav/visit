@@ -1437,7 +1437,7 @@ QvisSliceWindow::UpdateMeshNames()
         if (md)
         {
             stringVector meshNames = md->GetAllMeshNames();
-            for (int i = 0; i < meshNames.size(); i++)
+            for (size_t i = 0; i < meshNames.size(); i++)
             {
                 meshName->addItem(QString(meshNames[i].c_str()));
             }

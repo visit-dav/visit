@@ -3585,7 +3585,7 @@ PyPoincareAttributes_GetLogString()
 static void
 PyPoincareAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PoincareAttributes *atts = (PoincareAttributes *)subj;
+    PoincareAttributes *atts = (PoincareAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

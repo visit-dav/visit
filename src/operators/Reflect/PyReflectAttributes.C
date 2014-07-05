@@ -668,7 +668,7 @@ PyReflectAttributes_GetLogString()
 static void
 PyReflectAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ReflectAttributes *atts = (ReflectAttributes *)subj;
+    ReflectAttributes *atts = (ReflectAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

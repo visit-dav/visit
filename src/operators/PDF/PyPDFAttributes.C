@@ -1332,7 +1332,7 @@ PyPDFAttributes_GetLogString()
 static void
 PyPDFAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PDFAttributes *atts = (PDFAttributes *)subj;
+    PDFAttributes *atts = (PDFAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

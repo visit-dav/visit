@@ -593,7 +593,7 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
     vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
     vtkDataSet *output = NULL;
  
-    int nDataSets = 0;
+    //int nDataSets = 0;
     bool inverse = false; 
     bool funcSet = SetUpClipFunctions(ifuncs, inverse);
     if (!funcSet)
@@ -850,7 +850,7 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
     vtkDataArray *outXC = outGrid->GetXCoordinates();
     vtkDataArray *outVal = inVal->NewInstance();
 
-    int nx = inXC->GetNumberOfTuples();
+    //int nx = inXC->GetNumberOfTuples();
 
     double lastX = inXC->GetTuple1(0);
     double lastVal = inVal->GetTuple1(0);
@@ -875,7 +875,7 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
         if ((dist <= 0 && inv) || (lastDist > 0 && !inv))
             whichCase += 2;
 
-        double x1, x2, d1 = 0., d2 = 1., v1, v2, newX = 0., newVal = 0.;
+        double x1 = 0, x2 = 0, d1 = 0., d2 = 1., v1 = 0, v2 = 0, newX = 0., newVal = 0.; ///TODO: check on fix for uninitialized values
         switch(whichCase)
         {
             case 1 : 

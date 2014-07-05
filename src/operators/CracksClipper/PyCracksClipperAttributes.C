@@ -559,7 +559,7 @@ PyCracksClipperAttributes_GetLogString()
 static void
 PyCracksClipperAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CracksClipperAttributes *atts = (CracksClipperAttributes *)subj;
+    CracksClipperAttributes *atts = (CracksClipperAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

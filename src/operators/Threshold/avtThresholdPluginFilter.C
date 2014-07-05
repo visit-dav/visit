@@ -204,8 +204,8 @@ avtThresholdPluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
 
     char tmp[200];
     std::string params;
-    int nvars = (int)(t.GetListedVarNames().size());
-    for(int i = 0; i < nvars; ++i)
+    size_t nvars = t.GetListedVarNames().size();
+    for(size_t i = 0; i < nvars; ++i)
     {
         if(i < t.GetLowerBounds().size())
         {

@@ -390,7 +390,7 @@ PyMultiresControlAttributes_GetLogString()
 static void
 PyMultiresControlAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MultiresControlAttributes *atts = (MultiresControlAttributes *)subj;
+    MultiresControlAttributes *atts = (MultiresControlAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

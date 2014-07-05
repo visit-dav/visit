@@ -489,7 +489,7 @@ PyCoordSwapAttributes_GetLogString()
 static void
 PyCoordSwapAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CoordSwapAttributes *atts = (CoordSwapAttributes *)subj;
+    CoordSwapAttributes *atts = (CoordSwapAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

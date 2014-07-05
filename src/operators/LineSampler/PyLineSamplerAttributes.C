@@ -2567,7 +2567,7 @@ PyLineSamplerAttributes_GetLogString()
 static void
 PyLineSamplerAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LineSamplerAttributes *atts = (LineSamplerAttributes *)subj;
+    LineSamplerAttributes *atts = (LineSamplerAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

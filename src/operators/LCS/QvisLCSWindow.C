@@ -591,7 +591,7 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
 void
 QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
-    int row = 0;
+    //int row = 0;
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(5);

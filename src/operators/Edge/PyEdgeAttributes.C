@@ -329,7 +329,7 @@ PyEdgeAttributes_GetLogString()
 static void
 PyEdgeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    EdgeAttributes *atts = (EdgeAttributes *)subj;
+    EdgeAttributes *atts = (EdgeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

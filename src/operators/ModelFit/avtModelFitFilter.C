@@ -169,7 +169,7 @@ avtModelFitFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     stringVector Vars = atts.GetVars();
 
     if(!num_relats)
-    for(int i = 0; i < numTups.size(); i++)
+    for(size_t i = 0; i < numTups.size(); i++)
         if(numTups[i] > 0)
         num_relats++;
     
@@ -291,7 +291,7 @@ avtModelFitFilter::PostExecute()
     vtkDataArray *darray;
     char secVarName[1024];
     int numValues;
-    int varFinder;
+    size_t varFinder;
 
     double distance;
     float *scalars;
@@ -308,7 +308,7 @@ avtModelFitFilter::PostExecute()
 
     //Since there may be overlap between models in variables specified,
     //create a set of all unique variables
-    for(int i = 0; i < Vars.size(); i++)
+    for(size_t i = 0; i < Vars.size(); i++)
     {
         sprintf(secVarName, "%s", Vars[i].c_str());
         createVS(secVarName);
@@ -369,10 +369,10 @@ avtModelFitFilter::PostExecute()
     //statistics for each.
     calculateVariableStats();
     
+#ifdef PARALLEL
     int numProcs = 1;
     int myRank   = 0;
     
-#ifdef PARALLEL
     MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
     MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
 
@@ -447,7 +447,7 @@ avtModelFitFilter::PostExecute()
     
 #endif
 
-    for(int i = 0; i < VS.size(); i++)
+    for(size_t i = 0; i < VS.size(); i++)
         if(VS[i]->num_points)
             VS[i]->average = VS[i]->sum/VS[i]->num_points;
 
@@ -519,7 +519,7 @@ avtModelFitFilter::PostExecute()
     atts.SetThold(thold);
 
     //
-    for(int ds = 0; ds < out_ds.size(); ds++){
+    for(size_t ds = 0; ds < out_ds.size(); ds++){
         numValues = 0;
        
         if(Centering == AVT_NODECENT)
@@ -557,7 +557,7 @@ avtModelFitFilter::PostExecute()
                     distance = calculateDistance(mins, distanceType[i]);
     
                     good_match = true;
-                    for(int j = 0; j < mins.size(); j++)
+                    for(size_t j = 0; j < mins.size(); j++)
                         if(mins[j] < 0)
                             good_match = false;
             
@@ -614,7 +614,7 @@ avtModelFitFilter::ModifyContract(avtContract_p in_spec){
     if(!curListedVars.size())
     return in_spec;
   
-    ExpressionList *elist = ParsingExprList::Instance()->GetList();
+    //ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
     if((!strcmp(pipelineVar, "operators/ModelFit/model")) || 
        (!strcmp(pipelineVar, "operators/ModelFit/distance")))
@@ -632,7 +632,7 @@ avtModelFitFilter::ModifyContract(avtContract_p in_spec){
 
     const char *curListedVar;
     std::vector<CharStrRef> curSecondaryVars = outSpec->GetDataRequest()->GetSecondaryVariables();
-    int listedVarNum, secVarNum;
+    size_t listedVarNum, secVarNum;
     char secVarName[1024];
 
     for(listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++){
@@ -700,7 +700,7 @@ int compare_doubles(const void *a, const void *b)
 void
 avtModelFitFilter::createVS(char *secVarName)
 {
-    int varFinder;
+    size_t varFinder;
     variableStats *vs;
 
     for(varFinder = 0; varFinder < VS.size(); varFinder++)
@@ -739,13 +739,13 @@ avtModelFitFilter::calculateVariableStats()
     vtkDataArray *darray;
 
     //loop over VS
-    for(int varFinder = 0; varFinder < VS.size(); varFinder++)
+    for(size_t varFinder = 0; varFinder < VS.size(); varFinder++)
     {
         merged_ranges = (double *)malloc(sizeof(double)*(out_ds.size()*BINS));
         total_num_values = 0;
         number_on = 0;
 
-        for(int ds = 0; ds < out_ds.size(); ds++)
+        for(size_t ds = 0; ds < out_ds.size(); ds++)
         {
             if(Centering == AVT_NODECENT)                                            
             {
@@ -838,7 +838,7 @@ avtModelFitFilter::grabOnePoint(doubleVector *point, int numVars, int var_index,
     for(int i = point->size()-1; i >= 0; i--)
         point->erase(point->begin()+i); 
 
-    int varFinder;
+    size_t varFinder;
 
     for(int j = 0; j < numVars; j++)
     {//grabbing vars in a relationship - 1111111111111111111111111111111111111111
@@ -876,7 +876,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
     intVector tup_match2;
     double min;
     int l;
-    int varFinder;
+    size_t varFinder;
     double delta;
 
     // Is the relationship a fit at all? /////////////////
@@ -936,10 +936,10 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
         //make sure the min value comes from the same tuple for each variable
         for(int k = tup_match1->size() - 1; k >= 0; k--)
         {
-            for(l = 0; l < tup_match2.size(); l++)
+            for(l = 0; l < (int)tup_match2.size(); l++)
                 if((*tup_match1)[k] == tup_match2[l])
                     break;
-            if(l == tup_match2.size())
+            if(l == (int)tup_match2.size())
                 tup_match1->erase(tup_match1->begin()+k);
         }
     }
@@ -954,24 +954,25 @@ avtModelFitFilter::calculateDistance(doubleVector mins, int distanceType)
     double distance = 0;
     if(!distanceType)
     {/* Euclidean Distance ////////////////////////ED*/
-        for(int j = 0; j < mins.size(); j++)      //ED
+        for(size_t j = 0; j < mins.size(); j++)      //ED
         distance += pow(mins[j], 2);              //ED
         return sqrt(distance);                    //ED*/
     }
     if(distanceType == 1) 
     {/* Manhattan Distance /////////////////////////MD*/
-    for(int j = 0; j < mins.size(); j++)          //MD
+    for(size_t j = 0; j < mins.size(); j++)          //MD
         distance += fabs(mins[j]);                //MD
     return distance;                              //MD*/
     }
     if(distanceType == 2)
     {/* Chebyshev Distance /////////////////////////CD*/
     double max = mins[0];                         //CD
-    for(int j = 1; j < mins.size(); j++)          //CD
+    for(size_t j = 1; j < mins.size(); j++)          //CD
         if(mins[j] > max)                         //CD
         max = mins[j];                            //CD
     return max;                                   //CD*/
     }
+    return distance; /// TODO: check fix for return of non-void warning
 }
 
 double avtModelFitFilter::convertToVariableSpace(double value, int varFinder, int fromType)

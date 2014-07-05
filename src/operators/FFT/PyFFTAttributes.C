@@ -326,7 +326,7 @@ PyFFTAttributes_GetLogString()
 static void
 PyFFTAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FFTAttributes *atts = (FFTAttributes *)subj;
+    FFTAttributes *atts = (FFTAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

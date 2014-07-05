@@ -425,7 +425,7 @@ PyThreeSliceAttributes_GetLogString()
 static void
 PyThreeSliceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ThreeSliceAttributes *atts = (ThreeSliceAttributes *)subj;
+    ThreeSliceAttributes *atts = (ThreeSliceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

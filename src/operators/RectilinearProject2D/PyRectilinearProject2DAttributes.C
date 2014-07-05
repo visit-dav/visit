@@ -388,7 +388,7 @@ PyRectilinearProject2DAttributes_GetLogString()
 static void
 PyRectilinearProject2DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RectilinearProject2DAttributes *atts = (RectilinearProject2DAttributes *)subj;
+    RectilinearProject2DAttributes *atts = (RectilinearProject2DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

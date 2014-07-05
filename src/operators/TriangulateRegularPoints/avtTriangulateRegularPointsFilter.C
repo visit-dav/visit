@@ -166,7 +166,7 @@ avtTriangulateRegularPointsFilter::ExecuteData(vtkDataSet *in_ds, int, std::stri
                    "Expected a vtkPolyData in the avtTriangulateRegularPointsFilter.");
     }
     vtkPolyData *in_pd = vtkPolyData::SafeDownCast(in_ds);
-    vtkPoints   *in_pts = in_pd->GetPoints();
+    //vtkPoints   *in_pts = in_pd->GetPoints();
 
     int nPoints = in_pd->GetNumberOfPoints();
     float *points = vtkFloatArray::SafeDownCast(in_pd->GetPoints()->GetData())->GetPointer(0);

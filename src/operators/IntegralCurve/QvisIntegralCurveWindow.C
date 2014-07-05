@@ -978,7 +978,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 void
 QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
-    int row = 0;
+    //int row = 0;
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(5);
@@ -1242,7 +1242,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
                 std::vector<double> points = atts->GetPointList();
 
                 pointList->clear();
-                for (int i = 0; i < points.size(); i+= 3)
+                for (size_t i = 0; i < points.size(); i+= 3)
                 {
                     char tmp[256];
                     sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
@@ -2642,7 +2642,7 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
     }
     if (which_widget == IntegralCurveAttributes::ID_selection || doAll)
     {
-        int val = selections->currentIndex();
+        int val = selections->currentIndex(); (void) val; /// TODO: is this necessary?
     }
 }
 
