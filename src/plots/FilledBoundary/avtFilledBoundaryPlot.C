@@ -267,7 +267,7 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
     {
         levelsMapper->DataScalingOff();
     }
-    avtPointGlypher::PointGlyphType glyphType = avtPointGlypher::Point;
+    //avtPointGlypher::PointGlyphType glyphType = avtPointGlypher::Point;
     if (atts.GetPointType() == FilledBoundaryAttributes::Box)
         levelsMapper->SetGlyphType(avtPointGlypher::Box);
     else if (atts.GetPointType() == FilledBoundaryAttributes::Axis)
@@ -949,7 +949,7 @@ avtFilledBoundaryPlot::ReleaseData(void)
 void
 avtFilledBoundaryPlot::SortLabels()
 {
-    int   i;
+    size_t   i;
 
     vector < string > originalLabels = atts.GetBoundaryNames();
 
@@ -966,7 +966,7 @@ avtFilledBoundaryPlot::SortLabels()
     vector < string > usedLabels;
     behavior->GetInfo().GetAttributes().GetLabels(usedLabels);
     sort(usedLabels.begin(), usedLabels.end());
-    int origLabelIndex = 0;
+    size_t origLabelIndex = 0;
     vector < pair < int, string > > sortedUsedLabels;
     for (i = 0 ; i < usedLabels.size() ; i++)
     {

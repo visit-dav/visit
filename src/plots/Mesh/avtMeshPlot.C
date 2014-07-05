@@ -1235,7 +1235,7 @@ avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
 bool
 avtMeshPlot::ShouldRenderOpaque(void)
 {
-    bool shouldBeOn;
+    bool shouldBeOn = false; ///TODO: check on fix for uninitialized value
 
     switch (atts.GetOpaqueMode())
     {

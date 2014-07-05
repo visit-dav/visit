@@ -881,7 +881,7 @@ PySpreadsheetAttributes_GetLogString()
 static void
 PySpreadsheetAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SpreadsheetAttributes *atts = (SpreadsheetAttributes *)subj;
+    SpreadsheetAttributes *atts = (SpreadsheetAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

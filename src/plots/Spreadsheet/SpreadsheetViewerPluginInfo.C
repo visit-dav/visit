@@ -563,7 +563,7 @@ void
 SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
     const ViewerPlot *plot)
 {
-    const char *mName = "SpreadsheetViewerPluginInfo::PrivateSetPlotAtts: ";
+    //const char *mName = "SpreadsheetViewerPluginInfo::PrivateSetPlotAtts: ";
 
     // Search for a SIL_DOMAIN category under the current silTopSet and add
     // sets that are used.
@@ -582,7 +582,7 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         if(*collection != NULL && collection->GetRole() == SIL_DOMAIN) 
         {
             nSets = collection->GetNumberOfSubsets(); 
-            for(size_t si = 0; si < nSets && !validName; ++si)
+            for(size_t si = 0; si < (size_t)nSets && !validName; ++si)
             {
                 if(!firstNameSet)
                 {

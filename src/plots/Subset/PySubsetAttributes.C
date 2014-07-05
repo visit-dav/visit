@@ -570,7 +570,7 @@ SubsetAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
-                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)
+                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))
                                 {
                                     C[i*4] = 0;
                                     C[i*4+1] = 0;
@@ -614,7 +614,7 @@ SubsetAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
-                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)
+                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))
                                 {
                                     C[i*4] = 0;
                                     C[i*4+1] = 0;
@@ -1413,7 +1413,7 @@ PySubsetAttributes_GetLogString()
 static void
 PySubsetAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SubsetAttributes *atts = (SubsetAttributes *)subj;
+    SubsetAttributes *atts = (SubsetAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

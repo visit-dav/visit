@@ -1223,7 +1223,7 @@ VolumeAttributes_GetTransferFunction2DWidgets(PyObject *self, PyObject *args)
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
-    if(index < 0 || index >= obj->data->GetTransferFunction2DWidgets().size())
+    if(index < 0 || (size_t)index >= obj->data->GetTransferFunction2DWidgets().size())
     {
         char msg[200];
         if(obj->data->GetTransferFunction2DWidgets().size() == 0)
@@ -1972,7 +1972,7 @@ PyVolumeAttributes_GetLogString()
 static void
 PyVolumeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    VolumeAttributes *atts = (VolumeAttributes *)subj;
+    VolumeAttributes *atts = (VolumeAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

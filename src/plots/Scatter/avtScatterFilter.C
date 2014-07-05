@@ -580,8 +580,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
            << "zExtents = [" << zMin << ", " << zMax << "]" << endl;
 
     vtkIdType nCells = 0;
-    avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-    const float EPSILON = 1.e-9;
+    //avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+    //const float EPSILON = 1.e-9;
 
     debug4 << mName << "arr1 = " << arr1->GetName()
            << ", ntuples=" << arr1->GetNumberOfTuples() << endl;
@@ -780,8 +780,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
         coord = (float *)pts->GetVoidPointer(0);
 
         // Variables for log scaling
-        float small_val = 0.1;  // Less than 1.
-        float log_smallval = log10(small_val);
+        //float small_val = 0.1;  // Less than 1.
+        //float log_smallval = log10(small_val);
 
         // Variables for skew scaling.
         float x_range, x_rangeInverse, x_logSkew, x_k;
@@ -836,7 +836,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
         }
         else
         {
-            float z_range, z_rangeInverse, z_logSkew, z_k;
+            float z_range = 0, z_rangeInverse = 0, z_logSkew = 0, z_k = 0; ///TODO: check on fix for uninitialized variables
             if(d3->scale == 2)
             {
                 z_range = zMax - zMin; 

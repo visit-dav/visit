@@ -203,7 +203,7 @@ avtLabelsMapper::CustomizeMappers(void)
 
             vtkUserDefinedMapperBridge2 *M =
                (vtkUserDefinedMapperBridge2 *)mappers[i];
-            if(i < labelNames.size())
+            if((size_t)i < labelNames.size())
                 M->SetLabel(labelNames[i]);
             M->SetRendererAction(RENDERER_ACTION_NOTHING);
         }

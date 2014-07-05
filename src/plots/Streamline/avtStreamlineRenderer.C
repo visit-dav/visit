@@ -331,9 +331,9 @@ avtStreamlineRenderer::SetSpecularProperties(bool flag, double coeff,
     spec_coeff = flag ? coeff : 0;
     spec_power = power;
 
-    int r = color.Red();
-    int g = color.Green();
-    int b = color.Blue();
+    //int r = color.Red();
+    //int g = color.Green();
+    //int b = color.Blue();
     spec_r = float(color.Red())/255.;
     spec_g = float(color.Green())/255.;
     spec_b = float(color.Blue())/255.;

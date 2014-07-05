@@ -361,7 +361,7 @@ PyTruecolorAttributes_GetLogString()
 static void
 PyTruecolorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TruecolorAttributes *atts = (TruecolorAttributes *)subj;
+    TruecolorAttributes *atts = (TruecolorAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

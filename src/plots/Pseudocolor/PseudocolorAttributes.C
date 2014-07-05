@@ -2750,7 +2750,7 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
       {
         double opacity = k->AsDouble();
         
-        PseudocolorAttributes::OpacityType val;
+        //PseudocolorAttributes::OpacityType val;
         
         // If the opacity value is set and valid set the opacityType
         // to constant and a new node for it.

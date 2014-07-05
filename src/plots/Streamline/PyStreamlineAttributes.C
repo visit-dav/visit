@@ -4987,7 +4987,7 @@ PyStreamlineAttributes_GetLogString()
 static void
 PyStreamlineAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    StreamlineAttributes *atts = (StreamlineAttributes *)subj;
+    StreamlineAttributes *atts = (StreamlineAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

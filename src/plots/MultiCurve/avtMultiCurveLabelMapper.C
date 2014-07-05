@@ -217,9 +217,9 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
             if (buf2[i] != INT_MIN)
                 sprintf(label, "%d", buf2[i]);
             else
-                sprintf(label, "");
+                strcpy(label, "");
         else
-            sprintf(label, "%d", i);
+            sprintf(label, "%lld", i);
         la->SetDesignator(label);
         la->SetScaleFactor(scale);
         la->SetForegroundColor(col[0], col[1], col[2], col[3]);
@@ -252,7 +252,7 @@ void
 avtMultiCurveLabelMapper::SetScale(double s)
 {
     scale = s;
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         actors[i]->SetScaleFactor(s);
     }
@@ -277,7 +277,7 @@ void
 avtMultiCurveLabelMapper::SetMarkerLineWidth(_LineWidth lw)
 {
     markerLineWidth = lw;
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         actors[i]->SetLineWidth(LineWidth2Int(lw));
     }
@@ -304,14 +304,14 @@ avtMultiCurveLabelMapper::SetMarkerVisibility(bool labelsOn)
    markerVisibility = labelsOn;
    if (labelsOn)
    {
-       for (int i = 0; i < actors.size(); i += 2)
+       for (size_t i = 0; i < actors.size(); i += 2)
        {
            actors[i]->UnHide();
        }
    } 
    else 
    {
-       for (int i = 0; i < actors.size(); i += 2)
+       for (size_t i = 0; i < actors.size(); i += 2)
        {
            actors[i]->Hide();
        }
@@ -339,14 +339,14 @@ avtMultiCurveLabelMapper::SetIdVisibility(bool labelsOn)
    idVisibility = labelsOn;
    if (labelsOn)
    {
-       for (int i = 1; i < actors.size(); i += 2)
+       for (size_t i = 1; i < actors.size(); i += 2)
        {
            actors[i]->UnHide();
        }
    } 
    else 
    {
-       for (int i = 1; i < actors.size(); i += 2)
+       for (size_t i = 1; i < actors.size(); i += 2)
        {
            actors[i]->Hide();
        }
@@ -372,7 +372,7 @@ void
 avtMultiCurveLabelMapper::SetColors(const ColorAttributeList &c)
 {
     cal = c;
-    for (int i = 0; i < actors.size(); i++)
+    for (size_t i = 0; i < actors.size(); i++)
     {
         double col[4];
         GetLevelColor(colors[i], col);

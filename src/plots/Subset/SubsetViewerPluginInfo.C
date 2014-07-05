@@ -512,12 +512,12 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           else
           {
               int origin = mesh->groupOrigin;
-              int nGroups = mesh->groupIdsBasedOnRange.size()-1;
+              size_t nGroups = mesh->groupIdsBasedOnRange.size()-1;
               for (size_t i = 0; i < nGroups; i++)
               {
                   groupSet.insert(origin+i);
                   gIDS.push_back(origin+i);
-                  sprintf(temp, "%d", origin+i);
+                  sprintf(temp, "%ld", origin+i);
                   sv.push_back(temp);
               }
           }

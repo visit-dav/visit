@@ -604,7 +604,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     const stringVector &matNames = boundaryAtts->GetBoundaryNames();
     intVector selectedBoundaries;
     bool update = true;
-    int i;
+    size_t i;
     QListWidgetItem *item;
 
     multipleColorList->blockSignals(true);
@@ -612,7 +612,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     //
     // Make a pass through the widget to see how many boundaries are selected.
     //
-    for(i = 0; i < multipleColorList->count(); ++i)
+    for(i = 0; i < (size_t)multipleColorList->count(); ++i)
     {
         if(multipleColorList->item(i)->isSelected())
             selectedBoundaries.push_back(i);
@@ -621,7 +621,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     //
     // Modify the names.
     //
-    if(matNames.size() == multipleColorList->count())
+    if(matNames.size() == (size_t)multipleColorList->count())
     {
         // See if the strings are the same..
         bool same = true;
@@ -642,10 +642,10 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
         else
             update = false;
     }
-    else if(matNames.size() > multipleColorList->count())
+    else if(matNames.size() > (size_t)multipleColorList->count())
     {
         // Set all of the existing names.
-        for(i = 0; i < multipleColorList->count(); ++i)
+        for(i = 0; i < (size_t)multipleColorList->count(); ++i)
             UpdateItem(i);
 
         // Add new entries
@@ -665,7 +665,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
 
         // Remove excess entries
         int numEntries = multipleColorList->count();
-        for(i = (int)matNames.size(); i < numEntries; ++i)
+        for(i = (int)matNames.size(); i < (size_t)numEntries; ++i)
         {
             QListWidgetItem *item = multipleColorList->takeItem(multipleColorList->count() - 1);
             if(item != 0)
@@ -716,7 +716,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
         int selectedIndex = (selectedBoundaries.size() > 0) ?
             selectedBoundaries[0] : 0;
         // Make sure that the selected index is in the range of visible colors.
-        if(selectedIndex >= matNames.size())
+        if((size_t)selectedIndex >= matNames.size())
             selectedIndex = 0;
 
         SetMultipleColorWidgets(selectedIndex);

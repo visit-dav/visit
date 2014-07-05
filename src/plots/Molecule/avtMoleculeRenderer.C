@@ -248,7 +248,8 @@ void
 avtMoleculeRenderer::Initialize(vtkDataSet *ds)
 {
     // get data set
-    vtkPolyData  *polydata = (vtkPolyData*)ds;
+    //vtkPolyData  *polydata = (vtkPolyData*)ds;
+    (void) ds;
 
     initialized = true;
 }
@@ -271,7 +272,7 @@ avtMoleculeRenderer::Initialize(vtkDataSet *ds)
 void
 avtMoleculeRenderer::SetAtts(const AttributeGroup *a)
 {
-    const MoleculeAttributes *newAtts = (const MoleculeAttributes*)a;
+    //const MoleculeAttributes *newAtts = (const MoleculeAttributes*)a;
     atts = *(const MoleculeAttributes*)a;
 
     initialized = false;
@@ -358,9 +359,9 @@ avtMoleculeRenderer::SetSpecularProperties(bool flag, double coeff,
     spec_coeff = flag ? coeff : 0;
     spec_power = power;
 
-    int r = color.Red();
-    int g = color.Green();
-    int b = color.Blue();
+    //int r = color.Red();
+    //int g = color.Green();
+    //int b = color.Blue();
     spec_r = float(color.Red())/255.;
     spec_g = float(color.Green())/255.;
     spec_b = float(color.Blue())/255.;

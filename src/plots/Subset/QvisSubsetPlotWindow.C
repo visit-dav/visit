@@ -576,7 +576,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     const stringVector &matNames = subsetAtts->GetSubsetNames();
     intVector selectedsubsets;
     bool update = true;
-    int i;
+    size_t i;
     QListWidgetItem *item;
 
     multipleColorList->blockSignals(true);
@@ -584,7 +584,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     //
     // Make a pass through the widget to see how many subsets are selected.
     //
-    for(i = 0; i < multipleColorList->count(); ++i)
+    for(i = 0; i < (size_t)multipleColorList->count(); ++i)
     {
         if(multipleColorList->item(i)->isSelected())
             selectedsubsets.push_back(i);
@@ -593,7 +593,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     //
     // Modify the names.
     //
-    if(matNames.size() == multipleColorList->count())
+    if(matNames.size() == (size_t)multipleColorList->count())
     {
         // See if the strings are the same..
         bool same = true;
@@ -614,10 +614,10 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
         else
             update = false;
     }
-    else if(matNames.size() > multipleColorList->count())
+    else if(matNames.size() > (size_t)multipleColorList->count())
     {
         // Set all of the existing names.
-        for(i = 0; i < multipleColorList->count(); ++i)
+        for(i = 0; i < (size_t)multipleColorList->count(); ++i)
             UpdateItem(i);
 
         // Add new entries
@@ -636,8 +636,8 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
             UpdateItem(i);
 
         // Remove excess entries
-        int numEntries = multipleColorList->count();
-        for(i = (int)matNames.size(); i < numEntries; ++i)
+        size_t numEntries = multipleColorList->count();
+        for(i = matNames.size(); i < numEntries; ++i)
         {
             QListWidgetItem *item = multipleColorList->takeItem(multipleColorList->count() - 1);
             if(item != 0)
@@ -688,7 +688,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
         int selectedIndex = (selectedsubsets.size() > 0) ?
             selectedsubsets[0] : 0;
         // Make sure that the selected index is in the range of visible colors.
-        if(selectedIndex >= matNames.size())
+        if((size_t)selectedIndex >= matNames.size())
             selectedIndex = 0;
 
         SetMultipleColorWidgets(selectedIndex);

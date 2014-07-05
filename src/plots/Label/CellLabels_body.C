@@ -71,8 +71,8 @@
     // Look for the original cell number array.
     //
     vtkUnsignedIntArray  *originalCells = 0;
-    vtkDataArray         *subsetLabel = 0;
-    vtkDataArray         *materialLabels = 0;
+    //vtkDataArray         *subsetLabel = 0;
+    //vtkDataArray         *materialLabels = 0;
     vtkDataArray *data = input->GetCellData()->GetArray("LabelFilterOriginalCellNumbers");
     if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
     {
@@ -271,7 +271,7 @@
                 BEGIN_LABEL
                     labelString[0] = '\0';
                     double *vals = data->GetTuple(id);
-                    bool atStart = true;
+                    //bool atStart = true;
                     for (int comp = 0 ; comp < nComps ; comp++)
                     {
                         char *formatString = NULL;

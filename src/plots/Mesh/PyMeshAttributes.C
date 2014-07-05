@@ -1246,7 +1246,7 @@ PyMeshAttributes_GetLogString()
 static void
 PyMeshAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MeshAttributes *atts = (MeshAttributes *)subj;
+    MeshAttributes *atts = (MeshAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

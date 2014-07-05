@@ -1781,7 +1781,7 @@ PyCurveAttributes_GetLogString()
 static void
 PyCurveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CurveAttributes *atts = (CurveAttributes *)subj;
+    CurveAttributes *atts = (CurveAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

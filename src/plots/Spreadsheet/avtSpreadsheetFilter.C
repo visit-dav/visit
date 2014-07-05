@@ -139,7 +139,7 @@ avtSpreadsheetFilter::ModifyContract(avtContract_p spec)
     const std::vector<int> &mapsOut = current->GetMapsOut();
     int nSets = 1;
     int setId = -1, firstSetId = -1;
-    for(int j = 0; j < mapsOut.size() && setId==-1; ++j)
+    for(size_t j = 0; j < mapsOut.size() && setId==-1; ++j)
     {
         int cIndex = mapsOut[j];
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);

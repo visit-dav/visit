@@ -816,7 +816,7 @@ avtBoundaryPlot::ReleaseData(void)
 void
 avtBoundaryPlot::SortLabels()
 {
-    int   i;
+    size_t   i;
 
     vector < string > originalLabels = atts.GetBoundaryNames();
 
@@ -833,7 +833,7 @@ avtBoundaryPlot::SortLabels()
     vector < string > usedLabels;
     behavior->GetInfo().GetAttributes().GetLabels(usedLabels);
     sort(usedLabels.begin(), usedLabels.end());
-    int origLabelIndex = 0;
+    size_t origLabelIndex = 0;
     vector < pair < int, string > > sortedUsedLabels;
     for (i = 0 ; i < usedLabels.size() ; i++)
     {

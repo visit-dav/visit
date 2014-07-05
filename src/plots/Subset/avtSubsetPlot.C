@@ -1057,7 +1057,7 @@ avtSubsetPlot::ReleaseData(void)
 void
 avtSubsetPlot::SortLabels()
 {
-    int   i;
+    size_t   i;
 
     vector < string > originalLabels = atts.GetSubsetNames();
 
@@ -1074,7 +1074,7 @@ avtSubsetPlot::SortLabels()
     vector < string > usedLabels;
     behavior->GetInfo().GetAttributes().GetLabels(usedLabels);
     sort(usedLabels.begin(), usedLabels.end());
-    int origLabelIndex = 0;
+    size_t origLabelIndex = 0;
     vector < pair < int, string > > sortedUsedLabels;
     for (i = 0 ; i < usedLabels.size() ; i++)
     {

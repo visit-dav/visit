@@ -345,7 +345,7 @@ avtParallelCoordinatesPlot::ApplyOperators(avtDataObject_p input)
     }
 
     parAxisFilter = new avtParallelCoordinatesFilter(atts);
-    for (int i = 0 ; i < namedSelections.size() ; i++)
+    for (size_t i = 0 ; i < namedSelections.size() ; i++)
     {
         parAxisFilter->RegisterNamedSelection(namedSelections[i]);
     }
@@ -474,7 +474,7 @@ avtParallelCoordinatesPlot::EnhanceSpecification(avtContract_p in_spec)
     const char *inPipelineVar = in_spec->GetDataRequest()->GetVariable();
     std::string outPipelineVar(inPipelineVar);
     std::string axisVarName;
-    int axisNum;
+    size_t axisNum;
 
     avtContract_p outSpec;
 
@@ -506,7 +506,7 @@ avtParallelCoordinatesPlot::EnhanceSpecification(avtContract_p in_spec)
         
     const std::vector<CharStrRef> curSecondaryVars =
         in_spec->GetDataRequest()->GetSecondaryVariables();
-    int needSecVNum, curSecVNum;
+    size_t needSecVNum, curSecVNum;
     const char *needSecondaryVar;
     const char *curSecondaryVar;
 

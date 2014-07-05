@@ -1203,7 +1203,7 @@ PyHistogramAttributes_GetLogString()
 static void
 PyHistogramAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    HistogramAttributes *atts = (HistogramAttributes *)subj;
+    HistogramAttributes *atts = (HistogramAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

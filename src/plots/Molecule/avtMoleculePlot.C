@@ -562,7 +562,7 @@ avtMoleculePlot::EnhanceSpecification(avtContract_p spec)
     avtDataRequest_p nds = new avtDataRequest(primaryVariable,
                                                          ds->GetTimestep(),
                                                          ds->GetRestriction());
-    for (int i=0; i<added_vars.size(); i++)
+    for (size_t i=0; i<added_vars.size(); i++)
     {
         nds->AddSecondaryVariable(added_vars[i].c_str());
     }

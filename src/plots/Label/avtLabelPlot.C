@@ -443,8 +443,9 @@ avtLabelPlot::CustomizeBehavior(void)
     debug4 << "avtLabelPlot::CustomizeBehavior: Labels = " << endl;
     std::vector<std::string> labels;
     behavior->GetInfo().GetAttributes().GetLabels(labels);
-    for(int i = 0; i < labels.size(); ++i)
+    for(size_t i = 0; i < labels.size(); ++i) {
         debug4 << "\tlabel["<<i<<"] = " << labels[i].c_str() << endl;
+    }
     debug4 << endl;
 }
 

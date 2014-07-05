@@ -2133,7 +2133,7 @@ PyPseudocolorAttributes_GetLogString()
 static void
 PyPseudocolorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PseudocolorAttributes *atts = (PseudocolorAttributes *)subj;
+    PseudocolorAttributes *atts = (PseudocolorAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 
