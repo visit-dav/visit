@@ -283,7 +283,7 @@ avtHistogramFilter::PostExecute(void)
         {
             ranges = 
                  GetInput()->GetInfo().GetAttributes().GetVariableBinRanges();
-            if (ranges.size() == workingNumBins+1)
+            if (ranges.size() == (size_t)workingNumBins+1)
                 spaceBins = true;
         }
 
@@ -1030,7 +1030,7 @@ avtHistogramFilter::ArrayVarExecute(vtkDataSet *inDS, int chunk)
     int ncells = inDS->GetNumberOfCells();
     for (int i = 0 ; i < ncells ; i++)
     {
-        if (ptr[ncomps*i + compOffset] == zone)
+        if (ptr[ncomps*i + compOffset] == (size_t)zone)
         {
             workingNumBins = arr->GetNumberOfComponents();
             double *vals = new double[workingNumBins];

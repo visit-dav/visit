@@ -515,7 +515,7 @@ avtMultiCurveFilter::Execute(void)
         //
         // Create the label.
         //
-        if(inLabels.size() != ny)
+        if(inLabels.size() != (size_t)ny)
         {
             char label[80];
         

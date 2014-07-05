@@ -420,7 +420,7 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
 
     int primIndex = -1;
     int opacIndex = -1;
-    int gradIndex = -1;
+    //int gradIndex = -1;
     int count = 0;
     char gradName[128];
     const char *gradvar = atts.GetOpacityVariable().c_str();
@@ -490,7 +490,7 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     //
     avtFlatLighting fl;
     avtLightingModel *lm = &fl;
-    double gradMax = 0.0, lightingPower = 1.0;
+    //double gradMax = 0.0, lightingPower = 1.0;
 
     if (atts.GetLightingFlag())
         software->SetLighting(true);

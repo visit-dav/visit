@@ -1187,7 +1187,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 void
 QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
-    int row = 0;
+    //int row = 0;
     QGridLayout *advGLayout = new QGridLayout(pageAdvanced);
     advGLayout->setMargin(5);
     advGLayout->setSpacing(5);
@@ -1559,7 +1559,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 QListWidgetItem *item = NULL;
 
                 pointList->clear();
-                for (int i = 0; i < points.size(); i+= 3)
+                for (size_t i = 0; i < points.size(); i+= 3)
                 {
                     char tmp[256];
                     sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
@@ -3599,10 +3599,10 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetCorrelationDistanceMinDistBBox(streamAtts->GetCorrelationDistanceMinDistBBox());
         }
     }
-    if (which_widget == StreamlineAttributes::ID_selection || doAll)
-    {
-        int val = selections->currentIndex();
-    }
+    //if (which_widget == StreamlineAttributes::ID_selection || doAll)
+    //{
+    //    int val = selections->currentIndex(); (void) val;
+    //}
 }
 
 

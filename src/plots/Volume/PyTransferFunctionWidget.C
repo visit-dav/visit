@@ -549,7 +549,7 @@ PyTransferFunctionWidget_GetLogString()
 static void
 PyTransferFunctionWidget_CallLogRoutine(Subject *subj, void *data)
 {
-    TransferFunctionWidget *atts = (TransferFunctionWidget *)subj;
+    TransferFunctionWidget *atts = (TransferFunctionWidget *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

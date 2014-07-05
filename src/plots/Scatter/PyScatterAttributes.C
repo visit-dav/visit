@@ -1967,7 +1967,7 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // try to handle old attributes
     if(strcmp(name, "foregroundFlag") == 0)
     {
-        PyObject *new_args;
+        PyObject *new_args = NULL; ///TODO: check on fix for uninitialized var
 
         // from the tuple get the foreground value
         int ival;
@@ -1986,7 +1986,9 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
         }
 
         obj = ScatterAttributes_SetColorType(self, new_args);
-        Py_DECREF(new_args);
+        if(new_args) {
+            Py_DECREF(new_args);
+        }
     }
 
     // If the user changes one of the roles and one of the roles is
@@ -2181,7 +2183,7 @@ PyScatterAttributes_GetLogString()
 static void
 PyScatterAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ScatterAttributes *atts = (ScatterAttributes *)subj;
+    ScatterAttributes *atts = (ScatterAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

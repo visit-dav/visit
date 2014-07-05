@@ -285,7 +285,7 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
         //
         // THIS IS WHERE WE SET UP THE CONTEXT HISTOGRAMS
         //
-        for (int t = 0 ; t < allTimeIndexes.size() ; t++)
+        for (size_t t = 0 ; t < allTimeIndexes.size() ; t++)
         {
             if (!indexesIShouldProcess[t])
                 continue;
@@ -365,7 +365,7 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
         int anyoneHadFailure = UnifyMaximumValue(iHadFailure);
         if (anyoneHadFailure)
         {
-            for (int t=0; t<allTimeIndexes.size(); t++)
+            for (size_t t=0; t<allTimeIndexes.size(); t++)
             {
                 delete [] histograms[t];
                 delete [] histogramsForSelectedRegion[t];
@@ -647,12 +647,12 @@ avtParallelCoordinatesFilter::PostExecute(void)
         outAtts.SetYUnits("");
     }
 
-    for (int t=0; t<histograms.size(); t++)
+    for (size_t t=0; t<histograms.size(); t++)
         DrawContext(t);
 
     if (parCoordsAtts.GetDrawFocusAs()!=ParallelCoordinatesAttributes::IndividualLines)
     {
-        for (int t=0; t<histogramsForSelectedRegion.size(); t++)
+        for (size_t t=0; t<histogramsForSelectedRegion.size(); t++)
             if (histogramsForSelectedRegion[t] != NULL)
                 DrawFocusHistograms(t);
     }
@@ -790,7 +790,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     bool arrayIsCellData, dataBadOrMissing;
     string arrayName;
     vtkDataArray *dataArray;
-    vtkIdList *pointIdList;
+    vtkIdList *pointIdList = NULL; ///TODO: check on fix for uninitialized variable
     float *arrayValues;
     float valueSum;
     
@@ -895,11 +895,12 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             }
             
             // TODO: DOESN'T SUPPORT MULTIPLE TIME STEPS; hardcoded to 0
-            if (drawLines)
+            if (drawLines) {
                 if (parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
                     AppendDataTupleFocus(inputTuple);
                 else
                     CountDataTupleFocus(0, inputTuple);
+            }
             if (drawContext)
                 CountDataTupleContext(0, inputTuple);
         }
@@ -918,11 +919,12 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             }
             
             // TODO: DOESN'T SUPPORT MULTIPLE TIME STEPS; hardcoded to 0
-            if (drawLines)
+            if (drawLines) {
                 if (parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
                     AppendDataTupleFocus(inputTuple);
                 else
                     CountDataTupleFocus(0, inputTuple);
+            }
             if (drawContext)
                 CountDataTupleContext(0, inputTuple);
         }
@@ -1154,7 +1156,7 @@ avtParallelCoordinatesFilter::ComputeActualDataExtentsOverAllDomains()
                 if (varDataExtents[2*axisNum + 1] > globalMax)
                     globalMax = varDataExtents[2*axisNum + 1];
             }
-            for (int axisNum = 0; axisNum < axisMinima.size(); axisNum++)
+            for (size_t axisNum = 0; axisNum < axisMinima.size(); axisNum++)
             {
                 varDataExtents[axisNum*2 + 0] = globalMin;
                 varDataExtents[axisNum*2 + 1] = globalMax;
@@ -1166,7 +1168,7 @@ avtParallelCoordinatesFilter::ComputeActualDataExtentsOverAllDomains()
         // Set the internal data members we need to have set
         for (int i=0; i<dim; i++)
         {
-            if (bins.size() > i)
+            if (bins.size() > (size_t)i)
                 axisXPositions[i] = (bins[i]+bins[i+1])/2;
             else
                 axisXPositions[i] = i;
@@ -1249,7 +1251,7 @@ avtParallelCoordinatesFilter::ComputeActualDataExtentsOverAllDomains()
     {
         double globalMin =  DBL_MAX;
         double globalMax = -DBL_MAX;
-        for (int axisNum = 0; axisNum < axisMinima.size(); axisNum++)
+        for (size_t axisNum = 0; axisNum < axisMinima.size(); axisNum++)
         {
             double axisMin = axisMinima[axisNum];
             double axisMax = axisMaxima[axisNum];
@@ -1258,14 +1260,14 @@ avtParallelCoordinatesFilter::ComputeActualDataExtentsOverAllDomains()
             if (axisMax > globalMax)
                 globalMax = axisMax;
         }
-        for (int axisNum = 0; axisNum < axisMinima.size(); axisNum++)
+        for (size_t axisNum = 0; axisNum < axisMinima.size(); axisNum++)
         {
             axisMinima[axisNum] = globalMin;
             axisMaxima[axisNum] = globalMax;
         }
     }
 
-    for (int axisNum = 0; axisNum < axisMinima.size(); axisNum++)
+    for (size_t axisNum = 0; axisNum < axisMinima.size(); axisNum++)
     {
         double &axisMinimum = axisMinima[axisNum];
         double &axisMaximum = axisMaxima[axisNum];
@@ -2003,9 +2005,9 @@ avtParallelCoordinatesFilter::InitializeFocusHistograms()
 void
 avtParallelCoordinatesFilter::CleanUpAllHistograms()
 {
-    for (int t=0; t<histograms.size(); t++)
+    for (size_t t=0; t<histograms.size(); t++)
         delete [] histograms[t];
-    for (int t=0; t<histogramsForSelectedRegion.size(); t++)
+    for (size_t t=0; t<histogramsForSelectedRegion.size(); t++)
         delete [] histogramsForSelectedRegion[t];
     histograms.clear();
     histogramsForSelectedRegion.clear();
@@ -2128,7 +2130,7 @@ avtParallelCoordinatesFilter::ConvertNamedSelectionToCondition(void)
 {
     string rv = "";
 
-    for (int i = 0 ; i < namedSelections.size() ; i++)
+    for (size_t i = 0 ; i < namedSelections.size() ; i++)
     {
         avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
         avtNamedSelection *ns = nsm->GetNamedSelection(namedSelections[i]);
@@ -2206,11 +2208,11 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
         return NULL;
     }
 
-    int  j;
+    size_t  j;
 
     vector<avtDataSelection *> drs;
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
-    for (j = 0 ; j < axisCount ; j++)
+    for (j = 0 ; j < (size_t)axisCount ; j++)
     {
         drs.push_back(new avtDataRangeSelection(
                      curAxisVarNames[j],
@@ -2263,7 +2265,7 @@ avtNamedSelection *
 avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     avtContract_p c, const string &selName)
 {
-    int  i;
+    size_t  i;
 
     // Get the zone number labels loaded up.
     GetInput()->Update(c);
@@ -2275,7 +2277,7 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     int nleaves = 0;
     vtkDataSet **leaves = tree->GetAllLeaves(nleaves);
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
-    for (i = 0 ; i < nleaves ; i++)
+    for (i = 0 ; i < (size_t)nleaves ; i++)
     {
         int axisNum;
         int tupleCount, componentCount;
@@ -2352,8 +2354,8 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
         }
 
         int ncells = leaves[i]->GetNumberOfCells();
-        int curSize = doms.size();
-        int numMatching = 0;
+        //int curSize = (int)doms.size();
+        //int numMatching = 0;
         for (int j = 0 ; j < ncells ; j++)
         {
             int axisNum;
@@ -2408,12 +2410,12 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     // of the named selections will be small.
     int *numPerProcIn = new int[PAR_Size()];
     int *numPerProc   = new int[PAR_Size()];
-    for (i = 0 ; i < PAR_Size() ; i++)
+    for (i = 0 ; i < (size_t)PAR_Size() ; i++)
         numPerProcIn[i] = 0;
     numPerProcIn[PAR_Rank()] = (int)doms.size();
     SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
     int numTotal = 0;
-    for (i = 0 ; i < PAR_Size() ; i++)
+    for (i = 0 ; i < (size_t)PAR_Size() ; i++)
         numTotal += numPerProc[i];
     if (numTotal > 1000000)
     {
@@ -2423,7 +2425,7 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
                    "named selection.  Disallowing ... no selection created");
     }
     int myStart = 0;
-    for (i = 0 ; i < PAR_Rank()-1 ; i++)
+    for (i = 0 ; i < (size_t)PAR_Rank()-1 ; i++)
         myStart += numPerProc[i];
 
     int *selForDomsIn = new int[numTotal];
@@ -2484,7 +2486,7 @@ UpdateLimitsWithAllHSTimeSteps(int axis,
                               const vector<avtHistogramSpecification*> &h,
                               double &varmin, double &varmax)
 {
-    for (int ts = 0; ts < h.size(); ts++)
+    for (size_t ts = 0; ts < h.size(); ts++)
     {
         if (h[ts] == NULL)
             continue;
@@ -2527,14 +2529,14 @@ void
 CheckHistograms(int axisCount,
                 const vector<avtHistogramSpecification*> &h)
 {
-    for (int ts = 0; ts < h.size(); ts++)
+    for (size_t ts = 0; ts < h.size(); ts++)
     {
         if (!h[ts])
             continue;
 
         for (int axis = 0; axis < axisCount-1; axis++)
         {
-            if (h[ts][axis].GetNumberOfBins()[0]+1 !=
+            if ((size_t)h[ts][axis].GetNumberOfBins()[0]+1 !=
                 h[ts][axis].GetBounds()[0].size())
             {
                 cerr << "ERROR: histograms[time="<<ts<<"][axis="<<axis<<"] "
@@ -2544,7 +2546,7 @@ CheckHistograms(int axisCount,
                      << " and number of bins of "
                      << h[ts][axis].GetNumberOfBins()[0]<<endl;
             }
-            if (h[ts][axis].GetNumberOfBins()[1]+1 !=
+            if ((size_t)h[ts][axis].GetNumberOfBins()[1]+1 !=
                 h[ts][axis].GetBounds()[1].size())
             {
                 cerr << "ERROR: histograms[time="<<ts<<"][axis="<<axis<<"]  "

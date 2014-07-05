@@ -1146,7 +1146,7 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
         for(int t = 0; t < nTables; ++t)
             tables[t]->setUpdatesEnabled(false);
 
-        SpreadsheetTable::DisplayMode dMode;
+        SpreadsheetTable::DisplayMode dMode = SpreadsheetTable::SliceX; //TODO: check on fix for uninitialize value
         if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
         {
             // Make sure that we have the right number of tabs.
@@ -1919,7 +1919,8 @@ SpreadsheetViewer::moveSliceToCurrentPick()
     if (plotAtts->GetCurrentPickValid())
     {
         int sliceAxis = -1;
-        int rowAxis, columnAxis;
+        int rowAxis, columnAxis; 
+        (void) rowAxis; (void) columnAxis;
         switch (plotAtts->GetNormal())
         {
             case SpreadsheetAttributes::X:

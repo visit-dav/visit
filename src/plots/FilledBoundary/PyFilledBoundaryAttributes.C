@@ -570,7 +570,7 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
-                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)
+                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))
                                 {
                                     C[i*4] = 0;
                                     C[i*4+1] = 0;
@@ -614,7 +614,7 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
-                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)
+                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))
                                 {
                                     C[i*4] = 0;
                                     C[i*4+1] = 0;
@@ -1521,7 +1521,7 @@ PyFilledBoundaryAttributes_GetLogString()
 static void
 PyFilledBoundaryAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FilledBoundaryAttributes *atts = (FilledBoundaryAttributes *)subj;
+    FilledBoundaryAttributes *atts = (FilledBoundaryAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

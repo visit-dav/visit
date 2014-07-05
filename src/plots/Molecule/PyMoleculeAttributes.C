@@ -1291,7 +1291,7 @@ PyMoleculeAttributes_GetLogString()
 static void
 PyMoleculeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MoleculeAttributes *atts = (MoleculeAttributes *)subj;
+    MoleculeAttributes *atts = (MoleculeAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

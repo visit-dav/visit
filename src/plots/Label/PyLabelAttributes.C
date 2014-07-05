@@ -1131,7 +1131,7 @@ PyLabelAttributes_GetLogString()
 static void
 PyLabelAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LabelAttributes *atts = (LabelAttributes *)subj;
+    LabelAttributes *atts = (LabelAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -227,7 +227,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateColormap(const VolumeAttributes &atts, bool 
         context->cm = 0;
     }
     // Blow away the 2D transfer function
-    for(int c = 0; c < context->cmap2.size(); ++c)
+    for(size_t c = 0; c < context->cmap2.size(); ++c)
         delete context->cmap2[c];
     context->cmap2.clear();
 
@@ -517,7 +517,7 @@ avtOpenGLSLIVRVolumeRenderer::SlivrContext::~SlivrContext()
         nrrdNuke(cmap2_image);
     if(renderer != 0)
         delete renderer;
-    for(int i=0;i<planes.size();i++)
+    for(size_t i=0;i<planes.size();i++)
         delete planes[i];
 }
 
@@ -545,9 +545,11 @@ avtOpenGLSLIVRVolumeRenderer::CheckContext(SlivrContext* context,
     {
         if(context != 0)
         {
-            for(int i = 0; i < oldAtts.NumAttributes(); ++i)
-                if(!oldAtts.FieldsEqual(i, &atts))
+            for(int i = 0; i < oldAtts.NumAttributes(); ++i) {
+                if(!oldAtts.FieldsEqual(i, &atts)) {
                     debug5 << "Field " << i << " differs" << endl;
+                }
+            }
 
             if(oldAtts.AnyNonTransferFunctionMembersAreDifferent(atts))
             {

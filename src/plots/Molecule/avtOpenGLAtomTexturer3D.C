@@ -287,12 +287,12 @@ TextureModeData::MakeTextures()
 {
    int i, j;
 
-   float dx = SPHERE_TEX_H * 0.5f;
-   float dy = SPHERE_TEX_H * 0.5f;
-   float R = dx-2;
+   //float dx = SPHERE_TEX_H * 0.5f;
+   //float dy = SPHERE_TEX_H * 0.5f;
+   //float R = dx-2;
 
-   float minT = 0.;
-   float maxT = 0.;
+   //float minT = 0.;
+   //float maxT = 0.;
 
    GLubyte texture[SPHERE_TEX_H][SPHERE_TEX_H][2];
 

@@ -665,7 +665,7 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
 #define MAX_SYMBOL_VERTS 25
 
     double symbolPoints[MAX_SYMBOL_VERTS][2];
-    int symbolNVerts;
+    int symbolNVerts = 0; ///TODO: check fix for uninitialized warning
     if (atts.GetSymbol() == CurveAttributes::Point)
     {
         symbolNVerts = 1;

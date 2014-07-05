@@ -373,7 +373,7 @@ QvisParallelCoordinatesWidget::drawAxes(QPainter *painter)
         axisX = axesXPos[axisNum];
 
         if ((!namedRightAxis && (axisNum == axisCount-1)) ||
-            (axisNum >= axisTitles.size()))
+            ((size_t)axisNum >= axisTitles.size()))
         {
             for (size_t dashNum = 0; dashNum < dashesTopYPos.size(); dashNum++)
             {
@@ -422,7 +422,7 @@ QvisParallelCoordinatesWidget::drawAxisTitles(QPainter *painter)
     for (axisNum = 0; axisNum < axisCount; axisNum++)
     {
         if ((!namedRightAxis && (axisNum == axisCount-1)) ||
-            (axisNum >= axisTitles.size()))
+            ((size_t)axisNum >= axisTitles.size()))
         {
             axisTitle = std::string("?");
             titleCharCount = 1;

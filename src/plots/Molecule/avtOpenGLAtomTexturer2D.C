@@ -248,12 +248,12 @@ avtOpenGLAtomTexturer2D::MakeTextures()
 {
    int i, j;
 
-   float dx = SPHERE_TEX_H * 0.5f;
-   float dy = SPHERE_TEX_H * 0.5f;
-   float R = dx-2;
+   //float dx = SPHERE_TEX_H * 0.5f;
+   //float dy = SPHERE_TEX_H * 0.5f;
+   //float R = dx-2;
 
-   float minT = 0.;
-   float maxT = 0.;
+   //float minT = 0.;
+   //float maxT = 0.;
 
    GLubyte texture[SPHERE_TEX_H][SPHERE_TEX_H][2];
 
@@ -266,8 +266,8 @@ avtOpenGLAtomTexturer2D::MakeTextures()
          float x2y2 = sqrt(x*x + y*y);
          if(x2y2 < 1.)
          {
-             float z = sqrt(1. - x2y2);
-             GLubyte rc = (GLubyte)(z * 255.);
+             //float z = sqrt(1. - x2y2);
+             //GLubyte rc = (GLubyte)(z * 255.);
 
              texture[j][i][0] = (GLubyte) 0;
              texture[j][i][1] = (GLubyte) 255;

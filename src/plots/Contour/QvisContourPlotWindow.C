@@ -822,7 +822,7 @@ void
 QvisContourPlotWindow::UpdateSelectByText()
 {
     QString temp, temp2;
-    int     i;
+    size_t     i;
 
     if(contourAtts->GetContourMethod() == ContourAttributes::Level)
     {

@@ -1223,12 +1223,12 @@ SpreadsheetTable::selectedColumnIndices(int &nvals) const
     nvals = model()->rowCount();
     if(nvals > 0)
     {
-        int row = 0, col = 0;
+        int /*row = 0,*/ col = 0;
         ids = new vtkIdType[nvals];
 
         for(QModelIndexList::iterator it = sel.begin(); it != sel.end(); ++it)
         {
-            row = it->row();
+            //row = it->row();
             col = it->column();
             break;
         }
@@ -1270,13 +1270,13 @@ SpreadsheetTable::selectedRowIndices(int &nvals) const
     nvals = model()->columnCount();
     if(nvals > 0)
     {
-        int row = 0, col = 0;
+        int row = 0/*, col = 0*/;
         ids = new vtkIdType[nvals];
 
         for(QModelIndexList::iterator it = sel.begin(); it != sel.end(); ++it)
         {
             row = it->row();
-            col = it->column();
+            //col = it->column();
             break;
         }
 

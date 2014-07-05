@@ -548,7 +548,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
         glyph->CapEndsOff();
     }
 
-    float offset;
+    float offset = 0; ///TODO: check on fix for uninitialized pointer
     switch (atts.GetVectorOrigin())
     {
       case VectorAttributes::Head:    offset = -.5;  break;
@@ -701,7 +701,7 @@ void
 avtVectorPlot::SetLegendRanges()
 {
     double min = 0., max = 1.;
-    bool validRange = false;
+    bool validRange = false; (void) validRange;  ///TODO: this is not used but might have a side effect
     if (atts.GetLimitsMode() == VectorAttributes::OriginalData)
     {
         validRange = glyphMapper->GetRange(min, max);

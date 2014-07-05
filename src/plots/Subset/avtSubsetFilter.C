@@ -423,7 +423,7 @@ avtSubsetFilter::ModifyContract(avtContract_p spec)
             spec->SetCalculateVariableExtents(pointVar, true);
         }
 
-        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+        //avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
         if (spec->GetDataRequest()->MayRequireZones() ||
             spec->GetDataRequest()->MayRequireNodes())
         {

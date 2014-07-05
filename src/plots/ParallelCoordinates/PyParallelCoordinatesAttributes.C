@@ -1113,7 +1113,7 @@ PyParallelCoordinatesAttributes_GetLogString()
 static void
 PyParallelCoordinatesAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ParallelCoordinatesAttributes *atts = (ParallelCoordinatesAttributes *)subj;
+    ParallelCoordinatesAttributes *atts = (ParallelCoordinatesAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

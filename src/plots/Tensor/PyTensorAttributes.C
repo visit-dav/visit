@@ -719,7 +719,7 @@ PyTensorAttributes_GetLogString()
 static void
 PyTensorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TensorAttributes *atts = (TensorAttributes *)subj;
+    TensorAttributes *atts = (TensorAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 
