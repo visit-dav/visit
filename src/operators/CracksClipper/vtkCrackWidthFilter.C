@@ -275,8 +275,8 @@ vtkCrackWidthFilter::RequestData(
   // step through cells, calculating cell centers and crack widths for 
   // each crack direction.  Terminate early when possible.
   // 
-  vtkDoubleArray *crackWidth;
-  double delta, cw, zVol, *dir, *maxCW;
+  vtkDoubleArray *crackWidth = NULL; ///TODO: check on fix for uninitialized vars
+  double delta = 0, cw, zVol, *dir = NULL, *maxCW = NULL; ///TODO: check on fix for unitialized vars
   int crackOrder[3]; 
 
   for (vtkIdType cellId = 0; cellId < numCells; cellId++)

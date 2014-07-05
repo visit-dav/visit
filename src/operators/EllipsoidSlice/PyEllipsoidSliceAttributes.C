@@ -522,7 +522,7 @@ PyEllipsoidSliceAttributes_GetLogString()
 static void
 PyEllipsoidSliceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    EllipsoidSliceAttributes *atts = (EllipsoidSliceAttributes *)subj;
+    EllipsoidSliceAttributes *atts = (EllipsoidSliceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

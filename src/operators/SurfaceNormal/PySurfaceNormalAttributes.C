@@ -353,7 +353,7 @@ PySurfaceNormalAttributes_GetLogString()
 static void
 PySurfaceNormalAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SurfaceNormalAttributes *atts = (SurfaceNormalAttributes *)subj;
+    SurfaceNormalAttributes *atts = (SurfaceNormalAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

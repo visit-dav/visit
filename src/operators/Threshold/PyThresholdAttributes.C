@@ -74,7 +74,7 @@ std::string
 PyThresholdAttributes_ToString(const ThresholdAttributes *atts, const char *prefix)
 {
     std::string str; 
-    char tmpStr[1000]; 
+    char tmpStr[1000]; (void)tmpStr;
 
     str = PyThresholdOpAttributes_ToString(atts, prefix);
 
@@ -329,7 +329,7 @@ PyThresholdAttributes_GetLogString()
 static void
 PyThresholdAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ThresholdAttributes *atts = (ThresholdAttributes *)subj;
+    ThresholdAttributes *atts = (ThresholdAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

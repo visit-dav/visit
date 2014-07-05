@@ -280,11 +280,11 @@ class avtPoincareFilter : public virtual avtPluginFilter,
     double windingPairConfidence;
     double rationalSurfaceFactor;
 
-    unsigned int overlaps;
-
-    bool is_curvemesh;
     std::vector< double > planes;
     int adjust_plane;
+
+    unsigned int overlaps;
+    bool is_curvemesh;
 
     unsigned int dataValue;
   

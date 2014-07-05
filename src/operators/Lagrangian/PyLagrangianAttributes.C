@@ -604,7 +604,7 @@ PyLagrangianAttributes_GetLogString()
 static void
 PyLagrangianAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LagrangianAttributes *atts = (LagrangianAttributes *)subj;
+    LagrangianAttributes *atts = (LagrangianAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -1758,7 +1758,7 @@ PyTransformAttributes_GetLogString()
 static void
 PyTransformAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TransformAttributes *atts = (TransformAttributes *)subj;
+    TransformAttributes *atts = (TransformAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

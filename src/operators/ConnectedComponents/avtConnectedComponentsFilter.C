@@ -161,7 +161,7 @@ avtConnectedComponentsFilter::InferVariableNameFromContract(avtContract_p c)
     if (!foundIt)
     {
         std::vector<CharStrRef>   vars2nd = in_dr->GetSecondaryVariablesWithoutDuplicates();
-        for (int i = 0 ; i < vars2nd.size() ; i++)
+        for (size_t i = 0 ; i < vars2nd.size() ; i++)
         if (strncmp(*(vars2nd[i]), "operators/ConnectedComponents/",
                     strlen("operators/ConnectedComponents/")) == 0)
         {

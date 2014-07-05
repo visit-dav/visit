@@ -2291,7 +2291,7 @@ PyLCSAttributes_GetLogString()
 static void
 PyLCSAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LCSAttributes *atts = (LCSAttributes *)subj;
+    LCSAttributes *atts = (LCSAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

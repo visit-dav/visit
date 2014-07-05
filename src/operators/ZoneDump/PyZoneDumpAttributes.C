@@ -457,7 +457,7 @@ PyZoneDumpAttributes_GetLogString()
 static void
 PyZoneDumpAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ZoneDumpAttributes *atts = (ZoneDumpAttributes *)subj;
+    ZoneDumpAttributes *atts = (ZoneDumpAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

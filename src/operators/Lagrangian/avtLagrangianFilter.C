@@ -294,7 +294,7 @@ avtLagrangianFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
     
     avtStateRecorderIntegralCurve::Sample samp;
 
-    float xi, yi;
+    float xi = 0, yi = 0; ///TODO: check on fix for uninitialized values
     for (int j = 0; j < nSamps; j++)
     {
         samp = ic->GetSample(j);

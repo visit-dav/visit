@@ -286,7 +286,7 @@ avtAMRStitchCellFilter::PreExecute(void)
     for (size_t l=1; l<nLevels; ++l)
     {
         const std::vector<int>& refRatio = domainNesting->GetLevelRefinementRatios((int)l);
-        if (refRatio.size() != topologicalDimension)
+        if (refRatio.size() != (size_t)topologicalDimension)
             EXCEPTION1(ImproperUseException,
                     "Refinement ratio provided by database via domain nesting is invalid. "
                     "Expected a vector of length equal to topological dataset dimension.");
@@ -319,7 +319,7 @@ avtAMRStitchCellFilter::PreExecute(void)
     for (size_t l=0; l<nLevels; ++l)
     {
         cellSize[l] = domainNesting->GetLevelCellSizes((int)l);
-        if (cellSize[l].size() != spatialDimension)
+        if (cellSize[l].size() != (size_t)spatialDimension)
         {
             EXCEPTION1(ImproperUseException,
                     "Database plugin did not properly set level cell sizes using "
@@ -951,7 +951,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
 {
     // Create unstructured grid for stitch cells
     vtkPoints *stitchCellPts = vtkVisItUtility::NewPoints(rgrid);
-    vtkUnstructuredGrid *stitchCellGrid = vtkUnstructuredGrid::New();
+    //vtkUnstructuredGrid *stitchCellGrid = vtkUnstructuredGrid::New();
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(stitchCellPts);
     stitchCellPts->Delete();

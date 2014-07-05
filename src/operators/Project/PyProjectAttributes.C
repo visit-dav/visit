@@ -450,7 +450,7 @@ PyProjectAttributes_GetLogString()
 static void
 PyProjectAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ProjectAttributes *atts = (ProjectAttributes *)subj;
+    ProjectAttributes *atts = (ProjectAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -846,7 +846,7 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
             }
             if (*speciesColl != NULL)
             {
-                for (i = 0 ; i < speciesColl->GetNumberOfSubsets() ; i++)
+                for (i = 0 ; i < (unsigned int)speciesColl->GetNumberOfSubsets() ; i++)
                     setState.push_back(trav.UsesData(speciesColl->GetSubset(i)));
             }
             // End logic for seeing which species is on.
@@ -857,10 +857,10 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
             // We've just turned on an entire set, but some parts
             // (materials) may have been turned off before, so ensure
             // that remains the case.
-            int numSets = silr->GetNumSets();
+            unsigned int numSets = silr->GetNumSets();
             for (i = 0; i < numSets ; i++)
             {
-                if (setID == i)
+                if ((unsigned int)setID == i)
                     continue;
                 if (trav.UsesSetData(i) == NoneUsed)
                     silr->TurnOffSet(i);
@@ -901,7 +901,7 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
         {
             intVector chunks;
             trav.GetDomainList(chunks);
-            for (int i = 0; i < chunks.size(); i++)
+            for (size_t i = 0; i < chunks.size(); i++)
             {
                 bool hasMats = false;
                 trav.GetMaterials(chunks[i], hasMats);

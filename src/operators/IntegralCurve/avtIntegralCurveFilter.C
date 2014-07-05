@@ -488,7 +488,7 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
-    avtDataValidity   &val  = GetOutput()->GetInfo().GetValidity();
+    //avtDataValidity   &val  = GetOutput()->GetInfo().GetValidity();
 
     if( outVarName != "" )
     {
@@ -2139,8 +2139,9 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     int numStiff = 0;
     int numCritPts = 0;
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
+    }
 
     //See how many pts, ics we have so we can preallocate everything.
     for (int i = 0; i < numICs; i++)
@@ -2289,12 +2290,13 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         return;
 
     int numICs = ics.size(), numPts = 0;
-    int numEarlyTerminators = 0;
-    int numStiff = 0;
-    int numCritPts = 0;
+    //int numEarlyTerminators = 0;
+    //int numStiff = 0;
+    //int numCritPts = 0;
 
-    if (DebugStream::Level5())
+    if (DebugStream::Level5()) {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
+    }
 
     vtkAppendPolyData *append = vtkAppendPolyData::New();
 
@@ -2390,7 +2392,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         // If cropping determine how many points will be on the curve.
         if (cropBeginFlag || cropEndFlag)
         {
-            for (int j = 0; j < nSamples; j++)
+            for (size_t j = 0; j < nSamples; j++)
             {
                 avtStateRecorderIntegralCurve::Sample s = ic->GetSample(j);
 
@@ -2500,7 +2502,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             dataValue == IntegralCurveAttributes::AverageDistanceFromSeed ||
             dataValue == IntegralCurveAttributes::Difference )
         {
-          for (int j = 0; j < nSamples; j++)
+          for (size_t j = 0; j < nSamples; j++)
           {
             s = ic->GetSample(j);
 
@@ -2862,7 +2864,7 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
 static avtStateRecorderIntegralCurve *
 icFromID(int id, std::vector<avtIntegralCurve *> &ics)
 {
-    for (int i = 0; i < ics.size(); i++)
+    for (size_t i = 0; i < ics.size(); i++)
     {
         if (ics[i]->id == id)
             return dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
@@ -2887,7 +2889,7 @@ icFromID(int id, std::vector<avtIntegralCurve *> &ics)
 void
 avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCurve *> &ics)
 {
-    for (int i = 0; i < fwdBwdICPairs.size(); i++)
+    for (size_t i = 0; i < fwdBwdICPairs.size(); i++)
     {
         avtStateRecorderIntegralCurve *ic[2] =
           { icFromID(fwdBwdICPairs[i].first, ics),
@@ -2905,7 +2907,7 @@ avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCur
         for (int i = 0; i < 2; i++)
         {
             size_t n = ic[i]->GetNumberOfSamples();
-            for (int j = 0; j < n; j++)
+            for (size_t j = 0; j < n; j++)
             {
                 avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
                 if (s.secondarys[tubeVariableIndex] < range[0])
@@ -2920,7 +2922,7 @@ avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCur
         for (int i = 0; i < 2; i++)
         {
             size_t n = ic[i]->GetNumberOfSamples();
-            for (int j = 0; j < n; j++)
+            for (size_t j = 0; j < n; j++)
             {
                 avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
                 s.secondarys[tubeVariableIndex] = (s.secondarys[tubeVariableIndex]-range[0]) / dRange;

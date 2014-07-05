@@ -581,7 +581,7 @@ PyAMRStitchCellAttributes_GetLogString()
 static void
 PyAMRStitchCellAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AMRStitchCellAttributes *atts = (AMRStitchCellAttributes *)subj;
+    AMRStitchCellAttributes *atts = (AMRStitchCellAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

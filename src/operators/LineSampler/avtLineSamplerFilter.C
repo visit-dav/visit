@@ -572,7 +572,7 @@ avtLineSamplerFilter::Execute()
         {
           ToroidalIntegrationSum.resize( nPoints );
           
-          for( unsigned int i=0; i<nPoints; ++i )
+          for( unsigned int i=0; i< (unsigned int)nPoints; ++i )
             ToroidalIntegrationSum[i] = 0;
         }
 
@@ -619,7 +619,7 @@ avtLineSamplerFilter::Execute()
         }
 
         // Traverse all points
-        for( unsigned int i=0; i<nPoints; ++i )
+        for( unsigned int i=0; i< (unsigned int)nPoints; ++i )
         {
           // Get the next point and update its coordinates if necessary
           vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
@@ -1138,7 +1138,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             poloidalAngle += ((double) (c) - channelIndexOffset) * channelAngle;
 
           // Toroidal rotation
-          double toroidalAngle;
+          double toroidalAngle = 0; ///TODO: check on fix for uninitialized var
 
           if( atts.GetToroidalIntegration() ==
               LineSamplerAttributes::ToroidalTimeSample ||
@@ -1401,7 +1401,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               return NULL;
             }
 
-            double a, sd, weight, total=0;
+            double a = 0, sd = 0, weight = 0, total=0; ///TODO: check on fix for uninitialized vars
 
             if( atts.GetChannelProfile() == LineSamplerAttributes::Gaussian )
             {
@@ -1432,7 +1432,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
 
             // Do the summation for each channel
-            for( unsigned int i=0; i<nChannelSamples; ++i )
+            for( unsigned int i=0; i< (unsigned int)nChannelSamples; ++i )
             {
               float value = *out_data;
               *out_data++ += sampleVolume * weight * value;
@@ -1485,8 +1485,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
                 applyTransform( transform, offset );
 
-                avtVector startBase = startPoint + offset;
-                avtVector stopBase  = stopPoint  + offset;
+                //avtVector startBase = startPoint + offset;
+                //avtVector stopBase  = stopPoint  + offset;
 
                 vtkDataSet *tmp_ds = createLine( startPoint, stopPoint, false );
 
@@ -1518,7 +1518,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 float* tmp_data =
                   (float*) tmp_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
                 // Do the summation for each channel
-                for( unsigned int i=0; i<nChannelSamples; ++i )
+                for( unsigned int i=0; i< (unsigned int)nChannelSamples; ++i )
                 {
                   *out_data++ += sampleVolume * weight * *tmp_data++;
                 }
@@ -1609,7 +1609,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               float sum = 0;
 
               // Do the summation for each channel
-              for( unsigned int i=0; i<nChannelSamples; ++i )
+              for( unsigned int i=0; i< (unsigned int)nChannelSamples; ++i )
                 sum += sampleVolume * *out_data++;
 
               // Create groups that represent each channel.
@@ -1785,7 +1785,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 //               if( atts.GetChannelGeometry() == LineSamplerAttributes::Point ||
 //                   atts.GetChannelGeometry() == LineSamplerAttributes::Line )
               {
-                  float *points_ptr;
+                  float *points_ptr = NULL; /// TODO: is it possible to not be vtkUnstructured or PolyData?
 
                   if( out_ds->IsA("vtkUnstructuredGrid") )
                   {
@@ -1801,11 +1801,14 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
                     points_ptr =
                       (float *) out_pd->GetPoints()->GetVoidPointer(0);
+                  } else {
+                    const char* msg = "Input not vtkPolyData or Unstructured Grid";
+                    EXCEPTION1(ImproperUseException, msg);
                   }
           
                   vtkDataArray *scalars = out_ds->GetPointData()->GetScalars();
 
-                  int nPts = scalars->GetNumberOfTuples();
+                  unsigned int nPts = scalars->GetNumberOfTuples();
 
                   // Adjust the X coordinate for each array
                   for( unsigned int i=0, j=0; i<nPts; ++i, j+=3)
@@ -2024,7 +2027,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     }
 
     // Create the points for sampling
-    for( unsigned int i=0; i<nSamples; ++i )
+    for( unsigned int i=0; i< (unsigned int)nSamples; ++i )
     {
       if( (double) i * delta.length() > (stopPoint - startPoint).length() )
         basePoint = stopPoint;
@@ -2079,7 +2082,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     line->GetPointIds()->SetNumberOfIds(nSamples);
 
     // Create the points for sampling
-    for( unsigned int i=0; i<nSamples; ++i )
+    for( unsigned int i=0; i< (unsigned int)nSamples; ++i )
     {
       if( (double) i * delta.length() > (stopPoint - startPoint).length() )
         basePoint = stopPoint;
@@ -2197,9 +2200,9 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
     
   float *points_ptr = (float *) points->GetVoidPointer(0);
 
-  double deltaAngle = 360.0 / (double) (nRadialSamples);
+  //double deltaAngle = 360.0 / (double) (nRadialSamples);
     
-  for( unsigned int i=0, index=0; i<nSamples; ++i )
+  for( unsigned int i=0, index=0; i< (unsigned int)nSamples; ++i )
   {
     if( (double) i * delta.length() > (stopPoint - startPoint).length() )
       basePoint = stopPoint;
@@ -2210,7 +2213,7 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
     
     avtVector radialPoint = basePoint + (radius+dradius) * normal;
     
-    for( unsigned int j=0; j<nRadialSamples; ++j, ++index )
+    for( unsigned int j=0; j< (unsigned int)nRadialSamples; ++j, ++index )
     {
       double angle = (double) j * sampleArc;
       
@@ -2248,7 +2251,7 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
         scalars->InsertTuple1(index, index);
       
       // Create the quad.
-      if( i<nSamples-1 )
+      if( i<(unsigned int)nSamples-1 )
       {
         int i1 = i+1;
         int j1 = (j+1) % nRadialSamples;
@@ -2534,7 +2537,7 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
   // Find the frist two intersecting points, assume the startPoint is
   // outside the wall. The first clipped point will be intering point
   // and the second will be the exiting point.
-  for( unsigned int i=0, j=1; j<npts; ++i, ++j )
+  for( unsigned int i=0, j=1; j< (unsigned int)npts; ++i, ++j )
   {
     double  x3 = wallList[2*i];
     double  z3 = wallList[2*i+1];
@@ -2684,7 +2687,7 @@ avtLineSamplerFilter::CreateFinalOutput(void)
 
     vtkIdType pIdx = 0;
 
-    for( int i=0; i<lineSamples.size(); ++i )
+    for( unsigned int i=0; i<lineSamples.size(); ++i )
     {
       if( nPts == 1 )
       {

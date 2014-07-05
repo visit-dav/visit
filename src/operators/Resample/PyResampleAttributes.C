@@ -851,7 +851,7 @@ PyResampleAttributes_GetLogString()
 static void
 PyResampleAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ResampleAttributes *atts = (ResampleAttributes *)subj;
+    ResampleAttributes *atts = (ResampleAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

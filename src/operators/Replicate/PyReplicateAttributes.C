@@ -834,7 +834,7 @@ PyReplicateAttributes_GetLogString()
 static void
 PyReplicateAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ReplicateAttributes *atts = (ReplicateAttributes *)subj;
+    ReplicateAttributes *atts = (ReplicateAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

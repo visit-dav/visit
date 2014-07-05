@@ -185,7 +185,7 @@ QvisDeferExpressionWindow::UpdateWindow(bool doAll)
           case DeferExpressionAttributes::ID_exprs:
             {
                 QString res;
-                for (int j = 0 ; j < atts->GetExprs().size() ; j++)
+                for (size_t j = 0 ; j < atts->GetExprs().size() ; j++)
                 {
                     if(j !=0)
                         res += " ";

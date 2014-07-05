@@ -1382,7 +1382,7 @@ PyDataBinningAttributes_GetLogString()
 static void
 PyDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DataBinningAttributes *atts = (DataBinningAttributes *)subj;
+    DataBinningAttributes *atts = (DataBinningAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

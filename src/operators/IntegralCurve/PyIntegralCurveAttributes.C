@@ -3507,7 +3507,7 @@ PyIntegralCurveAttributes_GetLogString()
 static void
 PyIntegralCurveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IntegralCurveAttributes *atts = (IntegralCurveAttributes *)subj;
+    IntegralCurveAttributes *atts = (IntegralCurveAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -551,7 +551,7 @@ PyTubeAttributes_GetLogString()
 static void
 PyTubeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TubeAttributes *atts = (TubeAttributes *)subj;
+    TubeAttributes *atts = (TubeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

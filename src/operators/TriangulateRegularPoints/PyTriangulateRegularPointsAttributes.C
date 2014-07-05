@@ -428,7 +428,7 @@ PyTriangulateRegularPointsAttributes_GetLogString()
 static void
 PyTriangulateRegularPointsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TriangulateRegularPointsAttributes *atts = (TriangulateRegularPointsAttributes *)subj;
+    TriangulateRegularPointsAttributes *atts = (TriangulateRegularPointsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

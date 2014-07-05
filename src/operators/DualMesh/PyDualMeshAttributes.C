@@ -359,7 +359,7 @@ PyDualMeshAttributes_GetLogString()
 static void
 PyDualMeshAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DualMeshAttributes *atts = (DualMeshAttributes *)subj;
+    DualMeshAttributes *atts = (DualMeshAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

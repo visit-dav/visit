@@ -717,7 +717,7 @@ PyStatisticalTrendsAttributes_GetLogString()
 static void
 PyStatisticalTrendsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    StatisticalTrendsAttributes *atts = (StatisticalTrendsAttributes *)subj;
+    StatisticalTrendsAttributes *atts = (StatisticalTrendsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

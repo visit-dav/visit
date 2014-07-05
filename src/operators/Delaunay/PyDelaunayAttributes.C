@@ -359,7 +359,7 @@ PyDelaunayAttributes_GetLogString()
 static void
 PyDelaunayAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DelaunayAttributes *atts = (DelaunayAttributes *)subj;
+    DelaunayAttributes *atts = (DelaunayAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

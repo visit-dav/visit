@@ -346,7 +346,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
                 // Verify that the logical index is valid for this domain
                 // If not, set encounteredBadSeed to true, return NULL.
                 //
-                for (int i = 0; i < id.size(); i++)
+                for (size_t i = 0; i < id.size(); i++)
                 {
                     if (id[i] < minIJK[i] || id[i] > maxIJK[i])
                     {
@@ -713,7 +713,7 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
         }
         if (*speciesColl != NULL)
         {
-            for (i = 0 ; i < speciesColl->GetNumberOfSubsets() ; i++)
+            for (i = 0 ; i < (unsigned int)speciesColl->GetNumberOfSubsets() ; i++)
                 setState.push_back(trav.UsesData(speciesColl->GetSubset(i)));
         }
         // End logic for seeing which species is on.

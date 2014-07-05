@@ -351,7 +351,7 @@ VertexSkelet :: VertexSkelet (const Point &p,
                                                     // top of the site
                                                     // of intersection
                                                     // p)
-  : point (p), done (false), higher (NULL), ID (-1),
+  : point (p), higher (NULL), done (false), ID (-1),
     leftSkeletonLine (NULL), rightSkeletonLine (NULL),
     advancingSkeletonLine (NULL)
 {
@@ -662,7 +662,7 @@ bool invalidIntersection (const VertexSkelet &v,
       continue;
       
     Number dv = dist (poi, v.leftLine);
-    Number dvx = dist (poi, v.rightLine);
+    Number dvx = dist (poi, v.rightLine); (void) dvx;
     //        assert (SIMILAR (dv, dist (poi, v.rightLine)));
     assert 
       (SIMILAR (dv, dvx));
@@ -908,7 +908,7 @@ void applyNonconvexIntersection (Intersection &i)
   Ray SEleft(i.poi, (*rightPointer).leftLine.angle);
   Point Edge_left = intersection(SEleft, (*leftPointer).axis);
 
-  VertexSkelet *vertexPtr;
+  VertexSkelet *vertexPtr = NULL; ///TODO: check on uninitialized variable
 
   VertexSkelet *v1left, *v1right, *v2left, *v2right;
   v1right = i.rightVertex;
@@ -1347,9 +1347,9 @@ void applyLast3 (const Intersection &i)
   v2.done = true;
   v3.done = true;
    
-  Point is1 = facingTowards (v1.axis, v2.axis) ? Point (INFINITY, INFINITY) : intersection (v1.axis, v2.axis);
-  Point is2 = facingTowards (v2.axis, v3.axis) ? Point (INFINITY, INFINITY) : intersection (v2.axis, v3.axis);
-  Point is3 = facingTowards (v3.axis, v1.axis) ? Point (INFINITY, INFINITY) : intersection (v3.axis, v1.axis);
+  Point is1 = facingTowards (v1.axis, v2.axis) ? Point (INFINITY, INFINITY) : intersection (v1.axis, v2.axis); (void) is1;
+  Point is2 = facingTowards (v2.axis, v3.axis) ? Point (INFINITY, INFINITY) : intersection (v2.axis, v3.axis); (void) is2;
+  Point is3 = facingTowards (v3.axis, v1.axis) ? Point (INFINITY, INFINITY) : intersection (v3.axis, v1.axis); (void) is3;
    
   Point is = i.poi;                                               
   assert 
@@ -1407,7 +1407,7 @@ void applyLast3 (const Intersection &i)
   v2.advancingSkeletonLine = line2Ptr;
   v3.advancingSkeletonLine = line3Ptr;
 
-  int  event_type = 20;
+  //int  event_type = 20;
 
   // IDENTIFY THE EDGES THAT COLLAPSE
 
@@ -1450,7 +1450,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
    
   //std::cerr << "First loop..." << std::endl;
         
-  for (int ci = 0; ci < contours.size (); ci ++)             
+  for (size_t ci = 0; ci < contours.size (); ci ++)             
   {
     PointVector &points (contours[ci]);                 
     PointVector :: iterator first = points.begin();
@@ -1493,7 +1493,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
     (*i).rightVertex = &*i;
     if (vn == 0) 
       contourBegin = i;
-    if (vn == contours [cn].size () - 1)
+    if ((size_t)vn == contours [cn].size () - 1)
     {
       (*i).nextVertex = &*contourBegin;
       (*contourBegin).prevVertex = &*i;
@@ -1507,11 +1507,11 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
   //std::cerr << "Third loop..." << std::endl;
   
   NrCP = -1;
-  int type_ev = 0;
+  //int type_ev = 0;
 
   for (i=vl.begin(); i!=vl.end(); i++)  
   {
-    double h=0;
+    //double h=0;
     NrCP++;
   }
 

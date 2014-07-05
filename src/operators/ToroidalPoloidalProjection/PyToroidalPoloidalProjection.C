@@ -528,7 +528,7 @@ PyToroidalPoloidalProjection_GetLogString()
 static void
 PyToroidalPoloidalProjection_CallLogRoutine(Subject *subj, void *data)
 {
-    ToroidalPoloidalProjection *atts = (ToroidalPoloidalProjection *)subj;
+    ToroidalPoloidalProjection *atts = (ToroidalPoloidalProjection *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

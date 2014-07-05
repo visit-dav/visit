@@ -326,7 +326,7 @@ PyDecimateAttributes_GetLogString()
 static void
 PyDecimateAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DecimateAttributes *atts = (DecimateAttributes *)subj;
+    DecimateAttributes *atts = (DecimateAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

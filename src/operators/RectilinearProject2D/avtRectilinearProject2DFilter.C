@@ -228,8 +228,8 @@ avtRectilinearProject2DFilter::Execute()
     // ... for each group of boxes with same i, j exntents identify one representing box
     // ... this is the box with the lowest index that has the same i, j extents
     std::vector<int> representingBox(boxes.size());
-    for (int i = 0; i < boxes.size(); ++i)
-        for (int j = 0; j<=i; ++j)
+    for (size_t i = 0; i < boxes.size(); ++i)
+        for (size_t j = 0; j<=i; ++j)
             if (boxes[i] == boxes[j])
             {
                 representingBox[i] = j;
@@ -241,16 +241,16 @@ avtRectilinearProject2DFilter::Execute()
     // ... starts a new group
     std::vector<int> ijGroupNo(boxes.size());
     int currNewIJGroup = 0;
-    for (int i = 0; i < representingBox.size(); ++i)
+    for (size_t i = 0; i < representingBox.size(); ++i)
     {
-        if (representingBox[i] == i)
+        if ((size_t)representingBox[i] == i)
             ijGroupNo[i] = currNewIJGroup++;
         else
             ijGroupNo[i] = ijGroupNo[representingBox[i]];
     }
 
     std::vector< std::vector<int> > ijGroup(currNewIJGroup);
-    for (int i = 0; i < ijGroupNo.size(); ++i)
+    for (size_t i = 0; i < ijGroupNo.size(); ++i)
         ijGroup[ijGroupNo[i]].push_back(i);
 
     // Project grids per group to 2D generating one 2D mesh per group

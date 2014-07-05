@@ -946,7 +946,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
 void
 QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
-    int row = 0;
+    //int row = 0;
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(5);
@@ -2047,6 +2047,8 @@ QvisPoincareWindow::UpdateAlgorithmAttributes()
         maxSLCount->show();
         workGroupSizeLabel->show();
         workGroupSize->show();
+        break;
+    default: ///TODO: handle VisItSelects option
         break;
     }
 }

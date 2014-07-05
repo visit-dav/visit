@@ -662,7 +662,7 @@ PyFiveFoldTetSubdivisionAttributes_GetLogString()
 static void
 PyFiveFoldTetSubdivisionAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FiveFoldTetSubdivisionAttributes *atts = (FiveFoldTetSubdivisionAttributes *)subj;
+    FiveFoldTetSubdivisionAttributes *atts = (FiveFoldTetSubdivisionAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

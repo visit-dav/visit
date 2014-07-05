@@ -104,8 +104,8 @@ bool BracketIsValid(avtPoincareIC *poincare_ic)
 }
 bool NeedToMinimize(avtPoincareIC *poincare_ic)
 {
-  int toroidalWinding    = poincare_ic->properties.toroidalWinding;
-  int windingGroupOffset = poincare_ic->properties.windingGroupOffset;
+  //int toroidalWinding    = poincare_ic->properties.toroidalWinding;
+  //int windingGroupOffset = poincare_ic->properties.windingGroupOffset;
   
   Vector xzplane(0,1,0);
   FieldlineLib fieldlib;
@@ -367,13 +367,13 @@ bool PrepareToMinimize(avtPoincareIC *poincare_ic, avtVector &newPt, bool &cbGTb
   _a->properties.rationalPt2 =_b->properties.rationalPt2;
               
   double bx_ax,cx_bx;
-  double a_x,a_z,b_x,b_z,c_x,c_z;
-  a_x = a_puncturePoints[a_i][0];
-  a_z = a_puncturePoints[a_i][2];
-  b_x = b_puncturePoints[b_i][0];
-  b_z = b_puncturePoints[b_i][2];
-  c_x = c_puncturePoints[c_i][0];
-  c_z = c_puncturePoints[c_i][2];
+  //double a_x,a_z,b_x,b_z,c_x,c_z;
+  //a_x = a_puncturePoints[a_i][0];
+  //a_z = a_puncturePoints[a_i][2];
+  //b_x = b_puncturePoints[b_i][0];
+  //b_z = b_puncturePoints[b_i][2];
+  //c_x = c_puncturePoints[c_i][0];
+  //c_z = c_puncturePoints[c_i][2];
   bx_ax = PythDist(a_puncturePoints[a_i],b_puncturePoints[b_i]);
   cx_bx = PythDist(b_puncturePoints[b_i],c_puncturePoints[c_i]);
                 
@@ -385,7 +385,7 @@ bool PrepareToMinimize(avtPoincareIC *poincare_ic, avtVector &newPt, bool &cbGTb
     {
       std::cerr<<"Line: "<<__LINE__<<"Prepare to minimize: "<<"\n\t"<<VectorToString(a_puncturePoints[a_i])<<"\n\t"<<VectorToString(b_puncturePoints[b_i])<<"\n\t"<<VectorToString(c_puncturePoints[c_i])<<"\n";
     }
-  double new_x,new_z;
+  //double new_x,new_z;
   if (cx_bx > bx_ax)
     {
       cbGTba = true;
@@ -519,11 +519,11 @@ std::vector<avtVector> GetSeeds( avtPoincareIC *poincare_ic,
   double maxAngle = 0;
   unsigned int best_index = 0;
 
-  unsigned int best_one_less;
-  unsigned int best_one_more;
+  unsigned int best_one_less = 0; /// TODO: check on fix
+  unsigned int best_one_more = 0; /// TODO: check on fix of uninitialized vars
 
   bool twoPts = false;
-  for( int i=0; i<toroidalWinding; ++i )
+  for( unsigned int i=0; i<toroidalWinding; ++i )
   {
     unsigned int one_less = (i-windingGroupOffset+toroidalWinding) % toroidalWinding;
     unsigned int one_more = (i+windingGroupOffset+toroidalWinding) % toroidalWinding;
@@ -728,7 +728,7 @@ int FindMinimizationIndex( avtPoincareIC *ic )
   avtVector seedPt = ic->properties.srcPt;
   double min = 99999999;
   int minix = -1;
-  for (int i =0; i < ic->properties.toroidalWinding && i < puncturePoints.size(); i++)
+  for (unsigned int i =0; i < ic->properties.toroidalWinding && i < puncturePoints.size(); i++)
     {
       avtVector puncture = puncturePoints[i];
       double dist = (seedPt - puncture).length();

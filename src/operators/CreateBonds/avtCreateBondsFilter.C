@@ -295,7 +295,7 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, string)
     //
     float maxBondDist = 0.;
     vector<double> &maxDist = atts.GetMaxDist();
-    for (int i=0; i<maxDist.size(); i++)
+    for (size_t i=0; i<maxDist.size(); i++)
     {
         if (maxDist[i] > maxBondDist)
             maxBondDist = maxDist[i];
@@ -460,9 +460,9 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     // for periodic atom images
     //
     bool addPeriodicBonds = atts.GetAddPeriodicBonds();
-    bool xper = addPeriodicBonds && atts.GetPeriodicInX();
-    bool yper = addPeriodicBonds && atts.GetPeriodicInY();
-    bool zper = addPeriodicBonds && atts.GetPeriodicInZ();
+    //bool xper = addPeriodicBonds && atts.GetPeriodicInX();
+    //bool yper = addPeriodicBonds && atts.GetPeriodicInY();
+    //bool zper = addPeriodicBonds && atts.GetPeriodicInZ();
     double xv[3], yv[3], zv[3];
     for (int j=0; j<3; j++)
     {

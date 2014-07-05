@@ -498,7 +498,7 @@ QvisReflectWidget::setupCamera()
 {
     // Set the view.
     vector3 camera1 = vec_create(24.2f, 16.5f, 29.7f);
-    vector3 camera2 = vec_create(-24.2f, 16.5f, -29.7f);
+    //vector3 camera2 = vec_create(-24.2f, 16.5f, -29.7f);
 
 #ifdef DONT_KNOW_THE_VALUES
     // we're debugging

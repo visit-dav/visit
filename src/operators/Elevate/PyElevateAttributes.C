@@ -686,7 +686,7 @@ PyElevateAttributes_GetLogString()
 static void
 PyElevateAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ElevateAttributes *atts = (ElevateAttributes *)subj;
+    ElevateAttributes *atts = (ElevateAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -786,7 +786,7 @@ PyIsosurfaceAttributes_GetLogString()
 static void
 PyIsosurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IsosurfaceAttributes *atts = (IsosurfaceAttributes *)subj;
+    IsosurfaceAttributes *atts = (IsosurfaceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

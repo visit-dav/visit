@@ -469,7 +469,7 @@ PyExtrudeAttributes_GetLogString()
 static void
 PyExtrudeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExtrudeAttributes *atts = (ExtrudeAttributes *)subj;
+    ExtrudeAttributes *atts = (ExtrudeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

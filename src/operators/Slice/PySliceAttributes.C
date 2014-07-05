@@ -1071,7 +1071,7 @@ PySliceAttributes_GetLogString()
 static void
 PySliceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SliceAttributes *atts = (SliceAttributes *)subj;
+    SliceAttributes *atts = (SliceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -580,7 +580,7 @@ PyBoxAttributes_GetLogString()
 static void
 PyBoxAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    BoxAttributes *atts = (BoxAttributes *)subj;
+    BoxAttributes *atts = (BoxAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

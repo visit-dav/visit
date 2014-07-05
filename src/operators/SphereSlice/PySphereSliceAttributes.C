@@ -402,7 +402,7 @@ PySphereSliceAttributes_GetLogString()
 static void
 PySphereSliceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SphereSliceAttributes *atts = (SphereSliceAttributes *)subj;
+    SphereSliceAttributes *atts = (SphereSliceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

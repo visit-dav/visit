@@ -1222,7 +1222,7 @@ PyClipAttributes_GetLogString()
 static void
 PyClipAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ClipAttributes *atts = (ClipAttributes *)subj;
+    ClipAttributes *atts = (ClipAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

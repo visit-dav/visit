@@ -393,7 +393,7 @@ PyFluxAttributes_GetLogString()
 static void
 PyFluxAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FluxAttributes *atts = (FluxAttributes *)subj;
+    FluxAttributes *atts = (FluxAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -2638,8 +2638,9 @@ FindCells(double *x, double *y, double *z, int nx, int ny, int nz, vtkIdType *cl
         if (ncells >= clistlen)
         {
             static bool showed_error = false;
-            if (showed_error == false)
+            if (showed_error == false) {
                 debug1<<"ERROR: avtSliceFilter didn't allocate enough cells\n";
+            }
             showed_error = true;
         }
         else
