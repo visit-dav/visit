@@ -397,7 +397,7 @@ avtTSurfFileFormat::ReadFile(const char *name, int nLines)
     float pt[3];
     vtkIdType verts[8];
     bool recognized = false;
-    bool titleRead = false;
+    bool titleRead = false; (void) titleRead;
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
     {
         if(nLines != ALL_LINES && lineIndex >= nLines)

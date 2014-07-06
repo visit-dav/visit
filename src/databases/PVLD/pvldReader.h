@@ -5,11 +5,8 @@
 #define VELODYNE_READER_HPP
 
 #include <set>
-using std::set;
 #include <vector>
-using std::vector;
 #include <string>
-using std::string;
 
 #include <hdf5.h>
 
@@ -19,9 +16,7 @@ public:
     PVLD_Reader()
         : filename_(),title_(),file_id_(0),
           ncycle_(0),time_(0),nmmat_(0),
-          nnode_(0),nsolid_(0),nshell_(0),nbeam_(0),nsph_(0),ntdst_(0),ncntt_(0),
-          solid_lhv_(false),shell_lhv_(false),beam_lhv_(false),sph_lhv_(false),
-          solid_mxhv_(0),shell_mxhv_(0),beam_mxhv_(0),sph_mxhv_(0)
+          nnode_(0),nsolid_(0),solid_lhv_(false),solid_mxhv_(0),nshell_(0),shell_lhv_(false),shell_mxhv_(0),nbeam_(0),beam_lhv_(false),beam_mxhv_(0),nsph_(0),sph_lhv_(false),sph_mxhv_(0),ntdst_(0),ncntt_(0)
     {}
 
     virtual ~PVLD_Reader()
@@ -32,7 +27,7 @@ public:
     virtual
     void FreeResource();
 
-    void SetFileName( const string& name )
+    void SetFileName( const std::string& name )
     {
         filename_ = name;
     }
@@ -45,11 +40,11 @@ public:
     void CheckNumberOfEngines( int npart );
 
 
-    const string& GetFileName() const
+    const std::string& GetFileName() const
     {
         return filename_;
     }
-    const string &GetTitle() const
+    const std::string &GetTitle() const
     {
         return title_;
     }
@@ -65,7 +60,7 @@ public:
     {
         return nmmat_;
     }
-    const string& GetMaterialName( int nm ) const
+    const std::string& GetMaterialName( int nm ) const
     {
         return mat_titles_.at(nm-1);
     }
@@ -83,11 +78,11 @@ public:
     {
         return node_dsname_.size();
     }
-    const string& GetNodeVariableName( int idx ) const
+    const std::string& GetNodeVariableName( int idx ) const
     {
         return node_dsname_[idx];
     }
-    const vector<int>& GetNodeVariableDims( int idx ) const
+    const std::vector<int>& GetNodeVariableDims( int idx ) const
     {
         return node_dsdims_[idx];
     }
@@ -109,11 +104,11 @@ public:
     {
         return solid_dsname_.size();
     }
-    const string& GetSolidVariableName( int idx ) const
+    const std::string& GetSolidVariableName( int idx ) const
     {
         return solid_dsname_[idx];
     }
-    const vector<int>& GetSolidVariableDims( int idx ) const
+    const std::vector<int>& GetSolidVariableDims( int idx ) const
     {
         return solid_dsdims_[idx];
     }
@@ -125,19 +120,19 @@ public:
     {
         return solid_mxhv_;
     }
-    const vector<int>& GetSolidHistoryPartitions() const
+    const std::vector<int>& GetSolidHistoryPartitions() const
     {
         return solid_hvpart_;
     }
-    const vector<int>& GetSolidMaterial() const
+    const std::vector<int>& GetSolidMaterial() const
     {
         return solid_matid_;
     }
-    const vector<int>& GetMissingSolidMaterial() const
+    const std::vector<int>& GetMissingSolidMaterial() const
     {
         return solid_msmat_;
     }
-    const vector<int> &GetSolidBlockMeshMap(int nb) const
+    const std::vector<int> &GetSolidBlockMeshMap(int nb) const
     {
         return solid_blkmap_[nb];
     }
@@ -158,11 +153,11 @@ public:
     {
         return shell_dsname_.size();
     }
-    const string& GetShellVariableName( int idx ) const
+    const std::string& GetShellVariableName( int idx ) const
     {
         return shell_dsname_[idx];
     }
-    const vector<int>& GetShellVariableDims( int idx ) const
+    const std::vector<int>& GetShellVariableDims( int idx ) const
     {
         return shell_dsdims_[idx];
     }
@@ -174,19 +169,19 @@ public:
     {
         return shell_mxhv_;
     }
-    const vector<int>& GetShellHistoryPartitions() const
+    const std::vector<int>& GetShellHistoryPartitions() const
     {
         return shell_hvpart_;
     }
-    const vector<int>& GetShellMaterial() const
+    const std::vector<int>& GetShellMaterial() const
     {
         return shell_matid_;
     }
-    const vector<int>& GetMissingShellMaterial() const
+    const std::vector<int>& GetMissingShellMaterial() const
     {
         return shell_msmat_;
     }
-    const vector<int> &GetShellBlockMeshMap(int nb) const
+    const std::vector<int> &GetShellBlockMeshMap(int nb) const
     {
         return shell_blkmap_[nb];
     }
@@ -208,11 +203,11 @@ public:
     {
         return beam_dsname_.size();
     }
-    const string& GetBeamVariableName( int idx ) const
+    const std::string& GetBeamVariableName( int idx ) const
     {
         return beam_dsname_[idx];
     }
-    const vector<int>& GetBeamVariableDims( int idx ) const
+    const std::vector<int>& GetBeamVariableDims( int idx ) const
     {
         return beam_dsdims_[idx];
     }
@@ -224,19 +219,19 @@ public:
     {
         return beam_mxhv_;
     }
-    const vector<int>& GetBeamHistoryPartitions() const
+    const std::vector<int>& GetBeamHistoryPartitions() const
     {
         return beam_hvpart_;
     }
-    const vector<int>& GetBeamMaterial() const
+    const std::vector<int>& GetBeamMaterial() const
     {
         return beam_matid_;
     }
-    const vector<int>& GetMissingBeamMaterial() const
+    const std::vector<int>& GetMissingBeamMaterial() const
     {
         return beam_msmat_;
     }
-    const vector<int> &GetBeamBlockMeshMap(int nb) const
+    const std::vector<int> &GetBeamBlockMeshMap(int nb) const
     {
         return beam_blkmap_[nb];
     }
@@ -258,19 +253,19 @@ public:
     {
         return surf_dsname_.size();
     }
-    const string& GetSurfaceVariableName( int idx ) const
+    const std::string& GetSurfaceVariableName( int idx ) const
     {
         return surf_dsname_[idx];
     }
-    const vector<int>& GetSurfaceVariableDims( int idx ) const
+    const std::vector<int>& GetSurfaceVariableDims( int idx ) const
     {
         return surf_dsdims_[idx];
     }
-    const vector<int>& GetSurfaceMaterial() const
+    const std::vector<int>& GetSurfaceMaterial() const
     {
         return surf_matid_;
     }
-    const vector<int> &GetSurfaceBlockMeshMap(int nb) const
+    const std::vector<int> &GetSurfaceBlockMeshMap(int nb) const
     {
         return surf_blkmap_[nb];
     }
@@ -292,11 +287,11 @@ public:
     {
         return sph_dsname_.size();
     }
-    const string& GetSphVariableName( int idx ) const
+    const std::string& GetSphVariableName( int idx ) const
     {
         return sph_dsname_[idx];
     }
-    const vector<int>& GetSphVariableDims( int idx ) const
+    const std::vector<int>& GetSphVariableDims( int idx ) const
     {
         return sph_dsdims_[idx];
     }
@@ -308,15 +303,15 @@ public:
     {
         return sph_mxhv_;
     }
-    const vector<int>& GetSphHistoryPartitions() const
+    const std::vector<int>& GetSphHistoryPartitions() const
     {
         return sph_hvpart_;
     }
-    const vector<int>& GetSphMaterial() const
+    const std::vector<int>& GetSphMaterial() const
     {
         return sph_matid_;
     }
-    const vector<int>& GetMissingSphMaterial() const
+    const std::vector<int>& GetMissingSphMaterial() const
     {
         return sph_msmat_;
     }
@@ -334,16 +329,16 @@ public:
     {
         return tdst_part_[nb+1] - tdst_part_[nb];
     }
-    //const vector<string>& GetTiedSetVariableNames() const { return tdst_dsname_; }
+    //const vector<std::string>& GetTiedSetVariableNames() const { return tdst_dsname_; }
     int  GetNumOfTiedSetVariables() const
     {
         return tdst_dsname_.size();
     }
-    const string& GetTiedSetVariableName( int idx ) const
+    const std::string& GetTiedSetVariableName( int idx ) const
     {
         return tdst_dsname_[idx];
     }
-    const vector<int>& GetTiedSetVariableDims( int idx ) const
+    const std::vector<int>& GetTiedSetVariableDims( int idx ) const
     {
         return tdst_dsdims_[idx];
     }
@@ -365,65 +360,66 @@ public:
     {
         return cntt_dsname_.size();
     }
-    const string& GetContactVariableName( int idx ) const
+    const std::string& GetContactVariableName( int idx ) const
     {
         return cntt_dsname_[idx];
     }
-    const vector<int>& GetContactVariableDims( int idx ) const
+    const std::vector<int>& GetContactVariableDims( int idx ) const
     {
         return cntt_dsdims_[idx];
     }
 
 
-    void ReadSolidBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt );
-    bool ReadSolidBlockData( const char* varname, int nb, vector<int>& dims, vector<float>& data );
+    void ReadSolidBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    bool ReadSolidBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data );
     virtual
     void ReadSolidMaterial();
     virtual
-    void ReadSolidBlockMaterial( int blkInd, vector<int>& dims, vector<float>& data );
+    void ReadSolidBlockMaterial( int blkInd, std::vector<int>& dims, std::vector<float>& data );
 
-    void ReadShellBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt );
-    bool ReadShellBlockData( const char* varname, int nb, vector<int>& dims, vector<float>& data );
+    void ReadShellBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    bool ReadShellBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data );
     virtual
     void ReadShellMaterial();
     virtual
-    void ReadShellBlockMaterial( int blkInd, vector<int>& dims, vector<float>& data );
+    void ReadShellBlockMaterial( int blkInd, std::vector<int>& dims, std::vector<float>& data );
 
-    void ReadBeamBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt );
-    bool ReadBeamBlockData( const char* varname, int nb, vector<int>& dims, vector<float>& data );
+    void ReadBeamBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    bool ReadBeamBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data );
     virtual
     void ReadBeamMaterial();
     virtual
-    void ReadBeamBlockMaterial( int blkInd, vector<int>& dims, vector<float>& data );
+    void ReadBeamBlockMaterial( int blkInd, std::vector<int>& dims, std::vector<float>& data );
 
-    void ReadSurfaceBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt );
-    bool ReadSurfaceBlockData( const char* varname, int nb, vector<int>& dims, vector<float>& data );
+    void ReadSurfaceBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    bool ReadSurfaceBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data );
     virtual
     void ReadSurfaceMaterial();
     virtual
-    void ReadSurfaceBlockMaterial( int blkInd, vector<int>& dims, vector<float>& data );
+    void ReadSurfaceBlockMaterial( int blkInd, std::vector<int>& dims, std::vector<float>& data );
 
-    void ReadSphBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt );
-    void ReadSphBlockData( const char* varname, int blkInd, vector<int>& dims, vector<float>& data );
+    void ReadSphBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    void ReadSphBlockData( const char* varname, int blkInd, std::vector<int>& dims, std::vector<float>& data );
     void ReadSphMaterial(bool allowCollective = true);
-    void ReadSphBlockMaterial( int blkInd, vector<int>& dims, vector<float>& data );
+    void ReadSphBlockMaterial( int blkInd, std::vector<int>& dims, std::vector<float>& data );
 
 
-    void ReadTiedSetBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt );
-    void ReadTiedSetSlaveBlockMesh( int blkInd, vector<float>& crd );
-    void ReadTiedSetMasterBlockMesh( int blkInd, vector<float>& crd );
+    void ReadTiedSetBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    void ReadTiedSetSlaveBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadTiedSetMasterBlockMesh( int blkInd, std::vector<float>& crd );
     bool ReadTiedSetBlockData( const char* varname, int nb,
-                               vector<int>& dims, vector<float>& data );
+                               std::vector<int>& dims, std::vector<float>& data );
 
-    void ReadContactBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt );
-    void ReadContactSlaveBlockMesh( int blkInd, vector<float>& crd );
-    void ReadContactMasterBlockMesh( int blkInd, vector<float>& crd );
+    void ReadContactBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
+    void ReadContactSlaveBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadContactMasterBlockMesh( int blkInd, std::vector<float>& crd );
     bool ReadContactBlockData( const char* varname, int nb,
-                               vector<int>& dims, vector<float>& data );
+                               std::vector<int>& dims, std::vector<float>& data );
 
-    void AppendMissingMaterialMesh( int type, int blkInd, vector<float>& vcrd, vector<int>& elmt );
-    void AppendMissingMaterialData( int type, int blkInd, vector<int>& dims, vector<float>& data );
-    void AppendMissingMaterialMaterial( int type, int blkInd, vector<int>& dims, vector<float>& data );
+    void AppendMissingMaterialMesh( int type, int blkInd, std::vector<float>& vcrd, std::vector<int>& elmt );
+
+    void AppendMissingMaterialData( int type, int blkInd, std::vector<int>& dims, std::vector<float>& data );
+    void AppendMissingMaterialMaterial( int type, int blkInd, std::vector<int>& dims, std::vector<float>& data );
 
 
 protected:
@@ -443,92 +439,92 @@ protected:
     void GetMaterialType( hid_t file_id, const char* grpname );
     void GenMissingMaterials();
     void AddMissingParts( int type,
-                          const vector<int>& tgt,
-                          const vector<int>& own,
-                          vector<int>& msmat );
+                          const std::vector<int>& tgt,
+                          const std::vector<int>& own,
+                          std::vector<int>& msmat );
 
     void ReadInfo( hid_t file_id, const char* name,
                    int&                 num,
-                   vector<int>&         part,
-                   vector<string>&      dsname,
-                   vector<vector<int> >& dsdims,
+                   std::vector<int>&         part,
+                   std::vector<std::string>&      dsname,
+                   std::vector<std::vector<int> >& dsdims,
                    const char* num_str=NULL );
 
     void ReadNodeIndexCoord( hid_t file_id );
-    void ReadNodeData( hid_t fid, int varInd, const vector<int>& map,
-                       vector<int>& dims, vector<float>& dat );
+    void ReadNodeData( hid_t fid, int varInd, const std::vector<int>& map,
+                       std::vector<int>& dims, std::vector<float>& dat );
 
     virtual
     void ReadSolidBlockMesh( hid_t file_id, int blkInd,
-                             vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt );
+                             std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
     virtual
     void ReadSolidBlockData( hid_t file_id, int varInd, int blkInd,
-                             vector<int>& dims, vector<float>& edat );
+                             std::vector<int>& dims, std::vector<float>& edat );
     virtual
     void ReadSolidBlockHistoryData( hid_t fid, int blkInd, int varInd,
-                                    vector<int>& dims, vector<float>& data );
+                                    std::vector<int>& dims, std::vector<float>& data );
     void CollectSolidMaterial( hid_t file_id, int varInd, int blkInd,
-                               vector<int>& dims, vector<float>& edat );
+                               std::vector<int>& dims, std::vector<float>& edat );
 
     virtual
     void ReadShellBlockMesh( hid_t file_id, int blkInd,
-                             vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt );
+                             std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
     virtual
     void ReadShellBlockData( hid_t file_id, int varInd, int blkInd,
-                             vector<int>& dims, vector<float>& edat );
+                             std::vector<int>& dims, std::vector<float>& edat );
     virtual
     void ReadShellBlockHistoryData( hid_t fid, int blkInd, int varInd,
-                                    vector<int>& dims, vector<float>& data );
+                                    std::vector<int>& dims, std::vector<float>& data );
 
     virtual
     void ReadBeamBlockMesh( hid_t file_id, int blkInd,
-                            vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt );
+                            std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
     virtual
     void ReadBeamBlockData( hid_t file_id, int varInd, int blkInd,
-                            vector<int>& dims, vector<float>& edat );
+                            std::vector<int>& dims, std::vector<float>& edat );
     virtual
     void ReadBeamBlockHistoryData( hid_t fid, int blkInd, int varInd,
-                                   vector<int>& dims, vector<float>& data );
+                                   std::vector<int>& dims, std::vector<float>& data );
 
     virtual
     void ReadSurfaceBlockMesh( hid_t file_id, int blkInd,
-                               vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt );
+                               std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
     virtual
     void ReadSurfaceBlockData( hid_t file_id, int varInd, int blkInd,
-                               vector<int>& dims, vector<float>& edat );
+                               std::vector<int>& dims, std::vector<float>& edat );
 
     void ReadSphBlockMesh( hid_t file_id, int blkInd,
-                           vector<float>& vcrd, vector<int>& elmt );
+                           std::vector<float>& vcrd, std::vector<int>& elmt );
     void ReadSphBlockData( hid_t file_id, int varInd, int blkInd,
-                           vector<int>& dims, vector<float>& edat );
+                           std::vector<int>& dims, std::vector<float>& edat );
 
 
     virtual
     void ReadHistoryDataInfo( hid_t fid, const char* meshname,
-                              const vector<int>& part,
-                              int& mxnb, vector<int>& hvpart );
+                              const std::vector<int>& part,
+                              int& mxnb, std::vector<int>& hvpart );
     void ReadBlockHistoryData( hid_t fid, const char* meshname,  int blkInd, int varInd,
-                               const vector<int>& part,  const vector<int>& hvpart,
-                               vector<int>& hvsft, vector<int>& dims, vector<float>& data );
+                               const std::vector<int>& part,  const std::vector<int>& hvpart,
+                               std::vector<int>& hvsft, std::vector<int>& dims, std::vector<float>& data );
 
     void ReadTiedSetBlockMesh( hid_t file_id, int blkInd,
-                               vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt );
-    void ReadTiedSetSlaveBlockMesh( hid_t file_id, int blkInd, vector<float>& crd );
-    void ReadTiedSetMasterBlockMesh( hid_t file_id, int blkInd, vector<float>& crd );
+                               std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
+    void ReadTiedSetSlaveBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadTiedSetMasterBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadTiedSetBlockData( hid_t file_id, int varInd, int blkInd,
-                               vector<int>& dims, vector<float>& edat );
+                               std::vector<int>& dims, std::vector<float>& edat );
 
     void ReadContactBlockMesh( hid_t file_id, int blkInd,
-                               vector<int>& vmap, vector<float>& vcrd, vector<int>& elmt );
-    void ReadContactSlaveBlockMesh( hid_t file_id, int blkInd, vector<float>& crd );
-    void ReadContactMasterBlockMesh( hid_t file_id, int blkInd, vector<float>& crd );
+                               std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
+    void ReadContactSlaveBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadContactMasterBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadContactBlockData( hid_t file_id, int varInd, int blkInd,
-                               vector<int>& dims, vector<float>& edat );
+                               std::vector<int>& dims, std::vector<float>& edat );
 
 
 
-    void CollectMaterial( hid_t fid, const char* meshname, const vector<string>& dsname,
-                          int ne, vector<int>& mat, bool allowCollective = true );
+    void CollectMaterial( hid_t fid, const char* meshname, const std::vector<std::string>& dsname,
+                          int ne, std::vector<int>& mat, bool allowCollective = true );
 
 
 
@@ -540,8 +536,8 @@ protected:
 
     static hid_t OpenGroup( hid_t loc, const char* name );
     static void  CloseGroup( hid_t gid );
-    static void  CollectGroupDataSets( hid_t gid, vector<string>& name, vector<vector<int> >& dims );
-    static void  CollectSubgroups( hid_t gid, vector<string>& sgname );
+    static void  CollectGroupDataSets( hid_t gid, std::vector<std::string>& name, std::vector<std::vector<int> >& dims );
+    static void  CollectSubgroups( hid_t gid, std::vector<std::string>& sgname );
 
     static hid_t OpenAttribute( hid_t loc, const char* name );
     static void  CloseAttribute( hid_t aid );
@@ -560,18 +556,18 @@ protected:
                                   hid_t type, void* buf,
                                   int ndim=0, const hsize_t* sft=NULL, const hsize_t* cnt=NULL );
 
-    static void LoadSampleDatasetNames( const string& filename, const string& grpname,
-                                        vector<string>& dsname, vector<vector<int> >& dsdims,
+    static void LoadSampleDatasetNames( const std::string& filename, const std::string& grpname,
+                                        std::vector<std::string>& dsname, std::vector<std::vector<int> >& dsdims,
                                         bool& lhv, int& mxhv );
     static void GenMissMesh( int mesh_type,
-                             const vector<int>& msmat, const vector<float>& crd,
-                             vector<float>& vcrd, vector<int>& elmt );
-    static void GenMissData( const vector<int>& vdim, const vector<int>& msmat,
-                             vector<int>& dims, vector<float>& data );
-    static void GenMissMaterial( const vector<int>& msmat,
-                                 vector<int>& dims, vector<float>& data );
+                             const std::vector<int>& msmat, const std::vector<float>& crd,
+                             std::vector<float>& vcrd, std::vector<int>& elmt );
+    static void GenMissData( const std::vector<int>& vdim, const std::vector<int>& msmat,
+                             std::vector<int>& dims, std::vector<float>& data );
+    static void GenMissMaterial( const std::vector<int>& msmat,
+                                 std::vector<int>& dims, std::vector<float>& data );
 
-    static void GenDefaultSphVariables( vector<string>& dsname, vector<vector<int> >& dsdims );
+    static void GenDefaultSphVariables( std::vector<std::string>& dsname, std::vector<std::vector<int> >& dsdims );
 
 
     /* void ReadGroupDataSet( hid_t file_id, const char* gname, const char* dsname, int* buf, */
@@ -586,8 +582,8 @@ protected:
 
 protected:
     //bool           hasTOCread_;
-    string         filename_;
-    string         title_;
+    std::string         filename_;
+    std::string         title_;
 
     hid_t          file_id_;
 
@@ -595,105 +591,107 @@ protected:
     float          time_;   // simulation time
 
     int            nmmat_;  // number of materials
-    vector<int>    mat_type_;
-    vector<string> mat_titles_;
+    std::vector<int>    mat_type_;
+    std::vector<std::string> mat_titles_;
 
     // node
     int                    nnode_;
-    vector<string>         node_dsname_;
-    vector<vector<int> >    node_dsdims_;
-    vector<int>            node_idx_;  // node index
-    vector<float>          node_crd_;  // node coord
+    std::vector<std::string>         node_dsname_;
+    std::vector<std::vector<int> >    node_dsdims_;
+    std::vector<int>            node_idx_;  // node index
+    std::vector<float>          node_crd_;  // node coord
     int                    node_idx_mn_;
     int                    node_idx_mx_;
-    vector<int>            node_map_;
+    std::vector<int>            node_map_;
 
 
     // solid
     int                 nsolid_;
-    vector<int>         solid_part_;  // partition
-    vector<string>      solid_dsname_;
-    vector<vector<int> > solid_dsdims_;
-    vector<vector<int> > solid_blkmap_;
+    std::vector<int>         solid_part_;  // partition
+    std::vector<std::string>      solid_dsname_;
+    std::vector<std::vector<int> > solid_dsdims_;
+    std::vector<std::vector<int> > solid_blkmap_;
     bool                solid_lhv_;
     int                 solid_mxhv_;
-    vector<int>         solid_hvpart_;
-    vector<vector<int> > solid_hvdisp_;
-    vector<int>         solid_matid_;
-    vector<int>         solid_msmat_;
+    std::vector<int>         solid_hvpart_;
+    std::vector<std::vector<int> > solid_hvdisp_;
+    std::vector<int>         solid_matid_;
+    std::vector<int>         solid_msmat_;
 
 
     // shell
     int                 nshell_;
-    vector<int>         shell_part_;  // partition
-    vector<string>      shell_dsname_;
-    vector<vector<int> > shell_dsdims_;
-    vector<vector<int> > shell_blkmap_;
+    std::vector<int>         shell_part_;  // partition
+    std::vector<std::string>      shell_dsname_;
+    std::vector<std::vector<int> > shell_dsdims_;
+
+    std::vector<std::vector<int> > shell_blkmap_;
     bool                shell_lhv_;
     int                 shell_mxhv_;
-    vector<int>         shell_hvpart_;
-    vector<vector<int> > shell_hvdisp_;
-    vector<int>         shell_matid_;
-    vector<int>         shell_msmat_;
+    std::vector<int>         shell_hvpart_;
+    std::vector<std::vector<int> > shell_hvdisp_;
+    std::vector<int>         shell_matid_;
+    std::vector<int>         shell_msmat_;
 
 
     // beam
     int                 nbeam_;
-    vector<int>         beam_part_;  // partition
-    vector<string>      beam_dsname_;
-    vector<vector<int> > beam_dsdims_;
-    vector<vector<int> > beam_blkmap_;
+    std::vector<int>         beam_part_;  // partition
+    std::vector<std::string>      beam_dsname_;
+    std::vector<std::vector<int> > beam_dsdims_;
+
+    std::vector<std::vector<int> > beam_blkmap_;
     bool                beam_lhv_;
     int                 beam_mxhv_;
-    vector<int>         beam_hvpart_;
-    vector<vector<int> > beam_hvdisp_;
-    vector<int>         beam_matid_;
-    vector<int>         beam_msmat_;
+    std::vector<int>         beam_hvpart_;
+    std::vector<std::vector<int> > beam_hvdisp_;
+    std::vector<int>         beam_matid_;
+    std::vector<int>         beam_msmat_;
 
 
     // surface
     int                 nsurf_;
-    vector<int>         surf_part_;  // partition
-    vector<string>      surf_dsname_;
-    vector<vector<int> > surf_dsdims_;
-    vector<vector<int> > surf_blkmap_;
-    vector<int>         surf_matid_;
+    std::vector<int>         surf_part_;  // partition
+    std::vector<std::string>      surf_dsname_;
+    std::vector<std::vector<int> > surf_dsdims_;
+    std::vector<std::vector<int> > surf_blkmap_;
+    std::vector<int>         surf_matid_;
 
     // sph
     int                 nsph_;
-    vector<int>         sph_part_;  // partition
-    vector<string>      sph_dsname_;
-    vector<vector<int> > sph_dsdims_;
+    std::vector<int>         sph_part_;  // partition
+    std::vector<std::string>      sph_dsname_;
+    std::vector<std::vector<int> > sph_dsdims_;
     bool                sph_lhv_;
     int                 sph_mxhv_;
-    vector<int>         sph_hvpart_;
-    vector<vector<int> > sph_hvdisp_;
-    vector<int>         sph_matid_;
-    vector<int>         sph_msmat_;
+    std::vector<int>         sph_hvpart_;
+    std::vector<std::vector<int> > sph_hvdisp_;
+    std::vector<int>         sph_matid_;
+    std::vector<int>         sph_msmat_;
 
     // tiedset
     int                 ntdst_;
-    vector<int>         tdst_part_;  // partition
-    vector<string>      tdst_dsname_;
-    vector<vector<int> > tdst_dsdims_;
-    vector<vector<int> > tdst_blkmap_;
+    std::vector<int>         tdst_part_;  // partition
+    std::vector<std::string>      tdst_dsname_;
+    std::vector<std::vector<int> > tdst_dsdims_;
+    std::vector<std::vector<int> > tdst_blkmap_;
 
     // contact
     int                 ncntt_;
-    vector<int>         cntt_part_;  // partition
-    vector<string>      cntt_dsname_;
-    vector<vector<int> > cntt_dsdims_;
-    vector<vector<int> > cntt_blkmap_;
+    std::vector<int>         cntt_part_;  // partition
+    std::vector<std::string>      cntt_dsname_;
+    std::vector<std::vector<int> > cntt_dsdims_;
+    std::vector<std::vector<int> > cntt_blkmap_;
 
 
 
 public:
     typedef struct
     {
-        vector<string>                 names_;
-        vector<vector<string> >         dsnames_;
-        vector<vector<vector<int> > >    dsdims_;
-        vector<vector<vector<double> > > dsdata_;
+        std::vector<std::string>                 names_;
+        std::vector<std::vector<std::string> >         dsnames_;
+        std::vector<std::vector<std::vector<int> > >    dsdims_;
+        std::vector<std::vector<std::vector<double> > > dsdata_;
     } IndexVariables;
 
     const IndexVariables& GetSolidIndexVariables() const
@@ -705,29 +703,29 @@ public:
         return shell_idxvar_;
     }
 
-    void ReadSolidBlockIndexVariable( const string& idxname,
-                                      const string& varname,
+    void ReadSolidBlockIndexVariable( const std::string& idxname,
+                                      const std::string& varname,
                                       int domain,
-                                      vector<int>& dims,
-                                      vector<float>& data );
-    void ReadShellBlockIndexVariable( const string& idxname,
-                                      const string& varname,
+                                      std::vector<int>& dims,
+                                      std::vector<float>& data );
+    void ReadShellBlockIndexVariable( const std::string& idxname,
+                                      const std::string& varname,
                                       int domain,
-                                      vector<int>& dims,
-                                      vector<float>& data );
+                                      std::vector<int>& dims,
+                                      std::vector<float>& data );
 protected:
     void ReadIndexVariableInfo( hid_t file_id,
                                 const char* mshname,
                                 const char* ivname,
-                                const vector<string>& dsname,
+                                const std::vector<std::string>& dsname,
                                 IndexVariables& iv );
     void ReadStringArrayAttribute( hid_t loc,
                                    const char* name,
-                                   vector<string>& strings );
-    void PickIndexVariable( const vector<int>&    dim,
-                            const vector<double>& smp,
-                            const vector<float>&  idx,
-                            vector<float>&  dat );
+                                   std::vector<std::string>& strings );
+    void PickIndexVariable( const std::vector<int>&    dim,
+                            const std::vector<double>& smp,
+                            const std::vector<float>&  idx,
+                            std::vector<float>&  dat );
 
 
 protected:
@@ -736,9 +734,9 @@ protected:
 
 
 public:
-    static string ComposeNames( const string& m, const string& v, const char* seperator="/" );
-    static void   DecomposeNames( const string& str, string& m, string& v, const char* seperator="/" );
-    static void   DecomposeNames( const string& str, vector<string>& vs, const char* seperator="/" );
+    static std::string ComposeNames( const std::string& m, const std::string& v, const char* seperator="/" );
+    static void   DecomposeNames( const std::string& str, std::string& m, std::string& v, const char* seperator="/" );
+    static void   DecomposeNames( const std::string& str, std::vector<std::string>& vs, const char* seperator="/" );
     static void   ConvDyna3dStreeTensor( const float* stress, float* tensor );
     static void   ConvSphStreeTensor( const float* stress, float* tensor );
 
@@ -747,21 +745,21 @@ public:
 public:
     //static void*        mpi_comm_ptr;
     //static MPI_Comm     mpi_comm;
-    static const string general_name;
-    static const string node_name;
-    static const string solid_name;
-    static const string shell_name;
-    static const string beam_name;
-    static const string surface_name;
-    static const string sph_name;
-    static const string tiedset_name;
-    static const string tiedset_slave_name;
-    static const string contact_name;
-    static const string contact_slave_name;
-    static const string node_index_name;
-    static const string number_of_history_name;
-    static const string history_name;
-    static const string partition_name;
+    static const std::string general_name;
+    static const std::string node_name;
+    static const std::string solid_name;
+    static const std::string shell_name;
+    static const std::string beam_name;
+    static const std::string surface_name;
+    static const std::string sph_name;
+    static const std::string tiedset_name;
+    static const std::string tiedset_slave_name;
+    static const std::string contact_name;
+    static const std::string contact_slave_name;
+    static const std::string node_index_name;
+    static const std::string number_of_history_name;
+    static const std::string history_name;
+    static const std::string partition_name;
 
     static const int solid_elmt_type;
     static const int beam_elmt_type;
@@ -778,9 +776,9 @@ void EquallyPartition( int npart, int total, int* sft );
 
 
 template<class T>
-void FreeVector( vector<T>& vv )
+void FreeVector( std::vector<T>& vv )
 {
-    vector<T> tmp;
+    std::vector<T> tmp;
     tmp.swap(vv);
 }
 

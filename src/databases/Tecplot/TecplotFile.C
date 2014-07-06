@@ -248,7 +248,7 @@ TecplotDataType2String(TecplotDataType dt)
 int
 TecplotNumBytesForType(TecplotDataType dt)
 {
-    int s;
+    int s = 1; ///TODO: check on fix for uninitialized var
     switch(dt)
     {
     case TecplotFloat: s = 4; break;
@@ -288,7 +288,7 @@ int
 TecplotBase::ReadInt(FILE *f)
 {
     int val;
-    fread(&val, 4, 1, f);
+    size_t res = fread(&val, 4, 1, f); (void) res;
     if(reverseEndian)
     {
         char *cptr = (char *)&val;
@@ -310,7 +310,7 @@ float
 TecplotBase::ReadFloat(FILE *f)
 {
     float val;
-    fread(&val, 4, 1, f);
+    size_t res = fread(&val, 4, 1, f); (void) res;
     if(reverseEndian)
     {
         char *cptr = (char *)&val;
@@ -332,7 +332,7 @@ double
 TecplotBase::ReadDouble(FILE *f)
 {
     double val;
-    fread(&val, 8, 1, f);
+    size_t res = fread(&val, 8, 1, f); (void) res;
     if(reverseEndian)
     {
         char *cptr = (char *)&val;
@@ -2439,7 +2439,7 @@ TecplotFile::Read(FILE *f)
     // Look at the file's endian flag.
     int one = 1;
     int val;
-    fread((void*)&val, 1, 4, f);
+    size_t res = fread((void*)&val, 1, 4, f); (void) res;
     reverseEndian = one != val;
 
     // Read the title and variables.
@@ -2730,13 +2730,14 @@ TecplotFile::ReadData(long dataOffset, long dataSize, TecplotDataType dataType,
             long skip = dataSize - nBytes;
             for(int i = 0; i < nnodes; ++i)
             {
-                fread(cptr, 1, nBytes, tec);
+                size_t res = fread(cptr, 1, nBytes, tec); (void) res;
                 fseek(tec, skip, SEEK_CUR);
                 cptr += nBytes;
             }
         }
-        else
-            fread(ptr, 1, dataSize, tec);
+        else {
+            size_t res = fread(ptr, 1, dataSize, tec); (void) res;
+        }
         fclose(tec);
         tec = 0;
 

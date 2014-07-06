@@ -870,11 +870,11 @@ int zipinfo(__G)   /* return PK-type error code */
   ---------------------------------------------------------------------------*/
 
     if (uO.tflag) {
-        char *sgn = "";
+        char sgn[512] = "";
         int cfactor = ratio(tot_ucsize, tot_csize);
 
         if (cfactor < 0) {
-            sgn = "-";
+            strcpy(sgn , "-");
             cfactor = -cfactor;
         }
         Info(slide, 0, ((char *)slide, LoadFarString(ZipfileStats),
@@ -952,7 +952,9 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
     static ZCONST char Far *dtypelng[4] = {
         DeflNorm, DeflMax, DeflFast, DeflSFast
     };
-
+    (void) dtypelng; (void) hostver; (void) extver;
+    (void) varmsg_str;
+    (void) izVMScomp; (void) TandemFileformat;
 
 /*---------------------------------------------------------------------------
     Check whether there's any extra space inside the zipfile.  If *pEndprev is
@@ -1051,7 +1053,7 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
           (G.crec.general_purpose_bit_flag & 4)? '3' : '2'));
     } else if (methnum == DEFLATED || methnum == ENHDEFLATED) {
         ush  dnum=(ush)((G.crec.general_purpose_bit_flag>>1) & 3);
-
+        (void) dnum;
         Info(slide, 0, ((char *)slide, LoadFarString(CompressSubtype),
           LoadFarStringSmall(dtypelng[dnum])));
     }
@@ -1313,6 +1315,7 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
         ush eb_id, eb_datalen;
         ZCONST char Far *ef_fieldname;
 
+        (void) ef_fieldname;
         if (error_in_archive > PK_WARN)   /* fatal:  can't continue */
             /* delayed "fatal error" return from extra field reading */
             return error;
@@ -1452,7 +1455,7 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
                     break;
                 case EF_IZVMS:
                     if (eb_datalen >= 8) {
-                        char *p, q[8];
+                        char p[512], q[8];
                         unsigned compr = makeword(ef_ptr+EB_IZVMS_FLGS)
                                         & EB_IZVMS_BCMASK;
 
@@ -1460,21 +1463,21 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
                         if (compr > 3)
                             compr = 3;
                         if (strncmp((char *)ef_ptr, "VFAB", 4) == 0)
-                            p = "FAB";
+                            strcpy(p , "FAB");
                         else if (strncmp((char *)ef_ptr, "VALL", 4) == 0)
-                            p = "XABALL";
+                            strcpy(p , "XABALL");
                         else if (strncmp((char *)ef_ptr, "VFHC", 4) == 0)
-                            p = "XABFHC";
+                            strcpy(p , "XABFHC");
                         else if (strncmp((char *)ef_ptr, "VDAT", 4) == 0)
-                            p = "XABDAT";
+                            strcpy(p , "XABDAT");
                         else if (strncmp((char *)ef_ptr, "VRDT", 4) == 0)
-                            p = "XABRDT";
+                            strcpy(p , "XABRDT");
                         else if (strncmp((char *)ef_ptr, "VPRO", 4) == 0)
-                            p = "XABPRO";
+                            strcpy(p , "XABPRO");
                         else if (strncmp((char *)ef_ptr, "VKEY", 4) == 0)
-                            p = "XABKEY";
+                            strcpy(p , "XABKEY");
                         else if (strncmp((char *)ef_ptr, "VMSV", 4) == 0) {
-                            p = "version";
+                            strcpy(p , "version");
                             if (eb_datalen >= 16) {
                                 q[0] = ' ';
                                 q[1] = '(';
@@ -1483,7 +1486,7 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
                                 q[7] = '\0';
                             }
                         } else
-                            p = "unknown";
+                            strcpy(p , "unknown");
                         Info(slide, 0, ((char *)slide,
                           LoadFarString(izVMSdata),
                           LoadFarStringSmall(izVMScomp[compr]),
@@ -1526,10 +1529,10 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
                     break;
                 case EF_MAC3:
                     if (eb_datalen >= EB_MAC3_HLEN) {
-                        ulg eb_uc = makelong(ef_ptr);
+                        ulg eb_uc = makelong(ef_ptr); 
                         unsigned mac3_flgs = makeword(ef_ptr+EB_FLGS_OFFS);
                         unsigned eb_is_uc = mac3_flgs & EB_M3_FL_UNCMPR;
-
+                        (void) eb_uc;
                         Info(slide, 0, ((char *)slide, LoadFarString(Mac3data),
                           eb_uc, eb_is_uc ? "un" : nullStr));
                         if (eb_is_uc) {
@@ -1614,7 +1617,7 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
                         ulg eb_uc = makelong(ef_ptr);
                         unsigned eb_is_uc =
                           *(ef_ptr+EB_FLGS_OFFS) & EB_BE_FL_UNCMPR;
-
+                        (void) eb_uc;
                         Info(slide, 0, ((char *)slide, LoadFarString(BeOSdata),
                           eb_uc, eb_is_uc ? "un" : nullStr));
                         if (eb_is_uc) {
@@ -1765,6 +1768,7 @@ static int zi_short(__G)   /* return PK-type error code */
         "def#", "d64#", "dcli", "u###"
     };
 
+    (void) os; (void) z_modtim;
 
 /*---------------------------------------------------------------------------
     Print out various interesting things about the compressed file.

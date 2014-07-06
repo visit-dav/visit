@@ -1766,6 +1766,7 @@ void vtkCEAucdReader::PruneCache()
         {
            int ncd = this->CachedOutputs[i]->GetCellData()->GetNumberOfArrays();
            int npd = this->CachedOutputs[i]->GetPointData()->GetNumberOfArrays();
+           (void) ncd; (void) npd;
            vtkDebugMacro( <<"reuse Output "<<i<<" : npd="<<npd<<", ncd="<<ncd<<"\n" );
         }
      }
@@ -1822,7 +1823,7 @@ void vtkCEAucdReader::CacheOutputs()
 
 vtkDataArray* vtkCEAucdReader::GetPointsDataFromCache(int outputPort)
 {
-   if( outputPort>=0 && outputPort<this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 && this->CachedOutputs[outputPort]->GetPoints()!=0 )
+   if( outputPort>=0 && (size_t)outputPort< this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 && this->CachedOutputs[outputPort]->GetPoints()!=0 )
    {
       return this->CachedOutputs[outputPort]->GetPoints()->GetData();
    }
@@ -1834,7 +1835,7 @@ vtkDataArray* vtkCEAucdReader::GetPointsDataFromCache(int outputPort)
 
 int vtkCEAucdReader::GetCellsFromCache( int outputPort, vtkUnsignedCharArray* &cellTypes, vtkIdTypeArray* &cellLocations, vtkCellArray* &cellArray )
 {
-   if( outputPort>=0 && outputPort<this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 )
+   if( outputPort>=0 && (size_t)outputPort<this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 )
    {
       cellTypes = this->CachedOutputs[outputPort]->GetCellTypesArray();
       cellLocations = this->CachedOutputs[outputPort]->GetCellLocationsArray();
@@ -1853,7 +1854,7 @@ int vtkCEAucdReader::GetCellsFromCache( int outputPort, vtkUnsignedCharArray* &c
 
 vtkDataArray* vtkCEAucdReader::GetCellDataArrayFromCache(int outputPort, const char* arrayName)
 {
-   if( outputPort>=0 && outputPort<this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 && this->CachedOutputs[outputPort]->GetCellData()!=0 )
+   if( outputPort>=0 && (size_t)outputPort<this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 && this->CachedOutputs[outputPort]->GetCellData()!=0 )
    {
       vtkDataArray* dst = this->CachedOutputs[outputPort]->GetCellData()->GetArray( arrayName );
      //cout<<"GetCellDataArrayFromCache("<<outputPort<<","<<arrayName<<") = "<<dst<<endl;
@@ -1868,7 +1869,7 @@ vtkDataArray* vtkCEAucdReader::GetCellDataArrayFromCache(int outputPort, const c
 
 vtkDataArray* vtkCEAucdReader::GetPointDataArrayFromCache(int outputPort, const char* arrayName)
 {
-   if( outputPort>=0 && outputPort<this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 && this->CachedOutputs[outputPort]->GetPointData()!=0 )
+   if( outputPort>=0 && (size_t)outputPort<this->CachedOutputs.size() && this->CachedOutputs[outputPort]!=0 && this->CachedOutputs[outputPort]->GetPointData()!=0 )
    {
       return this->CachedOutputs[outputPort]->GetPointData()->GetArray( arrayName );
    }

@@ -11,8 +11,7 @@
 
 #define VERBOSE_DEBUG
 
-const static char * FICHIER_U__C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
-
+//const static char * FICHIER_U__C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 #include "FichierU.h"
 
 #include <string.h>
@@ -73,7 +72,7 @@ FichierU::FichierU(const string& fileName, ifstream* istr, long offset, long tai
       {
         case 0x07 :
         {
-           DEBUG_OUT(<<"format binaire #"<<(void*)(int)c<<endl);
+           DEBUG_OUT(<<"format binaire #"<<(void*)(size_t)c<<endl);
            long fsize;
            if (taille != 0)
            {
@@ -175,7 +174,7 @@ FichierU::FichierU(const string& fileName, ifstream* istr, long offset, long tai
                        else { BAD_FIELD(" in object list"); }                    
                     }
                     if(_nbMat==-1) _nbMat = (int)_matNames.size();
-                    else if( _nbMat!=_matNames.size() )
+                    else if( _nbMat!= (int) _matNames.size() )
                     {
                        cerr<<"Attention! "<<_nbMat<<"materiaux annoncés, mais seulement "<<_matNames.size()<<" décris"<<endl;
                     }
@@ -431,12 +430,16 @@ float FichierU::readBinaryFloat(const char* data, int dataSize, int &ptr)
 
    if(!_endian)
    {
-      char tmp[4];
-      tmp[0] = buf[3];
-      tmp[1] = buf[2];
-      tmp[2] = buf[1];
-      tmp[3] = buf[0];
-      return *(float*)(tmp);
+      union {
+        char tmp[4];
+        float ftmp;
+      } a;
+
+      a.tmp[0] = buf[3];
+      a.tmp[1] = buf[2];
+      a.tmp[2] = buf[1];
+      a.tmp[3] = buf[0];
+      return a.ftmp; //*(float*)(tmp);
    }
    else
    {

@@ -69,7 +69,7 @@ avtCCSM_MTSD_FileFormat::Identify(NETCDFFileObject *fileObject)
     // Make sure it's the right type of file.
     bool isCCSM = false;
     size_t sz;
-    int tmp = 0;
+    //int tmp = 0;
     if(fileObject->GetDimensionInfo("time", &sz))
     {
         size_t latSize = 0, lonSize = 0;

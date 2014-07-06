@@ -537,7 +537,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
 #ifdef _WIN32
           _getcwd(buf, 512);
 #else
-          getcwd(buf, 512);
+          char* res = getcwd(buf, 512); (void) res;
 #endif
           strcat(buf, "/"); 
           fileTemplate.insert(0, buf, strlen(buf));
@@ -1547,7 +1547,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
         {
             float *tmppts = new float[nPts*iDim];
             fseek(fdMesh, iRealHeaderSize + (boost::int64_t)nFloatsInDomain*sizeof(float)*element, SEEK_SET);
-            fread(tmppts, sizeof(float), nPts*iDim, fdMesh);
+            size_t res = fread(tmppts, sizeof(float), nPts*iDim, fdMesh); (void) res;
             if (bSwapEndian)
                 ByteSwap32(tmppts, nPts*iDim);
     
@@ -1572,7 +1572,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
         {
             double *tmppts = new double[nPts*iDim];
             fseek(fdMesh, iRealHeaderSize + (boost::int64_t)nFloatsInDomain*sizeof(double)*element, SEEK_SET);
-            fread(tmppts, sizeof(double), nPts*iDim, fdMesh);
+            size_t res = fread(tmppts, sizeof(double), nPts*iDim, fdMesh); (void) res;
             if (bSwapEndian)
                 ByteSwap64(tmppts, nPts*iDim);
     
@@ -1604,11 +1604,11 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
                           (boost::int64_t)ii*iAsciiMeshFileLineLen, SEEK_SET);
             if (iDim == 3)
             {
-                fscanf(fdMesh, " %f %f %f", pts_tmp, pts_tmp+1, pts_tmp+2);
+                int res = fscanf(fdMesh, " %f %f %f", pts_tmp, pts_tmp+1, pts_tmp+2); (void) res;
             }
             else
             {
-                fscanf(fdMesh, " %f %f", pts_tmp, pts_tmp+1);
+                int res = fscanf(fdMesh, " %f %f", pts_tmp, pts_tmp+1); (void) res;
                 pts_tmp[2] = 0.0f;
             }
             pts_tmp += 3;
@@ -1826,7 +1826,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
         if (iPrecision==4)
         {
             fseek(fdVar, filepos, SEEK_SET);
-            fread(var, sizeof(float), nPts, fdVar);
+            size_t res = fread(var, sizeof(float), nPts, fdVar); (void) res;
             if (bSwapEndian)
                 ByteSwap32(var, nPts);
         }
@@ -1835,7 +1835,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
             double *tmp = new double[nPts];
 
             fseek(fdVar, filepos, SEEK_SET);
-            fread(tmp, sizeof(double), nPts, fdVar);
+            size_t res = fread(tmp, sizeof(double), nPts, fdVar); (void) res;
             if (bSwapEndian)
                 ByteSwap64(tmp, nPts);
 
@@ -1854,7 +1854,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
                          (boost::int64_t)element*iAsciiCurrFileLineLen*nPts + 
                          (boost::int64_t)ii*iAsciiCurrFileLineLen + 
                          (boost::int64_t)iAsciiOffset, SEEK_SET);
-            fscanf(fdVar, " %f", var_tmp);
+            int res = fscanf(fdVar, " %f", var_tmp); (void) res;
             var_tmp++;
         }
     }
@@ -2057,7 +2057,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
             float *tmppts = new float[nPts*iDim];
 
             fseek(fdVar, filepos, SEEK_SET);
-            fread(tmppts, sizeof(float), nPts*iDim, fdVar);
+            size_t res = fread(tmppts, sizeof(float), nPts*iDim, fdVar); (void) res;
 
             if (bSwapEndian)
                 ByteSwap32(tmppts, nPts*iDim);
@@ -2083,7 +2083,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
         {
             double *tmppts = new double[nPts*iDim];
             fseek(fdVar, filepos, SEEK_SET);
-            fread(tmppts, sizeof(double), nPts*iDim, fdVar);
+            size_t res = fread(tmppts, sizeof(double), nPts*iDim, fdVar); (void) res;
 
             if (bSwapEndian)
                 ByteSwap64(tmppts, nPts*iDim);
@@ -2117,11 +2117,11 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
                          (boost::int64_t)iAsciiOffset, SEEK_SET);
             if (iDim == 3)
             {
-                fscanf(fdVar, " %f %f %f", var_tmp, var_tmp+1, var_tmp+2);
+                int res = fscanf(fdVar, " %f %f %f", var_tmp, var_tmp+1, var_tmp+2); (void) res;
             }
             else
             {
-                fscanf(fdVar, " %f %f", var_tmp, var_tmp+1);
+                int res = fscanf(fdVar, " %f %f", var_tmp, var_tmp+1); (void) res;
                 var_tmp[2] = 0.0f;
             }
             var_tmp += 3;
@@ -2225,9 +2225,8 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
 {
     int timestep  = rawTimestep+iFirstTimestep;
     int nPrintfTokens = 0;
-    int ii;
 
-    for (ii = 0; ii < fileTemplate.size()-1; ii++)
+    for (size_t ii = 0; ii < fileTemplate.size()-1; ii++)
     {
         if (fileTemplate[ii] == '%' && fileTemplate[ii+1] != '%')
             nPrintfTokens++;
@@ -2317,7 +2316,7 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
 void
 avtNek5000FileFormat::UpdateCyclesAndTimes()
 {
-    if (aTimes.size() != iNumTimesteps)
+    if (aTimes.size() != (size_t)iNumTimesteps)
     {
         aTimes.resize(iNumTimesteps);
         aCycles.resize(iNumTimesteps);
@@ -2592,13 +2591,14 @@ avtNek5000FileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLi
     for (int ii = 0 ; ii < iNumBlocks ; ii++)
     {
         float dummy;
-        fscanf(fd, " %f", &dummy);
+        int res = fscanf(fd, " %f", &dummy); (void) res;
     }
     char tmp[1024];
-    fgets(tmp, 1023, fd);
+    char* res = NULL; (void) res;
+    res = fgets(tmp, 1023, fd);
     outDataStart = ftell(fd);
 
-    fgets(tmp, 1023, fd);
+    res = fgets(tmp, 1023, fd);
     outLineLen = ftell(fd) - outDataStart;
 }
 
@@ -2934,7 +2934,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
 
     ReadBlockLocations();
 
-    bool foundVar = false;
+    //bool foundVar = false;
     bool doVelocityVar = false;
     int  velocityComp = -1;
     bool doPressureVar = false;
@@ -3163,7 +3163,7 @@ avtNek5000FileFormat::RegisterDataSelections(
     bool noMatches = false;
 
     int t1 = visitTimer->StartTimer();
-    for (int i = 0 ; i < selList.size() ; i++)
+    for (size_t i = 0 ; i < selList.size() ; i++)
     {
         if (string(selList[i]->GetType()) == "Spatial Box Data Selection")
         {
@@ -3173,7 +3173,7 @@ avtNek5000FileFormat::RegisterDataSelections(
             sel->GetMins(mins);
             sel->GetMaxs(maxs);
             avtSpatialBoxSelection::InclusionMode imode =
-                sel->GetInclusionMode();
+                sel->GetInclusionMode(); (void) imode;
 
             avtIntervalTree *itree = 
                               GetBoundingBoxIntervalTree(timestepToUseForMesh);
@@ -3234,7 +3234,7 @@ avtNek5000FileFormat::RegisterDataSelections(
 
             double eqn[1] = { 1. };
             vector<vector<int> > elemsForLevelJ(isolevels.size());
-            for (int j = 0 ; j < isolevels.size() ; j++)
+            for (size_t j = 0 ; j < isolevels.size() ; j++)
             {
                 itree->GetElementsList(eqn, isolevels[j], elemsForLevelJ[j]);
             }
@@ -3256,7 +3256,7 @@ avtNek5000FileFormat::RegisterDataSelections(
     else
     {
         bool haveSelection = false;
-        for (int i = 0 ; i < domainsToUse.size() ; i++)
+        for (size_t i = 0 ; i < domainsToUse.size() ; i++)
             if (domainsToUse[i].size() > 0)
                 haveSelection = true;
 
@@ -3276,8 +3276,8 @@ avtNek5000FileFormat::RegisterDataSelections(
     int nprocs = PAR_Size();
 
     int nelements = (useAllElements ? iNumBlocks : finalElementList.size());
-    int elements_per_proc = nelements / nprocs;
-    int one_extra_until = nelements % nprocs;
+    //int elements_per_proc = nelements / nprocs;
+    //int one_extra_until = nelements % nprocs;
 
     int my_num_elements, my_start, my_end;
     if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
@@ -3325,7 +3325,7 @@ avtNek5000FileFormat::CombineElementLists(
 {
     int t1 = visitTimer->StartTimer();
 
-    int  i, j;
+    size_t  i, j;
 
     if (lists.size() == 1)
     {
@@ -3345,12 +3345,12 @@ avtNek5000FileFormat::CombineElementLists(
         }
         
         int numOn = 0;
-        for (i = 0 ; i < iNumBlocks ; i++)
+        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
             if (useElements[i])
                 numOn++;
         outlist.resize(numOn);
         int ctr = 0;
-        for (i = 0 ; i < iNumBlocks ; i++)
+        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
             if (useElements[i])
                 outlist[ctr++] = i;
     }
@@ -3368,12 +3368,12 @@ avtNek5000FileFormat::CombineElementLists(
         }
         
         int numOn = 0;
-        for (i = 0 ; i < iNumBlocks ; i++)
+        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
             if (numHits[i] == numSelections)
                 numOn++;
         outlist.resize(numOn);
         int ctr = 0;
-        for (i = 0 ; i < iNumBlocks ; i++)
+        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
             if (numHits[i] == numSelections)
                 outlist[ctr++] = i;
     }

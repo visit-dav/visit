@@ -387,7 +387,7 @@ avtSiloMBObjectCache::HasEntry(const char *path, const char *name) const
 void
 avtSiloMBObjectCache::RemoveEntry(const string &full_path)
 {
-    avtSiloMBObjectCacheEntry *res = NULL;
+    //avtSiloMBObjectCacheEntry *res = NULL; (void) res;
     map<string, avtSiloMBObjectCacheEntry * >::iterator itr;
     itr = cache.find(full_path);
     if(itr != cache.end())

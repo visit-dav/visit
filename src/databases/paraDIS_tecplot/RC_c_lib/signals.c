@@ -6,10 +6,11 @@
 #  include <winsock2.h>
 #else
 #  include <netdb.h>
+#  include <unistd.h> ///TODO: check on fix for implicit function declaration
 #endif
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
+//#ifdef HAVE_UNISTD_H ///TODO: check does not seem to be going in here..
+//#  include <unistd.h>
+//#endif
 /* set a signal handler for the given signal 
    sig == the signal to catch
    func == the handler
@@ -35,7 +36,6 @@ int setsignal(int sig, sigfunc *func){
 
 void handler(int sig) {
   printf("test prog received signal %d\n", sig);
-  /*exit(0);*/
 }
 
 
@@ -70,7 +70,6 @@ int GettingSignaled(void)
       case -1: error
       {
       printf("failed to fork\n");
-      exit (1);
       }
       case 0: child
       {
@@ -85,7 +84,7 @@ int GettingSignaled(void)
     int err = usleep (999999);
     if (err) {
       fprintf(stderr, "child sleep err %d\n", err);
-      exit(1);
+      return -1; //TODO: this was exiting with zero changed to -1
     }
 #else
     Sleep(999);

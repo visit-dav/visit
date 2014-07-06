@@ -107,7 +107,7 @@ avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname)
 
 avtCurve2DFileFormat::~avtCurve2DFileFormat()
 {
-    for (int i = 0 ; i < curves.size() ; i++)
+    for (size_t i = 0 ; i < curves.size() ; i++)
     {
         curves[i]->Delete();
     }
@@ -148,7 +148,7 @@ avtCurve2DFileFormat::GetMesh(const char *name)
         ReadFile();
     }
 
-    for (int i = 0 ; i < curves.size() ; i++)
+    for (size_t i = 0 ; i < curves.size() ; i++)
     {
         if (strcmp(curveNames[i].c_str(), name) == 0)
         {
@@ -232,7 +232,7 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ReadFile();
     }
 
-    for (int i = 0 ; i < curveNames.size() ; i++)
+    for (size_t i = 0 ; i < curveNames.size() ; i++)
     {
         avtCurveMetaData *curve = new avtCurveMetaData;
         curve->name = curveNames[i];
@@ -375,7 +375,7 @@ avtCurve2DFileFormat::ReadFile(void)
     curveCycle = INVALID_CYCLE;
     CurveToken lastt = VALID_POINT;
     bool justStartedNewCurve = false;
-    float lastx;
+    //float lastx;
     xl.reserve(1000);
     yl.reserve(1000);
     while (!ifile.eof())
@@ -421,7 +421,7 @@ avtCurve2DFileFormat::ReadFile(void)
             {
                 // If we parsed a header followed by another header,
                 // see if it has TIME. 
-                int timePos = headerName.find("TIME");
+                size_t timePos = headerName.find("TIME");
                 if ( timePos != string::npos)
                 {
                     string tStr = headerName.substr(timePos+4);
@@ -432,7 +432,7 @@ avtCurve2DFileFormat::ReadFile(void)
                 }
                 else
                 {
-                    int cyclePos = headerName.find("CYCLE");
+                    size_t cyclePos = headerName.find("CYCLE");
                     if ( cyclePos != string::npos)
                     {
                         string cyStr = headerName.substr(cyclePos+5);
@@ -495,7 +495,7 @@ avtCurve2DFileFormat::ReadFile(void)
           }
        }
        lastt = t;
-       lastx = x;
+       //lastx = x;
        lineCount++;
     }  
 
@@ -503,7 +503,7 @@ avtCurve2DFileFormat::ReadFile(void)
     // it is TIME. 
     if (headerName != "")
     {
-        int timePos = headerName.find("TIME");
+        size_t timePos = headerName.find("TIME");
         if ( timePos != string::npos)
         {
             string tStr = headerName.substr(timePos+4);
@@ -514,7 +514,7 @@ avtCurve2DFileFormat::ReadFile(void)
         }
         else
         {
-            int cyclePos = headerName.find("CYCLE");
+            size_t cyclePos = headerName.find("CYCLE");
             if ( cyclePos != string::npos)
             {
                 string cyStr = headerName.substr(cyclePos+5);
@@ -532,8 +532,8 @@ avtCurve2DFileFormat::ReadFile(void)
     int start = 0;
     cutoff.push_back((int)xl.size());       // Make logic easier.
     centering.push_back(useCentering); //      ditto
-    int curveIndex = 0;
-    for (int i = 0 ; i < cutoff.size() ; i++)
+    //int curveIndex = 0;
+    for (size_t i = 0 ; i < cutoff.size() ; i++)
     {
         if (start == cutoff[i])
         {
@@ -547,6 +547,7 @@ avtCurve2DFileFormat::ReadFile(void)
 #ifdef MDSERVER
         vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
 #else
+        int curveIndex = 0;
         vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
  
         vtkFloatArray    *vals = vtkFloatArray::New();

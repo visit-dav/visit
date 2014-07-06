@@ -77,9 +77,9 @@
 // ****************************************************************************
 
 Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), hasMaterial(false),
-    cellCentered(true), matchSilo(false), slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
+    cellCentered(true), matchSilo(false), slice(0), sliceIndex(0), hsize(0), integrate(false),
     log(Streaker::LOGTYPE_NONE), x_scale(1.), x_translate(0.), y_scale(1.), y_translate(0.),
-    z_scale(1.), z_translate(0.)
+    z_scale(1.), z_translate(0.), dataset(0)
 {
 }
 
@@ -835,7 +835,7 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
     float *dest = (float *)arr->GetVoidPointer(0);
     memset(dest, 0, sizeof(float) * sdims[0] * sdims[1] * sdims[2]);
     int ti = 0;
-    for(int r = 0; r < pdb.size(); ++r)
+    for(size_t r = 0; r < pdb.size(); ++r)
     {
         int *dims = 0;
         int nDims = 0;

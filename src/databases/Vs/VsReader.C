@@ -219,7 +219,7 @@ int VsReader::getData( VsDataset* dataSet,
           // No components - [iz][iy][ix]
           if( components == -2 )
             {
-              for (unsigned int i = 0; i<ndims; i++)
+              for (unsigned int i = 0; i< (unsigned int)ndims; i++)
                 {
                   // Flip the ordering of the input.
                   int base = ndims - 1;
@@ -240,7 +240,7 @@ int VsReader::getData( VsDataset* dataSet,
           else if(indexOrder == VsSchema::compMajorFKey)
             {
               // Multiple components - [ic][iz][iy][ix] compMajorF
-              for (unsigned int i = 0; i<ndims-1; i++)
+              for (unsigned int i = 0; i< (unsigned int)ndims-1; i++)
                 {
                   // Flip the ordering of the input.
                   int base = ndims - 1;
@@ -275,7 +275,7 @@ int VsReader::getData( VsDataset* dataSet,
           else //if( indexOrder == VsSchema::compMinorFKey )
             {
               // Multiple components - [iz][iy][ix][ic] compMinorF
-              for (unsigned int i = 0; i<ndims-1; i++)
+              for (unsigned int i = 0; i< (unsigned int)ndims-1; i++)
                 {
                   // Flip the ordering of the input.
                   int base = ndims - 1;
@@ -315,7 +315,7 @@ int VsReader::getData( VsDataset* dataSet,
           if( components == -2 )
             {
               // No components - [ix][iy][iz]
-              for (unsigned int i = 0; i<ndims; i++)
+              for (unsigned int i = 0; i< (unsigned int)ndims; i++)
                 {
                   start[i] = (hsize_t) srcMins[i];
                   count[i] = (hsize_t) srcCounts[i];
@@ -334,7 +334,7 @@ int VsReader::getData( VsDataset* dataSet,
           else if(indexOrder == VsSchema::compMajorCKey)
             {
               // Multiple components - [ic][ix][iy][iz] compMajorC
-              for (unsigned int i = 0; i<ndims-1; i++)
+              for (unsigned int i = 0; i< (unsigned int)ndims-1; i++)
                 {
                   start[i+1] = (hsize_t) srcMins[i];
                   count[i+1] = (hsize_t) srcCounts[i];
@@ -367,7 +367,7 @@ int VsReader::getData( VsDataset* dataSet,
           else if(indexOrder == VsSchema::compMinorCKey)
             {
               // Multiple components - [ix][iy][iz][ic] compMinorC
-              for (unsigned int i = 0; i<ndims-1; i++)
+              for (unsigned int i = 0; i< (unsigned int)ndims-1; i++)
                 {
                   start[i] = (hsize_t) srcMins[i];
                   count[i] = (hsize_t) srcCounts[i];

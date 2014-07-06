@@ -134,7 +134,7 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &s, vector<string> &v,
                            vector<string> &materials)
 {
-    int  i;
+    size_t  i;
 
     scalars = s;
     vectors = v;
@@ -230,9 +230,9 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
 void
 avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
-    int i, j;
-    int npts = ds->GetNumberOfPoints();
-    int ncells = ds->GetNumberOfCells();
+    size_t i, j;
+    size_t npts = ds->GetNumberOfPoints();
+    size_t ncells = ds->GetNumberOfCells();
     if (varCentering == AVT_UNKNOWN_CENT) 
     {
         if (scalars.size() > 0)
@@ -258,7 +258,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     varsAreNodal = varCentering == AVT_NODECENT;
-    int nvals = (varsAreNodal ? npts : ncells);
+    size_t nvals = (varsAreNodal ? npts : ncells);
 
     if (nvals == 0)
         return;
@@ -273,7 +273,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if (ofile.fail())
         EXCEPTION0(ImproperUseException);
 
-    int nScalars = scalars.size() + 3*vectors.size();
+    size_t nScalars = scalars.size() + 3*vectors.size();
     if (writeOutCoordinates)
         nScalars += 3;
     ofile << nScalars << " " << nvals << " 1" << endl;

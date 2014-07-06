@@ -368,8 +368,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     // Determine the file size and come up with an estimate of the
     // number of vertices and cells so we can size the points and cells.
     int readingFile = visitTimer->StartTimer();
-    int nPoints = 100;
-    int nCells = 100;
+    int nPoints = 100; (void) nPoints;
+    int nCells = 100; (void) nCells;
     if(nLines == ALL_LINES)
     {
         VisItStat_t statbuf;
@@ -399,8 +399,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 #endif // if !defined(MDSERVER)
 
     char  line[1024];
-    float pt[3];
-    vtkIdType verts[8];
+    float pt[3]; (void) pt;
+    vtkIdType verts[8]; (void) verts;
     bool recognized = false;
     bool titleRead = false;
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
@@ -445,9 +445,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             valstart -= (2 * LONG_FIELD_WIDTH);
             valend -= (2 * LONG_FIELD_WIDTH);
             *valend = '\0';
-            int psi = Geti(valstart)-1;
+            //int psi = Geti(valstart)-1;
 
 #if !defined(MDSERVER)
+            int psi = Geti(valstart)-1;
 
             if(psi < nPoints)
                 pts->SetPoint(psi, pt);
@@ -506,9 +507,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             valstart -= (2 * SHORT_FIELD_WIDTH);
             valend -= (2 * SHORT_FIELD_WIDTH);
             *valend = '\0';
-            int psi = Geti(valstart)-1;
+            //int psi = Geti(valstart)-1;
 
 #if !defined(MDSERVER)
+            int psi = Geti(valstart)-1;
 
             if(psi < nPoints)
                 pts->SetPoint(psi, pt);
@@ -1053,7 +1055,7 @@ avtNASTRANFileFormat::GetMaterial(const char *mat)
     // This condition can happen if user specified mat count via read options
     // and ReadFile found a different number of them.
     //
-    if (matCountOpt != uniqMatIds.size())
+    if ((size_t)matCountOpt != uniqMatIds.size())
     {
         char msg[256];
         SNPRINTF(msg, sizeof(msg), "Material count specified in read options, %d, "
@@ -1064,7 +1066,7 @@ avtNASTRANFileFormat::GetMaterial(const char *mat)
 
     char **names = new char*[uniqMatIds.size()];
     int *matnos = new int[uniqMatIds.size()];
-    int mno = 0;
+    size_t mno = 0;
     for (map<int,int>::iterator mit = uniqMatIds.begin();
          mit != uniqMatIds.end(); mno++, mit++)
     {

@@ -532,7 +532,7 @@ static bool isInt(std::string str)
     char* endptr = NULL;
 
     if(txt != NULL) {
-        strtol( txt, &endptr, 10 );
+        int res = strtol( txt, &endptr, 10 ); (void) res;
         
         if(endptr == NULL || endptr[0] != '\0' || txt[0] == '\0')
             isInteger = false;

@@ -15,6 +15,9 @@
 #include <Partition.h>
 #include <pvldPartReader.h>
 
+using std::vector;
+using std::string;
+
 // defined in pvldRead.C
 void EquallyPartition( int npart, int total, int* sft );
 
@@ -177,7 +180,7 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
 
     if( solid_elmdef_.size()==0 )
     {
-        int ind;
+        size_t ind;
         for( ind=0; ind<solid_dsname_.size(); ind++ )
             if( solid_dsname_[ind] == "Nodes" ) break;
         if( ind>=solid_dsname_.size() )
@@ -347,7 +350,7 @@ ReadShellBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
 
     if( shell_elmdef_.size()==0 )
     {
-        int ind;
+        size_t ind;
         for( ind=0; ind<shell_dsname_.size(); ind++ )
             if( shell_dsname_[ind] == "Nodes" ) break;
         if( ind>=shell_dsname_.size() )
@@ -515,7 +518,7 @@ ReadSurfaceBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd,
 
     if( surf_elmdef_.size()==0 )
     {
-        int ind;
+        size_t ind;
         for( ind=0; ind<surf_dsname_.size(); ind++ )
             if( surf_dsname_[ind] == "Nodes" ) break;
         if( ind>=surf_dsname_.size() )
@@ -730,7 +733,7 @@ ReadMaterialInfo( hid_t fid, const char* grpname,
 
         mmap.resize( nmmat_ );
         std::fill( mmap.begin(), mmap.end(), 0 );
-        for( int i=0; i<mat.size(); i++ )
+        for( size_t i=0; i<mat.size(); i++ )
             mmap.at( mat[i]-1 ) = i+1;
 
         matidx.resize( ne );
@@ -820,7 +823,7 @@ ReadRawData( hid_t fid,
     int ne = dims[0];
     debug1 << "dims[0]= " << ne << ", dims[1]= " << dims[1] << "\n";
     debug1 << "idx.size()= " << idx.size() << "\n";
-    if( ne != idx.size() )
+    if( (size_t)ne != idx.size() )
     {
         string msg="Unmatched number of elements in ReadRawData(int)( ";
         msg+=grpname;
@@ -868,7 +871,7 @@ ReadRawData( hid_t fid,
 {
     int nd = dims.size();
     int ne = dims[0];
-    if( ne != idx.size() )
+    if( (size_t)ne != idx.size() )
     {
         string msg="Unmatched number of elements in ReadRawData(float)( ";
         msg+=grpname;
@@ -987,7 +990,7 @@ ReadElementIndex( hid_t fid,
 
         vector<int> mmap( nmmat_ );
         std::fill( mmap.begin(), mmap.end(), 0 );
-        for( int i=0; i<mat.size(); i++ )
+        for( size_t i=0; i<mat.size(); i++ )
             mmap.at( mat[i]-1 ) = i+1;
 
         vector<int> wlst( nmmat_ );

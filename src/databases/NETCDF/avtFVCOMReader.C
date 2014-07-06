@@ -475,7 +475,7 @@ avtFVCOMReader::GetDimensions()
       siglaystate=true;
     }
 
-  if(!siglaystate) debug4<<"NO SIGMA LAYERS"<< endl;
+  if(!siglaystate) { debug4<<"NO SIGMA LAYERS"<< endl; }
 
   //SIGLEV
   status = nc_inq_dimid(ncid, "siglev", &nSiglevID);
@@ -488,7 +488,7 @@ avtFVCOMReader::GetDimensions()
       siglevstate=true;
     }
 
-  if(!siglevstate) debug4<<"NO SIGMA LEVELS"<< endl;
+  if(!siglevstate) { debug4<<"NO SIGMA LEVELS"<< endl; }
 
 
   //THREE
@@ -1845,7 +1845,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
 
-  if(IsGeoRef & meshExists.find("SigmaLevel_Mesh") != meshExists.end() )
+  if(IsGeoRef && meshExists.find("SigmaLevel_Mesh") != meshExists.end() ) //TODO: check on fix was single & changed to &&
     {
       avtScalarMetaData *depth_lev_md = new avtScalarMetaData("Depth_on_Levels",
                                                           SigmaLevel_Mesh, AVT_NODECENT);
@@ -1854,7 +1854,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       md->Add(depth_lev_md);
       componentExists["depth"] = true;
     }
-  if(IsGeoRef & meshExists.find("SigmaLayer_Mesh") != meshExists.end() )
+  if(IsGeoRef && meshExists.find("SigmaLayer_Mesh") != meshExists.end() ) ///TODO: check on fix was single & changed to &&
     {
       avtScalarMetaData *depth_lay_md = new avtScalarMetaData("Depth_on_Layers",
                                                           SigmaLayer_Mesh, AVT_NODECENT);
@@ -1882,7 +1882,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
           
           char buffer[50];
           int n;
-          n=sprintf(buffer, "Layer %d",(i+1));
+          n=sprintf(buffer, "Layer %d",(i+1)); (void) n;
           matmd_lay->materialNames.push_back(buffer);
         }
       
@@ -1902,7 +1902,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         {
           char buffer [50];
           int n;
-          n=sprintf(buffer, "Layer %d",(i+1));
+          n=sprintf(buffer, "Layer %d",(i+1)); (void) n;
           matmd_lev->materialNames.push_back(buffer);
           
         }
@@ -1992,7 +1992,7 @@ avtFVCOMReader::GetStaticGridVariables(void)
   state*=fileObject->ReadVariableInto("h", FLOATARRAY_TYPE, zvals);
 
   
-  if(siglaystate)
+  if(siglaystate) {
     if (strcmp("ocean_sigma/general_coordinate",SigLayCoordType.c_str())==0)
       {
         debug4<< "Reading General ocean coordinates: sigma layers"<<endl;
@@ -2006,8 +2006,8 @@ avtFVCOMReader::GetStaticGridVariables(void)
         SigLayers = new float[nSiglay];
         fileObject->ReadVariableInto("siglay", FLOATARRAY_TYPE, SigLayers);
       }
-  
-  if (siglevstate)
+  }
+  if (siglevstate) {
     if (strcmp("ocean_sigma/general_coordinate",SigLevCoordType.c_str())==0)
       {
         debug4<< "Reading General ocean coordinates: sigma levels"<<endl;
@@ -2020,7 +2020,7 @@ avtFVCOMReader::GetStaticGridVariables(void)
         SigLevels = new float[nSiglev];
         fileObject->ReadVariableInto("siglev", FLOATARRAY_TYPE, SigLevels); 
       }
-
+  }
   
   NeedGridVariables=false;
 
@@ -2771,7 +2771,7 @@ avtFVCOMReader::GetAuxiliaryData(const char *var, int ts,
 
   if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-      int nMats;
+      int nMats = 0; ///TODO: check on uninitialized variable
       if(strcmp(var, "Sigma_Levels") == 0)
         {
           nMats=nSiglev-1;
@@ -2794,7 +2794,7 @@ avtFVCOMReader::GetAuxiliaryData(const char *var, int ts,
           matnos[i] = i + 1;
           char *buffer=new char[20];
           int n;
-          n=sprintf(buffer, "Layer %d",matnos[i]);
+          n=sprintf(buffer, "Layer %d",matnos[i]); (void) n;
           names[i] = (char *)buffer;
         }
     
@@ -4599,7 +4599,7 @@ avtFVCOMReader::SVAN(double S4, double T4, double P4)
   // Declare storage variable here!
   double SIG,SR,RR1,RR2,RR3,V350P,DK;
   double A4,B4,C4,D4,E4,AA1,BB1,AW,BW,K0,KW,K35,SVA;
-  double GAM,PK,DVAN,DR35P, SVAN;
+  double GAM,PK,DVAN,DR35P/*, SVAN*/;
     
   // Return variable:
   double SIGMA;    
@@ -4645,7 +4645,7 @@ avtFVCOMReader::SVAN(double S4, double T4, double P4)
 
   //  scale specific vol. anamoly to normally reported units
 
-  SVAN=SVA*1.0E+8;
+  //SVAN=SVA*1.0E+8;
   if(P4 == 0.0) return SIGMA;
     
   //-------------------------------------------------------------|
@@ -4687,7 +4687,7 @@ avtFVCOMReader::SVAN(double S4, double T4, double P4)
 
   //  scale specific vol. anamoly to normally reported units
 
-  SVAN  = SVA*1.0E+8;
+  //SVAN  = SVA*1.0E+8;
   V350P = V350P*PK;
 
   //----------------------------------------------------------|

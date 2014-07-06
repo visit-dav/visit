@@ -551,14 +551,18 @@ avtLODIFileFormat::GetMesh(int ts, const char *var)
 
                 if(err)
                 {
-                    if(xvals == 0)
+                    if(xvals == 0) {
                         debug4 << mName << "error reading cgridx" << endl;
-                    if(yvals == 0)
+                    }
+                    if(yvals == 0) {
                         debug4 << mName << "error reading cgridy" << endl;
-                    if(xt != DOUBLEARRAY_TYPE)
+                    }
+                    if(xt != DOUBLEARRAY_TYPE) {
                         debug4 << mName << "cgridx was not the right type" << endl;
-                    if(yt != DOUBLEARRAY_TYPE)
+                    }
+                    if(yt != DOUBLEARRAY_TYPE) {
                         debug4 << mName << "cgridy was not the right type" << endl;
+                    }
 
                     std::string msg("\"The variable ");
                     msg += var;
@@ -647,8 +651,9 @@ avtLODIFileFormat::GetVar(int ts, const char *var)
             starts[i] = 0;
             counts[i] = dims[i];
             nValues *= dims[i];
-            if(i > 0)
+            if(i > 0) {
                 debug4 << ", ";
+            }
             debug4 << dims[i];
         }
         debug4 << "}" << endl;
@@ -681,7 +686,7 @@ avtLODIFileFormat::GetVar(int ts, const char *var)
             T *data = new T[nValues];\
             VTK *arr = VTK::New();\
             int status = FUNC(fileObject->GetFileHandle(),\
-                              varId, starts, counts, data);\
+                              varId, starts, counts, data);(void)status;\
             arr->SetNumberOfTuples(nValues);\
             T *ptr = (T *)arr->GetVoidPointer(0);\
             int nx = dims[xdimi];\

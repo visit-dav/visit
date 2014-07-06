@@ -156,7 +156,7 @@ avtCubeFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     int block_origin = 0;
     int spatial_dimension = 3;
     int topological_dimension = 3;
-    double *extents = NULL;
+    //double *extents = NULL;
     avtMeshType mt;
 
     bool shear = creader->isGridSheared();
@@ -204,7 +204,7 @@ avtCubeFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     block_origin = 0;
     spatial_dimension = 3;
     topological_dimension = 0;
-    extents = NULL;
+    //extents = NULL;
     
     avtMeshMetaData *mesh2 = new avtMeshMetaData(meshname, nblocks, block_origin, 0, 0,
                                                spatial_dimension, topological_dimension,
@@ -250,7 +250,7 @@ vtkDataSet *
 avtCubeFileFormat::GetMesh(int timestate, const char *meshname)
 {
   int nnodes;
-  float *xarray, *yarray, *zarray;
+  float *xarray = NULL, *yarray = NULL, *zarray = NULL; ///TODO: check on fix for uninitialized warning
   if (creader) {
 
     if (strcmp(meshname,"electron_grid")==0) {
@@ -259,7 +259,7 @@ avtCubeFileFormat::GetMesh(int timestate, const char *meshname)
       debug4 << "sheared = " << shear << endl;
 
       if (shear) {
-        int ndims = 3;
+        //int ndims = 3;
         int dims[3] = {1,1,1};
 
         debug4 << "Creating curvilinear grid" << endl;

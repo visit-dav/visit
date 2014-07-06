@@ -60,7 +60,8 @@ string ASTIdNode::infixString(int lang, NameScope* nameScope)
     } else {            
     */    
         char chrs[20];    
-        sprintf(chrs, "%d\0", lang);    
+        sprintf(chrs, "%d", lang);    
+        chrs[19] = '\0';
         throw RuntimeException(string("Lanaguage '") + chrs + " not supported");    
         
     }        

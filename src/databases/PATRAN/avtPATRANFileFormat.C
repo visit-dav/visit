@@ -444,7 +444,7 @@ ProcessComponent(char *line, const int compno, const int ncomps,
     {
         int newSize = int(float(maxid) * 1.25);
         int *newcomponentList = new int[newSize];
-        int *dest = newcomponentList;
+        int *dest = newcomponentList; (void) dest;
         int S = newSize;
         if(componentList != 0)
         {
@@ -591,16 +591,17 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
 
     char  line[1024];
     bool  recognized = false;
-    int   cellNumNodes = 0;
-    float cellMatno = 1.f;
+    int   cellNumNodes = 0; (void) cellNumNodes;
+    float cellMatno = 1.f; (void) cellMatno;
     int cellCount = 0;
     int   card = 0;
-    int   IT, // Packet type
-          ID, // Identification number. "0" means not applicable.
-          IV, // Additional ID. "0" means not applicable.
-          KC, // Number of data cards after the header.
-          N1; // Supplemental integer values.
-
+    int   IT = 0, // Packet type
+          ID = 0, // Identification number. "0" means not applicable.
+          IV = 0, // Additional ID. "0" means not applicable.
+          KC = 0, // Number of data cards after the header.
+          N1 = 0; // Supplemental integer values.
+                  ///TODO: check IT, ID, IV, KC, N1 for fix of uninitialized values
+          (void) ID; (void) IV; (void) N1;
     int readingFile = visitTimer->StartTimer();
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
     {
@@ -1036,7 +1037,7 @@ avtPATRANFileFormat::GetAuxiliaryData(const char *var, const char *type,
 
         int *matnos = new int[componentNames.size()];
         char **names = new char *[componentNames.size()];
-        for(int i = 0; i < componentNames.size(); ++i)
+        for(size_t i = 0; i < componentNames.size(); ++i)
         {
             matnos[i] = i + 1;
             names[i] = (char *)componentNames[i].c_str();

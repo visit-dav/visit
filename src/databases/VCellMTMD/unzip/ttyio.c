@@ -440,6 +440,7 @@ int zgetch(__GPRO__ int f)
 #endif
     char c;
     struct sgttyb sg;           /* tty device structure */
+    ssize_t res = 0;
 
     GTTY(f, &sg);               /* get settings */
 #if (defined(USE_SYSV_TERMIO) || defined(USE_POSIX_TERMIOS))
@@ -455,7 +456,7 @@ int zgetch(__GPRO__ int f)
     STTY(f, &sg);               /* set cbreak mode */
     GLOBAL(echofd) = f;         /* in case ^C hit (not perfect: still CBREAK) */
 
-    read(f, &c, 1);             /* read our character */
+    res = read(f, &c, 1); (void) res; /* read our character */
 
 #if (defined(USE_SYSV_TERMIO) || defined(USE_POSIX_TERMIOS))
     sg.c_cc[VMIN] = oldmin;     /* restore old values */
@@ -602,8 +603,9 @@ char *getp(__GPRO__ ZCONST char* m, char* p, int n)
 {
     char c;                     /* one-byte buffer for read() to use */
     int i;                      /* number of characters input */
-    char *w;                    /* warning on retry */
+    char w[512];                    /* warning on retry */
     int f;                      /* file descriptor for tty device */
+    ssize_t res = 0;
 
 #ifdef PASSWD_FROM_STDIN
     /* Read from stdin. This is unsafe if the password is stored on disk. */
@@ -615,7 +617,7 @@ char *getp(__GPRO__ ZCONST char* m, char* p, int n)
         return NULL;
 #endif
     /* get password */
-    w = "";
+    strcpy(w,"");
     do {
         fputs(w, stderr);       /* warning if back again */
         fputs(m, stderr);       /* prompt */
@@ -623,13 +625,13 @@ char *getp(__GPRO__ ZCONST char* m, char* p, int n)
         i = 0;
         echoff(f);
         do {                    /* read line, keeping n */
-            read(f, &c, 1);
+            res = read(f, &c, 1); (void) res;
             if (i < n)
                 p[i++] = c;
         } while (c != '\n');
         echon();
         PUTC('\n', stderr);  fflush(stderr);
-        w = "(line too long--try again)\n";
+        strcpy(w,"(line too long--try again)\n");
     } while (p[i-1] != '\n');
     p[i-1] = 0;                 /* terminate at newline */
 

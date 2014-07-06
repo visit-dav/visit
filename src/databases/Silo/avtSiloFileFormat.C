@@ -1780,9 +1780,9 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
             {
                 avtMeshType mt = AVT_UNKNOWN_MESH;
                 avtMeshCoordType mct = AVT_XY;
-                int ndims;
-                int tdims;
-                int cellOrigin;
+                int ndims = 0; //TODO: check on unint var
+                int tdims = 0; //TODO: check on uninit var
+                int cellOrigin = 0; //TODO: check on unint var
                 int groupOrigin = 0;
                 string xUnits, yUnits, zUnits;
                 string xLabel, yLabel, zLabel;
@@ -2521,8 +2521,8 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
     const char *dirname, avtDatabaseMetaData *md)
 {
 #ifdef DBCSG_INNER
-    int i,j;
-    for (i = 0 ; i < ncsgmesh ; i++)
+    size_t i,j;
+    for (i = 0 ; i < (size_t)ncsgmesh ; i++)
     {
         char *name_w_dir = 0;
         DBcsgmesh *csgm = 0;
@@ -2560,7 +2560,7 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
                   csgm->min_extents[1] == -DBL_MAX && csgm->max_extents[1] == DBL_MAX &&
                   csgm->min_extents[2] == -DBL_MAX && csgm->max_extents[2] == DBL_MAX)))
            {
-               for (j = 0 ; j < csgm->ndims ; j++)
+               for (j = 0 ; j < (size_t)csgm->ndims ; j++)
                {
                    extents[2*j    ] = csgm->min_extents[j];
                    extents[2*j + 1] = csgm->max_extents[j];
@@ -2593,7 +2593,7 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
                if (csgm->zones->zonenames)
                {
                    vector<string> znames;
-                   for (j = 0; j < csgm->zones->nzones; j++)
+                   for (j = 0; j < (size_t)csgm->zones->nzones; j++)
                        znames.push_back(csgm->zones->zonenames[j]);
                    mmd->blockNames = znames;
                }
@@ -2654,7 +2654,7 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
         return false;
     }
 
-    int i, j;
+    size_t i, j;
     bool regionNamesButMaterialNumbers = true;
     debug3 << "For mat-restricted variable \"" << varname << "\"..." << endl;
     for (i = 0; region_pnames[i]; i++)
@@ -2668,7 +2668,7 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
             int regno = strtol(region_pnames[i], 0, 10);
             regionNamesButMaterialNumbers = false;
             debug3 << "        Comparing using regno=" << regno << "..." << endl; 
-            for (j = 0; j < mmd->numMaterials; j++)
+            for (j = 0; j < (size_t)mmd->numMaterials; j++)
             {
                 // The 'materialNames' Silo plugin creates are either
                 // "%d (matno)" or "%d (matno) %s (matname)". Either way,
@@ -2692,7 +2692,7 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
         else // Not just a number (a name?)
         {
             debug3 << "        Comparing using region name..." << endl;
-            for (j = 0; j < mmd->numMaterials; j++)
+            for (j = 0; j < (size_t)mmd->numMaterials; j++)
             {
                 int matno;
                 char matname[256];
@@ -2866,7 +2866,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             //
             // Get the centering and dimension information.
             //
-            avtCentering   centering;
+            avtCentering   centering = AVT_ZONECENT; ///TODO: check on uniinit variable
             bool           treatAsASCII = false;
             string realvar;
             DBfile *correctFile = dbfile;
@@ -3832,8 +3832,9 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                 {
                     debug1 << "Invalidating material \"" << multimat_names[i] 
                            << "\" since its first non-empty block ";
-                    if(valid_var)
+                    if(valid_var) {
                         debug1 << "(" << mb_matname << ") ";
+                    }
                     debug1 << "is invalid." << endl;
                     valid_var = false;
                 }
@@ -3856,8 +3857,9 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                     {
                         debug1 << "Invalidating material \"" << multimat_names[i] 
                                << "\" since its first non-empty block ";
-                        if(valid_var)
+                        if(valid_var) {
                             debug1 << "(" << mb_matname << ") ";
+                        }
                         debug1 << "has different # materials than its parent multimat." << endl;
                         valid_var = false;
                     }
@@ -4018,7 +4020,7 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
             name_w_dir = GenerateName(dirname, matspecies_names[i], topDir.c_str());
             string realvar;
             DBfile *correctFile = dbfile;
-            bool valid_var = true;
+            bool valid_var = true; (void) valid_var;
             DetermineFileAndDirectory(matspecies_names[i],"", correctFile, realvar);
 
             spec = DBGetMatspecies(correctFile, realvar.c_str());
@@ -6059,7 +6061,7 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname,
     string xLabel, yLabel, zLabel;
     double   extents[6] = {DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX};
     double  *extents_to_use = NULL;
-    bool hideFromGUI;
+    bool hideFromGUI = true; ///TODO: check on uninit var
 
     DBReadMaskType_t mask = GetSiloReadMask();
     SetSiloReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
@@ -6213,10 +6215,10 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname,
 vtkDataArray *
 avtSiloFileFormat::GetNodelistsVar(int domain)
 {
-    int i;
+    size_t i;
     vtkDataArray *nlvar = 0;
     string meshName = metadata->MeshForVar("Nodelists");
-    const avtMeshMetaData *mmd = metadata->GetMesh(meshName);
+    const avtMeshMetaData *mmd = metadata->GetMesh(meshName); (void) mmd;
 
     debug5 << "Generating Nodelists variable for domain " << domain << endl;
 
@@ -6569,7 +6571,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                             // If we've reached the end of the list of edge ids we
                             // are here to paint, then we are done.
                             //
-                            if (elemIdx >= elemidv.size())
+                            if ((size_t)elemIdx >= elemidv.size())
                                 return;
                         }
 
@@ -6785,7 +6787,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                             // If we've reached the end of the list of face ids we
                             // are here to paint, then we are done.
                             //
-                            if (elemIdx >= elemidv.size())
+                            if ((size_t)elemIdx >= elemidv.size())
                                 return;
                         }
 
@@ -6823,7 +6825,7 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
 vtkDataArray *
 avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
 {
-    int i;
+    size_t i;
     string meshName = metadata->MeshForVar(listsname);
 
     //
@@ -6884,7 +6886,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
     int elemoff = 0;
     int *elemvals = (int *) ai->values;
     vector<ev_pair_t> elemidv;
-    for (i = 0; i < ai->nelems; i++)
+    for (i = 0; i < (size_t)ai->nelems; i++)
     {
         int len = strlen(ai->elemnames[i]);
         if (listsname == "AnnotInt_Nodelists" && 
@@ -7561,7 +7563,7 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
             //
             vtkvar->SetNumberOfTuples(uv->nels+n);
             ptr = (T *) vtkvar->GetVoidPointer(0);
-            for (i = 0; i < uv->nels; i++)
+            for (i = 0; i < (size_t)uv->nels; i++)
             {
                 for (j = 0; j < nvtkcomps; j++)
                 {
@@ -7626,7 +7628,7 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
             //
             vtkvar->SetNumberOfTuples(uv->nels);
             ptr = (T *) vtkvar->GetVoidPointer(0);
-            for (i = 0; i < uv->nels; i++)
+            for (i = 0; i < (size_t)uv->nels; i++)
             {
                 for (j = 0; j < nvtkcomps; j++)
                 {
@@ -8525,33 +8527,33 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
     const intVector& restrictToMats,
     void **_newvals, void **_newmixvals)
 {
-    int i, j;
+    size_t i, j;
     int nzones = mat->GetNZones();
     int nnodes = ugrid?ugrid->GetNumberOfPoints():0;
     T **newvals = (T**) malloc((uv->nvals)*sizeof(T*));
-    for (i = 0; i < uv->nvals; i++)
+    for (i = 0; i < (size_t)uv->nvals; i++)
     {
         newvals[i] = (T*) malloc((ugrid?nnodes:nzones)*sizeof(T));
         // Initialize the array to be same as zero entry.
-        for (j = 0; j < (ugrid?nnodes:nzones); j++)
+        for (j = 0; j < (size_t)(ugrid?nnodes:nzones); j++)
             newvals[i][j] = ((T**)uv->vals)[i][0];
     }
     T **newmixvals = 0;
     if (mat->GetMixlen() > 0)
     {
         newmixvals = (T**) malloc((uv->nvals)*sizeof(T*));
-        for (i = 0; i < uv->nvals; i++)
+        for (i = 0; i < (size_t)uv->nvals; i++)
         {
             newmixvals[i] = (T*) malloc((mat->GetMixlen())*sizeof(T));
             // Initialize the array to be same as zero entry.
             if (uv->mixvals)
             {
-                for (j = 0; j < mat->GetMixlen(); j++)
+                for (j = 0; j < (size_t)mat->GetMixlen(); j++)
                     newmixvals[i][j] = ((T**)uv->mixvals)[i][0]; 
             }
             else
             {
-                for (j = 0; j < mat->GetMixlen(); j++)
+                for (j = 0; j < (size_t)mat->GetMixlen(); j++)
                     newmixvals[i][j] = ((T**)uv->vals)[i][0]; 
             }
         }
@@ -8559,7 +8561,7 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
     map<vtkIdType,bool> haveVisitedPoint;
     int nvals = 0;
     int nmixvals = 0;
-    for (i = 0; i < nzones; i++)
+    for (i = 0; i < (size_t)nzones; i++)
     {
         if (mat->GetMatlist()[i] >= 0) // clean case
         {
@@ -8571,13 +8573,13 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                 if (ugrid) // node-centered case
                 {
                     vtkCell *cell = ugrid->GetCell(i);
-                    for (j = 0; j < cell->GetNumberOfPoints(); j++)
+                    for (j = 0; j < (size_t)cell->GetNumberOfPoints(); j++)
                     {
                         vtkIdType ptId = cell->GetPointId(j);
                         if (haveVisitedPoint.find(ptId) == haveVisitedPoint.end())
                         {
                             haveVisitedPoint[ptId] = true;
-                            for (int k = 0; k < uv->nvals; k++)
+                            for (size_t k = 0; k < (size_t)uv->nvals; k++)
                                 newvals[k][(int)ptId] = ((T**)uv->vals)[k][nvals];
                             nvals++;
                         }
@@ -8585,7 +8587,7 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                 }
                 else // zone-centered case
                 {
-                    for (j = 0; j < uv->nvals; j++)
+                    for (j = 0; j < (size_t)uv->nvals; j++)
                         newvals[j][i] = ((T**)uv->vals)[j][nvals];
                     nvals++;
                 }
@@ -8606,7 +8608,7 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                         if (restrictToMats.size() == 1) // single material optimization
                         {
                             vtkCell *cell = ugrid->GetCell(i);
-                            for (j = 0; j < cell->GetNumberOfPoints(); j++)
+                            for (j = 0; j < (size_t)cell->GetNumberOfPoints(); j++)
                             {
                                 vtkIdType ptId = cell->GetPointId(j);
                                 if (haveVisitedPoint.find(ptId) == haveVisitedPoint.end())
@@ -8621,7 +8623,7 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                         else // multiple material case
                         {
                             vtkCell *cell = ugrid->GetCell(i);
-                            for (j = 0; j < cell->GetNumberOfPoints(); j++)
+                            for (j = 0; j < (size_t)cell->GetNumberOfPoints(); j++)
                             {
                                 vtkIdType ptId = cell->GetPointId(j);
                                 if (haveVisitedPoint.find(ptId) == haveVisitedPoint.end())
@@ -8638,13 +8640,13 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                     {
                         if (restrictToMats.size() == 1) // single material optimization
                         {
-                            for (j = 0; j < uv->nvals; j++)
+                            for (j = 0; j < (size_t)uv->nvals; j++)
                                 newmixvals[j][mix_idx] = ((T**)uv->vals)[j][nvals];
                             nvals++;
                         }
                         else // multiple material case
                         {
-                            for (j = 0; j < uv->nvals; j++)
+                            for (j = 0; j < (size_t)uv->nvals; j++)
                                 newmixvals[j][mix_idx] = ((T**)uv->mixvals)[j][nmixvals];
                             nmixvals++;
                         }
@@ -9247,7 +9249,7 @@ static void
 CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 {
     int nnodes = um->nnodes;
-    bool dim3 = (um->coords[2] != NULL ? true : false);
+    bool dim3 = (um->coords[2] != NULL ? true : false); (void) dim3;
     T *tmp = pts;
     const T *coords0 = (T*) um->coords[0];
     const T *coords1 = (T*) um->coords[1];
@@ -9352,7 +9354,7 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     tmp.vals[0] = (float*) gzoneno; 
 #endif
 
-    vtkDataArray *arr;
+    vtkDataArray *arr = NULL; //TODO: check for fix of uninit variable
     if (tmp.datatype == DB_SHORT)
         arr = CopyUcdVar<short,vtkShortArray>(&tmp, *remap);
     else if (tmp.datatype == DB_INT)
@@ -9450,7 +9452,7 @@ RemapFacelistForPolyhedronZones(DBfacelist *sfl, DBzonelist *szl)
     for (int i = 0 ; i < szl->nshapes ; i++)
     {
         const int shapecnt = szl->shapecnt[i];
-        const int shapesize = szl->shapesize[i];
+        const int shapesize = szl->shapesize[i]; (void) shapesize;
         const int shapetype = szl->shapetype[i];
         if (shapetype != DB_ZONETYPE_POLYHEDRON)
         {
@@ -9832,7 +9834,7 @@ LookupPHZonelistFaceIdInFaceHash(const vector<int>& faceNodes,
         return -INT_MAX;
 
     // Maybe a hash collision. So, now check all entries at 'hv' key.
-    for (int i = 0; i < it->second.size(); i++)
+    for (size_t i = 0; i < it->second.size(); i++)
     {
         std::pair<int, vector<int> > p(it->second[i]);
         if (canonicalFaceNodes == p.second) return p.first;
@@ -10043,8 +10045,8 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     // later. Note that a setting of 'vtk_zonetype' of -2 represents the
     // arb. polyhedral zonetype.
     //
-    int   i, j, k;
-    int nsdims = um->ndims;
+    size_t   i, j, k;
+    int nsdims = um->ndims; (void) nsdims;
     const DBzonelist *const zl = um->zones;
     int origin = um->zones->origin;
 
@@ -10054,7 +10056,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     int  numCells = 0;
     int  totalSize = 0;
     const int *tmp = zl->nodelist;
-    for (i = 0 ; i < zl->nshapes ; i++)
+    for (i = 0 ; i < (size_t)zl->nshapes ; i++)
     {
         int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
         if (vtk_zonetype != -2)
@@ -10069,7 +10071,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             {
                 // Some polygons representations have the shapesize be 0 and 
                 // each polygons # of nodes encoded as the first point ID.
-                for (j = 0 ; j < zl->shapecnt[i] ; j++)
+                for (j = 0 ; j < (size_t)zl->shapecnt[i] ; j++)
                 {
                     totalSize += *tmp + 1;
                     tmp += *tmp+1;
@@ -10101,7 +10103,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     vector<int> arbZoneIdxOffs;
     vector<int> arbZoneCounts;
     vector<int*> arbZoneNlOffs;
-    for (i = 0 ; i < zl->nshapes ; i++)
+    for (i = 0 ; i < (size_t)zl->nshapes ; i++)
     {
         const int shapecnt = zl->shapecnt[i];
         const int shapesize = zl->shapesize[i];
@@ -10160,7 +10162,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         {
             bool tetsAreInverted = false;
             bool firstTet = true;
-            for (j = 0 ; j < shapecnt ; j++, zoneIndex++)
+            for (j = 0 ; j < (size_t)shapecnt ; j++, zoneIndex++)
             {
                 *cl++ = currentIndex;
 
@@ -10171,7 +10173,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     vtk_zonetype != -1)
                 {
                     *nl++ = shapesize;
-                    for (k = 0 ; k < shapesize ; k++)
+                    for (k = 0 ; k < (size_t)shapesize ; k++)
                         *nl++ = *(nodelist+k) - origin;
                 }
                 else if (vtk_zonetype == VTK_POLYGON)
@@ -10184,7 +10186,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     if (shapesize > 0)
                     {
                         *nl++ = shapesize;
-                        for (k = 0 ; k < shapesize ; k++)
+                        for (k = 0 ; k < (size_t)shapesize ; k++)
                             *nl++ = *(nodelist+k) - origin;
                         /* correct stored cell type if its really a tri or quad */
                         if (shapesize == 3)
@@ -10198,7 +10200,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     {
                         int ss = *nodelist;
                         *nl++ = ss;
-                        for (k = 0 ; k < ss; k++)
+                        for (k = 0 ; k < (size_t)ss; k++)
                             *nl++ = *(nodelist+k+1) - origin;
                         nodelist += ss+1;
                         /* correct stored cell type if its really a tri or quad */
@@ -10241,7 +10243,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     {
                         firstTet = false;
                         tetsAreInverted = TetIsInverted(nodelist, ugrid);
-                        static bool haveIssuedWarning = false;
+                        static bool haveIssuedWarning = false; (void) haveIssuedWarning;
                         if (tetsAreInverted)
                         {
                             haveIssuedWarning = true;
@@ -10348,10 +10350,10 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         // Build up the cellReMap array for all the non-arb. zones we've
         // already put into the grid.
         //
-        for (i = j = 0; i < zl->nzones; i++)
+        for (i = j = 0; i < (size_t)zl->nzones; i++)
         {
             if (j < arbZoneIdxOffs.size() &&
-                i == arbZoneIdxOffs[j])
+                i == (size_t)arbZoneIdxOffs[j])
             {
                 i += arbZoneCounts[j]-1; // -1 to undue i++ of for stmt.
                 j++;
@@ -10427,11 +10429,11 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         unsigned char *gvals = new unsigned char[numCells];
         unsigned char val = 0;
         avtGhostData::AddGhostZoneType(val, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-        for (i = 0; i < first; i++)
+        for (i = 0; i < (size_t)first; i++)
             gvals[i] = val;
-        for (i = first; i <= last; i++)
+        for (i = first; i <= (size_t)last; i++)
             gvals[i] = 0;
-        for (i = last+1; i < numCells; i++)
+        for (i = last+1; i < (size_t)numCells; i++)
             gvals[i] = val;
 
         //
@@ -12298,11 +12300,11 @@ static void CopyQuadCoordinates(T *dest, int nx, int ny, int nz, int morder,
     else
     {
         unsigned int nyz = ny * nz; 
-        for (unsigned int k = 0; k < nz; k++)
+        for (unsigned int k = 0; k < (unsigned int)nz; k++)
         {
-            for (unsigned int j = 0; j < ny; j++)
+            for (unsigned int j = 0; j < (unsigned int)ny; j++)
             {
-                for (unsigned int i = 0; i < nx; i++)
+                for (unsigned int i = 0; i < (unsigned int)nx; i++)
                 {
                     unsigned int idx = k + j*nz + i*nyz;
                     *dest++ = c0 ? c0[idx] : 0.;
@@ -13175,7 +13177,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
                                                     avtSiloMBObjectCacheEntry *obj,
                                                     const char *curdir)
 {
-    int i;
+    size_t i;
     char subMesh[256];
     char subMeshTmp[256];
 
@@ -13233,7 +13235,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // Attempt an "exact" match, where the first mesh for the multivar is
     // an exact match and the number of domains is the same.
     //
-    int size = actualMeshName.size();
+    size_t size = actualMeshName.size();
     for (i = 0 ; i < size ; i++)
     {
         if (firstSubMesh[i] == subMeshWithFile && nblocks == blocksForMesh[i])
@@ -13260,7 +13262,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     debug5 << "Using fuzzy logic to match multivar \"" << name << "\" to a multimesh" << endl;
     string dir,varmesh;
     SplitDirVarName(subMesh, curdir, dir, varmesh);
-    for (i = 0 ; i < size ; i++)
+    for (i = 0 ; i < (size_t)size ; i++)
     {
         if (firstSubMeshVarName[i] == varmesh &&
             blocksForMesh[i] == nblocks)
@@ -13271,7 +13273,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
             for (int k = 0; k < nblocks; k++)
                 SplitDirVarName(obj->GenerateName(k).c_str(), curdir, dirs[k], varmesh);
 
-            for (int j = 0; j < allSubMeshDirs[i].size(); j++)
+            for (size_t j = 0; j < allSubMeshDirs[i].size(); j++)
             {
                 int match = -1;
                 for (int k = 0; k < nblocks && match == -1; k++)
@@ -14819,7 +14821,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
             DetermineFilenameAndDirectory(mm_ent->GenerateName(i).c_str(),
                                           "", filename, location);
             int index = -1;
-            for (j = 0 ; j < filenames.size() ; j++)
+            for (j = 0 ; j < (int)filenames.size() ; j++)
             {
                 if (filename == filenames[j])
                 {
@@ -15484,7 +15486,7 @@ GenerateName(const char *dirname, const char *varname, const char *topdirname)
     // tdOffset2+1 actually points beyond the end of the string.  We need to
     // make sure we don't deref the pointer we'll make with it, so check for
     // that simple case and bail out here if possible.
-    if (strlen(dirname) < tdOffset2+1)
+    if (strlen(dirname) < (size_t)tdOffset2+1)
     {
         sprintf(rv, "%s", varname);
         return rv;
@@ -15872,19 +15874,19 @@ avtSiloFileFormat::GetMultivarToMultimeshMap(DBfile *dbfile)
     int lmeshes = DBGetVarLength(dbfile, "MultivarToMultimeshMap_meshes");
     if (lvars > 0 && lmeshes > 0)
     {
-        int i;
+        size_t i;
         string tmpStr;
 
         char  *vars = new char[lvars+1];
-        for (i = 0 ; i < lvars+1 ; i++)
+        for (i = 0 ; i < (size_t)lvars+1 ; i++)
             vars[i] = '\0';
         DBReadVar(dbfile, "MultivarToMultimeshMap_vars", vars);
 
         vector<string> varVec;
         tmpStr.clear();
-        for (i = 0 ; i < lvars+1; i++)
+        for (i = 0 ; i < (size_t)lvars+1; i++)
         {
-            if (vars[i] == ';' || (i == lvars))
+            if (vars[i] == ';' || (i == (size_t)lvars))
             {
                 varVec.push_back(tmpStr);
                 tmpStr.clear();
@@ -15897,15 +15899,15 @@ avtSiloFileFormat::GetMultivarToMultimeshMap(DBfile *dbfile)
         delete [] vars;
 
         char  *meshes = new char[lmeshes+1];
-        for (i = 0 ; i < lmeshes+1 ; i++)
+        for (i = 0 ; i < (size_t)lmeshes+1 ; i++)
             meshes[i] = '\0';
         DBReadVar(dbfile, "MultivarToMultimeshMap_meshes", meshes);
 
         vector<string> meshVec;
         tmpStr.clear();
-        for (i = 0 ; i < lmeshes+1; i++)
+        for (i = 0 ; i < (size_t)lmeshes+1; i++)
         {
-            if (meshes[i] == ';' || (i == lmeshes))
+            if (meshes[i] == ';' || (i == (size_t)lmeshes))
             {
                 meshVec.push_back(tmpStr);
                 tmpStr.clear();
@@ -16268,7 +16270,7 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
             numAnnotIntLists = (int)smd->enumNames.size();
         else
         {
-            if (smd->enumNames.size() > numAnnotIntLists)
+            if (smd->enumNames.size() > (size_t)numAnnotIntLists)
                 numAnnotIntLists = (int)smd->enumNames.size();
         }
 
@@ -16543,8 +16545,8 @@ HandleMrgtreeAMRGroups(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_na
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,3)
     int i, j;
-    bool probablyAnAMRMesh = true;
-    DBgroupelmap *gm = 0; 
+    bool probablyAnAMRMesh = true; (void) probablyAnAMRMesh;
+    DBgroupelmap *gm = 0;  (void) gm;
 
     if (mm == 0)
         return;
@@ -17009,7 +17011,7 @@ GetNodesetEnumerationsFromMRGTree(DBfile *dbfile, const DBmrgtnode *nsnode,
     //
     avtScalarMetaData *smd = new avtScalarMetaData(string(nsnode->name)+"_"+mname, mname, AVT_NODECENT);
 
-    for (int i = 0; i < nsnames.size(); i++)
+    for (size_t i = 0; i < nsnames.size(); i++)
         smd->AddEnumNameValue(nsnames[i], i);
     smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
     smd->SetEnumPartialCellMode(avtScalarMetaData::Dissect);
@@ -17044,7 +17046,7 @@ HandleMrgtreeNodelistVars(DBfile *dbfile, const string& mname, const string& tna
     // Try to go to the nodesets node in the tree
     //
     const char* nsnames[] = {"nodesets", "facesets"};
-    for (int i = 0; i < sizeof(nsnames)/sizeof(nsnames[0]); i++)
+    for (size_t i = 0; i < sizeof(nsnames)/sizeof(nsnames[0]); i++)
     {
         if (DBSetCwr(mrgt, nsnames[i]) < 0)
         {

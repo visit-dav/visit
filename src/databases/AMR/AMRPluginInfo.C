@@ -43,7 +43,8 @@
 #include <AMRPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *AMRVisItPluginVersion = VISIT_VERSION;
+//extern "C" DBP_EXPORT const char *AMRVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(AMR,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

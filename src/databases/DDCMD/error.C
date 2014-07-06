@@ -16,7 +16,7 @@
 //    I modified this code to print to the debug logs and to throw an 
 //    exception instead of exiting.
 //
-static char message[1024];
+static char message[2048];
 void error_action(const char *start, ...)
 {
     va_list ap;

@@ -63,6 +63,7 @@
 //
 #ifndef VISIT_DONT_REDEFINE_H5FOPENCLOSE
 #ifdef H5_VERS_MAJOR
+#if 0 //TODO: check if these functions are unused at the moment
 #include <avtCallback.h>
 static void VisIt_IssueH5Warning(int phase)
 {
@@ -89,7 +90,6 @@ static void VisIt_IssueH5Warning(int phase)
     }
 
 }
-
 static hid_t VisIt_H5Fopen(const char *name, int flags, hid_t fapl)
 {
     bool created_fapl = false;
@@ -178,7 +178,7 @@ static herr_t VisIt_H5Fclose(hid_t fid)
 
 #define H5Fopen(NAME, FLAGS, FAPL) VisIt_H5Fopen(NAME, FLAGS, FAPL)
 #define H5Fclose(FID) VisIt_H5Fclose(FID)
-
+#endif
 #endif
 #endif
 

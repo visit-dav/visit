@@ -145,7 +145,7 @@ avtCarpetHDF5FileFormat::GetNTimesteps(void)
 void
 avtCarpetHDF5FileFormat::FreeUpResources(void)
 {
-   for (int i=0; i < data_file->timesteps.size(); i++)
+   for (size_t i=0; i < data_file->timesteps.size(); i++)
    {
       data_file->timesteps[i].unset_ranges();
    }
@@ -207,7 +207,7 @@ avtCarpetHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
         data_file->timesteps[timeState].multi_comp;
       // find the maximum number of dimensions over all components
       int maxndims = -1;
-      for (int i=0; i < comp.size(); i++)
+      for (size_t i=0; i < comp.size(); i++)
       if (maxndims < comp[i][0].ndims()) maxndims = comp[i][0].ndims();
 
       // Here's the call that tells the meta-data object that we have a mesh:
@@ -235,7 +235,7 @@ avtCarpetHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
       mesh->blockNames = blockPieceNames;
       md->AddGroupInformation(mesh->numGroups, nblocks, groupIds);
           
-      for (int i=0; i < comp.size(); i++) {
+      for (size_t i=0; i < comp.size(); i++) {
           string str = comp[i][0].varname() + (isCartesian ? "" : "(MP)");
           if (comp[i][0].comps() == 1) {
             // add scalar variable
@@ -418,9 +418,9 @@ avtCarpetHDF5FileFormat::GetMesh(int timestate, int domain, const char *meshname
 
    if (strcmp(meshname, "Carpet Multipatch") == 0) {
       
-      float *xarray = 0;
-      float *yarray = 0;
-      float *zarray = 0;
+      float *xarray = NULL;
+      float *yarray = NULL;
+      float *zarray = NULL;
       
       
       // check if the iteration is present in coordinate files.
@@ -429,7 +429,7 @@ avtCarpetHDF5FileFormat::GetMesh(int timestate, int domain, const char *meshname
       
       vector<vector<dataset_entry> > &comp = data_file->timesteps[timestate].multi_comp;
       
-      for (int i=0; i < xcoord_file->timesteps.size(); ++i)
+      for (size_t i=0; i < xcoord_file->timesteps.size(); ++i)
          if (xcoord_file->timesteps[i].multi_comp[0][0].cycle() <= comp[0][0].cycle())
             actual_timestate = i;
       
@@ -655,13 +655,13 @@ avtCarpetHDF5FileFormat::GetVar(int timestate, int domain, const char *varname)
    str.replace(str.find("--"), 2, "::");
        
    int var_no = 0;
-   for (int i=0; i < comp.size(); i++) {
+   for (size_t i=0; i < comp.size(); i++) {
      if (comp[i][0].varname() == str) {
        var_no = i;
      }
    }
    
-   int dims[] = {1, 1, 1};
+   //int dims[] = {1, 1, 1};
    float* data;
    data_file->get_data(!isMultiPatch, timestate, domain, var_no, &data);
    
@@ -713,7 +713,7 @@ avtCarpetHDF5FileFormat::GetVectorVar(int timestate, int domain,const char *varn
    str.replace(str.find("--"), 2, "::");
 
    int var_no = 0;
-   for (int i=0; i < comp.size(); i++) {
+   for (size_t i=0; i < comp.size(); i++) {
       if (comp[i][0].varname() == str)
          var_no = i;
    }
@@ -811,7 +811,7 @@ void avtCarpetHDF5FileFormat::open_all_files(const char* fname)
    string prefix = string(fname).substr(0,pos+1);
    
    
-   for (int i=0; i < data_file->timesteps.size(); i++)
+   for (size_t i=0; i < data_file->timesteps.size(); i++)
    {
       if (data_file->timesteps[i].multi_comp[0].size() > 0)
         curvilinear = true;
@@ -850,7 +850,7 @@ avtCarpetHDF5FileFormat::multi_file* avtCarpetHDF5FileFormat::open_cached_file(c
   {
     multi_file* file = file_cache[fname];
 
-    for(int i=0; i < file->files.size(); i++)
+    for(size_t i=0; i < file->files.size(); i++)
     {
       if(file->files[i]->file_changed_on_disk())
       {
@@ -900,7 +900,7 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
    
    hid_t attribute = H5Aopen(group, "nioprocs", H5P_DEFAULT);
    int n_io_procs = 0;
-   hid_t status = H5Aread(attribute, H5T_NATIVE_INT, &n_io_procs);
+   hid_t status = H5Aread(attribute, H5T_NATIVE_INT, &n_io_procs); (void)status;
    status = H5Aclose(attribute);
 
    H5Gclose(group);
@@ -931,7 +931,7 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
       
       // obtain all valid dataset names found in the current file
       // and add them to the global datasetname list
-      for (int j=0; j < files[i]->dsetnames.size(); j++)
+      for (size_t j=0; j < files[i]->dsetnames.size(); j++)
       {
          files[i]->dsetnames[j].set_file_id(i);
       }
@@ -939,10 +939,10 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
       
    // get number of times and cycles by browsing all available datasets of ALL files
    std::set<int> cycle_seen;
-   for (int f=0; f < files.size(); f++)
+   for (size_t f=0; f < files.size(); f++)
    {
       vector<dataset_entry>& dsetnames = files[f]->dsetnames;
-      for (int i=0; i < dsetnames.size(); i++)
+      for (size_t i=0; i < dsetnames.size(); i++)
       {
          bool found = cycle_seen.count(dsetnames[i].cycle());
 
@@ -962,10 +962,10 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
    
    // get varnames
    std::set<string> varname_seen;
-   for (int f=0; f < files.size(); f++)
+   for (size_t f=0; f < files.size(); f++)
    {
       vector<dataset_entry> &dsetnames = files[f]->dsetnames;
-      for (int i=0; i < dsetnames.size(); i++)
+      for (size_t i=0; i < dsetnames.size(); i++)
       {
          // replacable by varnames.assign(varname_seen.begin(), varname_end())
          bool found = varname_seen.count(dsetnames[i].varname());
@@ -996,26 +996,26 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
    map<int,int> cyclemap;
    // for very large files, using dataset_entry* might be required
    vector<vector<vector<const dataset_entry *> > > dsets_per_timestep_per_variable(timesteps.size());
-   for (int j=0; j < varnames.size(); j++)
+   for (size_t j=0; j < varnames.size(); j++)
    {
      varmap[varnames[j]] = j;
    }
-   for (int it=0; it < cycles.size(); it++)
+   for (size_t it=0; it < cycles.size(); it++)
    {
      cyclemap[cycles[it]] = it;
      dsets_per_timestep_per_variable[it].resize(varnames.size());
    }
    
-   for (int i=0; i < files.size(); i++)
+   for (size_t i=0; i < files.size(); i++)
    {
-     for (int c=0; c < files[i]->dsetnames.size(); c++)
+     for (size_t c=0; c < files[i]->dsetnames.size(); c++)
      {
        const int it = cyclemap[files[i]->dsetnames[c].cycle()];
        const int j = varmap[files[i]->dsetnames[c].varname()];
        dsets_per_timestep_per_variable[it][j].push_back(&(files[i]->dsetnames[c]));
      }
    }
-   for (int it=0; it < timesteps.size(); it++)
+   for (size_t it=0; it < timesteps.size(); it++)
    {
       timesteps[it] = dsets_per_timestep_per_variable[it];
    }
@@ -1296,7 +1296,7 @@ void avtCarpetHDF5FileFormat::file_t::get_data(const dataset_entry& dset, float*
    hid_t dataset = H5Dopen(file, dset.name().c_str(), H5P_DEFAULT);
       
    hid_t dataspace = H5Dget_space(dataset);
-   hid_t attrib;
+   //hid_t attrib;
    
    int rank  = H5Sget_simple_extent_ndims(dataspace);
       

@@ -766,9 +766,10 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
                 should_ghost_this_patch = false;
         }
 
-        if (should_ghost_this_patch)
+        if (should_ghost_this_patch) {
             debug5 << "avtSAMRAIFileFormat::ReadMesh has ghost layers " << 
                 num_ghosts[0] << ", " << num_ghosts[1] << ", " << num_ghosts[2] << endl;
+        }
 
     }
  
@@ -1347,8 +1348,8 @@ avtMaterial *
 avtSAMRAIFileFormat::ReadSparseMaterialData(int patch, const int *matnos,
     const char **matnames) 
 {
-    int i;
-    int one = 1;
+    int i; 
+    //int one = 1;
     avtMaterial *mat = 0;
 
     char domName[256];
@@ -1513,7 +1514,7 @@ avtSAMRAIFileFormat::ReadSparseMaterialData(int patch, const int *matnos,
 avtMaterial *
 avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
 {
-    int i;
+    size_t i;
 
     double bytesInFile = 0.0;
     static double bytesInFileTotal = 0.0;
@@ -1533,7 +1534,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     // re-format global mat numbers and names 
     int *matnos = new int[num_mats];
     char **matnames = new char*[num_mats];
-    for (i = 0; i < num_mats; i++)
+    for (i = 0; i < (size_t)num_mats; i++)
     {
         matnos[i] = i;
         matnames[i] = CXX_strdup(mat_names[i].c_str()); 
@@ -1546,7 +1547,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
 
         // free up the matnames and numbers
         SAFE_DELETE(matnos);
-        for (i = 0; i < num_mats; i++)
+        for (i = 0; i < (size_t)num_mats; i++)
             SAFE_DELETE(matnames[i]);
         SAFE_DELETE(matnames);
 
@@ -1556,7 +1557,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     // first, determine which material nos., if any, we actually have on this patch
     bool oneMat = false;
     std::vector<int> matList;
-    for (i = 0; i < num_mats; i++)
+    for (i = 0; i < (size_t)num_mats; i++)
     {
         // since the inferred "void" material doesn't really exist, we skip it
         if (mat_names[i] == inferredVoidMatName)
@@ -1613,7 +1614,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
     int dims[] = {1, 1, 1};
     int ncells = 1;
-    for (i=0; i<dim; i++)
+    for (i=0; i< (size_t)dim; i++)
     {
         dims[i] = patch_extents[patch].upper[i] -
                   patch_extents[patch].lower[i] + 1 +
@@ -1625,7 +1626,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     {
         // create a matlist array for this single material
         int *matlist = new int[ncells];
-        for (i = 0; i < ncells; i++)
+        for (i = 0; i < (size_t)ncells; i++)
             matlist[i] = matList[0];
 
         mat = new avtMaterial(num_mats,      //silomat->nmat,
@@ -1651,7 +1652,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     else
     {
        float **vfracs = new float*[num_mats];
-       for (i = 0; i < num_mats; i++)
+       for (i = 0; i < (size_t)num_mats; i++)
            vfracs[i] = 0;
 
        // read the volume fractions for each material
@@ -1672,7 +1673,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
 
            // infer the void's volume fractions
            vfracs[num_mats-1] = new float[ncells];
-           for (i = 0; i < ncells; i++)
+           for (i = 0; i < (size_t)ncells; i++)
                vfracs[num_mats-1][i] = 1.0 - vfracs[matList[0]][i];
        }
 
@@ -1684,7 +1685,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
        mat = new avtMaterial(num_mats, matnos, matnames, dim, dims, 0,
                              vfracs, domName);
 
-       for (i = 0; i < num_mats; i++)
+       for (i = 0; i < (size_t)num_mats; i++)
            SAFE_DELETE(vfracs[i]);
        SAFE_DELETE(vfracs);
 
@@ -1694,7 +1695,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
 
    // free up the matnames and numbers
    SAFE_DELETE(matnos);
-   for (i = 0; i < num_mats; i++)
+   for (i = 0; i < (size_t)num_mats; i++)
        SAFE_DELETE(matnames[i]);
 
    SAFE_DELETE(matnames);
@@ -1725,7 +1726,7 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
     float **vfracs, int ncells, int* &matfield, int &mixlen, int* &mix_mat,
     int* &mix_next, int* &mix_zone, float* &mix_vf)
 {
-    int i,m,z;
+    size_t i,m,z;
 
     // compute a value to be used as the 'notSet' value in matfield array
     int notSet = matIds[0];
@@ -1738,14 +1739,14 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
 
     // allocate and fill matfield array with the 'notSet' value
     matfield = new int[ncells];
-    for (i = 0; i < ncells; i++)
+    for (i = 0; i < (size_t)ncells; i++)
         matfield[i] = notSet;
 
     // pre-compute size of mix arrays
     mixlen = 0;
     for (m = 0; m < matIds.size(); m++)
     {
-        for (z = 0; z < ncells; z++)
+        for (z = 0; z < (size_t)ncells; z++)
         {
             if ((vfracs[m][z] > 0.0) &&
                 (vfracs[m][z] < 1.0))
@@ -1767,7 +1768,7 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
         float *frac = vfracs[m];
 
         // loop over zones
-        for (z = 0; z < ncells; z++)
+        for (z = 0; z < (size_t)ncells; z++)
         {
             if (frac[z] == 1.0)
             {
@@ -1884,8 +1885,9 @@ avtSAMRAIFileFormat::DebugMixedMaterials(int ncells, int* &matfield,
 
             debug5 << endl;
 
-            if (vfsum != 1.0)
+            if (vfsum != 1.0) {
                 debug5 << "***VOL-FRAC SUM ERROR***" << endl;
+            }
         }
     }
 
@@ -2921,7 +2923,7 @@ avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
     H5Dclose(h5_dataset);
 
     bool hasExpectedVersionNumber = false;
-    for (int n = 0;
+    for (size_t n = 0;
          n < sizeof(expected_version_number)/sizeof(expected_version_number[0]);
          n++)
     {
@@ -4458,7 +4460,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
             dims[i] = hdims[i];
         else
         {
-            if (dims[i] != hdims[i])
+            if ((hsize_t)dims[i] != hdims[i])
             {
                 H5Dclose(h5_dataset);
                 EXCEPTION2(UnexpectedValueException, dims[i], hdims[i]);

@@ -145,7 +145,7 @@ avtSASFileFormat::avtSASFileFormat(const char *filename)
     }
 
     int header = 0;
-    READ(f, (char *)&header, 4);
+    ssize_t res = READ(f, (char *)&header, 4); (void) res;
     CLOSE(f);
     
     bSwapEndian = false;
@@ -195,7 +195,7 @@ avtSASFileFormat::~avtSASFileFormat()
         delete[] aChannels;
         aChannels = NULL;
     }
-    int ii;
+    size_t ii;
     for (ii = 0; ii < aCachedAssemblies.size(); ii++)
     {
         aCachedAssemblies[ii].grid->Delete();
@@ -267,7 +267,7 @@ avtSASFileFormat::GetCycles(std::vector<int> &outTimes)
     if (aTimes.size() == 0)
         ReadTimeStepData();
 
-    int ii;
+    size_t ii;
     outTimes.resize( aTimes.size() );
     for (ii = 0; ii < outTimes.size(); ii++)
     {
@@ -377,7 +377,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
     if (!aAssemblyTypes)
         ReadAssemblyTypes();
 
-    int ii, jj;
+    size_t ii, jj;
     vtkUnstructuredGrid *grid = NULL;
 
     for (ii = 0; ii < aCachedAssemblies.size(); ii++)
@@ -400,7 +400,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
 
     LSEEK64(f, iAssemblyDiskLoc + domain*iAssemblyInstanceSize + sizeof(int)*3 + 80, SEEK_SET);
  
-    int iAssemblyID = ReadInt(f);
+    int iAssemblyID = ReadInt(f); (void) iAssemblyID;
     int iAssemblyType = ReadInt(f);
     int iChannelOffset = ReadInt(f);
 
@@ -410,7 +410,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
 
     // Find the assembly type
     AssemblyType *pType = NULL;
-    for (ii = 0; ii < nAssemblyTypes; ii++)
+    for (ii = 0; ii < (size_t)nAssemblyTypes; ii++)
     {
         if (iAssemblyType == aAssemblyTypes[ii].id)
         {
@@ -427,9 +427,9 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
     vtkPoints *pPoints = vtkPoints::New();
     pPoints->SetNumberOfPoints(pType->nUniquePts * pType->nZVals);
 
-    for (jj = 0; jj < pType->nZVals; jj++)
+    for (jj = 0; jj < (size_t)pType->nZVals; jj++)
     {
-        for (ii = 0; ii < pType->nUniquePts; ii++)
+        for (ii = 0; ii < (size_t)pType->nUniquePts; ii++)
         {
             pPoints->SetPoint( jj*pType->nUniquePts + ii, 
                                pos[0]+pType->aUniquePts[ii*2], 
@@ -443,7 +443,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
     pPoints->Delete();
 
     // Add the cells
-    for (ii = 0; ii < pType->nChannels; ii++)
+    for (ii = 0; ii < (size_t)pType->nChannels; ii++)
     {
         int  iCurrChannelGlobalID = iChannelOffset+pType->aChannelIDs[ii];
 
@@ -458,7 +458,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
                 continue;
         }
 
-        for (jj = 0; jj < pType->nZVals-1; jj++)
+        for (jj = 0; jj < (size_t)pType->nZVals-1; jj++)
         {
             if (pType->aChannelSizes[ii] == 3)
             {
@@ -718,8 +718,9 @@ avtSASFileFormat::ReadAssemblyTypes()
     char fileid[5], filetype[5];
     fileid[4]   = 0;
     filetype[4] = 0;
-    READ(f, fileid,   4);
-    READ(f, filetype, 4);
+    ssize_t res = 0; (void) res;
+    res = READ(f, fileid,   4);
+    res = READ(f, filetype, 4);
     if (strcmp(fileid, "SAS ") != 0  ||  strcmp(filetype, "GEOM") != 0)
     {
         EXCEPTION1(InvalidDBTypeException, "This file is not a SAS geometry file.");
@@ -874,8 +875,9 @@ avtSASFileFormat::ReadTimeStepData()
     char fileid[5], filetype[5];
     fileid[4]   = 0;
     filetype[4] = 0;
-    READ(f, fileid,   4);
-    READ(f, filetype, 4);
+    ssize_t res = 0; (void) res;
+    res = READ(f, fileid,   4);
+    res = READ(f, filetype, 4);
     if (strcmp(fileid, "SAS ") != 0  ||  strcmp(filetype, "DATA") != 0)
     {
         EXCEPTION1(InvalidDBTypeException, "This file is not a SAS data file.");
@@ -1065,7 +1067,7 @@ int
 avtSASFileFormat::ReadInt(int f) 
 {
     int tmp;
-    READ(f, (char *)&tmp, sizeof(int) );
+    ssize_t res = READ(f, (char *)&tmp, sizeof(int) ); (void) res;
 
     if (bSwapEndian)
         ByteSwap32(&tmp, 1);
@@ -1091,7 +1093,7 @@ avtSASFileFormat::ReadInt(int f)
 void          
 avtSASFileFormat::ReadDoubleArray(int f, double *array, int num) 
 {
-    READ(f, (char *)array, sizeof(double)*num );
+    ssize_t res = READ(f, (char *)array, sizeof(double)*num ); (void) res;
 
     if (bSwapEndian)
         ByteSwap64(array, num);
@@ -1117,12 +1119,12 @@ avtSASFileFormat::ReadFortranString(int f)
 {
     string tmp;
     int len = 0;
-    READ(f, (char *)&len, sizeof(int) );
+    ssize_t res = READ(f, (char *)&len, sizeof(int) ); (void) res;
     if (bSwapEndian)
         ByteSwap32(&len, 1);
 
     char *t = new char[len+1];
-    READ(f, t, len);
+    res = READ(f, t, len);
     t[len] = 0;
     
     //erase trailing spaces
@@ -1134,7 +1136,7 @@ avtSASFileFormat::ReadFortranString(int f)
 
     tmp = t;
     delete[] t;
-    READ(f, (char *)&len, sizeof(int) );
+    res = READ(f, (char *)&len, sizeof(int) );
 
     return tmp;
 }

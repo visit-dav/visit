@@ -114,7 +114,7 @@ avtGHOSTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     ReadMetaData();
     
     AddMeshToMetaData(md, "mesh", AVT_RECTILINEAR_MESH, NULL, nBlocks, 0, 3, 3);
-    for (int i = 0; i < vars.size(); i++)
+    for (size_t i = 0; i < vars.size(); i++)
         AddScalarVarToMetaData(md, vars[i].first.c_str(), "mesh", AVT_NODECENT);
 }
 
@@ -199,7 +199,7 @@ avtGHOSTFileFormat::GetVar(int domain, const char *varname)
     GetRange(domain, r0, r1);
     
     int fd = -1;
-    for (int i = 0; i < vars.size(); i++)
+    for (size_t i = 0; i < vars.size(); i++)
         if (vars[i].first == varname)
         {
             fd = OPEN(vars[i].second.c_str(), O_RDONLY|O_BINARY);
@@ -216,13 +216,13 @@ avtGHOSTFileFormat::GetVar(int domain, const char *varname)
     off64_t nZ = r1[2]-r0[2];
     int nVals = nX*nY*nZ;
 
-    off64_t offset = (nX*nY*r0[2]*sizeof(float));
+    //off64_t offset = (nX*nY*r0[2]*sizeof(float));
 
     vtkDataArray *arr = vtkFloatArray::New();
     arr->SetNumberOfTuples(nVals);
     
     float *out = (float *)arr->GetVoidPointer(0);
-    size_t nRead = READ(fd, out, nVals*sizeof(float));
+    size_t nRead = READ(fd, out, nVals*sizeof(float)); (void) nRead;
 
     CLOSE(fd);
     return arr;

@@ -118,9 +118,10 @@ void ExpressionTest::testParser(int count, char* javaresult, double cvalue, char
         }    
         if (d != d && javavalue != javavalue && cvalue != cvalue) {    
             //cout << count << " EVAL_YES :: all NaN" << endl;    
-        } else if (javavalue == d && d == cvalue && d == dtree     
-            || fabs(javavalue - d) < 1E-14 && fabs(cvalue - d) < 1E-14     
-            || fabs(javavalue - d)/max(fabs(d),fabs(javavalue)) < 1E-14 && fabs(cvalue - d)/max(fabs(d),fabs(cvalue)) < 1E-14 ) {    
+        } else if ((javavalue == d && d == cvalue && d == dtree)
+            || (fabs(javavalue - d) < 1E-14 && fabs(cvalue - d) < 1E-14)
+            || (fabs(javavalue - d)/max(fabs(d),fabs(javavalue)) < 1E-14 && fabs(cvalue - d)/max(fabs(d),fabs(cvalue)) < 1E-14 )) ///TODO: check on fix for parantheses warning
+        {    
             //cout << count << " EVAL_YES " << endl;    
         } else {                
             if (bException) {    
@@ -269,7 +270,7 @@ label_1:
         cout << endl << "-------------------------------------------" << endl;    
     }    
     cout << "BAD " << badmsg.size() << endl;    
-    for (int i = 0; i < badmsg.size(); i ++) {    
+    for (size_t i = 0; i < badmsg.size(); i ++) {    
         cout << badmsg[i] << endl;    
     }    
 }    

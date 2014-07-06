@@ -192,7 +192,7 @@ void CubeReader::readMetaData(bool keepFileOpen) {
   atom_locations.clear();
 
   for (int i=0; i<natoms; i++) {
-    float isotope;
+    //float isotope;
     
     getline( file , header);
     tokens.clear();
@@ -201,7 +201,7 @@ void CubeReader::readMetaData(bool keepFileOpen) {
     copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter<vector<string> >(tokens));
     if( tokens.size() >= 5 ){
       atom_types.push_back( atoi( tokens[0].c_str() ) );
-      isotope = atof( tokens[1].c_str() );
+      //isotope = atof( tokens[1].c_str() );
       atom_locations.push_back( atof( tokens[2].c_str() ) );
       atom_locations.push_back( atof( tokens[3].c_str() ) );
       atom_locations.push_back( atof( tokens[4].c_str() ) );
@@ -359,7 +359,7 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
   string var = string(varname);
   // first figure out what orbital offset corresponds to this varname
   string keyword = "orbital_";
-  size_t found_k = var.find(keyword.c_str(),0,keyword.length());
+  //size_t found_k = var.find(keyword.c_str(),0,keyword.length());
   string num_str = var.substr(keyword.length(), var.length()-keyword.length());
   debug4 << "num_str = " << num_str;
   int orbital_num = atoi(num_str.c_str());
@@ -368,7 +368,7 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
 
   int index = -1;
   
-  for (int i=0; i<orbitals.size(); i++) {
+  for (size_t i=0; i<orbitals.size(); i++) {
     if (orbitals[i]==orbital_num){
       index = i;
       debug4 << "FOUND index = " << index << endl;
@@ -391,12 +391,13 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
 
   
   char header[1024];
+  char* result = NULL; (void) result;
   for (int i=0; i<6; i++)
-    fgets(header, 1024, file);
+    result = fgets(header, 1024, file);
 
   char atoms[1024];
   for (int i=0; i<natoms; i++)
-    fgets(atoms, 1024, file);
+    result = fgets(atoms, 1024, file);
   
   int count = 0;
   int dest_index;
@@ -412,7 +413,7 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
     for (int j=0; j<y_size; j++) {
       for (int k=0; k<z_size; k++) {
         for (int o=0; o<norbitals; o++) {
-            fscanf(file, "%E", &val);
+            int res = fscanf(file, "%E", &val); (void) res;
             
             if (o==index) {// if the offset matches
             dest_index = i + (j)*x_size + (k)*x_size*y_size;
@@ -432,14 +433,14 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
 
 
 void CubeReader::GetAtomTypes(float *types) {
-  for (int i=0; i<atom_types.size(); i++)
+  for (size_t i=0; i<atom_types.size(); i++)
     types[i] = (float)atom_types[i];
   
 }
 
 void CubeReader::GetAtomLocations(vector<float> &locations) {
 
-  for (int i=0; i<atom_locations.size(); i++)
+  for (size_t i=0; i<atom_locations.size(); i++)
     locations[i] = atom_locations[i]*atom_units;
   
 }
@@ -456,12 +457,13 @@ void CubeReader::GetGridValues(float* vals) {
   }
     
   char header[1024];
+  char* result = NULL; (void) result;
   for (int i=0; i<6; i++)
-    fgets(header, 1024, file);
+    result = fgets(header, 1024, file);
 
   char atoms[1024];
   for (int i=0; i<natoms; i++)
-    fgets(atoms, 1024, file);
+    result = fgets(atoms, 1024, file);
   
   int count = 0;
   int dest_index;
@@ -475,7 +477,7 @@ void CubeReader::GetGridValues(float* vals) {
       for (int k=0; k<z_size; k++) {
         // the input values are written w/ z being fastest index and x
         // being slowest; visit is exactly the opposite
-        fscanf(file, "%E", &val);
+        int res = fscanf(file, "%E", &val); (void) res;
 
         dest_index = i + (j)*x_size + (k)*x_size*y_size;
 
@@ -501,14 +503,16 @@ void CubeReader::GetGridValues2(float* vals) {
   }
     
   char header[1024];
+  char* result = NULL; (void) result;
+
   for (int i=0; i<6; i++)
-    fgets(header, 1024, file);
+    result = fgets(header, 1024, file);
 
   char atoms[1024];
   for (int i=0; i<natoms; i++)
-    fgets(atoms, 1024, file);
+    result = fgets(atoms, 1024, file);
   
-  int count = 0;
+  //int count = 0;
   int dest_index;
   
   float val= 99;
@@ -525,7 +529,7 @@ void CubeReader::GetGridValues2(float* vals) {
       for (int k=0; k<z_size; k++) {
         // the input values are written w/ z being fastest index and x
         // being slowest; visit is exactly the opposite
-        fscanf(file, "%E", &val);
+        int res = fscanf(file, "%E", &val); (void) res;
 
         dest_index = cst1 + (k)*cst0;
         vals[dest_index] = val;

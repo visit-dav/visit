@@ -275,7 +275,7 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #ifdef DO_DOMAIN_NESTING
             avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(nblks, nLevels);
             dn->SetNumDimensions(3);
-            int ratios[3];
+            int ratios[3]; (void) ratios;
             bool *levelCSset = new bool[nLevels];
             for(int level = 0; level < nLevels; ++level)
             {
@@ -376,7 +376,7 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 }
 #ifdef DEBUG_PRINT
                 debug1 << "Block " << bid << " child patches: ";
-                for(int q = 0; q < childPatches.size(); ++q)
+                for(size_t q = 0; q < childPatches.size(); ++q)
                     debug1 << childPatches[q] << ", ";
                 debug1 << endl;
 #endif
@@ -843,7 +843,7 @@ avtAMRFileFormat::GetVar(int domain, const char *name)
         int np,ne;
         GetReader()->GetInterfaceSizes( &np, &ne );
 
-        int vid,cmp,sz;
+        int vid,cmp=0,sz; ///TODO: check on fix for uninitialized vars
         if( varname.compare("u velocity")==0 )
         {
             vid=AMRreaderInterface::i_velo;
@@ -1057,7 +1057,7 @@ avtAMRFileFormat::GetAuxiliaryData(const char *var, int domain,
                 GetReader()->GetBlockDimensions(dom, blkdim);
 
                 float xs[3]= {0.f,0.f,0.f}, dx[3]= {0.f,0.f,0.f};
-                int ierr = GetReader()->GetBlockMesh(dom, xs, dx);
+                int ierr = GetReader()->GetBlockMesh(dom, xs, dx); (void) ierr;
 
                 double extents[6];
                 extents[0] = xs[0];

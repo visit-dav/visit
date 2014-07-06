@@ -194,7 +194,7 @@ avtCTRLFileFormat::GetMesh(const char *meshname)
     ReadAllMetaData();
     ReadAtoms();
 
-    int natoms = atoms.size();
+    //int natoms = atoms.size();
 
     vtkPolyData *pd  = vtkPolyData::New();
     vtkPoints   *pts = vtkPoints::New();
@@ -202,7 +202,7 @@ avtCTRLFileFormat::GetMesh(const char *meshname)
     pts->SetNumberOfPoints(atoms.size());
     pd->SetPoints(pts);
     pts->Delete();
-    for (int j = 0 ; j < atoms.size() ; j++)
+    for (size_t j = 0 ; j < atoms.size() ; j++)
     {
         pts->SetPoint(j,
                       atoms[j].x,
@@ -213,7 +213,7 @@ avtCTRLFileFormat::GetMesh(const char *meshname)
     vtkCellArray *verts = vtkCellArray::New();
     pd->SetVerts(verts);
     verts->Delete();
-    for (int k = 0 ; k < atoms.size() ; k++)
+    for (size_t k = 0 ; k < atoms.size() ; k++)
     {
         verts->InsertNextCell(1);
         verts->InsertCellPoint(k);
@@ -251,7 +251,7 @@ avtCTRLFileFormat::GetVar(const char *varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].atomicnumber;
         }
@@ -264,7 +264,7 @@ avtCTRLFileFormat::GetVar(const char *varname)
         labels->SetNumberOfComponents(3);
         labels->SetNumberOfTuples(atoms.size());
         char *cptr = (char *)labels->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             memcpy(cptr, atoms[i].element, 3);
             cptr += 3;

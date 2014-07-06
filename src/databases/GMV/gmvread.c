@@ -46,9 +46,9 @@
 /*LLNL*/
 void gmverror(const char *);
 
-static int charsize = CHARSIZE, shortsize = SHORTSIZE, intsize = INTSIZE, 
-           wordsize = WORDSIZE, floatsize = FLOATSIZE,
-           longsize = LONGSIZE, doublesize = DOUBLESIZE,
+static int charsize = CHARSIZE, /*shortsize = SHORTSIZE,*/ intsize = INTSIZE, 
+           /*wordsize = WORDSIZE,*/ floatsize = FLOATSIZE,
+           /*longsize = LONGSIZE,*/ doublesize = DOUBLESIZE,
            longlongsize = LONGLONGSIZE, charsize_in;
 
 static long numnodes, numcells, lncells, numcellsin, numfaces, lnfaces,
@@ -113,7 +113,7 @@ int gmvread_checkfile(char *filnam)
    /*                           */
    /*  Check a GMV input file.  */
    /*                           */
-   int chkend;
+   //int chkend;
    char magic[9], filetype[9];
    FILE *gmvchk;
    char* slash;
@@ -251,7 +251,7 @@ int gmvread_open(char *filnam)
    /*                                    */
    /*  Open and check a GMV input file.  */
    /*                                    */
-   int chkend, ilast, i, isize;
+   int /*chkend,*/ ilast, i, isize;
    char magic[9], filetype[9];
    char* slash;
    int alloc_filnam = 0;
@@ -404,7 +404,7 @@ int gmvread_open(char *filnam)
       binread(magic,charsize,CHAR,(long)8,gmvin);
       binread(filetype,charsize,CHAR,(long)8,gmvin);
      }
-   if (ftype == ASCII) fscanf(gmvin,"%s%s",magic,filetype);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%s%s",magic,filetype); (void) res; }
 
    readkeyword = 1;
 
@@ -562,7 +562,7 @@ void gmvread_data()
          binread(keyword,charsize,CHAR,(long)8,gmvin);
          *(keyword+8)=(char)0;
         }
-      if (ftype == ASCII) fscanf(gmvin,"%s",keyword);
+      if (ftype == ASCII) { int res = fscanf(gmvin,"%s",keyword); (void) res; }
 
       if ((feof(gmvin) != 0) | (ferror(gmvin) != 0)) iend = 1;
 
@@ -576,7 +576,7 @@ void gmvread_data()
             binread(keyword,charsize,CHAR,(long)8,gmvin);
             *(keyword+8)=(char)0;
            }
-         if (ftype == ASCII) fscanf(gmvin,"%s",keyword);
+         if (ftype == ASCII) { int res = fscanf(gmvin,"%s",keyword); (void) res; }
          if ((feof(gmvin) != 0) | (ferror(gmvin) != 0)) iend = 1;
         }
 
@@ -739,7 +739,7 @@ void gmvread_data()
                   ptime = tmptime;
                  }
               }
-            if (ftype == ASCII) fscanf(gmvin,"%lf",&ptime);
+            if (ftype == ASCII) { int res = fscanf(gmvin,"%lf",&ptime); (void) res; }
             gmv_data.keyword = PROBTIME;
             gmv_data.datatype = 0;
             gmv_data.ndoubledata1 = 1;
@@ -750,7 +750,7 @@ void gmvread_data()
          case(CYCLENO):
             if (ftype != ASCII) binread(&cycleno,intsize,INT,
                                         (long)1,gmvin);
-            if (ftype == ASCII) fscanf(gmvin,"%d",&cycleno);
+            if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&cycleno); (void) res; }
             gmv_data.keyword = CYCLENO;
             gmv_data.num = cycleno;
             readkeyword = 1;
@@ -829,7 +829,7 @@ void gmvread_data()
               }
             if (ftype == ASCII)
               {
-               fscanf(gmvin,"%s",tmpchar);
+               int res = fscanf(gmvin,"%s",tmpchar); (void) res;
                *(tmpchar+8)=(char)0;
               }
             ioerrtst(gmvin);
@@ -889,7 +889,7 @@ void rdints(int iarray[], int nvals, FILE* gmvin)
 
    for (i = 0; i < nvals; i++)
      {
-      fscanf(gmvin,"%d",&iarray[i]);
+      int res = fscanf(gmvin,"%d",&iarray[i]); (void) res;
 
       if ((feof(gmvin) != 0) || (ferror(gmvin) != 0))
         {
@@ -910,7 +910,7 @@ void rdlongs(long iarray[], long nvals, FILE* gmvin)
 
    for (i = 0; i < nvals; i++)
      {
-      fscanf(gmvin,"%ld",&iarray[i]);
+      int res = fscanf(gmvin,"%ld",&iarray[i]); (void) res;
 
       if ((feof(gmvin) != 0) | (ferror(gmvin) != 0))
         {
@@ -931,7 +931,7 @@ void rdfloats(double farray[], long nvals, FILE* gmvin)
 
    for (i = 0; i < nvals; i++)
      {
-      fscanf(gmvin,"%lf",&farray[i]);
+      int res = fscanf(gmvin,"%lf",&farray[i]); (void) res;
 
       if ((feof(gmvin) != 0) | (ferror(gmvin) != 0))
         {
@@ -956,7 +956,7 @@ int rdcellkeyword(FILE* gmvin, int ftype, char* keystring)
 
       *(ckeyword+8)=(char)0;
      }
-   if (ftype == ASCII) fscanf(gmvin,"%s",ckeyword);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%s",ckeyword); (void) res; }
  
    return
      strncmp(ckeyword,keystring,strlen(keystring));
@@ -1027,7 +1027,7 @@ void checkfromfile()
    if (ftype != ASCII)
       binread(stringbuf, charsize, CHAR, (long)4, gmvin);
    else
-      fscanf(gmvin,"%s",stringbuf);
+      { int res = fscanf(gmvin,"%s",stringbuf); (void) res; }
 
    if (strncmp("from",stringbuf, 4) != 0) return;
 
@@ -1050,7 +1050,7 @@ void checkfromfile()
 
    if (ftype == ASCII) 
      {
-      fscanf(gmvin,"%s",tmpbuf);
+      int res = fscanf(gmvin,"%s",tmpbuf); (void) res;
       charptr2 = strpbrk(&tmpbuf[1],"\"");
       *charptr2 = '\0';
       charptr2 = &tmpbuf[1];
@@ -1153,14 +1153,14 @@ void readnodes(FILE* gmvin, int ftype)
 {
   int i, k, iswap, lnxv, lnyv, lnzv, lstructuredflag;
   long lnodes, tmplnodes;
-  double *lxic, *lyic, *lzic, *tmpdouble;
+  double *lxic = NULL, *lyic = NULL, *lzic = NULL, *tmpdouble; /* TODO: check fix for uninitialized pointer */
   long pos_after_lnodes, exp_cell_pos;
   float *tmpfloat;
   char ckkeyword[9];
 
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%ld",&lnodes);
+      int res = fscanf(gmvin,"%ld",&lnodes); (void) res;
       ioerrtst(gmvin);
      }
    else
@@ -1218,7 +1218,7 @@ void readnodes(FILE* gmvin, int ftype)
             binread(ckkeyword,charsize,CHAR,(long)8,gmvin);
             *(ckkeyword+8)=(char)0;
            }
-         if (ftype == ASCII) fscanf(gmvin,"%s",ckkeyword);
+         if (ftype == ASCII) { int res = fscanf(gmvin,"%s",ckkeyword); (void) res; }
          if (strncmp(ckkeyword,"cells",5) != 0 &&
              strncmp(ckkeyword,"faces",5) != 0 &&
              strncmp(ckkeyword,"xfaces",6) != 0 &&
@@ -1257,7 +1257,7 @@ void readnodes(FILE* gmvin, int ftype)
          binread(ckkeyword,charsize,CHAR,(long)8,gmvin);
          *(ckkeyword+8)=(char)0;
         }
-      if (ftype == ASCII) fscanf(gmvin,"%s",ckkeyword);
+      if (ftype == ASCII) { int res = fscanf(gmvin,"%s",ckkeyword); (void) res; }
       if (strncmp(ckkeyword,"cells",5) != 0 &&
           strncmp(ckkeyword,"faces",5) != 0 &&
           strncmp(ckkeyword,"vfaces",6) != 0)
@@ -1290,7 +1290,7 @@ void readnodes(FILE* gmvin, int ftype)
         }
       if (ftype == ASCII) 
         {
-         fscanf(gmvin,"%d%d%d",&lnxv,&lnyv,&lnzv);
+         int res = fscanf(gmvin,"%d%d%d",&lnxv,&lnyv,&lnzv); (void) res;
          ioerrtst(gmvin);
         }
 
@@ -1313,7 +1313,7 @@ void readnodes(FILE* gmvin, int ftype)
         }
       if (ftype == ASCII) 
         {
-         fscanf(gmvin,"%d%d%d",&lnxv,&lnyv,&lnzv);
+         int res = fscanf(gmvin,"%d%d%d",&lnxv,&lnyv,&lnzv); (void) res;
          ioerrtst(gmvin);
         }
    
@@ -1579,7 +1579,7 @@ void readcells(FILE* gmvin, int ftype)
       numcellsin = 0;
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%ld",&lncells);
+         int res = fscanf(gmvin,"%ld",&lncells); (void) res;
          ioerrtst(gmvin);
         }
       else
@@ -1610,7 +1610,7 @@ void readcells(FILE* gmvin, int ftype)
      {
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%ld",&numtop);
+         int res =fscanf(gmvin,"%ld",&numtop); (void) res;
          ioerrtst(gmvin);
         }
       else
@@ -1690,7 +1690,7 @@ void readcells(FILE* gmvin, int ftype)
       binread(&ndat,intsize,INT,(long)1,gmvin);
       ioerrtst(gmvin);
      }
-   if (ftype == ASCII) fscanf(gmvin,"%s%d",keyword,&ndat);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%s%d",keyword,&ndat); (void) res; }
 
    /*  Check cell type.  */
    if (strncmp(keyword,"general",7) != 0 &&
@@ -1970,8 +1970,8 @@ void readfaces(FILE* gmvin, int ftype)
       /*  Read no. of faces to read and cells to generate.  */
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%ld",&lnfaces);
-         fscanf(gmvin,"%ld",&lncells);
+         int res = fscanf(gmvin,"%ld",&lnfaces); (void) res;
+         res = fscanf(gmvin,"%ld",&lncells);
         }
       else
         {
@@ -2016,7 +2016,7 @@ void readfaces(FILE* gmvin, int ftype)
 
    /*  Read face vertices and cell info for each face.  */
    if (ftype != ASCII) binread(&nverts,intsize,INT,(long)1,gmvin);
-   if (ftype == ASCII) fscanf(gmvin,"%d",&nverts);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&nverts); (void) res; }
    ioerrtst(gmvin);
 
    /*  Read a face vertices and cells.  */
@@ -2074,7 +2074,9 @@ void readvfaces(FILE* gmvin, int ftype)
      {
 
       /*  Read no. of vfaces to read.  */
-      if (ftype == ASCII) fscanf(gmvin,"%ld",&lnfaces);
+      if (ftype == ASCII) {
+        int res = fscanf(gmvin,"%ld",&lnfaces); (void) res;
+      }
       else
         {
          if (ftype == IEEEI8R4 || ftype == IEEEI8R8)
@@ -2132,10 +2134,11 @@ void readvfaces(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
       {
-       fscanf(gmvin,"%d%d",&nverts,&facepe);
-       fscanf(gmvin,"%ld",&oppface);
-       fscanf(gmvin,"%d",&oppfacepe);
-       fscanf(gmvin,"%ld",&cellid);
+       int res = 0; (void) res;
+       res = fscanf(gmvin,"%d%d",&nverts,&facepe);
+       res = fscanf(gmvin,"%ld",&oppface);
+       res = fscanf(gmvin,"%d",&oppfacepe);
+       res = fscanf(gmvin,"%ld",&cellid);
       }
    ioerrtst(gmvin);
 
@@ -2202,7 +2205,7 @@ void readxfaces(FILE* gmvin, int ftype)
      {
 
       /*  Read no. of xfaces to read.  */
-      if (ftype == ASCII) fscanf(gmvin,"%ld",&lnfaces);
+      if (ftype == ASCII) { int res = fscanf(gmvin,"%ld",&lnfaces); (void) res; }
       else
         {
          if (ftype == IEEEI8R4 || ftype == IEEEI8R8)
@@ -2392,12 +2395,12 @@ void readmats(FILE* gmvin, int ftype)
    /*  Read no. of materials and data type (cells or nodes).  */
    if (ftype != ASCII)
       binread(&lmmats,intsize,INT,(long)1,gmvin);
-   else fscanf(gmvin,"%d",&lmmats);  
+   else { int res = fscanf(gmvin,"%d",&lmmats); (void) res; }
    ioerrtst(gmvin);
 
    if (ftype != ASCII)
       binread(&i,intsize,INT,(long)1,gmvin);
-   if (ftype == ASCII) fscanf(gmvin,"%d",&i);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&i); (void) res; }
    ioerrtst(gmvin);
    if (i == 0) data_type = CELL;
    if (i == 1) data_type = NODE;
@@ -2432,7 +2435,7 @@ void readmats(FILE* gmvin, int ftype)
         }
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%s",mname);
+         int res = fscanf(gmvin,"%s",mname); (void) res;
          ioerrtst(gmvin);
         }
       strncpy(&matnames[i*33],mname,32);
@@ -2485,7 +2488,7 @@ void readvels(FILE* gmvin, int ftype)
 
    /*  Read data type (cells, nodes or faces).  */
    if (ftype != ASCII) binread(&i,intsize,INT,(long)1,gmvin);
-   if (ftype == ASCII) fscanf(gmvin,"%d",&i);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&i); (void) res; }
    ioerrtst(gmvin);
    if (i == 0) data_type = CELL;
    if (i == 1) data_type = NODE;
@@ -2600,9 +2603,9 @@ void readvars(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%s",varname);
+      int res = fscanf(gmvin,"%s",varname); (void) res;
       if (strncmp(varname,"endvars",7) != 0)
-      fscanf(gmvin,"%d",&i);
+        res = fscanf(gmvin,"%d",&i);
      }
    ioerrtst(gmvin);
 
@@ -2710,9 +2713,9 @@ void readflags(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII) 
      {
-      fscanf(gmvin,"%s",flgname);
+      int res = fscanf(gmvin,"%s",flgname); (void) res;
       if (strncmp(flgname,"endflag",7) != 0)
-         fscanf(gmvin,"%d%d",&ntypes,&i);
+         res = fscanf(gmvin,"%d%d",&ntypes,&i);
      }
    ioerrtst(gmvin);
 
@@ -2761,7 +2764,7 @@ void readflags(FILE* gmvin, int ftype)
         }
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%s",fname);
+         int res = fscanf(gmvin,"%s",fname); (void) res;
          ioerrtst(gmvin);
          *(fname+charsize_in) = (char) 0;
         }
@@ -2827,7 +2830,7 @@ void readpolygons(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%s",varname);
+      int res = fscanf(gmvin,"%s",varname); (void) res;
       sscanf(varname,"%d", &limatno);
      }
    ioerrtst(gmvin);
@@ -2848,7 +2851,7 @@ void readpolygons(FILE* gmvin, int ftype)
 
    /*  Read no. vertices. */
    if (ftype != ASCII) binread(&nvertsin,intsize,INT,(long)1,gmvin);
-   if (ftype == ASCII) fscanf(gmvin,"%d",&nvertsin);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&nvertsin); (void) res; }
    ioerrtst(gmvin);
 
    /*  Read vertices and set data.  */
@@ -2930,7 +2933,7 @@ void readtracers(FILE* gmvin, int ftype)
 
       /*  Read no of tracers and x,y,z data.  */
       if (ftype != ASCII) binread(&numtracers,intsize,INT,(long)1,gmvin);
-      if (ftype == ASCII) fscanf(gmvin,"%d",&numtracers);
+      if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&numtracers); (void) res; }
       ioerrtst(gmvin);
 
       lxtr = NULL;  lytr = NULL;  lztr = NULL;
@@ -3011,7 +3014,7 @@ void readtracers(FILE* gmvin, int ftype)
         }
       *(varname+charsize_in)=(char)0;
      }
-   if (ftype == ASCII) fscanf(gmvin,"%s",varname);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%s",varname); (void) res; }
    ioerrtst(gmvin);
 
    /*  Check for endtrace.  */
@@ -3287,7 +3290,7 @@ void readunits(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%s",unittype);
+      int res = fscanf(gmvin,"%s",unittype); (void) res;
      }
    ioerrtst(gmvin);
 
@@ -3315,7 +3318,7 @@ void readunits(FILE* gmvin, int ftype)
         }
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%s",unitname);
+         int res = fscanf(gmvin,"%s",unitname); (void) res;
          ioerrtst(gmvin);
          *(unitname+16) = (char) 0;
         }
@@ -3355,7 +3358,7 @@ void readunits(FILE* gmvin, int ftype)
         }
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%d",&numunits);
+         int res =fscanf(gmvin,"%d",&numunits); (void) res;
          ioerrtst(gmvin);
         }
 
@@ -3381,10 +3384,11 @@ void readunits(FILE* gmvin, int ftype)
            }
          if (ftype == ASCII)
            {
-            fscanf(gmvin,"%s",fldname);
+            int res = 0; (void) res;
+            res = fscanf(gmvin,"%s",fldname);
             ioerrtst(gmvin);
             *(fldname+8) = (char) 0;
-            fscanf(gmvin,"%s",unitname);
+            res = fscanf(gmvin,"%s",unitname);
             ioerrtst(gmvin);
             *(unitname+16) = (char) 0;
            }
@@ -3416,7 +3420,7 @@ void readsurface(FILE* gmvin, int ftype)
      {
 
       /*  Read no. of surface facets to read.  */
-      if (ftype == ASCII) fscanf(gmvin,"%d",&lnsurf);
+      if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&lnsurf); (void) res; }
       else
          binread(&lnsurf,intsize,INT,(long)1,gmvin);
       ioerrtst(gmvin);
@@ -3446,7 +3450,7 @@ void readsurface(FILE* gmvin, int ftype)
      {
       binread(&nverts,intsize,INT,(long)1,gmvin);
      }
-   if (ftype == ASCII) fscanf(gmvin,"%d",&nverts);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%d",&nverts); (void) res; }
    ioerrtst(gmvin);
 
    /*  Read all face vertices.  */
@@ -3657,7 +3661,7 @@ void readsurfvars(FILE* gmvin, int ftype)
         }
       *(varname+charsize_in)=(char)0;
      }
-   if (ftype == ASCII) fscanf(gmvin,"%s",varname);
+   if (ftype == ASCII) { int res = fscanf(gmvin,"%s",varname); (void) res; }
    ioerrtst(gmvin);
 
    /*  Check for endsvar.  */
@@ -3738,7 +3742,7 @@ void readsurfflag(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII) 
      {
-      fscanf(gmvin,"%s",flgname);
+      int res = fscanf(gmvin,"%s",flgname); (void) res;
      }
    ioerrtst(gmvin);
 
@@ -3758,7 +3762,7 @@ void readsurfflag(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII) 
      {
-      fscanf(gmvin,"%d",&ntypes);
+      int res = fscanf(gmvin,"%d",&ntypes); (void) res;
      }
    ioerrtst(gmvin);
 
@@ -3791,7 +3795,7 @@ void readsurfflag(FILE* gmvin, int ftype)
         }
       if (ftype == ASCII)
         {
-         fscanf(gmvin,"%s",fname);
+         int res = fscanf(gmvin,"%s",fname); (void) res;
          ioerrtst(gmvin);
          *(fname+charsize_in) = (char) 0;
         }
@@ -3900,7 +3904,7 @@ void readvinfo(FILE* gmvin, int ftype)
   /*                               */
   int i, nelem_line, nlines, nvarin;
   double *varin;
-  float *tmpfloat;
+  float *tmpfloat  = NULL; /* TODO: check fix for uninitialized pointer */
   char varname[33];
 
    /*  Read a variable name, no. of elements per line, and no. of lines. */
@@ -3921,9 +3925,10 @@ void readvinfo(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%s",varname);
+      int res = 0; (void) res;
+      res = fscanf(gmvin,"%s",varname);
       if (strncmp(varname,"endvinfo",8) != 0)
-      fscanf(gmvin,"%d%d",&nelem_line,&nlines);
+        res = fscanf(gmvin,"%d%d",&nelem_line,&nlines);
      }
    ioerrtst(gmvin);
 
@@ -3993,7 +3998,7 @@ void readcomments(FILE* gmvin, int ftype)
    rdcomms = 1;
    while (rdcomms)
      {
-      fscanf(gmvin,"%s",varname);
+      int res = fscanf(gmvin,"%s",varname); (void) res;
       ioerrtst(gmvin);
       if (strncmp(varname,"endcomm",7) == 0)
          rdcomms = 0;
@@ -4032,9 +4037,9 @@ void readgroups(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII) 
      {
-      fscanf(gmvin,"%s",grpname);
+      int res = fscanf(gmvin,"%s",grpname); (void) res;
       if (strncmp(grpname,"endgrp",6) != 0)
-         fscanf(gmvin,"%d%d",&i,&ngroupin);
+         res = fscanf(gmvin,"%d%d",&i,&ngroupin);
      }
    ioerrtst(gmvin);
 
@@ -4181,9 +4186,9 @@ void readsubvars(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%s",varname);
+      int res = fscanf(gmvin,"%s",varname); (void) res;
       if (strncmp(varname,"endsubv",7) != 0)
-         fscanf(gmvin,"%d%d",&i,&nsubvarin);
+         res = fscanf(gmvin,"%d%d",&i,&nsubvarin);
      }
    ioerrtst(gmvin);
 
@@ -4300,7 +4305,7 @@ void readghosts(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%d%d",&i,&nghostin);
+      int res = fscanf(gmvin,"%d%d",&i,&nghostin); (void) res;
      }
    ioerrtst(gmvin);
 
@@ -4359,7 +4364,7 @@ void readvects(FILE* gmvin, int ftype)
   /*                                   */
   /*  Read and set vector field data.  */
   /*                                   */
-  int i, data_type, nvectin, ncomps, nreadin, cnamein;
+  int i, data_type, nvectin = 0, ncomps, nreadin, cnamein; /*TODO: check fix for uninitialized pointer */
   double *vectin;
   float *tmpfloat;
   char vectname[33], cvname[33], *cvnames;
@@ -4385,12 +4390,13 @@ void readvects(FILE* gmvin, int ftype)
      }
    if (ftype == ASCII)
      {
-      fscanf(gmvin,"%s",vectname);
+      int res = 0; (void) res;
+      res = fscanf(gmvin,"%s",vectname);
       if (strncmp(vectname,"endvect",7) != 0)
         {
-         fscanf(gmvin,"%d",&i);
-         fscanf(gmvin,"%d",&ncomps);
-         fscanf(gmvin,"%d",&cnamein);
+         res = fscanf(gmvin,"%d",&i);
+         res = fscanf(gmvin,"%d",&ncomps);
+         res = fscanf(gmvin,"%d",&cnamein);
         }
      }
    ioerrtst(gmvin);
@@ -4447,7 +4453,7 @@ void readvects(FILE* gmvin, int ftype)
            }
          if (ftype == ASCII)
            {
-            fscanf(gmvin,"%s",cvname);
+            int res = fscanf(gmvin,"%s",cvname); (void) res;
             ioerrtst(gmvin);
            }
          strncpy(&cvnames[i*33],cvname,32);
@@ -4759,7 +4765,7 @@ int chk_gmvend(FILE *fin)
 
    /*  Read the last 20 characters of the file.  */
    fseek(fin, -20L, 2);
-   fread(rdend,sizeof(char), 20, fin);
+   size_t res = fread(rdend,sizeof(char), 20, fin); (void) res;
 
    /*  Check the 20 characters for endgmv.  */
    chkend = 0;
@@ -4784,7 +4790,7 @@ void gmvread_mesh()
 {
   int nxv, nyv, nzv, nodetype_in, j, k;
   long nn, i, ip;
-  double *xin, *yin, *zin, x0, y0, z0, dx, dy, dz;
+  double *xin = NULL, *yin = NULL, *zin = NULL, x0, y0, z0, dx, dy, dz; /* TODO: check fix for uninitialized pointers */
   void rdcells(int nodetype_in);
   void rdfaces(), rdxfaces();
 
@@ -5168,9 +5174,9 @@ void regcell(long icell, long nc)
   /*    18-3line, 19-phex27                                */
   /*                                                       */
   long i, j, k, cnodes[30], fverts[145], l1, l2; 
-  int nfaces, nverts[144], totverts,  dupflag, ncnodes,
+  int nfaces = 0, nverts[144], totverts = 0,  dupflag, ncnodes, /* TODO: check fix for uninitialized type */
       dupverts[145], dupnverts[145], ndup, nf;
-  int icelltype;
+  int icelltype  = 0; /* TODO: check fix for uninitialized type */
   char ckeyword[9];
   short trinverts[1] = {3};
   short trifverts[3] = {1,2,3};
@@ -5229,7 +5235,7 @@ void regcell(long icell, long nc)
                              3,10,25, 10,2,25, 2,9,25,  9,1,25,
                              5,13,26, 13,6,26, 6,14,26, 14,7,26,
                              7,15,26, 15,8,26, 8,16,26, 16,5,26};
-  short *nv, *fv;
+  short *nv = NULL, *fv = NULL; /* TODO: check fix for uninitialized pointers */
 
    /*  Get cell nodes.  */
    ncnodes = gmv_data.nlongdata1;
@@ -6603,7 +6609,7 @@ int gmvrayread_open(char *filnam)
       binread(magic,charsize,CHAR,(long)8,gmvrayin);
       binread(filetype,charsize,CHAR,(long)8,gmvrayin);
      }
-   if (ftype == ASCII) fscanf(gmvrayin,"%s%s",magic,filetype);
+   if (ftype == ASCII) { int res = fscanf(gmvrayin,"%s%s",magic,filetype); (void) res; }
 
    if (alloc_filnam) free(filnam);
    return 0;
@@ -6653,7 +6659,7 @@ void gmvrayread_data()
          binread(keyword,charsize,CHAR,(long)8,gmvrayin);
          *(keyword+8)=(char)0;
         }
-      if (ftype == ASCII) fscanf(gmvrayin,"%s",keyword);
+      if (ftype == ASCII) { int res = fscanf(gmvrayin,"%s",keyword); (void) res; }
 
       if ((feof(gmvrayin) != 0) | (ferror(gmvrayin) != 0)) iend = 1;
 
@@ -6706,7 +6712,7 @@ void readrays(FILE* gmvrayin, int ftype)
   int lrays, lrayvars;
   int *rayids;
   double *x, *y, *z, *field, *tmpdouble;
-  float *tmpfloat;
+  float *tmpfloat = NULL; /* TODO: check fix for uninitialized pointer */
   char vname[33], *varnames;
   short vartype[NRAYVARS];
   struct gmvray *gmvrays;
@@ -6714,7 +6720,7 @@ void readrays(FILE* gmvrayin, int ftype)
 
    if (ftype == ASCII)
      {
-      fscanf(gmvrayin,"%d %d",&lrays,&lrayvars);
+      int res = fscanf(gmvrayin,"%d %d",&lrays,&lrayvars); (void) res;
       if (ioerrtst2(gmvrayin)) return;
      }
    else
@@ -6775,7 +6781,7 @@ void readrays(FILE* gmvrayin, int ftype)
         }
       if (ftype == ASCII)
         {
-         fscanf(gmvrayin,"%s %d",vname,&j);
+         int res = fscanf(gmvrayin,"%s %d",vname,&j); (void) res;
          if (ioerrtst2(gmvrayin)) return;
         }
       
@@ -6822,7 +6828,7 @@ void readrays(FILE* gmvrayin, int ftype)
         }
       if (ftype == ASCII)
         {
-         fscanf(gmvrayin,"%d",&npts);
+         int res = fscanf(gmvrayin,"%d",&npts); (void) res;
          if (ioerrtst2(gmvrayin)) return;
         }
       gmvrays[iray].npts = npts;
@@ -7033,7 +7039,7 @@ int chk_rayend(FILE *fin)
 
    /*  Read the last 20 characters of the file.  */
    fseek(fin, -20L, 2);
-   fread(rdend,sizeof(char), 20, fin);
+   size_t res = fread(rdend,sizeof(char), 20, fin); (void) res;
 
    /*  Check the 20 characters for endray.  */
    chkend = 0;

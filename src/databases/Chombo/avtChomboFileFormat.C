@@ -758,7 +758,7 @@ avtChomboFileFormat::InitializeReader(void)
     hid_t expressionsGroup = H5Gopen(file_handle, "/Expressions");
     if (expressionsGroup > 0)
     {
-        for (unsigned int i=0; i<H5Aget_num_attrs(expressionsGroup); ++i)
+        for (int i=0; i<H5Aget_num_attrs(expressionsGroup); ++i)
         {
             // Open expression
             hid_t currExpression = H5Aopen_idx(expressionsGroup, i);
@@ -1307,9 +1307,9 @@ avtChomboFileFormat::InitializeReader(void)
     // Find any materials
     //
     nMaterials = 0;
-    for (i = 0; i < varnames.size(); ++i)
+    for (i = 0; i < (int)varnames.size(); ++i)
     {
-        int val = 0;
+        //int val = 0;
         if (varnames[i].find("fraction-") == 0)
         {
             int val = atoi(varnames[i].c_str()+9) + 1;
@@ -1534,7 +1534,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
         }
         else
         {
-            for (int patchNo = 0; patchNo < listOfRepresentativeBoxes.size(); ++patchNo)
+            for (size_t patchNo = 0; patchNo < listOfRepresentativeBoxes.size(); ++patchNo)
             {
                 int patch = listOfRepresentativeBoxes[patchNo];
 
@@ -1609,7 +1609,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
             }
             std::vector<int> list;
             coarse_levels.GetElementsListFromRange(min, max, list);
-            for (int i = 0 ; i < list.size() ; i++)
+            for (size_t i = 0 ; i < list.size() ; i++)
             {
                 int candidate = coarse_start + list[i];
                 if (hiI[patch]*mp[0] < lowI[candidate]*mc[0])
@@ -1663,7 +1663,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     }
     else
     {
-        for (int patchNo = 0; patchNo < listOfRepresentativeBoxes.size(); ++patchNo)
+        for (size_t patchNo = 0; patchNo < listOfRepresentativeBoxes.size(); ++patchNo)
         {
             int patch = listOfRepresentativeBoxes[patchNo];
 
@@ -1843,7 +1843,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         std::vector<int> groupIds(listOfRepresentativeBoxes.size());
         std::vector<std::string> blockPieceNames(listOfRepresentativeBoxes.size());
         int levels_of_detail = 0;
-        for (i = 0; i < listOfRepresentativeBoxes.size(); ++i)
+        for (i = 0; i < (int)listOfRepresentativeBoxes.size(); ++i)
         {
             char tmpName[128];
             int level, local_patch;
@@ -1940,9 +1940,9 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     for (i = 0; i < nVars; i++)
     {
-        int id2 = -1;
-        bool startsWithFirst = false;
-        bool foundVector = false;
+        //int id2 = -1;
+        //bool startsWithFirst = false;
+        //bool foundVector = false;
         if (varnames[i][0] == 'x' || varnames[i][0] == 'X' ||
             varnames[i][0] == 'u' || varnames[i][0] == 'U')
         {
@@ -2043,11 +2043,11 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // variables that should be combined into vectors.  Identify these and
         // make expressions for the vectors.
         //
-        for (i = 0; i < particleVarnames.size(); i++)
+        for (i = 0; i < (int)particleVarnames.size(); i++)
         {
-            int id2 = -1;
-            bool startsWithFirst = false;
-            bool foundVector = false;
+            //int id2 = -1;
+            //bool startsWithFirst = false;
+            //bool foundVector = false;
             size_t len = particleVarnames[i].size();
             if (particleVarnames[i][len-2] == '_' &&
                     (particleVarnames[i][len-1] == 'x' || particleVarnames[i][len-1] == 'X' ||
@@ -2078,7 +2078,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 std::string yName = particleVarnames[i];
                 yName[len-1] = yChar;
                 int matchY = -1;
-                for (j = 0 ; j < particleVarnames.size() ; j++)
+                for (j = 0 ; j < (int)particleVarnames.size() ; j++)
                 {
                     if (particleVarnames[j] == yName)
                     {
@@ -2107,7 +2107,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     std::string zName = particleVarnames[i];
                     zName[len-1] = zChar;
                     int matchZ = -1;
-                    for (j = 0 ; j < particleVarnames.size() ; j++)
+                    for (j = 0 ; j < (int)particleVarnames.size() ; j++)
                     {
                         if (particleVarnames[j] == zName)
                         {
@@ -2396,8 +2396,9 @@ class LookUpOrderCmp
         LookUpOrderCmp(const boost::int32_t *d1, const boost::int32_t *d2) : order1Var(d1), order2Var(d2) {}
         bool operator()(vtkIdType a, vtkIdType b)
         {
+            /// TODO: has paranthesis warning
             return order1Var[a] < order1Var[b] ||
-                order1Var[a] == order1Var[b] && order2Var[a] < order2Var[b];
+                (order1Var[a] == order1Var[b] && order2Var[a] < order2Var[b]);
         }
 
     private:
@@ -2852,9 +2853,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         vtkPoints *points = vtkPoints::New();
         points->SetNumberOfPoints(nParticles);
         if (dimension > 2)
-            for (int i=0; i <nParticles; ++i) points->SetPoint(i, xPos[i], yPos[i], zPos[i]);
+            for (size_t i=0; i <nParticles; ++i) points->SetPoint(i, xPos[i], yPos[i], zPos[i]);
         else
-            for (int i=0; i <nParticles; ++i) points->SetPoint(i, xPos[i], yPos[i], 0);
+            for (size_t i=0; i <nParticles; ++i) points->SetPoint(i, xPos[i], yPos[i], 0);
 
         delete[] xPos;
         delete[] yPos;
@@ -2867,7 +2868,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             // all particles on same polymer are "next" to each other and that particles
             // within a polymer are ordered according to particle_nid
             vtkIdType *orderPermutation = new vtkIdType[nParticles];
-            for (vtkIdType i=0; i <nParticles; ++i) orderPermutation[i]=i;
+            for (vtkIdType i=0; i < (vtkIdType)nParticles; ++i) orderPermutation[i]=i;
 
             LookUpOrderCmp cmp(polymerNo, particleOrder);
             std::sort(orderPermutation, orderPermutation+nParticles, cmp);
@@ -2881,7 +2882,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             vtkCellArray *verts = vtkCellArray::New();
             pd->SetVerts(verts);
             verts->Delete();
-            for (vtkIdType i= 0; i<nParticles; ++i)
+            for (vtkIdType i= 0; i< (vtkIdType) nParticles; ++i)
             {
                 verts->InsertNextCell(1);
                 verts->InsertCellPoint(i);
@@ -2889,7 +2890,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             vtkCellArray *lines = vtkCellArray::New();
             pd->SetLines(lines);
             lines->Delete();
-            for (vtkIdType i=0; i<nParticles-1; ++i)
+            for (vtkIdType i=0; i< (vtkIdType)nParticles-1; ++i)
             {
                 if (polymerNo[i] == polymerNo[i+1])
                 {
@@ -2913,7 +2914,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             points->Delete();
             ugrid->Allocate(nParticles);
             vtkIdType onevertex;
-            for(int i = 0; i < nParticles; ++i)
+            for(size_t i = 0; i < nParticles; ++i)
             {
                 onevertex = i;
                 ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
@@ -3017,7 +3018,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         {
             EXCEPTION1(InvalidVariableException, varname);
         }
-        if (level > this->resolution)
+        if (level > (int)this->resolution)
         {
             std::ostringstream err;
             err << "Level '" << level << "' exceeds current resolution, '"
@@ -3078,7 +3079,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
 
         start += amt*varIdx;
 
-        if (amt > std::numeric_limits<vtkIdType>::max())
+        if (amt > (hsize_t) std::numeric_limits<vtkIdType>::max())
         {
             EXCEPTION1(InvalidFilesException, "Grid contains more cells than installed "
                     "VTK can handle. Installing a VTK version with 64-bit indices "
@@ -3120,9 +3121,11 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         }
 
         hid_t space_id = H5Dget_space(data);
-        hid_t rank     = H5Sget_simple_extent_ndims(space_id);
+        hid_t rank     = H5Sget_simple_extent_ndims(space_id); 
         hsize_t dims[1];
         int status_n   = H5Sget_simple_extent_dims(space_id, dims, NULL);
+        (void) rank; (void) status_n;
+
         H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &amt, NULL);
 
         hid_t memdataspace = H5Screate_simple(1, &amt, NULL);
@@ -3171,7 +3174,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
                 if (dimension == 3)
                 {
                     size_t nK = nodeCentered ? hiK[patch] - lowK[patch] + 1 : hiK[patch] - lowK[patch];
-                    size_t nK2 = nK + 2*numGhostK;
+                    //size_t nK2 = nK + 2*numGhostK;
                     for (size_t k = 0 ; k < nK ; k++)
                         for (size_t j = 0 ; j < nJ ; j++)
                             for (size_t i = 0 ; i < nI ; i++)
@@ -3333,7 +3336,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
                 num_tuples *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
         }
 
-        if (num_tuples > std::numeric_limits<vtkIdType>::max())
+        if (num_tuples > (hsize_t)std::numeric_limits<vtkIdType>::max())
         {
             EXCEPTION1(InvalidFilesException, "Grid contains more cells than installed "
                     "VTK can handle. Installing a VTK version with 64-bit indices "
@@ -3358,7 +3361,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
             {
                 EXCEPTION1(InvalidVariableException, varname);
             }
-            if (level > this->resolution)
+            if (level > (int)this->resolution)
             {
                 std::ostringstream err;
                 err << "Level '" << level << "' exceeds current resolution, '"
@@ -3401,7 +3404,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
                 }
                 nvals += numZones*nVars;
             }
-            hsize_t ncomps = nodeCentered ? hsize_t(hiL[i]-lowL[i]+1)+2*numGhostL : hsize_t(hiL[i]-lowL[i])+2*numGhostL;
+            //hsize_t ncomps = nodeCentered ? hsize_t(hiL[i]-lowL[i]+1)+2*numGhostL : hsize_t(hiL[i]-lowL[i])+2*numGhostL;
             //std::cout << i << " ncomps: " << ncomps << " " << lowL[i] << " - " << hiL[i] << std::endl;
 
 #if HDF5_VERSION_GE(1,6,4)
@@ -3464,6 +3467,8 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
             hid_t rank     = H5Sget_simple_extent_ndims(space_id);
             hsize_t dims[1];
             int status_n   = H5Sget_simple_extent_dims(space_id, dims, NULL);
+            (void) rank; (void) status_n;
+
             H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &amt, NULL);
 
             hid_t memdataspace = H5Screate_simple(1, &amt, NULL);
@@ -3690,7 +3695,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     // Calculate fractions for additional "missing" material
     double *addMatPtr =  new double[nCells];
 
-    for(unsigned int cellNo = 0; cellNo < nCells; ++cellNo)
+    for(int cellNo = 0; cellNo < nCells; ++cellNo)
     {
         double frac = 1.0;
         for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
@@ -3768,7 +3773,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     df = avtMaterial::Destruct;
 
     delete[] addMatPtr;
-    for (i = 0 ; i < deleteList.size() ; i++)
+    for (i = 0 ; i < (int)deleteList.size() ; i++)
         deleteList[i]->Delete();
 
     return (void*) mat;

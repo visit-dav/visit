@@ -157,10 +157,10 @@ void MultiresFileReader::parseFile(const char* filename)
                                     depth, 
                                     offset);
 
-            BOUNDS_CHECK(resolution, 0, mOffsets.size());
-            BOUNDS_CHECK(resolution, 0, mWidths.size());
-            BOUNDS_CHECK(resolution, 0, mHeights.size());
-            BOUNDS_CHECK(resolution, 0, mDepths.size());
+            BOUNDS_CHECK(resolution, 0, (int)mOffsets.size());
+            BOUNDS_CHECK(resolution, 0, (int)mWidths.size());
+            BOUNDS_CHECK(resolution, 0, (int)mHeights.size());
+            BOUNDS_CHECK(resolution, 0, (int)mDepths.size());
 
             mOffsets[resolution] = offset;
             mWidths[resolution] = width;
@@ -381,7 +381,7 @@ bool MultiresFileReader::isTensor(const string& name) const
 int MultiresFileReader::width(int resolution) const
 {
     TRACE(resolution);
-    BOUNDS_CHECK(resolution, 0, mWidths.size());
+    BOUNDS_CHECK(resolution, 0, (int)mWidths.size());
 
     return mWidths[resolution];
 }
@@ -391,7 +391,7 @@ int MultiresFileReader::width(int resolution) const
 int MultiresFileReader::height(int resolution) const
 {
     TRACE(resolution);
-    BOUNDS_CHECK(resolution, 0, mHeights.size());
+    BOUNDS_CHECK(resolution, 0, (int)mHeights.size());
 
     return mHeights[resolution];
 }
@@ -401,7 +401,7 @@ int MultiresFileReader::height(int resolution) const
 int MultiresFileReader::depth(int resolution) const
 {
     TRACE(resolution);
-    BOUNDS_CHECK(resolution, 0, mDepths.size());
+    BOUNDS_CHECK(resolution, 0, (int)mDepths.size());
 
     return mDepths[resolution];
 }
@@ -415,7 +415,7 @@ int MultiresFileReader::depth(int resolution) const
 int MultiresFileReader::numXchunks(int resolution) const
 {
     TRACE(resolution);
-    BOUNDS_CHECK(resolution, 0, mNumXchunks.size());
+    BOUNDS_CHECK(resolution, 0, (int)mNumXchunks.size());
 
     return mNumXchunks[resolution];
 }
@@ -429,7 +429,7 @@ int MultiresFileReader::numXchunks(int resolution) const
 int MultiresFileReader::numYchunks(int resolution) const
 {
     TRACE(resolution);
-    BOUNDS_CHECK(resolution, 0, mNumYchunks.size());
+    BOUNDS_CHECK(resolution, 0, (int)mNumYchunks.size());
 
     return mNumYchunks[resolution];
 }
@@ -443,7 +443,7 @@ int MultiresFileReader::numYchunks(int resolution) const
 int MultiresFileReader::numZchunks(int resolution) const
 {
     TRACE(resolution);
-    BOUNDS_CHECK(resolution, 0, mNumZchunks.size());
+    BOUNDS_CHECK(resolution, 0, (int)mNumZchunks.size());
 
     return mNumZchunks[resolution];
 }
@@ -485,7 +485,7 @@ const float* MultiresFileReader::rawData(const string& variableName,
     REQUIRE(variableName==variableNameAt(0),
             "variableName='%s', but this file is for '%s'",
              variableName.c_str(), variableNameAt(0).c_str());
-    BOUNDS_CHECK(resolution, 0, mRawDataPtrs.size());
+    BOUNDS_CHECK(resolution, 0, (int)mRawDataPtrs.size());
     BOUNDS_CHECK(chunkIndex, 0, (mNumXchunks[resolution]*
                 mNumYchunks[resolution]*mNumZchunks[resolution]));
 
@@ -574,7 +574,7 @@ void MultiresFileReader::loadDataFromFile()
         int numElements = mWidths[i]*mHeights[i]*mDepths[i];
 
         fseek(infile, mOffsets[i], SEEK_SET);
-        fread(ptr, 4, numElements, infile);
+        size_t res = fread(ptr, 4, numElements, infile); (void) res;
 
         mRawDataPtrs[i] = ptr;
         ptr += numElements;
@@ -1122,7 +1122,7 @@ const char* MultiresFileReader::getNextLine(FILE* ptr)
 
     checkFilePtr(ptr);
 
-    fgets(line, sizeof line, ptr);
+    char* res = fgets(line, sizeof line, ptr); (void) res;
 
     return line;
 }

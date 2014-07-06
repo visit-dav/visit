@@ -95,7 +95,7 @@ bool VsMDVariable::addBlock(VsVariable* newBlock) {
     return false;
   }
   int blockNumber = varMesh->getDomainNumber();
-  if ((blockNumber < 0) || (blockNumber >= blocks.size())) {
+  if ((blockNumber < 0) || ((size_t)blockNumber >= blocks.size())) {
     VsLog::errorLog() <<"VsMDVariable rejected new block " + newBlock->getFullName() + " because the given domain number is out of bounds: " <<blockNumber <<std::endl;
     return false;
   }

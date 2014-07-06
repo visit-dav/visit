@@ -171,7 +171,7 @@ avtPOSCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtScalarMetaData *el_smd =
             new avtScalarMetaData("element", "mesh", AVT_NODECENT);
         el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-        for (int i=0; i<element_map.size(); i++)
+        for (size_t i=0; i<element_map.size(); i++)
             el_smd->AddEnumNameValue(element_names[element_map[i]],element_map[i]);
         md->Add(el_smd);
     }
@@ -422,7 +422,7 @@ avtPOSCARFileFormat::ReadFile()
     // with the values following it.
     in.getline(line, 132);
     int equalspos = -1;
-    for (int p=0; p<strlen(line); p++)
+    for (size_t p=0; p<strlen(line); p++)
     {
         if (line[p] == '=')
             equalspos = p;
@@ -609,13 +609,13 @@ avtPOSCARFileFormat::Identify(const std::string &filename)
         fn = filename;
 
     // uppercase it
-    for (int i=0; i<fn.size(); i++)
+    for (size_t i=0; i<fn.size(); i++)
     {
         if (fn[i]>='a' && fn[i]<='z')
             fn[i] = fn[i] + ('A'-'a');
     }
 
-    for (int i=0; i<=fn.length()-3; i++)
+    for (size_t i=0; i<=fn.length()-3; i++)
     {
         if (fn.substr(i,3) == "POS")
             return true;

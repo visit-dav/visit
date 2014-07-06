@@ -153,7 +153,7 @@ avtCCMFileFormat::FreeUpResources(void)
         CCMIOCloseFile(&ccmErr, ccmRoot);
         ccmErr = kCCMIONoErr;
     }
-    for (int i = 0; i < originalCells.size(); ++i)
+    for (size_t i = 0; i < originalCells.size(); ++i)
     {
         if (originalCells[i] != NULL)
         {
@@ -303,7 +303,7 @@ avtCCMFileFormat::GetIDsForDomain(int dom,
     CCMIOID &processor, CCMIOID &vertices, CCMIOID &topology,
     CCMIOID &solution, bool &hasSolution)
 {
-    const char *mName = "avtCCMFileFormat::GetIDsForDomain: ";
+    //const char *mName = "avtCCMFileFormat::GetIDsForDomain: ";
 
     // Try and get the requested processor.
     int proc = dom;
@@ -378,7 +378,7 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
     }
     int getFacesTimer = visitTimer->StartTimer();
     CCMIOID mapID;
-    unsigned int nCells = 0, size = 0;
+    unsigned int /*nCells = 0,*/ size = 0;
     //intVector faces;
     intVector faceNodes, faceCells;
 
@@ -421,7 +421,7 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
         if (nVerts > maxSize)
             maxSize = nVerts;
 
-        for (unsigned int j = 0; j < nVerts; ++j)
+        for (int j = 0; j < nVerts; ++j)
         {
             newFace.nodes.push_back( vertexIDMap.IDtoIndex(faceNodes[pos+1+j]) );
         }
@@ -518,7 +518,7 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 #endif
 
-    for (unsigned int i = 0; i < nblocks; ++i)
+    for (int i = 0; i < nblocks; ++i)
         originalCells.push_back(NULL);
     // Determine the spatial dimensions.
     int dims = 3;
@@ -892,7 +892,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
             // We have zoo elements that we can deal with.
             vtkCellArray *cellArray = vtkCellArray::New();
             intVector cellTypes;
-            bool unhandledCellType = false;
+            //bool unhandledCellType = false;
             for (unsigned int i = 0; i < cellInfo.size(); i++)
             {
                 const CellInfo &ci = cellInfo[i];
@@ -933,8 +933,8 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
                                 origCells->InsertNextTupleValue(oc);
 #endif
                         }
-                        else
-                            unhandledCellType = true;
+                        //else
+                        //    unhandledCellType = true;
                         break;
                         }
                     case 6 :
@@ -945,7 +945,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
 #endif
                         break;
                     default :
-                        unhandledCellType = true;
+                        //unhandledCellType = true;
                         break;
                 }
             }
@@ -1043,7 +1043,7 @@ avtCCMFileFormat::ReadPoints(int dom, const char *meshname)
                    0, nnodes);
         float *src = pts2d;
         float *dest = pts;
-        for(int i = 0; i < nnodes; ++i)
+        for(size_t i = 0; i < nnodes; ++i)
         {
             *dest++ = *src++;
             *dest++ = *src++;
@@ -1060,7 +1060,7 @@ avtCCMFileFormat::ReadPoints(int dom, const char *meshname)
 
     // Scale the points, according to the scale factor read with the
     // vertices.
-    for(int i = 0; i < nnodes; ++i)
+    for(size_t i = 0; i < nnodes; ++i)
     {
         pts[0] *= scale;
         pts[1] *= scale;
@@ -1143,7 +1143,7 @@ avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
 
     // Get the topology information
     CCMIOID faceID, cellsID;
-    unsigned int nIFaces = 0, nCells = 0, size = 0;
+    unsigned int nIFaces = 0, nCells = 0/*, size = 0*/;
     intVector cells;
     //intVector cellMatType;
 
@@ -1159,7 +1159,7 @@ avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
                    kCCMIOStart, kCCMIOEnd);
     // this reads the cellids from the map.
     CCMIOReadMap(&ccmErr, mapID, &cells[0], kCCMIOStart, kCCMIOEnd);
-    for (int i = 0; i < nCells; ++i)
+    for (size_t i = 0; i < nCells; ++i)
         cellInfo[i].id = cells[i];
 
     IDMap cellIDMap;
@@ -1167,7 +1167,7 @@ avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
 
     // Read the boundary faces.
     int index = 0;
-    int count = 0;
+    //int count = 0;
     int nBoundaries = 0;
     while (CCMIONextEntity(NULL, topology, kCCMIOBoundaryFaces, &index,
                            &faceID) == kCCMIONoErr)
@@ -1212,18 +1212,17 @@ avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
         visitTimer->StopTimer(t6, "Get cell map data");
 
         int maxId = -1;
-        int j;
-        for (j = 0 ; j < cellInfo.size() ; j++)
+        for (size_t j = 0 ; j < cellInfo.size() ; j++)
         {
             maxId = (maxId > cellInfo[j].id ? maxId : cellInfo[j].id);
         }
         std::vector<bool> cellIsValid(maxId+1, false);
-        for (j = 0 ; j < cellInfo.size() ; j++)
+        for (size_t j = 0 ; j < cellInfo.size() ; j++)
         {
             cellIsValid[cellInfo[j].id] = true;
         }
 
-        for (int i = 0; i < cellInfo.size(); ++i)
+        for (size_t i = 0; i < cellInfo.size(); ++i)
         {
             if (cellIsValid[cellInfo[i].id])
             {
@@ -1265,7 +1264,7 @@ ComputePatchCenter(const double *centers, const intVector &patch, double *center
     center[1] = 0.;
     center[2] = 0.;
     int nMatches = 0;
-    for(int i = 0; i < patch.size(); ++i)
+    for(size_t i = 0; i < patch.size(); ++i)
     {
         const double *c = centers + patch[i] * 3;
 
@@ -1335,12 +1334,12 @@ DivideLargestPatch(const double *centers, std::vector<intVector> &patches)
 {
     // Find the index of the largest patch
     int maxIndex = 0;
-    for(int i = 1; i < patches.size(); ++i)
+    for(size_t i = 1; i < patches.size(); ++i)
         if(patches[i].size() > patches[maxIndex].size())
             maxIndex = i;
 
     // Compute the center at which we will bisect.
-    double center[3], bounds[6];
+    double center[3] = {0,0,0}, bounds[6] = {0,0,0,0,0,0};
     ComputePatchCenter(centers, patches[maxIndex], center, bounds);
 
     // Figure out the longest dimension since that's the dimension we'll bisect.
@@ -1361,7 +1360,7 @@ DivideLargestPatch(const double *centers, std::vector<intVector> &patches)
 
     const intVector &patch = patches[maxIndex];
     intVector piece0, piece1;
-    for(int j = 0; j < patch.size(); ++j)
+    for(size_t j = 0; j < patch.size(); ++j)
     {
         const double *c = centers + patch[j] * 3;
         if(c[longestDimension] > center[longestDimension])
@@ -1420,13 +1419,13 @@ avtCCMFileFormat::SelectCellsForThisProcessor(CellInfoVector &cellInfo, vtkPoint
         patches.push_back(allCells);
 
         // Divide the largest patch until we have enough patches.
-        while(patches.size() < PAR_Size())
+        while(patches.size() < (size_t)PAR_Size())
             DivideLargestPatch(centers, patches);
 
         // Set cellid to -1 unless we're on the patch whose id == PAR_Rank.
         for(size_t p = 0; p < patches.size(); ++p)
         {
-            if(p == PAR_Rank())
+            if(p == (size_t)PAR_Rank())
                 continue;
 
             const intVector &patch = patches[p];
@@ -1596,7 +1595,7 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
         // cell number!
         vtkUnsignedIntArray *ocarray =
             vtkUnsignedIntArray::SafeDownCast(originalCells[domain]);
-        int numCells = ocarray->GetNumberOfTuples();
+        unsigned int numCells = ocarray->GetNumberOfTuples();
 
         debug4 << mName << "numCells = " << numCells << endl;
         unsigned int *oc = ocarray->GetPointer(0);
@@ -1718,7 +1717,7 @@ avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
         // cell number!
         vtkUnsignedIntArray *ocarray =
             vtkUnsignedIntArray::SafeDownCast(originalCells[domain]);
-        int numCells = ocarray->GetNumberOfTuples();
+        unsigned int numCells = ocarray->GetNumberOfTuples();
 
         unsigned int *oc = ocarray->GetPointer(0);
         rv->SetNumberOfTuples(numCells);
@@ -1817,8 +1816,9 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
         }
 #endif
 
-        if (ccmErr != kCCMIONoErr)
+        if (ccmErr != kCCMIONoErr) {
             debug1 << "  Error reading scalar data " << ccmErr << endl;
+        }
     }
 }
 
@@ -1891,7 +1891,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
             continue;
 
         oc[1] = ci.id;
-        int nFaces  = ci.faces.size();
+        unsigned int nFaces  = ci.faces.size();
         size_t nPts = 0;
         doubleVector fbounds;
         for (j = 0; j < nFaces; ++j)
@@ -1948,7 +1948,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
         } // j faces
 
         double cc[3] = {0.,0.,0.};
-        double fc[3] = {0.,0.,0.};
+        //double fc[3] = {0.,0.,0.};
         for (j = 0; j < 3; ++j)
             cc[j] = (cbounds[2*j+1]+cbounds[2*j])/2.0;
 
@@ -1974,7 +1974,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
             } // k nodes
             tess.EndContour();
 
-            int ntris = tess.Tessellate();
+            unsigned int ntris = tess.Tessellate();
             // Make a tet for each triangle in the face to the cell center.
             vtkIdType verts[4];
             verts[3] = centerId;
@@ -2086,7 +2086,7 @@ avtCCMFileFormat::TesselateCells2D(const int domain, const CellInfoVector &civ,
 
         // Put all of the line segments in a pool of free edges.
         std::set<edge_pair> freeEdges;
-        for (int f = 0; f < ci.faces.size(); ++f)
+        for (size_t f = 0; f < ci.faces.size(); ++f)
         {
              edge_pair e01(ci.faces[f].nodes[0], ci.faces[f].nodes[1]);
              freeEdges.insert(e01);
@@ -2149,12 +2149,12 @@ avtCCMFileFormat::TesselateCells2D(const int domain, const CellInfoVector &civ,
             if(shape.size() > 2)
             {
                 tess.BeginContour();
-                for(int v = 0; v < shape.size(); ++v)
+                for(size_t v = 0; v < shape.size(); ++v)
                     tess.AddContourVertex(points->GetPoint(shape[v]));
                 tess.EndContour();
             }
         }
-        int ntris = tess.Tessellate();
+        unsigned int ntris = tess.Tessellate();
 
         vtkIdType verts[4];
         if (ntris > 0)
@@ -2211,13 +2211,13 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
     intVector uniqueNodes;
     bool useface;
     bool usedBF = false;
-    int nnodes = 0;
+    //int nnodes = 0;
     vtkIdList *cellNodes = vtkIdList::New();
 
     for (i = 0; i < faces.size(); ++i)
     {
         useface = true;
-        int nnodes = faces[i].nodes.size();
+        unsigned int nnodes = faces[i].nodes.size();
         if (nnodes != 4)
         {
             return;
@@ -2631,9 +2631,9 @@ avtCCMFileFormat::CellInfo::CellCenter(double *center, vtkPoints *pts) const
 {
     int npts = 0;
     double c[3] = {0.,0.,0.};
-    for(int i = 0; i < faces.size(); ++i)
+    for(size_t i = 0; i < faces.size(); ++i)
     {
-        for(int j = 0; j < faces[i].nodes.size(); ++j, ++npts)
+        for(size_t j = 0; j < faces[i].nodes.size(); ++j, ++npts)
         {
             double *pt = pts->GetPoint(faces[i].nodes[j]);
             c[0] += pt[0];
@@ -2666,8 +2666,8 @@ avtCCMFileFormat::CellInfo::CellCenter(double *center, vtkPoints *pts) const
 void
 avtCCMFileFormat::CellInfo::UseNodes(bool *pts) const
 {
-    for(int i = 0; i < faces.size(); ++i)
-        for(int j = 0; j < faces[i].nodes.size(); ++j)
+    for(size_t i = 0; i < faces.size(); ++i)
+        for(size_t j = 0; j < faces[i].nodes.size(); ++j)
             pts[faces[i].nodes[j]] = true;
 }
 
@@ -2947,7 +2947,7 @@ avtCCMFileFormat::IDMap::IDtoIndex(int id) const
     }
     else if (bReverseMap)
     {
-        if (id-iFirstElem >= 0 && id-iFirstElem < ids.size())
+        if (id-iFirstElem >= 0 && id-iFirstElem < (int)ids.size())
             return ids[id-iFirstElem];
     }
     else

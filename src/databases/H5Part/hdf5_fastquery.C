@@ -40,7 +40,7 @@ void HDF5_FQ::createSlices() {
 
     int64_t numSlices = dataFile->getNumSteps();
     size_t actualNum = static_cast<size_t>(numSlices);
-    if (actualNum == numSlices) {
+    if (actualNum == (size_t)numSlices) /* TODO: update check of int64_t with size_t*/ {
         timeSlices.resize(actualNum);
         for(size_t i = 0; i < actualNum; ++i)
             timeSlices[i] = new H5_FQ_Timestep(*dataFile, (const int64_t)i);
@@ -199,13 +199,13 @@ void HDF5_FQ::buildSpecificTimeIndex(int64_t time) {
 }
 
 void HDF5_FQ::buildAllIndexes() {
-    for(int64_t i=0; i<numTimeSlices(); i++){
+    for(int64_t i=0; i<(int64_t)numTimeSlices(); i++){
         timeSlices[i]->buildIndexes();
     }
 }
 
 void HDF5_FQ::buildIndexes(const char* variableName, const char *binning) {
-    for(int64_t i=0; i<numTimeSlices(); i++){
+    for(int64_t i=0; i<(int64_t)numTimeSlices(); i++){
         static_cast<H5_FQ_Timestep*>(timeSlices[i])->
             buildIndex(variableName, binning);
     }

@@ -348,7 +348,7 @@ avtVistaAle3dFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 void
 avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    int i, j;
+    size_t i, j;
 
     const Node *top = vTree->GetTop();
 
@@ -367,7 +367,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     vector<string> pieceNames;
     vector<vector<string> > pieceGroups;
     vector<string> groupNames;
-    for (i = 0; i < numPieces; i++)
+    for (i = 0; i < (size_t)numPieces; i++)
         pieceNames.push_back(pieceNodes[i]->text);
     StringHelpers::GroupStrings(pieceNames, pieceGroups, groupNames);
 
@@ -383,7 +383,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         pieceNodes = 0;
         sprintf(tempStr,"/./%s[0-9]{1,}", groupNames[0].c_str());
         vTree->FindNodes(top, tempStr, &pieceNodes, &numPieces, TopDown);
-        if (numPieces != pieceGroups[0].size())
+        if ((size_t)numPieces != pieceGroups[0].size())
         {
             cerr << "WARNING!!! Unable to find domains" << endl;
             return;
@@ -407,7 +407,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             firstDigit--;
         blockTitle = string(aPieceName, 0, firstDigit) + "s";
         blockPieceName = string(aPieceName, 0, firstDigit);
-        for (i = 0; i < numPieces; i++)
+        for (i = 0; i < (size_t)numPieces; i++)
             blockNames.push_back(pieceNodes[i]->text);
     }
     else
@@ -464,7 +464,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Every domain-level, field that appears numPieces times is a global field.
         // So, build a map that counts number of occurances of each field's name
         map<string, IMVal<int,0> > fieldMap;
-        for (i = 0; i < numFieldNodes; i++)
+        for (i = 0; i < (size_t)numFieldNodes; i++)
            fieldMap[fieldNodes[i]->text].val++;
 
         //
@@ -540,7 +540,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     groupNames.clear();
     vector<string> matNames;
     vector<vector<string> > matGroups;
-    for (i = 0; i < numMatNodes; i++)
+    for (i = 0; i < (size_t)numMatNodes; i++)
         matNames.push_back(matNodes[i]->text);
     StringHelpers::GroupStrings(matNames, matGroups, groupNames, 3, "");
 
@@ -570,7 +570,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         else
         {
-            sprintf(tempStr, "%d", i);
+            sprintf(tempStr, "%ld", i);
             materialNames.push_back(tempStr);
             materialNumbers.push_back(i);
         }
@@ -584,7 +584,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         materialNumbersArray = new int[numMaterials];
         materialNamesArray = new const char*[numMaterials];
-        for (i = 0; i < numMaterials; i++)
+        for (i = 0; i < (size_t)numMaterials; i++)
         {
             materialNumbersArray[i] = materialNumbers[i];
             materialNamesArray[i] = materialNames[i].c_str();
@@ -661,7 +661,7 @@ avtVistaAle3dFileFormat::GetAuxiliaryData(const char *var, int domain,
 avtMaterial *
 avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
 {
-    int i,j;
+    size_t i,j;
     const Node *top = vTree->GetTop();
 
     //
@@ -677,7 +677,7 @@ avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
     // Loop and populate matMap with lists of clean and mixed zones
     //
     vector<MatZoneMap> matMap;
-    for (i = 0; i < numMatNodes; i++)
+    for (i = 0; i < (size_t)numMatNodes; i++)
     {
         //
         // Get this material's number
@@ -746,7 +746,7 @@ avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
         SNPRINTF(tempStr, sizeof(tempStr), "%s/Indexset", idxPath);
         delete [] idxPath;
         ReadDataset(fileName, tempStr, 0, &dSize, (void**) &indexSet);
-        if (dSize != matNodes[i]->len)
+        if (dSize != (size_t)matNodes[i]->len)
         {
             EXCEPTION2(UnexpectedValueException, matNodes[i]->len, dSize);
         }
@@ -769,7 +769,7 @@ avtVistaAle3dFileFormat::GetMaterial(int domain, const char *var)
             SNPRINTF(tempStr, sizeof(tempStr), "%s/Fields/vf", vfPath); 
             delete [] vfPath;
             ReadDataset(fileName, tempStr, 0, &dSize, (void**) &dvf);
-            if (dSize != matNodes[i]->len)
+            if (dSize != (size_t)matNodes[i]->len)
             {
                 EXCEPTION2(UnexpectedValueException, matNodes[i]->len, dSize);
             }
@@ -921,7 +921,7 @@ avtVistaAle3dFileFormat::GetMesh(int domain, const char *meshname)
         size_t dSize = 0;
         ReadDataset(fileName, tempStr, 0, &dSize, (void**) &coords[i]);
 
-        if (dSize != numNodes)
+        if (dSize != (size_t)numNodes)
         {
             EXCEPTION2(UnexpectedValueException, numNodes, dSize);
         }
@@ -1108,7 +1108,7 @@ avtVistaAle3dFileFormat::ReadVar(int domain, const char *visitName)
     //
     // Read all the component's data
     //
-    int numVals;
+    int numVals = 0; ///TODO: check on fix for uninitialized value
     double **compData = new double*[numComponents];
     for (i = 0; i < numComponents; i++)
     {
@@ -1121,7 +1121,7 @@ avtVistaAle3dFileFormat::ReadVar(int domain, const char *visitName)
         compData[i] = 0;
         if (ReadDataset(fileName, tempStr, 0, &dSize, (void**) &compData[i]))
         {
-            if (dSize != numElems)
+            if (dSize != (size_t)numElems)
             {
                 EXCEPTION2(UnexpectedValueException, numElems, dSize);
             }
@@ -1136,7 +1136,7 @@ avtVistaAle3dFileFormat::ReadVar(int domain, const char *visitName)
         compData[i] = 0;
         if (ReadDataset(fileName, tempStr, 0, &dSize, (void**) &compData[i]))
         {
-            if (dSize != numNodes)
+            if (dSize != (size_t)numNodes)
             {
                 EXCEPTION2(UnexpectedValueException, numElems, dSize);
             }

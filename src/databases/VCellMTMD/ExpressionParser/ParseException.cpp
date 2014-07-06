@@ -83,7 +83,8 @@ string VCell::ParseException::getExactMessage(void)
         tok = tok->next;     
     }    
     char chrs[128];    
-    sprintf(chrs, "\" at line %d, column %d\0", currentToken->next->beginLine, currentToken->next->beginColumn);    
+    sprintf(chrs, "\" at line %d, column %d", currentToken->next->beginLine, currentToken->next->beginColumn);    
+    chrs[127] = '\0';
     retval += chrs;    
     retval += "." + eol;    
     if (numETS == 1) {    

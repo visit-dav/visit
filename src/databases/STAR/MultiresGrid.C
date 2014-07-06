@@ -203,31 +203,32 @@ bool MultiresGrid::parseGridFile(const char* filename)
         //     X_COORDINATES 392 float
         //     ...
 
-        fscanf(infile, "%s %s %s", junk, junk, junk);  // skip 3 tokens
-        fscanf(infile, "%d %d %d", &mWidth, &mHeight, &mDepth);
-        fscanf(infile, "%s %d %s", junk, &numXvals, junk); 
+        int res = 0; (void) res;
+        res = fscanf(infile, "%s %s %s", junk, junk, junk);  // skip 3 tokens
+        res = fscanf(infile, "%d %d %d", &mWidth, &mHeight, &mDepth);
+        res = fscanf(infile, "%s %d %s", junk, &numXvals, junk); 
 
         xc = new float[numXvals];
 
         // read in the x coords
         for(int i=0; i<numXvals; i++)
-            fscanf(infile, "%f", &xc[i]);
+            res = fscanf(infile, "%f", &xc[i]);
 
-        fscanf(infile, "%s %d %s", junk, &numYvals, junk); 
+        res = fscanf(infile, "%s %d %s", junk, &numYvals, junk); 
 
         yc = new float[numYvals];
 
         // read in the y coords
         for(int i=0; i<numYvals; i++)
-            fscanf(infile, "%f", &yc[i]);
+            res = fscanf(infile, "%f", &yc[i]);
 
-        fscanf(infile, "%s %d %s", junk, &numZvals, junk); 
+        res = fscanf(infile, "%s %d %s", junk, &numZvals, junk); 
 
         zc = new float[numZvals];
 
         // read in the z coords
         for(int i=0; i<numZvals; i++)
-            fscanf(infile, "%f", &zc[i]);
+            res = fscanf(infile, "%f", &zc[i]);
 
         fclose(infile);
 
@@ -436,7 +437,7 @@ const char* MultiresGrid::filename() const
 MultiresGrid* MultiresGrid::atResolution(int resolution) const
 {
     TRACE(resolution);
-    BOUNDS_CHECK(resolution,0,mGrids.size());
+    BOUNDS_CHECK(resolution,0,(int)mGrids.size());
 
     if(resolution<0||(unsigned)resolution>mGrids.size())
     {

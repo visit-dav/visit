@@ -227,7 +227,7 @@ avtSimV1WriterWriter::WriteHeaders(const avtDatabaseMetaData *md,
 {
     debug1 << "avtSimV1WriterWriter::WriteHeaders(...)\n";
     varList = scalars;
-    for(int i = 0; i < vectors.size(); ++i)
+    for(size_t i = 0; i < vectors.size(); ++i)
         varList.push_back(vectors[i]);
     metadata = md;
 }
@@ -830,7 +830,7 @@ avtSimV1WriterWriter::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMe
     debug1 << "avtSimV1WriterWriter::WritePolyDataMesh(chunk=" << chunk << ")\n";
 
     // Build up an unstructured mesh from the types of data in the polydata.
-    vtkIdType pts[100];
+    //vtkIdType pts[100];
     double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
     double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
     double *z = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
@@ -1248,7 +1248,7 @@ avtSimV1WriterWriter::WriteDataArrays(vtkDataSet *ds, int chunk)
 {
     if(cb.WriteDataArray != 0)
     {
-        for (int v = 0 ; v < varList.size() ; v++)
+        for (size_t v = 0 ; v < varList.size() ; v++)
         {
             vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
             if (arr != 0)
@@ -1302,7 +1302,7 @@ avtSimV1WriterWriter::WriteDataArraysConditionally(vtkDataSet *ds, int chunk,
 {
     if(cb.WriteDataArray != 0)
     {
-        for (int v = 0 ; v < varList.size() ; v++)
+        for (size_t v = 0 ; v < varList.size() ; v++)
         {
             vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
             if (arr != 0)

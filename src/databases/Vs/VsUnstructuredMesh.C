@@ -456,7 +456,7 @@ bool VsUnstructuredMesh::initialize() {
     }
 
     VsDataset* connectivityDataset =
-      registry->getDataset(connectivityDatasetName);
+      registry->getDataset(connectivityDatasetName); (void) connectivityDataset;
     
     std::vector<int> connectivityDims = connectivityMeta->getDims();
     

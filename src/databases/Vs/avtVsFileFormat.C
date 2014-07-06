@@ -1,5 +1,6 @@
 #include <hdf5.h>
 #include <visit-hdf5.h>
+#include <avtGhostData.h>
 #if HDF5_VERSION_GE(1,8,1)
 /**
  *
@@ -283,7 +284,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
     avtLogicalSelection composedSel;
 
-    for (int i = 0; i < selList.size(); i++)
+    for (size_t i = 0; i < selList.size(); i++)
     {
         if (std::string(selList[i]->GetType()) == "Logical Data Selection")
         {
@@ -409,7 +410,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     int mins[3], maxs[3], strides[3];
 
     // Adjust for the data selections which are NODAL.
-    if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
+    if( (haveDataSelections = ProcessDataSelections(mins, maxs, strides)) ) ///TODO: check fix for assignment
     {
         VsLog::debugLog()
         << CLASSFUNCLINE << "  "
@@ -606,7 +607,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
         return NULL;
     }
 
-    int numSpatialDims = uniformMesh->getNumSpatialDims();
+    size_t numSpatialDims = uniformMesh->getNumSpatialDims();
 
     if (numSpatialDims > 3) {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -855,11 +856,11 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
     std::vector<vtkDataArray*> coords(vsdim);
 
-    for( int i=0; i<numTopologicalDims; ++i )
+    for( size_t i=0; i<numTopologicalDims; ++i )
     {
         void* dataPtr;
-        double* dblDataPtr;
-        float* fltDataPtr;
+        double* dblDataPtr = NULL; //TODO: check fix for uninitialized values
+        float* fltDataPtr = NULL; ///TODO: check fix for uninitialized values
 
         VsLog::debugLog() << CLASSFUNCLINE << "  "
         << "Loading data for axis " << i << std::endl;
@@ -982,7 +983,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         << std::endl;
     }
 
-    for (int i=numTopologicalDims; i<vsdim; ++i) {
+    for (size_t i=numTopologicalDims; i<vsdim; ++i) {
         if( isDouble )
         coords[i] = vtkDoubleArray::New();
         else if( isFloat )
@@ -1019,7 +1020,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         // true. Calculate the points and return a Structured mesh instead
         // of a Rectilinear mesh
         //
-        float temp, tempk, tempj, tempi;
+        float /*temp,*/ tempk, tempj, tempi;
         vtkPoints* vpoints = vtkPoints::New();
         if (isDouble) {
             vpoints->SetDataTypeToDouble();
@@ -1144,7 +1145,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
         return NULL;
     }
 
-    int numSpatialDims = structuredMesh->getNumSpatialDims();
+    size_t numSpatialDims = structuredMesh->getNumSpatialDims();
 
     if (numSpatialDims > 3) {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -1364,7 +1365,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
             // Must have the name "avtGhostNodes"
             maskedNodes->SetName("avtGhostNodes");
             maskedNodes->SetNumberOfTuples(numPoints);
-            for (size_t k = 0; k < numPoints; ++k) {
+            for (size_t k = 0; k < (size_t)numPoints; ++k) {
                 // Zero means no masking, node is visible
                 maskedNodes->SetValue(k, 0);
             }
@@ -1526,7 +1527,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // Adjust for the data selections which are ZONAL.
     if (unstructuredMesh->isPointMesh() && haveDataSelections)
     {
-        if( maxs[0] < 0 || numNodes - 1 < maxs[0] )
+        if( maxs[0] < 0 || numNodes - 1 < (size_t)maxs[0] )
         maxs[0] = numNodes - 1;          // last cell index,
                                          // not number of cells
 
@@ -1601,7 +1602,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         int destMaxs[1] = {numNodes};
         int destStrides[1] = {3};
 
-        for( int i=0; i<numSpatialDims; ++i )
+        for( size_t i=0; i<numSpatialDims; ++i )
         {
             VsDataset* pointDataset = unstructuredMesh->getPointsDataset(i);
 
@@ -1633,7 +1634,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
                 double* dblDataPtr = &(((double*) dataPtr)[i]);
 
-                for (int j=0; j<numNodes; ++j)
+                for (size_t j=0; j<numNodes; ++j)
                 {
                     *dblDataPtr = 0;
                     dblDataPtr += 3;
@@ -1643,7 +1644,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
                 float* fltDataPtr = &(((float*) dataPtr)[i]);
 
-                for (int j=0; j<numNodes; ++j)
+                for (size_t j=0; j<numNodes; ++j)
                 {
                     *fltDataPtr = 0;
                     fltDataPtr += 3;
@@ -1724,7 +1725,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         << std::endl;
 
         vtkIdType vertex;
-        for (int i=0; i<numNodes; ++i) {
+        for (size_t i=0; i<numNodes; ++i) {
             vertex = i;
             ugridPtr->InsertNextCell(VTK_VERTEX, 1, &vertex);
         }
@@ -1826,7 +1827,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // which connections are read in.
     if( haveDataSelections )
     {
-        if( maxs[0] < 0 || numCells - 1 < maxs[0] )
+        if( maxs[0] < 0 || numCells - 1 < (size_t)maxs[0] )
         maxs[0] = numCells - 1; // numCells - 1 = last cell index,
                                 // not number of cells
 
@@ -2061,7 +2062,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             std::vector<vtkIdType> verts(cellVerts);
             for (size_t j = 0; j < cellVerts; ++j) {
                 verts[j] = (vtkIdType) vertices[k++];
-                if ((verts[j] < 0) || (verts[j] >= numNodes)) {
+                if ((verts[j] < 0) || ((size_t)verts[j] >= numNodes)) {
                     VsLog::debugLog() << CLASSFUNCLINE << "  "
                     << "ERROR in connectivity dataset - requested vertex number "
                     << verts[j] << " exceeds number of vertices" << std::endl;
@@ -2201,7 +2202,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     vtkPoints* vpoints = meshPtr->GetPoints();
 
     // Allocate
-    size_t dsize = 0;
+    size_t dsize = 0; (void) dsize;
     if (isDouble) {
         vpoints->SetDataTypeToDouble();
         dsize = sizeof(double);
@@ -2436,7 +2437,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
         // Is this variable a component?  If so, swap the component name
         // with the "real" variable name and remember that it is a
         // component.
-        bool isAComponent = false;
+        bool isAComponent = false; (void) isAComponent;
         int componentIndex = -2;// No components
         NamePair foundName;
         registry->getComponentInfo(name, &foundName);
@@ -2670,7 +2671,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     int mins[3], maxs[3], strides[3];
 
     // Adjust for the data selections which are NODAL (typical) or ZONAL.
-    if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
+    if( (haveDataSelections = ProcessDataSelections(mins, maxs, strides)) ) ///TODO: check on fix for assignment
     {
         VsLog::debugLog()
         << CLASSFUNCLINE << "  "
@@ -2683,7 +2684,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
 
     int componentIndex = -2;
     bool isAComponent = nameIsComponent(name, componentIndex);
-    bool transform = isTransformedName(name);
+    bool transform = isTransformedName(name); (void) transform;
 
     // The goal in all of the metadata loading is to fill one of
     // these two variables:
@@ -2702,7 +2703,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         << "Found MD metadata for this name: "
         << name << std::endl;
 
-        if (0 <= domain && domain < mdMeta->getNumBlocks()) {
+        if (0 <= domain && (size_t)domain < mdMeta->getNumBlocks()) {
             meta = mdMeta->getBlock(domain);
             name = meta->getFullName();
 
@@ -2763,7 +2764,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     bool isFortranOrder = false;
     bool isCompMajor = false;
     bool isZonal = false;
-    bool parallelRead = true;
+    bool parallelRead = true; (void) parallelRead;
     bool hasOffset = false;
     std::vector<double> offset(3, 0);
     std::string indexOrder;
@@ -2898,7 +2899,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     << "Total number of variables is " << numVariables
     << std::endl;
 
-    size_t varSize = H5Tget_size(varType);
+    size_t varSize = H5Tget_size(varType); (void) varSize;
 
     // Read in the data
     void* dataPtr = 0;
@@ -3125,15 +3126,15 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         << "Using FORTRAN data ordering." << std::endl;
 
         if (isDouble) {
-            for (size_t k = 0; k<numVariables; ++k) {
+            for (size_t k = 0; k<(size_t)numVariables; ++k) {
                 rv->SetTuple(k, &dblDataPtr[k]);
             }
         } else if (isFloat) {
-            for (size_t k = 0; k<numVariables; ++k) {
+            for (size_t k = 0; k<(size_t)numVariables; ++k) {
                 rv->SetTuple(k, &fltDataPtr[k]);
             }
         } else if (isInteger) {
-            for (size_t k = 0; k<numVariables; ++k) {
+            for (size_t k = 0; k<(size_t)numVariables; ++k) {
                 // Convert to float because SetTuple doesn't take ints
                 float temp = intDataPtr[k];
                 rv->SetTuple(k, &temp);
@@ -3145,7 +3146,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         << "Using C data ordering." << std::endl;
 
         // Step through by global C index
-        for (size_t k = 0; k<numVariables; ++k) {
+        for (size_t k = 0; k<(size_t)numVariables; ++k) {
 
             // Accumulate the Fortran index
             size_t indx = indices[numTopologicalDims-1];
@@ -3173,7 +3174,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
             do {
                 --j;
                 ++indices[j];
-                if (indices[j] == vdims[j])
+                if (indices[j] == (size_t)vdims[j])
                 indices[j] = 0;
                 else
                 break;
@@ -3209,14 +3210,14 @@ VsVariable* avtVsFileFormat::getVariableMeta(int domain, std::string requestedNa
     std::string name = requestedName;
 
     componentIndex = -2;
-    bool isAComponent = nameIsComponent(name, componentIndex);
-    bool transform = isTransformedName(name);
+    bool isAComponent = nameIsComponent(name, componentIndex); (void) isAComponent;
+    bool transform = isTransformedName(name); (void) transform;
 
     // The goal in all of the metadata loading is to fill one of
     // these two variables:
     VsVariable* meta = NULL;
     VsVariableWithMesh* vmMeta = NULL;
-    VsDataset* variableDataset = NULL;
+    VsDataset* variableDataset = NULL; (void) variableDataset;
 
     // It could be an MD variable if so, retrieve the md metadata,
     // look up the "real" variable name using the domain number, and
@@ -3229,7 +3230,7 @@ VsVariable* avtVsFileFormat::getVariableMeta(int domain, std::string requestedNa
         << "Found MD metadata for this name: "
         << name << std::endl;
 
-        if (0 <= domain && domain < mdMeta->getNumBlocks()) {
+        if (0 <= domain && (size_t)domain < mdMeta->getNumBlocks()) {
             meta = mdMeta->getBlock(domain);
             name = meta->getFullName();
 
@@ -3500,9 +3501,9 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
         VsMesh* meshMeta = vMeta->getMesh();
 
         // Name of the transformed mesh (if it exists)
-        bool hasTransform = false;
+        //bool hasTransform = false;
         std::string transformMeshName = "";
-        VsRectilinearMesh* rectMesh = static_cast<VsRectilinearMesh*> (meshMeta);
+        //VsRectilinearMesh* rectMesh = static_cast<VsRectilinearMesh*> (meshMeta);
         if (meshMeta && meshMeta->hasTransform()) {
             transformMeshName = meshMeta->getTransformedMeshName();
             VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
@@ -3681,7 +3682,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
     // Number of mesh dims
     int spatialDims;
-    int topologicalDims;
+    int topologicalDims; (void) topologicalDims;
 
     // All meshes names
     std::vector<std::string> names;
@@ -3766,7 +3767,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
             // Add in the logical bounds of the mesh.
             static_cast<VsUniformMesh*>(meta)->getCellDims(dims);
-            for( int i=0; i<dims.size(); ++i )
+            for( size_t i=0; i<dims.size(); ++i )
             {
                 bounds[i] = dims[i]; // Logical bounds are node centric.
                 numCells *= (dims[i]-1);
@@ -3784,7 +3785,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
             // Add in the logical bounds of the mesh.
             rectMesh->getCellDims(dims);
-            for( int i=0; i<dims.size(); ++i )
+            for( size_t i=0; i<dims.size(); ++i )
             {
                 bounds[i] = dims[i]; // Logical bounds are node centric.
                 numCells *= (dims[i]-1);
@@ -3836,7 +3837,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
             // Add in the logical bounds of the mesh.
             static_cast<VsRectilinearMesh*>(meta)->getCellDims(dims);
-            for( int i=0; i<dims.size(); ++i )
+            for( size_t i=0; i<dims.size(); ++i )
             {
                 bounds[i] = dims[i]; // Logical bounds are node centric.
                 numCells *= (dims[i]-1);
@@ -4145,7 +4146,7 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
             continue;
         }
 
-        avtMeshType meshType;
+        avtMeshType meshType = AVT_RECTILINEAR_MESH; ///TODO: check fix for uninitialized value
         std::string kind = meta->getMeshKind();
         if (meta->isUniformMesh()) {
             VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -4736,7 +4737,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
     // Adjust for the data selections which are NODAL (typically) or ZONAL.
     if( haveDataSelections )
     {
-        for (size_t i=0; i<numTopologicalDims; ++i)
+        for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
         {
             if( maxs[i] < 0 || numNodes[i] - 1 < maxs[i] )
             maxs[i] = numNodes[i] - 1; // last node index, not number of nodes
@@ -4765,7 +4766,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
     }
     else
     {
-        for (size_t i=0; i<numTopologicalDims; ++i)
+        for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
         {
             mins[i] = 0;
             maxs[i] = numNodes[i] - 1; // last node index, not number of nodes
@@ -4782,7 +4783,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
 
     // Storage for meshes in VisIt, which is is topologically 3D so
     // the points must also be 3D.
-    for (size_t i=0; i<numTopologicalDims; ++i)
+    for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
     gdims[i] = (maxs[i]-mins[i]) / strides[i] + 1;// Number of nodes
 
     for (size_t i=numTopologicalDims; i<gdims.size(); ++i)
@@ -4794,7 +4795,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
         << CLASSFUNCLINE << "  "
         << "Have a " << (isNodal ? "nodal" : "zonal") << " inclusive selection  ";
 
-        for (size_t i=0; i<numTopologicalDims; ++i)
+        for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
         {
             VsLog::debugLog()
             << "(" << mins[i] << "," << maxs[i] << " stride " << strides[i] << ") ";
@@ -4806,7 +4807,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     << "Dimensions ";
 
-    for (size_t i=0; i<numTopologicalDims; ++i)
+    for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
     VsLog::debugLog() << gdims[i] << "  ";
 
     VsLog::debugLog() << std::endl;
@@ -4997,7 +4998,7 @@ void avtVsFileFormat::fillInMaskNodeArray(const std::vector<int>& gdims,
                 << "Cannot read mask dataset " << std::endl;
     } else {
         if (maskIsFortranOrder) {
-            for (size_t k = 0; k < numPoints; ++k) {
+            for (size_t k = 0; k < (size_t)numPoints; ++k) {
                 if (maskArray[k] != 0) {
                     avtGhostData::AddGhostNodeType(mp[k],
                             NODE_NOT_APPLICABLE_TO_PROBLEM);

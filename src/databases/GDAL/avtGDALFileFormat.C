@@ -546,7 +546,7 @@ avtGDALFileFormat::GetMesh(int domain, const char *meshname)
 #ifdef MDSERVER
     return 0;
 #else
-    const char *mName = "avtGDALFileFormat::GetMesh: ";
+    //const char *mName = "avtGDALFileFormat::GetMesh: ";
 
     MeshInfoMap::const_iterator pos = meshInfo.find(meshname);
     if(pos == meshInfo.end())
@@ -692,7 +692,7 @@ avtGDALFileFormat::CreateFlatMesh(const avtGDALFileFormat::MeshInfo &info, int d
 #ifdef MDSERVER
     return 0;
 #else
-    const char *mName = "avtGDALFileFormat::CreateFlatMesh: ";
+    //const char *mName = "avtGDALFileFormat::CreateFlatMesh: ";
 
     vtkFloatArray *coords[3] = {0,0,0};
     CreateCoordinates(info, domain, coords, 1);
@@ -984,7 +984,7 @@ avtGDALFileFormat::GetVar(int domain, const char *varname)
     else
     {
         // Determine the channel number
-        int chno = -1;
+        //int chno = -1;
         for(int channel = 0; channel < poDataset->GetRasterCount(); ++channel)
         {
             GDALRasterBand  *poBand = poDataset->GetRasterBand(channel + 1);
@@ -1147,8 +1147,8 @@ avtGDALFileFormat::ReadVar(const avtGDALFileFormat::MeshInfo &info,
     GDALRasterBand *poBand, int domain)
 {
     const char *mName = "avtGDALFileFormat::ReadVar: ";
-    int nCellsInX = info.xdims;
-    int nCellsInY = info.ydims;
+    //int nCellsInX = info.xdims;
+    //int nCellsInY = info.ydims;
     int nYPerDomain = info.nYPerDomain;
     int numDomains = info.numDomains;
 
@@ -1213,10 +1213,12 @@ avtGDALFileFormat::ReadVar(const avtGDALFileFormat::MeshInfo &info,
     MinMax[1] = poBand->GetMaximum(&haveMax);
     if(haveMin == 0)
         GDALComputeRasterMinMax((GDALRasterBandH)poBand, TRUE, MinMax);
-    if(haveMin != 0)
+    if(haveMin != 0) {
         debug4 << mName << "Min: " << MinMax[0] << endl;
-    if(haveMax != 0)
+    }
+    if(haveMax != 0) {
         debug4 << mName << "Max: " << MinMax[1] << endl;
+    }
     float fmin = float(MinMax[0]);
     dest = (float *)f->GetVoidPointer(0);
     for(int i = 0; i < nxy; ++i)

@@ -681,7 +681,7 @@ bool
 avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
     VistaDataType *dataType, size_t *size, void **buf, bool convertToFloat)
 {
-    VistaDataType retType;
+    VistaDataType retType = DTYPE_UNKNOWN; //TODO: check on fix for uninitialized vars
     size_t retSize;
     bool retVal = false;
     void *f;
@@ -755,35 +755,35 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
                         case DB_CHAR:
                         {
                             char *cptr = (char *) tmpBuf;
-                            for (int i = 0; i < retSize; i++)
+                            for (size_t i = 0; i < retSize; i++)
                                 *fptr++ = (float) (*cptr++);
                             break;
                         }
                         case DB_SHORT:
                         {
                             short *sptr = (short *) tmpBuf;
-                            for (int i = 0; i < retSize; i++)
+                            for (size_t i = 0; i < retSize; i++)
                                 *fptr++ = (float) (*sptr++);
                             break;
                         }
                         case DB_INT:
                         {
                             int *iptr = (int *) tmpBuf;
-                            for (int i = 0; i < retSize; i++)
+                            for (size_t i = 0; i < retSize; i++)
                                 *fptr++ = (float) (*iptr++);
                             break;
                         }
                         case DB_LONG:
                         {
                             long *lptr = (long *) tmpBuf;
-                            for (int i = 0; i < retSize; i++)
+                            for (size_t i = 0; i < retSize; i++)
                                 *fptr++ = (float) (*lptr++);
                             break;
                         }
                         case DB_DOUBLE:
                         {
                             double *dptr = (double *) tmpBuf;
-                            for (int i = 0; i < retSize; i++)
+                            for (size_t i = 0; i < retSize; i++)
                                 *fptr++ = (float) (*dptr++);
                             break;
                         }
@@ -827,7 +827,7 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
 
             // examine the datatype
             hid_t type = H5Dget_type(ds);
-            hid_t memType;
+            hid_t memType = H5T_NATIVE_FLOAT; //TODO: check on fix for uninitialized var
             H5T_class_t typeClass = H5Tget_class(type);
             size_t typeSize = H5Tget_size(type);
             if (typeClass == H5T_FLOAT)

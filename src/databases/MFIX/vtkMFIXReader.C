@@ -819,51 +819,66 @@ void vtkMFIXReader::GetInt(istream& in, int &val)
 //----------------------------------------------------------------------------
 void vtkMFIXReader::SwapInt(int &value)
 {
+  union {
+    char Swapped[4];
+    int SwapInt;
+  } swapOrder;
   if (this->SwapByteOrder)
     {
-    static char Swapped[4];
+    //static char Swapped[4];
     int * Addr = &value;
-    Swapped[0]=*((char*)Addr+3);
-    Swapped[1]=*((char*)Addr+2);
-    Swapped[2]=*((char*)Addr+1);
-    Swapped[3]=*((char*)Addr  );
-    value = *(reinterpret_cast<int*>(Swapped));
+    swapOrder.Swapped[0]=*((char*)Addr+3);
+    swapOrder.Swapped[1]=*((char*)Addr+2);
+    swapOrder.Swapped[2]=*((char*)Addr+1);
+    swapOrder.Swapped[3]=*((char*)Addr  );
+    //value = *(reinterpret_cast<int*>(Swapped));
+    value = swapOrder.SwapInt;
     }
 }
 
 //----------------------------------------------------------------------------
 void vtkMFIXReader::SwapDouble(double &value)
 {
+  union {
+    char Swapped[8];
+    double SwapDouble;
+  } swapOrder;
   if (this->SwapByteOrder)
     {
-    static char Swapped[8];
+    //static char Swapped[8];
     double * Addr = &value;
 
-    Swapped[0]=*((char*)Addr+7);
-    Swapped[1]=*((char*)Addr+6);
-    Swapped[2]=*((char*)Addr+5);
-    Swapped[3]=*((char*)Addr+4);
-    Swapped[4]=*((char*)Addr+3);
-    Swapped[5]=*((char*)Addr+2);
-    Swapped[6]=*((char*)Addr+1);
-    Swapped[7]=*((char*)Addr  );
-    value = *(reinterpret_cast<double*>(Swapped));
+    swapOrder.Swapped[0]=*((char*)Addr+7);
+    swapOrder.Swapped[1]=*((char*)Addr+6);
+    swapOrder.Swapped[2]=*((char*)Addr+5);
+    swapOrder.Swapped[3]=*((char*)Addr+4);
+    swapOrder.Swapped[4]=*((char*)Addr+3);
+    swapOrder.Swapped[5]=*((char*)Addr+2);
+    swapOrder.Swapped[6]=*((char*)Addr+1);
+    swapOrder.Swapped[7]=*((char*)Addr  );
+    //value = *(reinterpret_cast<double*>(Swapped));
+    value = swapOrder.SwapDouble;
     }
 }
 
 //----------------------------------------------------------------------------
 void vtkMFIXReader::SwapFloat(float &value)
 {
+  union {
+    char Swapped[4];
+    int SwapFloat;
+  } swapOrder;
   if (this->SwapByteOrder)
     {
-    static char Swapped[4];
+    //static char Swapped[4];
     float * Addr = &value;
 
-    Swapped[0]=*((char*)Addr+3);
-    Swapped[1]=*((char*)Addr+2);
-    Swapped[2]=*((char*)Addr+1);
-    Swapped[3]=*((char*)Addr  );
-    value = *(reinterpret_cast<float*>(Swapped));
+    swapOrder.Swapped[0]=*((char*)Addr+3);
+    swapOrder.Swapped[1]=*((char*)Addr+2);
+    swapOrder.Swapped[2]=*((char*)Addr+1);
+    swapOrder.Swapped[3]=*((char*)Addr  );
+    //value = *(reinterpret_cast<float*>(Swapped));
+    value = swapOrder.SwapFloat;
     }
 }
 
@@ -1022,7 +1037,7 @@ void vtkMFIXReader::GetBlockOfFloats(FILE* in, vtkFloatArray *v, int n)
   int cnt = 0;
   for (int i=0; i<numberOfRecords; ++i)
     {
-      fread( (char*)&tempArray , 512 , 1 , in );
+      size_t res = fread( (char*)&tempArray , 512 , 1 , in ); (void) res;
    // in.read( (char*)&tempArray , 512 );
     for (int j=0; j<numberOfFloatsInBlock; ++j)
       {

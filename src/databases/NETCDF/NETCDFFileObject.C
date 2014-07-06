@@ -1147,18 +1147,24 @@ NETCDFFileObject::PrintFileContents(ostream &os)
             {
                 debug4 << "\tname=" << attname;
                 debug4 << ", type=";
-                if(atttype == NC_BYTE)
+                if(atttype == NC_BYTE) {
                    debug4 << "NC_BYTE";
-                else if(atttype == NC_CHAR)
+                }
+                else if(atttype == NC_CHAR) {
                     debug4 << "NC_CHAR";
-                else if(atttype == NC_SHORT)
+                }
+                else if(atttype == NC_SHORT) {
                    debug4 << "NC_SHORT";
-                else if(atttype == NC_INT)
+                }
+                else if(atttype == NC_INT) {
                    debug4 << "NC_INT";
-                else if(atttype == NC_FLOAT)
+                }
+                else if(atttype == NC_FLOAT) {
                    debug4 << "NC_FLOAT";
-                else if(atttype == NC_DOUBLE)
+                }
+                else if(atttype == NC_DOUBLE) {
                    debug4 << "NC_DOUBLE";
+                }
                 debug4 << ", size=" << attsize;
 
 #define PRINT_ATTR_VALUES(T, FUNC, varid) \
@@ -1170,14 +1176,16 @@ NETCDFFileObject::PrintFileContents(ostream &os)
                                 debug4 << ", value={";\
                                 for(size_t k = 0; k < attsize; ++k)\
                                 {\
-                                    if(k > 0)\
+                                    if(k > 0) {\
                                         debug4 << ", ";\
+                                    }\
                                     debug4 << value[k];\
                                 }\
                                 debug4 << "}";\
                             }\
-                            else\
+                            else {\
                                 debug4 << ", value=" << value[0];\
+                            }\
                             delete [] value;\
                             debug4 << endl;\
                         }
@@ -1225,18 +1233,24 @@ NETCDFFileObject::PrintFileContents(ostream &os)
         {
             debug4 << "\tname=" << varname << endl;
             debug4 << "\t\ttype=";
-            if(vartype == NC_BYTE)
+            if(vartype == NC_BYTE) {
                debug4 << "NC_BYTE";
-            else if(vartype == NC_CHAR)
+            }
+            else if(vartype == NC_CHAR) {
                debug4 << "NC_CHAR";
-            else if(vartype == NC_SHORT)
+            }
+            else if(vartype == NC_SHORT) {
                debug4 << "NC_SHORT";
-            else if(vartype == NC_INT)
+            }
+            else if(vartype == NC_INT) {
                debug4 << "NC_INT";
-            else if(vartype == NC_FLOAT)
+            }
+            else if(vartype == NC_FLOAT) {
                debug4 << "NC_FLOAT";
-            else if(vartype == NC_DOUBLE)
+            }
+            else if(vartype == NC_DOUBLE) {
                debug4 << "NC_DOUBLE";
+            }
             debug4 << endl;
             debug4 << "\t\tndims=" << varndims << endl;
             debug4 << "\t\tdims = {";
@@ -1245,8 +1259,9 @@ NETCDFFileObject::PrintFileContents(ostream &os)
             {
                 char   dimName[NC_MAX_NAME+1];
                 size_t dimSize;
-                if(j > 0)
+                if(j > 0) {
                     debug4 << ", ";
+                }
                 if((status = nc_inq_dim(GetFileHandle(), vardims[j], dimName, &dimSize)) == NC_NOERR)
                 {
                     debug4 << dimName << "=" << dimSize;
@@ -1273,18 +1288,24 @@ NETCDFFileObject::PrintFileContents(ostream &os)
                     {
                         debug4 << "\t\t\tname=" << attname;
                         debug4 << ", type=";
-                        if(atttype == NC_BYTE)
+                        if(atttype == NC_BYTE) {
                            debug4 << "NC_BYTE";
-                        else if(atttype == NC_CHAR)
+                        }
+                        else if(atttype == NC_CHAR) {
                            debug4 << "NC_CHAR";
-                        else if(atttype == NC_SHORT)
+                        }
+                        else if(atttype == NC_SHORT) {
                            debug4 << "NC_SHORT";
-                        else if(atttype == NC_INT)
+                        }
+                        else if(atttype == NC_INT) {
                            debug4 << "NC_INT";
-                        else if(atttype == NC_FLOAT)
+                        }
+                        else if(atttype == NC_FLOAT) {
                            debug4 << "NC_FLOAT";
-                        else if(atttype == NC_DOUBLE)
+                        }
+                        else if(atttype == NC_DOUBLE) {
                            debug4 << "NC_DOUBLE";
+                        }
                         debug4 << ", size=" << attsize;
 
                         if(atttype == NC_CHAR)

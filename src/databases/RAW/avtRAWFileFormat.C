@@ -165,7 +165,7 @@ avtRAWFileFormat::~avtRAWFileFormat()
 void
 avtRAWFileFormat::FreeUpResources(void)
 {
-    for(int i = 0; i < meshes.size(); ++i)
+    for(size_t i = 0; i < meshes.size(); ++i)
     {
         if(meshes[i].mesh != 0)
             meshes[i].mesh->Delete();
@@ -276,9 +276,9 @@ avtRAWFileFormat::ReadFile(const char *name)
 
     int domain = 0;
     char   line[1024];
-    double pts[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    int nc = 0;
-    for(int lineIndex = 0; ifile.good(); ++lineIndex)
+    double pts[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.}; (void) pts;
+    //int nc = 0;
+    for(size_t lineIndex = 0; ifile.good(); ++lineIndex)
     {
         // Get the line
         ifile.getline(line, 1024);
@@ -377,7 +377,7 @@ avtRAWFileFormat::ReadFile(const char *name)
 
     // Print out the meshes list
     debug4 << "MESHES\n===========================\n";
-    for(int i = 0; i < meshes.size(); ++i)
+    for(size_t i = 0; i < meshes.size(); ++i)
     {
         debug4 << mName << "Mesh " << i << ": " << meshes[i].domainName.c_str()
                << ", ptr=" << (void*)meshes[i].mesh << endl;
@@ -446,7 +446,7 @@ avtRAWFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->topologicalDimension = 2;
     mmd->numBlocks = (int)meshes.size();
     stringVector names;
-    for(int i = 0; i < meshes.size(); ++i)
+    for(size_t i = 0; i < meshes.size(); ++i)
         names.push_back(meshes[i].domainName);
     mmd->blockNames = names;
     md->Add(mmd);

@@ -92,8 +92,7 @@
 // ****************************************************************************
 
 avtBasicNETCDFReader::avtBasicNETCDFReader(const char *filename) :
-    avtNETCDFReaderBase(filename), meshNameToDimensionsSizes(), varToDimensionsSizes(),
-    meshNameToNCDimensions()
+    avtNETCDFReaderBase(filename), meshNameToDimensionsSizes(), meshNameToNCDimensions(), varToDimensionsSizes()
 {
     meshNamesCreated = false;
     procNum = 0;
@@ -105,8 +104,7 @@ avtBasicNETCDFReader::avtBasicNETCDFReader(const char *filename) :
 }
 
 avtBasicNETCDFReader::avtBasicNETCDFReader(const char *filename, NETCDFFileObject *f) :
-    avtNETCDFReaderBase(filename, f), meshNameToDimensionsSizes(), varToDimensionsSizes(),
-    meshNameToNCDimensions()
+    avtNETCDFReaderBase(filename, f), meshNameToDimensionsSizes(), meshNameToNCDimensions(), varToDimensionsSizes()
 {
     meshNamesCreated = false;
     procNum = 0;
@@ -456,7 +454,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                         // Filter out time from the dimensions so time varying and static
                         // variables can share the same mesh.
                         intVector meshDimsWithoutTime, meshDimSizesWithoutTime;
-                        for(int dim = 0; dim < meshDimSizes.size(); ++dim)
+                        for(size_t dim = 0; dim < meshDimSizes.size(); ++dim)
                             if(meshDimSizes[dim] != TIME_DIMENSION)
                             {
                                 meshDimSizesWithoutTime.push_back(meshDimSizes[dim]);
@@ -546,7 +544,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
 bool
 avtBasicNETCDFReader::ReturnSpatialDimensionIndices(const intVector &dims, int sDims[3], int &nSDims) const
 {
-    int i;
+    size_t i;
     const char *mName = "avtBasicNETCDFReader::ReturnValidDimensions: ";
 
     // Look for up to 3 valid spatial dimensions.
@@ -562,7 +560,7 @@ avtBasicNETCDFReader::ReturnSpatialDimensionIndices(const intVector &dims, int s
     // Count the number of cells that comprise the spatial dimensions
     int nCells = 1;
     debug5 << mName << "validDims=(";
-    for(i = 0; i < nSDims; ++i)
+    for(i = 0; i < (size_t)nSDims; ++i)
     {
         nCells *= dims[sDims[i]];
         debug5 << dims[sDims[i]] << ", ";
@@ -613,7 +611,7 @@ avtBasicNETCDFReader::ReturnDimStartsAndCounts(int timeState, const intVector &d
     //
     dimStarts.clear();
     dimCounts.clear();
-    for (int i = 0; i < dims.size(); i++)
+    for (size_t i = 0; i < dims.size(); i++)
     {
         if(dims[i] == TIME_DIMENSION)
         {
@@ -776,7 +774,7 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
                     debug4 << mName << "Looking for " << dimName << " array as X coordinate" << endl;
                     if(fileObject->InqVariable(dimName, &dvart, &dvarndims, &dvardims))
                     {
-                        if(dvarndims == 1 && dvardims[0] == sz)
+                        if(dvarndims == 1 && (size_t)dvardims[0] == sz)
                             coordvals = ReadArray(dimName);
                         delete [] dvardims;
                     }
@@ -872,7 +870,7 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
                                    << xyzname[i] << " coordinate" << endl;
                             if(fileObject->InqVariable(dimName, &dvart, &dvarndims, &dvardims))
                             {
-                                if(dvarndims == 1 && dvardims[0] == sz)
+                                if(dvarndims == 1 && (size_t)dvardims[0] == sz)
                                     coordvals = ReadArray(dimName);
                                 delete [] dvardims;
                             }
@@ -1015,7 +1013,7 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
                    << " of " << nValues << " elements" << endl; \
             int *rdimStarts = new int[dimStarts.size()]; \
             int *rdimCounts = new int[dimCounts.size()]; \
-            for (int kk = 0; kk < dimStarts.size(); kk++)\
+            for (size_t kk = 0; kk < dimStarts.size(); kk++)\
             {\
                 rdimStarts[ndims-kk-1] = dimStarts[kk];\
                 rdimCounts[ndims-kk-1] = dimCounts[kk];\
@@ -1061,16 +1059,18 @@ avtBasicNETCDFReader::GetVar(int timeState, const char *var)
 
         // Compute how many values that makes.
         unsigned long nValues = 1;
-        for(int i = 0; i < dimCounts.size(); ++i)
+        for(size_t i = 0; i < dimCounts.size(); ++i)
             nValues *= (unsigned long)dimCounts[i];
 
         debug4 << mName << "dimStarts = {";
-        for(int i = 0; i < dimStarts.size(); ++i)
+        for(size_t i = 0; i < dimStarts.size(); ++i) {
             debug4 << dimStarts[i] << ", ";
+        }
         debug4 << "}\n";
         debug4 << mName << "dimCounts = {";
-        for(int i = 0; i < dimCounts.size(); ++i)
+        for(size_t i = 0; i < dimCounts.size(); ++i) {
             debug4 << dimCounts[i] << ", ";
+        }
         debug4 << "}\n";
 
         if(t == CHARARRAY_TYPE || t == UCHARARRAY_TYPE)

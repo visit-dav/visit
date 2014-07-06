@@ -282,11 +282,12 @@ int extract_or_test_files(__G)    /* return PK-type error code */
     unsigned members_processed;
     ulg num_skipped=0L, num_bad_pwd=0L;
     LONGINT old_extra_bytes = 0L;
+    ssize_t res = 0;
 #ifdef SET_DIR_ATTRIB
     unsigned num_dirs=0;
     dirtime *dirlist=(dirtime *)NULL, **sorted_dirlist=(dirtime **)NULL;
 #endif
-
+    
 /*---------------------------------------------------------------------------
     The basic idea of this function is as follows.  Since the central di-
     rectory lies at the end of the zipfile and the member files lie at the
@@ -513,7 +514,7 @@ int extract_or_test_files(__G)    /* return PK-type error code */
         G.cur_zipfile_bufstart =
           lseek(G.zipfd, (LONGINT)cd_bufstart, SEEK_SET);
 #endif /* ?USE_STRM_INPUT */
-        read(G.zipfd, (char *)G.inbuf, INBUFSIZ);  /* been here before... */
+        res = read(G.zipfd, (char *)G.inbuf, INBUFSIZ); (void)res;  /* been here before... */
         G.inptr = cd_inptr;
         G.incnt = cd_incnt;
         ++blknum;
@@ -759,7 +760,7 @@ static int store_info(__G)   /* return 0 if skipping, 1 if OK */
         else if (!uO.tflag && !IS_OVERWRT_ALL) { /* if -o, extract anyway */
             Info(slide, 0x481, ((char *)slide, LoadFarString(VMSFormatQuery),
               FnFilter1(G.filename)));
-            fgets(G.answerbuf, 9, stdin);
+            { char* res = fgets(G.answerbuf, 9, stdin); (void) res; }
             if ((*G.answerbuf != 'y') && (*G.answerbuf != 'Y'))
                 return 0;
         }
@@ -774,7 +775,7 @@ static int store_info(__G)   /* return 0 if skipping, 1 if OK */
               UNZIP_VERSION / 10, UNZIP_VERSION % 10));
         return 0;
     }
-
+    (void) ComprNames;
     if UNKN_COMPR {
         if (!((uO.tflag && uO.qflag) || (!uO.tflag && !QCOND2))) {
 #ifndef SFX
@@ -1253,7 +1254,7 @@ reprompt:
                         do {
                             Info(slide, 0x81, ((char *)slide,
                               LoadFarString(NewNameQuery)));
-                            fgets(G.filename, FILNAMSIZ, stdin);
+                            {char* res = fgets(G.filename, FILNAMSIZ, stdin); (void) res;}
                             /* usually get \n here:  better check for it */
                             fnlen = strlen(G.filename);
                             if (lastchar(G.filename, fnlen) == '\n')
@@ -1351,7 +1352,7 @@ reprompt:
 static int extract_or_test_member(__G)    /* return PK-type error code */
      __GDEF
 {
-    char *nul="[empty] ", *txt="[text]  ", *bin="[binary]";
+    const char *nul="[empty] ", *txt="[text]  ", *bin="[binary]";
 #ifdef CMS_MVS
     char *ebc="[ebcdic]";
 #endif
@@ -1363,6 +1364,7 @@ static int extract_or_test_member(__G)    /* return PK-type error code */
 #   define wsize WSIZE
 #endif
 
+    (void) nul; (void) txt; (void) bin;
 
 /*---------------------------------------------------------------------------
     Initialize variables, buffers, etc.

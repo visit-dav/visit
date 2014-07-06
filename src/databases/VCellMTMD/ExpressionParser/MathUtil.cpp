@@ -41,6 +41,7 @@ double MathUtil::acsch(double arg){
     } else if (arg < 0) {    
         return log( (1.0 - sqrt(1 + arg * arg)) / arg );    
     }    
+    return 0; ///TODO: check fix
 }     
     
 double MathUtil::asec(double arg){    

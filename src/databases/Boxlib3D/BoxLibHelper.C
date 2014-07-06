@@ -9,7 +9,8 @@
 void BoxLibHelper::InitializeBoxLib()
 {
     int dummyArgC = 1;
-    char *dummyArgV[] = { "visit" };
+    char dummyArgVisit[] = "visit";
+    char *dummyArgV[] = { dummyArgVisit };
     char **argv = dummyArgV; // Avoid implicit type conversion
     BoxLib::Initialize(dummyArgC, argv);
 }

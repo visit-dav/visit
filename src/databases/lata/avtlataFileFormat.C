@@ -212,6 +212,9 @@ avtlataFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     case Domain::polyedre:
     case Domain::hexa:      topo_dim = 3; break;
     default:
+      topo_dim = 3; ///TODO: this should be an error in default case!
+      EXCEPTION1(InvalidVariableException, 
+                 "avtlataFileFormat::PopulateDatabaseMetaData error: unknown element type");
       cerr << "avtlataFileFormat::PopulateDatabaseMetaData error: unknown element type" << endl;
 //      exit(-1);
     }

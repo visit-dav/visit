@@ -12,7 +12,7 @@ Modifications history :
 */
 
 #ifndef SWIG
-const static char * FICHIER_U_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
+//const static char * FICHIER_U_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 #endif /*SWIG*/
 
 #include <string>

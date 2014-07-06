@@ -2131,6 +2131,9 @@ char    *GetLoadPath     OF((__GPRO));                              /* local */
  *      (fprintf((flag)&1? stderr : stdout, \
  *               (char *)(sprintf sprf_arg, (buf))) == EOF)
  */
+#if 1 ///TODO: There are too many warnings that are being generated (PLEASE FIX!
+#      define Info(buf,flag,sprf_arg)
+#else
 #ifndef Info   /* may already have been defined for redirection */
 #  ifdef FUNZIP
 #    define Info(buf,flag,sprf_arg) \
@@ -2146,7 +2149,7 @@ char    *GetLoadPath     OF((__GPRO));                              /* local */
 #    endif
 #  endif
 #endif /* !Info */
-
+#endif
 /*  The following macros wrappers around the fnfilter function are used many
  *  times to prepare archive entry names or name components for displaying
  *  listings and (warning/error) messages. They use sections in the upper half

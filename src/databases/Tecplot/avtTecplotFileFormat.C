@@ -1450,7 +1450,7 @@ avtTecplotFileFormat::ReadFile()
                             if (c == "CELLCENTERED")
                             {
                                 // remember given indices are 1-origin
-                                for (int i=0; i<varindices.size(); i++)
+                                for (size_t i=0; i<varindices.size(); i++)
                                     variableCellCentered[varindices[i]-1] = 1;
                             }
                             
@@ -1552,7 +1552,7 @@ avtTecplotFileFormat::ReadFile()
                                 // next....
                                 c = GetNextToken();
                             }
-                            for (int vi=0; vi<varindices.size(); vi++)
+                            for (size_t vi=0; vi<varindices.size(); vi++)
                             {
                                 // remember given indices are 1-origin
                                 variableShareMap[varindices[vi]-1] = dest-1;

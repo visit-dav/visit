@@ -19,6 +19,10 @@
 #include <snprintf.h>
 #include <pvldReader.h>
 
+using std::set;
+using std::vector;
+using std::string;
+
 static int STOI(const std::string &s)
 {
     return atoi(s.c_str());
@@ -293,7 +297,7 @@ GenMissData( const vector<int>& vdim, const vector<int>& msmat,
     dims[0]=msmat.size();
 
     int tot=dims[0];
-    for( int i=1; i<dims.size(); i++ )
+    for( size_t i=1; i<dims.size(); i++ )
         tot *= dims[i];
     data.assign(tot, 0);
 }
@@ -646,7 +650,7 @@ ReadSolidBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
         //if( nb >= nblks ) nb=0;
         //nb = nb<nblks ? nb : nblks-1;
 
-        if( solid_blkmap_.size() != nblks )
+        if( solid_blkmap_.size() != (size_t)nblks )
             solid_blkmap_.resize( nblks );
 
         vector<int>& vmap = solid_blkmap_[nb];
@@ -684,7 +688,7 @@ ReadSolidBlockData( const char* varname, int blkInd, vector<int>& dims, vector<f
         int nblks = GetNumOfSolidBlocks();
         if( blkInd >= nblks ) return true;
 
-        int ind;
+        size_t ind;
         for( ind=0; ind<solid_dsname_.size(); ind++ )
             if( solid_dsname_[ind] == varname ) break;
         if( ind<solid_dsname_.size() )
@@ -790,8 +794,8 @@ ReadShellBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
 {
     try
     {
-        int nblks = GetNumOfShellBlocks();
-        if( nb >= nblks ) return;
+        size_t nblks = GetNumOfShellBlocks();
+        if( (size_t)nb >= nblks ) return;
 
         if( shell_blkmap_.size() != nblks )
             shell_blkmap_.resize( nblks );
@@ -821,7 +825,7 @@ ReadShellBlockData( const char* varname, int blkInd, vector<int>& dims, vector<f
         int nblks = GetNumOfShellBlocks();
         if( blkInd >= nblks ) return true;
 
-        int ind;
+        size_t ind;
         for( ind=0; ind<shell_dsname_.size(); ind++ )
             if( shell_dsname_[ind] == varname ) break;
         if( ind<shell_dsname_.size() )
@@ -927,8 +931,8 @@ ReadBeamBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
 {
     try
     {
-        int nblks = GetNumOfBeamBlocks();
-        if( nb >= nblks ) return;
+        size_t nblks = GetNumOfBeamBlocks();
+        if( (size_t)nb >= nblks ) return;
 
         if( beam_blkmap_.size() != nblks )
             beam_blkmap_.resize( nblks );
@@ -958,7 +962,7 @@ ReadBeamBlockData( const char* varname, int blkInd, vector<int>& dims, vector<fl
         int nblks = GetNumOfBeamBlocks();
         if( blkInd >= nblks ) return true;
 
-        int ind;
+        size_t ind;
         for( ind=0; ind<beam_dsname_.size(); ind++ )
             if( beam_dsname_[ind] == varname ) break;
         if( ind<beam_dsname_.size() )
@@ -1063,8 +1067,8 @@ ReadSurfaceBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
 {
     try
     {
-        int nblks = GetNumOfSurfaceBlocks();
-        if( nb >= nblks ) return;
+        size_t nblks = GetNumOfSurfaceBlocks();
+        if( (size_t)nb >= nblks ) return;
 
         if( surf_blkmap_.size() != nblks )
             surf_blkmap_.resize( nblks );
@@ -1094,7 +1098,7 @@ ReadSurfaceBlockData( const char* varname, int blkInd, vector<int>& dims, vector
         int nblks = GetNumOfSurfaceBlocks();
         if( blkInd >= nblks ) return true;
 
-        int ind;
+        size_t ind;
         for( ind=0; ind<surf_dsname_.size(); ind++ )
             if( surf_dsname_[ind] == varname ) break;
         if( ind<surf_dsname_.size() )
@@ -1215,7 +1219,7 @@ ReadSphBlockData( const char* varname, int blkInd, vector<int>& dims, vector<flo
 {
     try
     {
-        int ind;
+        size_t ind;
         for( ind=0; ind<sph_dsname_.size(); ind++ )
             if( sph_dsname_[ind] == varname ) break;
         if( ind < sph_dsname_.size() )
@@ -1319,8 +1323,8 @@ ReadTiedSetBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
 {
     try
     {
-        int nblks = GetNumOfTiedSetBlocks();
-        if( nb >= nblks ) return;
+        size_t nblks = GetNumOfTiedSetBlocks();
+        if( (size_t)nb >= nblks ) return;
 
         if( tdst_blkmap_.size() != nblks )
             tdst_blkmap_.resize( nblks );
@@ -1392,7 +1396,7 @@ ReadTiedSetBlockData( const char* varname, int blkInd, vector<int>& dims, vector
         int nblks = GetNumOfTiedSetBlocks();
         if( blkInd >= nblks ) return true;
 
-        int ind;
+        size_t ind;
         for( ind=0; ind<tdst_dsname_.size(); ind++ )
             if( tdst_dsname_[ind] == varname ) break;
         if( ind<tdst_dsname_.size() )
@@ -1420,8 +1424,8 @@ ReadContactBlockMesh( int nb, vector<float>& vcrd, vector<int>& elmt )
 {
     try
     {
-        int nblks = GetNumOfContactBlocks();
-        if( nb >= nblks ) return;
+        size_t nblks = GetNumOfContactBlocks();
+        if( (size_t)nb >= nblks ) return;
 
         if( cntt_blkmap_.size() != nblks )
             cntt_blkmap_.resize( nblks );
@@ -1492,7 +1496,7 @@ ReadContactBlockData( const char* varname, int blkInd, vector<int>& dims, vector
         int nblks = GetNumOfContactBlocks();
         if( blkInd >= nblks ) return true;
 
-        int ind;
+        size_t ind;
         for( ind=0; ind<cntt_dsname_.size(); ind++ )
             if( cntt_dsname_[ind] == varname ) break;
         if( ind<cntt_dsname_.size() )
@@ -1535,7 +1539,7 @@ bool ReadStringAttribute(hid_t gid, const char *name, string &retval)
 
     char** rd = new char*[ dims[0] ];
     rd[0] = new char[ sdim*dims[0] ];
-    for( int j=1; j<dims[0]; j++ )
+    for( size_t j=1; j<dims[0]; j++ )
         rd[j] = rd[j-1]+sdim;
 
     herr_t herr = H5Aread( aid, memtype, rd[0] );
@@ -1551,7 +1555,7 @@ bool ReadStringAttribute(hid_t gid, const char *name, string &retval)
     else
     {
         string tmp = rd[0];
-        for( int j=1; j<dims[0]; j++ )
+        for( size_t j=1; j<dims[0]; j++ )
             tmp += rd[j];
         retval = tmp;
         delete [] rd[0];
@@ -1564,7 +1568,7 @@ bool ReadStringAttribute(hid_t gid, const char *name, string &retval)
 void PVLD_Reader::
 ReadGeneralInfo( hid_t file_id )
 {
-    herr_t herr;
+    herr_t herr; (void) herr;
     try
     {
         hid_t gid = OpenGroup( file_id, general_name.c_str() );
@@ -1597,7 +1601,7 @@ ReadGeneralInfo( hid_t file_id )
 void PVLD_Reader::
 ReadNodeInfo( hid_t file_id )
 {
-    herr_t herr;
+    herr_t herr; (void) herr;
 
     try
     {
@@ -1740,7 +1744,7 @@ GetMaterialTitles( hid_t gid )
 
         char** rd = new char*[ dims[0] ];
         rd[0] = new char[ sdim*dims[0] ];
-        for( int j=1; j<dims[0]; j++ )
+        for( size_t j=1; j<dims[0]; j++ )
             rd[j] = rd[j-1]+sdim;
 
         herr_t herr = H5Aread( aid, memtype, rd[0] );
@@ -1754,7 +1758,7 @@ GetMaterialTitles( hid_t gid )
         else
         {
             string tmp = rd[0];
-            for( int j=1; j<dims[0]; j++ )
+            for( size_t j=1; j<dims[0]; j++ )
                 tmp += rd[j];
             mat_titles_.push_back( tmp );
         }
@@ -1814,7 +1818,7 @@ GetMaterialType( hid_t file_id, const char* grpname )
             CloseAttribute( aid );
 
             // verify
-            if( type.size() != nmmat_ )
+            if( type.size() != (size_t)nmmat_ )
                 throw std::runtime_error("Unmatched number of parts in PVLD_Reader::GetMaterialType()\n");
             for( vector<int>::iterator i=solid_matid_.begin(); i!=solid_matid_.end(); ++i )
                 if( type.at( *i-1 ) != solid_elmt_type )
@@ -1919,7 +1923,7 @@ ReadInfo( hid_t file_id, const char* name,
           vector<vector<int> >& dsdims,
           const char* num_str )
 {
-    herr_t herr;
+    herr_t herr; (void) herr;
 
     try
     {
@@ -2111,7 +2115,7 @@ ReadNodeData( hid_t fid, int varInd, const vector<int>& map,
     dims[0] = map.size();
 
     dat.resize( nele*map.size() );
-    for( int i=0; i<map.size(); i++ )
+    for( size_t i=0; i<map.size(); i++ )
     {
         int sf1 = nele*i;
         int sf2 = nele*map[i];
@@ -2492,7 +2496,7 @@ ReadSphBlockMesh( hid_t fid, int nb, vector<float>& vcrd, vector<int>& elmt )
     len[0] = sph_part_.at(nb+1) - sph_part_.at(nb);
 
     elmt.resize( len[0] );
-    for( int i=0; i<len[0]; i++ )
+    for( size_t i=0; i<len[0]; i++ )
         elmt[i] = i;
 
     vcrd.resize( len[0]*len[1] );
@@ -2594,7 +2598,7 @@ ReadBlockHistoryData( hid_t fid, const char* meshname, int blkInd, int varInd,
 
     hsize_t shv = hvpart.at(blkInd);
     hsize_t nhv = hvpart.at(blkInd+1) - shv;
-    if( hvsft[len] != nhv )
+    if( (hsize_t)hvsft[len] != nhv )
         throw std::runtime_error( "Unmatched number of history variables in PVLD_Reader::ReadBlockHistoryData()\n" );
 
     vector<float> buf( nhv );
@@ -2607,7 +2611,7 @@ ReadBlockHistoryData( hid_t fid, const char* meshname, int blkInd, int varInd,
     for( hsize_t i=0; i<len; i++ )
     {
         hsize_t j = hvsft[i] + varInd;
-        if( j < hvsft[i+1] )
+        if( j < (hsize_t)hvsft[i+1] )
             data[i] = buf[j];
     }
 
@@ -3537,7 +3541,7 @@ ReadStringArrayAttribute( hid_t loc, const char* att_name,  vector<string>& str_
     H5Tset_size( type, H5T_VARIABLE );
 
     char** names = new char* [ dims[0] ];
-    herr_t herr = H5Aread( aid, type, names );
+    herr_t herr = H5Aread( aid, type, names ); (void) herr;
 
     for( hsize_t i=0; i<dims[0]; i++ )
     {
@@ -3588,18 +3592,18 @@ ReadSolidBlockIndexVariable( const string& idxname,
                              vector<float>& data )
 {
     const string& mn = solid_name;
-    vector<int>& pt = solid_part_;
+    vector<int>& pt = solid_part_; (void) pt;
     IndexVariables& iv = solid_idxvar_;
 
     try
     {
-        int iind=0;
+        size_t iind=0;
         for( iind=0; iind<iv.names_.size(); iind++ )
             if( iv.names_[iind] == idxname ) break;
         if( iind >= iv.names_.size() ) return;
 
         vector<string>& dsname = iv.dsnames_[iind];
-        int vind=0;
+        size_t vind=0;
         for( vind=0; vind<dsname.size(); vind++ )
             if( dsname[vind] == varname ) break;
         if( vind >= dsname.size() ) return;
@@ -3607,8 +3611,8 @@ ReadSolidBlockIndexVariable( const string& idxname,
         const vector<int>& sdim = iv.dsdims_[iind][vind];
         vector<double>& smpl = iv.dsdata_[iind][vind];
 
-        int dsz=1;
-        for( int i=0; i<sdim.size(); i++ )
+        size_t dsz=1;
+        for( size_t i=0; i<sdim.size(); i++ )
             dsz *= sdim[i];
 
         if( smpl.size() != dsz )
@@ -3665,13 +3669,13 @@ ReadShellBlockIndexVariable( const string& idxname,
                              vector<float>& data )
 {
     const string& mn = shell_name;
-    vector<int>& pt = shell_part_;
+    vector<int>& pt = shell_part_; (void) pt;
     IndexVariables& iv = shell_idxvar_;
 
     try
     {
-        int iind=0;
-        int vind=0;
+        size_t iind=0;
+        size_t vind=0;
         for( iind=0; iind<iv.names_.size(); iind++ )
             if( iv.names_[iind] == idxname ) break;
         if( iind >= iv.names_.size() ) return;
@@ -3684,8 +3688,8 @@ ReadShellBlockIndexVariable( const string& idxname,
         const vector<int>& sdim = iv.dsdims_[iind][vind];
         vector<double>& smpl = iv.dsdata_[iind][vind];
 
-        int dsz=1;
-        for( int i=0; i<sdim.size(); i++ )
+        size_t dsz=1;
+        for( size_t i=0; i<sdim.size(); i++ )
             dsz *= sdim[i];
 
         if( smpl.size() != dsz )

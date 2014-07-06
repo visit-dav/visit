@@ -450,7 +450,7 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
     nblocks = nb;
     dir ="";
     // find dir if provided
-    int idx = stem.rfind("/");
+    size_t idx = stem.rfind("/");
     if ( idx != string::npos )
     {
         int stem_len = stem.size() - (idx+1) ;
@@ -561,13 +561,13 @@ void
 avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
     int *meshtypes)
 {
-    int   i,j,k;
+    size_t   i,j,k; (void) j; (void) k;
 
     int nlevels = 0;
     string meshName = BeginVar(dbfile, mmd->name, nlevels);
 
     avtDataAttributes& atts = GetInput()->GetInfo().GetAttributes();
-    int ndims = atts.GetSpatialDimension();
+    int ndims = atts.GetSpatialDimension(); (void) ndims;
 
     //
     // Construct the names for each mesh.
@@ -577,25 +577,25 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
     double *extents = new double[nblocks * ndims * 2];
 #endif
     k = 0;
-    for (i = 0 ; i < nblocks ; i++)
+    for (i = 0 ; i < (size_t)nblocks ; i++)
     {
         char tmp[1024];
         if (singleFile)
         {
             if(nlevels > 0)
-                sprintf(tmp, "/domain_%d/%s", i, VN(mmd->name));
+                sprintf(tmp, "/domain_%ld/%s", i, VN(mmd->name));
             else
-                sprintf(tmp, "domain_%d/%s", i, VN(mmd->name));
+                sprintf(tmp, "domain_%ld/%s", i, VN(mmd->name));
         }
         else
-            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i,VN(mmd->name));
+            sprintf(tmp, "%s.%ld.silo:/%s", stem.c_str(), i,VN(mmd->name));
         mesh_names[i] = new char[strlen(tmp)+1];
         strcpy(mesh_names[i], tmp);
 
 #if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
-        for (j = 0; j < ndims; j++)
+        for (j = 0; j < (size_t)ndims; j++)
            extents[k++] = spatialMins[i*ndims+j];
-        for (j = 0; j < ndims; j++)
+        for (j = 0; j < (size_t)ndims; j++)
            extents[k++] = spatialMaxs[i*ndims+j];
 #endif
     }
@@ -605,7 +605,7 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
     //
 #if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
     int *zone_counts = new int[nblocks];
-    for (i = 0; i < nblocks; i++)
+    for (i = 0; i < (size_t)nblocks; i++)
         zone_counts[i] = zoneCounts[i];
 #endif
 
@@ -648,7 +648,7 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
     // Clean up memory.
     //
     DBFreeOptlist(tmpOptlist);
-    for (i = 0 ; i < nblocks ; i++)
+    for (i = 0 ; i < (size_t)nblocks ; i++)
     {
         delete [] mesh_names[i];
     }
@@ -799,7 +799,7 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
         DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
 
     // the following silo options exist only for silo 4.4 and later
-    int extsize = ncomps * 2;
+    int extsize = ncomps * 2; (void) extsize;
     if (extents != 0)
     {
 #if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
@@ -1125,7 +1125,7 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 void
 avtSiloWriter::CloseFile(void)
 {
-    int i;
+    size_t i;
  
     const avtMeshMetaData *mmd = headerDbMd->GetMesh(0);
 
@@ -2025,9 +2025,9 @@ void
 avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds, 
     bool isPointMesh, int centering, const unsigned char *gz)
 {
-    int i,j,k;
+    size_t i,j,k;
 
-    for (i = 0 ; i < ds->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)ds->GetNumberOfArrays() ; i++)
     {
          vtkDataArray *arr = ds->GetArray(i);
 
@@ -2062,7 +2062,7 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              // find min,max in this variable
              double dimMin = +DBL_MAX;
              double dimMax = -DBL_MAX;
-             for (k = 0 ; k < nTuples ; k++)
+             for (k = 0 ; k < (size_t)nTuples ; k++)
              {
                  double val = arr->GetTuple1(k);
                  if (val < dimMin)
@@ -2088,14 +2088,14 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
          {
              double **vars     = new double*[ncomps];
              char  **varnames = new char*[ncomps];
-             for (j = 0 ; j < ncomps ; j++)
+             for (j = 0 ; j < (size_t)ncomps ; j++)
              {
                  double dimMin = +DBL_MAX;
                  double dimMax = -DBL_MAX;
                  vars[j] = new double[nTuples];
                  varnames[j] = new char[1024];
-                 sprintf(varnames[j], "%s_comp%d", varName.c_str(), j);
-                 for (k = 0 ; k < nTuples ; k++)
+                 sprintf(varnames[j], "%s_comp%ld", varName.c_str(), j);
+                 for (k = 0 ; k < (size_t)nTuples ; k++)
                  {
                      vars[j][k] = arr2->GetComponent(k, j);
                      if (vars[j][k] < dimMin)
@@ -2117,7 +2117,7 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
                          ncomps, varnames, (DB_DTPTR2) vars, nTuples, NULL, 0, DB_DOUBLE,
                          centering, optlist);
 
-             for (j = 0 ; j < ncomps ; j++)
+             for (j = 0 ; j < (size_t)ncomps ; j++)
              {
                   delete [] vars[j];
                   delete [] varnames[j];
@@ -2185,9 +2185,9 @@ void
 avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
    int ndims, int *dims, int centering)
 {
-    int i,j,k;
+    size_t i,j,k;
 
-    for (i = 0 ; i < ds->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < (size_t)ds->GetNumberOfArrays() ; i++)
     {
          vtkDataArray *arr = ds->GetArray(i);
 
@@ -2220,7 +2220,7 @@ avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              // find min,max in this variable
              double dimMin = +DBL_MAX;
              double dimMax = -DBL_MAX;
-             for (k = 0 ; k < nTuples ; k++)
+             for (k = 0 ; k < (size_t)nTuples ; k++)
              {
                  double val = arr->GetTuple1(k);
                  if (val < dimMin)
@@ -2242,14 +2242,14 @@ avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              {
                  char  **varnames = new char*[ncomps];
                  double **vars = new double*[ncomps];
-                 for (j = 0 ; j < ncomps ; j++)
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
                  {
                      double dimMin = +DBL_MAX;
                      double dimMax = -DBL_MAX;
                      vars[j] = new double[nTuples];
                      varnames[j] = new char[1024];
-                     sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
-                     for (k = 0 ; k < nTuples ; k++)
+                     sprintf(varnames[j], "%s_comp%ld", arr->GetName(), j);
+                     for (k = 0 ; k < (size_t)nTuples ; k++)
                      {
                          vars[j][k] = arr->GetComponent(k, j);
                          if (vars[j][k] < dimMin)
@@ -2266,7 +2266,7 @@ avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
                               ncomps, varnames, (DB_DTPTR2) vars, dims, ndims, NULL, 0, 
                               DB_DOUBLE, centering, optlist);
 
-                 for (j = 0 ; j < ncomps ; j++)
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
                  {
                       delete [] vars[j];
                       delete [] varnames[j];
@@ -2278,14 +2278,14 @@ avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              {
                  char  **varnames = new char*[ncomps];
                  float **vars     = new float*[ncomps];
-                 for (j = 0 ; j < ncomps ; j++)
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
                  {
                      double dimMin = +DBL_MAX;
                      double dimMax = -DBL_MAX;
                      vars[j] = new float[nTuples];
                      varnames[j] = new char[1024];
-                     sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
-                     for (k = 0 ; k < nTuples ; k++)
+                     sprintf(varnames[j], "%s_comp%ld", arr->GetName(), j);
+                     for (k = 0 ; k < (size_t)nTuples ; k++)
                      {
                          vars[j][k] = (float)arr->GetComponent(k, j);
                          if (vars[j][k] < dimMin)
@@ -2302,7 +2302,7 @@ avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
                               ncomps, varnames, vars, dims, ndims, NULL, 0, 
                               DB_FLOAT, centering, optlist);
 
-                 for (j = 0 ; j < ncomps ; j++)
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
                  {
                       delete [] vars[j];
                       delete [] varnames[j];
@@ -2369,7 +2369,7 @@ avtSiloWriter::WriteQuadvars(DBfile *dbfile, vtkPointData *pd,
 void
 avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
 {
-    int   i;
+    size_t   i;
 
     if (!hasMaterialsInProblem)
         return;
@@ -2390,7 +2390,7 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
         //
         int nmats = mat->GetNMaterials();
         int *matnos = new int[nmats];
-        for (i = 0 ; i < nmats ; i++)
+        for (i = 0 ; i < (size_t)nmats ; i++)
             matnos[i] = i;
         int nzones[1];
         nzones[0] = mat->GetNZones();
@@ -2431,10 +2431,10 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
         vtkIntArray *ia = (vtkIntArray *) arr;
         vector<bool> matlookup;
         int nzones = ia->GetNumberOfTuples();
-        for (i = 0 ; i < nzones ; i++)
+        for (i = 0 ; i < (size_t)nzones ; i++)
         {
             int matno = ia->GetValue(i);
-            while (matlookup.size() <= matno)
+            while (matlookup.size() <= (size_t)matno)
             {
                 matlookup.push_back(false);
             }

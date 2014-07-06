@@ -636,7 +636,7 @@ avtCGNSFileFormat::GetVariablesForBase(int base, avtCGNSFileFormat::BaseInformat
                 debug4 << "\t\tsize=[";
                 for(int zi = 0; zi < 9; ++zi)
                 {
-                    if(zi > 0) debug4 << ", ";
+                    if(zi > 0) { debug4 << ", "; }
                         debug4 << zsize[zi];
                 }
                 debug4 << "]" << endl;
@@ -1220,8 +1220,9 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             for(size_t zi = 0; zi < it->first.size(); ++zi)
             {
                 debug4 << it->first[zi];
-                if(zi <  it->first.size()-1)
+                if(zi <  it->first.size()-1) {
                     debug4 << ", ";
+                }
             }
             debug4 << "]" << endl;
         }
@@ -1432,7 +1433,7 @@ avtCGNSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
         debug4 << mName << " name=" << zonename << " size=[";
         for(int zi = 0; zi < 9; ++zi)
         {
-            if(zi > 0) debug4 << ", ";
+            if(zi > 0) { debug4 << ", "; }
             debug4 << zsize[zi];
         }
         debug4 << "]\n";
@@ -2219,7 +2220,7 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
         debug4 << mName << " name=" << zonename << " size=[";
         for(int zi = 0; zi < 9; ++zi)
         {
-            if(zi > 0) debug4 << ", ";
+            if(zi > 0) { debug4 << ", "; }
             debug4 << zsize[zi];
         }
         debug4 << "]\n";

@@ -317,13 +317,14 @@ void SimpleCharStream::adjustBeginLineColumn(int newLine, int newCol)
      int nextColDiff = 0, columnDiff = 0;    
     
     while (i < len &&    
-        bufline[j = start % bufsize] == bufline[k = ++start % bufsize])    
+        //bufline[j = start % bufsize] == bufline[k = ++start % bufsize])    
+        bufline[j = start % bufsize] == bufline[k = (start+1) % bufsize]) ///TODO: check on fix for undefined operation warning
     {    
         bufline[j] = newLine;    
         nextColDiff = columnDiff + bufcolumn[k] - bufcolumn[j];    
         bufcolumn[j] = newCol + columnDiff;    
         columnDiff = nextColDiff;    
-        i++;    
+        i++;++start;
     }     
     
     if (i < len)    
@@ -333,10 +334,12 @@ void SimpleCharStream::adjustBeginLineColumn(int newLine, int newCol)
     
         while (i++ < len)    
         {    
-            if (bufline[j = start % bufsize] != bufline[++start % bufsize])    
+            //if (bufline[j = start % bufsize] != bufline[++start % bufsize])    
+            if (bufline[j = start % bufsize] != bufline[(start+1) % bufsize])///TODO: check on fix for undefined operation on start warning
                 bufline[j] = newLine++;    
             else    
                 bufline[j] = newLine;    
+            ++start;
         }    
     }    
     

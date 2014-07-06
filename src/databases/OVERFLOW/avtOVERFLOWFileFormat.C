@@ -141,9 +141,9 @@ avtOVERFLOWFileFormat::InitializeFile()
         // to be all digits in the file name itself.
         string gridfilename_withnumbers = gridfilename;
         gridfilename = "";
-        for (int i=0; i<gridfilename_withnumbers.length(); i++)
+        for (size_t i=0; i<gridfilename_withnumbers.length(); i++)
         {
-            if (i <= lastslash ||
+            if (i <= (size_t)lastslash ||
                 gridfilename_withnumbers[i] < '0' ||
                 gridfilename_withnumbers[i] > '9')
             {

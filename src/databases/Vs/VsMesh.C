@@ -331,6 +331,7 @@ std::string VsMesh::getSubCellLocationsDatasetName() const {
   if(!nodesName.empty()) {
       return makeCanonicalName(getFullName(), nodesName);
   }
+  return ""; //TODO: check on fix for non-void return
 }
 
 

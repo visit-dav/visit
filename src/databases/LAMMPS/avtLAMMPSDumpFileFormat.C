@@ -133,7 +133,7 @@ avtLAMMPSDumpFileFormat::GetNTimesteps(void)
 void
 avtLAMMPSDumpFileFormat::FreeUpResources(void)
 {
-    for (int i=0; i<vars.size(); i++)
+    for (size_t i=0; i<vars.size(); i++)
         vars[i].clear();
     vars.clear();
     varNames.clear();
@@ -501,7 +501,7 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
 
     speciesVar.resize(nAtoms[timestep]);
     idVar.resize(nAtoms[timestep]);
-    for (int v=0; v<vars.size(); v++)
+    for (int v=0; v<(int)vars.size(); v++)
     {
         // id and species are ints; don't bother with the float arrays for them
         if (v == idIndex || v == speciesIndex)

@@ -337,7 +337,7 @@ namespace rclib {
     // declaring vector<Point<T> >::iterator is to make a declaration that itself depends on a template, so must use "typename" keyword to convince the compiler that I'm really declaring a type.  See Stroustrop sec 13.5, p 857
     typename vector<Point<T> >::iterator pos = pointsToRotate.begin(), endpos = pointsToRotate.end();
     Point<T> tmpPt; 
-    bool firsttime = true; 
+    bool firsttime = true;  (void) firsttime;
     while (pos != endpos) {
       int axis = 3, newaxis; 
       while (axis--) {     
@@ -401,7 +401,7 @@ namespace rclib {
       bNew=newOrientation[1], 
       cNew=newOrientation[2],
       dNew = sqrt(newOrientation[0]*newOrientation[0] + newOrientation[2]*newOrientation[2]), 
-      eNew = sqrt(newOrientation[1]*newOrientation[1] + newOrientation[2]*newOrientation[2]);
+      eNew = sqrt(newOrientation[1]*newOrientation[1] + newOrientation[2]*newOrientation[2]); (void) eNew;
     //debug5 << "aOld = " << aOld << ", bOld = " << bOld << ", cOld = " << cOld << endl; 
     //debug5 << "aNew = " << aNew << ", bNew = " << bNew << ", cNew = " << cNew << ", dNew = " << dNew << endl; 
   

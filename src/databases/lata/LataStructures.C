@@ -240,7 +240,7 @@ void DomainUnstructured::fill_domain_from_lataDB(const LataDB & lataDB,
   LataVector<IntTab> joints;
   entier nproc = 1;
   for (entier i_item = 0; i_item < 3; i_item++) {
-    LataField_base::Elem_som loc = LataField_base::SOM;
+    LataField_base::Elem_som loc = LataField_base::SOM; (void) loc;
     Nom nom("JOINTS_SOMMETS");
     Nom nom2("SOMMETS");
     if (i_item == 1) {

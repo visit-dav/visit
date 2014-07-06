@@ -421,7 +421,7 @@ avtWellLogsFileFormat::ReadFile(void)
 vtkDataSet *
 avtWellLogsFileFormat::GetMesh(const char *meshname)
 {
-    int  i, j, k;
+    int  i;
 
     // Return all well locations.
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();

@@ -302,7 +302,7 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
         {
             // curves
             int index = -1;
-            for (int i=0; i<variableNames.size(); i++)
+            for (int i=0; i< (int)variableNames.size(); i++)
             {
                 if (meshname == variableNames[i])
                     index = i;
@@ -407,7 +407,7 @@ avtPlainTextFileFormat::GetVar(const char *varname)
     else if (format == Columns)
     {
         int index = -1;
-        for (int i=0; i<variableNames.size(); i++)
+        for (int i=0; i<(int)variableNames.size(); i++)
         {
             if (varname == variableNames[i])
                 index = i;
@@ -648,7 +648,7 @@ avtPlainTextFileFormat::ReadFile()
             sprintf(str, "var%02d", i);
             variableNames.push_back(str);
         }
-        if (variableNames.size() > ncolumns)
+        if (variableNames.size() > (size_t)ncolumns)
             variableNames.resize(ncolumns);
     }
 

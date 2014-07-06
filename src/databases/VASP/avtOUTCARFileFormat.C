@@ -170,7 +170,7 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
                                                3, 0,
                                                AVT_POINT_MESH);
     mmd->nodesAreCritical = true;
-    if (unitCell.size() > ts)
+    if (unitCell.size() > (size_t)ts)
     {
         for (int i=0; i<9; i++)
         {
@@ -182,7 +182,7 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
     avtMeshMetaData *mmd_bbox = new avtMeshMetaData("unitCell", 1, 0,0,0,
                                                     3, 1,
                                                     AVT_UNSTRUCTURED_MESH);
-    if (unitCell.size() > ts)
+    if (unitCell.size() > (size_t)ts)
     {
         for (int i=0; i<9; i++)
         {
@@ -194,7 +194,7 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
     avtScalarMetaData *el_smd =
         new avtScalarMetaData("element", "mesh", AVT_NODECENT);
     el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=0; i<element_types.size(); i++)
+    for (size_t i=0; i<element_types.size(); i++)
         el_smd->AddEnumNameValue(element_names[i], element_types[i]);
     md->Add(el_smd);
 
@@ -318,7 +318,7 @@ avtOUTCARFileFormat::GetMesh(int ts, const char *name)
         pts->SetNumberOfPoints(atoms.size());
         pd->SetPoints(pts);
         pts->Delete();
-        for (int j = 0 ; j < atoms.size() ; j++)
+        for (size_t j = 0 ; j < atoms.size() ; j++)
         {
             pts->SetPoint(j,
                           atoms[j].x,
@@ -329,7 +329,7 @@ avtOUTCARFileFormat::GetMesh(int ts, const char *name)
         vtkCellArray *verts = vtkCellArray::New();
         pd->SetVerts(verts);
         verts->Delete();
-        for (int k = 0 ; k < atoms.size() ; k++)
+        for (size_t k = 0 ; k < atoms.size() ; k++)
         {
             verts->InsertNextCell(1);
             verts->InsertCellPoint(k);
@@ -761,7 +761,7 @@ avtOUTCARFileFormat::ReadAllMetaData()
             in >> uctmp[2][1];
             in >> uctmp[2][2];
             in >> tmp >> tmp >> tmp;
-            if (unitCell.size() <= ntimesteps)
+            if (unitCell.size() <= (size_t)ntimesteps)
             {
                 unitCell.push_back(uctmp);
             }
@@ -988,7 +988,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
 
     if (ntimesteps > 0)
     {
-        if (file_positions.size() > timestep)
+        if (file_positions.size() > (size_t)timestep)
         {
             in.seekg(file_positions[timestep]);
             in.getline(line, 4096); // skip the separator
@@ -1013,7 +1013,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
         atoms.resize(natoms);
 
         int index = 0;
-        for (int et_index = 0; et_index < element_counts.size(); et_index++)
+        for (size_t et_index = 0; et_index < element_counts.size(); et_index++)
         {
             for (int a2=0; a2<element_counts[et_index]; a2++)
             {
@@ -1072,7 +1072,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
         atoms.resize(natoms);
 
         int index = 0;
-        for (int et_index = 0; et_index < element_counts.size(); et_index++)
+        for (size_t et_index = 0; et_index < element_counts.size(); et_index++)
         {
             for (int a2=0; a2<element_counts[et_index]; a2++)
             {
@@ -1118,7 +1118,7 @@ avtOUTCARFileFormat::Identify(const std::string &filename)
     else
         fn = filename;
 
-    for (int i=0; i<fn.size(); i++)
+    for (size_t i=0; i<fn.size(); i++)
     {
         if (fn[i]>='a' && fn[i]<='z')
             fn[i] = fn[i] + ('A'-'a');

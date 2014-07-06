@@ -126,7 +126,7 @@ avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
                                vector<string> &vectors,
                                vector<string> &materials)
 {
-     const avtMeshMetaData *mmd = md->GetMesh(0);
+     const avtMeshMetaData *mmd = md->GetMesh(0); (void) mmd;
 #if 0
     if (mmd->topologicalDimension != 3)
     {
@@ -220,14 +220,14 @@ avtTecplotWriter::WriteVariables(const vector<string> &coordvars)
     if(!variablesWritten)
     {
         file << "VARIABLES = ";
-        for(int i = 0; i < coordvars.size(); ++i)
+        for(size_t i = 0; i < coordvars.size(); ++i)
         {
             file << "\"" << coordvars[i] << "\"";
             if(i < coordvars.size()-1 || (variableList.size()+materialList.size()) > 0)
                 file << ", ";
         }
 
-        for(int i = 0; i < variableList.size(); ++i)
+        for(size_t i = 0; i < variableList.size(); ++i)
         {
             file << "\"" << variableList[i] << "\"";
             if (i < variableList.size()-1 || (materialList.size() > 0))
@@ -873,7 +873,7 @@ avtTecplotWriter::WriteDataArrays(vtkDataSet *ds1)
     vtkPointData *pd = ds1->GetPointData();
     vtkPointData *pd2 = ds2->GetPointData();
 
-    for (int v = 0 ; v < variableList.size() ; v++)
+    for (size_t v = 0 ; v < variableList.size() ; v++)
     {
         vtkDataArray *arr = pd->GetArray(variableList[v].c_str());
         if (!arr)

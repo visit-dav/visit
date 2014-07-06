@@ -87,11 +87,36 @@ class dataset_entry
                           const std::vector<hsize_t>& dims_,
                           const bool is_Cartesian_,
                           const std::vector<int>& ghosts_)
-               : _name(name_), _varname(varname_), _cycle(cycle_), _time(time_), _file_id(-1), _origin(origin_), _origin_ghosted(origin_),
-                 _iorigin(iorigin_), _iorigin_ghosted(iorigin_), _delta(delta_), _rl(rl_), _map(map_), 
-                 _factor(factor_), _type(type_), _comps(comps_), _ndims(ndims_), _dims(dims_), _dims_ghosted(dims_), _is_Cartesian(is_Cartesian_),
-                 _range(0), _blanks(0), _npoints(std::vector<int>(ndims_, 0)), _npoints_ghosted(std::vector<int>(ndims_, 0)), _ghosts(ghosts_),
-                 _isOutermostX(false), _isOutermostY(false), _isOutermostZ(false), _isLowerOutermostX(false), _isLowerOutermostY(false), _isLowerOutermostZ(false)
+               : _name(name_), 
+                 _varname(varname_), 
+                 _cycle(cycle_), 
+                 _time(time_), 
+                 _file_id(-1), 
+                 _rl(rl_), 
+                 _map(map_), 
+                 _factor(factor_), 
+                 _type(type_), 
+                 _comps(comps_), 
+                 _ndims(ndims_), 
+                 _dims(dims_), 
+                 _npoints(std::vector<int>(ndims_, 0)), 
+                 _origin(origin_), 
+                 _delta(delta_), 
+                 _iorigin(iorigin_), 
+                 _dims_ghosted(dims_), 
+                 _npoints_ghosted(std::vector<int>(ndims_, 0)), 
+                 _origin_ghosted(origin_), 
+                 _iorigin_ghosted(iorigin_),  
+                 _ghosts(ghosts_), 
+                 _range(0), 
+                 _blanks(0), 
+                 _is_Cartesian(is_Cartesian_), 
+                 _isOutermostX(false), 
+                 _isOutermostY(false), 
+                 _isOutermostZ(false), 
+                 _isLowerOutermostX(false), 
+                 _isLowerOutermostY(false), 
+                 _isLowerOutermostZ(false)
             {     
                 // put hdf5's c-ordering in correct order
                 for (int d=0; d < _ndims; d++)
@@ -134,11 +159,36 @@ class dataset_entry
                           const hsize_t* dims_,
                           const bool is_Cartesian_,
                           const int* ghosts_)
-               : _name(name_), _varname(varname_), _cycle(cycle_), _time(time_), _file_id(-1), _origin(origin_, origin_+ndims_), _origin_ghosted(origin_, origin_+ndims_),
-                 _iorigin(iorigin_, iorigin_+ndims_), _iorigin_ghosted(iorigin_, iorigin_+ndims_), _delta(delta_, delta_+ndims_), _rl(rl_), _map(map_), 
-                 _factor(factor_), _type(type_), _comps(comps_), _ndims(ndims_), _dims(dims_,dims_+ndims_), _dims_ghosted(dims_, dims_+ndims_), _is_Cartesian(is_Cartesian_),
-                 _range(0), _blanks(0), _npoints(ndims_, 0), _npoints_ghosted(ndims_, 0), _ghosts(ghosts_, ghosts_+2*ndims_),
-                 _isOutermostX(false), _isOutermostY(false), _isOutermostZ(false), _isLowerOutermostX(false), _isLowerOutermostY(false), _isLowerOutermostZ(false)
+               : _name(name_), 
+                 _varname(varname_), 
+                 _cycle(cycle_), 
+                 _time(time_), 
+                 _file_id(-1), 
+                 _rl(rl_), 
+                 _map(map_),
+                 _factor(factor_), 
+                 _type(type_), 
+                 _comps(comps_), 
+                 _ndims(ndims_), 
+                 _dims(dims_,dims_+ndims_), 
+                 _npoints(ndims_, 0), 
+                 _origin(origin_, origin_+ndims_), 
+                 _delta(delta_, delta_+ndims_),  
+                 _iorigin(iorigin_, iorigin_+ndims_),
+                 _dims_ghosted(dims_, dims_+ndims_),
+                 _npoints_ghosted(ndims_, 0),
+                 _origin_ghosted(origin_, origin_+ndims_),
+                 _iorigin_ghosted(iorigin_, iorigin_+ndims_),   
+                 _ghosts(ghosts_, ghosts_+2*ndims_),
+                 _range(0), 
+                 _blanks(0),
+                 _is_Cartesian(is_Cartesian_),
+                 _isOutermostX(false), 
+                 _isOutermostY(false), 
+                 _isOutermostZ(false), 
+                 _isLowerOutermostX(false), 
+                 _isLowerOutermostY(false), 
+                 _isLowerOutermostZ(false)
             {                
                 // put hdf5's c-ordering in correct order
                 for (int d=0; d < _ndims; d++)
@@ -319,15 +369,15 @@ class dataset_entry
 class timestep_t
 {
    public :
-            timestep_t() : max_cart_rl(0), max_multi_rl(0), totalCartDomainExt(std::vector<std::vector<double> >(0)), totalCartDomainIExt(std::vector<std::vector<int> >(0)) { }
+            timestep_t() : totalCartDomainExt(std::vector<std::vector<double> >(0)), totalCartDomainIExt(std::vector<std::vector<int> >(0)), max_cart_rl(0), max_multi_rl(0) { }
             timestep_t &operator=(std::vector<std::vector<const dataset_entry*> >& dsets)
             {
                cart_comp.resize(dsets.size());
                multi_comp.resize(dsets.size());
                
-               for (int v=0; v < dsets.size(); v++)
+               for (size_t v=0; v < dsets.size(); v++)
                {
-                  for (int i=0; i < dsets[v].size(); i++)
+                  for (size_t i=0; i < dsets[v].size(); i++)
                   {
                      if (dsets[v][i]->is_Cartesian())
                      {
@@ -360,7 +410,7 @@ class timestep_t
                   totalCartDomainIExt[i][5] = -1e8;
                }
                
-               for (int i=0; i < cart_comp[0].size(); i++)
+               for (size_t i=0; i < cart_comp[0].size(); i++)
                {
                   // set refinement factor
                   cart_comp[0][i].factor() = 1 << (max_cart_rl-1 - cart_comp[0][i].rl());
@@ -383,8 +433,8 @@ class timestep_t
                   
                }
                // set boundary info for individual Cartesian components
-               for (int j=0; j < cart_comp.size(); j++)
-                  for (int i=0; i < cart_comp[j].size(); i++)
+               for (size_t j=0; j < cart_comp.size(); j++)
+                  for (size_t i=0; i < cart_comp[j].size(); i++)
                   {
                      cart_comp[j][i].setOutermost(cart_comp[j][i].is_at_upper_total_rl_domain_boundary(0, totalCartDomainIExt[cart_comp[j][i].rl()][1]),
                                                   cart_comp[j][i].is_at_upper_total_rl_domain_boundary(1, totalCartDomainIExt[cart_comp[j][i].rl()][3]),
@@ -393,7 +443,7 @@ class timestep_t
                                                        cart_comp[j][i].is_at_lower_total_rl_domain_boundary(1, totalCartDomainIExt[cart_comp[j][i].rl()][2]),
                                                        cart_comp[j][i].is_at_lower_total_rl_domain_boundary(2, totalCartDomainIExt[cart_comp[j][i].rl()][4]));
                   }
-               for (int i=0; i < multi_comp[0].size(); i++)
+               for (size_t i=0; i < multi_comp[0].size(); i++)
                {
                   // set refinement factor
                   multi_comp[0][i].factor() = 1 << (max_multi_rl-1 - multi_comp[0][i].rl());
@@ -415,12 +465,12 @@ class timestep_t
             // get rid auf blanked out ghostcells
             void unset_ranges() 
             { 
-               for (int i=0; i < cart_comp[0].size(); i++)
+               for (size_t i=0; i < cart_comp[0].size(); i++)
                {
                   cart_comp[0][i].blanks().resize(0); 
                   cart_comp[0][i].range().resize(0);
                }
-               for (int i=0; i < multi_comp[0].size(); i++)
+               for (size_t i=0; i < multi_comp[0].size(); i++)
                {
                   multi_comp[0][i].blanks().resize(0); 
                   multi_comp[0][i].range().resize(0);

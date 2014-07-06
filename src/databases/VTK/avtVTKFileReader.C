@@ -464,9 +464,10 @@ avtVTKFileReader::ReadInDataset(int domain)
 
     if (pieceExtension == "vtk" || pieceExtension == "none")
     {
-        if (pieceExtension == "none")
+        if (pieceExtension == "none") {
             debug1 << "No extension given ... assuming legacy VTK format." 
                    << endl;
+        }
 
         //
         // Create a file reader and set our dataset to be its output.
@@ -1674,11 +1675,11 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
             vtkIdType outIndex = 0;
             vtkIdType nx  = wholeDims[0];
             vtkIdType nxy = wholeDims[0] * wholeDims[1];
-            for (unsigned int iZ = extents[4]; iZ < extents[5]; iZ++) 
+            for (unsigned int iZ = extents[4]; iZ < (unsigned int)extents[5]; iZ++) 
             {
-                for (unsigned int iY = extents[2]; iY < extents[3]; iY++) 
+                for (unsigned int iY = extents[2]; iY < (unsigned int)extents[3]; iY++) 
                 {
-                    for (unsigned int iX = extents[0]; iX < extents[1]; iX++) 
+                    for (unsigned int iX = extents[0]; iX < (unsigned int)extents[1]; iX++) 
                     {
                         vtkIdType inIndex = iZ * nxy + iY * nx + iX;
                         out->SetTuple(outIndex, inIndex, in);

@@ -91,7 +91,7 @@ static bool
 HasAllComponents(vector<string>& fieldList, bool eraseAllIfFound,
    const char *compName, ...)
 {
-    int i;
+    size_t i;
     bool retval = true;
     const char *name;
     va_list ap;
@@ -124,11 +124,11 @@ HasAllComponents(vector<string>& fieldList, bool eraseAllIfFound,
         vector<string> fieldListTmp;
         for (i = 0; i < fieldList.size(); i++)
         {
-            int j;
+            size_t j;
             bool dontCopy = false;
             for (j = 0; j < entriesToErase.size(); j++)
             {
-                if (entriesToErase[j] == i)
+                if ((size_t)entriesToErase[j] == i)
                 {
                     dontCopy = true;
                     break;
@@ -326,7 +326,7 @@ avtVistaDiabloFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 void
 avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    int i, j, n;
+    size_t i, j, n;
 
     const Node *top = vTree->GetTop();
 
@@ -345,12 +345,12 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // They should really be fields, but thats not how Diablo is writing them
     //
     vector<Node*> tmpPieceNodes;
-    for (i = 0; i < numPieces; i++)
+    for (i = 0; i < (size_t)numPieces; i++)
     {
         if (StringHelpers::FindRE(pieceNodes[i]->parent->text,"BC") < 0)
             tmpPieceNodes.push_back(pieceNodes[i]);
     }
-    if (tmpPieceNodes.size() < numPieces)
+    if (tmpPieceNodes.size() < (size_t)numPieces)
     {
         numPieces = tmpPieceNodes.size();
         for (i = 0; i < tmpPieceNodes.size(); i++)
@@ -359,14 +359,14 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // Adjust pieces upwards by two levels
     string otherViewName = pieceNodes[0]->otherView;
-    for (i = 0; i < numPieces; i++)
+    for (i = 0; i < (size_t)numPieces; i++)
         pieceNodes[i] = pieceNodes[i]->parent->parent;
 
     // use the string grouping utility to see how many "groups" we got
     vector<string> pieceNames;
     vector<vector<string> > pieceGroups;
     vector<string> groupNames;
-    for (i = 0; i < numPieces; i++)
+    for (i = 0; i < (size_t)numPieces; i++)
         pieceNames.push_back(pieceNodes[i]->text);
     StringHelpers::GroupStrings(pieceNames, pieceGroups, groupNames);
 
@@ -382,13 +382,13 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         pieceNodes = 0;
         sprintf(tempStr,"%s/%%R.*", groupNames[0].c_str());
         vTree->FindNodes(top, tempStr, &pieceNodes, &numPieces, BottomUp);
-        if (numPieces != pieceGroups[0].size())
+        if ((size_t)numPieces != pieceGroups[0].size())
         {
             cerr << "WARNING!!! Unable to find domains" << endl;
             return;
         }
         // Adjust pieces upwards by one level
-        for (i = 0; i < numPieces; i++)
+        for (i = 0; i < (size_t)numPieces; i++)
             pieceNodes[i] = pieceNodes[i]->parent;
     }
     pieceNames.clear();
@@ -409,7 +409,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             firstDigit--;
         blockTitle = string(aPieceName, 0, firstDigit) + "s";
         blockPieceName = string(aPieceName, 0, firstDigit);
-        for (i = 0; i < numPieces; i++)
+        for (i = 0; i < (size_t)numPieces; i++)
             blockNames.push_back(pieceNodes[i]->text);
     }
     else
@@ -441,7 +441,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Iterate over the pieces, finding fields on them
     //
-    for (i = 0; i < numPieces; i++)
+    for (i = 0; i < (size_t)numPieces; i++)
     {
         vector<FieldInfo_t> fieldsOnThisPiece;
 
@@ -460,7 +460,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             vector<string> fieldNames;
             vector<vector<string> > fieldGroups;
             groupNames.clear();
-            for (j = 0; j < numFieldNodes; j++)
+            for (j = 0; j < (size_t)numFieldNodes; j++)
             {
                 char *tmpFieldName = vTree->GetPathFromNode(elemView,fieldNodes[j]);
                 fieldNames.push_back(tmpFieldName);
@@ -540,7 +540,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     fieldsOnThisPiece.push_back(fieldInfo);
                 }
 
-                for (int k = 0; k < fieldGroups[j].size(); k++)
+                for (size_t k = 0; k < fieldGroups[j].size(); k++)
                 {
                     FieldInfo_t fieldInfo;
                     fieldInfo.visitVarName  = string(fieldGroups[j][k],1,string::npos);
@@ -567,12 +567,12 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         bool isDefinedOnAllPieces = true;
 
         // search for this field in all other pieces
-        for (j = 1; j < numPieces; j++)
+        for (j = 1; j < (size_t)numPieces; j++)
         {
             vector<FieldInfo_t> thisPieceFields = fieldInfos[j];
 
             bool isDefinedOnThisPiece = false;
-            for (int k = 0; k < thisPieceFields.size(); k++)
+            for (size_t k = 0; k < thisPieceFields.size(); k++)
             {
                 FieldInfo_t pieceField = thisPieceFields[k];
 
@@ -636,7 +636,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
 {
-    int i;
+    size_t i;
     const Node *top = vTree->GetTop();
 
     //
@@ -673,7 +673,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     // Read coordinate arrays
     //
     double *coords[3] = {0, 0, 0};
-    for (i = 0; i < spatialDim; i++)
+    for (i = 0; i < (size_t)spatialDim; i++)
     {
         const char *piecePath = vTree->GetPathFromNode(top, pieceNodes[domain]);
         char fieldName[32];
@@ -684,7 +684,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
         size_t dSize = 0;
         ReadDataset(fileName, tempStr, 0, &dSize, (void**) &coords[i]);
 
-        if (dSize != numNodes)
+        if (dSize != (size_t)numNodes)
         {
             EXCEPTION2(UnexpectedValueException, numNodes, dSize);
         }
@@ -732,7 +732,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     const double *coords0 = coords[0];
     const double *coords1 = coords[1];
     const double *coords2 = coords[2];
-    for (i = 0 ; i < numNodes; i++)
+    for (i = 0 ; i < (size_t)numNodes; i++)
     {
         *tmp++ = *coords0++;
         *tmp++ = *coords1++;
@@ -749,7 +749,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     ugrid->SetPoints(points);
     ugrid->Allocate(numElems * numNodesPerElem);
     vtkIdType *verts = new vtkIdType[numNodesPerElem];
-    for (i = 0; i < numElems; i++)
+    for (i = 0; i < (size_t)numElems; i++)
     {
         int vtkCellType = VTK_HEXAHEDRON;
         if (numNodesPerElem == 4)
@@ -841,7 +841,7 @@ avtVistaDiabloFileFormat::GetVectorVar(int domain, const char *varname)
 vtkFloatArray *
 avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
 {
-    int i, j;
+    size_t i, j;
     const Node *top = vTree->GetTop();
 
     vector<string> vistaNames;
@@ -894,7 +894,7 @@ avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
     // Read all the component's data
     //
     float **compData = new float*[numComponents];
-    for (i = 0; i < numComponents; i++)
+    for (i = 0; i < (size_t)numComponents; i++)
     {
         size_t dSize;
 
@@ -915,7 +915,7 @@ avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
         compData[i] = 0;
         if (ReadDataset(fileName, tempStr, &dSize, &compData[i]))
         {
-            if (dSize != numVals)
+            if (dSize != (size_t)numVals)
             {
                 EXCEPTION2(UnexpectedValueException, numVals, dSize);
             }
@@ -958,18 +958,18 @@ avtVistaDiabloFileFormat::ReadVar(int domain, const char *visitName)
     var_data->SetNumberOfComponents(numAllocComponents);
     var_data->SetNumberOfTuples(numVals);
     float *fbuf = (float*) var_data->GetVoidPointer(0);
-    for (i = 0; i < numVals; i++)
+    for (i = 0; i < (size_t)numVals; i++)
     {
-        for (j = 0; j < numComponents; j++)
+        for (j = 0; j < (size_t)numComponents; j++)
         {
             *fbuf++ = compData[j][i];
         }
-        for (j = numComponents; j < numAllocComponents; j++)
+        for (j = numComponents; j < (size_t)numAllocComponents; j++)
             *fbuf++ = 0.0;
     }
 
     // clean-up
-    for (i = 0; i < numComponents; i++)
+    for (i = 0; i < (size_t)numComponents; i++)
         delete [] compData[i];
     delete [] compData;
 

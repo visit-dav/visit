@@ -99,19 +99,19 @@ avtM3DFileFormat::avtM3DFileFormat(const char *filename)
 
 avtM3DFileFormat::~avtM3DFileFormat()
 {
-    for ( int i = 0; i < m_cellInfo.size(); i++ )
+    for ( size_t i = 0; i < m_cellInfo.size(); i++ )
         delete m_cellInfo[i];
-    for ( int i = 0; i < m_scalarVarNames.size(); i++ )
+    for ( size_t i = 0; i < m_scalarVarNames.size(); i++ )
         delete m_scalarVarNames[i];
-    for ( int i = 0; i < m_vectorVarNames.size(); i++ )
+    for ( size_t i = 0; i < m_vectorVarNames.size(); i++ )
         delete m_vectorVarNames[i];
-    for ( int i = 0; i < m_tensorVarNames.size(); i++ )
+    for ( size_t i = 0; i < m_tensorVarNames.size(); i++ )
         delete m_tensorVarNames[i];
-    for ( int i = 0; i < m_scalarVars.size(); i++ )
+    for ( size_t i = 0; i < m_scalarVars.size(); i++ )
         delete m_scalarVars[i];
-    for ( int i = 0; i < m_vectorVars.size(); i++ )
+    for ( size_t i = 0; i < m_vectorVars.size(); i++ )
         delete m_vectorVars[i];
-    for ( int i = 0; i < m_tensorVars.size(); i++ )
+    for ( size_t i = 0; i < m_tensorVars.size(); i++ )
         delete m_tensorVars[i];
 }
 
@@ -152,7 +152,7 @@ void
 avtM3DFileFormat::FreeUpResources(void)
 {
     H5Fclose( m_fileID );
-    for ( int i = 0; i < m_planeXforms.size(); i++ )
+    for ( size_t i = 0; i < m_planeXforms.size(); i++ )
         if ( m_planeXforms[i] )
             m_planeXforms[i]->Delete();
 }
@@ -192,8 +192,10 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
     // The 3D wedge mesh.
     if (doPlanes)
         sprintf( str, "%s/mesh", m_FullString.c_str() );
-    else
-        sprintf( str, "mesh", m_FullString.c_str() );
+    else {
+        //sprintf( str, "mesh", m_FullString.c_str() );
+        strcpy( str, "mesh"); ///TODO: check on fix
+    }
     string meshname = str;
     AddMeshToMetaData( md, meshname, mt, extents, nblocks, block_origin,
                        spatial_dimension, topological_dimension );
@@ -226,12 +228,12 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
     // Add all the variables.
 
     //Scalar vars.
-    for ( int i = 0; i < m_scalarVarNames.size(); i++ )
+    for ( size_t i = 0; i < m_scalarVarNames.size(); i++ )
     {
         string varname = m_scalarVarNames[i]->varName;
         
         //Add for each full mesh.
-        for ( int m = 0; m < m_meshes.size(); m++ )
+        for ( size_t m = 0; m < m_meshes.size(); m++ )
         {
             if (doPlanes)
                 sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
@@ -248,7 +250,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
         if (doPlanes)
         {
             //Add for each 3D plane.
-            for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
+            for ( size_t m = 0; m < m_meshesPlane3D.size(); m++ )
             {
                 sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
                 string meshvarname = str;
@@ -260,7 +262,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
             }
             
             //Add for each 2D plane.
-            for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
+            for ( size_t m = 0; m < m_meshesPlane2D.size(); m++ )
             {
                 sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
                 string meshvarname = str;
@@ -274,12 +276,12 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
     }
 
     //Vector vars.
-    for ( int i = 0; i < m_vectorVarNames.size(); i++ )
+    for ( size_t i = 0; i < m_vectorVarNames.size(); i++ )
     {
         string varname = m_vectorVarNames[i]->varName;
                 
         //Add for each full mesh.
-        for ( int m = 0; m < m_meshes.size(); m++ )
+        for ( size_t m = 0; m < m_meshes.size(); m++ )
         {
             if (doPlanes)
                 sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
@@ -297,7 +299,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
         if (doPlanes)
         {
             //Add for each 3D plane.
-            for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
+            for ( size_t m = 0; m < m_meshesPlane3D.size(); m++ )
             {
                 sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
                 string meshvarname = str;
@@ -310,7 +312,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
             }
             
             //Add for each 2D plane.
-            for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
+            for ( size_t m = 0; m < m_meshesPlane2D.size(); m++ )
             {
                 sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
                 string meshvarname = str;
@@ -325,12 +327,12 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
     }
 
     //Tensor vars.
-    for ( int i = 0; i < m_tensorVarNames.size(); i++ )
+    for ( size_t i = 0; i < m_tensorVarNames.size(); i++ )
     {
         string varname = m_tensorVarNames[i]->varName;
         
         //Add for each full mesh.
-        for ( int m = 0; m < m_meshes.size(); m++ )
+        for ( size_t m = 0; m < m_meshes.size(); m++ )
         {
             if (doPlanes)
                 sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
@@ -349,7 +351,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
         if (doPlanes)
         {
             //Add for each 3D plane.
-            for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
+            for ( size_t m = 0; m < m_meshesPlane3D.size(); m++ )
             {
                 sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
                 string meshvarname = str;
@@ -362,7 +364,7 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
             }
             
             //Add for each 2D plane.
-            for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
+            for ( size_t m = 0; m < m_meshesPlane2D.size(); m++ )
             {
                 sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
                 string meshvarname = str;
@@ -408,7 +410,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
     debug5 << "Reading in mesh " << meshname << " [domain, timestate] = " << domain << " " << timestate << endl;
 
     // Look for a full mesh first.
-    for ( int m = 0; m < m_meshes.size(); m++ )
+    for ( size_t m = 0; m < m_meshes.size(); m++ )
     {
         if ( meshname != m_meshes[m] )
             continue;
@@ -437,7 +439,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
         int *conn = new int[dims[0]*dims[1]];
         H5Dread( dataID, H5T_NATIVE_INT, H5S_ALL, spaceID, H5P_DEFAULT, conn );
         int *ptr = conn;
-        for ( int i = 0; i < dims[0]; i++ )
+        for ( size_t i = 0; i < dims[0]; i++ )
         {
             for ( int j = 0; j < 6; j++ )
             {
@@ -457,7 +459,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
     }
 
     // Try the 3D planes.
-    for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
+    for ( size_t m = 0; m < m_meshesPlane3D.size(); m++ )
     {
         if ( meshname != m_meshesPlane3D[m] )
             continue;
@@ -513,7 +515,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
     }
 
     // Try the 2D planes.
-    for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
+    for ( size_t m = 0; m < m_meshesPlane2D.size(); m++ )
     {
         if ( meshname != m_meshesPlane2D[m] )
             continue;
@@ -612,7 +614,7 @@ avtM3DFileFormat::GetVar( int timestate, int domain, const char *nm )
     sprintf( values, "/time_node_data[%d]/node_data[%d]/values", timestate, domain );
 
     string varname = nm;
-    for ( int i = 0; i < m_scalarVars.size(); i++ )
+    for ( size_t i = 0; i < m_scalarVars.size(); i++ )
     {
         if ( varname != m_scalarVars[i]->varName )
             continue;
@@ -686,7 +688,7 @@ avtM3DFileFormat::GetVectorVar( int timestate, int domain, const char *nm )
     sprintf( values, "/time_node_data[%d]/node_data[%d]/values", timestate, domain );
 
     string varname = nm;
-    for ( int i = 0; i < m_vectorVars.size(); i++ )
+    for ( size_t i = 0; i < m_vectorVars.size(); i++ )
     {
         if ( varname != m_vectorVars[i]->varName )
             continue;
@@ -960,12 +962,12 @@ avtM3DFileFormat::LoadFile()
     }
     
     //Load basic info on variables.
-    for ( int t = 0; t < m_timeSteps.size(); t++ )
+    for ( size_t t = 0; t < m_timeSteps.size(); t++ )
     {
         for ( int n = 0; n < m_nVars; n++ )
         {
             char field[512], values[512];
-            sprintf( field, "/time_node_data[%d]/node_data[%d]", t, n );
+            sprintf( field, "/time_node_data[%ld]/node_data[%d]", t, n );
             sprintf( values, "%s/values", field );
             
             string labelStr;
@@ -976,7 +978,7 @@ avtM3DFileFormat::LoadFile()
             string varName;
             varName.assign( labelStr.c_str(), labelStr.find("," ) );
             hid_t dataID = H5Dopen( m_fileID, values );
-            hid_t clss = H5Tget_class( H5Dget_type( dataID ) );
+            //hid_t clss = H5Tget_class( H5Dget_type( dataID ) );
             hid_t spaceID = H5Dget_space( dataID );
             int numDims = H5Sget_simple_extent_ndims( spaceID );
             hsize_t dimSize[10];
@@ -1009,10 +1011,10 @@ avtM3DFileFormat::LoadFile()
         m_cellInfo.push_back( new CellInfo( connectID, nCells ) );
     }
     
-    for ( int t = 0; t < m_timeSteps.size(); t++ )
+    for ( size_t t = 0; t < m_timeSteps.size(); t++ )
     {
         char values[512];
-        sprintf( values, "/time_coordinates[%d]/coordinates/values", t );
+        sprintf( values, "/time_coordinates[%ld]/coordinates/values", t );
         hid_t coordID = H5Dopen( m_fileID, values );
         m_coordIDs.push_back( coordID );
     }
@@ -1172,7 +1174,7 @@ avtM3DFileFormat::CalcPlaneAngularSpacing()
 
     //See if we clash if we cast these to ints....
     m_planeAngleClash = false;
-    for ( int i = 1; i < m_planeAngles.size(); i++ )
+    for ( size_t i = 1; i < m_planeAngles.size(); i++ )
     {
         int a0 = int(m_planeAngles[i-1] + 0.5);
         int a1 = int(m_planeAngles[i] + 0.5);
@@ -1183,7 +1185,7 @@ avtM3DFileFormat::CalcPlaneAngularSpacing()
         }
     }
 
-    for ( int i = 0; i < planes.size(); i++ )
+    for ( size_t i = 0; i < planes.size(); i++ )
         delete planes[i];
 
     delete [] vals;

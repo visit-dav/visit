@@ -213,6 +213,7 @@ static off_t ltell( int f )
  * in src.  Terminate dst with null character.
  * Return:  length of dst.
  */
+#if 0
 static int copy_string2( char *dst, const char *src, int maxlen )
 {
    int i;
@@ -247,7 +248,7 @@ static int copy_string( char *dst, const char *src, int maxlen )
    }
    return i;
 }
-
+#endif
 
 
 /*
@@ -1520,7 +1521,7 @@ static int read_comp_header( int f, v5dstruct *v )
       /* Newer COMP5D format */
       int gridtimes, gridsize;
       int it, iv, nl, i, j;
-      float delta;
+      float delta = 0; //TODO: check on fix for uninitialized var
 
       read_int4( f, &gridtimes );
       read_int4( f, &v->NumVars );
@@ -2135,7 +2136,7 @@ v5dstruct *v5dOpenFile( const char *filename, v5dstruct *v )
 int v5dReadCompressedGrid( v5dstruct *v, int time, int var,
                            float *ga, float *gb, void *compdata )
 {
-   int pos, n, k;
+   int pos, n, k = 0; ///TODO: check on fix for uninitialized var
 
    if (time<0 || time>=v->NumTimes) {
       printf("Error in v5dReadCompressedGrid: bad timestep argument (%d)\n",
@@ -2203,7 +2204,7 @@ int v5dReadGrid( v5dstruct *v, int time, int var, float data[] )
 {
    float ga[MAXLEVELS], gb[MAXLEVELS];
    void *compdata;
-   int bytes;
+   int bytes = 0; ///TODO: check on fix for uninitialized var
 
    if (time<0 || time>=v->NumTimes) {
       printf("Error in v5dReadGrid: bad timestep argument (%d)\n", time);
@@ -2608,7 +2609,7 @@ int v5dWriteGrid( v5dstruct *v, int time, int var, const float data[] )
 {
    float ga[MAXLEVELS], gb[MAXLEVELS];
    void *compdata;
-   int n, bytes;
+   int n, bytes = 0; ///TODO: check on fix for uninitalized var
    float min, max;
 
    if (v->Mode!='w') {

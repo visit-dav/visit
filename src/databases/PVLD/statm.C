@@ -54,7 +54,7 @@ void getstatm_(int *totsize, int *rss, int* share, int *text, int *lib,
 #endif
   FILE *fp = fopen(buf,"r");
   if(fp){
-    fscanf(fp, "%u %u %u %u %u %u %u",totsize,rss, share,text,lib, data, dt);
+    int res = fscanf(fp, "%u %u %u %u %u %u %u",totsize,rss, share,text,lib, data, dt); (void) res;
     (*totsize) *= PAGE_SIZE;
     (*rss) *= PAGE_SIZE;
     (*share) *= PAGE_SIZE;

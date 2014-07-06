@@ -167,7 +167,7 @@ avtExtrudedVolFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                       spatial_dimension, topological_dimension);
 
     string mesh_for_this_var = meshname; 
-    for (int i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
         AddScalarVarToMetaData(md, variables[i], mesh_for_this_var, 
                                AVT_NODECENT);
 }
@@ -294,7 +294,7 @@ avtExtrudedVolFileFormat::GetVar(int domain, const char *varname)
 
     int  i, j, k;
     int  varId = -1;
-    for (i = 0 ; i < variables.size() ; i++)
+    for (i = 0 ; i < (int)variables.size() ; i++)
     {
         if (variables[i] == varname)
             varId = i;

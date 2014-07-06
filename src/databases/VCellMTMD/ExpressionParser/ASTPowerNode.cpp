@@ -35,7 +35,8 @@ string ASTPowerNode::infixString(int lang, NameScope* nameScope)
 {    
     if (jjtGetNumChildren() != 2) {    
         char ch[20];    
-        sprintf(ch, "%d\0", jjtGetNumChildren());    
+        sprintf(ch, "%d", jjtGetNumChildren());
+        ch[19] = '\0';
         throw VCell::RuntimeException("There are" + string(ch) + " arguments for the power operator, expecting 2");    
     }    
     
@@ -66,7 +67,8 @@ void ASTPowerNode::getStackElements(std::vector<StackElement>& elements) {
 double ASTPowerNode::evaluate(int evalType, double* values) {    
     if (jjtGetNumChildren() != 2) {    
         char chrs[1000];    
-        sprintf(chrs, "ASTPowerNode: wrong number of arguments for '^' (%d), expected 2\0", jjtGetNumChildren());    
+        sprintf(chrs, "ASTPowerNode: wrong number of arguments for '^' (%d), expected 2", jjtGetNumChildren());    
+        chrs[999] = '\0';
         throw VCell::ExpressionException(chrs);    
     }    
     //    
@@ -127,6 +129,7 @@ double ASTPowerNode::evaluate(int evalType, double* values) {
             throw (*exponentException);    
         }     
     }    
+    return 0; ///TODO: check return value for fix of missing return typewarning
 }    
     
 Node* ASTPowerNode::copyTree() {    

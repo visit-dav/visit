@@ -188,7 +188,7 @@ SymbolInformation(hid_t hdf_fid, const char *name, TypeEnum *t,
     {
         int i = 0, nd = 0, length = 1;
         int *dims = 0;
-        int *maxdims = 0;
+        //int *maxdims = 0;
         hid_t   hdf_dspace ;
 
         // Figure out the number of dimensions and the number of elements
@@ -1041,7 +1041,7 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
     if (strcmp(meshname, "hydro") == 0)
     {
         // Create a VTK object for "hydro" mesh
-        int ndims = 2;
+        //int ndims = 2;
         int dims[3] = {1,1,1};
         int kmax, lmax, lp, nnalls = 0, namix;
         int nk, nl, hdf_err;
@@ -1167,8 +1167,8 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
     }
     else // check for time or cycle plot
     {
-        int ntp, ncp, ncurves, ntimes, tplen, foundit=0;
-        herr_t hdf_err;
+        int ntp, ncp, ncurves, ntimes, tplen, foundit=0; (void) ntimes;
+        herr_t hdf_err; (void) hdf_err;
         hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
         if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
         double *ttime, *data;
@@ -1553,7 +1553,7 @@ avtCaleHDF5FileFormat::GetVectorVar(const char *varname)
 int
 avtCaleHDF5FileFormat::GetCycle(void)
 {
-    int hdf_err ;
+    int hdf_err = 0; (void) hdf_err;
     int cycle ;
 
     hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/cycle",&cycle) ;
@@ -1625,7 +1625,7 @@ avtCaleHDF5FileFormat::GetCycleFromFilename(const char *f) const
 double
 avtCaleHDF5FileFormat::GetTime(void)
 {
-    int hdf_err ;
+    int hdf_err = 0; (void) hdf_err;
     double dtime ;
 
     hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/time",&dtime) ;

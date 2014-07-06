@@ -379,7 +379,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
     H5Gget_num_objs(fileID, &nObjs);
     nTime = 0;
     times.clear();
-    for(int i=0;i<nObjs;i++)
+    for(size_t i=0;i<nObjs;i++)
     {
         char name[256];
         H5Gget_objname_by_idx(fileID, i, name, 256);
@@ -694,7 +694,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
     hid_t timeGID = H5Gopen(fileID, times[timeState].second.c_str());
     hsize_t nObjs;
     H5Gget_num_objs(timeGID, &nObjs);
-    for(int i=0;i<nObjs;i++)
+    for(size_t i=0;i<nObjs;i++)
     {
         char name[512];
         H5Gget_objname_by_idx(timeGID, i, name, 512);
@@ -702,7 +702,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         // Check if variable is a Vector component
         char* vecMatch;
         for (int comp=0;comp<3;comp++)
-            if (vecMatch = strstr(name,vecNames[comp].c_str())) break;
+            if ((vecMatch = strstr(name,vecNames[comp].c_str()))) break;
         
         // if so, add component to vector list
         if (vecMatch)
@@ -744,6 +744,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
                 matlist = new int[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_INT,
                                      H5S_ALL, H5S_ALL, H5P_DEFAULT, matlist);
+                (void) err;
             }
             else
             {
@@ -765,7 +766,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
                 int nz = end[2]-beg[2]+1;
                 nvals = nx*ny*nz;
 
-                int dims[3];
+                int dims[3]; (void) dims;
                 dims[0] = nx;
                 dims[1] = ny;
                 dims[2] = nz;
@@ -777,7 +778,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
                 int *in = new int[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
                                      H5P_DEFAULT, in);
-
+                (void) err;
                 H5Sclose(memSpace);
                 H5Sclose(slabSpace);
 
@@ -794,7 +795,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 
             // find the different materials
             map<int,bool> matls;
-            for (int i=0;i<nvals;i++)
+            for (size_t i=0;i<nvals;i++)
                 matls[matlist[i]] = true;
 
             int nmats = matls.size();
@@ -833,7 +834,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         {
             hsize_t varDimsForOldFileTest[3];
             H5Sget_simple_extent_dims(dsSpace, varDimsForOldFileTest, NULL);
-            oldFileNeedingCoordFixup = (globalDims[0]==varDimsForOldFileTest[0]);
+            oldFileNeedingCoordFixup = ((hsize_t)globalDims[0]==varDimsForOldFileTest[0]);
         }        
 
         H5Dclose(ds);
@@ -981,7 +982,7 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
 
             herr_t err = H5Dread(dimID[dim], H5T_NATIVE_DOUBLE,
                                  memSpace, slabSpace, H5P_DEFAULT, coords);
-
+            (void) err;
             H5Sclose(memSpace);
             H5Sclose(slabSpace);
             H5Sclose(arraySpace);
@@ -1122,7 +1123,7 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 
             herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE,
                                  H5S_ALL, H5S_ALL, H5P_DEFAULT, ptr);
-
+            (void) err;
             arr = array;
         }
         else
@@ -1133,7 +1134,8 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 
             herr_t err = H5Dread(ds, H5T_NATIVE_INT,
                                  H5S_ALL, H5S_ALL, H5P_DEFAULT, ptr);
-        }
+            (void) err;
+        }   
 
         H5Sclose(dsSpace);
         H5Dclose(ds);
@@ -1193,7 +1195,7 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
             double *in = new double[nvals];
             herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
                                  H5P_DEFAULT, in);
-
+            (void) err;
             // Input is in a different ordering (Fortran) than VTK wants (C).
             for (int i=0;i<nx;i++)
                 for (int j=0;j<ny;j++)
@@ -1207,6 +1209,7 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
             int *in = new int[nvals];
             herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
                                  H5P_DEFAULT, in);
+            (void) err;
             // Input is in a different ordering (Fortran) than VTK wants (C).
             for (int i=0;i<nx;i++)
                 for (int j=0;j<ny;j++)
@@ -1288,7 +1291,7 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
             hsize_t nvals, maxvals;
             H5Sget_simple_extent_dims(dsSpace, &nvals, &maxvals);
 
-            double *out;
+            double *out = NULL; ///TODO: check on fix for uninitialized var
             if (comp == 0)
             {
                 array = vtkDoubleArray::New();
@@ -1308,8 +1311,8 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
                 double *in = new double[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL,
                                      H5P_DEFAULT, in);
-
-                for (int i=0;i<nvals;i++)
+                (void) err;
+                for (size_t i=0;i<nvals;i++)
                     out[i*3 + comp] = in[i];
 
                 delete [] in;
@@ -1319,8 +1322,8 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
                 int *in = new int[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
                                      H5P_DEFAULT, in);
-
-                for (int i=0;i<nvals;i++)
+                (void) err;
+                for (size_t i=0;i<nvals;i++)
                     out[i*3 + comp] = in[i];
 
                 delete [] in;
@@ -1337,7 +1340,7 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
     else
     {
         hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
-        vtkDoubleArray *array;
+        vtkDoubleArray *array = NULL; ///TODO: check on fix for uninitialized var
         for(int comp=0; comp<3; comp++)
         {
             hid_t ds = H5Dopen(ts, varnames[comp].c_str());
@@ -1372,7 +1375,7 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
             hid_t memSpace = H5Screate_simple(3,count,NULL);
 
             // Set up the VTK object.
-            double *out;
+            double *out = NULL; //TODO: check on fix for uninitalized var
             if (comp == 0)
             {
                 array = vtkDoubleArray::New();
@@ -1392,7 +1395,7 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
                 double *in = new double[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
                                      H5P_DEFAULT, in);
-
+                (void) err;
                 // Input is in a different ordering (Fortran) than VTK wants (C).
                 for (int i=0;i<nx;i++)
                     for (int j=0;j<ny;j++)
@@ -1406,6 +1409,7 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
                 int *in = new int[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
                                      H5P_DEFAULT, in);
+                (void) err;
                 // Input is in a different ordering (Fortran) than VTK wants (C).
                 for (int i=0;i<nx;i++)
                     for (int j=0;j<ny;j++)
@@ -1498,6 +1502,7 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
             matlist = new int[nvals];
             herr_t err = H5Dread(ds, H5T_NATIVE_INT,
                                  H5S_ALL, H5S_ALL, H5P_DEFAULT, matlist);
+            (void) err;
         }
         else
         {
@@ -1530,7 +1535,7 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
             int *in = new int[nvals];
             herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
                                  H5P_DEFAULT, in);
-
+            (void) err;
             H5Sclose(memSpace);
             H5Sclose(slabSpace);
 
@@ -1544,7 +1549,7 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
         }
 
         map<int,bool> matls;
-        for (int i=0;i<nvals;i++)
+        for (size_t i=0;i<nvals;i++)
             matls[matlist[i]] = true;
 
         int nmats = matls.size();

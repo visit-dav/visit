@@ -483,7 +483,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(mesh);
 
         // grid variables
-        for (int v = 0 ; v < varNames.size(); v++)
+        for (size_t v = 0 ; v < varNames.size(); v++)
         {
             // Create var names for unique submenu for block and level
             AddScalarVarToMetaData(md, varNames[v], "amr_mesh", AVT_ZONECENT);
@@ -572,7 +572,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             md->Add(bpmesh);
     
             // grid variables
-            for (int v = 0 ; v < varNames.size(); v++)
+            for (size_t v = 0 ; v < varNames.size(); v++)
             {
                 // Create var names for unique submenu for block and level
                 string composite = "mesh_blockandproc/" + varNames[v];
@@ -585,7 +585,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (numBlocks > 0 && dimension == 1)
     {
         // grid variables
-        for (int v = 0 ; v < varNames.size(); v++)
+        for (size_t v = 0 ; v < varNames.size(); v++)
         {
             avtCurveMetaData *curve = new avtCurveMetaData;
             curve->name = string("curves/") + varNames[v];
@@ -612,7 +612,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(pmesh);
 
         // particle variables
-        for (int pv = 0 ; pv < particleVarNames.size(); pv++)
+        for (size_t pv = 0 ; pv < particleVarNames.size(); pv++)
         {
             AddScalarVarToMetaData(md,
                                    GetNiceParticleName(particleVarNames[pv]),
@@ -865,9 +865,9 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         vtkPoints *points  = vtkPoints::New();
         points->SetNumberOfPoints(numParticles);
         float *pts = (float *) points->GetVoidPointer(0);
-        int i, index = 0;
+        int i/*, index = 0*/;
 
-        hid_t xtype, ytype, ztype; 
+        hid_t xtype = 0, ytype = 0, ztype = 0;  //TODO: check on fix for uninitialized pointer
  
         double *ddata = new double[numParticles];
         if (fileFormatVersion < FLASH3_FFV8)
@@ -1801,7 +1801,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
        ssize_t objsize = H5Gget_objname_by_idx(rootId, idx, NULL, 0);
        if (objsize == 16)
        {
-           ssize_t objsize = H5Gget_objname_by_idx(rootId, idx, namefromfile, 17);
+           ssize_t objsize = H5Gget_objname_by_idx(rootId, idx, namefromfile, 17); (void) objsize;
            string tempstr = namefromfile;
            if (tempstr == objname)  //  If this file contains processor numbers
            {
@@ -1829,7 +1829,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
         hsize_t procnum_ndims = H5Sget_simple_extent_dims(procnumSpaceId,
                                                           procnum_dims,NULL);
 
-        if (procnum_ndims != 1 || procnum_dims[0] != numBlocks)
+        if (procnum_ndims != 1 || procnum_dims[0] != (hsize_t)numBlocks)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
         }
@@ -1915,8 +1915,8 @@ void avtFLASHFileFormat::ReadCoordinates()
     if (fileFormatVersion <= FLASH3_FFV8)
     {
         if (coordinates_ndims != 2 ||
-            coordinates_dims[0] != numBlocks ||
-            coordinates_dims[1] != dimension)
+            coordinates_dims[0] != (hsize_t)numBlocks ||
+            coordinates_dims[1] != (hsize_t)dimension)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
         }
@@ -1952,8 +1952,8 @@ void avtFLASHFileFormat::ReadCoordinates()
     else if (fileFormatVersion == FLASH3_FFV9)
     {
         if (coordinates_ndims != 2 ||
-            coordinates_dims[0] != numBlocks ||
-            coordinates_dims[1] != MDIM)
+            coordinates_dims[0] != (hsize_t)numBlocks ||
+            coordinates_dims[1] != (hsize_t)MDIM)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
         }
@@ -2012,7 +2012,7 @@ void avtFLASHFileFormat::ReadNodeTypes()
     hsize_t nodetype_ndims = H5Sget_simple_extent_dims(nodetypeSpaceId,
                                                          nodetype_dims,NULL);
 
-    if (nodetype_ndims != 1 || nodetype_dims[0] != numBlocks)
+    if (nodetype_ndims != 1 || nodetype_dims[0] != (hsize_t)numBlocks)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -2203,8 +2203,8 @@ void avtFLASHFileFormat::ReadBlockExtents()
     if (fileFormatVersion <= FLASH3_FFV8)
     {
         if (bbox_ndims != 3 ||
-            bbox_dims[0] != numBlocks ||
-            bbox_dims[1] != dimension ||
+            bbox_dims[0] != (hsize_t)numBlocks ||
+            bbox_dims[1] != (hsize_t)dimension ||
             bbox_dims[2] != 2)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2257,8 +2257,8 @@ void avtFLASHFileFormat::ReadBlockExtents()
     else if (fileFormatVersion == FLASH3_FFV9)
     {
         if (bbox_ndims != 3 ||
-            bbox_dims[0] != numBlocks ||
-            bbox_dims[1] != MDIM ||
+            bbox_dims[0] != (hsize_t)numBlocks ||
+            bbox_dims[1] != (hsize_t)MDIM ||
             bbox_dims[2] != 2)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2341,7 +2341,7 @@ void avtFLASHFileFormat::ReadRefinementLevels()
     hsize_t refinement_ndims = H5Sget_simple_extent_dims(refinementSpaceId,
                                                          refinement_dims,NULL);
 
-    if (refinement_ndims != 1 || refinement_dims[0] != numBlocks)
+    if (refinement_ndims != 1 || refinement_dims[0] != (hsize_t)numBlocks)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -3218,7 +3218,7 @@ avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
     }
 
     hsize_t scalarDims[1];
-    hsize_t ndims = H5Sget_simple_extent_dims(spaceId, scalarDims, NULL);
+    hsize_t ndims = H5Sget_simple_extent_dims(spaceId, scalarDims, NULL); (void) ndims;
     int nScalars = scalarDims[0];
 
     hid_t datatype = H5Tcreate(H5T_COMPOUND, sizeof(IntegerScalars));
@@ -3299,7 +3299,7 @@ avtFLASHFileFormat::ReadRealScalars(hid_t file_id)
     }
 
     hsize_t scalarDims[10];
-    hsize_t ndims = H5Sget_simple_extent_dims(spaceId, scalarDims, NULL);
+    hsize_t ndims = H5Sget_simple_extent_dims(spaceId, scalarDims, NULL); (void) ndims;
 
     int nScalars = scalarDims[0];
 

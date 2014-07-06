@@ -1731,7 +1731,7 @@ void avtBATLFileFormat::ReadProcessorNumbers()
     hsize_t procnum_ndims = H5Sget_simple_extent_dims(procnumSpaceId,
                             procnum_dims,NULL);
     debug5 << "ReadProcessorNumbers Marker 3" << endl;
-    if (procnum_ndims != 1 || procnum_dims[0] != numBlocks)
+    if (procnum_ndims != 1 || procnum_dims[0] != (hsize_t)numBlocks)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -1796,7 +1796,7 @@ void avtBATLFileFormat::ReadMortonOrdering()
     hsize_t mortonidx_ndims = H5Sget_simple_extent_dims(mortonidxSpaceId,
                               mortonidx_dims,NULL);
     debug5 << "ReadMortonOrdering Marker 3" << endl;
-    if (mortonidx_ndims != 1 || mortonidx_dims[0] != numBlocks)
+    if (mortonidx_ndims != 1 || mortonidx_dims[0] != (hsize_t)numBlocks)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -1860,8 +1860,8 @@ void avtBATLFileFormat::ReadCoordinates()
     hsize_t coordinates_ndims = H5Sget_simple_extent_dims(coordinatesSpaceId, coordinates_dims, NULL);
 
     if (coordinates_ndims != 2 ||
-            coordinates_dims[0] != numBlocks ||
-            coordinates_dims[1] != dimension)
+            coordinates_dims[0] != (hsize_t)numBlocks ||
+            coordinates_dims[1] != (hsize_t)dimension)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -1936,8 +1936,8 @@ void avtBATLFileFormat::ReadBlockExtents()
     hsize_t bbox_dims[3];
     hsize_t bbox_ndims = H5Sget_simple_extent_dims(bboxSpaceId, bbox_dims, NULL);
     if (bbox_ndims != 3 ||
-            bbox_dims[0] != numBlocks ||
-            bbox_dims[1] != dimension ||
+            bbox_dims[0] != (hsize_t)numBlocks ||
+            bbox_dims[1] != (hsize_t)dimension ||
             bbox_dims[2] != 2)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
@@ -2010,7 +2010,7 @@ void avtBATLFileFormat::ReadRefinementLevels()
         hsize_t refinement_ndims = H5Sget_simple_extent_dims(refinementSpaceId,
                                    refinement_dims,NULL);
         debug5 << "ReadRefinementLevels Marker 3" << endl;
-        if (refinement_ndims != 1 || refinement_dims[0] != numBlocks)
+        if (refinement_ndims != 1 || refinement_dims[0] != (hsize_t)numBlocks)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
         }
@@ -2081,7 +2081,7 @@ void avtBATLFileFormat::ReadSimulationParameters(hid_t fileId)
                                   integerParams_dims,NULL);
     debug5 << "ReadSimulationParameters Marker 3" << endl;
     int numParams = 16;
-    if (integerParams_ndims != 1 || integerParams_dims[0] != numParams)
+    if (integerParams_ndims != 1 || integerParams_dims[0] != (hsize_t)numParams)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -2243,7 +2243,7 @@ void avtBATLFileFormat::ReadSimulationParameters(hid_t fileId)
                                realParams_dims,NULL);
     debug5 << "ReadSimulationParameters Marker 12" << endl;
     numParams = 7;
-    if (realParams_ndims != 1 || realParams_dims[0] != numParams)
+    if (realParams_ndims != 1 || realParams_dims[0] != (hsize_t)numParams)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -2600,8 +2600,8 @@ void avtBATLFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
     hsize_t minLogicalExtents_ndims = H5Sget_simple_extent_dims(minLogicalExtentsSpaceId, minLogicalExtents_dims, NULL);
     debug5 << "DetermineGlobalLogicalExtentsForAllBlocks Marker 3" << endl;
     if (minLogicalExtents_ndims != 2 ||
-        minLogicalExtents_dims[0] != numBlocks ||
-        minLogicalExtents_dims[1] != logicalDimension)
+        minLogicalExtents_dims[0] != (hsize_t)numBlocks ||
+        minLogicalExtents_dims[1] != (hsize_t)logicalDimension)
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
@@ -2928,7 +2928,7 @@ avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
         hsize_t extr_dims[2];
         hsize_t extr_ndims = H5Sget_simple_extent_dims(extrSpaceId, extr_dims, NULL);
         if (extr_ndims != 2 ||
-            extr_dims[0] != numBlocks ||
+            extr_dims[0] != (hsize_t)numBlocks ||
             extr_dims[1] != 2)
         {
             EXCEPTION1(InvalidFilesException, varstr.c_str());

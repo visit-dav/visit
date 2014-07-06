@@ -122,7 +122,7 @@ print_multi_dim_array(ostream &os, const char *name, const T *data, int ndims,
     const int *dims, bool doCommas)
 {
     os << name << "[" << dims[0] << "][" << dims[1] << "][" << dims[2] << "] = {";
-    int ct = 0;
+    //int ct = 0; (void) ct;
     if(ndims == 1)
     {
         for(int i = 0; i < dims[0]; ++i)
@@ -443,7 +443,7 @@ PF3DFileFormat::ReadVariableInformation()
     // the file that tell whether exp() should be applied to the data.
     //
     char buf[100];
-    for(int i = 0; i < glob_nams.size(); ++i)
+    for(size_t i = 0; i < glob_nams.size(); ++i)
     {
         // Get the right name of the _is_log array. The names stored in the
         // glob_nams array are not quite right for deniaw and denepw so
@@ -1059,13 +1059,14 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         PDBFileObject *domainPDB = GetDomainFileObject(0);
 
         debug4 << mName << "Domain 0 handle=" << ((void*)domainPDB);
-        if(domainPDB != 0)
+        if(domainPDB != 0) {
             debug4 << ", filename=" << domainPDB->GetName().c_str();
+        }
         debug4 << endl;
         debug4 << mName << "Start creating scalar metadata. " << endl;
 #endif
 
-        for(int i = 0; i < glob_nams.size(); ++i)
+        for(size_t i = 0; i < glob_nams.size(); ++i)
         {
             avtScalarMetaData *smd = new avtScalarMetaData(
                 glob_nams[i], "mesh", AVT_ZONECENT);
@@ -1608,7 +1609,7 @@ int
 PF3DFileFormat::GetVariableIndex(const std::string &name) const
 {
     int retval = -1;
-    for(int i = 0; i < glob_nams.size(); ++i)
+    for(int i = 0; i < (int)glob_nams.size(); ++i)
     {
         if(name == glob_nams[i])
         {
@@ -2268,7 +2269,7 @@ PF3DFileFormat::MasterInformation::MasterInformation() : members()
 
 PF3DFileFormat::MasterInformation::~MasterInformation()
 {
-    for(int i = 0; i < members.size(); ++i)
+    for(size_t i = 0; i < members.size(); ++i)
         delete members[i];
 }
 
@@ -2607,7 +2608,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
     // other data in the file. "Fix" the arrays now so that the member
     // information is in "canonical form" before returning from this function.
     //
-    for (int i = 0; i < members.size(); ++i)
+    for (size_t i = 0; i < members.size(); ++i)
     {
         std::string name = members[i]->name;
         int ndims = members[i]->ndims;
@@ -2625,7 +2626,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
             {
                 // get a pointer to the domloc array
                 long *domloc = 0;
-                for (int it = 0; it < members.size(); ++it)
+                for (size_t it = 0; it < members.size(); ++it)
                 {
                     std::string tname = members[it]->name;
                     if (tname == "domloc")
@@ -2778,7 +2779,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
 const PF3DFileFormat::MasterInformation::MemberData *
 PF3DFileFormat::MasterInformation::FindMember(const std::string &name) const
 {
-    for(int i = 0; i < members.size(); ++i)
+    for(size_t i = 0; i < members.size(); ++i)
     {
         if(name == members[i]->name)
             return members[i];
@@ -2812,7 +2813,7 @@ ostream &
 PF3DFileFormat::MasterInformation::operator << (ostream &os)
 {
 #ifdef DEBUG_PRINT
-    for(int i = 0; i < members.size(); ++i)
+    for(size_t i = 0; i < members.size(); ++i)
         members[i]->Print(os);
 #endif
 

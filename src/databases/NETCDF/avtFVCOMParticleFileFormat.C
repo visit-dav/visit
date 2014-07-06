@@ -264,7 +264,7 @@ avtFVCOMParticleFileFormat::GetTimes(doubleVector &t)
       float *tf = new float[ntimesteps+1];
       fileObject->ReadVariableInto("time",FLOATARRAY_TYPE , tf);
       
-      for(int n=0; n<ntimesteps; ++n)
+      for(size_t n=0; n<ntimesteps; ++n)
         {
           t.push_back(convert * double(tf[n]));
         }
@@ -348,7 +348,7 @@ avtFVCOMParticleFileFormat::GetCycles(intVector &cyc)
             debug4 << "IINT returned to cyc as NC_INT" << endl;
         int *ci = new int[ntimesteps+1];
             fileObject->ReadVariableInto("iint", INTEGERARRAY_TYPE, ci);
-        for(int n=0; n<ntimesteps; ++n)
+        for(size_t n=0; n<ntimesteps; ++n)
             {
                 cyc.push_back(ci[n]);
             }
@@ -361,7 +361,7 @@ avtFVCOMParticleFileFormat::GetCycles(intVector &cyc)
             float *cf = new float[ntimesteps+1];
             fileObject->ReadVariableInto("cycle", FLOATARRAY_TYPE, cf);
    
-            for(int n=0; n<ntimesteps; ++n)
+            for(size_t n=0; n<ntimesteps; ++n)
             {
                 cyc.push_back(int(cf[n]));
             }
@@ -592,7 +592,7 @@ avtFVCOMParticleFileFormat::GetMesh(int timestate, const char *mesh)
         // Store the points in the vtkPoints object.
         vtkPoints *p = vtkPoints::New();
         p->SetNumberOfPoints(nlag);
-        for (int i = 0 ; i < nlag ; i++)
+        for (size_t i = 0 ; i < nlag ; i++)
         {
             p->SetPoint(i, x[i], y[i], z[i]);
             debug4 << "[" << x[i] << ", "  << y[i] << ", "  << z[i] << "]" << endl;
@@ -609,7 +609,7 @@ avtFVCOMParticleFileFormat::GetMesh(int timestate, const char *mesh)
         p->Delete();
         ugrid->Allocate(nlag);
         vtkIdType onevertex[1];
-        for (int i = 0 ; i < nlag ; i++)
+        for (size_t i = 0 ; i < nlag ; i++)
         {
             onevertex[0] = i;
             ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
@@ -681,7 +681,7 @@ avtFVCOMParticleFileFormat::GetVar(int timestate, const char *varname)
     // Put the data into the vtkFloatArray   
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(nlag);
-    for (int i = 0 ; i < nlag ; i++)
+    for (size_t i = 0 ; i < nlag ; i++)
       {
         rv->SetTuple1(i, s1[i]);  // you must determine value for ith entry.
       }

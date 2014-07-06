@@ -981,7 +981,7 @@ JMFileFormat::GetMesh(int timestate, const char *meshname)
             }
         }
 
-        int ndims = threeD ? 3 : 2;
+        //int ndims = threeD ? 3 : 2;
         int dims[3];
         dims[0] = xx->dims[0];
         dims[1] = xx->dims[1];
@@ -1134,7 +1134,7 @@ JMFileFormat::GetAuxiliaryData(const char *var, int timestep,
             int *matnos = new int[materialNames.size()];
             char **names = new char*[materialNames.size()];
             bool mixed = false;
-            for(int i = 0; i < materialNames.size(); ++i)
+            for(size_t i = 0; i < materialNames.size(); ++i)
             {
                 names[i] = (char*)materialNames[i].c_str();
                 if(i==0 && strcmp(names[i], "mixed") == 0)

@@ -184,7 +184,7 @@ Dyna3DFile::FreeUpResources(void)
 void
 Dyna3DFile::GetMaterials(intVector &matnos, stringVector &matnames, doubleVector &matdens)
 {
-    for(int i = 0; i < materialCards.size(); ++i)
+    for(size_t i = 0; i < materialCards.size(); ++i)
     {
         matnos.push_back(materialCards[i].materialNumber);
         matnames.push_back(materialCards[i].materialName);
@@ -208,7 +208,7 @@ MaterialProperties
 Dyna3DFile::GetMaterial(int i) const
 {
     MaterialProperties mat;
-    if(i >= 0 && i < materialCards.size())
+    if(i >= 0 && i < (int)materialCards.size())
     {
         mat = materialCards[i];
     }
@@ -218,7 +218,7 @@ Dyna3DFile::GetMaterial(int i) const
 void
 Dyna3DFile::SetMaterial(int i, const MaterialProperties &mat)
 {
-    if(i >= 0 && i < materialCards.size())
+    if(i >= 0 && i < (int)materialCards.size())
     {
         materialCards[i] = mat;
     }
@@ -698,7 +698,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
         notFirstLine = true;
 
         // See if the line ends like a material
-        int len = strlen(line);
+        //int len = (int)strlen(line);
         const char *end_of_matline = "0    0    0";
         bool endsLikeMat = (strcmp(line + 69, end_of_matline) == 0);
         bool startsLikeMat = false;
@@ -711,7 +711,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
                 int matno; 
                 if(sscanf(line, "%d", &matno) == 1)
                 {
-                    startsLikeMat = (matno == materialCards.size()+1);
+                    startsLikeMat = (matno == (int)materialCards.size()+1);
                 }
                 line[6] = ' ';
             }
@@ -732,7 +732,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
             std::string matName(mat.materialName);
             if(matName.empty())
             {
-                char matNameBuf[10];
+                char matNameBuf[1025];
                 SNPRINTF(matNameBuf, 1024, "%d", int(1 + materialCards.size()));
                 matName = std::string(matNameBuf);
             }
@@ -741,7 +741,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
                 // Find a unique name.
                 int index = 2;
                 std::string tmpName(matName);
-                char *matNameBuf = new char[1024];
+                char *matNameBuf = new char[1025];
                 do
                 {
                     SNPRINTF(matNameBuf, 1024, "%s %d", matName.c_str(), index++);
@@ -759,13 +759,13 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
 
         // Read until we have the proper number of materials or we
         // run inth the "NODE DEFINITIONS" section.
-        keepReading = (materialCards.size() < cards.card2.nMaterials) &&
+        keepReading = ((int)materialCards.size() < cards.card2.nMaterials) &&
                       (strstr(line, "NODE DEFINITIONS") == NULL);
     } while(keepReading);
 
     // Fill out the material list in case we didn't get to read them all
     int n = 1;
-    while(materialCards.size() < cards.card2.nMaterials)
+    while((int)materialCards.size() < cards.card2.nMaterials)
     {
         char badname[100];
         SNPRINTF(badname, 100, "invalid %d", n++);
@@ -781,7 +781,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
     size_t i, diff = 0;
     for(i = 0; i < materialCards.size(); ++i)
     {
-        if(materialCards[i].materialNumber != i+1)
+        if(materialCards[i].materialNumber != (int)i+1)
             diff++;
     }
     if(diff > materialCards.size()/2)
@@ -915,8 +915,9 @@ Dyna3DFile::ReadFile(const std::string &name, int nLines)
                 if(line[0] != '*')
                 {
                     DEBUG_READER(
-                    if(node < 10 || node >= nPoints-10)
+                    if(node < 10 || node >= nPoints-10) {
                         debug5 << line << endl;
+                    }
                     )
 
                     // It's a valid point line.
@@ -958,8 +959,9 @@ Dyna3DFile::ReadFile(const std::string &name, int nLines)
                 if(line[0] != '*')
                 {
                     DEBUG_READER(
-                    if(cellid < 10 || cellid >= nCells-10)
+                    if(cellid < 10 || cellid >= nCells-10) {
                         debug5 << line << endl;
+                    }
                     )
 
 #define INDEX_FIELD_WIDTH 8
@@ -1165,7 +1167,7 @@ Dyna3DFile::GetVar(const char *varname)
        materialCards.size() > 0)
     {
         std::map<int, int> mat2card;
-        for(int i = 0; i < materialCards.size(); ++i)
+        for(size_t i = 0; i < materialCards.size(); ++i)
             mat2card[materialCards[i].materialNumber] = i;
 
         vtkFloatArray *arr = vtkFloatArray::New();
