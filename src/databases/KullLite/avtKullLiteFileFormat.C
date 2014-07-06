@@ -477,7 +477,8 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
         // Let's grab the nodeId's and store them
         if (sharedSlave) // Shared face, grab them in reverse order
         {
-            for (i = nodesForThisFace-1; i >= 0; i--)
+            //for (i = nodesForThisFace-1; i >= 0; i--)
+            for (i=nodesForThisFace; i-- > 0 ;)
             {
                 int ix2 = nodesForThisFace - 1 - i;
                 nodes[faceI - startZoneToFaceIndex][ix2] =
