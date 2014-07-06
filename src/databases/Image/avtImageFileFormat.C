@@ -172,8 +172,8 @@ avtImageFileFormat::Initialize(void)
     haveInitialized = true;
 
     // find the file extension
-    int start = fname.size();
-    for(int i=0; i<fname.size(); i++)
+    size_t start = fname.size();
+    for(size_t i=0; i<fname.size(); i++)
         if(fname[i] == '.')
             start = i;
     if (start>=fname.size())
@@ -187,7 +187,7 @@ avtImageFileFormat::Initialize(void)
     if (fext == "imgvol")
     {
         ReadImageVolumeHeader();
-        for(int i=0; i<subImages[0].size(); i++)
+        for(size_t i=0; i<subImages[0].size(); i++)
             if(subImages[0][i] == '.')
                 start = i;
         image_fext = string(subImages[0], start+1, subImages[0].size()-1);
@@ -361,7 +361,7 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
         // Maximum parallelism is one MPI task per image.
         //
         static bool haveIssuedProcWarning = false;
-        if (size > subImages.size() && !haveIssuedProcWarning)
+        if ((size_t)size > subImages.size() && !haveIssuedProcWarning)
         {
             char msg[1024];
             SNPRINTF(msg, sizeof(msg),
@@ -493,13 +493,13 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
         || (image_fext == "sdt") || (image_fext == "SDT") 
         || (image_fext == "imgvol"))
     {
-        for (int i = 0; i < selList.size(); i++)
+        for (size_t i = 0; i < selList.size(); i++)
             (*selsApplied)[i] = false;
         return retval;
     }
 
     avtLogicalSelection composedSel;
-    for (int i = 0; i < selList.size(); i++)
+    for (size_t i = 0; i < selList.size(); i++)
     {
         if (string(selList[i]->GetType()) == "Logical Data Selection")
         {
@@ -846,8 +846,7 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                       1, 0, dim, dim);
 
     // add these variable names to the metadata
-    int i;
-    for(i=0; i<cellvarnames.size(); i++)
+    for(size_t i=0; i<cellvarnames.size(); i++)
     {
         AddScalarVarToMetaData(md, cellvarnames[i], "ImageMesh", AVT_ZONECENT);
         AddScalarVarToMetaData(md, cellvarnames[i] + "_nodal", 
@@ -859,7 +858,7 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int numExtsThatDontSupportColors = 5;
     const char *extsThatDontSupportColors[5] = { "spr", "SPR", "sdt", "SDT",
                                                  "imgvol" };
-    for (i = 0 ; i < numExtsThatDontSupportColors ; i++)
+    for (int i = 0 ; i < numExtsThatDontSupportColors ; i++)
         if (image_fext == extsThatDontSupportColors[i])
             supportColors = false;
 
@@ -941,7 +940,7 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
     bool isNodal = !strcmp(meshname, "ImageMesh_nodal");
     int globalZoneCount = subImages.size();
     if (isNodal) globalZoneCount--; 
-    int globalZoneStart = 0;
+    //int globalZoneStart = 0;
     float globalZStart = (specifiedZStart ? zStart : 0.);
     float ZStep = (specifiedZStep ? zStep : 1.);
 
@@ -1165,9 +1164,9 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
 
     int globalZoneCount = subImages.size();
     if (isNodal) globalZoneCount--; 
-    int globalZoneStart = 0;
-    float globalZStart = (specifiedZStart ? zStart : 0.);
-    float ZStep = (specifiedZStep ? zStep : 1.);
+    //int globalZoneStart = 0;
+    //float globalZStart = (specifiedZStart ? zStart : 0.);
+    //float ZStep = (specifiedZStep ? zStep : 1.);
 
     int localZoneStart;
     int localZoneCount = globalZoneCount / nprocs;
@@ -1282,9 +1281,9 @@ avtImageFileFormat::GetOneVar(const char *varname)
     int extents[6];
     image->GetExtent(extents);
     int xmin = extents[0];
-    int xmax = extents[1];
+    //int xmax = extents[1];
     int ymin = extents[2];
-    int ymax = extents[3];
+    //int ymax = extents[3];
 
     int nChannels = image->GetNumberOfScalarComponents();
 

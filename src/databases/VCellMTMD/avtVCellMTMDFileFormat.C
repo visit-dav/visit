@@ -409,7 +409,7 @@ void avtVCellMTMDFileFormat::readSubDomains(){
         }
         string comma = ",";
         Tokenize(line,oResult,comma);
-        for(int i=0;i<oResult.size();i++){
+        for(size_t i=0;i<oResult.size();i++){
             trimString(oResult[i]);
         }
         istringstream convert;
@@ -749,9 +749,9 @@ avtVCellMTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
 
     //const avtMaterialMetaData *vol_mmd = md->GetMaterialOnMesh(VOLMESH);
     //const avtMaterialMetaData *membr_mmd = md->GetMaterialOnMesh(MEMBRMESH);
-    int volSize = vcellMeshInfo.numElementsXYZ[0]*vcellMeshInfo.numElementsXYZ[1]*vcellMeshInfo.numElementsXYZ[2];
-    int membrSize = vcellMeshInfo.numMembraneElements;
-    for(int i = 0;i<variableNames.size();i++){
+    //int volSize = vcellMeshInfo.numElementsXYZ[0]*vcellMeshInfo.numElementsXYZ[1]*vcellMeshInfo.numElementsXYZ[2];
+    //int membrSize = vcellMeshInfo.numMembraneElements;
+    for(size_t i = 0;i<variableNames.size();i++){
         //if(variableNames[i].size == volSize){
         if(variableNames[i].varType == VAR_VOLUME || variableNames[i].varType == VAR_VOLUME_REGION){
             avtScalarMetaData *smd = new avtScalarMetaData;
@@ -810,7 +810,7 @@ avtVCellMTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         }
     }
 
-    for(int i=0;i<membrSubstVariables.size();i++){
+    for(size_t i=0;i<membrSubstVariables.size();i++){
         avtScalarMetaData *smd = new avtScalarMetaData;
         smd->name = membrSubstVariables[i].convertVolToMembrName;
         smd->meshName = MEMBRMESH;
@@ -827,7 +827,7 @@ avtVCellMTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         md->Add(smd);
     }
 
-    for(int i=0;i<regionSubstVariables.size();i++){
+    for(size_t i=0;i<regionSubstVariables.size();i++){
         avtScalarMetaData *smd = new avtScalarMetaData;
         smd->name = regionSubstVariables[i].regionSubstName;
         if(regionSubstVariables[i].varType == VAR_VOLUME_REGION){
@@ -1124,7 +1124,7 @@ avtVCellMTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname)
         vtkPoints *p = vtkPoints::New();
         float x=0.0,y=0.0,z=0.0;
         string lastFoundVarName("");
-        double lastFoundVal;
+        double lastFoundVal = 0; //TODO: check on fix for uninitialized vars
         while(ifs.eof() == 0){
             getline(ifs,line);
             trimString(line);
@@ -1141,7 +1141,7 @@ avtVCellMTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname)
                 //save data values for this timepoint
                 string varName = name.substr(0,name.find("(",0));
                 if(lastFoundVarName.compare(varName) != 0){
-                    for(int i = 0;i<variableNames.size();i++){
+                    for(size_t i = 0;i<variableNames.size();i++){
                         string datablockVarName(variableNames[i].varName);
                         if(datablockVarName.compare(varName) == 0){
                             lastFoundVarName = datablockVarName;
@@ -1351,7 +1351,7 @@ void avtVCellMTMDFileFormat::readVariableValues(const char * simFileName,string 
     FILE *fp=NULL;
 
     DataBlock * varDataBlock = NULL;
-    for(int i=0;i<variableNames.size();i++){
+    for(size_t i=0;i<variableNames.size();i++){
         if(varname.compare(string(variableNames[i].varName)) == 0){
             varDataBlock = &(variableNames[i]);
             break;
@@ -1379,8 +1379,8 @@ void avtVCellMTMDFileFormat::readVariableValues(const char * simFileName,string 
         double * tempValues = new double[varDataBlock->size];
         readDoubles(fp, tempValues, varDataBlock->size);
         //read membrane
-        vector<int> * volIndexes;//fakeVariables[varnameIN];
-        for(int i=0;i<membrSubstVariables.size();i++){
+        vector<int> * volIndexes = NULL; //TODO: check on fix for uninitialized vars //fakeVariables[varnameIN];
+        for(size_t i=0;i<membrSubstVariables.size();i++){
             if(membrSubstVariables[i].convertVolToMembrName.compare(varnameIN) == 0){
                 volIndexes = &(membrSubstVariables[i].volumeIndexes);
                 break;
@@ -1585,7 +1585,7 @@ debug1 << "baseSimName = " << baseSimName << endl;
                 // parse iteration number and time
                 //
                 trimString(line);
-                int numTokens = 0;
+                //int numTokens = 0;
                 VCellLogEntry vcellLogEntry;
                 stringstream ss(line);
                 if (bSimZip) {
@@ -2119,7 +2119,7 @@ void avtVCellMTMDFileFormat::stripToBaseName(string & filePath){
 
 string avtVCellMTMDFileFormat::findDomainName(string & varOrFuncName){
 
-    for(int i=0;i<variableNames.size();i++){
+    for(size_t i=0;i<variableNames.size();i++){
         if(string(variableNames[i].varName).compare(varOrFuncName) == 0){
             return variableNames[i].domainName;
         }
@@ -2132,13 +2132,13 @@ string avtVCellMTMDFileFormat::findDomainName(string & varOrFuncName){
         }
     }
 
-    for(int i=0;i<membrSubstVariables.size();i++){
+    for(size_t i=0;i<membrSubstVariables.size();i++){
         if(membrSubstVariables[i].convertVolToMembrName.compare(varOrFuncName) == 0){
             return membrSubstVariables[i].membrFuncDomainName;
         }
     }
 
-    for(int i=0;i<regionSubstVariables.size();i++){
+    for(size_t i=0;i<regionSubstVariables.size();i++){
         if(regionSubstVariables[i].regionSubstName.compare(varOrFuncName) == 0){
             return regionSubstVariables[i].domainName;
         }
@@ -2164,7 +2164,7 @@ void avtVCellMTMDFileFormat::substituteMembraneFunctions(avtDatabaseMetaData *md
                     vcellExpr->getSymbols(vcellExprSymbols);
                     for(int i=0;i<exprList.GetNumExpressions();i++){
                         if(exprList.GetExpressions(i).GetMeshName().compare(VOLMESH) == 0){
-                            for(int j=0;j<vcellExprSymbols.size();j++){
+                            for(size_t j=0;j<vcellExprSymbols.size();j++){
                                 if(exprList.GetExpressions(i).GetName().compare(vcellExprSymbols[j]) == 0){
                                     VCell::Expression * replaceThisFragment = new VCell::Expression(vcellExprSymbols[j]);
                                     VCell::Expression * newReplacement = new VCell::Expression(exprList.GetExpressions(i).GetDefinition());
@@ -2186,7 +2186,7 @@ void avtVCellMTMDFileFormat::substituteMembraneFunctions(avtDatabaseMetaData *md
     
 
     //Within membrane functions replace all volume state variables with a "fake" membrane variable reference
-    int substCounter = 0;
+    //int substCounter = 0;
     for(int k=0;k<exprList.GetNumExpressions();k++){
         Expression & visitExpr = exprList.GetExpressions(k);
         if(visitExpr.GetMeshName().compare(MEMBRMESH) == 0){
@@ -2195,8 +2195,8 @@ void avtVCellMTMDFileFormat::substituteMembraneFunctions(avtDatabaseMetaData *md
                 VCell::Expression * vcellExpr = new VCell::Expression(visitExpr.GetDefinition());
                 vector<string> vcellExprSymbols;
                 vcellExpr->getSymbols(vcellExprSymbols);
-                for(int i=0;i<vcellExprSymbols.size();i++){
-                    for(int j=0;j<variableNames.size();j++){
+                for(size_t i=0;i<vcellExprSymbols.size();i++){
+                    for(size_t j=0;j<variableNames.size();j++){
                         if(variableNames[j].varType == VAR_VOLUME){
                             if(string(variableNames[j].varName).compare(vcellExprSymbols[i]) == 0){
                                 VCell::Expression * replaceThisFragment = new VCell::Expression(vcellExprSymbols[i]);
@@ -2204,7 +2204,7 @@ void avtVCellMTMDFileFormat::substituteMembraneFunctions(avtDatabaseMetaData *md
                                 ss << vcellExprSymbols[i] << "_subst";
                                 string substName = ss.str();
                                 bool bFound = false;
-                                for (int k=0;k<membrSubstVariables.size();k++){
+                                for (size_t k=0;k<membrSubstVariables.size();k++){
                                     if(membrSubstVariables[k].convertVolToMembrName.compare(substName) == 0){
                                         bFound = true;
                                         break;
@@ -2347,7 +2347,7 @@ void avtVCellMTMDFileFormat::substituteVisitFunctionSyntax(avtDatabaseMetaData *
 }
 
 void avtVCellMTMDFileFormat::addRegionSubstVar(string & regionSubstVarName,int substVarType,string & domainName){
-    for(int i=0;i<regionSubstVariables.size();i++){
+    for(size_t i=0;i<regionSubstVariables.size();i++){
         if(regionSubstVarName.compare(regionSubstVariables[i].regionSubstName) == 0){
             return;
         }
@@ -2574,14 +2574,14 @@ void avtVCellMTMDFileFormat::readVolumeSamples(ifstream & ifs){
     memset(inflated_bytes, 0, (twiceNumVolume + 1) * sizeof(unsigned char));
 
     unsigned long inflated_len = twiceNumVolume;
-    int retVal = uncompress(inflated_bytes, &inflated_len, bytes_from_compressed, compressed_len/2);
+    int retVal = uncompress(inflated_bytes, &inflated_len, bytes_from_compressed, compressed_len/2); (void) retVal;
 
     vcellMeshInfo.volumeElementsMapVolumeRegion = new unsigned short[numVolume];
-    if (inflated_len == numVolume) {
+    if (inflated_len == (unsigned long)numVolume) {
         for (unsigned long i = 0; i < inflated_len; i ++) {        
             vcellMeshInfo.volumeElementsMapVolumeRegion[i] = inflated_bytes[i];
         }
-    } else if (inflated_len == twiceNumVolume) {
+    } else if (inflated_len == (unsigned long)twiceNumVolume) {
         // convert two bytes to short
         for (unsigned long i = 0, j = 0; i < inflated_len; i += 2, j ++) {
             vcellMeshInfo.volumeElementsMapVolumeRegion[j] = inflated_bytes[i] | (inflated_bytes[i + 1] << 8);

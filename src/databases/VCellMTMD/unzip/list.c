@@ -134,7 +134,7 @@ int list_files(__G)    /* return PK-type error code */
 --------          -------  ---                            -------
    64159            20502  68%                            3 files
   ---------------------------------------------------------------------------*/
-
+    (void) hh; (void) mm; (void) Headers;
     G.pInfo = &info;
     date_format = DATE_FORMAT;
 
@@ -340,7 +340,7 @@ int list_files(__G)    /* return PK-type error code */
               (char)((G.crec.general_purpose_bit_flag & 1) ? 'E' : ' '));
 #else /* !WINDLL */
             if (cfactor == 100)
-                sprintf(cfactorstr, LoadFarString(CompFactor100));
+                sprintf(cfactorstr, "%s", LoadFarString(CompFactor100));
             else
                 sprintf(cfactorstr, LoadFarString(CompFactorStr), sgn, cfactor);
             if (longhdr)
@@ -418,7 +418,7 @@ int list_files(__G)    /* return PK-type error code */
 
 #else /* !WINDLL */
         if (cfactor == 100)
-            sprintf(cfactorstr, LoadFarString(CompFactor100));
+            sprintf(cfactorstr, "%s", LoadFarString(CompFactor100));
         else
             sprintf(cfactorstr, LoadFarString(CompFactorStr), sgn, cfactor);
         if (longhdr) {

@@ -68,10 +68,11 @@
 avtM3DC1Field::avtM3DC1Field( float *elementsPtr,
                               int nelements, int dim, int planes ) 
   : elements( elementsPtr), trigtable(0), neighbors(0),
-    f0(0), psi0(0), fnr(0), fni(0), psinr(0), psini(0),
+    element_dimension(dim), nplanes(planes),
+    psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0),
     I0(0), f(0), psi(0), I(0),
-    eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0),
-    nelms(nelements), element_dimension(dim), nplanes(planes)
+    eqsubtract(0), linflag(0), nelms(nelements), 
+    tmode(0), bzero(0), rzero(0), F0(0)
 {
   if( element_dimension == 2 )
   {
@@ -139,8 +140,8 @@ void avtM3DC1Field::findElementNeighbors()
   std::multimap< int, edge > edgeListMap;
 
   float   *ptr;
-  double  x[3], y[3], co, sn;
-  int     el, vert, tri[3], vlen;
+  //double  x[3], y[3], co, sn;
+  int     el/*, vert, tri[3], vlen*/;
 
   /* Allocate, initialize neighbor table */
   neighbors = (int *)malloc(3 * tElements * sizeof(int));
@@ -233,7 +234,7 @@ int avtM3DC1Field::register_vert(std::vector< vertex > &vlist,
 {
   const double tol=2.5e-13;
 
-  for( int i=0; i<vlist.size(); i++ )
+  for( size_t i=0; i<vlist.size(); i++ )
   {
     double dx = x - vlist[i].x;
     double dy = y - vlist[i].y;
@@ -349,8 +350,10 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
     {
       char buf[1024];
 
-      sprintf( buf, "avtM3DC1Field::get_tri_coords2D - Get Triangle Coords 2d an element was specified but the point is outside the phi tollerance", 
-               xin[0], xin[1], xin[2] );
+      strcpy( buf, "avtM3DC1Field::get_tri_coords2D - Get Triangle Coords 2d an element was specified but the point is outside the phi tollerance");
+
+      /*sprintf( buf, "avtM3DC1Field::get_tri_coords2D - Get Triangle Coords 2d an element was specified but the point is outside the phi tollerance", 
+               xin[0], xin[1], xin[2] ); */
 
       avtCallback::IssueWarning( buf );   
     }
@@ -620,7 +623,7 @@ float avtM3DC1Field::interpdz(float *var, int el, double *lcoords) const
 float avtM3DC1Field::interpdPhi(float *var, int el, double *lcoords) const
 {
   float *a = var + scalar_size*el;
-  double xi = lcoords[0], eta = lcoords[1], zi = lcoords[2];
+  double xi = lcoords[0], eta = lcoords[1] /*, zi = lcoords[2]*/;
   double val = 0;
 
   if( element_dimension == 2 )

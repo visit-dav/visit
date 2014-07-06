@@ -204,7 +204,7 @@ avtXmdvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
 
-    for (int i = 0 ; i < varnames.size() ; i++)
+    for (size_t i = 0 ; i < varnames.size() ; i++)
         AddScalarVarToMetaData(md, varnames[i], meshname, AVT_NODECENT, NULL);
 
     AddArrayVarToMetaData(md, "all_vars", varnames, meshname, AVT_NODECENT);

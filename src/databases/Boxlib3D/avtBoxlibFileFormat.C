@@ -353,8 +353,6 @@ AVTBOXLIBFILEFORMAT::ActivateTimestep(void)
 void
 AVTBOXLIBFILEFORMAT::InitializeReader(void)
 {
-    int  i;
-
     if (initializedReader)
         return;
 
@@ -373,7 +371,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     //
     int count = 0;
     int level = 0;
-    for (i = 0; i < multifabFilenames.size(); ++i)
+    for (size_t i = 0; i < multifabFilenames.size(); ++i)
     {
         VisMF *vmf = GetVisMF(i);
         int cnt = vmf->nComp();
@@ -420,7 +418,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     // want to expose as scalar variables, since we are using them elsewhere.
     //
     varUsedElsewhere.clear();
-    for (i = 0 ; i < nVars ; i++)
+    for (int i = 0 ; i < nVars ; i++)
     {
         varUsedElsewhere.push_back(false);
     }
@@ -429,9 +427,9 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     // Find any materials
     //
     nMaterials = 0;
-    for (i = 0; i < nVars; ++i)
+    for (int i = 0; i < nVars; ++i)
     {
-        int val = 0;
+        //int val = 0;
         if (varNames[i].find("frac") == 0)
         {
             varUsedElsewhere[i] = true;
@@ -443,9 +441,9 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     }
     if (nMaterials == 0)
     {
-        for (i = 0; i < nVars; ++i)
+        for (int i = 0; i < nVars; ++i)
         {
-            int val = 0;
+            //int val = 0;
             if (varNames[i].find("vf_") == 0)
             {
                 varUsedElsewhere[i] = true;
@@ -464,7 +462,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     //
     nVectors = 0;
     vectorNames.clear();
-    for (i = 0; i < nVars; ++i)
+    for (int i = 0; i < nVars; ++i)
     {
         int id2 = -1;
 #if BL_SPACEDIM==3
@@ -1255,7 +1253,7 @@ AVTBOXLIBFILEFORMAT::GetVar(int patch, const char *var_name)
     if (local_patch >= patchesPerLevel[level])
         EXCEPTION2(BadDomainException, patch, patchesPerLevel[level]);
 
-    int varIndex;
+    size_t varIndex;
     for (varIndex = 0; varIndex < varNames.size(); ++varIndex)
         if (varNames[varIndex] == var_name)
             break;
@@ -1397,12 +1395,12 @@ AVTBOXLIBFILEFORMAT::GetVectorVar(int patch, const char *var_name)
     if (local_patch >= patchesPerLevel[level])
         EXCEPTION2(BadDomainException, patch, patchesPerLevel[level]);
 
-    int vectIndex;
+    size_t vectIndex;
     for (vectIndex = 0; vectIndex < vectorNames.size(); ++vectIndex)
         if (vectorNames[vectIndex] == var_name)
             break;
 
-    if (vectIndex > nVectors)
+    if (vectIndex > (size_t)nVectors)
         EXCEPTION1(InvalidVariableException, var_name);
 
     // Get the data for the components (in FArrayBoxes).
@@ -1920,7 +1918,7 @@ AVTBOXLIBFILEFORMAT::CalculateDomainNesting(void)
 #endif
             vector<int> list;
             coarse_levels.GetElementsListFromRange(min, max, list);
-            for (int i = 0 ; i < list.size() ; i++)
+            for (size_t i = 0 ; i < list.size() ; i++)
             {
                 int candidate = coarse_start + list[i];
                 if (logIMax[patch] < logIMin[candidate])
@@ -2271,7 +2269,7 @@ SwapEntries(std::vector<int> &clearlist, int t, int s)
 void
 AVTBOXLIBFILEFORMAT::FreeUpResources()
 {
-    int   i, j;
+    size_t   i, j;
 
     initializedReader = false;
 
@@ -2280,19 +2278,23 @@ AVTBOXLIBFILEFORMAT::FreeUpResources()
     // to sort out the duplicates (this can happen when we access a variable
     // as a component of a vector and then later as a scalar).
     //
-    int num_entries = clearlist.size() / 3;
+    size_t num_entries = clearlist.size() / 3;
     for (i = 0 ; i < num_entries ; i++)
     {
         for (j = i+1 ; j < num_entries ; j++)
         {
             if (clearlist[3*i] > clearlist[3*j])
                 SwapEntries(clearlist, i, j);
-            else if (clearlist[3*i] == clearlist[3*j])
-                if (clearlist[3*i+1] > clearlist[3*j+1])
+            else if (clearlist[3*i] == clearlist[3*j]) {
+                if (clearlist[3*i+1] > clearlist[3*j+1]) {
                     SwapEntries(clearlist, i, j);
-                else if (clearlist[3*i+1] == clearlist[3*j+1])
-                    if (clearlist[3*i+2] > clearlist[3*j+2])
+                }
+                else if (clearlist[3*i+1] == clearlist[3*j+1]) {
+                    if (clearlist[3*i+2] > clearlist[3*j+2]) {
                         SwapEntries(clearlist, i, j);
+                    }
+                }
+            }
         }
     }
 
@@ -2417,10 +2419,10 @@ static void EatUpWhiteSpace(ifstream &in)
 
 static int VSSearch(const vector<string> &v, const string &s)
 {
-    int i;
+    size_t i;
     for (i = 0; i < v.size(); ++i)
         if (v[i] == s)
-            return i;
+            return (int)i;
     return -1;
 }
 

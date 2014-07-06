@@ -1501,7 +1501,7 @@ namespace paraDIS {
   //===========================================================================
   void Arm::Classify(void) {
 #ifdef RC_CPP_VISIT_BUILD
-    int err = -1; 
+    int err = -1; (void) err;
 #endif 
     dbprintf(5, "Arm::Classify(%d) called for arm %s\n", mArmID, Stringify(0).c_str()); 
 #if LINKED_LOOPS
@@ -2591,7 +2591,7 @@ namespace paraDIS {
     if (Arm::mTotalArmLengthAfterDecomposition && fabs(ratio) > 0.00001 ) {
       string errmsg = str(boost::format("\n\nError:  mDecomposedLength %1% + mTotalArmLengthBeforeDecomposition %2% != mTotalArmLengthAfterDecomposition %3% (ratio is %4%)!\n\n\n")%Arm::mDecomposedLength%Arm::mTotalArmLengthBeforeDecomposition%Arm::mTotalArmLengthAfterDecomposition%ratio);
       cerr  << errmsg; 
-      fprintf(thefile,  errmsg.c_str()); 
+      fprintf(thefile, "%s", errmsg.c_str()); 
     }
     fprintf(thefile, "Number of segments classified in arm: %d\n", ArmSegment::mNumClassified); 
     fprintf(thefile, "Number of segments measured in arm: %d\n", ArmSegment::mNumArmSegmentsMeasured); 
@@ -3270,7 +3270,7 @@ namespace paraDIS {
   void DataSet::ReadFullNodeFromFile(std::ifstream &datafile, MinimalNode &theNode){
     FullNode *fullNode = NULL; //new FullNode; 
     char comma;
-    long old_id_junk, constraint_junk, numNeighbors; 
+    long old_id_junk, constraint_junk, numNeighbors = 0;  ///TODO: check on uninitialized value
     float float_junk, location[3]; 
     int domainID, nodeID, neighborDomain, neighborID, numskipped=0;
     string junkstring;
@@ -3825,8 +3825,8 @@ namespace paraDIS {
       uint32_t numarms = lastarm-firstarm+1; 
       // ----------------------------------------------------------
       // 1. Segment file: the header
-      fprintf(segfile,"# vtk DataFile Version 3.0\n" );
-      fprintf(segfile, str(boost::format("%s, written by paraDIS_lib. mBounds are %s, number of arms = %d\n")% filename % (FullNode::mBoundsSize.Stringify()) % (lastarm-firstarm+1)).c_str()); 
+      fprintf(segfile, "# vtk DataFile Version 3.0\n" );
+      fprintf(segfile, "%s", str(boost::format("%s, written by paraDIS_lib. mBounds are %s, number of arms = %d\n")% filename % (FullNode::mBoundsSize.Stringify()) % (lastarm-firstarm+1)).c_str()); 
       fprintf(segfile, "ASCII\n" );
       fprintf(segfile, "DATASET POLYDATA\n" );
       
@@ -4020,8 +4020,8 @@ namespace paraDIS {
       
       // ----------------------------------------------------------
       // 1. Node file: the header
-      fprintf(nodefile,"# vtk DataFile Version 3.0\n" );
-      fprintf(nodefile, str(boost::format("%s, written by paraDIS_lib. mBounds are %s\n")% filename % (FullNode::mBoundsSize.Stringify())).c_str()); 
+      fprintf(nodefile, "# vtk DataFile Version 3.0\n" );
+      fprintf(nodefile, "%s", str(boost::format("%s, written by paraDIS_lib. mBounds are %s\n")% filename % (FullNode::mBoundsSize.Stringify())).c_str()); 
       fprintf(nodefile, "ASCII\n" );
       fprintf(nodefile, "DATASET POLYDATA\n" );
       
@@ -4203,7 +4203,7 @@ namespace paraDIS {
     fprintf(armfile, "\n\n"); 
     fprintf(armfile, "MONSTER NODE SUMMARY STATISTICS \n"); 
     fprintf(armfile, "=========================================================================\n"); 
-    fprintf(armfile, GetMonsterNodeSummary().c_str()); 
+    fprintf(armfile, "%s", GetMonsterNodeSummary().c_str()); 
     fprintf(armfile, "=========================================================================\n");     
     fprintf(armfile, "\n\n"); 
     
@@ -4220,12 +4220,12 @@ namespace paraDIS {
     pos = mMetaArms.begin();
     armnum = 0; 
     while (pos != endpos) {
-      int numtermnodes = (*pos)->mTerminalNodes.size(), numNeighbors[2] = {0};
+      int numtermnodes = (*pos)->mTerminalNodes.size(), numNeighbors[2] = {0,0}; (void) numNeighbors;
       int numtermarms = (*pos)->mTerminalArms.size(); 
       double eplength = 0.0; 
       string ids[2]; ids[1] = "--"; 
       float loc[2][3]={{0}};
-      int ntypes[2]={0}, armtypes[2] = {0}; 
+      int ntypes[2]={0}, armtypes[2] = {0,0}; (void) armtypes;
       if (numtermarms < 1 || numtermarms > 2) {
         dbprintf(0,  "WARNING: arm # %d has %d terminal arms\n", armnum, numtermarms);
         dbprintf(0,  (*pos)->Stringify(0).c_str()); 

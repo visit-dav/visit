@@ -566,7 +566,7 @@ avtTFTFileFormat::CurveData::GetLabelsAndUnits(const std::string &input,
 #if 1
     // This is just for now since VisIt can't draw sideways text yet.
     // Remove this someday.
-    for(int i = 0; i < label.size(); ++i)
+    for(size_t i = 0; i < label.size(); ++i)
     {
         if(label[i] == ' ')
             label[i] = '\n';
@@ -631,7 +631,7 @@ avtTFTFileFormat::CurveData::Read(ifstream &ifile, bool &setTime, float &time,
 
             // Get the title and replace bad characters with underscore.
             title = GetLine(ifile);
-            for(a = 0; a < title.size(); ++a)
+            for(a = 0; a < (int)title.size(); ++a)
             {
                 if(title[a] == '(' || title[a] == ')' ||
                    title[a] == '[' || title[a] == ']' ||

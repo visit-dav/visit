@@ -48,7 +48,7 @@ float JwlEOS::T_from_r_e( float r, float e )
 
 float JwlEOS::a_from_r_e( float r, float e )
 {
-  float ri,r1i,r2i,c1,c2,p,d1,d2,d3,a;
+  float ri,r1i,r2i,c1,c2,d1,d2,d3,a; 
   ri = 1./r;
   r1i= R1 * ri;
   r2i= R2 * ri;

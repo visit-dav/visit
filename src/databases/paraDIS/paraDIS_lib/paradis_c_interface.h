@@ -15,8 +15,8 @@ using boost::uint32_t;
 #ifdef __cplusplus
 extern "C" {
 #endif  
-  static uint32_t WRAPPED_NODE = -42424242; 
-  static uint32_t END_OF_NODELIST = 42424242; 
+  static const uint32_t WRAPPED_NODE = -42424242; 
+  static const uint32_t END_OF_NODELIST = 42424242; 
   
   void *paraDIS_init(void *ds=NULL); 
   

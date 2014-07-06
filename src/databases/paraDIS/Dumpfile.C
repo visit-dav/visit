@@ -62,7 +62,7 @@ Dumpfile::Dumpfile(const char* filename, DBOptionsAttributes *rdatts) {
 
   mFilename = filename; 
 
-  paraDIS::DataSet * ds = reinterpret_cast<paraDIS::DataSet *>(paraDIS_init());
+  paraDIS::DataSet * ds = reinterpret_cast<paraDIS::DataSet *>(paraDIS_init()); (void)ds;
   /*!
     Write out files
   */ 
@@ -364,6 +364,7 @@ Dumpfile::GetMesh(std::string meshname) {
     cerr << err << endl; 
     EXCEPTION1(VisItException, err.c_str());
   }   
+  return NULL; ///TODO; check fix for non-void warning
 }
 
 // ****************************************************************************

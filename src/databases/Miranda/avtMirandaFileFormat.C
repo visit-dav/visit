@@ -152,7 +152,7 @@ string Vec2String(string name, T *vec, int numelems) {
 static void Fix2DFileOrder(int a, int b, int *fileOrder)
 {
   debug5 << "Fix2DFileOrder(" << a << ", "<< b << ", " << Vec2String("fileOrder",fileOrder,3) << ") " << endl; 
-    int posA, posB;
+    int posA = 0, posB = 0; ///TODO: check on fix for uninitialized values
     int ii;
     /* set posA to the position in iFileOrder in which a appears.  
        set posB to the position in iFileOrder in which b appears.  
@@ -399,7 +399,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
                 EXCEPTION1(InvalidDBTypeException, "Error parsing file.  "
                     "fileorder: should be followed by a permutation of XYZ");
 
-            for (ii = 0 ; ii < order.size() ; ii++)
+            for (ii = 0 ; ii < (int)order.size() ; ii++)
             {
                 if ('x' <= order[ii] && order[ii] <= 'z')
                     iFileOrder[ii] = order[ii] - 'x';
@@ -464,7 +464,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
 #ifdef _WIN32
         _getcwd(buf, 512);
 #else
-        getcwd(buf, 512);
+        char* res = getcwd(buf, 512); (void) res;
 #endif
         strcat(buf, "/");
         fileTemplate.insert(0, buf, strlen(buf));
@@ -652,7 +652,7 @@ avtMirandaFileFormat::GetFortranDouble( ifstream &f )
     std::string s;
     f >> s;
 
-    int ii;
+    size_t ii;
     for (ii = 0 ; ii < s.size() ; ii++)
     {
         if (s[ii] == 'd' || s[ii] == 'D')
@@ -791,7 +791,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     else 
       debug5 << "centering is nodal"<<endl;
 
-    int ii;
+    size_t ii;
     for (ii = 0 ; ii < aVarNames.size() ; ii++)
       {
         if (aVarNumComps[ii] == 1)
@@ -831,7 +831,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
         rdb->SetNumDomains(nblocks);
         int bbox[6];
-        for (ii = 0 ; ii < nblocks ; ii++)
+        for (ii = 0 ; ii < (size_t)nblocks ; ii++)
         {
           int iBlockIJK[3];           
           DomainToIJK( ii, iBlockIJK[0], iBlockIJK[1],  iBlockIJK[2]);
@@ -1378,7 +1378,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     int ii, iVar = -1, nPrevComp = 0;
 
-    for (ii = 0 ; ii < aVarNames.size() ; ii++) 
+    for (ii = 0 ; ii < (int)aVarNames.size() ; ii++) 
     {
         if (aVarNames[ii] == varname)
         {
@@ -1390,7 +1390,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
     // Search the materials if varname is not a regular variable
     if (iVar == -1)
     {
-        for (ii = 0 ; ii < aMatNames.size() ; ii++) 
+        for (ii = 0 ; ii < (int)aMatNames.size() ; ii++) 
         {
             if (aMatNames[ii] == varname)
             {
@@ -1506,7 +1506,7 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
 
    int ii, jj, iVar = -1, nPrevComp = 0;
 
-    for (ii = 0 ; ii < aVarNames.size() ; ii++) 
+    for (ii = 0 ; ii < (int)aVarNames.size() ; ii++) 
     {
         if (aVarNames[ii] == varname)
         {
@@ -1687,9 +1687,11 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
           }        
           bounds[3] -= fStride[1]; 
           if (iBlockZ != iNumBlocks[2]-1) {
-            bounds[5] = bounds[4] + fStride[4]*iInteriorSize[4];
+            //bounds[5] = bounds[4] + fStride[4]*iInteriorSize[4];
+            bounds[5] = bounds[4] + fStride[1]*iInteriorSize[1]; ///TODO: FIXME fStride & iInteriorSize are outside bounds size is only 3 I am setting it to 1 which is probably incorrect FIXME
           } else {
-            bounds[5] = bounds[4] + fStride[4]*iBoundarySize[4];
+            //bounds[5] = bounds[4] + fStride[4]*iBoundarySize[4];
+            bounds[5] = bounds[4] + fStride[1]*iBoundarySize[1]; ///TODO: FIXME fStride & iBoundarySize are outside bounds size is only 3 I am setting to 1 which is probably incorrect FIXME
           }        
           bounds[5] -= fStride[2]; 
           debug5 << "For domain "<<ii<<", "<<Vec2String("bounds", bounds, 6)<< endl;
@@ -1712,7 +1714,7 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
         sprintf(domainName, "domain %d", domain);
         
         int iFirstComp = 0;
-        for (ii = 0 ; ii < aVarNumComps.size() ; ii++)
+        for (ii = 0 ; ii < (int)aVarNumComps.size() ; ii++)
             iFirstComp += aVarNumComps[ii];
         
         
@@ -1984,7 +1986,7 @@ avtMirandaFileFormat::InterleaveData( float * __restrict dst, float *__restrict 
     memcpy(dst, src, numItems*sizeof(float)); 
     return; 
   }
-  float *__restrict srcp = src, *__restrict dstp = dst; 
+  //float *__restrict srcp = src, *__restrict dstp = dst; 
   int item, comp; 
   for (item=0; item < numItems; item++) {
     for (comp=0; comp < nComp; comp++) {
@@ -2116,20 +2118,20 @@ avtMirandaFileFormat::ReadRawScalar(FILE *fd, int iComp, float *out, const char 
 
     // Fortran records have a 32 bit int that tells their length.  
     // We read that here to test endianism. 
-    fread(&header, sizeof(int), 1, fd);
+    size_t res = fread(&header, sizeof(int), 1, fd); (void) res;
     nItemsRead = (int)fread(out, sizeof(float), nPoints, fd);
     if (nItemsRead != nPoints)
         EXCEPTION1(InvalidFilesException, filename);
 
-    if (header != nPoints*sizeof(float))
+    if ((size_t)header != nPoints*sizeof(float))
     {
         //If this is true, we need to swap endian
         ByteSwap32(&header);
-        if (header != nPoints*sizeof(float))
+        if ((size_t)header != nPoints*sizeof(float))
             EXCEPTION1(InvalidFilesException, filename);
 
         float *f = out;
-        for (ii = 0 ; ii < nPoints ; ii++, f++) {
+        for (ii = 0 ; ii < (size_t)nPoints ; ii++, f++) {
             ByteSwap32(f);
         }
     }

@@ -520,15 +520,16 @@ DDCMDHeader::Read(const std::string &filename, int maxlen, char *header)
     if (!file)
         return -1;
 
+    char* res = NULL; (void) res;
     size_t headerlength = 0;
-    fgets(header, maxlen - headerlength, file);
+    res = fgets(header, maxlen - headerlength, file); 
     headerlength = strlen(header);
     char *h = header + headerlength;
-    fgets(h, maxlen - headerlength, file);
+    res = fgets(h, maxlen - headerlength, file);
     while(*h != '\n' && !feof(file))
     {
         headerlength = strlen(header);
-        fgets(h = header + headerlength, maxlen-headerlength, file);
+        res = fgets(h = header + headerlength, maxlen-headerlength, file);
     }
     headerlength = strlen(header);
     fclose(file);
@@ -973,16 +974,16 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header,
     int iBlock = rank;
     int iXBlock = iBlock / (nYFileBlocks * nZFileBlocks);
     int iMin = iXBlock * deltaX;
-    int iMax = iMin + deltaX < nXFile ? iMin + deltaX : nXFile;
+    int iMax = iMin + deltaX < (int)nXFile ? iMin + deltaX : (int)nXFile;
 
     iBlock = iBlock % (nYFileBlocks * nZFileBlocks);
     int iYBlock = iBlock / nZFileBlocks;
     int jMin = iYBlock * deltaY;
-    int jMax = jMin + deltaY < nYFile ? jMin + deltaY : nYFile;
+    int jMax = jMin + deltaY < (int)nYFile ? jMin + deltaY : (int)nYFile;
 
     int iZBlock = iBlock % nZFileBlocks;
     int kMin = iZBlock * deltaZ;
-    int kMax = kMin + deltaZ < nZFile ? kMin + deltaZ : nZFile;
+    int kMax = kMin + deltaZ < (int)nZFile ? kMin + deltaZ : (int)nZFile;
 
     if (nDims == 2)
     {
@@ -2407,10 +2408,10 @@ avtDDCMDFileFormat::GetRectilinearMesh()
     if (nDims == 2)
     {
         iXMin = iYBlock * deltaY;
-        iXMax = iXMin + deltaY < nYFile ? iXMin + deltaY : nYFile;
+        iXMax = iXMin + deltaY < (int)nYFile ? iXMin + deltaY : (int)nYFile;
 
         iYMin = iZBlock * deltaZ;
-        iYMax = iYMin + deltaZ < nZFile ? iYMin + deltaZ : nZFile;
+        iYMax = iYMin + deltaZ < (int)nZFile ? iYMin + deltaZ : (int)nZFile;
 
         iZMin = 0;
         iZMax = 0;
@@ -2418,13 +2419,13 @@ avtDDCMDFileFormat::GetRectilinearMesh()
     else
     {
         iXMin = iXBlock * deltaX;
-        iXMax = iXMin + deltaX < nXFile ? iXMin + deltaX : nXFile;
+        iXMax = iXMin + deltaX < (int)nXFile ? iXMin + deltaX : (int)nXFile;
 
         iYMin = iYBlock * deltaY;
-        iYMax = iYMin + deltaY < nYFile ? iYMin + deltaY : nYFile;
+        iYMax = iYMin + deltaY < (int)nYFile ? iYMin + deltaY : (int)nYFile;
 
         iZMin = iZBlock * deltaZ;
-        iZMax = iZMin + deltaZ < nZFile ? iZMin + deltaZ : nZFile;
+        iZMax = iZMin + deltaZ < (int)nZFile ? iZMin + deltaZ : (int)nZFile;
     }
 
     debug1 << "iXMin=" << iXMin << ",iXMax=" << iXMax
@@ -3018,10 +3019,10 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 if (nDims == 2)
                 {
                     iXMin = iYBlock * deltaY;
-                    iXMax = iXMin + deltaY < nYFile ? iXMin + deltaY : nYFile;
+                    iXMax = iXMin + deltaY < (int)nYFile ? iXMin + deltaY : (int)nYFile;
 
                     iYMin = iZBlock * deltaZ;
-                    iYMax = iYMin + deltaZ < nZFile ? iYMin + deltaZ : nZFile;
+                    iYMax = iYMin + deltaZ < (int)nZFile ? iYMin + deltaZ : (int)nZFile;
 
                     iZMin = 0;
                     iZMax = 0;
@@ -3029,13 +3030,13 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 else
                 {
                     iXMin = iXBlock * deltaX;
-                    iXMax = iXMin + deltaX < nXFile ? iXMin + deltaX : nXFile;
+                    iXMax = iXMin + deltaX < (int)nXFile ? iXMin + deltaX : (int)nXFile;
 
                     iYMin = iYBlock * deltaY;
-                    iYMax = iYMin + deltaY < nYFile ? iYMin + deltaY : nYFile;
+                    iYMax = iYMin + deltaY < (int)nYFile ? iYMin + deltaY : (int)nYFile;
 
                     iZMin = iZBlock * deltaZ;
-                    iZMax = iZMin + deltaZ < nZFile ? iZMin + deltaZ : nZFile;
+                    iZMax = iZMin + deltaZ < (int)nZFile ? iZMin + deltaZ : (int)nZFile;
                 }
 
                 extents[0] = iXMin;

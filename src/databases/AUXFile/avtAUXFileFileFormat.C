@@ -360,7 +360,7 @@ avtAUXFileFileFormat::ReadFile()
     }
 
     fileBuf = new char[fileSize];
-    if (fread((void *)fileBuf, 1, fileSize, fd) != fileSize)
+    if (fread((void *)fileBuf, 1, fileSize, fd) != (size_t)fileSize)
     {
         fclose(fd);
         delete [] fileBuf;

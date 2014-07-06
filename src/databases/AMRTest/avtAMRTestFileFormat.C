@@ -200,7 +200,7 @@ avtAMRTestFileFormat::PopulateDomainNesting()
         dn->SetLevelCellSizes(level, cs);
     }
 
-    int iChildPatch = 0;
+    //int iChildPatch = 0;
     for (int patch = 0; patch < totalPatches; patch++)
     {
         //

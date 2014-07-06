@@ -234,7 +234,7 @@ string MultiresMultifileReader::variableNameAt(int index) const
 {
     TRACE(index);
     NOTNULL(mFileReader);
-    BOUNDS_CHECK(index, 0, mVariables.size());
+    BOUNDS_CHECK(index, 0, (int)mVariables.size());
 
     return mVariables[index].name;
 }
@@ -359,7 +359,7 @@ int MultiresMultifileReader::numVectorExpressions() const
 string MultiresMultifileReader::vectorExpressionAt(int index) const
 {
     TRACE();
-    BOUNDS_CHECK(index, 0, mVectorExpressions.size());
+    BOUNDS_CHECK(index, 0, (int)mVectorExpressions.size());
 
     return mVectorExpressions[index];
 }
@@ -735,7 +735,7 @@ getFilename(const string& varName, int fileIndex)
     }
 
     vector<int> timeSteps = timeStepList();
-    BOUNDS_CHECK(fileIndex, 0, timeSteps.size());
+    BOUNDS_CHECK(fileIndex, 0, (int)timeSteps.size());
 
     int timestep = timeSteps[fileIndex];
 
@@ -858,7 +858,7 @@ float MultiresMultifileReader::parseFileVersion(const char* filename)
         throw IOerror();
     }
 
-    fgets(line, sizeof line, infile);
+    char* res = fgets(line, sizeof line, infile); (void) res;
 
     vector<string> tokens = split(line, " #\t\n");
 

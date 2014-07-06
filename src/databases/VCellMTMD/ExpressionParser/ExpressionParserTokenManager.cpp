@@ -175,12 +175,12 @@ void ExpressionParserTokenManager::jjCheckNAddStates(int start, int end)
     
 int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)    
 {    
-    int* nextStates;    
+    //int* nextStates;    
     int startsAt = 0;    
     jjnewStateCnt = 45;    
     int i = 1;    
     jjstateSet[0] = startState;    
-    int j, kind = 0x7fffffff;    
+    int kind = 0x7fffffff;    
     for (;;)    
     {    
         if (++jjround == 0x7fffffff)    
@@ -188,7 +188,8 @@ int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)
         if (curChar < 64)    
         {    
             int64 l = ((int64)1LL) << curChar;    
-            MatchLoop1: do    
+            //MatchLoop1: do    
+            do    
             {    
             switch(jjstateSet[--i])    
             {    
@@ -384,7 +385,8 @@ int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)
         else if (curChar < 128)    
         {    
             int64 l = ((int64)1LL) << (curChar & 077);    
-            MatchLoop2: do    
+            //MatchLoop2: do    
+            do    
             {    
             switch(jjstateSet[--i])    
             {    
@@ -488,9 +490,10 @@ int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)
         }    
         else    
         {    
-            int i2 = (curChar & 0xff) >> 6;    
-            int64 l2 = ((int64)1LL) << (curChar & 077);    
-            MatchLoop3: do    
+            //int i2 = (curChar & 0xff) >> 6;    
+            //int64 l2 = ((int64)1LL) << (curChar & 077);    
+            //MatchLoop3: do    
+             do    
             {    
                 switch(jjstateSet[--i])    
                 {    
@@ -505,7 +508,11 @@ int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)
             kind = 0x7fffffff;    
         }    
         ++curPos;    
-        if ((i = jjnewStateCnt) == (startsAt = 45 - (jjnewStateCnt = startsAt)))    
+        //if ((i = jjnewStateCnt) == (startsAt = 45 - (jjnewStateCnt = startsAt)))  ////TODO: check on fix below 
+        i = jjnewStateCnt;
+        jjnewStateCnt = startsAt;
+        startsAt = 45 - jjnewStateCnt;
+        if (i == startsAt)    
             return curPos;    
         try {     
             curChar = input_stream->readChar();     
@@ -541,7 +548,8 @@ void ExpressionParserTokenManager::SwitchTo(int lexState)
 {    
     if (lexState >= 1 || lexState < 0) {    
         char ex[20];    
-        sprintf(ex, "%d\0", lexState);    
+        sprintf(ex, "%d", lexState);    
+        ex[19] = '\0';
         throw RuntimeException("Error: Ignoring invalid lexical state: " + string(ex) + ".State unchanged.");    
     }    
     else    
@@ -563,8 +571,8 @@ Token* ExpressionParserTokenManager::jjFillToken(void)
     
 Token* ExpressionParserTokenManager::getNextToken(void)    
 {    
-    int kind;    
-    Token* specialToken = 0;    
+    //int kind;    
+    //Token* specialToken = 0;    
     Token* matchedToken = 0;    
     int curPos = 0;    
     
@@ -626,13 +634,13 @@ Token* ExpressionParserTokenManager::getNextToken(void)
         }    
         char chrs[1000];    
         if (EOFSeen)    
-            sprintf(chrs, "Lexical error at line %d, column %d.  Encountered:  <EOF>\0", error_line, error_column);    
+            sprintf(chrs, "Lexical error at line %d, column %d.  Encountered:  <EOF>", error_line, error_column);    
         else  {    
             string a = Exception::add_escapes(string(&curChar, 1));    
             string b = Exception::add_escapes(error_after);    
-            sprintf(chrs, "Lexical error at line %d, column %d.  Encountered: \"%s\" (%d) after : \"%s\"\0", error_line, error_column, a.c_str(), curChar, b.c_str());    
+            sprintf(chrs, "Lexical error at line %d, column %d.  Encountered: \"%s\" (%d) after : \"%s\"", error_line, error_column, a.c_str(), curChar, b.c_str());    
         }    
-    
+        chrs[999] = '\0';
         throw RuntimeException(chrs);    
     }    
 EOFLoop :    

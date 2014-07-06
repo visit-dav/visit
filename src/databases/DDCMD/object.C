@@ -128,7 +128,7 @@ int object_test(OBJECT*object, char *name, char **value_ptr, int *nvalue_ptr)
     static char *keyword = NULL;
     static char *value;
     static int nvalue;
-    int found;
+    int found = 0; /* TODO: check for fix for uninitialized value */
     int nname;
     char *name_list[16], *name_save;
     char *string;
@@ -164,7 +164,7 @@ int object_test(OBJECT*object, char *name, char **value_ptr, int *nvalue_ptr)
         trim(line);
         ptr = strchr(line, '=');
         *ptr = 0x0;
-        while (nkeyword < strlen(line) + 1)
+        while (nkeyword < (int)strlen(line) + 1)
         {
             nkeyword += 256;
             keyword = (char*) realloc(keyword, nkeyword);
@@ -172,7 +172,7 @@ int object_test(OBJECT*object, char *name, char **value_ptr, int *nvalue_ptr)
         strncpy(keyword, line, nkeyword);
         trim(keyword);
         ptr++;
-        while (nvalue < strlen(ptr) + 1)
+        while (nvalue < (int)strlen(ptr) + 1)
         {
             nvalue += 256;
             value = (char*) realloc(value, nvalue);
@@ -330,7 +330,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
     char *name_list[16], *name_save;
     char *string;
     FIELD f;
-    int i, nv, size, element_size, found, first, last;
+    int i, nv, size, element_size = -1, found = 0, first, last; /* TODO: check on fix for uninitialized pointer */
     size_t lstring;
     char *ptr, *vptr, *eptr;
     name_save = strdup(name);
@@ -360,7 +360,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
         trim(line);
         ptr = strchr(line, '=');
         *ptr = 0x0;
-        while (nkeyword < strlen(line) + 1)
+        while (nkeyword < (int)strlen(line) + 1)
         {
             nkeyword += 256;
             keyword = (char*) realloc(keyword, nkeyword);
@@ -368,7 +368,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
         strncpy(keyword, line, nkeyword);
         trim(keyword);
         ptr++;
-        while (nvalue < strlen(ptr) + 1)
+        while (nvalue < (int)strlen(ptr) + 1)
         {
             nvalue += 256;
             value = (char*) realloc(value, nvalue);
@@ -399,7 +399,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
             f.v = NULL;
             return f;
         }
-        while (nvalue < strlen(dvalue) + 1)
+        while (nvalue < (int)strlen(dvalue) + 1)
         {
             nvalue += 256;
             value = (char*) realloc(value, nvalue);
@@ -537,6 +537,7 @@ void object_compileSectionedFile(char *filename, int section)
     int rc, i, sec;
     size_t l;
     obj.name = obj_delim.name = NULL;
+    obj_delim._class = NULL; /* TODO: check on fix for uninitialized pointer */
     file = object_fopen(filename, "r");
     sec = -1;
     if (file.file != NULL)

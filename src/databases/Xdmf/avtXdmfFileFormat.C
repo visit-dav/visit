@@ -99,17 +99,17 @@ using std::string;
 //
 // ****************************************************************************
 
-avtXdmfFileFormat::avtXdmfFileFormat(const char *filename) :
-    avtMTMDFileFormat(filename), filename(filename), dom(NULL), currentGrid(NULL)
+avtXdmfFileFormat::avtXdmfFileFormat(const char *fname) :
+    avtMTMDFileFormat(fname), filename(fname), currentGrid(NULL), dom(NULL)
 {
     dom = new XdmfDOM();
 
-    std::string directory = vtksys::SystemTools::GetFilenamePath(filename) + "/";
+    std::string directory = vtksys::SystemTools::GetFilenamePath(fname) + "/";
     if (directory == "/") {
         directory = vtksys::SystemTools::GetCurrentWorkingDirectory() + "/";
     }
     dom->SetWorkingDirectory(directory.c_str());
-    if (dom->Parse(filename) == XDMF_FAIL) {
+    if (dom->Parse(fname) == XDMF_FAIL) {
         EXCEPTION1(InvalidDBTypeException, "The file could not be opened");
     }
 
@@ -199,7 +199,7 @@ avtXdmfFileFormat::~avtXdmfFileFormat()
 void avtXdmfFileFormat::AddArrayExpressions(avtDatabaseMetaData * md, std::string attributeName, std::vector<
         std::string> & names)
 {
-    for (int i = 0; i < names.size(); ++i) {
+    for (size_t i = 0; i < names.size(); ++i) {
         Expression expression;
         expression.SetName(names[i]);
 
@@ -462,7 +462,7 @@ XdmfAttribute * avtXdmfFileFormat::GetAttributeFromName(XdmfGrid * grid, const c
         name = name.substr(name.rfind("/") + 1, name.length());
     }
 
-    XdmfAttribute * attribute = NULL;
+    //XdmfAttribute * attribute = NULL;
     for (int i = 0; i < grid->GetNumberOfAttributes(); ++i) {
         if (strcmp(name.c_str(), grid->GetAttribute(i)->GetName()) == 0) {
             return grid->GetAttribute(i);
@@ -768,7 +768,7 @@ vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *m
 
 int avtXdmfFileFormat::GetMeshDataType(XdmfGrid* grid)
 {
-    XdmfInt32 gridType = grid->GetGridType();
+    //XdmfInt32 gridType = grid->GetGridType();
 
     if (grid->GetTopology()->GetClass() == XDMF_UNSTRUCTURED) {
         return VTK_UNSTRUCTURED_GRID;
@@ -1804,7 +1804,8 @@ vtkStructuredGrid* avtXdmfFileFormat::ReadStructuredGrid(XdmfGrid* grid)
     array->Delete();
 
     int numPoints = grid->GetGeometry()->GetNumberOfPoints();
-    if (update_extents && whole_extents) {
+    //if (update_extents && whole_extents) //TODO: update extents and whole extents are addresses and will always evaluate to true (FIX)!, not sure how to fix so I am leaving the condition blank which is equivalent to always true but without the warning.
+    {
         // we are reading a sub-extent.
         int scaled_extents[6];
         int scaled_dims[3];

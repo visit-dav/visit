@@ -778,7 +778,7 @@ avtGULPFileFormat::ReadTimestep(int ts)
 void
 avtGULPFileFormat::GetTimes(std::vector<double> &t)
 {
-    for (int i=0; i<times.size(); i++)
+    for (size_t i=0; i<times.size(); i++)
         t.push_back(times[i]);
 }
 

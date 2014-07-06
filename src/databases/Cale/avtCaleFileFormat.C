@@ -353,7 +353,7 @@ avtCaleFileFormat::GetPDBFile()
 void
 avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    const char *mName = "avtCaleFileFormat::PopulateDatabaseMetaData: ";
+    //const char *mName = "avtCaleFileFormat::PopulateDatabaseMetaData: ";
     //
     // CODE TO ADD A MESH
     //
@@ -919,7 +919,7 @@ avtCaleFileFormat::GetMesh(const char *meshname)
     if (strcmp(meshname, "hydro") == 0)
     {
         // Create a VTK object for "hydro" mesh
-        int ndims = 2;
+        //int ndims = 2;
         int dims[3] = {1,1,1};
         int kmax, lmax, lp, nnalls = 0, namix;
         int nk, nl, pdberr;
@@ -1046,7 +1046,7 @@ avtCaleFileFormat::GetMesh(const char *meshname)
     else // check for time or cycle plot
     {
         int ntp, ncp, ncurves, ntimes, tplen, foundit=0;
-        int pdberr;
+        int pdberr = 0; (void) pdberr;
         pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ntp",&ntp);
         pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ncp",&ncp);
         double *ttime, *data;
@@ -1211,6 +1211,7 @@ avtCaleFileFormat::GetVar(const char *varname)
     int kmax, lmax, lp, nnalls, namix, nvals, pdberr, nk, nl;
     int npbin, ngrps, rdifmix;
     int length, group, grplen;
+    (void) pdberr;
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lp",&lp);
@@ -1413,7 +1414,7 @@ avtCaleFileFormat::GetVectorVar(const char *varname)
 int
 avtCaleFileFormat::GetCycle(void)
 {
-    int pdberr ;
+    int pdberr = 0; (void) pdberr;
     int cycle ;
 
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/cycle",&cycle) ;
@@ -1480,7 +1481,7 @@ avtCaleFileFormat::GetCycleFromFilename(const char *f) const
 double
 avtCaleFileFormat::GetTime(void)
 {
-    int pdberr ;
+    int pdberr = 0; (void) pdberr;
     double dtime ;
 
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/time",&dtime) ;
@@ -1509,7 +1510,7 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
     debug4 << mName << "type " << type << " var " << var << endl;
     if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        int i, kmax, lmax, lp, nnalls, namix, pdberr;
+        int i, kmax, lmax, lp, nnalls, namix, pdberr; (void) pdberr;
         int nreg, nregx, nk, nl, mixmax;
         int dims[3] = {1,1,1}, ndims = 2;
 
@@ -1805,6 +1806,7 @@ avtCaleFileFormat::GetUsedMeshLimits (void)
     int ibc, pdberr;
     int kmax, lmax, nbc, nbcx;
 
+    (void) pdberr;
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
     pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nbc",&nbc);

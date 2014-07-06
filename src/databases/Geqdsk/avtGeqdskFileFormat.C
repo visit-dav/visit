@@ -82,7 +82,7 @@ using     std::string;
 avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttributes *readOpts)
   : avtMTSDFileFormat(&filename, 1), nw(0), nh(0)
 {
-    if (filename == "")
+    if (std::string(filename) == "")
         return;
 
     std::ifstream f;
@@ -93,7 +93,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     // Read the first line: case information, dummy var, and nw, and nh
     char id[32], date[32], run[32], time[32];
     float xdum;
-    int idum;
+    //int idum;
 
     f.getline(tmp, 1024);
 
@@ -107,7 +107,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
 
     // Strip off the last three int and convert them to ints.
     strncpy(tmpInt, &(tmp[48]), 4 );
-    idum = atoi( tmpInt );
+    //idum = atoi( tmpInt );
     strncpy(tmpInt, &(tmp[52]), 4 );
     nw = atoi( tmpInt );
     strncpy(tmpInt, &(tmp[56]), 4 );
@@ -314,7 +314,7 @@ avtGeqdskFileFormat::ReadData( std::ifstream &f, float **var, int nVar )
     // https://fusion.gat.com/conferences/snowmass/working/mfe/physics/p3/equilibria/g_eqdsk_s.pdf
     // as such, scan appropriately based on what might be left to read
     // in the file.
-    int n, count = (cc > nVar-5 ? nVar%5 : 5 );
+    int n = 0, count = (cc > nVar-5 ? nVar%5 : 5 ); //TODO: check fix for uninitialized pointer
 
     if( count == 5 )
       n = sscanf( tmp, "%f %f %f %f %f",
@@ -737,8 +737,8 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
   else if( string(meshname) == string("boundary") ||
            string(meshname) == string("limiter") )
   {
-    float *rzVals;
-    int numNodes;
+    float *rzVals = NULL; //TODO: check fix fo uninitialized pointer warning
+    int numNodes = 0; //TODO: check fix for uninitialized pointer warning
 
     if( string(meshname) == string("boundary") )
     {
@@ -759,7 +759,7 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
 
     ugridPtr->SetPoints(vpoints);
 
-    for (size_t i=0; i<numNodes; ++i)
+    for (int i=0; i<numNodes; ++i)
       vpoints->SetPoint(i, rzVals[i*2], 0, rzVals[i*2+1] );
 
     ugridPtr->Allocate(numNodes-1);
@@ -767,7 +767,7 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
     unsigned int cellVerts = 2; // cell's connected node indices
     std::vector<vtkIdType> verts(cellVerts);
 
-    for (size_t i=0; i<numNodes-1; ++i)
+    for (int i=0; i<numNodes-1; ++i)
     {
       verts[0] = i;
       verts[1] = i + 1;
@@ -786,7 +786,7 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
            string(meshname) == string("pprime") ||
            string(meshname) == string("qpsi") )
   {
-    float *var;
+    float *var = NULL; //TODO: check fix for uninitialized pointer warning
 
     if( string(meshname) == string("fpol") )
       var = fpol;
@@ -858,7 +858,7 @@ avtGeqdskFileFormat::GetVar(int timestate, const char *varname)
 
     rv->SetNumberOfTuples(nw*nh);
 
-    int cc = 0;
+    //int cc = 0;
 
     for( int i=0; i<nw; ++i )
     {

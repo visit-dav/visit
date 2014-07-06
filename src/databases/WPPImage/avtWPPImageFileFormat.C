@@ -300,7 +300,7 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         arr->SetNumberOfTuples(npts);
         float* data = (float *)arr->GetVoidPointer(0);
         nr = READ(fd,data,sizeof(float)*npts);
-        if( nr != sizeof(float)*npts )
+        if( (size_t)nr != sizeof(float)*npts )
         {
             CLOSE(fd);
             SNPRINTF(errmsg,500,"Error reading array in %s", 
@@ -314,7 +314,7 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         arr->SetNumberOfTuples(npts);
         double* data = (double *)arr->GetVoidPointer(0);
         nr = READ(fd,data,sizeof(double)*npts);
-        if( nr != sizeof(double)*npts )
+        if( (size_t)nr != sizeof(double)*npts )
         {
             CLOSE(fd); 
             SNPRINTF(errmsg,500,"Error reading array in %s", 
@@ -396,7 +396,7 @@ void avtWPPImageFileFormat::Initialize()
     {
         // We have a '3D.mode' type file -- this is for volimage
         SNPRINTF(errmsg,500,"Error: WPPImage reader does not read 3D volimage"
-                " files -- use the volimage reader instead.", m_mode.c_str());
+                " files -- use the volimage reader instead. mode -- %s", m_mode.c_str());
         debug1 << errmsg << endl; 
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }

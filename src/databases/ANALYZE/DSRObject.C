@@ -65,7 +65,7 @@ reverse_endian(const T &data)
     // Rearrange the bytes.
     unsigned char *dest = (unsigned char *)&retval;
     unsigned char *src = (unsigned char *)&data + sizeof(T) - 1;
-    for(int i = 0; i < sizeof(T); ++i)
+    for(size_t i = 0; i < sizeof(T); ++i)
         *dest++ = *src--;
 
     return retval;
@@ -87,7 +87,7 @@ reverse_endian(const T &data)
 DSRObject::DSRObject()
 {
     unsigned char *cptr = (unsigned char *)&data;
-    for(int i = 0; i < sizeof(dsr); ++i)
+    for(size_t i = 0; i < sizeof(dsr); ++i)
         *cptr++ = 0;
     reverseEndian = false;
 }

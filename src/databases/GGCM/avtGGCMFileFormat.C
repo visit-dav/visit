@@ -494,7 +494,7 @@ static std::vector<std::string> DeriveVectors(const MHDdata *md)
                 char *tmp;
                 tmp = strdup(prev);
                 tmp[p_len-1] = '\0'; /* get rid of the 'y' */
-                for (i=0; i < p_len-1; ++i) tmp[i] = toupper(tmp[i]);
+                for (i=0; i < (int)p_len-1; ++i) tmp[i] = toupper(tmp[i]);
                 std::string vec(tmp);
                 vectors.push_back(vec);
                 free(tmp);
@@ -523,7 +523,7 @@ static std::vector<std::string> DeriveScalars(const MHDdata *md)
         if(s[len-1] != 'x' && s[len-1] != 'y' && s[len-1] != 'z') {
             char *tmp;
             tmp = strdup(s);
-            for (i = 0; i < len; ++i) tmp[i] = toupper(tmp[i]);
+            for (i = 0; i < (int)len; ++i) tmp[i] = toupper(tmp[i]);
             std::string scalar(tmp);
             scalars.push_back(scalar);
             free(tmp);

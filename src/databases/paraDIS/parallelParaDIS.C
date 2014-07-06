@@ -167,7 +167,7 @@ string FileSet::VarType(string varname) {
 //===============================================
 long FileSet::NumElems(void) {
   long fileno = 0, numelems = 0; 
-  for (fileno=0; fileno < mElemsPerFile.size(); fileno++){
+  for (fileno=0; fileno < (long)mElemsPerFile.size(); fileno++){
     numelems += mElemsPerFile[fileno]; 
   }
   debug5 << "NumElems() = " << numelems << endl;
@@ -267,10 +267,10 @@ void ElementFetcher::IterateOverFiles(void *output) {
   
   // ITERATE OVER FILES
   // look at each file in order, and determine if it contains elements we care about.  If it does, then read them and place them into the mesh. 
-  long fileno = 0, outputItemIndex = 0,
+  long fileno = 0 /*, outputItemIndex = 0*/,
     elementsCompleted = 0; //elements from previous files
   for (fileno = 0;
-       fileno < mFileSet->mFileNames.size() &&
+       fileno < (long)mFileSet->mFileNames.size() &&
          elementsCompleted < mEndElement + 1;
        fileno++) {
     //  int elemsInFile = mFileSet->mElemsPerFile[fileno];
@@ -329,13 +329,13 @@ void ElementFetcher::GetElemsFromBinaryFile(std::string filename, long fileOffse
   while (bytesToRead) { 
     long chunkBytes = bytesToRead > bufferLength ? bufferLength: bytesToRead; 
     long chunkElems = chunkBytes/mFileSet->mBytesPerElem; 
-    if (fread((void*)buffer, mFileSet->mBytesPerElem, chunkElems, fp) == -1) {
+    if (fread((void*)buffer, mFileSet->mBytesPerElem, chunkElems, fp) == (unsigned int)-1) /* TODO: check fix for fread return is size_t which cannot be -1 */{
       string msg = string("Error, cannot read ")+intToString(chunkBytes)+" bytes from file: "+filename+string(" (")+strerror(errno)+string(")");
       fclose(fp);
       EXCEPTION1(VisItException, msg.c_str()); 
     }
     char *bufp = buffer; 
-    long elemNum = 0; 
+    //long elemNum = 0; 
     while (chunkElems--) {
       InterpretBinaryElement(bufp); 
       bufp += mFileSet->mBytesPerElem; 
@@ -395,7 +395,7 @@ vtkDataSet * MeshElementFetcher::GetMeshElems(void) {
 
   vtkPoints *points =  vtkPoints::New();
   long numelems = mEndElement - mStartElement + 1; 
-  long  pointsPerElement = 0; 
+  long  pointsPerElement = 0;  (void) pointsPerElement;
   
   if (mElementName == "nodes") {
     points->SetNumberOfPoints(numelems);
@@ -455,7 +455,7 @@ inline void MeshElementFetcher:: InterpretTextElement(std::string line, long lin
   vector<string> linetokens;
   float location[3] ; 
   linetokens = Split(line); 
-  if (linetokens.size() < 3*mPointsPerElement) {
+  if (linetokens.size() < (size_t)3*mPointsPerElement) {
     string msg = string("Error in line ")+intToString(linenum)+string(": not enough tokens in line ");
     EXCEPTION1(VisItException, msg.c_str()); 
   }
@@ -480,7 +480,7 @@ inline void MeshElementFetcher:: InterpretTextElement(std::string line, long lin
 inline void MeshElementFetcher::InterpretBinaryElement(char *elementData){
   float location[3]; 
   int numpts = mPointsPerElement; 
-  int component = 0; 
+  //int component = 0; 
   while (numpts--) {
     if (mElementDataType == "D") {
       double *dp = (double*)elementData; 
@@ -551,8 +551,8 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
 
   debug4 << "mNumVarComponents = " << mNumVarComponents << ", mVarTokenPositionInElement = " << mVarTokenPositionInElement << ", mVarBytePositionInElement = " << mVarBytePositionInElement << endl; 
   mVarBuffer = new float[mNumVarComponents]; 
-  long index = 0;
-  float f=0.0; 
+  //long index = 0;
+  //float f=0.0; 
 
   vtkFloatArray *tuples = vtkFloatArray::New(); 
 
@@ -579,7 +579,7 @@ void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
   debug5 << "VarElementFetcher:: InterpretTextElement parsing line " << linenum << ": \"" << line << "\"" << endl;  
   vector<string> linetokens;
   linetokens = Split(line); 
-  if (linetokens.size() < mVarTokenPositionInElement+mNumVarComponents) {
+  if (linetokens.size() < (size_t)mVarTokenPositionInElement+mNumVarComponents) {
     string msg = string("Error in line ")+intToString(linenum)+string(": not enough tokens in line to get variable values");
     EXCEPTION1(VisItException, msg.c_str()); 
   }
@@ -682,7 +682,7 @@ bool ParallelData:: ParseMetaDataFile(void) {
 
   string line;
   vector<string> linetokens;
-  bool goodversion = false; 
+  bool goodversion = false;  (void) goodversion;
   FileSet *fileset = &mNodeFiles; 
   ifstream myfile (mMetaDataFileName.c_str());
   if (!myfile.is_open()) {

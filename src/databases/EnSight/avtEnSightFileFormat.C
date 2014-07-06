@@ -332,7 +332,7 @@ void
 avtEnSightFileFormat::RegisterVariableList(const char *primVar,
                                            const vector<CharStrRef> &vars2nd)
 {
-    int   i, j;
+    size_t   i, j;
 
     reader->SetReadAllVariables(0);
     reader->GetPointDataArraySelection()->RemoveAllArrays();
@@ -345,7 +345,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
 
     if (matnames.size() > 0)
     {
-        int numRealMats = matnames.size()-1;
+        size_t numRealMats = matnames.size()-1;
         for (i = 0 ; i < numRealMats ; i++)
         {
             vars.push_back(matnames[i].c_str());
@@ -370,7 +370,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         bool foundVar = false;
         if (!foundVar)
         {
-            int nsn = reader->GetNumberOfScalarsPerNode();
+            size_t nsn = reader->GetNumberOfScalarsPerNode();
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -385,7 +385,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         }
         if (!foundVar)
         {
-            int nsz = reader->GetNumberOfScalarsPerElement();
+            size_t nsz = reader->GetNumberOfScalarsPerElement();
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -400,7 +400,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         }
         if (!foundVar)
         {
-            int nsn = reader->GetNumberOfVectorsPerNode();
+            size_t nsn = reader->GetNumberOfVectorsPerNode();
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -415,7 +415,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         }
         if (!foundVar)
         {
-            int nsz = reader->GetNumberOfVectorsPerElement();
+            size_t nsz = reader->GetNumberOfVectorsPerElement();
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -814,7 +814,7 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     if (matnames.size() > 0)
     {
         char str[128];
-        SNPRINTF(str, 128, "volume_fraction%d", matnames.size()+1);
+        SNPRINTF(str, 128, "volume_fraction%ld", matnames.size()+1);
         matnames.push_back(str);
         avtMaterialMetaData *mmd;
         mmd = new avtMaterialMetaData("materials", "mesh",
@@ -842,13 +842,13 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
         return NULL;
 
-    int i;
-    int nMaterials = matnames.size();
+    size_t i;
+    size_t nMaterials = matnames.size();
 
     // Get the material fractions
     std::vector<float *> mats(nMaterials);
     std::vector<vtkFloatArray *> deleteList;
-    int nCells = 0;
+    size_t nCells = 0;
     for (i = 0; i < nMaterials-1; i++)
     {
         vtkDataArray *arr = GetVar(ts, domain, matnames[i].c_str());
@@ -864,10 +864,10 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
 
     // Calculate fractions for additional "missing" material
     float *addMatPtr =  new float[nCells];
-    for(unsigned int cellNo = 0; cellNo < nCells; ++cellNo)
+    for(size_t cellNo = 0; cellNo < nCells; ++cellNo)
     {
         double frac = 1.0;
-        for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
+        for (size_t matNo = 0; matNo < nMaterials - 1; ++matNo)
             frac -= mats[matNo][cellNo];
         addMatPtr[cellNo] = frac;
     }
@@ -882,7 +882,7 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
 
     for (i = 0; i < nCells; ++i)
     {
-        int j;
+        size_t j;
 
         // First look for pure materials
         int nmats = 0;
@@ -892,7 +892,7 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
             if (mats[j][i] > 0)
             {
                 nmats++;
-                lastMat = j;
+                lastMat = (int)j;
             }
         }
 

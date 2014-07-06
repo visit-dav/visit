@@ -468,7 +468,7 @@ avtunvFileFormat::getNormal2D (float *one_entry,
                                set<UnvElement, UnvElement::compare_UnvElement>::iterator itre,
                                int facloc)
 {
-    double x1,x2,y1,y2,z1,z2;
+    double x1 = 0,x2 = 0,y1 = 0,y2 = 0,z1 = 0,z2 = 0; ///TODO: check for fix of uninitialized vars
     UnvNode anUnvNode;
     set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
     // First compute the normal to the element:
@@ -597,8 +597,8 @@ int avtunvFileFormat::getNbnolsv ()
             UnvNode anUnvNode;
             set<UnvNode, UnvNode::compare_UnvNode> maliste;  // Sub list
             anotherUnvNode.number=0;
-            for (int i=0; i<meshUnvFacePressures.size(); i++)
-                for (int j=0; j<meshUnvFacePressures[i].faces.size(); j++)
+            for (size_t i=0; i<meshUnvFacePressures.size(); i++)
+                for (size_t j=0; j<meshUnvFacePressures[i].faces.size(); j++)
                 {
                     int iel = meshUnvFacePressures[i].faces[j].element;
                     int facloc = meshUnvFacePressures[i].faces[j].facloc;
@@ -674,7 +674,7 @@ int avtunvFileFormat::getNbnodesFreeFaces ()
         UnvNode anUnvNode;
         set<UnvNode, UnvNode::compare_UnvNode> maliste;  // Sub list
         anotherUnvNode.number=0;
-        for (int j=0; j<freeUnvFaces.size(); j++)
+        for (size_t j=0; j<freeUnvFaces.size(); j++)
         {
             int iel = freeUnvFaces[j].element;
             int facloc = freeUnvFaces[j].facloc;
@@ -1120,7 +1120,7 @@ int avtunvFileFormat::getNbfaextv ()
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre2;
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre3;
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre4;
-        int iflo3 = -1, iflo2 = -1, iflo1 = -1;
+        int iflo3 = -1, iflo2 = -1, iflo1 = -1; (void) iflo1;
         // Now loop on elements and on their faces and look for their neighbours:
         for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
         {
@@ -1185,7 +1185,7 @@ int avtunvFileFormat::getNbfaextv ()
                     else
                     {
                         // STL technique:
-                        int nf = avtunvFileFormat::getNbfaces(itre->typelt);
+                        int nf = avtunvFileFormat::getNbfaces(itre->typelt); (void) nf;
                         int nodes[4]; // Maximum 4 nodes per face
                         iflo3 = avtunvFileFormat::is3DKnownElt(itre->typelt);
                         if (iflo3 < 0)
@@ -1235,7 +1235,7 @@ int avtunvFileFormat::getNbfaextv ()
                                 nodes[ln] = anUnvNode.label;
                                 itrg = meshUnvNodes.find(anUnvNode);
                                 // Loop on elements that possess this node and check for candidates:
-                                for (int iel=0; iel < itrg->nod2elts.size(); iel++ )
+                                for (size_t iel=0; iel < itrg->nod2elts.size(); iel++ )
                                 {
                                     anUnvElement.label = itrg->nod2elts[iel];
                                     if (anUnvElement.label != itre->label)
@@ -1377,7 +1377,7 @@ int avtunvFileFormat::getNbfreeSets ()
 #else
         debug3 << "Building elements from free faces" << freeUnvFaces.size() << endl;
 #endif
-        for (int j=0; j<freeUnvFaces.size(); j++)
+        for (size_t j=0; j<freeUnvFaces.size(); j++)
         {
             int iel = freeUnvFaces[j].element;
             int facloc = freeUnvFaces[j].facloc;
@@ -1564,7 +1564,7 @@ int avtunvFileFormat::getNbfreeSets ()
                     myrange[3] = max(myrange[3],itrl->y);
                     myrange[4] = min(myrange[4],itrl->z);
                     myrange[5] = max(myrange[5],itrl->z);
-                    for (int iel=0; iel < itrl->nod2elts.size(); iel++ )
+                    for (size_t iel=0; iel < itrl->nod2elts.size(); iel++ )
                     {
                         UnvElement anUnvElement; // an element
                         anUnvElement.label = itrl->nod2elts[iel];
@@ -1665,7 +1665,7 @@ int avtunvFileFormat::getNbfreeSets ()
 #else
         debug3 << "Painting the " << freeUnvFaces.size() << " free faces using " << nbfreesets << " colors" << endl;
 #endif
-        for (int j=0; j<freeUnvFaces.size(); j++)
+        for (size_t j=0; j<freeUnvFaces.size(); j++)
         {
             anUnvElement.label = j;
             itre = freeelts.find(anUnvElement);
@@ -1767,7 +1767,7 @@ avtunvFileFormat::FreeUpResources(void)
     meshUnvElements.clear();
 
     // Remove face pressures if any:
-    for (int i=0; i<meshUnvFacePressures.size(); i++)
+    for (size_t i=0; i<meshUnvFacePressures.size(); i++)
         meshUnvFacePressures[i].faces.clear();
 
     meshUnvFacePressures.clear();
@@ -1922,7 +1922,7 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (nbloadsets > 0)
     {
         vector<string> lnames;
-        for (int i=0; i<meshUnvFacePressures.size(); i++)
+        for (size_t i=0; i<meshUnvFacePressures.size(); i++)
             lnames.push_back(meshUnvFacePressures[i].name);
 
         AddMaterialToMetaData(md, "load_sets", "facemesh", nbloadsets, lnames);
@@ -2237,7 +2237,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
         
         ugrid->Allocate(nb2dcells);
         vtkIdType verts[8]; // Element nodes in Ideas convention
-        vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
+        //vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
         if (nb3dcells > nb2dcells)
         {
             for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
@@ -2358,7 +2358,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
         
         ugrid->Allocate(nb1dcells);
         vtkIdType verts[8]; // Element nodes in Ideas convention
-        vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
+        //vtkIdType cverts[8]; // Element nodes in VTK convention, may differ on some kinds of elements
         if (nb3dcells+nb2dcells > nb1dcells)
         {
             for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
@@ -2512,7 +2512,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
         // Fills the VTK data structures, both nodes and elements right at the same time
         anotherUnvNode.number=0;
         nbcells = 0;
-        for (int j=0; j<freeUnvFaces.size(); j++)
+        for (size_t j=0; j<freeUnvFaces.size(); j++)
         {
             int iel = freeUnvFaces[j].element;
             int facloc = freeUnvFaces[j].facloc;
@@ -2622,8 +2622,8 @@ avtunvFileFormat::GetMesh(const char *meshname)
         debug2 << "Face Pressure mesh made of " << nbfalsv << " faces and " << nbn << " nodes " << endl;
 #endif
         anotherUnvNode.number=0;
-        for (int i=0; i<meshUnvFacePressures.size(); i++)
-            for (int j=0; j<meshUnvFacePressures[i].faces.size(); j++)
+        for (size_t i=0; i<meshUnvFacePressures.size(); i++)
+            for (size_t j=0; j<meshUnvFacePressures[i].faces.size(); j++)
             {
                 int iel = meshUnvFacePressures[i].faces[j].element;
                 int facloc = meshUnvFacePressures[i].faces[j].facloc;
@@ -2666,6 +2666,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
         maliste.clear();
         return ugrid;
     }
+    return NULL; ///TODO: check fix for return type warning
 }
 
 
@@ -2714,8 +2715,8 @@ avtunvFileFormat::GetVar(const char *varname)
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
         if (strcmp(varname, "sets_surfaces") == 0)
         {
-            for (int i=0; i<meshUnvFacePressures.size(); i++)
-                for (int j=0; j<meshUnvFacePressures[i].faces.size(); j++)
+            for (size_t i=0; i<meshUnvFacePressures.size(); i++)
+                for (size_t j=0; j<meshUnvFacePressures[i].faces.size(); j++)
                 {
                     int iel = meshUnvFacePressures[i].faces[j].element;
                     // Fetch the element:
@@ -2746,14 +2747,14 @@ avtunvFileFormat::GetVar(const char *varname)
         }
         else if (strcmp(varname, "free_surfaces") == 0)
         {
-            for (int j=0; j<freeUnvFaces.size(); j++)
+            for (size_t j=0; j<freeUnvFaces.size(); j++)
             {
                 int iel = freeUnvFaces[j].element;
                 // Fetch the element:
                 anUnvElement.label = iel;
                 itre = meshUnvElements.find(anUnvElement);
                 int iflo = avtunvFileFormat::is3DKnownElt(itre->typelt);
-                int iko = 0;
+                //int iko = 0;
                 if (iflo >= 0)
                 {
                     // Set one_entry...
@@ -2777,6 +2778,7 @@ avtunvFileFormat::GetVar(const char *varname)
         }
         return rv;
     }
+    return NULL; ///TODO: check fix for return type warning
 }
 
 
@@ -2823,7 +2825,7 @@ avtunvFileFormat::GetVectorVar(const char *varname)
         set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
         UnvNode anUnvNode;
         set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
-        double x1,x2,y1,y2,z1,z2;
+        //double x1,x2,y1,y2,z1,z2;
         if (strcmp(varname, "sets_normals") == 0)
             rv->SetNumberOfTuples(nbfalsv);
         else if (strcmp(varname, "free_normals") == 0)
@@ -2833,8 +2835,8 @@ avtunvFileFormat::GetVectorVar(const char *varname)
         }
         ntuples = 0;
         if (strcmp(varname, "sets_normals") == 0)
-            for (int i=0; i<meshUnvFacePressures.size(); i++)
-                for (int j=0; j<meshUnvFacePressures[i].faces.size(); j++)
+            for (size_t i=0; i<meshUnvFacePressures.size(); i++)
+                for (size_t j=0; j<meshUnvFacePressures[i].faces.size(); j++)
                 {
                     int iel = meshUnvFacePressures[i].faces[j].element;
                     // Fetch the element:
@@ -2870,14 +2872,14 @@ avtunvFileFormat::GetVectorVar(const char *varname)
                     }
                 }
         else if (strcmp(varname, "free_normals") == 0)
-            for (int j=0; j<freeUnvFaces.size(); j++)
+            for (size_t j=0; j<freeUnvFaces.size(); j++)
             {
                 int iel = freeUnvFaces[j].element;
                 // Fetch the element:
                 anUnvElement.label = iel;
                 itre = meshUnvElements.find(anUnvElement);
                 int iflo = avtunvFileFormat::is3DKnownElt(itre->typelt);
-                int iko = 0;
+                //int iko = 0;
                 if (iflo >= 0)
                 {
                     // Set one_entry...
@@ -2915,6 +2917,7 @@ avtunvFileFormat::GetVectorVar(const char *varname)
         delete [] one_entry;
         return rv;
     }
+    return NULL; ///TODO: check return type warning fix
 }
 
 void
@@ -2970,7 +2973,7 @@ avtunvFileFormat::ReadFile()
             char buf[2048]; // A line length
             int code;
             int label;
-            double fac = 1.;
+            double fac = 1.; (void) fac;
             while (fgets(buf, len, handle) != NULL)
             {
                 if (strstr(buf, "    -1") != NULL)
@@ -2988,7 +2991,7 @@ avtunvFileFormat::ReadFile()
 #endif
                         if (code == 2412)
                         {
-                            UnvElement anUnvElement;
+                            UnvElement anUnvElement; (void) anUnvElement;
                             int nod[8];
                             anUnvElement.number=0;
 #if INTERACTIVEREAD
@@ -3011,7 +3014,7 @@ avtunvFileFormat::ReadFile()
                                 }
                                 if (fgets(buf, len, handle) != NULL)
                                 {
-                                    int ier; //  = avtunvFileFormat::isKnownElt(typelt);
+                                    int ier = 0; //TODO: check on fix for uninitalized vars //  = avtunvFileFormat::isKnownElt(typelt);
                                     //if (typelt == 111) {
                                     switch (typelt)
                                     {
@@ -3113,7 +3116,7 @@ avtunvFileFormat::ReadFile()
                             debug2 << "Found Node code "  << endl;
 #endif
                             int i1, i2, i3;
-                            double x, y, z;
+                            double x, y, z; (void) x; (void) y; (void) z;
                             while (fgets(buf, len, handle) != NULL)
                             {
                                 sscanf(buf, "%d%d%d%d\n", &label, &i1, &i2, &i3);
@@ -3125,7 +3128,7 @@ avtunvFileFormat::ReadFile()
 #if defined(MDSERVER)
                                     nbnodes++;
 #else
-                                    for (i1=0; i1<strlen(buf); i1++)
+                                    for (i1=0; i1<(int)strlen(buf); i1++)
                                         if (buf[i1] == 'D')
                                             buf[i1] = 'E';
 
@@ -3207,7 +3210,7 @@ avtunvFileFormat::ReadFile()
                             {
                                 int imax = strlen(buf)-1;
                                 // fprintf(stdout, "imax=%d\n",imax);
-                                for (i1=0; i1<strlen(buf); i1++)
+                                for (i1=0; i1<(int)strlen(buf); i1++)
                                     if (buf[i1] == ' ')
                                         buf[i1] = '_';
 
@@ -3232,7 +3235,7 @@ avtunvFileFormat::ReadFile()
                                 debug3 << "Adding a load set id=" << anfp.label << " name='" << anfp.name << "'." << endl;
 #endif
                                 UnvFace anUnvFace; // Elementary face pressure object
-                                UnvElement anUnvElement; // an element object, assuming already built
+                                UnvElement anUnvElement; (void) anUnvElement;// an element object, assuming already built
                                 set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
                                 while (fgets(buf, len, handle) != NULL)
                                 {
@@ -3257,7 +3260,7 @@ avtunvFileFormat::ReadFile()
                                         anUnvFace.matid = colour;
                                         if (fgets(buf, len, handle) != NULL)
                                         {
-                                            for (i1=0; i1<strlen(buf); i1++)
+                                            for (i1=0; i1<(int)strlen(buf); i1++)
                                                 if (buf[i1] == 'D')
                                                     buf[i1] = 'E';
 
@@ -3336,7 +3339,7 @@ avtunvFileFormat::ReadFile()
             char buf[2048]; // A line length
             int code;
             int label;
-            double fac = 1.;
+            double fac = 1.; (void) fac;
             while (gzgets(gzhandle, buf, len) != Z_NULL)
             {
                 if (strstr(buf, "    -1") != NULL)
@@ -3351,7 +3354,7 @@ avtunvFileFormat::ReadFile()
 #endif
                         if (code == 2412)
                         {
-                            UnvElement anUnvElement;
+                            UnvElement anUnvElement; (void) anUnvElement;
                             int nodes[8];
                             anUnvElement.number=0;
 #if INTERACTIVEREAD
@@ -3458,7 +3461,7 @@ avtunvFileFormat::ReadFile()
                                             if (gzgets(gzhandle, buf, len) != Z_NULL)
                                                 if (typelt == 21)
                                                 {
-                                                    sscanf(buf, "%d %d %d %d\n", &nodes[0], &nodes[1]);
+                                                    sscanf(buf, "%d %d %d %d\n", &nodes[0], &nodes[1], &nodes[2], &nodes[3]); ///TODO check fix had 4 %ds but only had &nodes[0], &nodes[1] -- added &nodes[2], &nodes[3]
 #if INTERACTIVEREAD
                                                     if (debuglevel >= 4) fprintf(stdout,"\t Nodes=(%d,%d)\n",nodes[0], nodes[1]);
 #else
@@ -3530,7 +3533,7 @@ avtunvFileFormat::ReadFile()
                                 else
                                 {
                                     int i1, i2, i3;
-                                    double x, y, z;
+                                    double x, y, z; (void) x; (void) y; (void) z;
                                     sscanf(buf, "%d%d%d%d\n", &label, &i1, &i2, &i3);
                                     if (gzgets(gzhandle, buf, len) != Z_NULL)
                                     {
@@ -3538,7 +3541,7 @@ avtunvFileFormat::ReadFile()
                                         nbnodes++;
 #else
                                         //fprintf(stdout,"buf len=%d, '%s'\n",strlen(buf), buf);
-                                        for (i1=0; i1<strlen(buf); i1++)
+                                        for (i1=0; i1<(int)strlen(buf); i1++)
                                             if (buf[i1] == 'D')
                                                 buf[i1] = 'E';
 
@@ -3609,7 +3612,7 @@ avtunvFileFormat::ReadFile()
                             {
                                 int imax = strlen(buf)-1;
                                 // fprintf(stdout, "imax=%d\n",imax);
-                                for (i1=0; i1<strlen(buf); i1++)
+                                for (i1=0; i1<(int)strlen(buf); i1++)
                                     if (buf[i1] == ' ')
                                         buf[i1] = '_';
 
@@ -3635,7 +3638,7 @@ avtunvFileFormat::ReadFile()
                                 debug3 << "Adding a load set id=" << anfp.label << " name='" << anfp.name << "'." << endl;
 #endif
                                 UnvFace anUnvFace; // Elementary face pressure object
-                                UnvElement anUnvElement; // an element object, assuming already built
+                                UnvElement anUnvElement; (void) anUnvElement; // an element object, assuming already built
                                 set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
                                 while (gzgets(gzhandle, buf, len) != NULL)
                                 {
@@ -3660,7 +3663,7 @@ avtunvFileFormat::ReadFile()
                                         anUnvFace.matid = colour;
                                         if (gzgets(gzhandle, buf, len) != NULL)
                                         {
-                                            for (i1=0; i1<strlen(buf); i1++)
+                                            for (i1=0; i1<(int)strlen(buf); i1++)
                                                 if (buf[i1] == 'D')
                                                     buf[i1] = 'E';
 
@@ -3893,7 +3896,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
             int nmats = nbloadsets;
             int *matnos = new int[nmats];
             char **names = new char *[nmats];
-            for (int i=0; i<meshUnvFacePressures.size(); i++)
+            for (size_t i=0; i<meshUnvFacePressures.size(); i++)
             {
                 char str[32];
                 matnos[i] = i;
@@ -3915,8 +3918,8 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
             dims[0] = nbfalsv;
             matlist = new int[nbfalsv];
             nbcells = 0;
-            for (int i=0; i<meshUnvFacePressures.size(); i++)
-                for (int j=0; j<meshUnvFacePressures[i].faces.size(); j++)
+            for (size_t i=0; i<meshUnvFacePressures.size(); i++)
+                for (size_t j=0; j<meshUnvFacePressures[i].faces.size(); j++)
                 {
                     int iel = meshUnvFacePressures[i].faces[j].element;
                     // Fetch the element:
@@ -3992,7 +3995,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
             debug2 << "mat nbfaextv " << nbfaextv << endl;
 #endif
             matlist = new int[nbfaextv];
-            for (int j=0; j<freeUnvFaces.size(); j++)
+            for (size_t j=0; j<freeUnvFaces.size(); j++)
                 matlist[j] = freeUnvFaces[j].matid;
 
             mat = new avtMaterial(nmats,matnos,names,ndims,dims,0,matlist,

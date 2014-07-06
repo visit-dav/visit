@@ -478,7 +478,7 @@ static void VisitFindNodes(const Node *root, const char *slash_delimited_re,
       }
 
       /* copy this path component's re into tmpstr */ 
-      while ((*p != '/') && (*p != '\0') && (i < sizeof(tmpstr)-1))
+      while ((*p != '/') && (*p != '\0') && ((size_t)i < sizeof(tmpstr)-1))
          tmpstr[i++] = *p++;
       if (i == sizeof(tmpstr)-1)
          printf("WARNING: Exceeded maximum size of regular expression\n");

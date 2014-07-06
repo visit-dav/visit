@@ -398,7 +398,7 @@ void visit_vtkPOpenFOAMReader::GatherMetaData()
 // Broadcast a vtkStringArray in process 0 to all processes
 void visit_vtkPOpenFOAMReader::Broadcast(vtkStringArray *sa)
 {
-  vtkIdType lengths[2];
+  vtkIdType lengths[2] = {0,0}; //TODO: check on fix for uninitialized pointer
   if (this->ProcessId == 0)
     {
     lengths[0] = sa->GetNumberOfTuples();

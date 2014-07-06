@@ -79,7 +79,7 @@ void ResolutionMap::loadMapFromFile(const char* filename)
     else {
         while(true) {
             int resolution;
-            fscanf(infile, "%d", &resolution);
+            int res = fscanf(infile, "%d", &resolution); (void) res;
             if(feof(infile))
                 break;
 
@@ -156,7 +156,7 @@ void ResolutionMap::loadUniformResMap(int resolution)
 int ResolutionMap::resolutionForChunk(int chunkIndex)
 {
     TRACE(chunkIndex);
-    BOUNDS_CHECK(chunkIndex,0,mResolutionMap.size());
+    BOUNDS_CHECK(chunkIndex,0,(int)mResolutionMap.size());
 
     return mResolutionMap[chunkIndex];
 }

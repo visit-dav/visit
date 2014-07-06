@@ -524,7 +524,7 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
          for(long long y = start[1]; y < end[1]; ++y)
          {
              // Read in a line of data in x.
-             fread((void *)ptr, sizeof(T), nxelem, fp);
+             size_t result = fread((void *)ptr, sizeof(T), nxelem, fp); (void) result;
              ptr += nxelem;
 
              // Seek to the next line
@@ -967,7 +967,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     // Determine the unit_size, which is the size of the data in the file,
     // and allocate the return VTK object.
     //
-    long long unit_size;
+    long long unit_size = 0; /* TODO: check on fix for uninitialized variable */
     vtkDataArray *rv = 0;
     if(dataFormat == ByteData)
     {
@@ -1214,7 +1214,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             {
                 debug4 << mName << "Reversing endian for shorts" << endl;
                 short *buff = (short *) rv->GetVoidPointer(0);
-                for (long long i = 0 ; i < ntotal ; i++)
+                for (unsigned long long i = 0 ; i < ntotal ; i++)
                 {
                     int tmp;
                     int16_Reverse_Endian(buff[i], (unsigned char *) &tmp);
@@ -1225,7 +1225,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             {
                 debug4 << mName << "Reversing endian for ints" << endl;
                 int *buff = (int *) rv->GetVoidPointer(0);
-                for (long long i = 0 ; i < ntotal ; i++)
+                for (unsigned long long i = 0 ; i < ntotal ; i++)
                 {
                     int tmp;
                     int32_Reverse_Endian(buff[i], (unsigned char *) &tmp);
@@ -1236,7 +1236,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             {
                 debug4 << mName << "Reversing endian for floats" << endl;
                 float *buff = (float *) rv->GetVoidPointer(0);
-                for (long long i = 0 ; i < ntotal ; i++)
+                for (unsigned long long i = 0 ; i < ntotal ; i++)
                 {
                     float tmp;
                     float32_Reverse_Endian(buff[i], (unsigned char *) &tmp);
@@ -1247,7 +1247,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             {
                 debug4 << mName << "Reversing endian for doubles" << endl;
                 double *buff = (double *) rv->GetVoidPointer(0);
-                for (long long i = 0 ; i < ntotal ; i++)
+                for (unsigned long long i = 0 ; i < ntotal ; i++)
                 {
                     double tmp;
                     double64_Reverse_Endian(buff[i], (unsigned char *) &tmp);
@@ -1591,7 +1591,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 long long nx = full_size[0] / bricklet_size[0];
                 long long ny = full_size[1] / bricklet_size[1];
-                long long nz = full_size[2] / bricklet_size[2];
+                //long long nz = full_size[2] / bricklet_size[2];
                 long long z_off = i / (nx*ny);
                 long long y_off = (i % (nx*ny)) / nx;
                 long long x_off = i % nx;
@@ -1826,9 +1826,9 @@ avtBOVFileFormat::ReadTOC(void)
             }
 
             char *currPos = header + 1;
-            bool readDescr = false;
-            bool readShape = false;
-            bool readFortranOrder = false;
+            //bool readDescr = false;
+            //bool readShape = false;
+            //bool readFortranOrder = false;
             bool fortranOrder = false;
 
             while (*currPos)
@@ -1939,7 +1939,7 @@ avtBOVFileFormat::ReadTOC(void)
                         }
                         ++currPos;
                     }
-                    readDescr = true;
+                    //readDescr = true;
                 }
                 else if (strcmp(key, "fortran_order") == 0)
                 {
@@ -1971,7 +1971,7 @@ avtBOVFileFormat::ReadTOC(void)
                         }
                         ++currPos;
                     }
-                    readFortranOrder = true;
+                    //readFortranOrder = true;
                 }
                 else if (strcmp(key, "shape") == 0)
                 {
@@ -2040,7 +2040,7 @@ avtBOVFileFormat::ReadTOC(void)
                         }
                         ++currPos;
                     }
-                    readShape = true;
+                    //readShape = true;
                 }
                 else
                 {
@@ -2100,7 +2100,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "DATA_FILE:") == 0)
                 {
                     line += strlen("DATA_FILE:") + 1;
-                    int len = strlen(line);
+                    //int len = strlen(line);
                     file_pattern = line;
                 }
                 else if (strcmp(line, "DATA_SIZE:") == 0)
@@ -2151,7 +2151,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "VARIABLE:") == 0)
                 {
                     line += strlen("VARIABLE:") + 1;
-                    int len = strlen(line);
+                    //int len = strlen(line);
                     varname = line;
                 }
                 else if (strcmp(line, "HAS_BOUNDARY:") == 0)

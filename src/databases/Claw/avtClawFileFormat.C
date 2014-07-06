@@ -130,7 +130,7 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
     int nexpectedMatches = 0;
     if (scanfStr != "")
     {
-        for (int i = 0; i < scanfStr.size()-1; i++)
+        for (size_t i = 0; i < scanfStr.size()-1; i++)
         {
             // all '%' except '%%' indicate an argument conversion specifier
             if (scanfStr[i] == '%' && scanfStr[i+1] != '%')
@@ -338,7 +338,7 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     string fullFileName = rootDir + "/" + fileName;
     int fd = open(fullFileName.c_str(), O_RDONLY);
     int nread = read(fd, buf, sizeof(buf)-1);
-    if (nread >= sizeof(buf)-1)
+    if (nread >= (int)sizeof(buf)-1)
     {
         char msg[256];
         SNPRINTF(msg, sizeof(msg), "Buffer size of %ld insufficient "
@@ -504,16 +504,19 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     debug5 << "   AMR_level = " << ghdr->AMR_level << endl;
     debug5 << "   mx = " << ghdr->mx << endl;
     debug5 << "   my = " << ghdr->my << endl;
-    if (thdr->ndims == 3)
+    if (thdr->ndims == 3) {
         debug5 << "   mz = " << ghdr->mz << endl;
+    }
     debug5 << "   xlow = " << ghdr->xlow << endl;
     debug5 << "   ylow = " << ghdr->ylow << endl;
-    if (thdr->ndims == 3)
+    if (thdr->ndims == 3) {
         debug5 << "   zlow = " << ghdr->zlow << endl;
+    }
     debug5 << "   dx = " << ghdr->dx << endl;
     debug5 << "   dy = " << ghdr->dy << endl;
-    if (thdr->ndims == 3)
+    if (thdr->ndims == 3) {
         debug5 << "   dz = " << ghdr->dz << endl;
+    }
     debug5 << "   charsPerLine = " << ghdr->charsPerLine << endl;
     debug5 << "   dataOffset = " << ghdr->dataOffset << endl;
 }
@@ -533,7 +536,7 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     vector<GridHeader_t> &gridHeaders, map<int, GridHeader_t> &gridHeaderMap)
 {
     // open a grid file
-    char buf[2048];
+    //char buf[2048];
     string fullFileName = rootDir + "/" + fileName;
     int fd = open(fullFileName.c_str(), O_RDONLY);
     int offset = 0;
@@ -550,7 +553,7 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     close(fd);
 
     // Build gridHeaderMap, too 
-    for (int i = 0; i < gridHeaders.size(); i++)
+    for (size_t i = 0; i < gridHeaders.size(); i++)
     {
         const GridHeader_t &ghdr = gridHeaders[i];
         if (gridHeaderMap.find(ghdr.AMR_level) == gridHeaderMap.end())
@@ -615,18 +618,24 @@ avtClawFileFormat::avtClawFileFormat(const char *filename)
     fclose(bootFile);
 
     debug1 << "DIR=" << rootDir << endl;
-    if (timeScanf != "")
+    if (timeScanf != "") {
         debug1 << "TIME_FILES_SCANF=" << timeScanf << endl;
-    if (timeRegex != "")
+    }
+    if (timeRegex != "") {
         debug1 << "TIME_FILES_REGEX=" << timeRegex << endl;
-    if (gridScanf != "")
+    }
+    if (gridScanf != "") {
         debug1 << "GRID_FILES_SCANF=" << gridScanf << endl;
-    if (gridRegex != "")
+    }
+    if (gridRegex != "") {
         debug1 << "GRID_FILES_REGEX=" << gridRegex << endl;
-    if (cycleRegex != "")
+    }
+    if (cycleRegex != "") {
         debug1 << "CYCLE_REGEX=" << cycleRegex << endl;
-    if (optMode != "")
+    }
+    if (optMode != "") {
         debug1 << "OPTIMIZE_MODE=" << optMode << endl;
+    }
 }
 
 // ****************************************************************************
@@ -776,7 +785,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     const map<int, GridHeader_t> &levelsMap = gridHeaderMaps[timeState];
 
     // sanity check
-    if (timeHdr.ngrids != gridHeaders[timeState].size())
+    if (timeHdr.ngrids != (int)gridHeaders[timeState].size())
     {
         char msg[256];
         SNPRINTF(msg, sizeof(msg), "Time header's ngrid value, %d, doesn't agree "
@@ -1194,7 +1203,8 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
 
         // every transition from space to numeric characters is
         // beginning of a column
-        if (c0 == ' ' && (c1 >= '0' && c1 <= '9' || c1 == '.' || c1 =='-'))
+        /// TODO: check fix for the paranthesis warning
+        if (c0 == ' ' && ((c1 >= '0' && c1 <= '9') || c1 == '.' || c1 =='-'))
         {
             colCount++;
             if (colCount == colNeeded)
@@ -1209,7 +1219,8 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     while (true)
     {
         char c0 = buf[lineOffset2];
-        if (c0 >= '0' && c0 <= '9' || 
+        /// TODO: fix for paranthesis warning
+        if ((c0 >= '0' && c0 <= '9') || 
             c0 == '.' || c0 =='-' || c0 == '+' || 
             c0 == 'e' || c0 == 'E')
             lineOffset2++;

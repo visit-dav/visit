@@ -225,7 +225,7 @@ extern "C" {
     int index0, index1;
     index0 = paraDIS_GetEndpointIndex(segnum, 0); 
     index1 = paraDIS_GetEndpointIndex(segnum, 1); 
-    
+    (void) index0; (void) index1;
     return true; 
   }
 

@@ -773,7 +773,7 @@ int vtkVisItPLOT3DReader::getInfoLine(char * line, int size, FILE*fp)
 {
   //  skip all comments and empty lines in the file.  
   do{
-    fscanf(fp,"%*[^0-9a-zA-Z#]s");
+    int res = fscanf(fp,"%*[^0-9a-zA-Z#]s"); (void) res;
     line = fgets(line,size,fp);
   }while(line && line[0] =='#');
 
@@ -2472,7 +2472,7 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
   {
     for (unsigned int i = 0; i < numbersToRead; i++)
     {
-      fscanf(fp,"%f",output + i);
+      int res = fscanf(fp,"%f",output + i); (void) res;
     }
   }
  
@@ -2483,10 +2483,10 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
     char garbage[1024];
     for (unsigned int i = 0; i < numbersToRead;)
     {
-      fscanf(fp,"%f%[^0-9.-]s",&multiplier,garbage);
+      int res = fscanf(fp,"%f%[^0-9.-]s",&multiplier,garbage); (void) res;
       if (strchr(garbage,'*'))
       {
-        fscanf(fp,"%f%[^0-9.-]s",&multiplicand,garbage);
+        int res = fscanf(fp,"%f%[^0-9.-]s",&multiplicand,garbage); (void) res;
         for (int j = 0; j < (int)multiplier; j++)
         {
           output[i++] = multiplicand;
@@ -2583,7 +2583,7 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
   {
     for (unsigned int i = 0; i < numbersToRead; i++)
     {
-      fscanf(fp,"%d",output + i);
+      int res = fscanf(fp,"%d",output + i); (void) res;
     }
   }
   else if (this->FileType == ASCII && this->Compression == COMPRESSED_ASCII)
@@ -2593,10 +2593,10 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
     char garbage[1024];
     for (unsigned int i = 0; i < numbersToRead;)
     {
-      fscanf(fp,"%d%[^0-9.-]s",&multiplier,garbage);
+      int res = fscanf(fp,"%d%[^0-9.-]s",&multiplier,garbage); (void) res;
       if (strchr(garbage,'*'))
       {
-        fscanf(fp,"%d%[^0-9.-]s",&multiplicand,garbage);
+        res = fscanf(fp,"%d%[^0-9.-]s",&multiplicand,garbage);
         for (int j = 0; j < (int)multiplier; j++)
         {
           output[i++] = multiplicand;

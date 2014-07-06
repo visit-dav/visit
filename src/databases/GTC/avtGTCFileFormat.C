@@ -157,7 +157,7 @@ avtGTCFileFormat::Initialize()
     H5open();
     H5Eset_auto( NULL, NULL );
 
-    bool err = false;
+    //bool err = false;
 
     // Check for a valid GTC file
     if( H5Fis_hdf5( GetFilename() ) < 0 )
@@ -543,8 +543,8 @@ void
 avtGTCFileFormat::ParallelReadVariable( int domain, int varDim, float *var, float *ids )
 {
     // Sort the particles into bins. We need to build a package for each processor.
-    int ptCnt = nTotalPoints / nProcs;
-    int remainder = nTotalPoints % nProcs;
+    //int ptCnt = nTotalPoints / nProcs;
+    //int remainder = nTotalPoints % nProcs;
 
     float *myVar = var, *myIds = ids;
 

@@ -164,7 +164,7 @@ avtSXRISFileFormat::GetCycles(vector<int> &t)
     LoadFile();
     
     t.resize(times.size());
-    for (int i = 0; i < times.size(); i++)
+    for (size_t i = 0; i < times.size(); i++)
         t[i] = i;
 }
 
@@ -271,7 +271,7 @@ avtSXRISFileFormat::LoadFile()
     hid_t spaceId = H5Dget_space(dataId);
 
     hsize_t dims[3], maxDims[3];
-    int ndims = H5Sget_simple_extent_dims(spaceId, dims, maxDims);
+    int ndims = H5Sget_simple_extent_dims(spaceId, dims, maxDims); (void) ndims;
 
     dimensions[0] = dims[0];
     dimensions[1] = dims[1];
@@ -288,7 +288,7 @@ avtSXRISFileFormat::LoadFile()
         if (strcmp(buf, "X-axis Values") == 0)
         {
             H5Aread(attrId, H5T_NATIVE_INT, &timevals[0]);
-            for (int j = 0; j < timevals.size(); j++)
+            for (size_t j = 0; j < timevals.size(); j++)
                 times.push_back((double)timevals[j]);
         }
         else if (strcmp(buf, "X-axis Label") == 0)
@@ -415,7 +415,7 @@ avtSXRISFileFormat::GetVar(int timestate, const char *varname)
     hsize_t count[3] = {dimensions[0], dimensions[1], 1};
     H5Sselect_hyperslab(spaceId, H5S_SELECT_SET, offset, NULL, count, NULL);
     
-    herr_t status = H5Dread(dataId, H5T_NATIVE_DOUBLE, memspaceId, spaceId, H5P_DEFAULT, arr->GetVoidPointer(0));
+    herr_t status = H5Dread(dataId, H5T_NATIVE_DOUBLE, memspaceId, spaceId, H5P_DEFAULT, arr->GetVoidPointer(0)); (void) status;
     
     return arr;
 }

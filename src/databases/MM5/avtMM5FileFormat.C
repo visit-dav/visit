@@ -374,7 +374,7 @@ avtMM5FileFormat::GetMesh(int timestate, const char *meshname)
             // Default number of components for an array is 1.
             coords[i] = vtkFloatArray::New();
 
-            if (i < pos->second.size())
+            if ((size_t)i < pos->second.size())
             {
                 dims[i] = pos->second[i] + 1;
                 coords[i]->SetNumberOfTuples(dims[i]);

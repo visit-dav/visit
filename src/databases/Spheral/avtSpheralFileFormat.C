@@ -156,8 +156,8 @@ avtSpheralFileFormat::~avtSpheralFileFormat()
 void
 avtSpheralFileFormat::FreeUpResources(void)
 {
-    int   i, j, k;
-    for (i = 0 ; i < ndomains ; i++)
+    size_t   i, j, k;
+    for (i = 0 ; i < (size_t)ndomains ; i++)
     {
         for (j = 0 ; j < nodeLists.size() ; j++)
         {
@@ -360,7 +360,7 @@ avtSpheralFileFormat::ParseHeader(istream &ifile)
     {
         cache[i].meshes.resize(nodeLists.size());
         cache[i].fields.resize(nodeLists.size());
-        for (int j = 0 ; j < nodeLists.size() ; j++)
+        for (size_t j = 0 ; j < nodeLists.size() ; j++)
         {
             cache[i].fields[j].resize(fields.size());
         }
@@ -503,7 +503,7 @@ avtSpheralFileFormat::ParseField(char *line, int nwords,
     else
     {
         int fieldIndex = -1;
-        for (int i = 0 ; i < fields.size() ; i++)
+        for (int i = 0 ; i < (int)fields.size() ; i++)
         {
             if (fields[i] == fieldName)
             {
@@ -518,7 +518,7 @@ avtSpheralFileFormat::ParseField(char *line, int nwords,
             fieldType.push_back(AVT_UNKNOWN_TYPE);
             fieldDim1.push_back(-1);
             fieldDim2.push_back(-1);
-            for (int i = 0 ; i < fieldDefinedOnNodeList.size() ; i++)
+            for (size_t i = 0 ; i < fieldDefinedOnNodeList.size() ; i++)
             {
                  fieldDefinedOnNodeList[i].push_back(false);
             }
@@ -748,7 +748,7 @@ avtSpheralFileFormat::GetMesh(int dom, const char *name)
         vtkAppendPolyData *appender = vtkAppendPolyData::New();
         vtkPolyData *one_dataset = NULL;
         int nInputs = 0;
-        for (int i = 0 ; i < nodeLists.size() ; i++)
+        for (size_t i = 0 ; i < nodeLists.size() ; i++)
         {
             if (validNodeLists[i] && cache[dom].meshes[i] != NULL)
             {
@@ -837,7 +837,7 @@ avtSpheralFileFormat::GetVar(int dom, const char *field)
         vtkDataArray *one_array = NULL;
         int nInputs = 0;
         int nTuples = 0;
-        for (int i = 0 ; i < nodeLists.size() ; i++)
+        for (size_t i = 0 ; i < nodeLists.size() ; i++)
         {
             if (validNodeLists[i] && cache[dom].fields[i][fieldIndex] != NULL)
             {
@@ -861,7 +861,7 @@ avtSpheralFileFormat::GetVar(int dom, const char *field)
                                        one_array->GetNumberOfComponents());
                 rv->SetNumberOfTuples(nTuples);
                 int currentTuple = 0;
-                for (int i = 0 ; i < nodeLists.size() ; i++)
+                for (size_t i = 0 ; i < nodeLists.size() ; i++)
                 {
                     if (validNodeLists[i] && 
                         cache[dom].fields[i][fieldIndex] != NULL)
@@ -898,7 +898,7 @@ avtSpheralFileFormat::GetVar(int dom, const char *field)
 int
 avtSpheralFileFormat::GetNodeListIndexFromName(const char *name)
 {
-    for (int i = 0 ; i < nodeLists.size() ; i++)
+    for (size_t i = 0 ; i < nodeLists.size() ; i++)
     {
         if (strcmp(nodeLists[i].c_str(), name) == 0)
         {
@@ -934,7 +934,7 @@ avtSpheralFileFormat::GetNodeListIndexFromName(const char *name)
 int
 avtSpheralFileFormat::GetFieldIndexFromName(const char *name)
 {
-    for (int i = 0 ; i < fields.size() ; i++)
+    for (size_t i = 0 ; i < fields.size() ; i++)
     {
         if (strcmp(fields[i].c_str(), name) == 0)
         {
@@ -1028,7 +1028,7 @@ avtSpheralFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                     "Node List", (int)nodeLists.size(), nodeLists);
     md->Add(mmd);
 
-    for (int i = 0 ; i < fields.size() ; i++)
+    for (size_t i = 0 ; i < fields.size() ; i++)
     {
         if (fieldType[i] == AVT_SCALAR_VAR)
         {
@@ -1098,7 +1098,7 @@ avtSpheralFileFormat::ReadDomain(int dom)
     bool keepGoing = true;
     char line[1024];
     vector<int> offsets;
-    int nwords;
+    int nwords; (void) nwords;
     while (keepGoing)
     {
         nwords = GetLine(ifile, line, offsets);
@@ -1115,7 +1115,7 @@ avtSpheralFileFormat::ReadDomain(int dom)
         EXCEPTION1(InvalidFilesException, current_file.c_str());
     }
 
-    for (int i = 0 ; i < nodeLists.size() ; i++)
+    for (size_t i = 0 ; i < nodeLists.size() ; i++)
     {
         vtkPolyData *pdata = ReadNodeList(ifile, i);
         nodeListSizes[i] = pdata->GetNumberOfPoints();
@@ -1126,12 +1126,12 @@ avtSpheralFileFormat::ReadDomain(int dom)
      
 
         int nFieldsToRead = 0;
-        int j;
+        size_t j;
         for (j = 0 ; j < fields.size() ; j++)
             if (fieldDefinedOnNodeList[i][j])
                 nFieldsToRead++;
 
-        for (j = 0 ; j < nFieldsToRead ; j++)
+        for (j = 0 ; j < (size_t)nFieldsToRead ; j++)
         {
             int index = -1;
             vtkDataArray *da = ReadField(ifile, i, index);

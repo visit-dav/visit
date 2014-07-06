@@ -140,6 +140,8 @@ static void FreeDataArray(VisIt_DataArray &da)
 //  Note:  stolen from the Silo file format method of the same name
 //
 // ****************************************************************************
+
+#ifndef MDSERVER
 static void 
 GetQuadGhostZones(int nnodes, int ndims,
                   int *dims, int *min_index, int *max_index,
@@ -250,7 +252,7 @@ GetQuadGhostZones(int nnodes, int ndims,
             vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
     }
 }
-
+#endif
 
 // ****************************************************************************
 //  Method: avtSimV1 constructor

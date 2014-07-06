@@ -39,7 +39,8 @@ std::string ASTFloatNode::infixString(int lang, NameScope* nameScope)
         return std::string("0.0");    
     } else {    
         char s[256];            
-        sprintf(s, "%.20lg\0", value);    
+        sprintf(s, "%.20lg", value);    
+        s[255] = '\0';
         return std::string(s);    
     }    
 }    

@@ -275,7 +275,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
     {
         debug5 << "constructing a curvilinear grid" << endl;
 
-        int ndims=3;
+        //int ndims=3;
         int dims[3] = {1,1,1};
         dims[0] = m_ni[domain];
         dims[1] = m_nj[domain];
@@ -286,7 +286,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
         float *zarray = new float[nnodes];
 
 // POPULATE THE zarray variable with grid point coordinates...
-        int pnt=0;
+        //int pnt=0;
 
 //      for(int k = 0; k < dims[2]; ++k)
 //        for(int j = 0; j < dims[1]; ++j)
@@ -319,7 +319,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
         if( m_prec == 4 )
         {
             nr = read(fd,zarray,sizeof(float)*nnodes); // read straight into zarray
-            if( nr != sizeof(float)*nnodes )
+            if( (size_t)nr != sizeof(float)*nnodes )
             {
                 CLOSE(fd);
                 delete [] zarray;
@@ -331,7 +331,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
         {
             double* tmp=new double[nnodes];
             nr = read(fd,tmp,sizeof(double)*nnodes); // read into tmp (double) array
-            if( nr != sizeof(double)*nnodes )
+            if( (size_t)nr != sizeof(double)*nnodes )
             {
                 CLOSE(fd);
                 delete [] zarray;
@@ -339,7 +339,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
                 SNPRINTF(errmsg,500,"Error reading dp grid array in %s" , m_gridfilename.c_str());
                 EXCEPTION1( InvalidDBTypeException, errmsg );
             }
-            for( size_t i = 0 ; i < nnodes ; i++ ) // copy over to zarray
+            for( size_t i = 0 ; i < (size_t)nnodes ; i++ ) // copy over to zarray
                 zarray[i] = tmp[i];
             delete[] tmp;
         }
@@ -434,7 +434,7 @@ avtvolimageFileFormat::GetVar(int domain, const char *varname)
         if( m_prec == 4 )
         {
             nr = read(fd,data,sizeof(float)*npts);
-            if( nr != sizeof(float)*npts )
+            if( (size_t)nr != sizeof(float)*npts )
             {
                 CLOSE(fd);
                 SNPRINTF(errmsg,500,"Error reading array in %s" , m_filename.c_str());
@@ -445,7 +445,7 @@ avtvolimageFileFormat::GetVar(int domain, const char *varname)
         {
             double* tmp=new double[npts];
             nr = read(fd,tmp,sizeof(double)*npts);
-            if( nr != sizeof(double)*npts )
+            if( (size_t)nr != sizeof(double)*npts )
             {
                 CLOSE(fd); 
                 delete [] tmp;

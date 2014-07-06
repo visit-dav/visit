@@ -149,7 +149,7 @@ void
 avtTetradFileFormat::GetCycles(vector<int> &c)
 {
     c.clear();
-    for (int i = 0 ; i < timesteps.size() ; i++)
+    for (size_t i = 0 ; i < timesteps.size() ; i++)
     {
         c.push_back(i+1);
     }
@@ -309,7 +309,7 @@ avtTetradFileFormat::ConstructMesh(void)
 vtkDataArray *
 avtTetradFileFormat::GetVar(int ts, const char *var)
 {
-    if (ts < 0 || ts >= timesteps.size())
+    if (ts < 0 || (size_t)ts >= timesteps.size())
     {
         EXCEPTION2(InvalidTimeStepException, ts, timesteps.size());
     }
@@ -379,7 +379,7 @@ void
 avtTetradFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState)
 {
-    int   i;
+    size_t   i;
 
     //
     // Start off by walking through the HDF5 file and determining the
@@ -396,7 +396,7 @@ avtTetradFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // The timesteps were added in lexicographical order -- we need to
         // re-order them in numerical order.
         //
-        int ntimes = timesteps.size();
+        size_t ntimes = timesteps.size();
         time_index_pair *pairs = new time_index_pair[ntimes];
         for (i = 0 ; i < ntimes ; i++)
         {

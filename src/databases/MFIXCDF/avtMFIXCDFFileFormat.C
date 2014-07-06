@@ -411,7 +411,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
             {
                 // Cylindrical
                 ndims = 1;
-                int nzvals= 0;
+                int nzvals= 0; (void) nzvals;
                 if (this->kSz == 1)
                 {
                     dims[0] = (widths[0]+2)*(widths[1]+2);
@@ -1347,9 +1347,9 @@ avtMFIXCDFFileFormat::GetVar(int domain, const char *varname)
               &widths[2], &offsets[2], &larrays[2]);
 
     vtkFloatArray *arr = vtkFloatArray::New();
-    int totNodes= 0;
+    int totNodes= 0; (void) totNodes;
     int totZones= 0;
-    int nzvals= 0;
+    int nzvals= 0; (void) nzvals;
 
     if (kSz==1)
     {
@@ -1465,9 +1465,9 @@ avtMFIXCDFFileFormat::GetVectorVar(int domain, const char *varname)
     get_limit(kSz-1, zDomain, numZDomains, Lz,
               &widths[2], &offsets[2], &larrays[2]);
 
-    int totNodes= 0;
+    int totNodes= 0; (void) totNodes;
     int totZones= 0;
-    int nzvals= 0;
+    int nzvals= 0; (void) nzvals;
     if (kSz==1)
     {
         // 2D case

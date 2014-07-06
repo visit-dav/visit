@@ -81,7 +81,7 @@ reverse_endian(const T &data)
     // Rearrange the bytes.
     unsigned char *dest = (unsigned char *)&retval;
     unsigned char *src = (unsigned char *)&data + sizeof(T) - 1;
-    for(int i = 0; i < sizeof(T); ++i)
+    for(size_t i = 0; i < sizeof(T); ++i)
         *dest++ = *src--;
 
     return retval;
@@ -377,8 +377,11 @@ avtANALYZEFileFormat::GetVar(const char *varname)
                     if(fileInformation.ReversedEndian())
                     {
                         short *end = data + ntuples;
-                        while(data < end)
-                            *data++ = reverse_endian(*data);
+                        while(data < end) {
+                            /// TODO: check on sequence-point warning fix
+                            ///*data++ = reverse_endian(*data);
+                            *data = reverse_endian(*data); data++;
+                        }
                     }
                 }
             }
@@ -397,8 +400,11 @@ avtANALYZEFileFormat::GetVar(const char *varname)
                     if(fileInformation.ReversedEndian())
                     {
                         int *end = data + ntuples;
-                        while(data < end)
-                            *data++ = reverse_endian(*data);
+                        while(data < end) {
+                            /// TODO: check on sequence-point warning fix
+                            ///*data++ = reverse_endian(*data);
+                            *data = reverse_endian(*data); data++;
+                        }
                     }
                 }
             }
@@ -417,8 +423,11 @@ avtANALYZEFileFormat::GetVar(const char *varname)
                     if(fileInformation.ReversedEndian())
                     {
                         float *end = data + ntuples;
-                        while(data < end)
-                            *data++ = reverse_endian(*data);
+                        while(data < end) {
+                            /// TODO: check on sequence-point warning fix
+                            ///*data++ = reverse_endian(*data);
+                            *data = reverse_endian(*data); data++;
+                        }
                     }
                 }
             }

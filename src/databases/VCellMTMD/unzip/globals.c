@@ -177,7 +177,7 @@ Uz_Globs *globalsCtor()
 #endif
 
     uO.lflag=(-1);
-    G.wildzipfn = "";
+    strcpy(G.wildzipfn,""); ///TODO: check on fix..
     G.pfnames = (char **)fnames;
     G.pxnames = (char **)&fnames[1];
     G.pInfo = G.info;

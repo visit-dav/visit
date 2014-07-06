@@ -131,7 +131,7 @@ HistogramCache::addToCache(avtHistogramSpecification *spec)
       avtHistogramSpecification* histoCopy = new avtHistogramSpecification();
       histoCopy->copyInfo(spec);
       //save the object in the cache if there is enough space
-      if(mCachedHistograms.size() < mMaxCacheSize){
+      if(mCachedHistograms.size() < (size_t)mMaxCacheSize){
             mCachedHistograms.push_back( histoCopy );
       }else{
             //remove the oldest object from the cache
@@ -164,9 +164,9 @@ HistogramCache::setMaxCacheSize(unsigned int size)
       if(size==0)
             return;
       mMaxCacheSize = size;
-      if( mCachedHistograms.size() > mMaxCacheSize ){
+      if( mCachedHistograms.size() > (size_t)mMaxCacheSize ){
             //remove objects from the oldest objects from the cache
-            for(int i=mMaxCacheSize; i<mCachedHistograms.size() ; ++i){
+            for(size_t i=mMaxCacheSize; i<mCachedHistograms.size() ; ++i){
                   avtHistogramSpecification* temp = mCachedHistograms[i];
                   mCachedHistograms[i] = NULL;
                   delete temp;

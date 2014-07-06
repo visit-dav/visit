@@ -638,7 +638,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
     //result is NAN    
     if (MathUtil::double_infinity == -result || MathUtil::double_infinity == result || result != result) {    
         char problem[1000];    
-        sprintf(problem, "%s evaluated to infinity or NaN", infixString(LANGUAGE_DEFAULT,0).c_str(), functionNamesVCML[funcType].c_str());    
+        sprintf(problem, "%s evaluated to infinity or NaN: %s", infixString(LANGUAGE_DEFAULT,0).c_str(), functionNamesVCML[funcType].c_str());    
         throw VCell::FunctionRangeException(problem);    
     }    
     return result;    

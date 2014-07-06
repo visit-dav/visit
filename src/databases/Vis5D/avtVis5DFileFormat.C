@@ -150,6 +150,7 @@ avtVis5DFileFormat::GetCycles(std::vector<int> &cycles)
         {
             int yyddd  = v5dYYDDDtoDays(v5dfile->DateStamp[i]);
             int hhmmss = v5dHHMMSStoSeconds(v5dfile->TimeStamp[i]);
+            (void) hhmmss;
             debug4 << ", " << yyddd;
             cycles.push_back(yyddd);
         }

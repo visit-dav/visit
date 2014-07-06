@@ -67,7 +67,7 @@ VsFile::~VsFile() {
       //Don't print a warning for the file itself, we know it's still open.
       if (anobj != getId()) {
         H5I_type_t ot = H5Iget_type(anobj);
-        int status = H5Iget_name(anobj, objName, 1024);
+        int status = H5Iget_name(anobj, objName, 1024); (void) status;
         VsLog::debugLog() << "type = " << ot << ", name = " << objName <<", id = " <<anobj <<std::endl;;
       }
     }

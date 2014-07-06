@@ -420,8 +420,9 @@ avtADAPTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 debug4 << mName << varname << " size={";
                 for(int j = 0; j < varndims; ++j)
                 {
-                    if(j > 0)
+                    if(j > 0) {
                        debug4 << ", ";
+                    }
                     debug4 << dimSizes[vardims[j]];
                 }
                 debug4 << "}\n";
@@ -888,7 +889,7 @@ avtADAPTFileFormat::CreateMain(const float *xc, int nx, const float *yc,
             {
                 for(int j = 0; j < ny; ++j)
                 {
-                    float y = yc[j];
+                    //float y = yc[j];
                     for(int i = 0; i < nx; ++i)
                     {
                         *pts++ = xc[i];
@@ -927,7 +928,7 @@ avtADAPTFileFormat::CreateMain(const float *xc, int nx, const float *yc,
             {
                 for(int j = 0; j < ny; ++j)
                 {
-                    float y = yc[j];
+                    //float y = yc[j];
                     int index = nx * j;
                     for(int i = 0; i < nx; ++i, ++index)
                     {

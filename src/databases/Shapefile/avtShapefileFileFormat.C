@@ -145,7 +145,7 @@ avtShapefileFileFormat::FreeUpResources(void)
            << endl;
 
     // Free all of the shapes objects.
-    for(int i = 0; i < shapes.size(); ++i)
+    for(size_t i = 0; i < shapes.size(); ++i)
         esriFreeShape(shapes[i].shapeType, shapes[i].shape);
     shapes.clear();
 
@@ -378,7 +378,7 @@ avtShapefileFileFormat::Initialize()
             else
             {
                 debug4 << mName << "Opened the DBF file. Fields = {";
-                for(int i = 0; i < dbfFile->header.numFieldDescriptors; ++i)
+                for(size_t i = 0; i < dbfFile->header.numFieldDescriptors; ++i)
                     debug4 << ", " << dbfFile->header.fieldDescriptors[i].fieldName;
                 debug4 << "}" << endl;
             }
@@ -415,7 +415,7 @@ int
 avtShapefileFileFormat::CountMemberPoints(esriShapeType_t shapeType) const
 {
     int npts = 0;
-    for(int i = 0; i < shapes.size(); ++i)
+    for(size_t i = 0; i < shapes.size(); ++i)
     {
         if(shapes[i].shapeType == shapeType)
         {
@@ -493,12 +493,12 @@ int
 avtShapefileFileFormat::CountShapeTypes() const
 {
 
-    int i, ret = 0, shapeCounts[15];
-    for(i = 0; i < 15; ++i)
+    int ret = 0, shapeCounts[15];
+    for(int i = 0; i < 15; ++i)
         shapeCounts[i] = 0;
 
     // Count the number of instances of each shape.
-    for(i = 0; i < shapes.size(); ++i)
+    for(size_t i = 0; i < shapes.size(); ++i)
     {
         switch(shapes[i].shapeType)
         {
@@ -550,7 +550,7 @@ avtShapefileFileFormat::CountShapeTypes() const
     }
 
     // Sum up the number of shape types.
-    for(i = 0; i < 15; ++i)
+    for(int i = 0; i < 15; ++i)
         ret += ((shapeCounts[i] > 0) ? 1 : 0);
 
     return ret;
@@ -580,7 +580,7 @@ int
 avtShapefileFileFormat::CountShapes(esriShapeType_t shapeType) const
 {
     int nShapes = 0;
-    for(int i = 0; i < shapes.size(); ++i)
+    for(int i = 0; i < (int)shapes.size(); ++i)
     {
         if(shapes[i].shapeType == shapeType)
         {
@@ -619,7 +619,7 @@ int
 avtShapefileFileFormat::CountCellsForShape(esriShapeType_t shapeType) const
 {
     int nCells = 0;
-    for(int i = 0; i < shapes.size(); ++i)
+    for(int i = 0; i < (int)shapes.size(); ++i)
     {
         if(shapes[i].shapeType == shapeType)
         {
@@ -878,7 +878,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if(dbfFile != 0)
     {
         debug4 << mName << "nMeshes = " << meshes.size() << endl;
-        for(int m = 0; m < meshes.size(); ++m)
+        for(size_t m = 0; m < meshes.size(); ++m)
         {
             // Ensure that point meshes use node centering.
             avtCentering centering = AVT_ZONECENT;
@@ -887,7 +887,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
             dbfFieldDescriptor_t *fieldDescriptor =
                 dbfFile->header.fieldDescriptors;
-            for(int i = 0; i < dbfFile->header.numFieldDescriptors; ++i)
+            for(size_t i = 0; i < dbfFile->header.numFieldDescriptors; ++i)
             {
                 std::string varName;
                 if(meshes.size() > 1)
@@ -965,7 +965,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     else
     {
-        for(int m = 0; m < meshes.size(); ++m)
+        for(size_t m = 0; m < meshes.size(); ++m)
         {
             Expression expr;
             expr.SetName(meshes[m] + "_x");
@@ -1022,7 +1022,7 @@ avtShapefileFileFormat::GetMesh_TessellatedPolygon()
     int total_tris = 0;
     // Go through each cell and tesselate into triangles.
     debug5 << mName << "Start tessellation." << endl;
-    for(int i = 0; i < shapes.size(); ++i)
+    for(size_t i = 0; i < shapes.size(); ++i)
     {
         avtPolygonToTrianglesTesselator tess(pts);
         tess.SetNormal(0.0,0.0,1.0);
@@ -1037,7 +1037,7 @@ avtShapefileFileFormat::GetMesh_TessellatedPolygon()
                 int end = (part < pg->numParts-1) ?
                    pg->parts[part+1] : pg->numPoints;
 
-                int part_size = (end -1) - start;
+                //int part_size = (end -1) - start;
                 tess.BeginContour();
 
                 for(int j = start; j < end-1; ++j)
@@ -1202,7 +1202,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                                 verts_size = nverts; \
                             }
 
-        for(int i = 0; i < shapes.size(); ++i)
+        for(size_t i = 0; i < shapes.size(); ++i)
         {
             int part, j;
 
@@ -1636,7 +1636,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
     // Determine the shape type from the mesh name.
     //
     dbfFieldDescriptor_t *field = 0;
-    esriShapeType_t shapeType;
+    esriShapeType_t shapeType = esriPointM; ///TODO: check fix for uninitialized var
     if(strcmp(varname, "pointM_measure") == 0)
         shapeType = esriPointM;
     else if(strcmp(varname, "polylineM_measure") == 0)
@@ -1740,7 +1740,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
                 else
                 {
                     unsigned char *ucptr = ucsrc;
-                    for(int i = 0; i < shapes.size(); ++i)
+                    for(size_t i = 0; i < shapes.size(); ++i)
                     {
                         int nr = 1;
                         if(shapes[i].shapeType == shapeType)
@@ -1779,7 +1779,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
                 else
                 {
                     float *fptr = fsrc;
-                    for(int i = 0; i < shapes.size(); ++i)
+                    for(size_t i = 0; i < shapes.size(); ++i)
                     {
                         int nr = 1;
                         if(shapes[i].shapeType == shapeType)
@@ -1846,7 +1846,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
         float *data = (float *)rv->GetVoidPointer(0);
 
         int j;
-        for(int i = 0; i < shapes.size(); ++i)
+        for(size_t i = 0; i < shapes.size(); ++i)
         {
             if(shapes[i].shapeType == shapeType)
             {

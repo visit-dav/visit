@@ -192,7 +192,7 @@ avtFVCOM_MTMDFileFormat::~avtFVCOM_MTMDFileFormat()
 
   debug4 << "avtFVCOM_MTMDFileFormat::~avtFVCOM_MTMDFileFormat" << endl;
 
-      for (int dom=0; dom<ndoms; ++dom)
+      for (size_t dom=0; dom<ndoms; ++dom)
       {
         debug4 << "dom: " << dom << endl;
           domainFiles[dom]->FreeUpResources();
@@ -299,7 +299,7 @@ avtFVCOM_MTMDFileFormat::Init()
     bool fatalError = false;
     char *domainfilename = new char[nfnames];
     debug4 << mName << "Reading " << ndoms << " filenames." << endl;
-    for(dom=0; dom<ndoms; ++dom)
+    for(dom=0; dom<(int)ndoms; ++dom)
     {
 
         size_t start[]={dom,0};
@@ -375,7 +375,7 @@ avtFVCOM_MTMDFileFormat::Init()
     if(fatalError)
     {
         // Clean up the files that we've made sure exist.
-        for(int i = 0; i < domainFiles.size(); ++i)
+        for(size_t i = 0; i < domainFiles.size(); ++i)
             delete domainFiles[i];
         domainFiles.clear();
 
@@ -387,7 +387,7 @@ avtFVCOM_MTMDFileFormat::Init()
     }
 
 
-    for(dom=0; dom<ndoms; ++dom)
+    for(dom=0; dom<(int)ndoms; ++dom)
     {
       domainFiles[dom]->SetKeySuffixForCaching(keysuffix);
     }

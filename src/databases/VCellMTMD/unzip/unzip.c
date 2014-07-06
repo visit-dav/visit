@@ -1632,7 +1632,7 @@ int usage(__G__ int error)   /* return PK-type error code */
     __GDEF
     //int error;
 {
-    int flag = (error? 1 : 0);
+    int flag = (error? 1 : 0); (void) flag;
 
 
 /*---------------------------------------------------------------------------
@@ -1715,7 +1715,7 @@ static void show_version_info(__G)
         Info(slide, 0, ((char *)slide, "%d\n",
           (UZ_MAJORVER*100 + UZ_MINORVER*10 + UZ_PATCHLEVEL)));
     else {
-        char *envptr/*, *getenv()*/;
+        char *envptr/*, *getenv()*/; (void) envptr;
         int numopts = 0;
 
         Info(slide, 0, ((char *)slide, LoadFarString(UnzipUsageLine1v),
@@ -1994,12 +1994,15 @@ int unzip32(char* zipfile, char* file, char* exdir)   /* return PK-type error co
     }
     argv = (char**)malloc((argc+1) * sizeof(char*));
     memset(argv, 0, (argc+1) * sizeof(char*));
-    argv[0] = "unzip";
-    argv[1] = "-o";
+    const char* unzip_str = "unzip";
+    const char* o_flag_str = "-o";
+    argv[0] = (char*)unzip_str;
+    argv[1] = (char*)o_flag_str;
     argv[2] = zipfile;
     argv[3] = file;
     if (exdir != NULL) {
-        argv[4] = "-d";
+        const char* d_flag_str = "-d";
+        argv[4] = (char*)d_flag_str;
         argv[5] = exdir;    
     }
 

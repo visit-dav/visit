@@ -262,7 +262,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
     }
 
     // Make sure the stem only contains numbers.
-    for (int i = 0 ; i < stem.size() ; i++)
+    for (size_t i = 0 ; i < stem.size() ; i++)
     {
         if (! isdigit(stem[i]))
         {
@@ -375,8 +375,6 @@ avtCEAucdFileFormat::FreeUpResources(void)
 void
 avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    int  i, j, v;
-
     if (!readRoot)
         ReadRootFile();
 
@@ -405,13 +403,13 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     rdr->ProcessRequest(request, e->GetInputInformation(), 
                                  e->GetOutputInformation());
 
-    for (i = 0 ; i < rdr->GetNumberOfCellArrays() ; i++)
+    for (int i = 0 ; i < rdr->GetNumberOfCellArrays() ; i++)
     {
         const char *name = rdr->GetCellArrayName(i);
         AddScalarVarToMetaData(md, name, meshname, AVT_ZONECENT);
         nodeCentered[name] = false;
     }
-    for (i = 0 ; i < rdr->GetNumberOfPointArrays() ; i++)
+    for (int i = 0 ; i < rdr->GetNumberOfPointArrays() ; i++)
     {
         const char *name = rdr->GetPointArrayName(i);
         AddScalarVarToMetaData(md, name, meshname, AVT_NODECENT);
@@ -425,17 +423,17 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Set up expressions for vectors.
     //
     int numberOfCenterings = 2;
-    for (v = 0 ; v < numberOfCenterings ; v++)
+    for (int v = 0 ; v < numberOfCenterings ; v++)
     {
         vector<const char *> vnames;
         if (v == 0)
-            for (i = 0 ; i < rdr->GetNumberOfCellArrays() ; i++)
+            for (int i = 0 ; i < rdr->GetNumberOfCellArrays() ; i++)
                 vnames.push_back(rdr->GetCellArrayName(i));
         else
-            for (i = 0 ; i < rdr->GetNumberOfPointArrays() ; i++)
+            for (int i = 0 ; i < rdr->GetNumberOfPointArrays() ; i++)
                 vnames.push_back(rdr->GetPointArrayName(i));
 
-        for (i = 0 ; i < vnames.size() ; i++)
+        for (size_t i = 0 ; i < vnames.size() ; i++)
         {
             if (strstr(vnames[i], "[0]") != NULL)
             {
@@ -458,7 +456,7 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 ptrK[1] = '2';
                 bool foundK = (dimension == 2 ? true : false);
 
-                for (j = 0 ; j < vnames.size() ; j++)
+                for (size_t j = 0 ; j < vnames.size() ; j++)
                 {
                     if (strcmp(vnames[j], jName) == 0)
                         foundJ = true;
@@ -624,7 +622,7 @@ avtCEAucdFileFormat::RegisterVariableList(const char *primaryVariable,
 
     variables.clear();
     variables.push_back(primaryVariable);
-    for (int i = 0 ; i < secondaryVars.size() ; i++)
+    for (size_t i = 0 ; i < secondaryVars.size() ; i++)
         variables.push_back(*(secondaryVars[i]));
 
     if (reader != NULL)

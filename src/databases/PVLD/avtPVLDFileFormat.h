@@ -145,7 +145,7 @@ protected:
     void AddShellVariables( avtDatabaseMetaData *md );
     void AddBeamVariables(  avtDatabaseMetaData *md );
     void AddSurfaceVariables( avtDatabaseMetaData *md );
-    void AddNodeVariables( const string& meshname, avtDatabaseMetaData *md );
+    void AddNodeVariables( const std::string& meshname, avtDatabaseMetaData *md );
     void AddSphVariables( avtDatabaseMetaData *md );
     void AddTiedSetVariables( avtDatabaseMetaData *md );
     void AddContactVariables( avtDatabaseMetaData *md );
@@ -156,28 +156,28 @@ protected:
     void AddSurfaceMaterial( avtDatabaseMetaData *md );
     void AddSphMaterial( avtDatabaseMetaData *md );
 
-    vtkPoints *MakePoints(vector<float> &crd);
+    vtkPoints *MakePoints(std::vector<float> &crd);
 
-    vtkUnstructuredGrid* GenerateSolidMesh( vector<float>& crd, const vector<int>& elm );
-    vtkUnstructuredGrid* GenerateShellMesh( vector<float>& crd, const vector<int>& elm );
-    vtkUnstructuredGrid* GenerateBeamMesh(  vector<float>& crd, const vector<int>& elm );
-    vtkUnstructuredGrid* GenerateSphMesh( vector<float>& crd, const vector<int>& elm );
-    vtkUnstructuredGrid* GeneratePointMesh( vector<float>& crd );
-    vtkUnstructuredGrid* GenerateBondMesh( const vector<float>& crd1, const vector<float>& crd2 );
+    vtkUnstructuredGrid* GenerateSolidMesh( std::vector<float>& crd, const std::vector<int>& elm );
+    vtkUnstructuredGrid* GenerateShellMesh( std::vector<float>& crd, const std::vector<int>& elm );
+    vtkUnstructuredGrid* GenerateBeamMesh(  std::vector<float>& crd, const std::vector<int>& elm );
+    vtkUnstructuredGrid* GenerateSphMesh( std::vector<float>& crd, const std::vector<int>& elm );
+    vtkUnstructuredGrid* GeneratePointMesh( std::vector<float>& crd );
+    vtkUnstructuredGrid* GenerateBondMesh( const std::vector<float>& crd1, const std::vector<float>& crd2 );
 
-    void CreateGlobalNodeIds(int domain, const char *meshname, const vector<int> &vmap);
+    void CreateGlobalNodeIds(int domain, const char *meshname, const std::vector<int> &vmap);
 
-    vtkFloatArray* GenerateVariable( const vector<int>& dim, vector<float>& dat );
-    vtkFloatArray* GenerateDyna3dStressTensor( const vector<int>& dims, const vector<float>& dat );
-    vtkFloatArray* GenerateSphStressTensor( const vector<int>& dims, const vector<float>& dat );
+    vtkFloatArray* GenerateVariable( const std::vector<int>& dim, std::vector<float>& dat );
+    vtkFloatArray* GenerateDyna3dStressTensor( const std::vector<int>& dims, const std::vector<float>& dat );
+    vtkFloatArray* GenerateSphStressTensor( const std::vector<int>& dims, const std::vector<float>& dat );
 
 
     void AddSolidIndexVariables( avtDatabaseMetaData *md );
     void AddShellIndexVariables( avtDatabaseMetaData *md );
-    void AddIndexVariables( const string& meshname,
-                            const string& idxname,
-                            const vector<string>& dsname,
-                            const vector<vector<int> >& dsdims,
+    void AddIndexVariables( const std::string& meshname,
+                            const std::string& idxname,
+                            const std::vector<std::string>& dsname,
+                            const std::vector<std::vector<int> >& dsdims,
                             avtDatabaseMetaData *md );
 
 };

@@ -35,7 +35,8 @@ class VelodyneReader
 {
  public:
   VelodyneReader() {
-    file_id=node_id,solid_id,shell_id,particle_id=surf_id=tied_id=-1;
+    //file_id=node_id,solid_id,shell_id,particle_id=surf_id=tied_id=-1;
+    file_id=node_id=solid_id=shell_id=particle_id=surf_id=tied_id=-1; ///TODO: check on fix for comma operator has no effect warning
     nhhv=nshv=nsphhv=0;
   }
   ~VelodyneReader() {

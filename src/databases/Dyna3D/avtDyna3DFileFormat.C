@@ -184,7 +184,7 @@ avtDyna3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if(!materialCards.empty())
     {
         stringVector materialNames;
-        for(int i = 0; i < materialCards.size(); ++i)
+        for(size_t i = 0; i < materialCards.size(); ++i)
             materialNames.push_back(materialCards[i].materialName);
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData("material",
@@ -389,7 +389,7 @@ avtDyna3DFileFormat::GetAuxiliaryData(const char *var, const char *type,
 
         int *matnos = new int[materialCards.size()];
         char **names = new char *[materialCards.size()];
-        for(int i = 0; i < materialCards.size(); ++i)
+        for(size_t i = 0; i < materialCards.size(); ++i)
         {
             matnos[i] = materialCards[i].materialNumber;
             names[i] = (char *)materialCards[i].materialName.c_str();

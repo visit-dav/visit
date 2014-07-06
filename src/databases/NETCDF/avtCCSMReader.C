@@ -202,7 +202,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
 
             int nSpatialDimsGt1 = 0;
             int maxDim = dimSizes[vardims[0]];
-            bool hasTimeDimension = false;
+            //bool hasTimeDimension = false;
             for(int dim = 0; dim < varndims; ++dim)
             {
                 int d = dimSizes[vardims[dim]];
@@ -215,13 +215,13 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                 if(d > maxDim)
                     maxDim = d;
 
-                if(vardims[dim] == timedim)
-                    hasTimeDimension = true;
+                //if(vardims[dim] == timedim)
+                //    hasTimeDimension = true;
             }
 
-            int requiredDims = 2;
-            if(hasTimeDimension)
-                requiredDims = 3;
+            //int requiredDims = 2;
+            //if(hasTimeDimension)
+            //    requiredDims = 3;
 
             if(nSpatialDimsGt1 < 2 || nSpatialDimsGt1 > 3)
             {
@@ -271,7 +271,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                 // so time-varying and non-time-varying variables can share
                 // the same dimension if possible.
                 int nSpatialDims = 0;
-                for(int j = 0; j < meshDims.size(); ++j)
+                for(size_t j = 0; j < meshDims.size(); ++j)
                 {
                     if(meshDims[j] != TIME_DIMENSION)
                     {
@@ -290,7 +290,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                 }
                 // Print the meshDimensions.
                 debug4 << mName << "meshName=" << meshName << ", dims[x,y[,z][,t]]=";
-                for(int j = 0; j < meshDims.size(); ++j)
+                for(size_t j = 0; j < meshDims.size(); ++j)
                     debug4 << meshDims[j] << ",";
                 debug4 << endl;
 
@@ -302,7 +302,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                     // Filter out time from the dimensions so time varying and static
                     // variables can share the same mesh.
                     intVector meshDimsWithoutTime;
-                    for(int dim = 0; dim < meshDims.size(); ++dim)
+                    for(size_t dim = 0; dim < meshDims.size(); ++dim)
                         if(meshDims[dim] != TIME_DIMENSION)
                             meshDimsWithoutTime.push_back(meshDims[dim]);
 
@@ -377,8 +377,9 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                 varToDimensions[varname] = meshDims;
 
                 debug4 << "Variable " << varname << " on mesh " << meshName << " with size: {";
-                for(int j = 0; j < meshDims.size(); ++j)
+                for(size_t j = 0; j < meshDims.size(); ++j) {
                     debug4 << meshDims[j] << ", ";
+                }
                 debug4 << "}" << endl;
 
                 // Add a global variable too.
@@ -476,7 +477,7 @@ debug4 << "ncells=" << ncells << endl;
             else
             {
                 float poleAngle = float(ip) / float(Y_RES) * M_PI;
-                float sign = (poleAngle > M_PI_2) ? -1. : 1;
+                //float sign = (poleAngle > M_PI_2) ? -1. : 1;
                 float y = radius * cos(poleAngle) * -1;
                 float yrad = radius * sin(poleAngle);
 
@@ -659,7 +660,7 @@ avtCCSMReader::GetMesh(int timestate, const char *var)
         int nValidDims = 0;
         int nnodes = 1;
         debug4 << mName << "meshDims={";
-        for(int i = 0; i < mesh->second.size(); ++i)
+        for(size_t i = 0; i < mesh->second.size(); ++i)
         {
             debug4 << mesh->second[i] << ", ";
             if(mesh->second[i] != TIME_DIMENSION)
@@ -923,12 +924,13 @@ avtCCSMReader::GetVar(int timestate, const char *var)
     int nElems = 1;
 
     debug4 << mName << "meshDims={";
-    for(int i = 0; i < minfo->second.size(); ++i)
+    for(size_t i = 0; i < minfo->second.size(); ++i) {
          debug4 << minfo->second[i] << ", ";
+    }
     debug4 << "}" << endl;
 
-    int index = minfo->second.size()-1;
-    for(int i = 0; i < minfo->second.size(); ++i, --index)
+    size_t index = minfo->second.size()-1;
+    for(size_t i = 0; i < minfo->second.size(); ++i, --index)
     {
         if(minfo->second[i] == TIME_DIMENSION)
         {

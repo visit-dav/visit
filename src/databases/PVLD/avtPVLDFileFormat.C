@@ -70,6 +70,7 @@
 #include <algorithm>
 #include <stdexcept>
 
+using     std::vector;
 using     std::string;
 
 //#define DEBUG_PRINT
@@ -795,7 +796,7 @@ GetAuxiliaryData( const char *varname, int domain,
                         0, // mix_zone array
                         0  // mix_vf array
                     );
-                    for( int i=0; i<mat.size(); i++ )
+                    for( size_t i=0; i<mat.size(); i++ )
                         delete [] mnames[i];
                     delete [] mnames;
 
@@ -2363,7 +2364,7 @@ avtPVLDFileFormat::MakePoints(vector<float> &crd)
         int nvrt = crd.size() / 3;
         pts->SetNumberOfPoints(nvrt);
         float *pt = (float *) pts->GetVoidPointer(0);
-        for( int i=0; i<crd.size(); i++ )
+        for( size_t i=0; i<crd.size(); i++ )
             pt[i] = crd[i];
     }
     return pts;
@@ -2396,7 +2397,7 @@ avtPVLDFileFormat::MakePoints(vector<float> &crd)
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nvrt = crd.size()/3;
+    int nvrt = crd.size()/3; (void) nvrt;
     int nele = elm.size()/8;
 
     vtkPoints *pts = MakePoints(crd);
@@ -2574,7 +2575,7 @@ vtkFloatArray*
 avtPVLDFileFormat::GenerateVariable( const vector<int>& dims, vector<float>& dat )
 {
     int ncmp = 1;
-    for( int i=1; i<dims.size(); i++ )
+    for( size_t i=1; i<dims.size(); i++ )
         ncmp *= dims[i];
     int msz  = dims[0];
 
@@ -2676,7 +2677,7 @@ AddSolidIndexVariables( avtDatabaseMetaData *md )
         if( iv.names_.size()>0 )
         {
             const string& meshname = PVLD_Reader::solid_name;
-            for( int i=0; i<iv.names_.size(); i++ )
+            for( size_t i=0; i<iv.names_.size(); i++ )
             {
                 const string& idxname = iv.names_[i];
                 const vector<string>& dsname  = iv.dsnames_[i];
@@ -2698,7 +2699,7 @@ AddShellIndexVariables( avtDatabaseMetaData *md )
         if( iv.names_.size()>0 )
         {
             const string& meshname = PVLD_Reader::shell_name;
-            for( int i=0; i<iv.names_.size(); i++ )
+            for( size_t i=0; i<iv.names_.size(); i++ )
             {
                 const string& idxname = iv.names_[i];
                 const vector<string>& dsname  = iv.dsnames_[i];
@@ -2723,7 +2724,7 @@ AddIndexVariables( const string& meshname,
 {
     string basename = PVLD_Reader::ComposeNames( meshname, idxname );
 
-    for( int i=0; i<dsname.size(); i++ )
+    for( size_t i=0; i<dsname.size(); i++ )
     {
         const string& name = dsname[i];
         const vector<int>& dims = dsdims[i];

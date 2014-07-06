@@ -170,7 +170,7 @@ AMRreaderWithLevels::MakeOctTree()
     first_subdivide8(xMin, yMin, zMin, xMax, yMax, zMax, p.key, maxLevels);
 
     // Make a map of bid to key.
-    for(int i = 0; i < patches.size(); ++i)
+    for(size_t i = 0; i < patches.size(); ++i)
         blkkey2bid[patches[i].key] = i;
 }
 

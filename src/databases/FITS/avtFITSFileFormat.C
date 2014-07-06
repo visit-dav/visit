@@ -217,7 +217,7 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
             if(hdutype == IMAGE_HDU)
             {
                 debug4 << mName << "HDU " << hdu << " contains an image" << endl;
-                int status2 = 0;
+                //int status2 = 0;
                 char value[FLEN_VALUE];
                 std::string objname, bunit, xlabel, ylabel, zlabel;
 
@@ -563,7 +563,7 @@ avtFITSFileFormat::GetMesh(const char *meshname)
             {
                 for(int i = 0; i < 3; ++i)
                 {
-                    if(i < pos->second.size())
+                    if(i < (int)pos->second.size())
                         mdims[i] = pos->second[i];
                     else
                         mdims[i] = 1;
@@ -668,7 +668,7 @@ avtFITSFileFormat::GetVar(const char *varname)
             EXCEPTION1(InvalidVariableException, varname);
         }
         long nelements = 1;
-        for(int i = 0; i < mit->second.size(); ++i)
+        for(size_t i = 0; i < mit->second.size(); ++i)
             nelements *= mit->second[i];
 
         // Allocate the VTK return array.
@@ -749,7 +749,7 @@ avtFITSFileFormat::GetVectorVar(const char *varname)
             EXCEPTION1(InvalidVariableException, varname);
         }
         long nelements = 1, n_xy_elements = 1;
-        int i;
+        size_t i;
         for(i = 0; i < mit->second.size(); ++i)
             nelements *= mit->second[i];
         for(i = 0; i < mit->second.size()-1; ++i)
@@ -787,7 +787,7 @@ avtFITSFileFormat::GetVectorVar(const char *varname)
         float *r = pixels;
         float *g = pixels + n_xy_elements;
         float *b = pixels + n_xy_elements*2;
-        for(i = 0; i < n_xy_elements; ++i)
+        for(i = 0; i < (size_t)n_xy_elements; ++i)
         {
             *rgba++ = *r++;
             *rgba++ = *g++;

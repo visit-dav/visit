@@ -156,7 +156,8 @@ string SimpleNode::getNodeSummary(double* values, Node* node){
                             value = symbolTableEntry->getExpression()->evaluateVector(values);    
                         }    
                         char chrs[1000];    
-                        sprintf(chrs, "\t%s = %lf\n\0", symbolTableEntry->getName().c_str(), value);    
+                        sprintf(chrs, "\t%s = %lf\n", symbolTableEntry->getName().c_str(), value);    
+                        chrs[999] = '\0';
                         errorMsg += chrs;    
                     } else if (symbolTableEntry->getIndex() > -1) {    
                         if (values == NULL) {    
@@ -169,7 +170,8 @@ string SimpleNode::getNodeSummary(double* values, Node* node){
                             value = values[symbolTableEntry->getIndex()];    
                         }    
                         char chrs[1000];    
-                        sprintf(chrs, "\t%s = %lf\n\0", symbolTableEntry->getName().c_str(), value);    
+                        sprintf(chrs, "\t%s = %lf\n", symbolTableEntry->getName().c_str(), value);    
+                        chrs[999] = '\0';
                         errorMsg += chrs;    
                     } else {    
                         errorMsg += "\t" + symbols[i] + " = <<<WRONG BINDING>>>\n";    

@@ -109,6 +109,7 @@ double VCell::Expression::evaluateVectorTree(double* values)
     } catch (Exception& ex) {    
         Exception::rethrowException(ex, ex.getMessage() + " in " + rootNode->getNodeSummary(values, rootNode));    
     }    
+    return 0; //TODO: check return value 
 }    
     
 double VCell::Expression::evaluateVector(double* values)    
@@ -118,6 +119,7 @@ double VCell::Expression::evaluateVector(double* values)
     } catch (Exception& ex) {    
         Exception::rethrowException(ex, ex.getMessage()+ " in " + rootNode->getNodeSummary(values, rootNode));    
     }    
+    return 0; //TODO: check return value
 }    
     
 void VCell::Expression::parseExpression(string exp)    

@@ -77,8 +77,7 @@ using     namespace std;
 // ****************************************************************************
 
 avtparaDIS_tecplotFileFormat::avtparaDIS_tecplotFileFormat(const char *filename)
-  : avtSTSDFileFormat(filename), mNumElems(0), mNumPoints(0), mNumVars(0), 
-    mFilename(filename),
+  : avtSTSDFileFormat(filename), mFilename(filename), mNumElems(0), mNumPoints(0), mNumVars(0), 
     mRotateTecplotPoints(false), mOldOrientation(0,0,1), mNewOrientation(0,0,1)
 {
     // INITIALIZE DATA MEMBERS
@@ -157,7 +156,7 @@ bool avtparaDIS_tecplotFileFormat::ParseTecplotHeader(ifstream &tecplotfile, boo
         vector<string> tokens = Split(lines, ','); 
         // now need to store the variable names... 
         if (tokens.size() > 3) {
-          int varnum = 3; 
+          size_t varnum = 3; 
           while (varnum < tokens.size()) {
             mVariableNames.push_back(Strip(tokens[varnum]));
             ++varnum;
@@ -210,7 +209,7 @@ bool avtparaDIS_tecplotFileFormat::ParseTecplotHeader(ifstream &tecplotfile, boo
         mNumVars = tokens.size()-3;
         debug2 << "Setting mNumVars to " << mNumVars << endl; 
         int i=0; 
-        while (i<mNumVars) {
+        while (i<(int)mNumVars) {
           string varname = string("V")+doubleToString(i); 
           mVariableNames.push_back(varname); 
           ++i; 
@@ -287,7 +286,7 @@ bool avtparaDIS_tecplotFileFormat::PopulateTecplotMetaData(avtDatabaseMetaData *
     { 
       int varnum=0;
       string varname; 
-      while (varnum < mNumVars) {
+      while (varnum < (int)mNumVars) {
         varname = string("paraDIS_Tecplot_line_var_") +  mVariableNames[varnum]; 
         debug3 << "Adding tecplot variable " << varname << " to  grid mesh metadata." << endl;
         AddScalarVarToMetaData(md, varname.c_str(), "paraDIS_Tecplot_poly_mesh", AVT_NODECENT);
@@ -450,7 +449,7 @@ void avtparaDIS_tecplotFileFormat::AddCellToMesh(vtkUnstructuredGrid *linemesh, 
     debug5 << "inserting quadrilateral: " << arrayToString(ip, 4) << endl; 
     linemesh->InsertNextCell(VTK_QUAD, 4, nodeIndices);
    } else if (mFileType == "BRICK") {
-    int index, indexnum = 0; 
+    int index, indexnum = 0; (void) index; (void) indexnum;
     // 3 segments connected to vertex 0
     nodeIndices[0] = hex[0]-1;
     nodeIndices[1] = hex[1]-1; 
@@ -539,9 +538,9 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
   //rclib::Point<float> pointloc; 
   float pointloc[3]; 
   float junk; 
-  int index, varnum; 
+  int index, varnum;  (void) index;
   vector<rclib::Point<float> > tecplotPoints;
-  vtkPoints *linepoints = NULL; 
+  vtkPoints *linepoints = NULL; (void) linepoints;
   vtkPoints *points =  vtkPoints::New();
   points->SetNumberOfPoints(mNumPoints); 
   
@@ -553,7 +552,7 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
   // accept scientific notation
   tecplotfile.setf(ios::scientific, ios::floatfield); 
   
-  while (point < mNumPoints) {
+  while ((size_t)point < mNumPoints) {
     tecplotfile >> pointloc[0] >> pointloc[1] >> pointloc[2]; 
     debug5 << "Read point: (" << pointloc[0] << ", " << pointloc[1] 
            << ", " << pointloc[2] << ")" << endl;
@@ -575,7 +574,7 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
   if (mRotateTecplotPoints) {
     debug2 << "Rotating points" << endl;
     rclib::RotatePoints(mOldOrientation, mNewOrientation, tecplotPoints); 
-    int nodenum = 0; 
+    size_t nodenum = 0; 
     float location[3];       
     while (nodenum < mNumPoints) {
       tecplotPoints[nodenum].Get(location); 
@@ -593,7 +592,7 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
     debug2 << "Filling in trivial connectivity for point mesh" << endl; 
     point = 0; 
     vtkIdType onevertex[1]; 
-    while (point < mNumPoints) {
+    while ((size_t)point < mNumPoints) {
       *onevertex = point; 
       mesh->InsertNextCell(VTK_VERTEX, 1, onevertex); 
       ++point; 
@@ -610,15 +609,16 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
       throw string("Unknown tecplot file format: ")+mFileType;      
     }
     vector<int> cell; 
-    while (elem < mNumElems) {
+    while ((size_t)elem < mNumElems) {
       cell.clear(); 
       int index, i=0; 
       debug5 << "Found element with vertices: ("; 
       while (i++<vertsPerElem) {
         tecplotfile >> index; 
         debug5 << index; 
-        if (i<vertsPerElem)
+        if (i<vertsPerElem) {
           debug5 << ", "; 
+        }
         cell.push_back(index); 
       }
       debug5 << ")"<< endl; 
@@ -688,7 +688,7 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
   
   // first look for the "constantvar" variable, it is special
   if (string(varname) == "constantvalue") {
-    int pointNum = 0;
+    size_t pointNum = 0;
     float f = 1.0; 
     debug4 << "Inserting "<<mNumPoints << " constant variable values: "<<endl;
     while (pointNum < mNumPoints) {
@@ -709,7 +709,7 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
       Note that it does not matter if this is the line mesh or the 
       point mesh; the code is identical, so no check for that is done. 
   */ 
-  int varnum = 0; 
+  size_t varnum = 0; 
   while (varnum < mNumVars) {
     string::size_type pos = string(varname).rfind(mVariableNames[varnum]);
     if (pos != string::npos) {      
@@ -737,13 +737,13 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
   tecplotfile.setf(ios::scientific, ios::floatfield); 
   double junk; 
   float f; 
-  int pointNum = 0; 
+  size_t pointNum = 0; 
   debug4 << "Inserting "<<mNumPoints << " variable values: "<<endl; 
   try {
     while (pointNum < mNumPoints) {
       long varindex = 0; 
       tecplotfile >> junk >> junk >> junk; // location
-      while (varindex++ < varnum-1) {
+      while (varindex++ < (long)varnum-1) {
         tecplotfile >> junk; 
       } 
       tecplotfile >> f; 
@@ -755,7 +755,7 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
       debug5 << f << "\t" ; 
       
       ++pointNum; 
-      if (!(pointNum % 10)) debug5 << endl; 
+      if (!(pointNum % 10)) { debug5 << endl; }
       if (!tecplotfile) {
         throw string("File integrity failure (failbit is set)"); 
       }     

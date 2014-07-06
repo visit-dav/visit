@@ -497,8 +497,9 @@ avtLODIParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
                 sourceids.push_back(name);
 
-                if(i > 0)
+                if(i > 0) {
                     debug4 << ", ";
+                }
                 debug4 << name;
             }
             debug4 << "}" << endl;
@@ -774,7 +775,7 @@ avtLODIParticleFileFormat::GetVar(int ts, const char *var)
         {\
             T *values = new T[nPts];\
             int status = FUNC(fileObject->GetFileHandle(),\
-                              varId, starts, counts, values);\
+                              varId, starts, counts, values); (void) status;\
             VTK *arr = VTK::New();\
             arr->Allocate(nPts);\
             vtkIdType index = 0;\
@@ -877,7 +878,7 @@ avtLODIParticleFileFormat::GetAuxiliaryData(const char *var, int ts,
             // Create matnos and names arrays so we can create an avtMaterial.
             int *matnos = new int[sourceids.size()];
             char **names = new char *[sourceids.size()];
-            for(int i = 0; i < sourceids.size(); ++i)
+            for(size_t i = 0; i < sourceids.size(); ++i)
             {
                 matnos[i] = i + 1;
                 names[i] = (char *)sourceids[i].c_str();

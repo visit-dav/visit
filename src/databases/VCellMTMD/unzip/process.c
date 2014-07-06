@@ -785,7 +785,7 @@ static int do_seekable(__G__ int lastchance)        /* return PK-type error code
 #endif
         {
 #ifndef SFX
-            long tmp = G.extra_bytes;
+            long tmp = G.extra_bytes; (void) tmp;
 #endif
 
             G.extra_bytes = 0;

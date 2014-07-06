@@ -105,12 +105,12 @@ openGroups()
   node_id=solid_id=shell_id=particle_id=surf_id=tied_id=sph_id=-1;
 
   hsize_t nobjs;
-  herr_t  err = H5Gget_num_objs( file_id, &nobjs );
+  herr_t  err = H5Gget_num_objs( file_id, &nobjs ); (void) err;
   for( hsize_t i=0; i<nobjs; i++ ) {
     int type = H5Gget_objtype_by_idx( file_id, i );
     if( type == H5G_GROUP ) {
       char name[1000];
-      ssize_t l= H5Gget_objname_by_idx( file_id, i, name, 1000 );
+      ssize_t l= H5Gget_objname_by_idx( file_id, i, name, 1000 ); (void)l;
 
       hid_t gid = H5Gopen1( file_id, name );
 
@@ -324,7 +324,7 @@ getMaterialTitles( hid_t gid )
 
     char** rd = new char*[ dims[0] ];
     rd[0] = new char[ sdim*dims[0] ];
-    for( int j=1; j<dims[0]; j++ )
+    for( size_t j=1; j<dims[0]; j++ )
       rd[j] = rd[j-1]+sdim;
 
     herr_t herr = H5Aread( aid, memtype, rd[0] );
@@ -337,7 +337,7 @@ getMaterialTitles( hid_t gid )
     }
     else {
       mat_titles[i] = rd[0];
-      for( int j=1; j<dims[0]; j++ )
+      for( size_t j=1; j<dims[0]; j++ )
     mat_titles[i] += rd[j];
     }
 
@@ -363,7 +363,7 @@ getNumberOfHV( hid_t gid )
     if( type!=H5G_DATASET ) continue;
 
     char name[101];
-    ssize_t namelen = H5Gget_objname_by_idx( gid, idx, name, 100 );
+    ssize_t namelen = H5Gget_objname_by_idx( gid, idx, name, 100 ); (void) namelen;
     if( strcmp( name, "NumberOfHistoryVariables" )!=0 ) continue;
 
     hid_t did = H5Dopen1( gid, name );
@@ -394,7 +394,7 @@ getNumberOfHV( hid_t gid )
     }
     H5Dclose(did);
 
-    for( int i=0;i<dims[0];i++ )
+    for( size_t i=0;i<dims[0];i++ )
       nn = nn>dat[i] ? nn : dat[i];
 
     delete [] dat;
@@ -440,7 +440,7 @@ GetDataSetInfo( int run, int grp,
   }
   if( idx>=nobj ) return 1;
 
-  ssize_t namelen;
+  ssize_t namelen; (void) namelen;
   namelen = H5Gget_objname_by_idx( gid, idx, name, strlen-1 );
   idx++;
 
@@ -518,7 +518,7 @@ hid_t VelodyneReader::
 openDataSet( hid_t gid, const char* name )
 {
   hsize_t nobj,idx;
-  herr_t herr = H5Gget_num_objs( gid, &nobj );
+  herr_t herr = H5Gget_num_objs( gid, &nobj ); (void) herr;
 
   for( idx=0; idx<nobj; idx++ ) {
     int type = H5Gget_objtype_by_idx( gid, idx );
@@ -573,7 +573,7 @@ readIntArray( hid_t gpid, const char* dsetname, int bufsz, int* buf, int* ndim, 
   }
 
   debug2 << "bufsz=" << bufsz << " \t " << "datasize=" << nt << "\n";
-  if( bufsz<nt ) {
+  if( (size_t)bufsz<nt ) {
     debug1 << "Buffer size is too small for dataset " << dsetname << " ("
        << bufsz << " vs. " << nt << ") in group " << gpid << ".\n";
     return -2;
@@ -619,7 +619,7 @@ readFltArray( hid_t gpid, const char* dsetname, int bufsz, float* buf, int* ndim
   }
 
   debug2 << "bufsz=" << bufsz << " \t " << "datasize=" << nt << "\n";
-  if( bufsz<nt ) {
+  if( (size_t)bufsz<nt ) {
     debug1 << "Buffer size is too small for dataset " << dsetname << " ("
        << bufsz << " vs. " << nt << ") in group " << gpid << ".\n";
     H5Dclose(dsid);
@@ -645,7 +645,7 @@ readFltArray( hid_t gpid, const char* dsetname, int bufsz, float* buf, int* ndim
       irev = -4;
     }
     else {
-      for( int i=0; i<nt; i++ ) 
+      for( size_t i=0; i<nt; i++ ) 
     buf[i] = ibuf[i];
     }
     delete [] ibuf;
@@ -690,7 +690,7 @@ readHVarray( hid_t gpid, int ind, int bufsz, float* buf, int* ndim, int* rdms )
     return 0;
   }
   nt=dims[0];
-  if( bufsz<nt ) {
+  if( (size_t)bufsz<nt ) {
     debug1 << "Buffer size is too small for dataset History Variables" << " ("
        << bufsz << " vs. " << nt << ") in group " << gpid << ".\n";
     H5Dclose(dsid);
@@ -711,7 +711,7 @@ readHVarray( hid_t gpid, int ind, int bufsz, float* buf, int* ndim, int* rdms )
   H5Dclose(dsid);
   // shift
   loc[0]=0;
-  for( int i=0; i<dims[0]; i++ ) 
+  for( size_t i=0; i<dims[0]; i++ ) 
     loc[i+1] += loc[i];
 
   //
@@ -745,7 +745,7 @@ readHVarray( hid_t gpid, int ind, int bufsz, float* buf, int* ndim, int* rdms )
   H5Dclose(dsid);
 
   // assign data
-  for( int i=0; i<nt; i++ ) {
+  for( size_t i=0; i<nt; i++ ) {
     if( ind<loc[i+1]-loc[i] )
       buf[i] = hv[ loc[i]+ind ];
     else
@@ -787,7 +787,7 @@ getMaterialSet( hid_t gpid, const char* matname, std::set<int>& mset )
     return -2;
   }
 
-  for( int i=0; i<nt; i++ )
+  for( size_t i=0; i<nt; i++ )
     mset.insert(mat[i]);
 
   delete [] mat;

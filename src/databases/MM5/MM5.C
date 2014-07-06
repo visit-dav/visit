@@ -116,7 +116,7 @@ void mm5p_swap_endian_32(unsigned char *ptr, int nelem)
 int mm5p_read_int(FILE *f)
 {
     int ret = 0;
-    fread((void *)&ret, sizeof(int), 1, f);
+    size_t res = fread((void *)&ret, sizeof(int), 1, f); (void) res;
     return ret;
 }
 
@@ -220,7 +220,7 @@ int mm5p_big_header_read(mm5_big_header_t *bh, FILE *f, int swap_endian)
 
     mm5p_skip_record_header(f);
 
-    fread(bh, sizeof(mm5_big_header_t), 1, f);
+    size_t res = fread(bh, sizeof(mm5_big_header_t), 1, f); (void) res;
 
     /* Swap endians if necessary. */
     if(swap_endian)
@@ -327,7 +327,7 @@ int mm5p_sub_header_read(mm5_sub_header_t *sh, FILE *f, int swap_endian)
 {
     mm5p_skip_record_header(f);
 
-    fread(sh, sizeof(mm5_sub_header_t), 1, f);
+    size_t res = fread(sh, sizeof(mm5_sub_header_t), 1, f); (void) res;
 
     mm5p_skip_record_trailer(f);
 
@@ -716,7 +716,7 @@ int mm5_file_read_field(mm5_file_t *f, const char *varname, int ts, float *dest)
         fseek(f->file, field->file_offset, SEEK_CUR);
 
         /* Read the variable into the array. */
-        fread((void*)dest, sizeof(float), n_elements, f->file);
+        size_t res = fread((void*)dest, sizeof(float), n_elements, f->file); (void) res;
         /* Swap endian.*/
         if(f->swap_endian)
             mm5p_swap_endian_32((unsigned char *)dest, n_elements);

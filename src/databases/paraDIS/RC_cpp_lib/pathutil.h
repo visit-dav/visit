@@ -22,7 +22,7 @@ inline string Dirname(string filename) {
   if (dirname[0] != '/')  {
     // need to switch to absolute path
     char wd[PATH_MAX]; // this is why I hate C programming -- there is no way to be sure about buffer overflows with this kind of crap lingering around
-    getcwd(wd, PATH_MAX);
+    char* res = getcwd(wd, PATH_MAX); (void) res;
 
     string::size_type loc = dirname.find("/");
     if (loc == string::npos) {

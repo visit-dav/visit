@@ -127,7 +127,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     disableDomainDecomposition = false;
 
     // Check options
-    bool idVarNameSpecified = false;
+    //bool idVarNameSpecified = false;
     if (readOpts != NULL)
         for (int i = 0; i < readOpts->GetNumberOfOptions(); ++i)
             if (readOpts->GetName(i) == "Use FastBit index")
@@ -456,7 +456,7 @@ avtH5PartFileFormat::GetAuxiliaryData(const char *var, int ts, const char *type,
 
             std::vector<avtDataSelection *> *ds = (std::vector<avtDataSelection *> *) s;
             std::vector<avtDataSelection *> drs;
-            for (int i = 0; i < ds->size(); ++i)
+            for (size_t i = 0; i < ds->size(); ++i)
             {
                 if ((strcmp((*ds)[i]->GetType(), "Data Range Selection") == 0) ||
                         ((strcmp((*ds)[i]->GetType(), "Identifier Data Selection") == 0)))
@@ -608,7 +608,7 @@ avtH5PartFileFormat::RegisterDataSelections(
 {
     int t1 = visitTimer->StartTimer();
 
-    time_t startTime = time(0);
+    //time_t startTime = time(0);
     debug5 << "Entering avtH5PartFileFormat::RegisterDataSelection()" << std::endl;
 #ifdef VERYVERBOSE
     std::cout << "Entering avtH5PartFileFormat::RegisterDataSelection(). useFastBitIndex is " << useFastBitIndex << std::endl;
@@ -642,7 +642,7 @@ avtH5PartFileFormat::RegisterDataSelections(
         }
         else
         {
-            for (int i = 0; i < selList.size(); ++i)
+            for (size_t i = 0; i < selList.size(); ++i)
             {
                 if (std::string(selList[i]->GetType()) ==
                         std::string("Data Range Selection"))
@@ -884,7 +884,7 @@ avtH5PartFileFormat::SelectParticlesToRead()
             h5part_int64_t myStart = h5part_int64_t(PAR_Rank() * particlesPerProc);
             h5part_int64_t myEnd = std::min(h5part_int64_t((PAR_Rank()+1) * particlesPerProc),
                     h5part_int64_t(queryResults.size()));
-            if (myStart < queryResults.size())
+            if (myStart < (h5part_int64_t)queryResults.size())
             {
 #ifdef VERYVERBOSE
                 std::cout << myEnd - myStart << " particles from query." << std::endl;
@@ -1066,9 +1066,9 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
         { "x", "y", "z" }, {"r", "phi", "z" } , { "r", "phi", "theta" }
     };
     h5part_int64_t coordValType = particleVarNameToTypeMap[coordNames[coordType][0]]; 
-    if (coordValType != particleVarNameToTypeMap[coordNames[coordType][1]] ||
-            (particleNSpatialDims > 2) &&
-            coordValType != particleVarNameToTypeMap[coordNames[coordType][2]]) 
+    if (coordValType != (h5part_int64_t)particleVarNameToTypeMap[coordNames[coordType][1]] ||
+            ((particleNSpatialDims > 2) &&
+            coordValType != (h5part_int64_t)particleVarNameToTypeMap[coordNames[coordType][2]])) /// TODO: check parenthsis placement logic 
     {
         EXCEPTION2(NonCompliantFileException, "H5Part GetParticleMesh",
                 "Coordinate data sets do not have the same value type (double, float, ...).");
@@ -1641,7 +1641,7 @@ avtH5PartFileFormat::GetVectorVar(int timestate, const char *varname)
         (subBlockDims[5] - subBlockDims[4] + 1);
 
     void* vecsRead[3] = { 0, 0, 0 };
-    h5part_int64_t status = H5PART_SUCCESS; 
+    h5part_int64_t status = H5PART_SUCCESS; (void) status;
     if (it->second == H5PART_INT64)
     {
         for (int i=0; i<3; ++i)
@@ -1690,7 +1690,8 @@ avtH5PartFileFormat::GetVectorVar(int timestate, const char *varname)
     }
     else
     {
-        vtkFloatArray *array = vtkFloatArray::New();
+        //vtkFloatArray *array = vtkFloatArray::New(); ///TODO: original code?
+        array = vtkFloatArray::New(); //TODO: check fix
         // FIXME: Possibly check for integer and create an integer array
     }
 
@@ -1984,13 +1985,13 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     std::string              condition = spec->GetCondition();
 
     int                     boundsSize = spec->GetBounds().size();
-    VISIT_LONG_LONG *           counts = spec->GetCounts();
+    //VISIT_LONG_LONG *           counts = spec->GetCounts();
 
 #ifdef VERYVERBOSE
     std::cout << "Constructing histogram for time step " << timestep << std::endl;
 #endif
 
-    for (int i=0; i<numBins.size(); i++) 
+    for (size_t i=0; i<numBins.size(); i++) 
     {
         if (regularBinning)
         {
@@ -2010,7 +2011,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
         EXCEPTION1(ImproperUseException, "No variables for histogram specified.");
     }
 
-    for (int i=0; i<variables.size(); i++)
+    for (size_t i=0; i<variables.size(); i++)
     {
         bool found = reader.checkForVariable(variables[i]);
         if (!found)
@@ -2023,7 +2024,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
 
     if (boundsSpecified)
     {
-        if (variables.size() != boundsSize)
+        if (variables.size() != (size_t)boundsSize)
         {
             debug5 << method << " Histogram Spec variable list does not match bounds ";
             debug5 << " list size " << std::endl;
@@ -2053,7 +2054,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     // If bounds are specified then copy the extends into the histogram
     if (boundsSpecified)
     {
-        for (int i=0; i<variables.size(); i++)
+        for (size_t i=0; i<variables.size(); i++)
         {
             begins[i] = spec->GetBounds()[i][0];
             ends[i]   = spec->GetBounds()[i][spec->GetBounds()[i].size()-1];
@@ -2072,7 +2073,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
 #ifdef VERYVERBOSE
         std::cout << method << "Detected that bounds are not set. Setting them too." << std::endl;
 #endif
-        for(int i=0; i<variables.size() ; i++)
+        for(size_t i=0; i<variables.size() ; i++)
         {
             std::vector<int64_t> dims;
             BaseFileInterface::DataType type;
@@ -2311,7 +2312,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
 
     // Iterate over all the selections
     idVariableName = H5PART_DEFAULT_ID_VARIABLE_NAME;
-    for (int i=0; i<drs.size(); ++i)
+    for (size_t i=0; i<drs.size(); ++i)
     {
         if (std::string(drs[i]->GetType()) == std::string("Data Range Selection"))
         {
@@ -2412,7 +2413,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
             else
             {
                 returnIds.resize(selectionQueryResults.size());
-                for (int i=0; i<selectionQueryResults.size(); ++i)
+                for (size_t i=0; i<selectionQueryResults.size(); ++i)
                     returnIds[i] = idList[i];
                 delete[] idList;
             }
@@ -2428,7 +2429,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
             else
             {
                 returnIds.resize(selectionQueryResults.size());
-                for (int i=0; i<selectionQueryResults.size(); ++i)
+                for (size_t i=0; i<selectionQueryResults.size(); ++i)
                     returnIds[i] = idList[i];
                 delete[] idList;
             }
@@ -2444,7 +2445,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
             else
             {
                 returnIds.resize(selectionQueryResults.size());
-                for (int i=0; i<selectionQueryResults.size(); ++i)
+                for (size_t i=0; i<selectionQueryResults.size(); ++i)
                     returnIds[i] = idList[i];
                 delete[] idList;
             }
@@ -2493,7 +2494,7 @@ void avtH5PartFileFormat::ConstructIdQueryString(
 {
     int t1 = visitTimer->StartTimer();
 
-    time_t startTime = time(0);
+    //time_t startTime = time(0);
 
     id_string.clear();
 
@@ -2507,7 +2508,7 @@ void avtH5PartFileFormat::ConstructIdQueryString(
 
         // FIXME: Precision always sufficient? In particular with floats this
         // may not be true.
-        for (int j=0; j<identifiers.size()-1; j++)
+        for (size_t j=0; j<identifiers.size()-1; j++)
             queryStream << setprecision(32) << identifiers[j] << ", ";
         queryStream << setprecision(32) << identifiers[identifiers.size()-1] << " ))";
 

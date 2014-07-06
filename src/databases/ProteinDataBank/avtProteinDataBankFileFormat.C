@@ -129,7 +129,7 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
     in.close();
 
     bonds.clear();
-    for (int i=0; i<allatoms.size(); i++)
+    for (size_t i=0; i<allatoms.size(); i++)
     {
         allatoms[i].clear();
     }
@@ -246,7 +246,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             avtScalarMetaData *cmp_smd =
                 new avtScalarMetaData(name_cmp, name_mesh, AVT_NODECENT);
             cmp_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-            for (int a=0; a<compoundNames.size(); a++)
+            for (size_t a=0; a<compoundNames.size(); a++)
                 cmp_smd->AddEnumNameValue(compoundNames[a], a);
             md->Add(cmp_smd);
             md->Add(new avtLabelMetaData(name_cmpnm, name_mesh, AVT_NODECENT));
@@ -303,7 +303,7 @@ vtkDataSet *
 avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
 {
     int model = 0;
-    const char *meshname = orig_meshname;
+    const char *meshname = orig_meshname; (void) meshname;
     if (sscanf(orig_meshname, "models/model_%02d/", &model))
     {
         meshname = &(orig_meshname[16]);
@@ -316,14 +316,14 @@ avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
     ReadAtomsForModel(model);
 
     vector<Atom> &atoms = allatoms[model];
-    int natoms = atoms.size();
+    //size_t natoms = atoms.size();
 
     vtkPolyData *pd  = vtkPolyData::New();
     vtkPoints   *pts = vtkPoints::New();
     pd->SetPoints(pts);
 
     pts->SetNumberOfPoints(atoms.size());
-    for (int j = 0 ; j < atoms.size() ; j++)
+    for (size_t j = 0 ; j < atoms.size() ; j++)
     {
         pts->SetPoint(j,
                       atoms[j].x,
@@ -333,7 +333,7 @@ avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
  
     vtkCellArray *lines = vtkCellArray::New();
     pd->SetLines(lines);
-    for (int k = 0 ; k < bonds.size() ; k++)
+    for (size_t k = 0 ; k < bonds.size() ; k++)
     {
         lines->InsertNextCell(2);
         lines->InsertCellPoint(bonds[k].first);
@@ -342,7 +342,7 @@ avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
 
     vtkCellArray *verts = vtkCellArray::New();
     pd->SetVerts(verts);
-    for (int k = 0 ; k < atoms.size() ; k++)
+    for (size_t k = 0 ; k < atoms.size() ; k++)
     {
         verts->InsertNextCell(1);
         verts->InsertCellPoint(k);
@@ -414,7 +414,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].atomicnumber;
         }
@@ -426,7 +426,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].residuenumber;
         }
@@ -438,7 +438,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].resseq;
         }
@@ -450,7 +450,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].backbone ? 1 : 0;
         }
@@ -462,7 +462,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].compound;
         }
@@ -474,7 +474,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].occupancy;
         }
@@ -486,7 +486,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(atoms.size());
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].tempfactor;
         }
@@ -499,7 +499,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         labels->SetNumberOfComponents(5);
         labels->SetNumberOfTuples(atoms.size());
         char *cptr = (char *)labels->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             memcpy(cptr, atoms[i].name, 5);
             cptr += 5;
@@ -513,7 +513,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         labels->SetNumberOfComponents(4);
         labels->SetNumberOfTuples(atoms.size());
         char *cptr = (char *)labels->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             memcpy(cptr, atoms[i].resname, 4);
             cptr += 4;
@@ -530,7 +530,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         char *cptr = (char *)labels->GetVoidPointer(0);
         memset(cptr, 0, maxlen*atoms.size());  // Initialize all of this for
                                             // purify, extents, etc.
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             const char *n = ResiduenameToLongName(atoms[i].resname);
             if(n != 0)
@@ -548,7 +548,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         labels->SetNumberOfComponents(3);
         labels->SetNumberOfTuples(atoms.size());
         char *cptr = (char *)labels->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             memcpy(cptr, atoms[i].element, 3);
             cptr += 3;
@@ -559,7 +559,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
     if (string(varname) == "compoundname")
     {
         int maxlen = 1;
-        for (int j=0; j<compoundNames.size(); j++)
+        for (size_t j=0; j<compoundNames.size(); j++)
         {
             int l = compoundNames[j].length() + 1;
             if (l > maxlen)
@@ -572,7 +572,7 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         char *cptr = (char *)labels->GetVoidPointer(0);
         memset(cptr, 0, maxlen*atoms.size());  // Initialize all of this for
                                                // purify, extents, etc.
-        for (int i=0; i<atoms.size(); i++)
+        for (size_t i=0; i<atoms.size(); i++)
         {
             strcpy(cptr, compoundNames[atoms[i].compound].c_str());
             cptr += maxlen;
@@ -1509,7 +1509,7 @@ ConnectRecord::ConnectRecord(const char *origline)
     line[31] = '\0';
 
     char record[7];
-    int n;
+    int n; (void) n;
     b[0] = -1;
     b[1] = -1;
     b[2] = -1;

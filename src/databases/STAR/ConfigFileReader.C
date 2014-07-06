@@ -143,7 +143,7 @@ void ConfigFileReader::readFile(FILE* infile)
     while(!feof(infile)) {
         char line[1024];
 
-        fgets(line, sizeof(line), infile);
+        char* res = fgets(line, sizeof(line), infile); (void) res;
 
         if(feof(infile))
             break;

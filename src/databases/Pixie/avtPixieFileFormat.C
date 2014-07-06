@@ -81,7 +81,7 @@
 #define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
-
+#include <avtGhostData.h>
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -334,13 +334,13 @@ avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 void
 avtPixieFileFormat::GetTimes(std::vector<double> &times)
 {
-    int nts = (nTimeStates < 1) ? 1 : nTimeStates;
+    size_t nts = (nTimeStates < 1) ? 1 : nTimeStates;
     double lastTime = 0.;
-    for(int i = 0; i < nts; ++i)
+    for(size_t i = 0; i < nts; ++i)
     {
         if(i < cycles.size())
         {
-            if (time_val.size() == nTimeStates)
+            if (time_val.size() == (size_t)nTimeStates)
             {
                 times.push_back(time_val[i]);
                 lastTime = time_val[i];
@@ -865,11 +865,11 @@ avtPixieFileFormat::DetermineVarDimensions(const VarInfo &info,
         varDims[1] = 1;
         varDims[2] = 1;
 
-        if(info.dims[0] > size1D)
+        if(info.dims[0] > (size_t)size1D)
             varDims[di++] = int(info.dims[0]);
-        if(info.dims[1] > size1D)
+        if(info.dims[1] > (size_t)size1D)
             varDims[di++] = int(info.dims[1]);
-        if(info.dims[2] > size1D)
+        if(info.dims[2] > (size_t)size1D)
             varDims[di++] = int(info.dims[2]);
     }
 
@@ -877,9 +877,9 @@ avtPixieFileFormat::DetermineVarDimensions(const VarInfo &info,
     // Determine the number of spatial dimensions of the variable.
     //
     nVarDims = 0;
-    if(info.dims[0] > size1D) ++nVarDims;
-    if(info.dims[1] > size1D) ++nVarDims;
-    if(info.dims[2] > size1D) ++nVarDims;
+    if(info.dims[0] > (size_t)size1D) ++nVarDims;
+    if(info.dims[1] > (size_t)size1D) ++nVarDims;
+    if(info.dims[2] > (size_t)size1D) ++nVarDims;
 }
 
 // ****************************************************************************
@@ -1110,7 +1110,7 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
             // remove offending chars from exprStr (spaces)
             std::string newExprStr;
-            for (int i = 0; i < exprStr.size(); i++)
+            for (size_t i = 0; i < exprStr.size(); i++)
             {
                 if (exprStr[i] != ' ')
                     newExprStr += exprStr[i];
@@ -1269,7 +1269,7 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
             if (i < nVarDims)
             {
                 coords[i]->SetNumberOfTuples(hyperslabDims[i]);
-                for (int j = 0; j < hyperslabDims[i]; j++)
+                for (size_t j = 0; j < hyperslabDims[i]; j++)
                     coords[i]->SetComponent(j, 0, it->second.start[I]+j);
             }
             else
@@ -2162,13 +2162,13 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 
                     // Strip off the "/Timestep #" prefix from the argument.
                     std::string::size_type index = varName.find("/", 1);
-                    if(index != -1)
+                    if(index != std::string::npos)
                         varName = varName.substr(index+1);
 
                     // Strip the timestep off of the file variable because
                     // we'll add that back later.
                     index = varInfo.fileVarName.find("/", 1);
-                    if(index != -1)
+                    if(index != std::string::npos)
                         varInfo.fileVarName = varInfo.fileVarName.substr(index+1);
                 }
                 else if(varName.size() > 0 && varName[0] == '/')
@@ -2182,7 +2182,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 
             // See if the variable's name contains any parenthesis. If so,
             // replace with square brackets.
-            for(int i = 0; i < varName.size(); ++i)
+            for(size_t i = 0; i < varName.size(); ++i)
             {
                 if(varName[i] == '(')
                     varName[i]=  '[';
@@ -2276,7 +2276,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
         break;
     case H5G_GROUP:
         // We found a time state, increment the number of time states.
-        if(info->level == 0 && varName.find("Timestep") != -1)
+        if(info->level == 0 && varName.find("Timestep") != std::string::npos)
         {
             debug4 << "Added time state" << endl;
             ++info->This->nTimeStates;

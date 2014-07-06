@@ -300,8 +300,8 @@ avtVelodyneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
   for( set<int>::const_iterator m=meshtypes.begin(); m!=meshtypes.end(); m++ ) {
     int num = reader_->GetMeshSize( *m );
     if( num>0 ) {
-      int ntd;
-      avtMeshType mtp;
+      int ntd = 3; ///TODO: check o fix for uninitialized var
+      avtMeshType mtp = AVT_UNSTRUCTURED_MESH; ///TODO: check on fix for uninitialized var
       switch( *m ) {
       case VelodyneReader::solid_type:
     ntd = 3;
@@ -360,7 +360,7 @@ avtVelodyneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if( strcmp( name, "Coordinate" )==0 ) continue;
     //if( strcmp( name, "Material" )==0 ) continue;
 
-    avtCentering  nzc;
+    avtCentering  nzc = AVT_ZONECENT; ///TODO: check on fix for uninitialized warning
     switch( *m ) {
     case VelodyneReader::solid_type:
     case VelodyneReader::shell_type:
@@ -396,9 +396,9 @@ avtVelodyneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //vmd->varDim = (int)dims[1];
         md->Add(vmd);
 
-        for( int d=0;d<dims[1];d++ ) {
+        for( size_t d=0;d<dims[1];d++ ) {
           char buf[100];
-          sprintf(buf,"%d",d);
+          sprintf(buf,"%ld",d);
           Expression *exp= new Expression;
           exp->SetName( composeName(meshname,name)+"_"+buf );
           exp->SetDefinition( "array_decompose(<"+composeName(meshname,name)+">,"+buf+")");
@@ -509,9 +509,9 @@ avtVelodyneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         vmd->hasUnits = false;
         vmd->varDim = (int)dims[1];
         md->Add(vmd);
-        for( int d=0;d<dims[1];d++ ) {
+        for( size_t d=0;d<dims[1];d++ ) {
           char buf[100];
-          sprintf(buf,"%d",d);
+          sprintf(buf,"%ld",d);
           Expression *exp= new Expression;
           exp->SetName( composeName(solid_name,name)+"_"+buf );
           exp->SetDefinition( "array_decompose(<"+composeName(solid_name,name)+">,"+buf+")");
@@ -528,9 +528,9 @@ avtVelodyneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         vmd->hasUnits = false;
         vmd->varDim = (int)dims[1];
         md->Add(vmd);
-        for( int d=0;d<dims[1];d++ ) {
+        for( size_t d=0;d<dims[1];d++ ) {
           char buf[100];
-          sprintf(buf,"%d",d);
+          sprintf(buf,"%ld",d);
           Expression *exp= new Expression;
           exp->SetName( composeName(shell_name,name)+"_"+buf );
           exp->SetDefinition( "array_decompose(<"+composeName(shell_name,name)+">,"+buf+")");
@@ -547,9 +547,9 @@ avtVelodyneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         vmd->hasUnits = false;
         vmd->varDim = (int)dims[1];
         md->Add(vmd);
-        for( int d=0;d<dims[1];d++ ) {
+        for( size_t d=0;d<dims[1];d++ ) {
           char buf[100];
-          sprintf(buf,"%d",d);
+          sprintf(buf,"%ld",d);
           Expression *exp= new Expression;
           exp->SetName( composeName(surface_name,name)+"_"+buf );
           exp->SetDefinition( "array_decompose(<"+composeName(surface_name,name)+">,"+buf+")");
@@ -700,8 +700,8 @@ avtVelodyneFileFormat::GetMesh(const char *meshname)
           "Failed to read in Node coordinates.\n" );
     }
 
-    int nnd; // = meshtype==VelodyneReader::solid_type ? 8 : 4;
-    int ctype; //  = meshtype==VelodyneReader::solid_type ? VTK_HEXAHEDRON : VTK_QUAD;
+    int nnd = 8; //TODO: check on fix for uninitialized var// = meshtype==VelodyneReader::solid_type ? 8 : 4;
+    int ctype = VTK_HEXAHEDRON; //TODO: check on fix for uninitialized var //  = meshtype==VelodyneReader::solid_type ? VTK_HEXAHEDRON : VTK_QUAD; 
     switch( meshtype ) {
     case VelodyneReader::solid_type:
       nnd=8;      ctype=VTK_HEXAHEDRON;
@@ -1107,7 +1107,7 @@ readdElements( int grp, int bufsz, int* elmt )
 {
   debug2 << "begin to read in " << grp << "th mesh elements...\n";
   int ierr = reader_->readMeshIntArray( grp, "Nodes",
-                    bufsz, elmt );
+                    bufsz, elmt ); (void) ierr;
   for( int i=0; i<bufsz; i++ ) {
     int gi = elmt[i];
     if( gi<idx_mn_ || gi>idx_mx_ ) {

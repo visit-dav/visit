@@ -949,7 +949,7 @@ avtBOUTFileFormat::ReadMesh()
     //
     // Read the coordinate information.
     //
-    bool err = false;
+    //bool err = false;
     TypeEnum rt = NO_TYPE, zt = NO_TYPE, zshiftt = NO_TYPE;
     int rndims = 0, zndims = 0, zshiftndims = 0;
     int *rdims = 0, *zdims = 0, *zshiftdims = 0;
@@ -961,12 +961,15 @@ avtBOUTFileFormat::ReadMesh()
         zndims != 2 || zdims == 0 || 
         zshiftndims != 2 || zshiftdims == 0)
     {
-        if (rndims != 2 || rdims == 0)
+        if (rndims != 2 || rdims == 0) {
             debug4 << mName << "error reading Rxy" << endl;
-        if (zndims != 2 || zdims == 0)
+        }
+        if (zndims != 2 || zdims == 0) {
             debug4 << mName << "error reading Zxy" << endl;
-        if (zshiftndims != 2 || zshiftdims == 0)
+        }
+        if (zshiftndims != 2 || zshiftdims == 0) {
             debug4 << mName << "error reading zShift" << endl;
+        }
 
         if (rdims != 0) delete [] rdims;
         if (zdims != 0) delete [] zdims;
@@ -1230,13 +1233,13 @@ avtBOUTFileFormat::CreateDiverterMesh(Subgrid &grid, int domain,
     //
     // Set the dimensions
     //
-    int istart, iend;
+    //int istart, iend;
     int *ijindex;
     int *inrep;
     int nxIn, nyIn;
     int nxOut;
-    istart  = grid.istart;
-    iend    = grid.iend;
+    //istart  = grid.istart;
+    //iend    = grid.iend;
     ijindex = grid.ijindex;
     inrep   = grid.inrep;
     nxIn    = grid.nxIn;
@@ -1311,13 +1314,13 @@ avtBOUTFileFormat::CreateMesh(Subgrid &grid, int iblock, int ndims,
     //
     // Set the dimensions
     //
-    int *jindex;
+    //int *jindex;
     int *ijindex;
     int *inrep;
     int *jnrep;
     int nxIn, nyIn;
     int nxOut, nyOut;
-    jindex    = grid.jindex;
+    //jindex    = grid.jindex;
     ijindex   = grid.ijindex;
     inrep     = grid.inrep;
     jnrep     = grid.jnrep;
@@ -1467,15 +1470,15 @@ avtBOUTFileFormat::CreateDiverterVar(Subgrid &grid, int domain, float *data,
     //
     // Calculate the block and subgrid indexes.
     //
-    int iblock, isubgrid;
+    int /*iblock,*/ isubgrid;
     if (gridType == oneXGrid)
     {
-        iblock = domain / N_DIVERTER_ONEX_SUB_MESHES;
+        //iblock = domain / N_DIVERTER_ONEX_SUB_MESHES;
         isubgrid = domain % N_DIVERTER_ONEX_SUB_MESHES;
     }
     else
     {
-        iblock = domain / N_DIVERTER_TWOX_SUB_MESHES;
+        //iblock = domain / N_DIVERTER_TWOX_SUB_MESHES;
         isubgrid = domain % N_DIVERTER_TWOX_SUB_MESHES;
     }
 
@@ -1551,23 +1554,23 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
     //
     // Set the dimensions
     //
-    int nb;
-    int istart, iend;
+    //int nb;
+    int istart/*, iend*/;
     int jstart[2], jend[2];
     int *jindex;
-    int *ijindex;
+    //int *ijindex;
     int *inrep;
     int *jnrep;
     int nxIn, nyIn;
     int nxOut, nyOut;
-    nb        = grid.nb;
+    //nb        = grid.nb;
     istart    = grid.istart;
     jstart[0] = grid.jstart[0];
     jstart[1] = grid.jstart[1];
     jend[0]   = grid.jend[0];
     jend[1]   = grid.jend[1];
     jindex    = grid.jindex;
-    ijindex   = grid.ijindex;
+    //ijindex   = grid.ijindex;
     inrep     = grid.inrep;
     jnrep     = grid.jnrep;
     nxIn      = grid.nxIn;
@@ -1950,8 +1953,9 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
             {
                 starts[i] = 0;
                 counts[i] = vdims[i];
-                if (i > 0)
+                if (i > 0) {
                     debug4 << ", ";
+                }
                 debug4 << vdims[i];
             }
             debug4 << "}" << endl;
@@ -1970,14 +1974,14 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
                 int nValues = nxRaw * nyRaw;
                 data = new float[nValues];
                 int status = nc_get_vara_float(varFileObject->GetFileHandle(),
-                                  varId, starts, counts, data);
+                                  varId, starts, counts, data); (void) status;
             }
             else
             {
                 int nValues = nxRaw * nyRaw * nz;
                 data = new float[nValues];
                 int status = nc_get_vara_float(varFileObject->GetFileHandle(),
-                                  varId, starts, counts, data);
+                                  varId, starts, counts, data); (void) status;
             }
 
             delete [] vdims;

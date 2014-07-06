@@ -178,7 +178,7 @@ char *do_wild(__G__ ZCONST char* wildspec)
 
         /* break the wildspec into a directory part and a wildcard filename */
         if ((G.wildname = (ZCONST char *)strrchr(wildspec, '/')) == NULL) {
-            G.dirname = ".";
+            strcpy(G.dirname , ".");
             G.dirnamelen = 1;
             G.have_dirname = FALSE;
             G.wildname = wildspec;

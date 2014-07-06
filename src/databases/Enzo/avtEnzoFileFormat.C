@@ -89,7 +89,7 @@ void avtEnzoFileFormat::Grid::PrintRecursive(vector<Grid> &grids, int level)
 {
     string indent(level*3, ' ');
     cerr << indent << ID << endl;
-    for (int i=0; i<childrenID.size(); i++)
+    for (size_t i=0; i<childrenID.size(); i++)
     {
         grids[childrenID[i]].PrintRecursive(grids,level+1);
     }
@@ -405,7 +405,7 @@ avtEnzoFileFormat::ReadHierachyFile()
             g.level = level;
             g.parentID = parent;
 
-            if (grids.size() != g.ID)
+            if ((int)grids.size() != g.ID)
             {
                 EXCEPTION2(InvalidFilesException, fnameH.c_str(),
                            "The grids in the hierarchy are currently "
@@ -556,7 +556,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
     int smallest_grid = 0;
     int smallest_grid_nzones = INT_MAX;
     bool found_grid_with_particles = false;
-    for (int i=1; i<grids.size(); i++)
+    for (size_t i=1; i<grids.size(); i++)
     {
         Grid &g = grids[i];
         if (found_grid_with_particles && g.numberOfParticles <= 0)
@@ -657,7 +657,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
         // open it if necessary.
         hsize_t n_objs;
         H5Gget_num_objs(rootId, &n_objs);
-        for (int var = 0 ; var < n_objs ; var++)
+        for (hsize_t var = 0 ; var < n_objs ; var++)
         {
             if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
             {
@@ -679,7 +679,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
         H5Gget_num_objs(rootId, &n_objs);
 
         // Okay, actually do the parsing work.
-        for (int var = 0 ; var < n_objs ; var++)
+        for (size_t var = 0 ; var < n_objs ; var++)
         {
             if (H5Gget_objtype_by_idx(rootId, var) == H5G_DATASET)
             {
@@ -878,7 +878,7 @@ avtEnzoFileFormat::ReadAllMetaData()
     UnifyGlobalExtents();
 
     // Convert the parent logical extents
-    for (int i=1; i<grids.size(); i++)
+    for (size_t i=1; i<grids.size(); i++)
     {
         grids[i].DetermineExtentsInParent(grids);
         grids[i].DetermineExtentsGlobally(numLevels, grids);
@@ -1132,20 +1132,20 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->Add(pmesh);
 
     // grid variables
-    for (int v = 0 ; v < varNames.size(); v++)
+    for (size_t v = 0 ; v < varNames.size(); v++)
     {
         AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_ZONECENT);
     }
 
     // particle variables
-    for (int p = 0 ; p < particleVarNames.size(); p++)
+    for (size_t p = 0 ; p < particleVarNames.size(); p++)
     {
         AddScalarVarToMetaData(md, particleVarNames[p], "particles",
                                AVT_NODECENT);
     }
 
     // tracer particle variables
-    for (int tp = 0 ; tp < tracerparticleVarNames.size(); tp++)
+    for (size_t tp = 0 ; tp < tracerparticleVarNames.size(); tp++)
     {
         AddScalarVarToMetaData(md, tracerparticleVarNames[tp],
             "tracer_particles", AVT_NODECENT);
@@ -1448,7 +1448,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 
         hsize_t n_objs;
         H5Gget_num_objs(rootId, &n_objs);
-        for (int var = 0 ; var < n_objs ; var++)
+        for (hsize_t var = 0 ; var < n_objs ; var++)
         {
             if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
             {
@@ -1689,7 +1689,7 @@ avtEnzoFileFormat::BuildDomainNesting()
             for (i = 1; i <= numGrids; i++)
             {
                 vector<int> childGrids;
-                for (int j = 0; j < grids[i].childrenID.size(); j++)
+                for (size_t j = 0; j < grids[i].childrenID.size(); j++)
                 {
                     // if this is allowed to be 1-origin, we will just pass
                     // the "children" array up -- the "-1" here at least needs
@@ -1884,7 +1884,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
 
         hsize_t n_objs;
         H5Gget_num_objs(rootId, &n_objs);
-        for (int var = 0 ; var < n_objs ; var++)
+        for (hsize_t var = 0 ; var < n_objs ; var++)
         {
             if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
             {

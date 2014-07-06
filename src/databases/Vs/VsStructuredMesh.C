@@ -57,7 +57,7 @@ bool VsStructuredMesh::initialize()
   
   // Determine num spatial dims. For a structured mesh, it is the size
   // of the last component of the dataset.
-  int index = ((VsDataset*)h5Object)->getDims().size() - 1;
+  //int index = ((VsDataset*)h5Object)->getDims().size() - 1;
 
   if (dims.empty())
   {
@@ -94,7 +94,7 @@ bool VsStructuredMesh::initialize()
     else {
       numSpatialDims = dims[0];
       numTopologicalDims = 0;
-      for (int i = 1; i < dims.size(); i++) {
+      for (size_t i = 1; i < dims.size(); i++) {
         if (dims[i] > 1) {
           numTopologicalDims++;
         }
@@ -185,7 +185,7 @@ void VsStructuredMesh::getNodeDims(std::vector<int>& dims) const
       dims.resize(dims.size()-1);
     else
     {
-      for( int i=0; i<dims.size()-1; ++i )
+      for( size_t i=0; i<dims.size()-1; ++i )
         dims[i] = dims[i+1];
 
       dims.resize(dims.size()-1);

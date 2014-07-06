@@ -1576,7 +1576,7 @@ void LataDB::read_data2_(LataDataFile & f,
   // Yeah: dirty specs make dirty code...
   entier size_in_file = fld.size_;
   entier nb_comp_in_file = fld.nb_comp_;
-  entier old_lata_hack = 0;
+  entier old_lata_hack = 0; (void) old_lata_hack;
   if (old_style_lata_ && (Motcle(fld.geometry_) != "INTERFACES") && (Motcle(fld.geometry_) != "PARTICULES")) {
     const LataDBField & som = get_field(0, fld.geometry_, "SOMMETS", "*");
     if (som.nb_comp_ == 2) {

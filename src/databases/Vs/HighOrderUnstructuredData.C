@@ -155,8 +155,8 @@ vtkDoubleArray* HighOrderUnstructuredData::getData(VsVariable* meta,
             << nodesPerCell << std::endl;
 
     int count = 0;
-    for (size_t i = 0; i < numCells; i++) {
-        for (size_t j = 0; j < nodesPerCell; j++) {
+    for (size_t i = 0; i < (size_t)numCells; i++) {
+        for (size_t j = 0; j < (size_t)nodesPerCell; j++) {
             double tVal = tvar[i * nodesPerCell * components + j * components
                     + tComp];
             array->SetValue(count, tVal);
@@ -279,7 +279,7 @@ void HighOrderUnstructuredData::fillQuadPoints(
     quadPoints.resize(subCellLocations.size() / dimensions);
     for (size_t i = 0; i < quadPoints.size(); i++) {
         quadPoints[i].resize(3);
-        for (size_t j = 0; j < dimensions; j++) {
+        for (size_t j = 0; j < (size_t)dimensions; j++) {
             quadPoints[i][j] = subCellLocations[i * dimensions + j];
         }
     }

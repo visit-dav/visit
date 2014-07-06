@@ -95,7 +95,7 @@ avtLinesFileFormat::avtLinesFileFormat(const char *fname)
 
 avtLinesFileFormat::~avtLinesFileFormat()
 {
-    for (int i = 0 ; i < lines.size() ; i++)
+    for (size_t i = 0 ; i < lines.size() ; i++)
     {
         lines[i]->Delete();
     }
@@ -324,7 +324,7 @@ avtLinesFileFormat::ReadFile(void)
     //
     int start = 0;
     cutoff.push_back((int)xl.size());  // Make logic easier.
-    for (int i = 0 ; i < cutoff.size() ; i++)
+    for (size_t i = 0 ; i < cutoff.size() ; i++)
     {
         if (start == cutoff[i])
         {

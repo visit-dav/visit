@@ -174,7 +174,7 @@ avtXSFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
         if (unitCell.size() > 0)
         {
             int index = 0;
-            if (timeState < unitCell.size())
+            if ((size_t)timeState < unitCell.size())
                 index = timeState;
             for (int i=0; i<9; i++)
                 mmd->unitCellVectors[i] = unitCell[index][i/3][i%3];
@@ -210,7 +210,7 @@ avtXSFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
                                                         3, 1,
                                                         AVT_UNSTRUCTURED_MESH);
         int index = 0;
-        if (timeState < unitCell.size())
+        if ((size_t)timeState < unitCell.size())
             index = timeState;
         for (int i=0; i<9; i++)
             mmd_bbox->unitCellVectors[i] = unitCell[index][i/3][i%3];
@@ -218,7 +218,7 @@ avtXSFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
     }
 
 
-    for (int meshid = 0; meshid < allMeshes.size(); meshid++)
+    for (size_t meshid = 0; meshid < allMeshes.size(); meshid++)
     {
         Mesh &m = allMeshes[meshid];
         avtMeshMetaData *mmd_grid = new avtMeshMetaData(m.name,
@@ -269,7 +269,7 @@ avtXSFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
         md->Add(mmd_grid);
 
         // and add all the variables
-        for (int v = 0; v < m.var_names.size(); v++)
+        for (size_t v = 0; v < m.var_names.size(); v++)
         {
             AddScalarVarToMetaData(md, m.var_names[v], m.name, AVT_NODECENT);
         }
@@ -309,7 +309,7 @@ avtXSFFileFormat::GetMesh(int timestate, const char *name)
         vtkPoints   *pts = vtkPoints::New();
 
         int index = 0;
-        if (unitCell.size() > timestate)
+        if (unitCell.size() > (size_t)timestate)
             index = timestate;
 
         pts->SetNumberOfPoints(8);
@@ -353,7 +353,7 @@ avtXSFFileFormat::GetMesh(int timestate, const char *name)
         pts->SetNumberOfPoints(currentAtoms.size());
         pd->SetPoints(pts);
         pts->Delete();
-        for (int j = 0 ; j < currentAtoms.size() ; j++)
+        for (size_t j = 0 ; j < currentAtoms.size() ; j++)
         {
             pts->SetPoint(j,
                           currentAtoms[j].x,
@@ -364,7 +364,7 @@ avtXSFFileFormat::GetMesh(int timestate, const char *name)
         vtkCellArray *verts = vtkCellArray::New();
         pd->SetVerts(verts);
         verts->Delete();
-        for (int k = 0 ; k < currentAtoms.size() ; k++)
+        for (size_t k = 0 ; k < currentAtoms.size() ; k++)
         {
             verts->InsertNextCell(1);
             verts->InsertCellPoint(k);
@@ -375,7 +375,7 @@ avtXSFFileFormat::GetMesh(int timestate, const char *name)
     else
     {
         // one of the grids; identify it in the list by name
-        for (int m = 0 ; m < allMeshes.size(); m++)
+        for (size_t m = 0 ; m < allMeshes.size(); m++)
         {
             Mesh &mesh = allMeshes[m];
             if (meshname == string(mesh.name))
@@ -467,10 +467,10 @@ avtXSFFileFormat::GetVar(int timestate, const char *varname)
         return scalars;
     }
 
-    for (int m = 0 ; m < allMeshes.size(); m++)
+    for (size_t m = 0 ; m < allMeshes.size(); m++)
     {
         Mesh &mesh = allMeshes[m];
-        for (int v = 0 ; v < mesh.var_names.size(); v++)
+        for (size_t v = 0 ; v < mesh.var_names.size(); v++)
         {
             if (mesh.var_names[v] == varname)
             {

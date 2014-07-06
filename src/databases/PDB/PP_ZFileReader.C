@@ -359,8 +359,9 @@ PP_ZFileReader::Initialize()
                 for(int i = 0; i < nCycles; ++i)
                 {
                     debug4 << cycles[i];
-                    if(i < nCycles - 1)
+                    if(i < nCycles - 1) {
                         debug4 << ", ";
+                    }
                 }
                 debug4 << ")" << endl;
             }
@@ -396,8 +397,9 @@ PP_ZFileReader::Initialize()
                 for(int i = 0; i < nTimes; ++i)
                 {
                     debug4 << times[i];
-                    if(i < nTimes - 1)
+                    if(i < nTimes - 1) {
                         debug4 << ", ";
+                    }
                 }
                 debug4 << ")" << endl;
             }
@@ -493,7 +495,7 @@ PP_ZFileReader::Initialize()
 bool
 PP_ZFileReader::VariableIsNodal(const std::string &var) const
 {
-    for(int i = 0; i < nodalVars.size(); ++i)
+    for(size_t i = 0; i < nodalVars.size(); ++i)
     {
         if(var == nodalVars[i])
             return true;
@@ -885,7 +887,7 @@ PP_ZFileReader::PopulateMaterialNames()
     if(haveMaterials)
     {
         debug4 << "Materials={";
-        for(int i = 0; i < materialNames.size(); ++i)
+        for(size_t i = 0; i < materialNames.size(); ++i)
             debug4 << materialNames[i].c_str() << ", ";
         debug4 << "}" << endl;
     }
@@ -1058,7 +1060,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
         for(int j = 0; j < numVars; ++j)
         {
             int length = 1;
-            int freeDimNums[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+            int freeDimNums[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}; (void) freeDimNums;
             int freeDimSizes[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
             int numFreeDims = 0;
             int numDims;
@@ -1087,7 +1089,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
                 }
 
                 // figure out which dims are the 'free' dims of the array
-                int dimCount = dimNum;
+                //int dimCount = dimNum;
                 dimNum = 0;
                 dimptr = PD_entry_dimensions(ep);
                 while(dimptr != 0)
@@ -3111,7 +3113,7 @@ PP_ZFileReader::GetRayVar(int state, const std::string &varStr)
                 float *ptr = (float *)fscalars->GetVoidPointer(0);
 
                 const int *irayu = (const int *)irayu_data->data;
-                int lastRay = irayu[irayu_data->dims[0]-1];
+                //int lastRay = irayu[irayu_data->dims[0]-1];
 
                 bool doLaser = varStr == "laserid";
                 int laser = 1;
@@ -3739,7 +3741,7 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                 //
                 MaterialEncoder mats;
                 mats.AllocClean(nCleanZones);
-                for(int i = 0; i < materialNames.size(); ++i)
+                for(size_t i = 0; i < materialNames.size(); ++i)
                     mats.AddMaterial(materialNames[i]);
 
                 //

@@ -1314,8 +1314,8 @@ LEOSFileReader::GetCurve(const string matDirName, const string varName,
     TypeEnum type;
 
     // loop to read x, then y values
-    double *xvals;
-    double *yvals;
+    double *xvals = NULL; ///TODO: check on fix for uninitialized vars
+    double *yvals = NULL; 
     for (i = 0; i < 2; i++)
     {
         string dataName = (i == 0) ? varInfo.xName : varInfo.vName;
@@ -1430,12 +1430,12 @@ LEOSFileReader::GetMesh(int state, const char *var)
     // the leading "meshes/", then it must be a curve that is being requested
     //
     bool isCurve = false;
-    int len = strlen(var);
+    size_t len = strlen(var);
     if (len < sizeof(meshesDirName)-1)
         isCurve = true;
     else
     {
-        for (i = 0; i < sizeof(meshesDirName)-1; i++)
+        for (i = 0; i < (int)sizeof(meshesDirName)-1; i++)
         {
             if (var[i] != meshesDirName[i])
             {

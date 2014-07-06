@@ -230,7 +230,7 @@ avtUNICFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     ptvarnames.clear();
 
     string meshname = "mesh";
-    avtMeshType mt = AVT_UNSTRUCTURED_MESH;
+    avtMeshType mt = AVT_UNSTRUCTURED_MESH; (void) mt;
 
     //
     // We know the file is valid and it has "control" from the constructor.
@@ -1454,7 +1454,7 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
     if (!haveInitialized)
         Initialize();
 
-    int i, j;
+    size_t i, j;
 
     bool isPtVar = false;
     int  idx     = -1;
@@ -1496,8 +1496,8 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
 
     vtkDoubleArray *rv = vtkDoubleArray::New();
 
-    int ntups, ntupsRead;
-    double *valsRead;
+    int ntups = 0, ntupsRead = 0; ///TODO: check on fix for uninitialized values
+    double *valsRead = NULL; ///TODO: check on fix for uninitialized values
     if (isPtVar)
     {
         ntups = numVertices;
@@ -1602,9 +1602,9 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
         id = H5Dopen(block, "ELEMENTDATA");
 
     hid_t dataspace = H5Dget_space(id);
-    hid_t rank      = H5Sget_simple_extent_ndims(dataspace);
+    hid_t rank      = H5Sget_simple_extent_ndims(dataspace); (void) rank;
     hsize_t dims[2];
-    int status_n   = H5Sget_simple_extent_dims(dataspace, dims, NULL);
+    int status_n   = H5Sget_simple_extent_dims(dataspace, dims, NULL); (void) status_n;
     offsets[0] = idx;
     offsets[1] = 0;
     counts[0]  = 1;
@@ -1627,9 +1627,9 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
         int replicateFactor = ntups / ntupsRead;
 
         double *vals = (double *) rv->GetVoidPointer(0);
-        for (i = 0; i < ntupsRead; i++)
+        for (i = 0; i < (size_t)ntupsRead; i++)
         {
-            for (j = 0; j < replicateFactor; j++)
+            for (j = 0; j < (size_t)replicateFactor; j++)
             {
                 *vals++ = valsRead[i];
             }

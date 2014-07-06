@@ -147,7 +147,7 @@ MHDdata *ggcm_read_metadata(const char *filename)
             /* fgets works pretty well too; getline is slightly faster.
                fscanf is extremely slow.  Using fgets since it is portable,
                whereas getline is only on linux. */
-            fgets(line, len, cur->mhd_fp);
+            char* res = fgets(line, len, cur->mhd_fp); (void) res;
         }
 
         cur->next = (MHDdata *)malloc(sizeof(MHDdata)); /* need another elem in the list */
@@ -179,7 +179,7 @@ static int ggcm_read_field_metadata(MHDdata *mhd)
     /* read the first field header, describing the field type (2D? 3D? etc.).
      * If this read fails, we're probably at EOF, indicating there are no more
      * fields. */
-    fscanf(mhd->mhd_fp, "FIELD-%[^\n ]\n", junk);
+    int res = fscanf(mhd->mhd_fp, "FIELD-%[^\n ]\n", junk); (void) res;
     if(ferror(mhd->mhd_fp)) {
         perror("Unrecoverable reading field metadata");
         EXCEPTION1(InvalidFilesException, mhd->filename);
@@ -559,8 +559,9 @@ int readMHDField(MHDdata *data, char *field_info,
         if(data->number % 64 != 0)
             skip++;
         skip *= 2;
-        for(count = 0; count < skip; count++)
-            fscanf(data->mhd_fp, "%*[^\n]\n");    /* read one line */
+        for(count = 0; count < skip; count++) {
+            int res = fscanf(data->mhd_fp, "%*[^\n]\n"); (void) res; /* read one line */
+        }
 
         num_elements = 0;
     } else {
@@ -595,7 +596,7 @@ MHDdata *ggcm_read_mhd(const char *file_name, const char *field_list[])
     mhd_fp = fopen(file_name, "r");
     if (mhd_fp == NULL) {
         fprintf(stderr, "Error, unable to open '%s'\n", file_name);
-        exit(1);
+        EXCEPTION1(InvalidFilesException, file_name);
     }
 
     /* first scan the preliminary listing -- I guess that's what it is */

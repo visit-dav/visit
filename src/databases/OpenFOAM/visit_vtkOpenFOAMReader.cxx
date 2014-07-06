@@ -6551,7 +6551,7 @@ vtkFloatArray *visit_vtkOpenFOAMReaderPrivate::FillField(vtkFoamEntry *entryPtr,
 {
   vtkFloatArray *data;
   vtkFoamEntry &entry = *entryPtr;
-  const vtkStdString &className = ioPtr->GetClassName();
+  const vtkStdString &className = ioPtr->GetClassName(); (void) className;
 
   // "uniformValue" keyword is for uniformFixedValue B.C.
   if (entry.FirstValue().GetIsUniform() || entry.GetKeyword() == "uniformValue")

@@ -355,7 +355,7 @@ avtGadgetFileFormat::read_gadget_head(int *npart,double *massarr,double *time,
 avtGadgetFileFormat::avtGadgetFileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
-    int i,n;
+    int i/*,n*/;
     int npart[6];
     fname=filename;
     swap=0;
@@ -371,7 +371,7 @@ avtGadgetFileFormat::avtGadgetFileFormat(const char *filename)
     else
     {
         /*----------- RED HEADER TO GET GLOBAL PROPERTIES -------------*/
-        n = read_gadget_head(npart,masstab,&time,&redshift,fd);
+        int n = read_gadget_head(npart,masstab,&time,&redshift,fd); (void)n;
       
         ntot=0;
         for(i=0;i<6;i++)
@@ -535,7 +535,7 @@ avtGadgetFileFormat::GetMesh(const char *meshname)
     points->SetNumberOfPoints(ntot);
     float *pts = (float *) points->GetVoidPointer(0);
   
-    int n = read_gadget_float3(pts,meshname,fd);
+    int n = read_gadget_float3(pts,meshname,fd); (void) n;
 #ifdef MY_DEBUG
     fprintf(stderr,"done reading mesh %d\n",n);
 #endif
@@ -594,14 +594,14 @@ avtGadgetFileFormat::GetVar(const char *varname)
         rv=vtkIntArray::New();
         rv->SetNumberOfTuples(ntot);
         float *pts = (float *) rv->GetVoidPointer(0);
-        int n = read_gadget_float(pts,varname,fd);
+        int n = read_gadget_float(pts,varname,fd); (void) n;
     }
     else
     {
         rv = vtkFloatArray::New();
         rv->SetNumberOfTuples(ntot);
         float *pts = (float *) rv->GetVoidPointer(0);
-        int n = read_gadget_float(pts,varname,fd);
+        int n = read_gadget_float(pts,varname,fd); (void) n;
 #ifdef MY_DEBUG
         fprintf(stderr,"done reading data %s  %d\n",varname,n);
 #endif
@@ -647,7 +647,7 @@ avtGadgetFileFormat::GetVectorVar(const char *varname)
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(ntot);
     float *pts = (float *) rv->GetVoidPointer(0);
-    int n = read_gadget_float3(pts,varname,fd);
+    int n = read_gadget_float3(pts,varname,fd); (void) n;
 #ifdef MY_DEBUG
     fprintf(stderr,"done reading data %s  %d\n",varname,n);
 #endif
