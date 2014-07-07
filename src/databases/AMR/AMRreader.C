@@ -80,7 +80,7 @@ AMRreader::getInfo( const char* filename )
     }
 
     hsize_t nobjs;
-    herr_t  err = H5Gget_num_objs( file_id, &nobjs ); (void) err;
+    H5Gget_num_objs( file_id, &nobjs );
     debug2 << "nobjs in " << filename << " is " << nobjs << "\n";
     for( hsize_t i=0; i<nobjs; i++ )
     {
@@ -88,7 +88,7 @@ AMRreader::getInfo( const char* filename )
         if( type == H5G_GROUP )
         {
             char name[1000];
-            ssize_t l= H5Gget_objname_by_idx( file_id, i, name, 1000 ); (void)l;
+            H5Gget_objname_by_idx( file_id, i, name, 1000 );
 
             hid_t gid = H5Gopen1( file_id, name );
 
