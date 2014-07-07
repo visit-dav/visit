@@ -1585,7 +1585,7 @@ avtCaleHDF5FileFormat::GetCycleFromFilename(const char *f) const
 
     j = 0;
 
-    for ( i = n-1 ; i  >= 0 ; i-- )
+    for ( i = n ; i--  > 0 ;)
     {
         if ((f[i] >= '0') && (f[i] <= '9'))
         {

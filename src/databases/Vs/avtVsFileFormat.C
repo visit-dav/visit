@@ -590,7 +590,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     //OLD: uniformMesh->getMeshDataDims(numCells); // Number of cells NOT nodes
     uniformMesh->getCellDims(numCells);
 
-    if (numCells.size() < 0) {
+    if (numCells.size() <= 0) { ///TODO: are number of cells allow to be 0?
         std::ostringstream msg;
         msg << CLASSFUNCLINE << "  "
         << "Could not get dimensions of the uniform mesh.";
@@ -793,7 +793,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     //rectilinearMesh->getMeshDataDims(numNodes); // Number of nodes NOT cells
     rectilinearMesh->getCellDims(numNodes);
 
-    if (numNodes.size() < 0) {
+    if (numNodes.size() <= 0) { ///TODO: are number of cells allow to be zero?
         std::ostringstream msg;
         msg << CLASSFUNCLINE << "  "
         << "Could not get dimensions of the rectilinear mesh.";
@@ -1126,7 +1126,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     std::vector<int> numNodes;
     structuredMesh->getCellDims(numNodes);// Number of nodes NOT cells.
 
-    if (numNodes.size() < 0) {
+    if (numNodes.size() <= 0) { ///TODO: < 0 can never happen, but can size be equal to zero?
         std::ostringstream msg;
         msg << CLASSFUNCLINE << "  "
         << "Could not get dimensions of the structured mesh.";
