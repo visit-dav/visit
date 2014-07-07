@@ -960,7 +960,7 @@ void LataFilter::release_cached_operator(const Domain_Id& id)
 void LataOptions::extract_path_basename(const char * s, Nom & path_prefix, Nom & basename)
 {
   size_t i;
-  for (i=strlen(s)-1;i>=0;i--)
+  for (i=strlen(s);i-- >0;)
     if ((s[i]==PATH_SEPARATOR) ||(s[i]=='\\'))
       break;
   path_prefix = "";

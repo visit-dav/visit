@@ -382,7 +382,7 @@ int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)
             }    
             } while(i != startsAt);    
         }    
-        else if (curChar < 128)    
+        else //if (curChar < 128)  ///TODO: curChar will always be true <--
         {    
             int64 l = ((int64)1LL) << (curChar & 077);    
             //MatchLoop2: do    
@@ -487,7 +487,7 @@ int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)
                 default : break;    
             }    
             } while(i != startsAt);    
-        }    
+        }/* TODO: this code is not getting called due to the above logic always being true
         else    
         {    
             //int i2 = (curChar & 0xff) >> 6;    
@@ -500,7 +500,7 @@ int ExpressionParserTokenManager::jjMoveNfa_0(int startState, int curPos)
                     default : break;    
                 }    
             } while(i != startsAt);    
-        }    
+        }*/
         if (kind != 0x7fffffff)    
         {    
             jjmatchedKind = kind;    

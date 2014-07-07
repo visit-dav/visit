@@ -85,7 +85,7 @@ VsStaggeredField<TYPE>::setDataPtr(const TYPE* dataPtr,
   this->oriCellDimProd[this->numTopoDims - 1] = 1;
   this->newCellDimProd.resize(this->numTopoDims);
   this->newCellDimProd[this->numTopoDims - 1] = 1;
-  for (size_t i = this->numTopoDims - 2; i >= 0; --i) {
+  for (int i = this->numTopoDims - 2; i >= 0; --i) {
     this->oriCellDimProd[i] = this->oriCellDimProd[i + 1] * this->oriCellDims[i + 1];
     this->newCellDimProd[i] = this->newCellDimProd[i + 1] * this->newCellDims[i + 1];
   }

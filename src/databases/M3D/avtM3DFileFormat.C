@@ -839,7 +839,7 @@ avtM3DFileFormat::ReadAttribute( hid_t parentID, const char *attr, void *value )
         return false;
 
     hsize_t nelem = H5Sget_simple_extent_npoints( spaceID );
-    if ( nelem < 0 )
+    if ( nelem <= 0 ) ///TODO: changed to <= from < 0 if 0 elements are possible this would be incorrect
         return false;
 
     hid_t typeID = NormalizeH5Type( attrType );

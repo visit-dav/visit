@@ -220,7 +220,7 @@ DDCMDHeader::DDCMDHeader(const std::string &fname, const std::string &subname)
     std::string filename(fname + "/" + subname + "#000000");
     char header[4096];
     headerLength = Read(filename, 4096, header);
-    if(headerLength < 0)
+    if(headerLength <= 0) ///TODO: headerLength < 0 will never be true setting <= 0 as 0 size file is also bad
         EXCEPTION1(InvalidFilesException, fname);
 
     //

@@ -104,7 +104,7 @@ H5NIMROD_read_attrib (hid_t parent_id,
         return H5NIMROD_ERR;
 
     nelem = H5Sget_simple_extent_npoints (space_id);
-    if (nelem < 0)
+    if (nelem <= 0) ///TODO: changing to <= instead of < as it will never get called 
         return H5NIMROD_ERR;
 
     type_id = _normalize_h5_type (mytype);
