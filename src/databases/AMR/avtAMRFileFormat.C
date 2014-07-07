@@ -275,7 +275,6 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #ifdef DO_DOMAIN_NESTING
             avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(nblks, nLevels);
             dn->SetNumDimensions(3);
-            int ratios[3]; (void) ratios;
             bool *levelCSset = new bool[nLevels];
             for(int level = 0; level < nLevels; ++level)
             {
@@ -843,7 +842,7 @@ avtAMRFileFormat::GetVar(int domain, const char *name)
         int np,ne;
         GetReader()->GetInterfaceSizes( &np, &ne );
 
-        int vid,cmp=0,sz; ///TODO: check on fix for uninitialized vars
+        int vid=0,cmp=0,sz=0;
         if( varname.compare("u velocity")==0 )
         {
             vid=AMRreaderInterface::i_velo;
@@ -1057,7 +1056,7 @@ avtAMRFileFormat::GetAuxiliaryData(const char *var, int domain,
                 GetReader()->GetBlockDimensions(dom, blkdim);
 
                 float xs[3]= {0.f,0.f,0.f}, dx[3]= {0.f,0.f,0.f};
-                int ierr = GetReader()->GetBlockMesh(dom, xs, dx); (void) ierr;
+                GetReader()->GetBlockMesh(dom, xs, dx);
 
                 double extents[6];
                 extents[0] = xs[0];
