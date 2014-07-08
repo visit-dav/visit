@@ -75,7 +75,7 @@ std::string
 PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetAntialiasing())
         SNPRINTF(tmpStr, 1000, "%santialiasing = 1\n", prefix);
@@ -1436,7 +1436,6 @@ PyRenderingAttributes_GetLogString()
 static void
 PyRenderingAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RenderingAttributes *atts = (RenderingAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -88,7 +88,7 @@ std::string
 PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetHasTemporalExtents())
         SNPRINTF(tmpStr, 1000, "%shasTemporalExtents = 1\n", prefix);
@@ -3040,7 +3040,6 @@ PyavtDatabaseMetaData_GetLogString()
 static void
 PyavtDatabaseMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtDatabaseMetaData *atts = (avtDatabaseMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

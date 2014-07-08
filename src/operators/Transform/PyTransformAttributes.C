@@ -73,8 +73,8 @@ static PyObject *NewTransformAttributes(int);
 std::string
 PyTransformAttributes_ToString(const TransformAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetDoRotate())
         SNPRINTF(tmpStr, 1000, "%sdoRotate = 1\n", prefix);
@@ -1758,7 +1758,6 @@ PyTransformAttributes_GetLogString()
 static void
 PyTransformAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TransformAttributes *atts = (TransformAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

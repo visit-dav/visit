@@ -74,7 +74,7 @@ std::string
 PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const intVector &types = atts->GetTypes();
         SNPRINTF(tmpStr, 1000, "%stypes = (", prefix);
@@ -379,7 +379,6 @@ PyDBOptionsAttributes_GetLogString()
 static void
 PyDBOptionsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DBOptionsAttributes *atts = (DBOptionsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

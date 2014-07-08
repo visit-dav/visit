@@ -73,8 +73,8 @@ static PyObject *NewDualMeshAttributes(int);
 std::string
 PyDualMeshAttributes_ToString(const DualMeshAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *mode_names = "Auto, NodesToZones, ZonesToNodes";
     switch (atts->GetMode())
@@ -359,7 +359,6 @@ PyDualMeshAttributes_GetLogString()
 static void
 PyDualMeshAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DualMeshAttributes *atts = (DualMeshAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

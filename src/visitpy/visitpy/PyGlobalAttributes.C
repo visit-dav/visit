@@ -74,7 +74,7 @@ std::string
 PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const stringVector &sources = atts->GetSources();
         SNPRINTF(tmpStr, 1000, "%ssources = (", prefix);
@@ -1314,7 +1314,6 @@ PyGlobalAttributes_GetLogString()
 static void
 PyGlobalAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    GlobalAttributes *atts = (GlobalAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

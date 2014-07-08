@@ -73,8 +73,8 @@ static PyObject *NewCreateBondsAttributes(int);
 std::string
 PyCreateBondsAttributes_ToString(const CreateBondsAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%selementVariable = \"%s\"\n", prefix, atts->GetElementVariable().c_str());
     str += tmpStr;
@@ -1101,7 +1101,6 @@ PyCreateBondsAttributes_GetLogString()
 static void
 PyCreateBondsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CreateBondsAttributes *atts = (CreateBondsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewDisplaceAttributes(int);
 std::string
 PyDisplaceAttributes_ToString(const DisplaceAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sfactor = %g\n", prefix, atts->GetFactor());
     str += tmpStr;
@@ -358,7 +358,6 @@ PyDisplaceAttributes_GetLogString()
 static void
 PyDisplaceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DisplaceAttributes *atts = (DisplaceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewFFTAttributes(int);
 std::string
 PyFFTAttributes_ToString(const FFTAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sdummy = %d\n", prefix, atts->GetDummy());
     str += tmpStr;
@@ -326,7 +326,6 @@ PyFFTAttributes_GetLogString()
 static void
 PyFFTAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FFTAttributes *atts = (FFTAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

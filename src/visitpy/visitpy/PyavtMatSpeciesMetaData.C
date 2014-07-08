@@ -74,7 +74,7 @@ std::string
 PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%snumSpecies = %d\n", prefix, atts->numSpecies);
     str += tmpStr;
@@ -432,7 +432,6 @@ PyavtMatSpeciesMetaData_GetLogString()
 static void
 PyavtMatSpeciesMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtMatSpeciesMetaData *atts = (avtMatSpeciesMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

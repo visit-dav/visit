@@ -72,3 +72,11 @@ SaveSubWindowsAttributes::GetAttsForWindow(int win)
 
     EXCEPTION1(VisItException, "Window ID is out of range");
 }
+
+Target: xml2python
+Code: PySaveSubWindowsAttributes_ToString 
+Prefix:
+    // To squelch a warning
+    (void)tmpStr;
+Postfix:
+

@@ -73,8 +73,8 @@ static PyObject *NewReplicateAttributes(int);
 std::string
 PyReplicateAttributes_ToString(const ReplicateAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetUseUnitCellVectors())
         SNPRINTF(tmpStr, 1000, "%suseUnitCellVectors = 1\n", prefix);
@@ -834,7 +834,6 @@ PyReplicateAttributes_GetLogString()
 static void
 PyReplicateAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ReplicateAttributes *atts = (ReplicateAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

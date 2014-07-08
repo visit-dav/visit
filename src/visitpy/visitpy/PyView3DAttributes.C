@@ -74,7 +74,7 @@ std::string
 PyView3DAttributes_ToString(const View3DAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const double *viewNormal = atts->GetViewNormal();
         SNPRINTF(tmpStr, 1000, "%sviewNormal = (", prefix);
@@ -1358,7 +1358,6 @@ PyView3DAttributes_GetLogString()
 static void
 PyView3DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    View3DAttributes *atts = (View3DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

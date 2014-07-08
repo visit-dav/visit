@@ -74,7 +74,7 @@ std::string
 PyavtArrayMetaData_ToString(const avtArrayMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
@@ -432,7 +432,6 @@ PyavtArrayMetaData_GetLogString()
 static void
 PyavtArrayMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtArrayMetaData *atts = (avtArrayMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

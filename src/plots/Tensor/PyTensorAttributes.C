@@ -74,8 +74,8 @@ static PyObject *NewTensorAttributes(int);
 std::string
 PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetUseStride())
         SNPRINTF(tmpStr, 1000, "%suseStride = 1\n", prefix);
@@ -719,7 +719,6 @@ PyTensorAttributes_GetLogString()
 static void
 PyTensorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TensorAttributes *atts = (TensorAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

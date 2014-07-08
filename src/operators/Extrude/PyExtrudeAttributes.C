@@ -73,8 +73,8 @@ static PyObject *NewExtrudeAttributes(int);
 std::string
 PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const double *axis = atts->GetAxis();
         SNPRINTF(tmpStr, 1000, "%saxis = (", prefix);
@@ -469,7 +469,6 @@ PyExtrudeAttributes_GetLogString()
 static void
 PyExtrudeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExtrudeAttributes *atts = (ExtrudeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

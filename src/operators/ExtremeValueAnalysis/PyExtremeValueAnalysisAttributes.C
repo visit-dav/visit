@@ -73,8 +73,8 @@ static PyObject *NewExtremeValueAnalysisAttributes(int);
 std::string
 PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sdataYearBegin = %d\n", prefix, atts->GetDataYearBegin());
     str += tmpStr;
@@ -1330,7 +1330,6 @@ PyExtremeValueAnalysisAttributes_GetLogString()
 static void
 PyExtremeValueAnalysisAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExtremeValueAnalysisAttributes *atts = (ExtremeValueAnalysisAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -76,8 +76,8 @@ static PyObject *NewVolumeAttributes(int);
 std::string
 PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -1972,7 +1972,6 @@ PyVolumeAttributes_GetLogString()
 static void
 PyVolumeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    VolumeAttributes *atts = (VolumeAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

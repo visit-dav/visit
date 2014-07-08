@@ -75,7 +75,7 @@ std::string
 PyLightAttributes_ToString(const LightAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetEnabledFlag())
         SNPRINTF(tmpStr, 1000, "%senabledFlag = 1\n", prefix);
@@ -589,7 +589,6 @@ PyLightAttributes_GetLogString()
 static void
 PyLightAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LightAttributes *atts = (LightAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

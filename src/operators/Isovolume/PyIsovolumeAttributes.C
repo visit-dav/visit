@@ -73,8 +73,8 @@ static PyObject *NewIsovolumeAttributes(int);
 std::string
 PyIsovolumeAttributes_ToString(const IsovolumeAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%slbound = %g\n", prefix, atts->GetLbound());
     str += tmpStr;
@@ -390,7 +390,6 @@ PyIsovolumeAttributes_GetLogString()
 static void
 PyIsovolumeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IsovolumeAttributes *atts = (IsovolumeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

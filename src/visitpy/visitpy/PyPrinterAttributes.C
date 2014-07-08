@@ -74,7 +74,7 @@ std::string
 PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sprinterName = \"%s\"\n", prefix, atts->GetPrinterName().c_str());
     str += tmpStr;
@@ -623,7 +623,6 @@ PyPrinterAttributes_GetLogString()
 static void
 PyPrinterAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PrinterAttributes *atts = (PrinterAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

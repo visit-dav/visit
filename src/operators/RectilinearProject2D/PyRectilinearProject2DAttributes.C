@@ -73,8 +73,8 @@ static PyObject *NewRectilinearProject2DAttributes(int);
 std::string
 PyRectilinearProject2DAttributes_ToString(const RectilinearProject2DAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *reductionOperator_names = "Sum, Average";
     switch (atts->GetReductionOperator())
@@ -388,7 +388,6 @@ PyRectilinearProject2DAttributes_GetLogString()
 static void
 PyRectilinearProject2DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RectilinearProject2DAttributes *atts = (RectilinearProject2DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

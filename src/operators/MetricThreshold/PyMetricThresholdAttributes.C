@@ -73,8 +73,8 @@ static PyObject *NewMetricThresholdAttributes(int);
 std::string
 PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *preset_names = "None, Aspect_Ratio, Aspect_Gamma, Skew, Taper, "
         "Volume, Stretch, Diagonal, Dimension, "
@@ -1070,7 +1070,6 @@ PyMetricThresholdAttributes_GetLogString()
 static void
 PyMetricThresholdAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MetricThresholdAttributes *atts = (MetricThresholdAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

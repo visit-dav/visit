@@ -73,8 +73,8 @@ static PyObject *NewProjectAttributes(int);
 std::string
 PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *projectionType_names = "ZYCartesian, XZCartesian, XYCartesian, XRCylindrical, YRCylindrical, "
         "ZRCylindrical";
@@ -450,7 +450,6 @@ PyProjectAttributes_GetLogString()
 static void
 PyProjectAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ProjectAttributes *atts = (ProjectAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -74,8 +74,8 @@ static PyObject *NewStreamlineAttributes(int);
 std::string
 PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *sourceType_names = "SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, "
         "SpecifiedSphere, SpecifiedBox, Selection";
@@ -4987,7 +4987,6 @@ PyStreamlineAttributes_GetLogString()
 static void
 PyStreamlineAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    StreamlineAttributes *atts = (StreamlineAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

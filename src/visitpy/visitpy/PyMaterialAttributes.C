@@ -74,7 +74,7 @@ std::string
 PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetSmoothing())
         SNPRINTF(tmpStr, 1000, "%ssmoothing = 1\n", prefix);
@@ -742,7 +742,6 @@ PyMaterialAttributes_GetLogString()
 static void
 PyMaterialAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MaterialAttributes *atts = (MaterialAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

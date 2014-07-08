@@ -79,7 +79,7 @@ std::string
 PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
     str += tmpStr;
@@ -2587,7 +2587,6 @@ PyavtMeshMetaData_GetLogString()
 static void
 PyavtMeshMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtMeshMetaData *atts = (avtMeshMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

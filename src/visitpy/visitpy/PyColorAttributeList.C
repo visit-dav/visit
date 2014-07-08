@@ -75,7 +75,7 @@ std::string
 PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         int index = 0;
@@ -430,7 +430,6 @@ PyColorAttributeList_GetLogString()
 static void
 PyColorAttributeList_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorAttributeList *atts = (ColorAttributeList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewToroidalPoloidalProjection(int);
 std::string
 PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sR0 = %g\n", prefix, atts->GetR0());
     str += tmpStr;
@@ -528,7 +528,6 @@ PyToroidalPoloidalProjection_GetLogString()
 static void
 PyToroidalPoloidalProjection_CallLogRoutine(Subject *subj, void *data)
 {
-    ToroidalPoloidalProjection *atts = (ToroidalPoloidalProjection *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

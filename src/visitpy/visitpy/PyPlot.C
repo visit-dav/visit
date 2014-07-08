@@ -74,7 +74,7 @@ std::string
 PyPlot_ToString(const Plot *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     const char *stateType_names = "NewlyCreated, Pending, Completed, Error";
     switch (atts->GetStateType())
@@ -1186,7 +1186,6 @@ PyPlot_GetLogString()
 static void
 PyPlot_CallLogRoutine(Subject *subj, void *data)
 {
-    Plot *atts = (Plot *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

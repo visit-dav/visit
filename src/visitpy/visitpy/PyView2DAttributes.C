@@ -74,7 +74,7 @@ std::string
 PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const double *windowCoords = atts->GetWindowCoords();
         SNPRINTF(tmpStr, 1000, "%swindowCoords = (", prefix);
@@ -819,7 +819,6 @@ PyView2DAttributes_GetLogString()
 static void
 PyView2DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    View2DAttributes *atts = (View2DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -74,7 +74,7 @@ std::string
 PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sprofileName = \"%s\"\n", prefix, atts->GetProfileName().c_str());
     str += tmpStr;
@@ -1472,7 +1472,6 @@ PyLaunchProfile_GetLogString()
 static void
 PyLaunchProfile_CallLogRoutine(Subject *subj, void *data)
 {
-    LaunchProfile *atts = (LaunchProfile *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

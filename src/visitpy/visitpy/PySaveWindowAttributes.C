@@ -75,7 +75,7 @@ std::string
 PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetOutputToCurrentDirectory())
         SNPRINTF(tmpStr, 1000, "%soutputToCurrentDirectory = 1\n", prefix);
@@ -1091,7 +1091,6 @@ PySaveWindowAttributes_GetLogString()
 static void
 PySaveWindowAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SaveWindowAttributes *atts = (SaveWindowAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

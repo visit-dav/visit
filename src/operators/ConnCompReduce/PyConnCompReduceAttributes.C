@@ -73,8 +73,8 @@ static PyObject *NewConnCompReduceAttributes(int);
 std::string
 PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%starget = %g\n", prefix, atts->GetTarget());
     str += tmpStr;
@@ -326,7 +326,6 @@ PyConnCompReduceAttributes_GetLogString()
 static void
 PyConnCompReduceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ConnCompReduceAttributes *atts = (ConnCompReduceAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -74,7 +74,7 @@ std::string
 PyExpression_ToString(const Expression *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
@@ -705,7 +705,6 @@ PyExpression_GetLogString()
 static void
 PyExpression_CallLogRoutine(Subject *subj, void *data)
 {
-    Expression *atts = (Expression *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

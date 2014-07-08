@@ -75,7 +75,7 @@ std::string
 PyExpressionList_ToString(const ExpressionList *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         int index = 0;
@@ -430,7 +430,6 @@ PyExpressionList_GetLogString()
 static void
 PyExpressionList_CallLogRoutine(Subject *subj, void *data)
 {
-    ExpressionList *atts = (ExpressionList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

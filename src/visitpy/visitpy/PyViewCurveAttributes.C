@@ -74,7 +74,7 @@ std::string
 PyViewCurveAttributes_ToString(const ViewCurveAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const double *domainCoords = atts->GetDomainCoords();
         SNPRINTF(tmpStr, 1000, "%sdomainCoords = (", prefix);
@@ -616,7 +616,6 @@ PyViewCurveAttributes_GetLogString()
 static void
 PyViewCurveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewCurveAttributes *atts = (ViewCurveAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -75,7 +75,7 @@ std::string
 PyFontAttributes_ToString(const FontAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     const char *font_names = "Arial, Courier, Times";
     switch (atts->GetFont())
@@ -583,7 +583,6 @@ PyFontAttributes_GetLogString()
 static void
 PyFontAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FontAttributes *atts = (FontAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

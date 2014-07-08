@@ -74,7 +74,7 @@ std::string
 PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const unsigned char *color = atts->GetColor();
         SNPRINTF(tmpStr, 1000, "%scolor = (", prefix);
@@ -375,7 +375,6 @@ PyColorAttribute_GetLogString()
 static void
 PyColorAttribute_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorAttribute *atts = (ColorAttribute *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewInverseGhostZoneAttributes(int);
 std::string
 PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetRequestGhostZones())
         SNPRINTF(tmpStr, 1000, "%srequestGhostZones = 1\n", prefix);
@@ -539,7 +539,6 @@ PyInverseGhostZoneAttributes_GetLogString()
 static void
 PyInverseGhostZoneAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    InverseGhostZoneAttributes *atts = (InverseGhostZoneAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

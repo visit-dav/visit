@@ -78,8 +78,8 @@ static PyObject *NewCurveAttributes(int);
 std::string
 PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetShowLines())
         SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
@@ -1781,7 +1781,6 @@ PyCurveAttributes_GetLogString()
 static void
 PyCurveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CurveAttributes *atts = (CurveAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

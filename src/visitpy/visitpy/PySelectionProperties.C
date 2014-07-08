@@ -74,7 +74,7 @@ std::string
 PySelectionProperties_ToString(const SelectionProperties *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
@@ -1115,7 +1115,6 @@ PySelectionProperties_GetLogString()
 static void
 PySelectionProperties_CallLogRoutine(Subject *subj, void *data)
 {
-    SelectionProperties *atts = (SelectionProperties *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

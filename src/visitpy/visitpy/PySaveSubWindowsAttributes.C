@@ -90,8 +90,10 @@ std::string
 PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
+    // To squelch a warning
+    (void)tmpStr;
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win1.";
@@ -1062,7 +1064,6 @@ PySaveSubWindowsAttributes_GetLogString()
 static void
 PySaveSubWindowsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SaveSubWindowsAttributes *atts = (SaveSubWindowsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

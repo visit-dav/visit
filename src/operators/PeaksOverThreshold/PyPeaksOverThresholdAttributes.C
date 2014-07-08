@@ -73,8 +73,8 @@ static PyObject *NewPeaksOverThresholdAttributes(int);
 std::string
 PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sdataYearBegin = %d\n", prefix, atts->GetDataYearBegin());
     str += tmpStr;
@@ -1689,7 +1689,6 @@ PyPeaksOverThresholdAttributes_GetLogString()
 static void
 PyPeaksOverThresholdAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PeaksOverThresholdAttributes *atts = (PeaksOverThresholdAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -74,7 +74,7 @@ std::string
 PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const intVector &pids = atts->GetPids();
         SNPRINTF(tmpStr, 1000, "%spids = (", prefix);
@@ -655,7 +655,6 @@ PyProcessAttributes_GetLogString()
 static void
 PyProcessAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ProcessAttributes *atts = (ProcessAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

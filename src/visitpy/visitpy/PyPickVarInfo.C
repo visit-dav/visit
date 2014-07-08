@@ -74,7 +74,7 @@ std::string
 PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%svariableName = \"%s\"\n", prefix, atts->GetVariableName().c_str());
     str += tmpStr;
@@ -1075,7 +1075,6 @@ PyPickVarInfo_GetLogString()
 static void
 PyPickVarInfo_CallLogRoutine(Subject *subj, void *data)
 {
-    PickVarInfo *atts = (PickVarInfo *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

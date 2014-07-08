@@ -58,7 +58,7 @@ def main():
 	    os.chdir(dirName)
 	    
         bname = f[index+1:-5]
-        command = "../../bin/xml2atts -clobber %s.xml" % bname
+        command = "../../../Build/bin/xml2python -clobber %s.xml" % bname
         systemCommand(command)
 	
 	# Go back up

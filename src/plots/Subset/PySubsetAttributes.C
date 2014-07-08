@@ -75,8 +75,8 @@ static PyObject *NewSubsetAttributes(int);
 std::string
 PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *colorType_names = "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable";
     switch (atts->GetColorType())
@@ -1413,7 +1413,6 @@ PySubsetAttributes_GetLogString()
 static void
 PySubsetAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SubsetAttributes *atts = (SubsetAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

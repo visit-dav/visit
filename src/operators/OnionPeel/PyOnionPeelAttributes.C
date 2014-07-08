@@ -73,8 +73,8 @@ static PyObject *NewOnionPeelAttributes(int);
 std::string
 PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *adjacencyType_names = "Node, Face";
     switch (atts->GetAdjacencyType())
@@ -663,7 +663,6 @@ PyOnionPeelAttributes_GetLogString()
 static void
 PyOnionPeelAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    OnionPeelAttributes *atts = (OnionPeelAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

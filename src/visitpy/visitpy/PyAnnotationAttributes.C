@@ -83,7 +83,7 @@ std::string
 PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         std::string objPrefix(prefix);
@@ -1409,7 +1409,6 @@ PyAnnotationAttributes_GetLogString()
 static void
 PyAnnotationAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AnnotationAttributes *atts = (AnnotationAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

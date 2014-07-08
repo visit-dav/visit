@@ -73,8 +73,8 @@ static PyObject *NewTransferFunctionWidget(int);
 std::string
 PyTransferFunctionWidget_ToString(const TransferFunctionWidget *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *Type_names = "Rectangle, Triangle, Paraboloid, Ellipsoid";
     switch (atts->GetType())
@@ -549,7 +549,6 @@ PyTransferFunctionWidget_GetLogString()
 static void
 PyTransferFunctionWidget_CallLogRoutine(Subject *subj, void *data)
 {
-    TransferFunctionWidget *atts = (TransferFunctionWidget *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

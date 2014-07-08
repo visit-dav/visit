@@ -73,8 +73,8 @@ static PyObject *NewMultiresControlAttributes(int);
 std::string
 PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sresolution = %d\n", prefix, atts->GetResolution());
     str += tmpStr;
@@ -390,7 +390,6 @@ PyMultiresControlAttributes_GetLogString()
 static void
 PyMultiresControlAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MultiresControlAttributes *atts = (MultiresControlAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

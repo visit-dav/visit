@@ -74,8 +74,8 @@ static PyObject *NewScatterAttributes(int);
 std::string
 PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%svar1 = \"%s\"\n", prefix, atts->GetVar1().c_str());
     str += tmpStr;
@@ -1967,7 +1967,7 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // try to handle old attributes
     if(strcmp(name, "foregroundFlag") == 0)
     {
-        PyObject *new_args = NULL; ///TODO: check on fix for uninitialized var
+        PyObject *new_args = NULL;
 
         // from the tuple get the foreground value
         int ival;
@@ -1985,8 +1985,10 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
             new_args = Py_BuildValue("(i)", 0);
         }
 
-        obj = ScatterAttributes_SetColorType(self, new_args);
-        if(new_args) {
+        if (new_args)
+        {
+            obj = ScatterAttributes_SetColorType(self, new_args);
+     
             Py_DECREF(new_args);
         }
     }
@@ -2183,7 +2185,6 @@ PyScatterAttributes_GetLogString()
 static void
 PyScatterAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ScatterAttributes *atts = (ScatterAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

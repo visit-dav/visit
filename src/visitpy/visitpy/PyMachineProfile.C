@@ -75,7 +75,7 @@ std::string
 PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;
@@ -1163,7 +1163,6 @@ PyMachineProfile_GetLogString()
 static void
 PyMachineProfile_CallLogRoutine(Subject *subj, void *data)
 {
-    MachineProfile *atts = (MachineProfile *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

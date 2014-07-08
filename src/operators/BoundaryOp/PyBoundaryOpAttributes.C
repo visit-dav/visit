@@ -73,8 +73,8 @@ static PyObject *NewBoundaryOpAttributes(int);
 std::string
 PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
     str += tmpStr;
@@ -326,7 +326,6 @@ PyBoundaryOpAttributes_GetLogString()
 static void
 PyBoundaryOpAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    BoundaryOpAttributes *atts = (BoundaryOpAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

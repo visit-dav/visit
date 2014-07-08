@@ -74,7 +74,7 @@ std::string
 PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
@@ -457,7 +457,6 @@ PyAxisTickMarks_GetLogString()
 static void
 PyAxisTickMarks_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisTickMarks *atts = (AxisTickMarks *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

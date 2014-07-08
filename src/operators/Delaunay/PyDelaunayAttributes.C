@@ -73,8 +73,8 @@ static PyObject *NewDelaunayAttributes(int);
 std::string
 PyDelaunayAttributes_ToString(const DelaunayAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *dimension_names = "Automatic, Triangulation, Tetrahedralization";
     switch (atts->GetDimension())
@@ -359,7 +359,6 @@ PyDelaunayAttributes_GetLogString()
 static void
 PyDelaunayAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DelaunayAttributes *atts = (DelaunayAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

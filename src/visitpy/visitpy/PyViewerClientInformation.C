@@ -75,7 +75,7 @@ std::string
 PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         int index = 0;
@@ -501,7 +501,6 @@ PyViewerClientInformation_GetLogString()
 static void
 PyViewerClientInformation_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerClientInformation *atts = (ViewerClientInformation *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

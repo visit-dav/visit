@@ -73,8 +73,8 @@ static PyObject *NewContextAttributes(int);
 std::string
 PyContextAttributes_ToString(const ContextAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%soffset = %g\n", prefix, atts->GetOffset());
     str += tmpStr;
@@ -518,7 +518,6 @@ PyContextAttributes_GetLogString()
 static void
 PyContextAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ContextAttributes *atts = (ContextAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -75,7 +75,7 @@ std::string
 PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const stringVector &names = atts->GetNames();
         SNPRINTF(tmpStr, 1000, "%snames = (", prefix);
@@ -565,7 +565,6 @@ PyColorTableAttributes_GetLogString()
 static void
 PyColorTableAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorTableAttributes *atts = (ColorTableAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

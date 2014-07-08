@@ -73,8 +73,8 @@ static PyObject *NewLineoutAttributes(int);
 std::string
 PyLineoutAttributes_ToString(const LineoutAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const double *point1 = atts->GetPoint1();
         SNPRINTF(tmpStr, 1000, "%spoint1 = (", prefix);
@@ -618,7 +618,6 @@ PyLineoutAttributes_GetLogString()
 static void
 PyLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LineoutAttributes *atts = (LineoutAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

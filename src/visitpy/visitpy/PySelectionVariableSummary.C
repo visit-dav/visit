@@ -74,7 +74,7 @@ std::string
 PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
@@ -466,7 +466,6 @@ PySelectionVariableSummary_GetLogString()
 static void
 PySelectionVariableSummary_CallLogRoutine(Subject *subj, void *data)
 {
-    SelectionVariableSummary *atts = (SelectionVariableSummary *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

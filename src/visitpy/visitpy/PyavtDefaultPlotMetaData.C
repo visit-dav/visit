@@ -74,7 +74,7 @@ std::string
 PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%spluginID = \"%s\"\n", prefix, atts->pluginID.c_str());
     str += tmpStr;
@@ -429,7 +429,6 @@ PyavtDefaultPlotMetaData_GetLogString()
 static void
 PyavtDefaultPlotMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtDefaultPlotMetaData *atts = (avtDefaultPlotMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

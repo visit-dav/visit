@@ -74,7 +74,7 @@ std::string
 PyavtSymmetricTensorMetaData_ToString(const avtSymmetricTensorMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
@@ -361,7 +361,6 @@ PyavtSymmetricTensorMetaData_GetLogString()
 static void
 PyavtSymmetricTensorMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtSymmetricTensorMetaData *atts = (avtSymmetricTensorMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

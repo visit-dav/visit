@@ -76,7 +76,7 @@ std::string
 PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     const char *timeType_names = "Cycle, DTime, Timestep";
     switch (atts->GetTimeType())
@@ -629,7 +629,6 @@ PyQueryOverTimeAttributes_GetLogString()
 static void
 PyQueryOverTimeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    QueryOverTimeAttributes *atts = (QueryOverTimeAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

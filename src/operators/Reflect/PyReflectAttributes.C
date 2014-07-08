@@ -73,8 +73,8 @@ static PyObject *NewReflectAttributes(int);
 std::string
 PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *octant_names = "PXPYPZ, NXPYPZ, PXNYPZ, NXNYPZ, PXPYNZ, "
         "NXPYNZ, PXNYNZ, NXNYNZ";
@@ -668,7 +668,6 @@ PyReflectAttributes_GetLogString()
 static void
 PyReflectAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ReflectAttributes *atts = (ReflectAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

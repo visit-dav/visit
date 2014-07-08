@@ -74,8 +74,8 @@ static PyObject *NewSpreadsheetAttributes(int);
 std::string
 PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
     str += tmpStr;
@@ -881,7 +881,6 @@ PySpreadsheetAttributes_GetLogString()
 static void
 PySpreadsheetAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SpreadsheetAttributes *atts = (SpreadsheetAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

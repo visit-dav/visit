@@ -73,8 +73,8 @@ static PyObject *NewRevolveAttributes(int);
 std::string
 PyRevolveAttributes_ToString(const RevolveAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *meshType_names = "Auto, XY, RZ, ZR";
     switch (atts->GetMeshType())
@@ -572,7 +572,6 @@ PyRevolveAttributes_GetLogString()
 static void
 PyRevolveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RevolveAttributes *atts = (RevolveAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -72,8 +72,8 @@ static PyObject *NewDatabaseCorrelation(int);
 std::string
 PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *prefix)
 {
-   std::string str; 
-   char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     // Make a reference.
     const DatabaseCorrelation &correlation = *atts;
@@ -619,7 +619,6 @@ PyDatabaseCorrelation_GetLogString()
 static void
 PyDatabaseCorrelation_CallLogRoutine(Subject *subj, void *data)
 {
-    DatabaseCorrelation *atts = (DatabaseCorrelation *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -74,7 +74,7 @@ std::string
 PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecification *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
@@ -659,7 +659,6 @@ PyavtSimulationCommandSpecification_GetLogString()
 static void
 PyavtSimulationCommandSpecification_CallLogRoutine(Subject *subj, void *data)
 {
-    avtSimulationCommandSpecification *atts = (avtSimulationCommandSpecification *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

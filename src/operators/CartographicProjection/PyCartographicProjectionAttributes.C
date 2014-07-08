@@ -73,8 +73,8 @@ static PyObject *NewCartographicProjectionAttributes(int);
 std::string
 PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *projectionID_names = "aitoff, eck4, eqdc, hammer, laea, "
         "lcc, merc, mill, moll, "
@@ -443,7 +443,6 @@ PyCartographicProjectionAttributes_GetLogString()
 static void
 PyCartographicProjectionAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CartographicProjectionAttributes *atts = (CartographicProjectionAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

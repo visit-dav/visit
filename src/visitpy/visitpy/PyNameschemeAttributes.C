@@ -74,7 +74,7 @@ std::string
 PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%snamescheme = \"%s\"\n", prefix, atts->GetNamescheme().c_str());
     str += tmpStr;
@@ -794,7 +794,6 @@ PyNameschemeAttributes_GetLogString()
 static void
 PyNameschemeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    NameschemeAttributes *atts = (NameschemeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

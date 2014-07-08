@@ -73,8 +73,8 @@ static PyObject *NewIsosurfaceAttributes(int);
 std::string
 PyIsosurfaceAttributes_ToString(const IsosurfaceAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%scontourNLevels = %d\n", prefix, atts->GetContourNLevels());
     str += tmpStr;
@@ -786,7 +786,6 @@ PyIsosurfaceAttributes_GetLogString()
 static void
 PyIsosurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IsosurfaceAttributes *atts = (IsosurfaceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

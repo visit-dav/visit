@@ -74,7 +74,7 @@ std::string
 PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%soutputMeshType = %d\n", prefix, atts->GetOutputMeshType());
     str += tmpStr;
@@ -719,7 +719,6 @@ PyThresholdOpAttributes_GetLogString()
 static void
 PyThresholdOpAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ThresholdOpAttributes *atts = (ThresholdOpAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

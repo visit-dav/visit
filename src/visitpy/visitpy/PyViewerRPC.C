@@ -73,8 +73,8 @@ static PyObject *NewViewerRPC(int);
 std::string
 PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *RPCType_names = "CloseRPC, DetachRPC, AddWindowRPC, DeleteWindowRPC, SetWindowLayoutRPC, "
         "SetActiveWindowRPC, ClearWindowRPC, ClearAllWindowsRPC, OpenDatabaseRPC, "
@@ -2083,8 +2083,9 @@ ViewerRPC_GetToolUpdateMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerRPC_SetQueryParams(PyObject *self, PyObject *args)
 {
-    ViewerRPCObject *obj = (ViewerRPCObject *)self; (void) obj;
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
+    (void) obj;
     // NOT IMPLEMENTED!!!
     // name=queryParams, type=MapNode
 
@@ -2095,7 +2096,8 @@ ViewerRPC_SetQueryParams(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerRPC_GetQueryParams(PyObject *self, PyObject *args)
 {
-    ViewerRPCObject *obj = (ViewerRPCObject *)self; (void) obj;
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+    (void) obj;
     // NOT IMPLEMENTED!!!
     // name=queryParams, type=MapNode
     PyObject *retval = NULL;
@@ -2897,7 +2899,6 @@ PyViewerRPC_GetLogString()
 static void
 PyViewerRPC_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerRPC *atts = (ViewerRPC *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

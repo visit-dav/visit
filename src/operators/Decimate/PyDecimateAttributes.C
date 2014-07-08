@@ -73,8 +73,8 @@ static PyObject *NewDecimateAttributes(int);
 std::string
 PyDecimateAttributes_ToString(const DecimateAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%starget = %g\n", prefix, atts->GetTarget());
     str += tmpStr;
@@ -326,7 +326,6 @@ PyDecimateAttributes_GetLogString()
 static void
 PyDecimateAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DecimateAttributes *atts = (DecimateAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

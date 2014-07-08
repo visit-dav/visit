@@ -76,7 +76,7 @@ std::string
 PySelectionList_ToString(const SelectionList *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetAutoApplyUpdates())
         SNPRINTF(tmpStr, 1000, "%sautoApplyUpdates = 1\n", prefix);
@@ -601,7 +601,6 @@ PySelectionList_GetLogString()
 static void
 PySelectionList_CallLogRoutine(Subject *subj, void *data)
 {
-    SelectionList *atts = (SelectionList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 
