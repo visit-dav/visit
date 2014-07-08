@@ -4758,6 +4758,7 @@ int chk_gmvend(FILE *fin)
   int i, chkend;
   long int currpos;
   char rdend[21];
+  size_t res;
 
    /*  Get the current file position.  */
    /* currpos = ftell(fin); */
@@ -4765,7 +4766,7 @@ int chk_gmvend(FILE *fin)
 
    /*  Read the last 20 characters of the file.  */
    fseek(fin, -20L, 2);
-   size_t res = fread(rdend,sizeof(char), 20, fin); (void) res;
+   res = fread(rdend,sizeof(char), 20, fin); (void) res;
 
    /*  Check the 20 characters for endgmv.  */
    chkend = 0;
@@ -7032,6 +7033,7 @@ int chk_rayend(FILE *fin)
   int i, chkend;
   long int currpos;
   char rdend[21];
+  size_t res;
 
    /*  Get the current file position.  */
    /* currpos = ftell(fin); */
@@ -7039,7 +7041,7 @@ int chk_rayend(FILE *fin)
 
    /*  Read the last 20 characters of the file.  */
    fseek(fin, -20L, 2);
-   size_t res = fread(rdend,sizeof(char), 20, fin); (void) res;
+   res = fread(rdend,sizeof(char), 20, fin); (void) res;
 
    /*  Check the 20 characters for endray.  */
    chkend = 0;
