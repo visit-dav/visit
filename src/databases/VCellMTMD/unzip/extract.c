@@ -282,7 +282,11 @@ int extract_or_test_files(__G)    /* return PK-type error code */
     unsigned members_processed;
     ulg num_skipped=0L, num_bad_pwd=0L;
     LONGINT old_extra_bytes = 0L;
+#ifdef WIN32
+    int res = 0;
+#else
     ssize_t res = 0;
+#endif
 #ifdef SET_DIR_ATTRIB
     unsigned num_dirs=0;
     dirtime *dirlist=(dirtime *)NULL, **sorted_dirlist=(dirtime **)NULL;

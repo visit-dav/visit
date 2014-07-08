@@ -72,6 +72,7 @@ using namespace std;
 #define LSEEK64 ::_lseeki64
 #define READ    ::_read
 #define WRITE   ::_write
+#define ssize_t int
 
 #else
 #include <unistd.h>
