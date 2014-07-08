@@ -286,8 +286,8 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
             //
             // Check for saddle points to disqualify them
             //
-            if (tu && td && ar && al && vS && hS
-             || au && ad && tr && tl && vS && hS)
+            if ((tu && td && ar && al && vS && hS)
+             || (au && ad && tr && tl && vS && hS))
                 ;
             
             // Check for constant area first
@@ -572,7 +572,7 @@ float avtTopologyFilter::EvaluateValue(float x, float y, float z,
     double *abnormalWeights = NULL; // In case of more than 8 points
     
     int cellId;
-    vtkCell *c;
+    vtkCell *c = NULL;
     for (cellId = 0 ; cellId < neighborCells->GetNumberOfIds() ; cellId++)
     {
         c = in_ds->GetCell(neighborCells->GetId(cellId));

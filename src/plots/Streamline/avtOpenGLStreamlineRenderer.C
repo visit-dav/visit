@@ -507,7 +507,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             p[1] = prev[1] + t0*(pt[1]-prev[1]);
             p[2] = prev[2] + t0*(pt[2]-prev[2]);
             
-            float  s0, s1, s, o;
+            float  s0, s1, s;
             s0 = scalar[segptr[idx0-1]];
             s1 = scalar[segptr[idx0]];
             s = s0 + t0*(s1-s0);
@@ -569,7 +569,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             p[1] = pt[1] + t1*(next[1]-pt[1]);
             p[2] = pt[2] + t1*(next[2]-pt[2]);
 
-            float  s0, s1, s, o;
+            float  s0, s1, s;
             s0 = scalar[segptr[idx1]];
             s1 = scalar[segptr[idx1+1]];
             s = s0 + t1*(s1-s0);
@@ -672,7 +672,6 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
         // If we need to trim either end, create a new trimmed polyline
         // and run the tube on this geometry.
         
-        //vtkPoints *points = data->GetPoints();
         vtkCellArray *lines = data->GetLines();
         vtkIdType *segments = lines->GetPointer();
     
@@ -689,8 +688,6 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
                 pd->Delete();
             }
         }
-        //VTK-6.0 FIX ME -- ksb, is this update necessary?
-        //append->Update();
         tube->SetInputConnection(append->GetOutputPort());
         append->Delete();
     }

@@ -499,7 +499,6 @@ avtMeshFilter::ModifyContract(avtContract_p spec)
             rv->SetCalculateVariableExtents(pointVar, true);
         }
 
-        //avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
         if (spec->GetDataRequest()->MayRequireZones() ||
             spec->GetDataRequest()->MayRequireNodes())
         {

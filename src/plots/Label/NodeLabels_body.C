@@ -256,7 +256,7 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
                 BEGIN_LABEL
                     labelString[0] = '\0';
                     double *vals = data->GetTuple(id);
-                    //bool atStart = true;
+
                     for (int comp = 0 ; comp < nComps ; comp++)
                     {
                         char *formatString = NULL;
@@ -331,7 +331,7 @@ debug3 << "Labelling nodes with original node indices: "
                     // const float *vert = p->GetPoint(id);
                     BEGIN_LABEL
                         unsigned int realNodeId = originalNodes->GetValue(id);
-                        if(realNodeId == (unsigned int)-1) ///TODO: check fix that converts -1 to max
+                        if(realNodeId == (unsigned int)-1)
                         {
                             CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
                         }
@@ -353,7 +353,7 @@ debug3 << "Labelling nodes with original node indices: "
                     // const float *vert = p->GetPoint(id);
                     BEGIN_LABEL
                         unsigned int realNodeId = originalNodes->GetValue(id);
-                        if(realNodeId == (unsigned int)-1) ///TODO: check on fix asunsigned int cannot become -1 converting to max
+                        if(realNodeId == (unsigned int)-1)
                         {
                             CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
                         }
@@ -381,7 +381,7 @@ debug3 << "Labelling nodes with original node indices: "
                 // const float *vert = p->GetPoint(id);
                 BEGIN_LABEL
                     unsigned int realNodeId = originalNodes->GetValue(id);
-                    if(realNodeId == (unsigned int)-1) ///TODO: check fix that converts -1 to max
+                    if(realNodeId == (unsigned int)-1)
                     {
                         CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
                     }

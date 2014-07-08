@@ -396,7 +396,6 @@ avtMantaMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
     float ptOffsets[4][3] = {
         {-1., -1., 0.}, {1., -1., 0.},{1., 1., 0.}, {-1., 1., 0.}
     };
-    const float texCoords[4][2] = {{0., 0.}, {1.,0.}, {1.,1.}, {0.,1.}};
     bool imposter = atts.GetDrawAtomsAs() == MoleculeAttributes::ImposterAtoms;
     int vmode = 0;
     if(imposter)
@@ -463,7 +462,7 @@ avtMantaMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
       else if (radiusvar && sbv)
         radius = radiusvar[atom] * radiusscale;
 
-      unsigned char colora[3];
+      unsigned char colora[3] = {0, 0, 0};
       // Determine color
       if (color_by_element)
       {
@@ -515,7 +514,8 @@ avtMantaMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
       mpdm->AddSphere(pos[0],pos[1],pos[2], radius, colora[0], colora[1], colora[2]);
 
 
-      /*if(vmode == 2)
+      /*const float texCoords[4][2] = {{0., 0.}, {1.,0.}, {1.,1.}, {0.,1.}};
+      if(vmode == 2)
       {
         // Plot squares. Use the same point for each of the vertices;
         // a vertex program will figure out the real coordinates.
@@ -795,7 +795,6 @@ avtMantaMoleculeRenderer::DrawBonds(vtkPolyData *data,
       for (int half=0; half<=1; half++)
       {
         int atom     = (half==0) ? v0 : v1;
-        int otherAtom= (half==0) ? v1 : v0;
         double *pt_a = (half==0) ? pt_0 : pt_mid;
         double *pt_b = (half==0) ? pt_mid : pt_1;
 
@@ -912,7 +911,8 @@ avtMantaMoleculeRenderer::DrawBonds(vtkPolyData *data,
           }
         }
 
-        /*if (atts.GetDrawBondsAs() == MoleculeAttributes::CylinderBonds )
+        /*int otherAtom= (half==0) ? v1 : v0;
+        if (atts.GetDrawBondsAs() == MoleculeAttributes::CylinderBonds )
         {
           if (is2D)
           {

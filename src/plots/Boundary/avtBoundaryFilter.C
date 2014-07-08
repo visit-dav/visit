@@ -385,7 +385,6 @@ avtBoundaryFilter::ModifyContract(avtContract_p spec)
             spec->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
         }
 
-        //avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
         if (spec->GetDataRequest()->MayRequireZones() ||
             spec->GetDataRequest()->MayRequireNodes())
         {

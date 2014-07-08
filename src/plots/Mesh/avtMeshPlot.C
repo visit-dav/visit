@@ -1230,27 +1230,32 @@ avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
 //    Kathleen Bonnell, Thu Feb  5 11:07:05 PST 2004
 //    If Auto mode, only show opaque if ShowInternal is OFF.
 //
+//    Kathleen Biagas, Tue Jul  8 11:19:38 PDT 2014
+//    Made Auto also be the default (its the default in the atts), so that
+//    shouldBeOn is guaranteed to be set.
+//
 // ****************************************************************************
 
 bool
 avtMeshPlot::ShouldRenderOpaque(void)
 {
-    bool shouldBeOn = false; ///TODO: check on fix for uninitialized value
+    bool shouldBeOn = false;
 
     switch (atts.GetOpaqueMode())
     {
-        case MeshAttributes::Auto: 
-            // Only on if appropriate
-            shouldBeOn = atts.GetOpaqueMeshIsAppropriate() && 
-                         !atts.GetShowInternal();
-            break;
-        case MeshAttributes::On: 
-            // Always on 
+        case MeshAttributes::On:
+            // Always on
             shouldBeOn = true;
             break;
-        case MeshAttributes::Off: 
-            // On if wireframeRendering is Inappropriate. 
+        case MeshAttributes::Off:
+            // On if wireframeRendering is Inappropriate.
             shouldBeOn = wireframeRenderingIsInappropriate;
+            break;
+        case MeshAttributes::Auto:
+        default:
+            // Only on if appropriate
+            shouldBeOn = atts.GetOpaqueMeshIsAppropriate() &&
+                         !atts.GetShowInternal();
             break;
     }
     return shouldBeOn;

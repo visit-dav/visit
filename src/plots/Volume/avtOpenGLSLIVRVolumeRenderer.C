@@ -545,8 +545,10 @@ avtOpenGLSLIVRVolumeRenderer::CheckContext(SlivrContext* context,
     {
         if(context != 0)
         {
-            for(int i = 0; i < oldAtts.NumAttributes(); ++i) {
-                if(!oldAtts.FieldsEqual(i, &atts)) {
+            for(int i = 0; i < oldAtts.NumAttributes(); ++i)
+            {
+                if(!oldAtts.FieldsEqual(i, &atts))
+                {
                     debug5 << "Field " << i << " differs" << endl;
                 }
             }

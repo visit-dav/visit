@@ -2075,13 +2075,16 @@ avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
         zTolerance = float(zShift * 1.001);
     }
 
-    if(zBufferMode == ZBUFFER_DONT_USE) {
+    if(zBufferMode == ZBUFFER_DONT_USE)
+    {
         debug4 << mName << "zBufferMode = ZBUFFER_DONT_USE" << endl;
     }
-    else if(zBufferMode == ZBUFFER_USE_PROVIDED) {
+    else if(zBufferMode == ZBUFFER_USE_PROVIDED)
+    {
         debug4 << mName << "zBufferMode = ZBUFFER_USE_PROVIDED" << endl;
     }
-    else if(zBufferMode == ZBUFFER_QUERY) {
+    else if(zBufferMode == ZBUFFER_QUERY)
+    {
         debug4 << mName << "zBufferMode = ZBUFFER_QUERY" << endl;
     }
 }
