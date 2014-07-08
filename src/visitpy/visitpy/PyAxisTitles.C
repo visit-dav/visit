@@ -75,7 +75,7 @@ std::string
 PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
@@ -511,7 +511,6 @@ PyAxisTitles_GetLogString()
 static void
 PyAxisTitles_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisTitles *atts = (AxisTitles *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

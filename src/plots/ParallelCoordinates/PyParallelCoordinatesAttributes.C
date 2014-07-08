@@ -75,8 +75,8 @@ static PyObject *NewParallelCoordinatesAttributes(int);
 std::string
 PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const stringVector &scalarAxisNames = atts->GetScalarAxisNames();
         SNPRINTF(tmpStr, 1000, "%sscalarAxisNames = (", prefix);
@@ -1113,7 +1113,6 @@ PyParallelCoordinatesAttributes_GetLogString()
 static void
 PyParallelCoordinatesAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ParallelCoordinatesAttributes *atts = (ParallelCoordinatesAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

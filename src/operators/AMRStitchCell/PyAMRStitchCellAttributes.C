@@ -73,8 +73,8 @@ static PyObject *NewAMRStitchCellAttributes(int);
 std::string
 PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *CreateCellsOfType_names = "DualGridAndStitchCells, DualGrid, StitchCells";
     switch (atts->GetCreateCellsOfType())
@@ -581,7 +581,6 @@ PyAMRStitchCellAttributes_GetLogString()
 static void
 PyAMRStitchCellAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AMRStitchCellAttributes *atts = (AMRStitchCellAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

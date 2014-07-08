@@ -73,8 +73,8 @@ static PyObject *NewCracksClipperAttributes(int);
 std::string
 PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%scrack1Var = \"%s\"\n", prefix, atts->GetCrack1Var().c_str());
     str += tmpStr;
@@ -559,7 +559,6 @@ PyCracksClipperAttributes_GetLogString()
 static void
 PyCracksClipperAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    CracksClipperAttributes *atts = (CracksClipperAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

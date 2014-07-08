@@ -73,8 +73,8 @@ static PyObject *NewExtractPointFunction2DAttributes(int);
 std::string
 PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sI = %d\n", prefix, atts->GetI());
     str += tmpStr;
@@ -358,7 +358,6 @@ PyExtractPointFunction2DAttributes_GetLogString()
 static void
 PyExtractPointFunction2DAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExtractPointFunction2DAttributes *atts = (ExtractPointFunction2DAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

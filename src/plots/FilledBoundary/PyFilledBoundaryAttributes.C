@@ -76,8 +76,8 @@ static PyObject *NewFilledBoundaryAttributes(int);
 std::string
 PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *colorType_names = "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable";
     switch (atts->GetColorType())
@@ -1521,7 +1521,6 @@ PyFilledBoundaryAttributes_GetLogString()
 static void
 PyFilledBoundaryAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FilledBoundaryAttributes *atts = (FilledBoundaryAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

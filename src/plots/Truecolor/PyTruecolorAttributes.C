@@ -73,8 +73,8 @@ static PyObject *NewTruecolorAttributes(int);
 std::string
 PyTruecolorAttributes_ToString(const TruecolorAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
     str += tmpStr;
@@ -361,7 +361,6 @@ PyTruecolorAttributes_GetLogString()
 static void
 PyTruecolorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TruecolorAttributes *atts = (TruecolorAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

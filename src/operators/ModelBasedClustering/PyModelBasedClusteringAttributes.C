@@ -73,8 +73,8 @@ static PyObject *NewModelBasedClusteringAttributes(int);
 std::string
 PyModelBasedClusteringAttributes_ToString(const ModelBasedClusteringAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%snumClusters = %d\n", prefix, atts->GetNumClusters());
     str += tmpStr;
@@ -532,7 +532,6 @@ PyModelBasedClusteringAttributes_GetLogString()
 static void
 PyModelBasedClusteringAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ModelBasedClusteringAttributes *atts = (ModelBasedClusteringAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewConnectedComponentsAttributes(int);
 std::string
 PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetEnableGhostNeighborsOptimization())
         SNPRINTF(tmpStr, 1000, "%sEnableGhostNeighborsOptimization = 1\n", prefix);
@@ -329,7 +329,6 @@ PyConnectedComponentsAttributes_GetLogString()
 static void
 PyConnectedComponentsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ConnectedComponentsAttributes *atts = (ConnectedComponentsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

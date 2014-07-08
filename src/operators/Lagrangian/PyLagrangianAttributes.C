@@ -73,8 +73,8 @@ static PyObject *NewLagrangianAttributes(int);
 std::string
 PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const double *seedPoint = atts->GetSeedPoint();
         SNPRINTF(tmpStr, 1000, "%sseedPoint = (", prefix);
@@ -604,7 +604,6 @@ PyLagrangianAttributes_GetLogString()
 static void
 PyLagrangianAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LagrangianAttributes *atts = (LagrangianAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

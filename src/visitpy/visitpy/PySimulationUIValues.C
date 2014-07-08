@@ -74,7 +74,7 @@ std::string
 PySimulationUIValues_ToString(const SimulationUIValues *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;
@@ -489,7 +489,6 @@ PySimulationUIValues_GetLogString()
 static void
 PySimulationUIValues_CallLogRoutine(Subject *subj, void *data)
 {
-    SimulationUIValues *atts = (SimulationUIValues *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

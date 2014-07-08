@@ -74,7 +74,7 @@ std::string
 PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     const char *renderingType_names = "None, Image, Data";
     switch (atts->GetRenderingType())
@@ -639,7 +639,6 @@ PyViewerClientAttributes_GetLogString()
 static void
 PyViewerClientAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerClientAttributes *atts = (ViewerClientAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

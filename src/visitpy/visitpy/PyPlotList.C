@@ -75,7 +75,7 @@ std::string
 PyPlotList_ToString(const PlotList *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         int index = 0;
@@ -430,7 +430,6 @@ PyPlotList_GetLogString()
 static void
 PyPlotList_CallLogRoutine(Subject *subj, void *data)
 {
-    PlotList *atts = (PlotList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

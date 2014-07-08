@@ -81,8 +81,8 @@ static PyObject *NewExportDBAttributes(int);
 std::string
 PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sdb_type = \"%s\"\n", prefix, atts->GetDb_type().c_str());
     str += tmpStr;
@@ -536,7 +536,6 @@ PyExportDBAttributes_GetLogString()
 static void
 PyExportDBAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExportDBAttributes *atts = (ExportDBAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

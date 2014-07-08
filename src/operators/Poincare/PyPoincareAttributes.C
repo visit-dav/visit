@@ -74,8 +74,8 @@ static PyObject *NewPoincareAttributes(int);
 std::string
 PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *opacityType_names = "Explicit, ColorTable";
     switch (atts->GetOpacityType())
@@ -3585,7 +3585,6 @@ PyPoincareAttributes_GetLogString()
 static void
 PyPoincareAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PoincareAttributes *atts = (PoincareAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -75,7 +75,7 @@ std::string
 PyGaussianControlPointList_ToString(const GaussianControlPointList *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         int index = 0;
@@ -430,7 +430,6 @@ PyGaussianControlPointList_GetLogString()
 static void
 PyGaussianControlPointList_CallLogRoutine(Subject *subj, void *data)
 {
-    GaussianControlPointList *atts = (GaussianControlPointList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

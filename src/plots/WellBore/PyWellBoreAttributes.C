@@ -76,8 +76,8 @@ static PyObject *NewWellBoreAttributes(int);
 std::string
 PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     { // new scope
         std::string objPrefix(prefix);
@@ -1492,7 +1492,6 @@ PyWellBoreAttributes_GetLogString()
 static void
 PyWellBoreAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    WellBoreAttributes *atts = (WellBoreAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

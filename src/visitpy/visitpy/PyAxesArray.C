@@ -75,7 +75,7 @@ std::string
 PyAxesArray_ToString(const AxesArray *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
@@ -514,7 +514,6 @@ PyAxesArray_GetLogString()
 static void
 PyAxesArray_CallLogRoutine(Subject *subj, void *data)
 {
-    AxesArray *atts = (AxesArray *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

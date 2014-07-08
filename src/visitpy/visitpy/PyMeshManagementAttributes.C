@@ -74,7 +74,7 @@ std::string
 PyMeshManagementAttributes_ToString(const MeshManagementAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const doubleVector &discretizationTolerance = atts->GetDiscretizationTolerance();
         SNPRINTF(tmpStr, 1000, "%sdiscretizationTolerance = (", prefix);
@@ -769,7 +769,6 @@ PyMeshManagementAttributes_GetLogString()
 static void
 PyMeshManagementAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MeshManagementAttributes *atts = (MeshManagementAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

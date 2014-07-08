@@ -74,7 +74,7 @@ std::string
 PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
@@ -1118,7 +1118,6 @@ PyavtScalarMetaData_GetLogString()
 static void
 PyavtScalarMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtScalarMetaData *atts = (avtScalarMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

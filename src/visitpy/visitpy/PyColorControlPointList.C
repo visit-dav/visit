@@ -75,7 +75,7 @@ std::string
 PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         int index = 0;
@@ -600,7 +600,6 @@ PyColorControlPointList_GetLogString()
 static void
 PyColorControlPointList_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorControlPointList *atts = (ColorControlPointList *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

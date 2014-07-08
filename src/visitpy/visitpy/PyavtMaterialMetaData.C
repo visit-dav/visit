@@ -74,7 +74,7 @@ std::string
 PyavtMaterialMetaData_ToString(const avtMaterialMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     str = PyavtBaseVarMetaData_ToString(atts, prefix);
 
@@ -503,7 +503,6 @@ PyavtMaterialMetaData_GetLogString()
 static void
 PyavtMaterialMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtMaterialMetaData *atts = (avtMaterialMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

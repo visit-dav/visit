@@ -73,8 +73,8 @@ static PyObject *NewSurfCompPrepAttributes(int);
 std::string
 PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *surfaceType_names = "Closest, Farthest, Average";
     switch (atts->GetSurfaceType())
@@ -1000,7 +1000,6 @@ PySurfCompPrepAttributes_GetLogString()
 static void
 PySurfCompPrepAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SurfCompPrepAttributes *atts = (SurfCompPrepAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

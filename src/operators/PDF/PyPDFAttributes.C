@@ -73,8 +73,8 @@ static PyObject *NewPDFAttributes(int);
 std::string
 PyPDFAttributes_ToString(const PDFAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%svar1 = \"%s\"\n", prefix, atts->GetVar1().c_str());
     str += tmpStr;
@@ -1332,7 +1332,6 @@ PyPDFAttributes_GetLogString()
 static void
 PyPDFAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PDFAttributes *atts = (PDFAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

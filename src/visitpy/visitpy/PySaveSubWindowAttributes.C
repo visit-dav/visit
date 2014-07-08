@@ -74,7 +74,7 @@ std::string
 PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const int *position = atts->GetPosition();
         SNPRINTF(tmpStr, 1000, "%sposition = (", prefix);
@@ -545,7 +545,6 @@ PySaveSubWindowAttributes_GetLogString()
 static void
 PySaveSubWindowAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SaveSubWindowAttributes *atts = (SaveSubWindowAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

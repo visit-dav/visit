@@ -73,8 +73,8 @@ static PyObject *NewDeferExpressionAttributes(int);
 std::string
 PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const stringVector &exprs = atts->GetExprs();
         SNPRINTF(tmpStr, 1000, "%sexprs = (", prefix);
@@ -365,7 +365,6 @@ PyDeferExpressionAttributes_GetLogString()
 static void
 PyDeferExpressionAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DeferExpressionAttributes *atts = (DeferExpressionAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

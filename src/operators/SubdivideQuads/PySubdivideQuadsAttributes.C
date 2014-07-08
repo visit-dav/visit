@@ -73,8 +73,8 @@ static PyObject *NewSubdivideQuadsAttributes(int);
 std::string
 PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sthreshold = %g\n", prefix, atts->GetThreshold());
     str += tmpStr;
@@ -460,7 +460,6 @@ PySubdivideQuadsAttributes_GetLogString()
 static void
 PySubdivideQuadsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SubdivideQuadsAttributes *atts = (SubdivideQuadsAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

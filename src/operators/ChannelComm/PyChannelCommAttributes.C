@@ -73,8 +73,8 @@ static PyObject *NewChannelCommAttributes(int);
 std::string
 PyChannelCommAttributes_ToString(const ChannelCommAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%snumInX = %d\n", prefix, atts->GetNumInX());
     str += tmpStr;
@@ -390,7 +390,6 @@ PyChannelCommAttributes_GetLogString()
 static void
 PyChannelCommAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ChannelCommAttributes *atts = (ChannelCommAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewTraceHistoryAttributes(int);
 std::string
 PyTraceHistoryAttributes_ToString(const TraceHistoryAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const stringVector &vars = atts->GetVars();
         SNPRINTF(tmpStr, 1000, "%svars = (", prefix);
@@ -461,7 +461,6 @@ PyTraceHistoryAttributes_GetLogString()
 static void
 PyTraceHistoryAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TraceHistoryAttributes *atts = (TraceHistoryAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

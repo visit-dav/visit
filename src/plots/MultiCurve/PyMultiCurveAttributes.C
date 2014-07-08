@@ -76,8 +76,8 @@ static PyObject *NewMultiCurveAttributes(int);
 std::string
 PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     { // new scope
         std::string objPrefix(prefix);
@@ -1231,7 +1231,6 @@ PyMultiCurveAttributes_GetLogString()
 static void
 PyMultiCurveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MultiCurveAttributes *atts = (MultiCurveAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

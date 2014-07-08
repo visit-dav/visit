@@ -76,8 +76,8 @@ static PyObject *NewContourAttributes(int);
 std::string
 PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     { // new scope
         std::string objPrefix(prefix);
@@ -1502,7 +1502,6 @@ PyContourAttributes_GetLogString()
 static void
 PyContourAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ContourAttributes *atts = (ContourAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

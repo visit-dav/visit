@@ -73,8 +73,8 @@ static PyObject *NewPseudocolorAttributes(int);
 std::string
 PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *scaling_names = "Linear, Log, Skew";
     switch (atts->GetScaling())
@@ -2133,7 +2133,6 @@ PyPseudocolorAttributes_GetLogString()
 static void
 PyPseudocolorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PseudocolorAttributes *atts = (PseudocolorAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

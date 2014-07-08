@@ -76,7 +76,7 @@ std::string
 PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
@@ -670,7 +670,6 @@ PyAxes2D_GetLogString()
 static void
 PyAxes2D_CallLogRoutine(Subject *subj, void *data)
 {
-    Axes2D *atts = (Axes2D *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

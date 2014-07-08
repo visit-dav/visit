@@ -73,8 +73,8 @@ static PyObject *NewIntegralCurveAttributes(int);
 std::string
 PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *sourceType_names = "Point, PointList, Line_, Circle, Plane, "
         "Sphere, Box, Selection";
@@ -3507,7 +3507,6 @@ PyIntegralCurveAttributes_GetLogString()
 static void
 PyIntegralCurveAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IntegralCurveAttributes *atts = (IntegralCurveAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

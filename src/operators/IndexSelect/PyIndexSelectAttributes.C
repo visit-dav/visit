@@ -73,8 +73,8 @@ static PyObject *NewIndexSelectAttributes(int);
 std::string
 PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *maxDim_names = "OneD, TwoD, ThreeD";
     switch (atts->GetMaxDim())
@@ -1012,7 +1012,6 @@ PyIndexSelectAttributes_GetLogString()
 static void
 PyIndexSelectAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    IndexSelectAttributes *atts = (IndexSelectAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

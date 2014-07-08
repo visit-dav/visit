@@ -75,7 +75,7 @@ std::string
 PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     str = PyavtBaseVarMetaData_ToString(atts, prefix);
 
@@ -641,7 +641,6 @@ PyavtVarMetaData_GetLogString()
 static void
 PyavtVarMetaData_CallLogRoutine(Subject *subj, void *data)
 {
-    avtVarMetaData *atts = (avtVarMetaData *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

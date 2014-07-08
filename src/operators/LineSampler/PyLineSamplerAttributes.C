@@ -73,8 +73,8 @@ static PyObject *NewLineSamplerAttributes(int);
 std::string
 PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *meshGeometry_names = "Cartesian, Cylindrical, Toroidal";
     switch (atts->GetMeshGeometry())
@@ -2567,7 +2567,6 @@ PyLineSamplerAttributes_GetLogString()
 static void
 PyLineSamplerAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LineSamplerAttributes *atts = (LineSamplerAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

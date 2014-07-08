@@ -74,7 +74,7 @@ std::string
 PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
@@ -1105,7 +1105,6 @@ PyConstructDataBinningAttributes_GetLogString()
 static void
 PyConstructDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ConstructDataBinningAttributes *atts = (ConstructDataBinningAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

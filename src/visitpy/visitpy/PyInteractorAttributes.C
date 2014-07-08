@@ -74,7 +74,7 @@ std::string
 PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetShowGuidelines())
         SNPRINTF(tmpStr, 1000, "%sshowGuidelines = 1\n", prefix);
@@ -564,7 +564,6 @@ PyInteractorAttributes_GetLogString()
 static void
 PyInteractorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    InteractorAttributes *atts = (InteractorAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

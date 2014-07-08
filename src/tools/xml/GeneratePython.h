@@ -1874,7 +1874,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                            {" << Endl;
             c << "                                PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << Endl;
             c << "                                if(PyTuple_Check(item) &&" << Endl;
-            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << Endl;
+            c << "                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))" << Endl;
             c << "                                {" << Endl;
             c << "                                    C[i*4] = 0;" << Endl;
             c << "                                    C[i*4+1] = 0;" << Endl;
@@ -1918,7 +1918,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                            {" << Endl;
             c << "                                PyObject *item = PyList_GET_ITEM(pyobj, i);" << Endl;
             c << "                                if(PyTuple_Check(item) &&" << Endl;
-            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << Endl;
+            c << "                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))" << Endl;
             c << "                                {" << Endl;
             c << "                                    C[i*4] = 0;" << Endl;
             c << "                                    C[i*4+1] = 0;" << Endl;
@@ -2449,6 +2449,18 @@ class AttsGeneratorMapNode : public virtual MapNode , public virtual PythonGener
     virtual bool HasSetAttr()
     {
         return false;
+    }
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
+    {
+        // squelch a warning, then call base class method, as this isn't implemented yet
+        c << "    (void) obj;" << endl;
+        PythonGeneratorField::WriteSetMethodBody(c, className);
+    }
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
+    {
+        // squelch a warning, then call base class method, as this isn't implemented yet
+        c << "    (void) obj;" << endl;
+        PythonGeneratorField::WriteGetMethodBody(c, className);
     }
 };
 
@@ -3169,7 +3181,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << mName << "(const "<<name<<" *atts, const char *prefix)" << Endl;
         c << "{" << Endl;
         c << "    std::string str;" << Endl;
-        c << "    char tmpStr[1000]; (void)tmpStr;" << Endl;
+        if (!fields.empty())
+            c << "    char tmpStr[1000];" << Endl;
         c << Endl;
         if (custombase)
         {
@@ -3372,7 +3385,6 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "static void" << Endl;
             c << CallLogRoutine << "(Subject *subj, void *data)" << Endl;
             c << "{" << Endl;
-            c << "    "<<name<<" *atts = ("<<name<<" *)subj; (void) atts;" << Endl;
             if(HasCode(CallLogRoutine, 0))
                 PrintCode(c, CallLogRoutine, 0);
             c << "    typedef void (*logCallback)(const std::string &);" << Endl;

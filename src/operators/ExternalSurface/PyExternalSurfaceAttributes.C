@@ -73,8 +73,8 @@ static PyObject *NewExternalSurfaceAttributes(int);
 std::string
 PyExternalSurfaceAttributes_ToString(const ExternalSurfaceAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetRemoveGhosts())
         SNPRINTF(tmpStr, 1000, "%sremoveGhosts = 1\n", prefix);
@@ -364,7 +364,6 @@ PyExternalSurfaceAttributes_GetLogString()
 static void
 PyExternalSurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ExternalSurfaceAttributes *atts = (ExternalSurfaceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

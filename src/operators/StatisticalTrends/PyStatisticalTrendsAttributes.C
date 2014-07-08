@@ -73,8 +73,8 @@ static PyObject *NewStatisticalTrendsAttributes(int);
 std::string
 PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
     str += tmpStr;
@@ -717,7 +717,6 @@ PyStatisticalTrendsAttributes_GetLogString()
 static void
 PyStatisticalTrendsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    StatisticalTrendsAttributes *atts = (StatisticalTrendsAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

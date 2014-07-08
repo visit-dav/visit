@@ -75,8 +75,8 @@ static PyObject *NewSurfaceAttributes(int);
 std::string
 PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -1083,7 +1083,6 @@ PySurfaceAttributes_GetLogString()
 static void
 PySurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SurfaceAttributes *atts = (SurfaceAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

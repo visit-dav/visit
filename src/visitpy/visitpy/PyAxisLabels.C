@@ -75,7 +75,7 @@ std::string
 PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
@@ -409,7 +409,6 @@ PyAxisLabels_GetLogString()
 static void
 PyAxisLabels_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisLabels *atts = (AxisLabels *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewResampleAttributes(int);
 std::string
 PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetUseExtents())
         SNPRINTF(tmpStr, 1000, "%suseExtents = 1\n", prefix);
@@ -851,7 +851,6 @@ PyResampleAttributes_GetLogString()
 static void
 PyResampleAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ResampleAttributes *atts = (ResampleAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

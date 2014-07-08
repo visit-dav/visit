@@ -77,7 +77,7 @@ std::string
 PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
@@ -899,7 +899,6 @@ PyAxes3D_GetLogString()
 static void
 PyAxes3D_CallLogRoutine(Subject *subj, void *data)
 {
-    Axes3D *atts = (Axes3D *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

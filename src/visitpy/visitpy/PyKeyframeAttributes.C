@@ -74,7 +74,7 @@ std::string
 PyKeyframeAttributes_ToString(const KeyframeAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     if(atts->GetEnabled())
         SNPRINTF(tmpStr, 1000, "%senabled = 1\n", prefix);
@@ -396,7 +396,6 @@ PyKeyframeAttributes_GetLogString()
 static void
 PyKeyframeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    KeyframeAttributes *atts = (KeyframeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

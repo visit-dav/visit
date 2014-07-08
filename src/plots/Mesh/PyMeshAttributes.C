@@ -75,8 +75,8 @@ static PyObject *NewMeshAttributes(int);
 std::string
 PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -1246,7 +1246,6 @@ PyMeshAttributes_GetLogString()
 static void
 PyMeshAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    MeshAttributes *atts = (MeshAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

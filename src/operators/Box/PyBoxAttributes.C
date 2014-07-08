@@ -73,8 +73,8 @@ static PyObject *NewBoxAttributes(int);
 std::string
 PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *amount_names = "Some, All";
     switch (atts->GetAmount())
@@ -580,7 +580,6 @@ PyBoxAttributes_GetLogString()
 static void
 PyBoxAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    BoxAttributes *atts = (BoxAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

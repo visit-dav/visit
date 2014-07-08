@@ -75,7 +75,7 @@ std::string
 PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const stringVector &variables = atts->GetVariables();
         SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);
@@ -1181,7 +1181,6 @@ PyPickAttributes_GetLogString()
 static void
 PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    PickAttributes *atts = (PickAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

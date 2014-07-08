@@ -74,8 +74,8 @@ static PyObject *NewHistogramAttributes(int);
 std::string
 PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *basedOn_names = "ManyVarsForSingleZone, ManyZonesForSingleVar";
     switch (atts->GetBasedOn())
@@ -1203,7 +1203,6 @@ PyHistogramAttributes_GetLogString()
 static void
 PyHistogramAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    HistogramAttributes *atts = (HistogramAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

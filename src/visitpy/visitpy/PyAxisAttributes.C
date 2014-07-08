@@ -77,7 +77,7 @@ std::string
 PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     { // new scope
         std::string objPrefix(prefix);
@@ -473,7 +473,6 @@ PyAxisAttributes_GetLogString()
 static void
 PyAxisAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AxisAttributes *atts = (AxisAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -75,8 +75,8 @@ static PyObject *NewLabelAttributes(int);
 std::string
 PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -1131,7 +1131,6 @@ PyLabelAttributes_GetLogString()
 static void
 PyLabelAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LabelAttributes *atts = (LabelAttributes *)subj; (void)atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewFiveFoldTetSubdivisionAttributes(int);
 std::string
 PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetOddParityHasSixNeighborhood())
         SNPRINTF(tmpStr, 1000, "%soddParityHasSixNeighborhood = 1\n", prefix);
@@ -662,7 +662,6 @@ PyFiveFoldTetSubdivisionAttributes_GetLogString()
 static void
 PyFiveFoldTetSubdivisionAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    FiveFoldTetSubdivisionAttributes *atts = (FiveFoldTetSubdivisionAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewSmoothOperatorAttributes(int);
 std::string
 PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%snumIterations = %d\n", prefix, atts->GetNumIterations());
     str += tmpStr;
@@ -524,7 +524,6 @@ PySmoothOperatorAttributes_GetLogString()
 static void
 PySmoothOperatorAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SmoothOperatorAttributes *atts = (SmoothOperatorAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

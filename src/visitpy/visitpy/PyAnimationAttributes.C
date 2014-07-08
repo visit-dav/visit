@@ -74,7 +74,7 @@ std::string
 PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     const char *animationMode_names = "ReversePlayMode, StopMode, PlayMode";
     switch (atts->GetAnimationMode())
@@ -523,7 +523,6 @@ PyAnimationAttributes_GetLogString()
 static void
 PyAnimationAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    AnimationAttributes *atts = (AnimationAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

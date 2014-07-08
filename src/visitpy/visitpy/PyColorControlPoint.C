@@ -74,7 +74,7 @@ std::string
 PyColorControlPoint_ToString(const ColorControlPoint *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const unsigned char *colors = atts->GetColors();
         SNPRINTF(tmpStr, 1000, "%scolors = (", prefix);
@@ -407,7 +407,6 @@ PyColorControlPoint_GetLogString()
 static void
 PyColorControlPoint_CallLogRoutine(Subject *subj, void *data)
 {
-    ColorControlPoint *atts = (ColorControlPoint *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewRemoveCellsAttributes(int);
 std::string
 PyRemoveCellsAttributes_ToString(const RemoveCellsAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const intVector &cellList = atts->GetCellList();
         SNPRINTF(tmpStr, 1000, "%scellList = (", prefix);
@@ -464,7 +464,6 @@ PyRemoveCellsAttributes_GetLogString()
 static void
 PyRemoveCellsAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RemoveCellsAttributes *atts = (RemoveCellsAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

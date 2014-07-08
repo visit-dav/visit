@@ -74,7 +74,7 @@ std::string
 PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sdata = \"%s\"\n", prefix, atts->GetData().c_str());
     str += tmpStr;
@@ -524,7 +524,6 @@ PyViewerClientInformationElement_GetLogString()
 static void
 PyViewerClientInformationElement_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewerClientInformationElement *atts = (ViewerClientInformationElement *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

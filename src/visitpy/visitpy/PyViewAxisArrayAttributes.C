@@ -74,7 +74,7 @@ std::string
 PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     {   const double *domainCoords = atts->GetDomainCoords();
         SNPRINTF(tmpStr, 1000, "%sdomainCoords = (", prefix);
@@ -522,7 +522,6 @@ PyViewAxisArrayAttributes_GetLogString()
 static void
 PyViewAxisArrayAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ViewAxisArrayAttributes *atts = (ViewAxisArrayAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

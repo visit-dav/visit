@@ -73,8 +73,8 @@ static PyObject *NewTubeAttributes(int);
 std::string
 PyTubeAttributes_ToString(const TubeAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetScaleByVarFlag())
         SNPRINTF(tmpStr, 1000, "%sscaleByVarFlag = 1\n", prefix);
@@ -551,7 +551,6 @@ PyTubeAttributes_GetLogString()
 static void
 PyTubeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TubeAttributes *atts = (TubeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

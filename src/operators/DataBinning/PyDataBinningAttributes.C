@@ -73,8 +73,8 @@ static PyObject *NewDataBinningAttributes(int);
 std::string
 PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *numDimensions_names = "One, Two, Three";
     switch (atts->GetNumDimensions())
@@ -1382,7 +1382,6 @@ PyDataBinningAttributes_GetLogString()
 static void
 PyDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    DataBinningAttributes *atts = (DataBinningAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -74,7 +74,7 @@ std::string
 PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix)
 {
     std::string str;
-    char tmpStr[1000]; (void)tmpStr;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sactiveSource = \"%s\"\n", prefix, atts->GetActiveSource().c_str());
     str += tmpStr;
@@ -1491,7 +1491,6 @@ PyWindowInformation_GetLogString()
 static void
 PyWindowInformation_CallLogRoutine(Subject *subj, void *data)
 {
-    WindowInformation *atts = (WindowInformation *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

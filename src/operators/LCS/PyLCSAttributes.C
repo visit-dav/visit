@@ -73,8 +73,8 @@ static PyObject *NewLCSAttributes(int);
 std::string
 PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *sourceType_names = "NativeMesh, RegularGrid";
     switch (atts->GetSourceType())
@@ -2291,7 +2291,6 @@ PyLCSAttributes_GetLogString()
 static void
 PyLCSAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    LCSAttributes *atts = (LCSAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewSliceAttributes(int);
 std::string
 PySliceAttributes_ToString(const SliceAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     const char *originType_names = "Point, Intercept, Percent, Zone, Node";
     switch (atts->GetOriginType())
@@ -1071,7 +1071,6 @@ PySliceAttributes_GetLogString()
 static void
 PySliceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SliceAttributes *atts = (SliceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

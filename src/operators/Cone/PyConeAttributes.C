@@ -73,8 +73,8 @@ static PyObject *NewConeAttributes(int);
 std::string
 PyConeAttributes_ToString(const ConeAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%sangle = %g\n", prefix, atts->GetAngle());
     str += tmpStr;
@@ -686,7 +686,6 @@ PyConeAttributes_GetLogString()
 static void
 PyConeAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ConeAttributes *atts = (ConeAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

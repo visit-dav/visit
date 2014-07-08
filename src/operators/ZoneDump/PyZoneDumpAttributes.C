@@ -73,8 +73,8 @@ static PyObject *NewZoneDumpAttributes(int);
 std::string
 PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
@@ -457,7 +457,6 @@ PyZoneDumpAttributes_GetLogString()
 static void
 PyZoneDumpAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    ZoneDumpAttributes *atts = (ZoneDumpAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

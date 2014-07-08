@@ -74,8 +74,8 @@ static PyObject *NewTopologyAttributes(int);
 std::string
 PyTopologyAttributes_ToString(const TopologyAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
@@ -223,7 +223,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
-                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)
+                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))
                                 {
                                     C[i*4] = 0;
                                     C[i*4+1] = 0;
@@ -267,7 +267,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
-                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)
+                                   (PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4))
                                 {
                                     C[i*4] = 0;
                                     C[i*4+1] = 0;
@@ -798,7 +798,6 @@ PyTopologyAttributes_GetLogString()
 static void
 PyTopologyAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    TopologyAttributes *atts = (TopologyAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 

@@ -73,8 +73,8 @@ static PyObject *NewSphereSliceAttributes(int);
 std::string
 PySphereSliceAttributes_ToString(const SphereSliceAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     {   const double *origin = atts->GetOrigin();
         SNPRINTF(tmpStr, 1000, "%sorigin = (", prefix);
@@ -402,7 +402,6 @@ PySphereSliceAttributes_GetLogString()
 static void
 PySphereSliceAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    SphereSliceAttributes *atts = (SphereSliceAttributes *)subj; (void) atts;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 
