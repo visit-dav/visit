@@ -113,7 +113,8 @@ WidgetID QvisCMap2Display::WIDGET_NOT_FOUND = -1;
 
 QvisCMap2Display::QvisCMap2Display(QWidget *parent) : 
   QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::AlphaChannel), parent), 
-  histogram_texture(0), init_done(false), defaultColor(1., 1., 1.), defaultAlpha(0.8), idToWidget(), nextID(0) 
+  histogram_texture(0), init_done(false), defaultColor(1., 1., 1.), 
+  defaultAlpha(0.8), idToWidget(), nextID(0) 
 {
     activeW = 0;
     hist_data = 0;

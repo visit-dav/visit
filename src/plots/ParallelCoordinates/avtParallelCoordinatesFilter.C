@@ -790,7 +790,6 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     bool arrayIsCellData, dataBadOrMissing;
     string arrayName;
     vtkDataArray *dataArray;
-    vtkIdList *pointIdList = NULL; ///TODO: check on fix for uninitialized variable
     float *arrayValues;
     float valueSum;
     
@@ -856,13 +855,9 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     }
     bool drawContext = parCoordsAtts.GetDrawContext();
 
-    if (plotCellData && (pointArrayCount > 0))
-    {
-        pointIdList = vtkIdList::New();
-    }
-
     if (plotCellData)
     {
+        vtkIdList *pointIdList = vtkIdList::New();
         for (tupleNum = 0; tupleNum < cellCount; tupleNum++)
         {
             for (axisNum = 0; axisNum < axisCount; axisNum++)
@@ -895,7 +890,8 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             }
             
             // TODO: DOESN'T SUPPORT MULTIPLE TIME STEPS; hardcoded to 0
-            if (drawLines) {
+            if (drawLines)
+            {
                 if (parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
                     AppendDataTupleFocus(inputTuple);
                 else
@@ -904,6 +900,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             if (drawContext)
                 CountDataTupleContext(0, inputTuple);
         }
+        pointIdList->Delete();
     }
     else
     {
@@ -919,7 +916,8 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             }
             
             // TODO: DOESN'T SUPPORT MULTIPLE TIME STEPS; hardcoded to 0
-            if (drawLines) {
+            if (drawLines)
+            {
                 if (parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
                     AppendDataTupleFocus(inputTuple);
                 else
@@ -928,11 +926,6 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             if (drawContext)
                 CountDataTupleContext(0, inputTuple);
         }
-    }
-
-    if (plotCellData && (pointArrayCount > 0))
-    {
-        pointIdList->Delete();
     }
 
     if (drawLines && parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
@@ -2208,11 +2201,9 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
         return NULL;
     }
 
-    size_t  j;
-
     vector<avtDataSelection *> drs;
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
-    for (j = 0 ; j < (size_t)axisCount ; j++)
+    for (int j = 0 ; j < axisCount ; j++)
     {
         drs.push_back(new avtDataRangeSelection(
                      curAxisVarNames[j],
@@ -2235,7 +2226,7 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
     // own this reference.
     // delete ids;
 
-    for (j = 0 ; j < drs.size() ; j++)
+    for (size_t j = 0 ; j < drs.size() ; j++)
         delete drs[j];
 
     return rv;
@@ -2265,8 +2256,6 @@ avtNamedSelection *
 avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     avtContract_p c, const string &selName)
 {
-    size_t  i;
-
     // Get the zone number labels loaded up.
     GetInput()->Update(c);
 
@@ -2277,7 +2266,7 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     int nleaves = 0;
     vtkDataSet **leaves = tree->GetAllLeaves(nleaves);
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
-    for (i = 0 ; i < (size_t)nleaves ; i++)
+    for (int i = 0 ; i < nleaves ; i++)
     {
         int axisNum;
         int tupleCount, componentCount;
@@ -2410,12 +2399,12 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     // of the named selections will be small.
     int *numPerProcIn = new int[PAR_Size()];
     int *numPerProc   = new int[PAR_Size()];
-    for (i = 0 ; i < (size_t)PAR_Size() ; i++)
+    for (int i = 0 ; i < PAR_Size() ; i++)
         numPerProcIn[i] = 0;
     numPerProcIn[PAR_Rank()] = (int)doms.size();
     SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
     int numTotal = 0;
-    for (i = 0 ; i < (size_t)PAR_Size() ; i++)
+    for (int i = 0 ; i < PAR_Size() ; i++)
         numTotal += numPerProc[i];
     if (numTotal > 1000000)
     {
@@ -2425,18 +2414,18 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
                    "named selection.  Disallowing ... no selection created");
     }
     int myStart = 0;
-    for (i = 0 ; i < (size_t)PAR_Rank()-1 ; i++)
+    for (int i = 0 ; i < PAR_Rank()-1 ; i++)
         myStart += numPerProc[i];
 
     int *selForDomsIn = new int[numTotal];
     int *selForDoms   = new int[numTotal];
-    for (i = 0 ; i < doms.size() ; i++)
+    for (size_t i = 0 ; i < doms.size() ; i++)
         selForDomsIn[myStart+i] = doms[i];
     SumIntArrayAcrossAllProcessors(selForDomsIn, selForDoms, numTotal);
 
     int *selForZonesIn = new int[numTotal];
     int *selForZones   = new int[numTotal];
-    for (i = 0 ; i < zones.size() ; i++)
+    for (size_t i = 0 ; i < zones.size() ; i++)
         selForZonesIn[myStart+i] = zones[i];
     SumIntArrayAcrossAllProcessors(selForZonesIn, selForZones, numTotal);
 

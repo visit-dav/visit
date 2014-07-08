@@ -267,7 +267,7 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
     {
         levelsMapper->DataScalingOff();
     }
-    //avtPointGlypher::PointGlyphType glyphType = avtPointGlypher::Point;
+
     if (atts.GetPointType() == FilledBoundaryAttributes::Box)
         levelsMapper->SetGlyphType(avtPointGlypher::Box);
     else if (atts.GetPointType() == FilledBoundaryAttributes::Axis)

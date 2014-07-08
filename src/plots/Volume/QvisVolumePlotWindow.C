@@ -1601,7 +1601,6 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
     double *mat;
-    //bool matEnabled = false;
 
     // If the plot info atts changed then update the histogram.
     if(doAll || SelectedSubject() == GetViewerState()->GetPlotInformation(plotType))

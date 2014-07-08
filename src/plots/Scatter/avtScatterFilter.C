@@ -580,8 +580,6 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
            << "zExtents = [" << zMin << ", " << zMax << "]" << endl;
 
     vtkIdType nCells = 0;
-    //avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-    //const float EPSILON = 1.e-9;
 
     debug4 << mName << "arr1 = " << arr1->GetName()
            << ", ntuples=" << arr1->GetNumberOfTuples() << endl;
@@ -779,12 +777,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     {    
         coord = (float *)pts->GetVoidPointer(0);
 
-        // Variables for log scaling
-        //float small_val = 0.1;  // Less than 1.
-        //float log_smallval = log10(small_val);
-
         // Variables for skew scaling.
-        float x_range, x_rangeInverse, x_logSkew, x_k;
+        float x_range = 0, x_rangeInverse = 0, x_logSkew = 0, x_k = 0;
         if(d1scale == 2)
         {
             x_range = xMax - xMin; 
@@ -792,7 +786,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
             x_logSkew = log(d1->skew);
             x_k = x_range / (d1->skew - 1.);
         }
-        float y_range, y_rangeInverse, y_logSkew, y_k;
+        float y_range = 0, y_rangeInverse = 0, y_logSkew = 0, y_k = 0;
         if(d2scale == 2)
         {
             y_range = yMax - yMin; 
@@ -801,15 +795,9 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
             y_k = y_range / (d2->skew - 1.);
         }
 
-#if 0
-#define LOG10_X(X) log10((X) - xMin + small_val) - log_smallval;
-#define LOG10_Y(Y) log10((Y) - yMin + small_val) - log_smallval;
-#define LOG10_Z(Z) log10((Z) - zMin + small_val) - log_smallval;
-#else
 #define LOG10_X(X) log10(X)
 #define LOG10_Y(Y) log10(Y)
 #define LOG10_Z(Z) log10(Z)
-#endif
 
         if(arr3 == 0)
         {
@@ -836,7 +824,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
         }
         else
         {
-            float z_range = 0, z_rangeInverse = 0, z_logSkew = 0, z_k = 0; ///TODO: check on fix for uninitialized variables
+            float z_range = 0, z_rangeInverse = 0, z_logSkew = 0, z_k = 0;
             if(d3->scale == 2)
             {
                 z_range = zMax - zMin; 

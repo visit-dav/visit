@@ -418,8 +418,8 @@ void
 StreamlineAttributes::ProcessOldVersions(DataNode *parentNode,
                                          const char *configVersion)
 {
-    char num1[2] = {configVersion[0], '\0'}, num2[2] = {configVersion[2], '\0'}, num3[2] = {configVersion[4], '\0'};
-    int major = atoi(num1), minor = atoi(num2), patch = atoi(num3);
+    char num1[2] = {configVersion[0], '\0'};
+    int major = atoi(num1);
     
     DataNode *searchNode = parentNode->GetNode("streamlineAlgorithmType");
     if (searchNode)

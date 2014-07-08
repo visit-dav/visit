@@ -373,9 +373,6 @@ avtWellBoreFilter::CreateWell(const std::vector<int> &wellBores,
 {
     WellBoreAttributes::WellRenderingMode renderingMode =
         atts.GetDrawWellsAs();
-    //WellBoreAttributes::DetailLevel cylinderQuality =
-    //    atts.GetWellCylinderQuality();
-    //float cylinderRadius = atts.GetWellRadius();
 
     vtkPolyData *polyData = vtkPolyData::New();
 
@@ -483,7 +480,7 @@ avtWellBoreFilter::CreateWell(const std::vector<int> &wellBores,
     {
         int nChange = 0;
         int nRemainingPoints = 0;
-        int iRemainingPoints = 0; //TODO: check on fix for uninitialized pointer
+        int iRemainingPoints = 0;
         int i;
         for (i = 0; i < 3; i++)
         {

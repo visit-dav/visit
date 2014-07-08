@@ -1358,7 +1358,7 @@ void
 ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
                                           int minAxisCount)
 {
-    if (scalarAxisNames.size() <= (size_t)minAxisCount) return;
+    if ((int)scalarAxisNames.size() <= minAxisCount) return;
 
     std::string newAxisName = axisName_;
 

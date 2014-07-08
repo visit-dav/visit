@@ -548,7 +548,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
         glyph->CapEndsOff();
     }
 
-    float offset = 0; ///TODO: check on fix for uninitialized pointer
+    float offset = 0;
     switch (atts.GetVectorOrigin())
     {
       case VectorAttributes::Head:    offset = -.5;  break;

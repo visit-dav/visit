@@ -140,10 +140,6 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 void
 QvisHistogramPlotWindow::CreateWindowContents()
 {
-    // Figure out the max width that we want to allow for some simple
-    // line edit widgets.
-    //int maxWidth = fontMetrics().width("1.0000000000");
-    
     QGridLayout *mainLayout = new QGridLayout();
     topLayout->addLayout(mainLayout);
 

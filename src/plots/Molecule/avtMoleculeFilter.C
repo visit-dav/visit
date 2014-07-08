@@ -336,13 +336,11 @@ avtMoleculeFilter::PostExecute()
         // the known residue names into the labels. We send them all 
         // with an on/off flag so we can let the viewer know about 
         // new residues that we've learned about.
-        //bool err = false;
         for(int i = 0; i < NumberOfKnownResidues(); ++i)
         {
             const char *rn = NumberToResiduename(i);
             if(rn == 0)
             {
-                //err = true;
                 break;
             }
 

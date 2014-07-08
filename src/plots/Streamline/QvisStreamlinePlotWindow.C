@@ -1187,7 +1187,6 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 void
 QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
-    //int row = 0;
     QGridLayout *advGLayout = new QGridLayout(pageAdvanced);
     advGLayout->setMargin(5);
     advGLayout->setSpacing(5);

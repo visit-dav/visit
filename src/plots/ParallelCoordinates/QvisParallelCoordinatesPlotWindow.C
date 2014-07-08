@@ -1178,7 +1178,7 @@ QvisParallelCoordinatesPlotWindow::moveAxisDown()
     int naxes = axes.size();
  
     // can't move last axis down in list
-    if ((size_t)index >= axes.size()-1)
+    if (index >= (int)axes.size()-1)
         return;
 
     // InsertAxis() will reorder axes already in the list, so we
