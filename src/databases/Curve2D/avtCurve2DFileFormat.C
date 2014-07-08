@@ -532,7 +532,7 @@ avtCurve2DFileFormat::ReadFile(void)
     int start = 0;
     cutoff.push_back((int)xl.size());       // Make logic easier.
     centering.push_back(useCentering); //      ditto
-    //int curveIndex = 0;
+    int curveIndex = 0; (void) curveIndex;
     for (size_t i = 0 ; i < cutoff.size() ; i++)
     {
         if (start == cutoff[i])
@@ -547,7 +547,6 @@ avtCurve2DFileFormat::ReadFile(void)
 #ifdef MDSERVER
         vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
 #else
-        int curveIndex = 0;
         vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
  
         vtkFloatArray    *vals = vtkFloatArray::New();
