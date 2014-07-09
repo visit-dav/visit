@@ -136,11 +136,20 @@ function build_mfem
     mkdir "$VISITDIR/mfem/$MFEM_VERSION"
     mkdir "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH"
     mkdir "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include"
+    mkdir "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/fem"
+    mkdir "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/general"
+    mkdir "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/mesh"
+    mkdir "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/linalg"
     mkdir "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/lib"
+
 
     cp libmfem.a "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/lib"
     cp *.hpp  "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include"
-   
+    cp fem/*.hpp  "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/fem"
+    cp general/*.hpp  "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/general"
+    cp mesh/*.hpp  "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/mesh"
+    cp linalg/*.hpp  "$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/include/linalg"
+
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/mfem"
