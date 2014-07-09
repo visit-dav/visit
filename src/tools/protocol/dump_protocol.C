@@ -57,7 +57,6 @@
 #include <PlotList.h>
 #include <PlotQueryInfo.h>
 #include <PluginManagerAttributes.h>
-#include <Point.h>
 #include <PointAttributes.h>
 #include <PrinterAttributes.h>
 #include <ProcessAttributes.h>
@@ -206,7 +205,6 @@ CreateCommonStateObjects(StateObjectMap &attributes)
     MAKE_OBJECT(PlotList);
     MAKE_OBJECT(PlotQueryInfo);
     MAKE_OBJECT(PluginManagerAttributes);
-    MAKE_OBJECT(Point);
     MAKE_OBJECT(PointAttributes);
     MAKE_OBJECT(PrinterAttributes);
     MAKE_OBJECT(ProcessAttributes);
