@@ -177,7 +177,16 @@ function apply_vtk_patch
             return 1
         fi
     fi
-
+    
+    # also apply objc flag patch to 6.1.0
+    
+    if [[ ${VTK_VERSION} == 6.1.0 ]] ; then
+        apply_vtk_600_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+    
     return 0
 }
 
