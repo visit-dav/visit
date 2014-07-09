@@ -261,7 +261,6 @@ state/PlotInfoAttributes.C
 state/PlotList.C
 state/PlotQueryInfo.C
 state/PluginManagerAttributes.C
-state/Point.C
 state/PointAttributes.C
 state/PrinterAttributes.C
 state/ProcessAttributes.C

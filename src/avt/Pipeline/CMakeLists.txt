@@ -109,7 +109,6 @@ Data/avtOpacityMapSamplePointArbitrator.C
 Data/avtPhong.C
 Data/avtPixelizer.C
 Data/avtPlaneSelection.C
-Data/avtPointAttribute.C
 Data/avtPointExtractor.C
 Data/avtPointSelection.C
 Data/avtPyramidExtractor.C

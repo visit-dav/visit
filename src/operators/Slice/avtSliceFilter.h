@@ -54,8 +54,6 @@ class vtkTransformFilter;
 class vtkMatrix4x4;
 class vtkSlicer;
 
-class avtPointAttribute;
-
 
 // ****************************************************************************
 //  Class: avtSliceFilter
