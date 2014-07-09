@@ -614,8 +614,6 @@ avtModelFitFilter::ModifyContract(avtContract_p in_spec){
     if(!curListedVars.size())
     return in_spec;
   
-    //ExpressionList *elist = ParsingExprList::Instance()->GetList();
-
     if((!strcmp(pipelineVar, "operators/ModelFit/model")) || 
        (!strcmp(pipelineVar, "operators/ModelFit/distance")))
         for(int i = 0; ; i++)

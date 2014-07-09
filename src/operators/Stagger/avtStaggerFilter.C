@@ -191,7 +191,6 @@ avtStaggerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       debug5 <<"avtStaggerFilter::ExecuteData() - This is a STRUCTURED grid." <<std::endl;
       
       vtkStructuredGrid* grid = vtkStructuredGrid::SafeDownCast(in_ds);
-      //int* dimensions = grid->GetDimensions();
       
       vtkStructuredGrid* newGrid = vtkStructuredGrid::New();
       newGrid->ShallowCopy(grid);

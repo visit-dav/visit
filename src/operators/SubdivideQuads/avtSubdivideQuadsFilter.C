@@ -182,11 +182,13 @@ int
 DetermineSubdivisions(vtkDataArray *arr, vtkIdType id[4], int max, 
                       double threshold)
 {
+    int numSubdivs = 0;
     switch(arr->GetDataType())
     {
-        vtkTemplateAliasMacro(return DetermineSubdivisions(id, max, threshold,
+        vtkTemplateAliasMacro(numSubdivs = DetermineSubdivisions(id, max, threshold,
             static_cast<VTK_TT *>(arr->GetVoidPointer(0))));
     }
+    return numSubdivs;
 }
 
 template <class T> inline void

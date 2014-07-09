@@ -951,7 +951,6 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
 {
     // Create unstructured grid for stitch cells
     vtkPoints *stitchCellPts = vtkVisItUtility::NewPoints(rgrid);
-    //vtkUnstructuredGrid *stitchCellGrid = vtkUnstructuredGrid::New();
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(stitchCellPts);
     stitchCellPts->Delete();

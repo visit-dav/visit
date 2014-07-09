@@ -288,7 +288,6 @@ avtCylinderFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 void
 avtCylinderFilter::UpdateDataObjectInfo(void)
 {
-    //avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
 

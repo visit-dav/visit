@@ -558,7 +558,7 @@ avtLCSFilter::PreExecute(void)
 
     double minResolution = std::numeric_limits<float>::max();
 
-    double resX, resY, resZ;
+    double resX = 0., resY = 0., resZ = 0.;
 
     if (global_resolution[0] > 1)
     {
@@ -882,10 +882,6 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                   global_bounds[0]*(1.0-xpcnt) +
                   global_bounds[1]*xpcnt;
                 
-                //size_t index =
-                //  (global_resolution[1]*global_resolution[0]*k) +
-                //  (global_resolution[0]*j)+i;
-
                 seedPoints[l++].set(x,y,z);
             }
         }
@@ -2069,7 +2065,8 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         UnifyMaximumValue(iHavePoint, anyoneHasPoint);
         avtVector zero;
         zero.x = zero.y = zero.z = 0.;
-        for (size_t i = 0; i < (size_t)nTuples; i++) {
+        for (size_t i = 0; i < (size_t)nTuples; i++)
+        {
             if (PAR_Rank() == 0 && !anyoneHasPoint[i])
             {
                 remapPoints[i] = seedPoints.at(offset + i);
@@ -2986,7 +2983,8 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     int numStiff = 0;
     int numCritPts = 0;
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
     }
 
@@ -3250,7 +3248,6 @@ avtLCSFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
         //
         // there is only one dataset to process
         //
-        //vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
         int dom = inDT->GetDataRepresentation().GetDomain();
         std::string label = inDT->GetDataRepresentation().GetLabel();
         std::string str = CreateCacheString();

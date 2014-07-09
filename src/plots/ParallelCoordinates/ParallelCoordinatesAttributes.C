@@ -1280,8 +1280,8 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
 {
     std::string newAxisName = axisName_;
 
-    int curAxisCount = scalarAxisNames.size();
-    int axisOrdinal;
+    size_t curAxisCount = scalarAxisNames.size();
+    size_t axisOrdinal;
     double saveExtentMin, saveExtentMax;
 
     stringVector::iterator saxisNamesIt;
@@ -1362,8 +1362,8 @@ ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
 
     std::string newAxisName = axisName_;
 
-    int curAxisCount = scalarAxisNames.size();
-    int axisOrdinal;
+    size_t curAxisCount = scalarAxisNames.size();
+    size_t axisOrdinal;
 
     for (axisOrdinal = 0; axisOrdinal < curAxisCount; axisOrdinal++)
     {
@@ -1410,8 +1410,8 @@ ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
 bool
 ParallelCoordinatesAttributes::AttributesAreConsistent() const
 {
-    int axisNamesSize = scalarAxisNames.size();
-    int axisNum, axis2Num;
+    size_t axisNamesSize = scalarAxisNames.size();
+    size_t axisNum, axis2Num;
     std::string axisName;
     
     if (axisNamesSize == 0)
@@ -1425,8 +1425,8 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
     if (axisNamesSize == 1)
         return false;
 
-    if ((extentMinima.size()     != (size_t)axisNamesSize) ||
-        (extentMaxima.size()     != (size_t)axisNamesSize))
+    if ((extentMinima.size()     != axisNamesSize) ||
+        (extentMaxima.size()     != axisNamesSize))
     {
         return false;
     }

@@ -222,7 +222,7 @@ QvisRemoveCellsWindow::UpdateWindow(bool doAll)
             const vector<int> &cV = atts->GetCellList();
             const vector<int> &dV = atts->GetDomainList();
             
-            for (int j = 0; j < cV.size(); ++j)
+            for (size_t j = 0; j < cV.size(); ++j)
                 cellList->addItem(CreateEntryString(cV[j],dV[j]));
             
             if (row > 0 && row < cellList->count())

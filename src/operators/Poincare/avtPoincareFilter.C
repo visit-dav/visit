@@ -1097,7 +1097,8 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     int numStiff = 0;
     int numCritPts = 0;
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "::ReportWarnings " << ics.size() << endl;
     }
     //See how many pts, ics we have so we can preallocate everything.
@@ -1641,7 +1642,7 @@ avtPoincareFilter::ContinueExecute()
                       std::vector<avtIntegralCurve *> new_ics;
                       newA[1] =Z_OFFSET;                      
                       AddSeedPoint( newB, zeroVec, new_ics );
-                      avtPoincareIC *seed_b = NULL; ///TODO: check on fix for uninitialized value
+                      avtPoincareIC *seed_b = NULL;
                       for( unsigned int k=0; k<new_ics.size(); k++ )
                         {
                           seed_b = (avtPoincareIC *) new_ics[k];
@@ -1652,7 +1653,7 @@ avtPoincareFilter::ContinueExecute()
                       std::vector<avtIntegralCurve *> new_ics_2;
                       newC[1]=Z_OFFSET;
                       AddSeedPoint( newC, zeroVec, new_ics_2 );
-                      avtPoincareIC *seed_c = NULL; ///TODO: check on fix for uninitialized value
+                      avtPoincareIC *seed_c = NULL;
                   
                       for( unsigned int k=0; k<new_ics_2.size(); k++ )
                         {
@@ -2081,8 +2082,8 @@ avtPoincareFilter::ContinueExecute()
                   
                   std::vector<avtIntegralCurve *> new_ics;
                   avtVector zeroVec = avtVector(0,0,0);
-                  avtPoincareIC *newIC = NULL; ///TODO: check on fix for uninitialized value
-                  size_t j;     
+                  avtPoincareIC *newIC = NULL;
+                  size_t j;
                   
                   double range1 = FindMinimizationDistance(_x1);
                   double range2 = FindMinimizationDistance(_x2);
@@ -2252,7 +2253,6 @@ avtPoincareFilter::ContinueExecute()
                   }
                   // We have minimized!!!
                   else{
-                      //std::vector<avtPoincareIC *>::iterator it = children->begin();
                       if (range1 < range2)
                         {
                           // X1 is our minimum
@@ -2732,7 +2732,7 @@ avtPoincareFilter::ClassifyRationals(std::vector<avtIntegralCurve *> &ics)
     for( inneritr = curves.begin(); inneritr != curves.end(); ++inneritr )
     {
       numRationalCurves++;
-      // If all the curves for a rational are waiting…
+      // If all the curves for a rational are waiting???
       if( rationalCounts[(*inneritr)->src_rational_ic->id] ==
           waitingCounts[(*inneritr)->src_rational_ic->id] )
       {
@@ -2894,10 +2894,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         unsigned int islands            = properties.islands;
         unsigned int islandGroups       = properties.islandGroups;
         unsigned int nnodes             = properties.nnodes;
-
-        //std::vector< avtVector > &seedPoints = properties.seedPoints;
-
-        //bool completeIslands = true;
 
         if( summaryFlag ) 
         {
@@ -3374,8 +3370,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 if( showLines )
                   nnodes = 2;
 
-                //bool tmpPoints = showPoints;
-
                 // Loop through each island.
                 for( unsigned int j=0; j<toroidalWinding; j++ )
                 {
@@ -3394,7 +3388,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
               }
             }
             
-            //bool VALID = true;
             
             // Sanity check
             for( unsigned int j=0; j<toroidalWinding; ++j ) 
@@ -3410,7 +3403,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                            << " number of points " << puncturePts[p][j].size()
                            << std::endl;
                     
-                    //VALID = false;
                     
 //                  return NULL;
                 }
@@ -3431,7 +3423,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
               type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
               type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS)) )
         {
-            double color_value = 0; ///TODO: check on fix for uninitialized value
+            double color_value = 0;
 
             if( !analysis )
             {
@@ -3642,9 +3634,6 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
         (properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
          properties.searchState    != FieldlineProperties::ORIGINAL_RATIONAL) )
       continue;
-     
-    //FieldlineProperties::FieldlineType type = properties.type;
-    //bool complete = (properties.analysisState == FieldlineProperties::COMPLETED);
 
     unsigned int toroidalWinding    = properties.toroidalWinding;
     unsigned int poloidalWinding    = properties.poloidalWinding;
@@ -4735,9 +4724,9 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
   if (showLines)
   {
     //Create groups that represent the toroidial groups.
-    vtkPoints *points = NULL; ///TODO: check on fix
-    vtkCellArray *cells = NULL; ///TODO: check on fix
-    vtkFloatArray *scalars = NULL; ///TODO: check on fix for uninitialized variables
+    vtkPoints *points = NULL;
+    vtkCellArray *cells = NULL;
+    vtkFloatArray *scalars = NULL;
     
     unsigned int cc = 0;
   

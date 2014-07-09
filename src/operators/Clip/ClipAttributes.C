@@ -659,7 +659,7 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
     else if(tname == "PlaneAttributes" && GetPlaneToolControlledClipPlane() != None)
     {
         PlaneAttributes *p = new PlaneAttributes;
-        const double *normal_arr = NULL; //TODO: check on fix for uninitialized array
+        const double *normal_arr = NULL;
 
         switch (GetPlaneToolControlledClipPlane())
         {

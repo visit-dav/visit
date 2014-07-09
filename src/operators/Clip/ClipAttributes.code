@@ -153,7 +153,7 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
     else if(tname == "PlaneAttributes" && GetPlaneToolControlledClipPlane() != None)
     {
         PlaneAttributes *p = new PlaneAttributes;
-        const double *normal_arr;
+        const double *normal_arr = NULL;
 
         switch (GetPlaneToolControlledClipPlane())
         {

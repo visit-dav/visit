@@ -304,7 +304,8 @@ avtCartographicProjectionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string
 
   ds->SetPoints(newPoints);
 
-  if(do_type != VTK_POLY_DATA) {
+  if(do_type != VTK_POLY_DATA)
+  {
     debug4 << "dims = " << dims[0] << " x "  << dims[1] << " x " << dims[2] <<  endl;
   }
 

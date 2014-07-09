@@ -215,7 +215,7 @@ void DIR_Graph::trim_leafs()
 
 int DIR_Graph::Min_Distance(const std::vector<double>& D, std::vector<bool>& F)
 {                
-  size_t j;
+  size_t j = 0;
   double dmin = 1.e30;                                                   
             
   for(size_t i = 0; i < nlist.size(); i++)

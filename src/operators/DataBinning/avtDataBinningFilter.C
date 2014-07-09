@@ -350,8 +350,6 @@ avtDataBinningFilter::Execute(void)
             SetOutputDataTree(new avtDataTree());
      
         avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-        //int dim = ( (atts.GetNumDimensions() == DataBinningAttributes::One) ? 1
-        //          : ((atts.GetNumDimensions() == DataBinningAttributes::Two) ? 2 : 3));
         dataAtts.GetThisProcsOriginalSpatialExtents()->Set(&bb[0]);
         dataAtts.GetOriginalSpatialExtents()->Set(&bb[0]);
     }
@@ -557,14 +555,13 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
         out_dr = new avtDataRequest(in_dr);
     std::vector<CharStrRef>   vars2nd = in_dr->GetSecondaryVariablesWithoutDuplicates();
     std::vector<std::string>  removeMe;
-    size_t  i;
-    for (i = 0 ; i < vars2nd.size() ; i++)
+    for (size_t i = 0 ; i < vars2nd.size() ; i++)
         if (strncmp(*(vars2nd[i]), "operators/DataBinning", strlen("operators/DataBinning")) == 0)
         {
             varname = *(vars2nd[i]);
             removeMe.push_back(*(vars2nd[i]));
         }
-    for (i = 0 ; i < removeMe.size() ; i++)
+    for (size_t i = 0 ; i < removeMe.size() ; i++)
         out_dr->RemoveSecondaryVariable(removeMe[i].c_str());
 
     if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Variable)
@@ -679,7 +676,6 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 void
 avtDataBinningFilter::UpdateDataObjectInfo(void)
 {
-    //avtDataAttributes &inAtts   = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
     dataAtts.AddVariable(varname);
     dataAtts.SetActiveVariable(varname.c_str());

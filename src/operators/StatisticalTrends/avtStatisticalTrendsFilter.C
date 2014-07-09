@@ -610,8 +610,6 @@ avtStatisticalTrendsFilter::Execute(void)
         }
       }
 
-      //vtkDataSet *sum_ds = trend_ds[0];
-
       if( curr_ds->GetPointData()->GetScalars() )
       {
         int tPoints = trend_ds[0]->GetNumberOfPoints();
@@ -856,7 +854,7 @@ avtStatisticalTrendsFilter::Execute(void)
           // Traverse all point data
           for( unsigned int i=0; i<nPoints; ++i )
           {
-            double val = 0; ///TODO: check on fix for uninitialized variables
+            double val = 0.;
 
             if( atts.GetStatisticType() ==
                 StatisticalTrendsAttributes::Variance ||
@@ -894,7 +892,7 @@ avtStatisticalTrendsFilter::Execute(void)
           // Traverse all cell data
           for( unsigned int i=0; i<nCells; ++i )
           {
-            double val = 0; ///TODO: check on fix of uninitialized variable
+            double val = 0.;
 
             if( atts.GetStatisticType() ==
                 StatisticalTrendsAttributes::Variance ||
@@ -1094,7 +1092,6 @@ avtStatisticalTrendsFilter::CreateFinalOutput(void)
     std::string newPipelineVariable =
       outVarName + " " + std::string( typeString[(int) atts.GetStatisticType()] );
 
-    //avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 
     // Set the new data range.

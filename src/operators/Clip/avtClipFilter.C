@@ -850,8 +850,6 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
     vtkDataArray *outXC = outGrid->GetXCoordinates();
     vtkDataArray *outVal = inVal->NewInstance();
 
-    //int nx = inXC->GetNumberOfTuples();
-
     double lastX = inXC->GetTuple1(0);
     double lastVal = inVal->GetTuple1(0);
     double lastDist = ifuncs->EvaluateFunction(lastX, 0., 0.);
@@ -875,7 +873,7 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
         if ((dist <= 0 && inv) || (lastDist > 0 && !inv))
             whichCase += 2;
 
-        double x1 = 0, x2 = 0, d1 = 0., d2 = 1., v1 = 0, v2 = 0, newX = 0., newVal = 0.; ///TODO: check on fix for uninitialized values
+        double x1 = 0, x2 = 0, d1 = 0., d2 = 1., v1 = 0, v2 = 0, newX = 0., newVal = 0.;
         switch(whichCase)
         {
             case 1 : 
