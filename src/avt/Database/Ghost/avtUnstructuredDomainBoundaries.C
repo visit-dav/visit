@@ -1907,7 +1907,6 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 if (index < 0)
                     continue;
 
-                //avtMaterial      *givingMat = mats[i];
                 avtMixedVariable *givingVar = mixvars[i];
                 
                 size_t nCells = givenCells[index].size();
@@ -1961,7 +1960,6 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     if (matlist[cell] < 0)
                     {
                         int current = -matlist[cell]-1;
-                        //int nmats = 0;
                         do
                         {
                             vals[sendDom][recvDom][nMixlen++] = buff[current];
@@ -2014,7 +2012,6 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     if (domainNum[i] == sendDom)
                         break;
 
-                //avtMaterial *givingMat = mats[i];
                 avtMixedVariable *givingVar = mixvars[i];
                 
                 int nCells = givenCells[index].size();
@@ -2070,7 +2067,6 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     if (matlist[cell] < 0)
                     {
                         int current = -matlist[cell]-1;
-                        //int nmats = 0;
                         do
                         {
                             sendBuff[nMixlen++] = buff[current];
@@ -2237,7 +2233,6 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 
                 const int   *mix_mat  = givingMat->GetMixMat();
                 const float *mix_vf   = givingMat->GetMixVF();
-                //const int   *mix_zone = givingMat->GetMixZone();
 
                 int mixcnt = 0;
                 for (i = 0; i < nCells; ++i)
@@ -2372,7 +2367,6 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 
                 const int   *mix_mat  = givingMat->GetMixMat();
                 const float *mix_vf   = givingMat->GetMixVF();
-                //const int   *mix_zone = givingMat->GetMixZone();
 
                 int mixcnt = 0;
                 for (i = 0; i < (size_t)nCells; ++i)

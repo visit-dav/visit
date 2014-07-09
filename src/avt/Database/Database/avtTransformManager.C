@@ -1695,8 +1695,6 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         nZBlocks = 1;
 #endif
 
-        //int nBlocks = nXBlocks * nYBlocks * nZBlocks;
-
         int deltaX = (nX + nXBlocks - 1) / nXBlocks;
         int deltaY = (nY + nYBlocks - 1) / nYBlocks;
         int deltaZ = (nZ + nZBlocks - 1) / nZBlocks;

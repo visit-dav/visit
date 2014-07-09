@@ -534,8 +534,6 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 #ifdef PARALLEL
     MPI_Datatype mpi_datatype = GetMPIDataType<T>();
 
-    //int mpiMsgTag = GetUniqueMessageTag();
-
     int rank;
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 
@@ -743,7 +741,6 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
-            //int mi = n1->match;
 
             if (domain2proc[d1] != domain2proc[d2])
             {
@@ -774,7 +771,6 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
-            //int mi = n1->match;
             int size = bndmixlen[d1][n];
 
             if (domain2proc[d1] != domain2proc[d2])
