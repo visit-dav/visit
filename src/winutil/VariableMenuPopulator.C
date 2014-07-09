@@ -426,8 +426,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 
     // Do stuff with the metadata
     id = visitTimer->StartTimer(); 
-    size_t i;
-    for (i = 0; i < (size_t)md->GetNumMeshes(); ++i)
+    int i;
+    for (i = 0; i < md->GetNumMeshes(); ++i)
     {
         const avtMeshMetaData &mmd = md->GetMeshes(i);
         if (!mmd.hideFromGUI)
@@ -437,48 +437,48 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     {
         meshVars.AddVariable(VisItInit::CatchAllMeshName, true);
     }
-    for (i = 0; i < (size_t)md->GetNumScalars(); ++i)
+    for (i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData &smd = md->GetScalars(i);
         if (!smd.hideFromGUI)
             scalarVars.AddVariable(smd.name, smd.validVariable);
     }
-    for (i = 0; i < (size_t)md->GetNumVectors(); ++i)
+    for (i = 0; i < md->GetNumVectors(); ++i)
     {
         const avtVectorMetaData &vmd = md->GetVectors(i);
         if (!vmd.hideFromGUI)
             vectorVars.AddVariable(vmd.name, vmd.validVariable);
     }
-    for (i = 0; i < (size_t)md->GetNumSpecies(); ++i)
+    for (i = 0; i < md->GetNumSpecies(); ++i)
     {
         const avtSpeciesMetaData &smd = md->GetSpecies(i);
         speciesVars.AddVariable(smd.name, smd.validVariable);
     }
-    for (i = 0; i < (size_t)md->GetNumCurves(); ++i)
+    for (i = 0; i < md->GetNumCurves(); ++i)
     {
         const avtCurveMetaData &cmd = md->GetCurves(i);
         if (!cmd.hideFromGUI)
             curveVars.AddVariable(cmd.name, cmd.validVariable);
     }
-    for (i = 0; i < (size_t)md->GetNumTensors(); ++i)
+    for (i = 0; i < md->GetNumTensors(); ++i)
     {
         const avtTensorMetaData &tmd = md->GetTensors(i);
         if (!tmd.hideFromGUI)
             tensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
-    for (i = 0; i < (size_t)md->GetNumSymmTensors(); ++i)
+    for (i = 0; i < md->GetNumSymmTensors(); ++i)
     {
         const avtSymmetricTensorMetaData &tmd = md->GetSymmTensors(i);
         if (!tmd.hideFromGUI)
             symmTensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
-    for (i = 0; i < (size_t)md->GetNumLabels(); ++i)
+    for (i = 0; i < md->GetNumLabels(); ++i)
     {
         const avtLabelMetaData &lmd = md->GetLabels(i);
         if (!lmd.hideFromGUI)
             labelVars.AddVariable(lmd.name, lmd.validVariable);
     }
-    for (i = 0; i < (size_t)md->GetNumArrays(); ++i)
+    for (i = 0; i < md->GetNumArrays(); ++i)
     {
         const avtArrayMetaData &amd = md->GetArrays(i);
         if (!amd.hideFromGUI)
@@ -494,9 +494,9 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     // in the top sets.
     int roleCount[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    for(i = 0; i < topSets.size(); ++i)
+    for(size_t ii = 0; ii < topSets.size(); ++ii)
     {
-        int tsIndex = topSets[i];
+        int tsIndex = topSets[ii];
         avtSILSet_p pTopset = sil->GetSILSet(tsIndex);
         const intVector &maps = pTopset->GetMapsOut();
         for (size_t j = 0; j < maps.size(); ++j)
@@ -508,9 +508,9 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
         }
     }
 
-    for(i = 0; i < topSets.size(); ++i)
+    for(size_t ii = 0; ii < topSets.size(); ++ii)
     {
-        int tsIndex = topSets[i];
+        int tsIndex = topSets[ii];
         avtSILSet_p pTopset = sil->GetSILSet(tsIndex);
         const intVector &maps = pTopset->GetMapsOut();
         string meshName = sil->GetSILSet(tsIndex)->GetName();
@@ -586,7 +586,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     // Add the expressions from the cached expression list.
     //
     id = visitTimer->StartTimer(); 
-    size_t nexp = cachedExpressionList.GetNumExpressions();
+    int nexp = cachedExpressionList.GetNumExpressions();
     for(i = 0; i < nexp; ++i)
     {
         const Expression &expr = cachedExpressionList[i];
@@ -1616,7 +1616,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
             }
             else if(pathvar.size() > 1)
             {
-                for (size_t j = 0; j < pathvar.size()-1; j++)
+                for (int j = 0; j < (int)pathvar.size()-1; j++)
                     path = path + "/" + pathvar[j];
                 INCPATH
             }
