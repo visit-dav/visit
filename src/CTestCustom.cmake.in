@@ -51,6 +51,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
     "swig"
     "install_lib:"
     "mpeg2encode"
+    ".*/include/Qt.*"
     # auto generated code
     "Attributes"
     # OSX clang/gcc 4.2.1
