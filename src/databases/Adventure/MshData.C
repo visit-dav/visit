@@ -97,7 +97,6 @@ MshData::Open(const std::string &filename)
             // Read the connectivity
             //
             int iconn[10];
-            //vtkIdType conn[10];
             ifile.getline(line, 1024);
             int nNodesPerCell = sscanf(line, "%d %d %d %d %d %d %d %d %d %d", 
                 &iconn[0], &iconn[1], &iconn[2], &iconn[3], &iconn[4], 
