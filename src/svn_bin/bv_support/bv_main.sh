@@ -55,6 +55,10 @@ if [[ "$OPSYS" == "Darwin" ]]; then
 # Kernel versions to OSX version numbers.
 # Other options for dealing with MACOSX_DEPLOYMENT_TARGET didn't work
 # See issue #1499 (https://visitbugs.ornl.gov/issues/1499)
+
+# use gcc for 10.9 & earlier
+
+
    if (( ${VER%%.*} < 8 )) ; then
       export MACOSX_DEPLOYMENT_TARGET=10.3
    elif [[ ${VER%%.*} == 8 ]] ; then
@@ -69,11 +73,18 @@ if [[ "$OPSYS" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET=10.8
    elif [[ ${VER%%.*} == 13 ]] ; then
       export MACOSX_DEPLOYMENT_TARGET=10.9
+      export C_COMPILER=${C_COMPILER:-"clang"}
+      export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
    else
       export MACOSX_DEPLOYMENT_TARGET=10.9
+      export C_COMPILER=${C_COMPILER:-"clang"}
+      export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
    fi
+   
+   
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+
    # Disable Fortran on Darwin since it causes HDF5, H5Part, Silo, ADIOS builds to explode.
    export FC_COMPILER=""
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
