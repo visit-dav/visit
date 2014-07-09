@@ -696,14 +696,13 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
         // So see which species are on.
         std::vector<int>  species;
         std::vector<bool> setState;
-        unsigned int i;
 
         int topset = silr->GetTopSet();
         avtSILSet_p pTopset = silr->GetSILSet(topset);
         const std::vector<int> &mapsOut = pTopset->GetRealMapsOut();
 
         avtSILCollection_p speciesColl = NULL;
-        for (i = 0 ; i < mapsOut.size() ; i++)
+        for (size_t i = 0 ; i < mapsOut.size() ; i++)
         {
             avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
             if (coll->GetRole() == SIL_SPECIES)
@@ -713,7 +712,7 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
         }
         if (*speciesColl != NULL)
         {
-            for (i = 0 ; i < (unsigned int)speciesColl->GetNumberOfSubsets() ; i++)
+            for (int i = 0 ; i < speciesColl->GetNumberOfSubsets() ; i++)
                 setState.push_back(trav.UsesData(speciesColl->GetSubset(i)));
         }
         // End logic for seeing which species is on.
@@ -722,7 +721,7 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
         silr->TurnOnSet(setID);
 
         // Turn sets back on if species are on.
-        for (i = 0 ; i < species.size() ; i++)
+        for (size_t i = 0 ; i < species.size() ; i++)
             if (setState[i])
                 silr->TurnOnSet(species[i]);
 

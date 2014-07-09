@@ -253,8 +253,8 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                            restriction->GetSILCollection(colIndex); 
             if (*collection != NULL)
             {
-                size_t nSets = collection->GetNumberOfSubsets();
-                for (size_t i = 0; i < nSets && !subsetNameValid; ++i)
+                int nSets = collection->GetNumberOfSubsets();
+                for (int i = 0; i < nSets && !subsetNameValid; ++i)
                 {
                     bool isOn = false;
                     if (silAtts->GetTopSetIsAllOn())

@@ -184,8 +184,8 @@ vtkBoxFilter::RequestData(
     {
         pointMap[i] = -1;
     }
-    bool *isInBox = NULL; ///TODO: check on fix for uninitialized pointer
-    char *relativeToBox[3] = {NULL, NULL, NULL}; ///TODO: check on fix for uninitialized pointer
+    bool *isInBox = NULL;
+    char *relativeToBox[3] = {NULL, NULL, NULL};
     float bxpts[8][3];
     double bounds[6];
 

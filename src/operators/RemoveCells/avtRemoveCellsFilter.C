@@ -205,7 +205,7 @@ avtRemoveCellsFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         //
         if (origCellNums)
         {
-            if (cells[cIndex] == origCellNums[1 + 2 * i])
+            if (cells[cIndex] == (int)origCellNums[1 + 2 * i])
             {
                 ++cIndex;
                 continue;
@@ -251,8 +251,7 @@ avtRemoveCellsFilter::ParseAtts(int domain, vector<int> &cells)
     const vector<int> &cV = atts.GetCellList();
     const vector<int> &dV = atts.GetDomainList();
     
-    int i;
-    for (i = 0; i < cV.size(); ++i)
+    for (size_t i = 0; i < cV.size(); ++i)
     {
         if (dV[i] == domain)
             cells.push_back(cV[i]);

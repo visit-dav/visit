@@ -381,8 +381,6 @@ avtToroidalPoloidalProjectionFilter::ExecuteData(vtkDataSet *in_ds,
 void
 avtToroidalPoloidalProjectionFilter::UpdateDataObjectInfo(void)
 {
-    
-    //avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
 
     outAtts.SetContainsGhostZones(AVT_CREATED_GHOSTS);

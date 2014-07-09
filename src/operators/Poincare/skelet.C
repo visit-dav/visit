@@ -975,7 +975,7 @@ void applyNonconvexIntersection (Intersection &i)
   SkeletonLine *auxLine1Ptr = &skeleton.back ();
   skeleton.push_back (SkeletonLine (*v2Pointer, *v1Pointer));     
   SkeletonLine *auxLine2Ptr = &skeleton.back ();
-  SkeletonLine *SeclinePtr;
+  SkeletonLine *SeclinePtr = NULL;
 
   if (collision_type == 11)
   {
@@ -1407,8 +1407,6 @@ void applyLast3 (const Intersection &i)
   v2.advancingSkeletonLine = line2Ptr;
   v3.advancingSkeletonLine = line3Ptr;
 
-  //int  event_type = 20;
-
   // IDENTIFY THE EDGES THAT COLLAPSE
 
   VertexSkelet *Edge1_left = i.leftVertex; 
@@ -1507,11 +1505,9 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
   //std::cerr << "Third loop..." << std::endl;
   
   NrCP = -1;
-  //int type_ev = 0;
 
   for (i=vl.begin(); i!=vl.end(); i++)  
   {
-    //double h=0;
     NrCP++;
   }
 

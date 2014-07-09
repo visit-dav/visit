@@ -488,7 +488,6 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
-    //avtDataValidity   &val  = GetOutput()->GetInfo().GetValidity();
 
     if( outVarName != "" )
     {
@@ -2139,7 +2138,8 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     int numStiff = 0;
     int numCritPts = 0;
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
     }
 
@@ -2290,11 +2290,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         return;
 
     int numICs = ics.size(), numPts = 0;
-    //int numEarlyTerminators = 0;
-    //int numStiff = 0;
-    //int numCritPts = 0;
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
     }
 

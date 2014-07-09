@@ -260,7 +260,6 @@ PoincareViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     PoincareAttributes *atts_in = (PoincareAttributes *)atts;
 
-    const char numTypes = 14;
     const char *typeString[14] =
       { "None", "Safety Factor Q", "Safety Factor P",
         "Safety Factor Q != P", "Safety Factor P != Q",

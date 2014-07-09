@@ -421,7 +421,6 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
-    const char numTypes = 11;
     const char *typeString[11] =
       { "None", "Seed Point ID", "Speed", "Vorticity", "Arc Length",
          "Absolute Time", "Relative Time",

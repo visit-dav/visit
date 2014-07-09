@@ -752,7 +752,6 @@ avtExtrudeFilter::UpdateDataObjectInfo(void)
     // Now extrude the extents.
     //
     double b[6];
-    //int olddim = inAtts.GetSpatialDimension();
     if (inAtts.GetOriginalSpatialExtents()->HasExtents())
     {
         inAtts.GetOriginalSpatialExtents()->CopyTo(b);

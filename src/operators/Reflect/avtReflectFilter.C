@@ -981,12 +981,10 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         return;
     }
 
-    size_t   i, j;
-
     // First identify which variables are vectors.  Point vectors only.
     std::vector<vtkDataArray *> pt_vectors;
     vtkPointData *pd = ds->GetPointData();
-    for (i = 0 ; i < (size_t)pd->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < pd->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *da = pd->GetArray(i);
         if (da->GetNumberOfComponents() == 3)
@@ -998,13 +996,13 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
     // Now reverse the orientation of the vectors based on the axis of
     // reflection.  Point vectors only.
     std::vector<vtkDataArray *> new_pt_vectors;
-    for (i = 0 ; i < pt_vectors.size() ; i++)
+    for (size_t i = 0 ; i < pt_vectors.size() ; i++)
     {
         vtkDataArray *da = pt_vectors[i]->NewInstance();
         da->DeepCopy(pt_vectors[i]);
         da->SetName(pt_vectors[i]->GetName());
         const size_t ntups = da->GetNumberOfTuples();
-        for (j = 0 ; j < ntups ; j++)
+        for (size_t j = 0 ; j < ntups ; j++)
         {
             if (dim & 1)
                 da->SetComponent(j, 0, -da->GetComponent(j, 0));
@@ -1025,18 +1023,18 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         vtkUnsignedCharArray *gn = (vtkUnsignedCharArray *) pd->GetArray("avtGhostNodes");
         double zeroVel[3] = { 0,0,0 };
         size_t npts = ds->GetNumberOfPoints();
-        for (i = 0 ; i < npts ; i++)
+        for (size_t i = 0 ; i < npts ; i++)
         {
             if (gn->GetValue(i) != 0)
             {
-                for (j = 0 ; j < new_pt_vectors.size() ; j++)
+                for (size_t j = 0 ; j < new_pt_vectors.size() ; j++)
                     new_pt_vectors[j]->SetTuple(i, zeroVel);
             }
         }
     }
 
     // Now replace all of the original vectors with our new ones.
-    for (i = 0 ; i < new_pt_vectors.size() ; i++)
+    for (size_t i = 0 ; i < new_pt_vectors.size() ; i++)
     {
         bool isActiveVector = false;
         vtkDataArray *da = pd->GetVectors();
@@ -1054,7 +1052,7 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
     // First identify which variables are vectors.  Now the cell vectors
     std::vector<vtkDataArray *> cell_vectors;
     vtkCellData *cd = ds->GetCellData();
-    for (i = 0 ; i < (size_t)cd->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < cd->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *da = cd->GetArray(i);
         if (da->GetNumberOfComponents() == 3)
@@ -1064,13 +1062,13 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
     // Now reverse the orientation of the vectors based on the axis of
     // reflection.  Cell vectors only.
     std::vector<vtkDataArray *> new_cell_vectors;
-    for (i = 0 ; i < cell_vectors.size() ; i++)
+    for (size_t i = 0 ; i < cell_vectors.size() ; i++)
     {
         vtkDataArray *da = cell_vectors[i]->NewInstance();
         da->DeepCopy(cell_vectors[i]);
         da->SetName(cell_vectors[i]->GetName());
         const size_t ntups = da->GetNumberOfTuples();
-        for (j = 0 ; j < ntups ; j++)
+        for (size_t j = 0 ; j < ntups ; j++)
         {
             if (dim & 1)
                 da->SetComponent(j, 0, -da->GetComponent(j, 0));
@@ -1094,13 +1092,13 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         vtkUnsignedCharArray *gn = (vtkUnsignedCharArray *) pd->GetArray("avtGhostNodes");
         double zeroVel[3] = { 0,0,0 };
         size_t ncells = ds->GetNumberOfCells();
-        for (i = 0 ; i < ncells ; i++)
+        for (size_t i = 0 ; i < ncells ; i++)
         {
             vtkCell *cell = ds->GetCell(i);
             vtkIdList *ids = cell->GetPointIds();
             size_t nids = ids->GetNumberOfIds();
             bool touchesBoundary = false;
-            for (j = 0 ; j < nids ; j++)
+            for (size_t j = 0 ; j < nids ; j++)
             {
                 if (gn->GetValue(ids->GetId(j)) != 0)
                    touchesBoundary = true;
@@ -1108,14 +1106,14 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
             // inefficient
             if (touchesBoundary)
             {
-                for (j = 0 ; j < new_cell_vectors.size() ; j++)
+                for (size_t j = 0 ; j < new_cell_vectors.size() ; j++)
                     new_cell_vectors[j]->SetTuple(i, zeroVel);
             }
         }
     }
 
     // Now replace all of the original vectors with our new ones.
-    for (i = 0 ; i < new_cell_vectors.size() ; i++)
+    for (size_t i = 0 ; i < new_cell_vectors.size() ; i++)
     {
         bool isActiveVector = false;
         vtkDataArray *da = cd->GetVectors();

@@ -460,9 +460,6 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     // for periodic atom images
     //
     bool addPeriodicBonds = atts.GetAddPeriodicBonds();
-    //bool xper = addPeriodicBonds && atts.GetPeriodicInX();
-    //bool yper = addPeriodicBonds && atts.GetPeriodicInY();
-    //bool zper = addPeriodicBonds && atts.GetPeriodicInZ();
     double xv[3], yv[3], zv[3];
     for (int j=0; j<3; j++)
     {
