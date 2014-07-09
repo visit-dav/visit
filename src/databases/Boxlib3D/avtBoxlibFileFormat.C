@@ -429,7 +429,6 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     nMaterials = 0;
     for (int i = 0; i < nVars; ++i)
     {
-        //int val = 0;
         if (varNames[i].find("frac") == 0)
         {
             varUsedElsewhere[i] = true;
@@ -443,7 +442,6 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     {
         for (int i = 0; i < nVars; ++i)
         {
-            //int val = 0;
             if (varNames[i].find("vf_") == 0)
             {
                 varUsedElsewhere[i] = true;
