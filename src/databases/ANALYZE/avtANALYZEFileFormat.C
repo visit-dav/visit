@@ -378,9 +378,8 @@ avtANALYZEFileFormat::GetVar(const char *varname)
                     {
                         short *end = data + ntuples;
                         while(data < end) {
-                            /// TODO: check on sequence-point warning fix
-                            ///*data++ = reverse_endian(*data);
-                            *data = reverse_endian(*data); data++;
+                            *data = reverse_endian(*data);
+                            data++;
                         }
                     }
                 }
@@ -401,9 +400,8 @@ avtANALYZEFileFormat::GetVar(const char *varname)
                     {
                         int *end = data + ntuples;
                         while(data < end) {
-                            /// TODO: check on sequence-point warning fix
-                            ///*data++ = reverse_endian(*data);
-                            *data = reverse_endian(*data); data++;
+                            *data = reverse_endian(*data);
+                            data++;
                         }
                     }
                 }
@@ -424,9 +422,8 @@ avtANALYZEFileFormat::GetVar(const char *varname)
                     {
                         float *end = data + ntuples;
                         while(data < end) {
-                            /// TODO: check on sequence-point warning fix
-                            ///*data++ = reverse_endian(*data);
-                            *data = reverse_endian(*data); data++;
+                            *data = reverse_endian(*data);
+                            data++;
                         }
                     }
                 }
