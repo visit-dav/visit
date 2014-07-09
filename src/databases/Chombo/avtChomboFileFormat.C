@@ -2396,7 +2396,6 @@ class LookUpOrderCmp
         LookUpOrderCmp(const boost::int32_t *d1, const boost::int32_t *d2) : order1Var(d1), order2Var(d2) {}
         bool operator()(vtkIdType a, vtkIdType b)
         {
-            /// TODO: has paranthesis warning
             return order1Var[a] < order1Var[b] ||
                 (order1Var[a] == order1Var[b] && order2Var[a] < order2Var[b]);
         }
