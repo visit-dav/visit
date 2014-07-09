@@ -143,7 +143,6 @@ Plot.java
 PlotInfoAttributes.java 
 PlotList.java
 PluginManagerAttributes.java 
-Point.java 
 PostponedAction.java 
 PrinterAttributes.java 
 ProcessAttributes.java 
