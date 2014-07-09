@@ -437,7 +437,7 @@ avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
     {
         char name[1024];
         if (!gNames.empty() && gNames.size() == (size_t)numGroups)
-            strcpy(name, gNames[i].c_str()); //sprintf(name, gNames[i].c_str());
+            strcpy(name, gNames[i].c_str()); 
         else if (strstr(piece.c_str(), "%") != NULL)
             sprintf(name, piece.c_str(), i+origin);
         else

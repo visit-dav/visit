@@ -632,7 +632,6 @@ avtSILRestriction::EnsureRestrictionCorrectness()
         // by turning on enum sets, even though the TurnBoolSet
         // calls will update the useSet vector.
 
-        //intVector enum_indices;
         for (size_t i = 0 ; i < mapsOut.size(); i++)
         {
             avtSILCollection_p coll = GetSILCollection(mapsOut[i]);
