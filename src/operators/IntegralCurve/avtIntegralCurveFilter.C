@@ -67,9 +67,7 @@
 #include <limits>
 
 std::string avtIntegralCurveFilter::colorVarArrayName = "colorVar";
-
 std::string avtIntegralCurveFilter::thetaArrayName = "theta";
-
 std::string avtIntegralCurveFilter::tangentsArrayName = "tangents";
 
 
@@ -672,8 +670,6 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
     }
 
     SetVelocitiesForLighting(1);
-
-    SetCoordinateSystem(atts.GetCoordinateSystem());
 }
 
 // ****************************************************************************
@@ -2532,50 +2528,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
             line->GetPointIds()->SetId(j-beginIndex, pIdx);
 
-            double pt[3] = {0, 0, 0};
-
-            if( coordinateSystem == 0 )
-            {
-              pt[0] = s.position.x;
-              pt[1] = s.position.y;
-              pt[2] = s.position.z;
-            }
-            else if( coordinateSystem == 1 )
-            {
-              pt[0] = s.position.x*cos(s.position.y);
-              pt[1] = s.position.x*sin(s.position.y);
-              pt[2] = s.position.z;
-            }
-            else if( coordinateSystem == 2 )
-            {
-              pt[0] = sqrt(s.position.x*s.position.x+
-                           s.position.y*s.position.y);
-
-              pt[1] = atan2( s.position.y, s.position.x );
-
-              pt[2] = s.position.z;
-
-              // Check for going past 2*pi mark in the CCW dirrection.
-              if( lastPhi < 0 && 0 < pt[1] && pt[1] - lastPhi > 1.75 * M_PI )
-              {
-                angle -= 2.0 * M_PI;
-              }
-
-              // Check for going past 2*pi mark in the CW dirrection.
-              if( pt[1] < 0 && 0 < lastPhi && lastPhi - pt[1] > 1.75 * M_PI )
-              {
-                angle += 2.0 * M_PI;
-              }
-
-              // Store the relative phi value
-              lastPhi = pt[1];
-
-              // Update to get teh absolute phi value.
-              pt[1] += angle;
-            }
-
             // Points
-            points->InsertPoint(pIdx, pt[0], pt[1], pt[2] );
+            points->InsertPoint(pIdx,
+                                s.position.x, s.position.y, s.position.z);
 
             float speed = s.velocity.length();
 
@@ -2583,8 +2538,8 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                 s.velocity *= 1.0f/speed;
 
             // Tangents
-            tangents->InsertTuple3(pIdx,
-                                   s.velocity.x, s.velocity.y, s.velocity.z);
+            tangents->
+              InsertTuple3(pIdx, s.velocity.x, s.velocity.y, s.velocity.z);
 
             double data_value = 0.0f;
 
@@ -2648,6 +2603,8 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
             if( atts.GetShowPoints() )
             {
+              double pt[3] = {s.position.x, s.position.y, s.position.z};
+
               vtkPolyData *vert = CreateVTKVertex(pt, data_value,
                                                   secondaryVariables,
                                                   s.secondarys );

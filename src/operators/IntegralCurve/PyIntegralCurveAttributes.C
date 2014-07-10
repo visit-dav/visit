@@ -552,25 +552,6 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
     }
 
-    const char *coordinateSystem_names = "AsIs, CylindricalToCartesian, CartesianToCylindrical";
-    switch (atts->GetCoordinateSystem())
-    {
-      case IntegralCurveAttributes::AsIs:
-          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sAsIs  # %s\n", prefix, prefix, coordinateSystem_names);
-          str += tmpStr;
-          break;
-      case IntegralCurveAttributes::CylindricalToCartesian:
-          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCylindricalToCartesian  # %s\n", prefix, prefix, coordinateSystem_names);
-          str += tmpStr;
-          break;
-      case IntegralCurveAttributes::CartesianToCylindrical:
-          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCartesianToCylindrical  # %s\n", prefix, prefix, coordinateSystem_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     if(atts->GetShowLines())
         SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
     else
@@ -2143,39 +2124,6 @@ IntegralCurveAttributes_GetDisplayGeometry(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the coordinateSystem in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetCoordinateSystem(IntegralCurveAttributes::CoordinateSystem(ival));
-    else
-    {
-        fprintf(stderr, "An invalid coordinateSystem value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "AsIs, CylindricalToCartesian, CartesianToCylindrical.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IntegralCurveAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
-    return retval;
-}
-
-/*static*/ PyObject *
 IntegralCurveAttributes_SetShowLines(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
@@ -2861,8 +2809,6 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetPathlinesCMFE", IntegralCurveAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetDisplayGeometry", IntegralCurveAttributes_SetDisplayGeometry, METH_VARARGS},
     {"GetDisplayGeometry", IntegralCurveAttributes_GetDisplayGeometry, METH_VARARGS},
-    {"SetCoordinateSystem", IntegralCurveAttributes_SetCoordinateSystem, METH_VARARGS},
-    {"GetCoordinateSystem", IntegralCurveAttributes_GetCoordinateSystem, METH_VARARGS},
     {"SetShowLines", IntegralCurveAttributes_SetShowLines, METH_VARARGS},
     {"GetShowLines", IntegralCurveAttributes_GetShowLines, METH_VARARGS},
     {"SetShowPoints", IntegralCurveAttributes_SetShowPoints, METH_VARARGS},
@@ -3126,15 +3072,6 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Ribbons") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Ribbons));
 
-    if(strcmp(name, "coordinateSystem") == 0)
-        return IntegralCurveAttributes_GetCoordinateSystem(self, NULL);
-    if(strcmp(name, "AsIs") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::AsIs));
-    if(strcmp(name, "CylindricalToCartesian") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::CylindricalToCartesian));
-    if(strcmp(name, "CartesianToCylindrical") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::CartesianToCylindrical));
-
     if(strcmp(name, "showLines") == 0)
         return IntegralCurveAttributes_GetShowLines(self, NULL);
     if(strcmp(name, "showPoints") == 0)
@@ -3297,8 +3234,6 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "displayGeometry") == 0)
         obj = IntegralCurveAttributes_SetDisplayGeometry(self, tuple);
-    else if(strcmp(name, "coordinateSystem") == 0)
-        obj = IntegralCurveAttributes_SetCoordinateSystem(self, tuple);
     else if(strcmp(name, "showLines") == 0)
         obj = IntegralCurveAttributes_SetShowLines(self, tuple);
     else if(strcmp(name, "showPoints") == 0)

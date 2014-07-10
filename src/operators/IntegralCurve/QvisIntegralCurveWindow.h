@@ -258,8 +258,6 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void showLinesChanged(bool val);
     void showPointsChanged(bool val);
 
-    void coordinateButtonGroupChanged(int val);
-
   // Advanced
     void parallelAlgorithmChanged(int val);
     void maxSLCountChanged(int val);
@@ -364,8 +362,6 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
 
     QCheckBox    *showLines;
     QCheckBox    *showPoints;
-
-    QButtonGroup *coordinateButtonGroup;
 
   // Advanced
     QLabel    *parallelAlgoLabel;

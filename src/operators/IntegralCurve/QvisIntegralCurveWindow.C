@@ -824,31 +824,6 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
             SLOT(showPointsChanged(bool)));
     displayLayout->addWidget(showPoints, 0, 1);
 
-
-    // Create the coordinate group
-    QGroupBox *coordinateGrp = new QGroupBox(central);
-    coordinateGrp->setTitle(tr("Coordinate transform"));
-    mainLayout->addWidget(coordinateGrp, 2, 0);
-
-    QGridLayout *coordinateLayout = new QGridLayout(coordinateGrp);
-    coordinateLayout->setMargin(5);
-    coordinateLayout->setSpacing(10);
-
-    coordinateButtonGroup = new QButtonGroup(coordinateGrp);
-    QRadioButton *asIsButton = new QRadioButton(tr("None"), coordinateGrp);
-    QRadioButton *toCartesianButton = new QRadioButton(tr("Cylindrical to Cartesian"), coordinateGrp);
-    QRadioButton *toCylindricalButton = new QRadioButton(tr("Cartesian to Cylindrical"), coordinateGrp);
-    coordinateButtonGroup->addButton(asIsButton, 0);
-    coordinateButtonGroup->addButton(toCartesianButton, 1);
-    coordinateButtonGroup->addButton(toCylindricalButton, 2);
-
-    coordinateLayout->addWidget(asIsButton, 0, 0);
-    coordinateLayout->addWidget(toCartesianButton, 0, 1);
-    coordinateLayout->addWidget(toCylindricalButton, 0, 2);
-
-    connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
-            SLOT(coordinateButtonGroupChanged(int)));
-
     // Create the crop group
     QGroupBox *cropGrp = new QGroupBox(pageAppearance);
     cropGrp->setTitle(tr("Crop a portion of the integral curve (for animations)"));
@@ -1494,11 +1469,6 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             parallelAlgo->blockSignals(true);
             parallelAlgo->setCurrentIndex(atts->GetParallelizationAlgorithmType());
             parallelAlgo->blockSignals(false);
-            break;
-        case IntegralCurveAttributes::ID_coordinateSystem:
-            coordinateButtonGroup->blockSignals(true);
-            coordinateButtonGroup->button(atts->GetCoordinateSystem())->setChecked(true);
-            coordinateButtonGroup->blockSignals(false);
             break;
         case IntegralCurveAttributes::ID_maxProcessCount:
             maxSLCount->blockSignals(true);
@@ -2972,13 +2942,6 @@ void
 QvisIntegralCurveWindow::dataVariableChanged(const QString &var)
 {
     atts->SetDataVariable(var.toStdString());
-    Apply();
-}
-
-void
-QvisIntegralCurveWindow::coordinateButtonGroupChanged(int val)
-{
-    atts->SetCoordinateSystem((IntegralCurveAttributes::CoordinateSystem) val);
     Apply();
 }
 
