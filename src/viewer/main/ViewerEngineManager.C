@@ -1557,7 +1557,6 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                                     int windowID)
 {
     // break-out individual members of the request info
-    //const vector<string> &plotNames                  = reqInfo.plotNames;
     const vector<const char*>& pluginIDsList         = reqInfo.pluginIDsList;
     const vector<EngineKey>& engineKeysList          = reqInfo.engineKeysList;
     const vector<int>& plotIdsList                   = reqInfo.plotIdsList;
@@ -2718,7 +2717,6 @@ ViewerEngineManager::UpdateEngineList()
     
     // Go through the list of engines and add each engine to the engine list
     // that gets returned to the viewer's client.
-    int i;
     for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
     {
         ids.push_back(it->first);
@@ -2731,7 +2729,7 @@ ViewerEngineManager::UpdateEngineList()
     EngineList newEL;
 
     // Add the other information about the engine.
-    for(i = 0; i < (int)ids.size(); ++i) 
+    for(size_t i = 0; i < ids.size(); ++i) 
     {
         EngineKey ek = ids[i];
         if (EngineExists(ek))

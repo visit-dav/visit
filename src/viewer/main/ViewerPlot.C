@@ -218,11 +218,6 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
         variableName(variableName_)
 {
     //
-    // Make sure the state is not negative.
-    //
-    //int state = (plotState < 0) ? 0 : plotState;
-
-    //
     // Initialize some values.
     //
     type                = type_;
@@ -1742,7 +1737,6 @@ ViewerPlot::SetVariableName(const std::string &name)
     OperatorPluginManager *oPM = GetOperatorPluginManager();
     for (int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
-        //const std::string &mesh = GetMeshName();
         std::string id = oPM->GetEnabledID(j);
         CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
         const avtDatabaseMetaData *md = GetMetaData();

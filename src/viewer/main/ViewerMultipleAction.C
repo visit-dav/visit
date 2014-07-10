@@ -157,7 +157,7 @@ bool
 ViewerMultipleAction::Enabled() const
 {
     bool someEnabled = false;
-    for(size_t i = 0; i < children.size() && !someEnabled; ++i)
+    for(int i = 0; i < (int)children.size() && !someEnabled; ++i)
         someEnabled |= ChoiceEnabled(i);
 
     return someEnabled;
@@ -279,7 +279,7 @@ ViewerMultipleAction::Update()
 
     // Update the child actions
     bool foundTrue = false;
-    for(size_t i = 0; i < children.size(); ++i)
+    for(int i = 0; i < (int)children.size(); ++i)
     {
         bool choiceShouldBeEnabled = actionShouldBeEnabled ? ChoiceEnabled(i) : false;
         if(choiceShouldBeEnabled)

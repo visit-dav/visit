@@ -371,8 +371,8 @@ SaveViewAction::DeleteViewsFromInterface()
     window->GetToolbar()->RemoveAction(this);
 
     // Remove all of the choices after the second choice.
-    int s = children.size();
-    for(int i = 2; i < s; ++i)
+    size_t s = children.size();
+    for(size_t i = 2; i < s; ++i)
     {
         delete children[s - i + 1];
         children.pop_back();

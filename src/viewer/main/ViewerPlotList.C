@@ -1117,9 +1117,8 @@ ViewerPlotList::SetTimeSliderState(int state)
                 // sliders, after having set the time for the correlated time
                 // slider, they have the right states.
                 //
-                size_t i = 0;
                 const stringVector &correlationDBs = correlation->GetDatabaseNames();
-                for(i = 0; i < correlationDBs.size(); ++i)
+                for(size_t i = 0; i < correlationDBs.size(); ++i)
                 {
                     StringIntMap::iterator ts = timeSliders.find(correlationDBs[i]);
                     if(ts != timeSliders.end())
@@ -1789,7 +1788,7 @@ ViewerPlotList::AllowAutomaticCorrelation(const stringVector &dbs) const
         cL->GetWhenToCorrelate();
     bool needPermission = GetViewerProperties()->GetNowin() ? false :
         cL->GetNeedPermission();
-    bool allowCorrelation = false; //TODO: check initial condition
+    bool allowCorrelation = false;
 
     if(when == DatabaseCorrelationList::CorrelateAlways)
     {
@@ -1946,7 +1945,7 @@ ViewerPlotList::GetMostSuitableCorrelation(const std::string &source,
         // added to the selected correlation if they are not already in it.
         std::string correlationName;
         int score = 0;
-        for(int desiredScore = dbs.size(); desiredScore > 1 && score == 0;
+        for(int desiredScore = (int)dbs.size(); desiredScore > 1 && score == 0;
             --desiredScore)
         {
             for(StringIntMap::const_iterator pos = scores.begin();
@@ -5892,7 +5891,7 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
     //
     int firstSelected = -1;
     std::vector<int> activePlots;
-    for (size_t i = 0; i < (size_t)nPlots; ++i)
+    for (int i = 0; i < nPlots; ++i)
     {
         if (plots[i].active)
         {
@@ -8142,7 +8141,6 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
             continue;
 
         ViewerPlot *plot = plots[i].plot;
-        //const string &mesh = plot->GetMeshName();
         for (int j = 0 ; j < plot->GetNOperators() ; j++)
         {
             ViewerOperator *oper = plot->GetOperator(j);
@@ -8626,8 +8624,7 @@ ViewerPlotList::GetMeshVarNameForActivePlots(const std::string &host,
     ViewerPlot *activePlot = GetPlot(activePlotIDs[0]);
     std::string activeVarName = activePlot->GetVariableName();
     std::string tmpMeshName = md->MeshForVar(activeVarName);
-    size_t i;
-    for (i = 1; i < activePlotIDs.size(); i++)
+    for (size_t i = 1; i < activePlotIDs.size(); i++)
     {
         activePlot = GetPlot(activePlotIDs[i]);
         activeVarName = activePlot->GetVariableName();
@@ -9372,7 +9369,6 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
     // Try and recreate the plots
     //
     bool sendUpdateFrame = false;
-    //bool createdPlots = false;
     intVector plotSelected;
     for(int i = 0; i < expectedPlots; ++i)
     {
@@ -9545,7 +9541,6 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                     }
 
                     createdPlot = true;
-                    //createdPlots = true;
                 }
             }
         }
@@ -10048,9 +10043,9 @@ ViewerPlotList::ShouldRefineData(double smallestCellSize) const
         return false;
     }
 
-    int nDims = 0; //TODO: uninitialized data
+    int nDims = 0;
     double ext[6];
-    double cellSize = 0; //TODO: uninitialized data
+    double cellSize = 0.;
     for (int i = 0; i < nPlots; ++i)
     {
         ViewerPlot *plot = plots[i].plot;

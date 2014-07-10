@@ -345,7 +345,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     // Callback for render information.
     //
     visWindow->SetRenderInfoCallback(ViewerWindowManager::RenderInformationCallback,
-        (void *)((size_t)windowId)); ///TODO: check if cast to size_t to remove int-to-pointer-cast warning is proper
+        &windowId);
 
     //
     // Callback for pick.
@@ -1021,8 +1021,7 @@ ViewerWindow::UpdateTools()
                 // same position.  The call below is what makes this
                 // happen.  This is the mechanism where the attributes are 
                 // sent to (for example) the clip operator.
-                ViewerWindowManager *wM = ViewerWindowManager::Instance();
-                bool applyOps = wM->GetClientAtts()->GetApplyOperator();
+                bool applyOps = ViewerWindowManager::Instance()->GetClientAtts()->GetApplyOperator();
                 HandleTool(visWindow->GetToolInterface(toolId), applyOps);
             }
             if(ViewerQueryManager::Instance()->
@@ -1131,6 +1130,7 @@ ViewerWindow::RecenterView()
         GetExtents(2, limits);
         RecenterViewAxisArray(limits);
         break;
+      case WINMODE_NONE:
       default:
         break;
     }
@@ -1218,6 +1218,7 @@ ViewerWindow::ResetView()
       case WINMODE_VERTPARALLELAXES:
         ResetViewAxisArray();
         break;
+      case WINMODE_NONE:
       default:
         break;
     }
@@ -2656,6 +2657,7 @@ ViewerWindow::UpdateView(const WINDOW_MODE mode, const double *limits)
       case WINMODE_VERTPARALLELAXES:
         UpdateViewAxisArray(limits);
         break;
+        case WINMODE_NONE:
       default:
         break;
     }
@@ -5860,7 +5862,6 @@ ViewerWindow::UpdateViewAxisArray(const double *limits)
 
         boundingBoxValidAxisArray = true;
         centeringValidAxisArray   = true;
-        //const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
 
         if (!viewSetInAxisArray)
         {
@@ -5917,7 +5918,6 @@ ViewerWindow::UpdateViewAxisArray(const double *limits)
     //
     else
     {
-        //const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
         visWindow->UpdateView();
     }
 
@@ -9630,7 +9630,7 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
             if ((lastRequest.plotIdsList[j] == thisRequest.plotIdsList[i]) &&
                 (lastRequest.engineKeysList[j] == thisRequest.engineKeysList[i]))
             {
-                indexOfPlotInLastList = j;
+                indexOfPlotInLastList = (int)j;
                 break;
             }
         }
@@ -10096,7 +10096,6 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 void
 ViewerWindow::ViewChangedCallback(void *data)
 {
-    //unsigned char* argsBuf = (unsigned char*) data;
     ViewerWindow *win;
 
     win = (ViewerWindow *)data;

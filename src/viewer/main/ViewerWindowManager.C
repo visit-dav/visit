@@ -5157,7 +5157,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
 void
 ViewerWindowManager::RenderInformationCallback(void *data)
 {
-    int index = (int)((long)data);
+    int index = *((int*)data);
     instance->UpdateWindowRenderingInformation(index);
 }
 

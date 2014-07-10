@@ -2458,10 +2458,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 if (!GetPlotPluginManager()->PluginAvailable(
                                                             "Spreadsheet_1.0"))
                 {
-                    //static bool issuedWarning = false;
                     Error(tr("Could not create a spreadsheet with the pick, "
                           "because the spreadsheet plugin is not available."));
-                    //issuedWarning = true;
                     return retval;
                 }
 
@@ -2633,7 +2631,6 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             }
             if (haveArray)
             {
-                //int winId = win->GetWindowId();
                 ViewerWindow *resWin =
                        ViewerWindowManager::Instance()->GetTimeQueryWindow(-1);
                 if (resWin == NULL)
@@ -2646,11 +2643,9 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 if (!GetPlotPluginManager()->PluginAvailable(
                                                               "Histogram_1.0"))
                 {
-                    //static bool issuedWarning = false;
                     Error(tr("Could not create a histogram of the array "
                              "variable, because the Histogram plugin is not "
                              "available."));
-                    //issuedWarning = true;
                     return retval;
                 }
 
@@ -3878,9 +3873,8 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
         uniqueVars.push_back(activeVar);
         return;
     }
-    size_t i, j;
     set<string> uniqueVarsSet;
-    for (i = 0; i < vars.size(); i++)
+    for (size_t i = 0; i < vars.size(); i++)
     {
         string v = vars[i];
         if (v == "default")
@@ -3892,7 +3886,7 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
             stringVector dbVars = md->GetAllVariableNames(activeVar);
             const ExpressionList *exprList = ParsingExprList::Instance()->GetList();
             stringVector exprVars = exprList->GetAllVarNames(md->GetDatabaseName());
-            for (j = 0; j < dbVars.size(); j++)
+            for (size_t j = 0; j < dbVars.size(); j++)
             {
                 if (uniqueVarsSet.count(dbVars[j]) == 0)
                 {
@@ -3900,7 +3894,7 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
                     uniqueVarsSet.insert(dbVars[j]);
                 }
             }
-            for (j = 0; j < exprVars.size(); j++)
+            for (size_t j = 0; j < exprVars.size(); j++)
             {
                 if (uniqueVarsSet.count(exprVars[j]) == 0)
                 {
