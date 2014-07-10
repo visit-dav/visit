@@ -1472,7 +1472,7 @@ avtOpenGLMoleculeRenderer::DrawRectangleBetweenTwoPoints(double *p0,
                                                          double *p1,
                                                          float r)
 {
-    float v[3] = {p0[1]-p1[1], p1[0]-p0[0], 0};
+    float v[3] = {(float)(p0[1]-p1[1]), (float)(p1[0]-p0[0]), 0.f};
     float v_len = vtkMath::Normalize(v);
     if (v_len == 0)
         return;

@@ -12,13 +12,13 @@ Code: SetContourPercent
 Prefix:
 Postfix:
     // Grow the color vector.
-    EnlargeMultiColor(contourPercent.size());
+    EnlargeMultiColor((int)contourPercent.size());
 
 Code: SetContourValue
 Prefix:
 Postfix:
     // Grow the color vector.
-    EnlargeMultiColor(contourValue.size());
+    EnlargeMultiColor((int)contourValue.size());
 
 Code: SetDefaultPalette
 Prefix:
@@ -27,9 +27,9 @@ Postfix:
     if(contourMethod == Level)
         EnlargeMultiColor(contourNLevels);
     else if(contourMethod == Value)
-        EnlargeMultiColor(contourValue.size());
+        EnlargeMultiColor((int)contourValue.size());
     else
-        EnlargeMultiColor(contourPercent.size());
+        EnlargeMultiColor((int)contourPercent.size());
 
 Constant: MAX_CONTOURS
 Declaration: static const int MAX_CONTOURS;

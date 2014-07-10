@@ -163,7 +163,7 @@ avtMultiCurveFilter::PostExecute(void)
     //
     std::vector<std::string> labels;
     outAtts.GetLabels(labels);
-    int nCurves = labels.size();
+    int nCurves = (int)labels.size();
 
     outAtts.GetOriginalSpatialExtents()->Clear();
     outAtts.GetThisProcsOriginalSpatialExtents()->Clear();

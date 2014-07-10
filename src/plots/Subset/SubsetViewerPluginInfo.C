@@ -580,7 +580,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         for(size_t i = 0; i < sv.size(); ++i)
         {
             unsigned char rgb[3] = {0,0,0};
-            ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), i, rgb);
+            ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), (int)i, rgb);
             ca[i].SetRed(int(rgb[0]));
             ca[i].SetGreen(int(rgb[1]));
             ca[i].SetBlue(int(rgb[2]));
@@ -591,7 +591,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         // The CT is continuous, sample the CT so we have a unique color
         // for each element in sv.
         unsigned char *rgb = ct->GetSampledColors(
-            ct->GetDefaultDiscreteColorTable(), sv.size());
+            ct->GetDefaultDiscreteColorTable(), (int)sv.size());
         if(rgb)
         {
             for(size_t i = 0; i < sv.size(); ++i)

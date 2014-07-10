@@ -315,9 +315,9 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
             if (!success)
                 break; // out of iterating over time
 
-            int numVars = parCoordsAtts.GetExtentMinima().size();
+            size_t numVars = parCoordsAtts.GetExtentMinima().size();
             bool haveSelection = false;
-            for (int i = 0 ; i < numVars ; i++)
+            for (size_t i = 0 ; i < numVars ; i++)
             {
                 if (parCoordsAtts.GetExtentMinima()[i] > -1e+36)
                 {
@@ -647,12 +647,12 @@ avtParallelCoordinatesFilter::PostExecute(void)
         outAtts.SetYUnits("");
     }
 
-    for (size_t t=0; t<histograms.size(); t++)
+    for (int t=0; t<(int)histograms.size(); t++)
         DrawContext(t);
 
     if (parCoordsAtts.GetDrawFocusAs()!=ParallelCoordinatesAttributes::IndividualLines)
     {
-        for (size_t t=0; t<histogramsForSelectedRegion.size(); t++)
+        for (int t=0; t<(int)histogramsForSelectedRegion.size(); t++)
             if (histogramsForSelectedRegion[t] != NULL)
                 DrawFocusHistograms(t);
     }
@@ -1680,8 +1680,8 @@ avtParallelCoordinatesFilter::DrawHistogram(int ts, bool focus)
             bounds = &(hist[ts][axisNum].GetBounds()[0]);
         else
             bounds = &(hist[ts][axisNum-1].GetBounds()[1]);
-        int nparts = bounds->size() - 1;
-        for (int part = 0 ; part <= nparts ; part++)
+        size_t nparts = bounds->size() - 1;
+        for (size_t part = 0 ; part <= nparts ; part++)
         {
             double val = (*bounds)[part];
             float pt[3];
@@ -2489,7 +2489,7 @@ UpdateLimitsWithAllHSTimeSteps(int axis,
         if ((*bounds)[0] < varmin)
             varmin = (*bounds)[0];
 
-        int nparts = bounds->size() - 1;
+        size_t nparts = bounds->size() - 1;
         if ((*bounds)[nparts] > varmax)
             varmax = (*bounds)[nparts];
     }

@@ -1067,7 +1067,7 @@ avtSubsetPlot::SortLabels()
     vector < pair < string, int > > originalLabelPairs;
     for (i = 0 ; i < originalLabels.size() ; i++)
     {
-        originalLabelPairs.push_back(pair<string, int>(originalLabels[i], i));
+        originalLabelPairs.push_back(pair<string, int>(originalLabels[i], (int)i));
     }
     sort(originalLabelPairs.begin(), originalLabelPairs.end());
     

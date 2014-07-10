@@ -1315,7 +1315,7 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
         saveExtentMax  = +1e+37;
     }
 
-    int insertOrdinal = scalarAxisNames.size();
+    size_t insertOrdinal = scalarAxisNames.size();
 
     saxisNamesIt = scalarAxisNames.begin()  + insertOrdinal;
     vaxisNamesIt = visualAxisNames.begin()  + insertOrdinal;

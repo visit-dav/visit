@@ -347,7 +347,7 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
     vector<vtkPolyData *> contours;
     vector<string> labels;
     
-    int cl;
+    size_t cl;
     for (cl = 0; cl < 4; ++cl)
     {
         contourInput->GetPointData()->SetScalars(rv[cl]);
@@ -373,7 +373,7 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
         data->Delete();
     
 
-    int ccount = contours.size();
+    size_t ccount = contours.size();
     if (ccount == 0)
         return NULL;
 
@@ -381,7 +381,7 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
     for (cl = 0; cl < ccount; ++cl)
         out_ds[cl] = contours[cl];
 
-    avtDataTree_p returnDT = new avtDataTree(ccount, out_ds, domain, labels);
+    avtDataTree_p returnDT = new avtDataTree((int)ccount, out_ds, domain, labels);
     
     return returnDT;
 }
