@@ -231,6 +231,7 @@ void TransformAttributes::Init()
     transformType = Similarity;
     inputCoordSys = Cartesian;
     outputCoordSys = Spherical;
+    continuousPhi = false;
     m00 = 1;
     m01 = 0;
     m02 = 0;
@@ -297,6 +298,7 @@ void TransformAttributes::Copy(const TransformAttributes &obj)
     transformType = obj.transformType;
     inputCoordSys = obj.inputCoordSys;
     outputCoordSys = obj.outputCoordSys;
+    continuousPhi = obj.continuousPhi;
     m00 = obj.m00;
     m01 = obj.m01;
     m02 = obj.m02;
@@ -505,6 +507,7 @@ TransformAttributes::operator == (const TransformAttributes &obj) const
             (transformType == obj.transformType) &&
             (inputCoordSys == obj.inputCoordSys) &&
             (outputCoordSys == obj.outputCoordSys) &&
+            (continuousPhi == obj.continuousPhi) &&
             (m00 == obj.m00) &&
             (m01 == obj.m01) &&
             (m02 == obj.m02) &&
@@ -719,6 +722,7 @@ TransformAttributes::SelectAll()
     Select(ID_transformType,         (void *)&transformType);
     Select(ID_inputCoordSys,         (void *)&inputCoordSys);
     Select(ID_outputCoordSys,        (void *)&outputCoordSys);
+    Select(ID_continuousPhi,         (void *)&continuousPhi);
     Select(ID_m00,                   (void *)&m00);
     Select(ID_m01,                   (void *)&m01);
     Select(ID_m02,                   (void *)&m02);
@@ -870,6 +874,12 @@ TransformAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("outputCoordSys", CoordinateSystem_ToString(outputCoordSys)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_continuousPhi, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("continuousPhi", continuousPhi));
     }
 
     if(completeSave || !FieldsEqual(ID_m00, &defaultObject))
@@ -1363,6 +1373,13 @@ TransformAttributes::SetOutputCoordSys(TransformAttributes::CoordinateSystem out
 }
 
 void
+TransformAttributes::SetContinuousPhi(bool continuousPhi_)
+{
+    continuousPhi = continuousPhi_;
+    Select(ID_continuousPhi, (void *)&continuousPhi);
+}
+
+void
 TransformAttributes::SetM00(double m00_)
 {
     m00 = m00_;
@@ -1619,6 +1636,12 @@ TransformAttributes::GetOutputCoordSys() const
     return CoordinateSystem(outputCoordSys);
 }
 
+bool
+TransformAttributes::GetContinuousPhi() const
+{
+    return continuousPhi;
+}
+
 double
 TransformAttributes::GetM00() const
 {
@@ -1796,6 +1819,7 @@ TransformAttributes::GetFieldName(int index) const
     case ID_transformType:         return "transformType";
     case ID_inputCoordSys:         return "inputCoordSys";
     case ID_outputCoordSys:        return "outputCoordSys";
+    case ID_continuousPhi:         return "continuousPhi";
     case ID_m00:                   return "m00";
     case ID_m01:                   return "m01";
     case ID_m02:                   return "m02";
@@ -1856,6 +1880,7 @@ TransformAttributes::GetFieldType(int index) const
     case ID_transformType:         return FieldType_enum;
     case ID_inputCoordSys:         return FieldType_enum;
     case ID_outputCoordSys:        return FieldType_enum;
+    case ID_continuousPhi:         return FieldType_bool;
     case ID_m00:                   return FieldType_double;
     case ID_m01:                   return FieldType_double;
     case ID_m02:                   return FieldType_double;
@@ -1916,6 +1941,7 @@ TransformAttributes::GetFieldTypeName(int index) const
     case ID_transformType:         return "enum";
     case ID_inputCoordSys:         return "enum";
     case ID_outputCoordSys:        return "enum";
+    case ID_continuousPhi:         return "bool";
     case ID_m00:                   return "double";
     case ID_m01:                   return "double";
     case ID_m02:                   return "double";
@@ -2059,6 +2085,11 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_outputCoordSys:
         {  // new scope
         retval = (outputCoordSys == obj.outputCoordSys);
+        }
+        break;
+    case ID_continuousPhi:
+        {  // new scope
+        retval = (continuousPhi == obj.continuousPhi);
         }
         break;
     case ID_m00:

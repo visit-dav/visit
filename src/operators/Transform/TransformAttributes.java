@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class TransformAttributes extends AttributeSubject implements Plugin
 {
-    private static int TransformAttributes_numAdditionalAtts = 36;
+    private static int TransformAttributes_numAdditionalAtts = 37;
 
     // Enum values
     public final static int ANGLETYPE_DEG = 0;
@@ -109,6 +109,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         transformType = TRANSFORMTYPE_SIMILARITY;
         inputCoordSys = COORDINATESYSTEM_CARTESIAN;
         outputCoordSys = COORDINATESYSTEM_SPHERICAL;
+        continuousPhi = false;
         m00 = 1;
         m01 = 0;
         m02 = 0;
@@ -160,6 +161,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         transformType = TRANSFORMTYPE_SIMILARITY;
         inputCoordSys = COORDINATESYSTEM_CARTESIAN;
         outputCoordSys = COORDINATESYSTEM_SPHERICAL;
+        continuousPhi = false;
         m00 = 1;
         m01 = 0;
         m02 = 0;
@@ -216,6 +218,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         transformType = obj.transformType;
         inputCoordSys = obj.inputCoordSys;
         outputCoordSys = obj.outputCoordSys;
+        continuousPhi = obj.continuousPhi;
         m00 = obj.m00;
         m01 = obj.m01;
         m02 = obj.m02;
@@ -286,6 +289,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
                 (transformType == obj.transformType) &&
                 (inputCoordSys == obj.inputCoordSys) &&
                 (outputCoordSys == obj.outputCoordSys) &&
+                (continuousPhi == obj.continuousPhi) &&
                 (m00 == obj.m00) &&
                 (m01 == obj.m01) &&
                 (m02 == obj.m02) &&
@@ -443,118 +447,124 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(16);
     }
 
+    public void SetContinuousPhi(boolean continuousPhi_)
+    {
+        continuousPhi = continuousPhi_;
+        Select(17);
+    }
+
     public void SetM00(double m00_)
     {
         m00 = m00_;
-        Select(17);
+        Select(18);
     }
 
     public void SetM01(double m01_)
     {
         m01 = m01_;
-        Select(18);
+        Select(19);
     }
 
     public void SetM02(double m02_)
     {
         m02 = m02_;
-        Select(19);
+        Select(20);
     }
 
     public void SetM03(double m03_)
     {
         m03 = m03_;
-        Select(20);
+        Select(21);
     }
 
     public void SetM10(double m10_)
     {
         m10 = m10_;
-        Select(21);
+        Select(22);
     }
 
     public void SetM11(double m11_)
     {
         m11 = m11_;
-        Select(22);
+        Select(23);
     }
 
     public void SetM12(double m12_)
     {
         m12 = m12_;
-        Select(23);
+        Select(24);
     }
 
     public void SetM13(double m13_)
     {
         m13 = m13_;
-        Select(24);
+        Select(25);
     }
 
     public void SetM20(double m20_)
     {
         m20 = m20_;
-        Select(25);
+        Select(26);
     }
 
     public void SetM21(double m21_)
     {
         m21 = m21_;
-        Select(26);
+        Select(27);
     }
 
     public void SetM22(double m22_)
     {
         m22 = m22_;
-        Select(27);
+        Select(28);
     }
 
     public void SetM23(double m23_)
     {
         m23 = m23_;
-        Select(28);
+        Select(29);
     }
 
     public void SetM30(double m30_)
     {
         m30 = m30_;
-        Select(29);
+        Select(30);
     }
 
     public void SetM31(double m31_)
     {
         m31 = m31_;
-        Select(30);
+        Select(31);
     }
 
     public void SetM32(double m32_)
     {
         m32 = m32_;
-        Select(31);
+        Select(32);
     }
 
     public void SetM33(double m33_)
     {
         m33 = m33_;
-        Select(32);
+        Select(33);
     }
 
     public void SetInvertLinearTransform(boolean invertLinearTransform_)
     {
         invertLinearTransform = invertLinearTransform_;
-        Select(33);
+        Select(34);
     }
 
     public void SetVectorTransformMethod(int vectorTransformMethod_)
     {
         vectorTransformMethod = vectorTransformMethod_;
-        Select(34);
+        Select(35);
     }
 
     public void SetTransformVectors(boolean transformVectors_)
     {
         transformVectors = transformVectors_;
-        Select(35);
+        Select(36);
     }
 
     // Property getting methods
@@ -575,6 +585,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     public int      GetTransformType() { return transformType; }
     public int      GetInputCoordSys() { return inputCoordSys; }
     public int      GetOutputCoordSys() { return outputCoordSys; }
+    public boolean  GetContinuousPhi() { return continuousPhi; }
     public double   GetM00() { return m00; }
     public double   GetM01() { return m01; }
     public double   GetM02() { return m02; }
@@ -633,42 +644,44 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(16, buf))
             buf.WriteInt(outputCoordSys);
         if(WriteSelect(17, buf))
-            buf.WriteDouble(m00);
+            buf.WriteBool(continuousPhi);
         if(WriteSelect(18, buf))
-            buf.WriteDouble(m01);
+            buf.WriteDouble(m00);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(m02);
+            buf.WriteDouble(m01);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(m03);
+            buf.WriteDouble(m02);
         if(WriteSelect(21, buf))
-            buf.WriteDouble(m10);
+            buf.WriteDouble(m03);
         if(WriteSelect(22, buf))
-            buf.WriteDouble(m11);
+            buf.WriteDouble(m10);
         if(WriteSelect(23, buf))
-            buf.WriteDouble(m12);
+            buf.WriteDouble(m11);
         if(WriteSelect(24, buf))
-            buf.WriteDouble(m13);
+            buf.WriteDouble(m12);
         if(WriteSelect(25, buf))
-            buf.WriteDouble(m20);
+            buf.WriteDouble(m13);
         if(WriteSelect(26, buf))
-            buf.WriteDouble(m21);
+            buf.WriteDouble(m20);
         if(WriteSelect(27, buf))
-            buf.WriteDouble(m22);
+            buf.WriteDouble(m21);
         if(WriteSelect(28, buf))
-            buf.WriteDouble(m23);
+            buf.WriteDouble(m22);
         if(WriteSelect(29, buf))
-            buf.WriteDouble(m30);
+            buf.WriteDouble(m23);
         if(WriteSelect(30, buf))
-            buf.WriteDouble(m31);
+            buf.WriteDouble(m30);
         if(WriteSelect(31, buf))
-            buf.WriteDouble(m32);
+            buf.WriteDouble(m31);
         if(WriteSelect(32, buf))
-            buf.WriteDouble(m33);
+            buf.WriteDouble(m32);
         if(WriteSelect(33, buf))
-            buf.WriteBool(invertLinearTransform);
+            buf.WriteDouble(m33);
         if(WriteSelect(34, buf))
-            buf.WriteInt(vectorTransformMethod);
+            buf.WriteBool(invertLinearTransform);
         if(WriteSelect(35, buf))
+            buf.WriteInt(vectorTransformMethod);
+        if(WriteSelect(36, buf))
             buf.WriteBool(transformVectors);
     }
 
@@ -728,60 +741,63 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             SetOutputCoordSys(buf.ReadInt());
             break;
         case 17:
-            SetM00(buf.ReadDouble());
+            SetContinuousPhi(buf.ReadBool());
             break;
         case 18:
-            SetM01(buf.ReadDouble());
+            SetM00(buf.ReadDouble());
             break;
         case 19:
-            SetM02(buf.ReadDouble());
+            SetM01(buf.ReadDouble());
             break;
         case 20:
-            SetM03(buf.ReadDouble());
+            SetM02(buf.ReadDouble());
             break;
         case 21:
-            SetM10(buf.ReadDouble());
+            SetM03(buf.ReadDouble());
             break;
         case 22:
-            SetM11(buf.ReadDouble());
+            SetM10(buf.ReadDouble());
             break;
         case 23:
-            SetM12(buf.ReadDouble());
+            SetM11(buf.ReadDouble());
             break;
         case 24:
-            SetM13(buf.ReadDouble());
+            SetM12(buf.ReadDouble());
             break;
         case 25:
-            SetM20(buf.ReadDouble());
+            SetM13(buf.ReadDouble());
             break;
         case 26:
-            SetM21(buf.ReadDouble());
+            SetM20(buf.ReadDouble());
             break;
         case 27:
-            SetM22(buf.ReadDouble());
+            SetM21(buf.ReadDouble());
             break;
         case 28:
-            SetM23(buf.ReadDouble());
+            SetM22(buf.ReadDouble());
             break;
         case 29:
-            SetM30(buf.ReadDouble());
+            SetM23(buf.ReadDouble());
             break;
         case 30:
-            SetM31(buf.ReadDouble());
+            SetM30(buf.ReadDouble());
             break;
         case 31:
-            SetM32(buf.ReadDouble());
+            SetM31(buf.ReadDouble());
             break;
         case 32:
-            SetM33(buf.ReadDouble());
+            SetM32(buf.ReadDouble());
             break;
         case 33:
-            SetInvertLinearTransform(buf.ReadBool());
+            SetM33(buf.ReadDouble());
             break;
         case 34:
-            SetVectorTransformMethod(buf.ReadInt());
+            SetInvertLinearTransform(buf.ReadBool());
             break;
         case 35:
+            SetVectorTransformMethod(buf.ReadInt());
+            break;
+        case 36:
             SetTransformVectors(buf.ReadBool());
             break;
         }
@@ -833,6 +849,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         if(outputCoordSys == COORDINATESYSTEM_SPHERICAL)
             str = str + "COORDINATESYSTEM_SPHERICAL";
         str = str + "\n";
+        str = str + boolToString("continuousPhi", continuousPhi, indent) + "\n";
         str = str + doubleToString("m00", m00, indent) + "\n";
         str = str + doubleToString("m01", m01, indent) + "\n";
         str = str + doubleToString("m02", m02, indent) + "\n";
@@ -883,6 +900,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     private int      transformType;
     private int      inputCoordSys;
     private int      outputCoordSys;
+    private boolean  continuousPhi;
     private double   m00;
     private double   m01;
     private double   m02;

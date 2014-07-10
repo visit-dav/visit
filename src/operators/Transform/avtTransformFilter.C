@@ -236,6 +236,12 @@ avtTransformFilter::SetAtts(const AttributeGroup *a)
              csc->SetOutputCoordSys(avtCoordSystemConvert::SPHERICAL);
              break;
         }
+
+
+        if( atts.GetInputCoordSys()  == TransformAttributes::Cartesian &&
+            atts.GetOutputCoordSys() == TransformAttributes::Cylindrical )
+            csc->SetContinuousPhi(atts.GetContinuousPhi());
+
         switch (atts.GetVectorTransformMethod())
         {
           case TransformAttributes::None:

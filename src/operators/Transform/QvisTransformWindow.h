@@ -149,6 +149,7 @@ class QvisTransformWindow : public QvisOperatorWindow
     void pageTurned(int);
     void inputCoordChanged(int);
     void outputCoordChanged(int);
+    void continuousPhiChanged(bool val);
     void ltElementtChanged();
     void linearInvertChanged(bool val);
     void transformVectorsChanged(bool val);
@@ -205,6 +206,8 @@ class QvisTransformWindow : public QvisOperatorWindow
 
     QButtonGroup    *inputCoord;
     QButtonGroup    *outputCoord;
+    QCheckBox       *continuousPhi;
+    QLabel          *continuousPhiLabel;
     QComboBox       *vectorMethodCombo;
 
     TransformAttributes *atts;
