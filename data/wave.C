@@ -40,6 +40,7 @@
 #include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
+#include <errno.h>
 #else
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -170,7 +171,10 @@ main(int argc, char *argv[])
         {
             sprintf(filename, "wave_1file.silo:cycle_%04d", cycle);
 #ifndef _WIN32
-            symlink("wave_1file.silo", filename);
+            if (symlink("wave_1file.silo", filename) && (errno!=EEXIST))
+            {
+                cerr << "ERROR: failed to create symlink" << endl;
+            }
 #else
             CopyFile("wave_1file.silo", filename, true);
 #endif
@@ -209,7 +213,10 @@ main(int argc, char *argv[])
         {
             sprintf(filename, "wave_tv_1file.silo:cycle_%04d", cycle);
 #ifndef _WIN32
-            symlink("wave_tv_1file.silo", filename);
+            if (symlink("wave_tv_1file.silo", filename) && (errno!=EEXIST))
+            {
+                cerr << "ERROR: failed to create symlink" << endl;
+            }
 #else
             CopyFile("wave_tv_1file.silo", filename, true);
 #endif

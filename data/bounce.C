@@ -413,7 +413,7 @@ public:
                     double x[nvals];
                     double y[nvals];
                     double z[nvals];
-                    for(size_t i = 0; i < nvals; ++i)
+                    for(int i = 0; i < nvals; ++i)
                     {
                         double t = double(i) / double(nvals-1);
                         x[i] = (1.-t)*thisExtents[0] + t*thisExtents[1];

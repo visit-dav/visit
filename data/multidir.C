@@ -52,6 +52,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #endif
 
 #define MAX_CYCLES  10
@@ -128,8 +129,11 @@ GetCurrentDirectory()
     // For now...
     return std::string();
 #else
-    char buf[1000];
-    getcwd(buf, 1000);
+    char buf[1000] = {'\0'};
+    if (!getcwd(buf, 1000))
+    {
+        cerr << "getcwd failed" << endl;
+    }
     return std::string(buf);
 #endif
 }
@@ -156,8 +160,11 @@ GotoDirectory(const std::string &dirname)
 #ifdef WIN32
     cerr << "GotoDirectory not implemented" << endl;
 #else
-    mkdir(dirname.c_str(), S_IRWXU);
-    chdir(dirname.c_str());
+    if ( (mkdir(dirname.c_str(), S_IRWXU) && (errno!=EEXIST))
+      || chdir(dirname.c_str()) )
+    {
+        cerr << "GotoDirectory " << dirname << " failed!" << endl;
+    }
 #endif
 }
 

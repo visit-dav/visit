@@ -1243,7 +1243,7 @@ build_rect3d(DBfile * dbfile, int size)
     int            cycle;
     float          time;
     double         dtime;
-    int            nx, ny, nz;
+    int            nx=0, ny=0, nz=0;
     int            ndims;
     int            dims[3], zdims[3];
     float         *coords[3];
@@ -2411,7 +2411,7 @@ build_poly3d(DBfile *dbfile, int size)
     float          Ca, Cb, Cc, Cd;
     float          Xmin,Ymin,Zmin;
     float          Xmax,Ymax,Zmax;
-    int            nx, ny, nz;
+    int            nx=0, ny=0, nz=0;
     int            nfaces, nzone1, nzone2, nzone3, nzones, nnodes;
     int            lo_offset, hi_offset;
     int            lfacelist, lzonelist;
