@@ -46,7 +46,6 @@
 #include <filters_exports.h>
 #include <avtDataTreeIterator.h>
 
-
 // ****************************************************************************
 //  Class: avtCoordSystemConvert
 //
@@ -72,9 +71,9 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
   public:
     enum CoordSystem
     {
-        CARTESIAN       = 0,
-        CYLINDRICAL,   /* 1 */
-        SPHERICAL      /* 2 */
+        CARTESIAN = 0,                /* 0 */
+        CYLINDRICAL,                  /* 1 */
+        SPHERICAL,                    /* 2 */
     };
 
     enum VectorTransformMethod
@@ -94,12 +93,15 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
 
     void                 SetInputCoordSys(CoordSystem a) { inputSys = a; };
     void                 SetOutputCoordSys(CoordSystem a) { outputSys = a; };
+    void                 SetContinuousPhi(bool a) { continuousPhi = a; };
     void                 SetVectorTransformMethod(VectorTransformMethod m)
                                                { vectorTransformMethod = m; }
 
   protected:
     CoordSystem           inputSys;
     CoordSystem           outputSys;
+    bool                  continuousPhi;
+
     VectorTransformMethod vectorTransformMethod;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
@@ -107,6 +109,4 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
 
     virtual void          UpdateDataObjectInfo(void);
 };
-
-
 #endif

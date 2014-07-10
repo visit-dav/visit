@@ -62,7 +62,7 @@
 
 #include <vector>
 
-typedef void(*xformFunc)(double *, const double *);
+typedef void(*xformFunc)(double *, const double *, const bool normalize);
 static vtkDataSet *CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts);
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ avtCoordSystemConvert::~avtCoordSystemConvert()
 // ****************************************************************************
 
 static void 
-CylindricalToCartesianPoint(double *newpt, const double *pt)
+CylindricalToCartesianPoint(double *newpt, const double *pt, const bool normalize)
 {
     newpt[0] = pt[0] * cos(pt[1]);
     newpt[1] = pt[0] * sin(pt[1]);
@@ -138,7 +138,7 @@ CylindricalToCartesianPoint(double *newpt, const double *pt)
 // ****************************************************************************
 
 static void 
-SphericalToCartesianPoint(double *newpt, const double *pt)
+SphericalToCartesianPoint(double *newpt, const double *pt, const bool normalize)
 {
     newpt[0] = pt[0]*sin(pt[1])*cos(pt[2]);
     newpt[1] = pt[0]*sin(pt[1])*sin(pt[2]);
@@ -160,11 +160,11 @@ SphericalToCartesianPoint(double *newpt, const double *pt)
 // ****************************************************************************
 
 static void 
-CartesianToCylindricalPoint(double *newpt, const double *pt)
+CartesianToCylindricalPoint(double *newpt, const double *pt, const bool normalize)
 {
     newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
     newpt[1] = atan2(pt[1], pt[0]);
-    if (newpt[1] < 0.)
+    if (normalize && newpt[1] < 0.)
       newpt[1] += 2*vtkMath::Pi();
     newpt[2] = pt[2];
 }
@@ -182,12 +182,12 @@ CartesianToCylindricalPoint(double *newpt, const double *pt)
 // ****************************************************************************
 
 static void 
-CartesianToSphericalPoint(double *newpt, const double *pt)
+CartesianToSphericalPoint(double *newpt, const double *pt, const bool normalize)
 {
     newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
     newpt[1] = acos ( pt[2]/newpt[0] );
     newpt[2] = atan2( pt[1], pt[0]);
-    if (newpt[2] < 0.)
+    if (normalize && newpt[2] < 0.)
         newpt[2] += 2*vtkMath::Pi();
 }
 
@@ -205,7 +205,7 @@ CartesianToSphericalPoint(double *newpt, const double *pt)
 // ****************************************************************************
 
 static void 
-SphericalToCylindricalPoint(double *newpt, const double *pt)
+SphericalToCylindricalPoint(double *newpt, const double *pt, const bool normalize)
 {
     newpt[0] = pt[0] * sin(pt[1]);
     newpt[1] = pt[2];             
@@ -229,11 +229,11 @@ SphericalToCylindricalPoint(double *newpt, const double *pt)
 // ****************************************************************************
 
 static void 
-CylindricalToSphericalPoint(double *newpt, const double *pt)
+CylindricalToSphericalPoint(double *newpt, const double *pt, const bool normalize)
 {
     newpt[0] = sqrt(pt[0]*pt[0] + pt[2]*pt[2]);
     newpt[1] = atan2(pt[0], pt[2]);            
-    if (newpt[1] < 0.)
+    if (normalize && newpt[1] < 0.)
         newpt[1] += 2*vtkMath::Pi();
     newpt[2] = pt[1];                          
 }
@@ -279,14 +279,14 @@ TransformSingleVector(avtCoordSystemConvert::VectorTransformMethod method,
         newvec[2] = vec[2];
         break;
       case avtCoordSystemConvert::AsPoint:
-        xf(newvec, vec);
+        xf(newvec, vec, true);
         break;
       case avtCoordSystemConvert::AsDisplacement:
         {
         double tmpvec[3] = {vec[0] + pt[0],
                             vec[1] + pt[1],
                             vec[2] + pt[2]};
-        xf(newvec, tmpvec);
+        xf(newvec, tmpvec, true);
         newvec[0] -= newpt[0];
         newvec[1] -= newpt[1];
         newvec[2] -= newpt[2];
@@ -306,7 +306,7 @@ TransformSingleVector(avtCoordSystemConvert::VectorTransformMethod method,
         tmpvec[1] = instantEps*tmpvec[1] + pt[1];
         tmpvec[2] = instantEps*tmpvec[2] + pt[2];
 
-        xf(newvec, tmpvec);
+        xf(newvec, tmpvec, true);
         newvec[0] = (newvec[0] - newpt[0]) * instantEpsInv *mag;
         newvec[1] = (newvec[1] - newpt[1]) * instantEpsInv *mag;
         newvec[2] = (newvec[2] - newpt[2]) * instantEpsInv *mag;
@@ -350,6 +350,7 @@ TransformSingleVector(avtCoordSystemConvert::VectorTransformMethod method,
 
 static vtkDataSet *
 Transform(vtkDataSet *in_ds,
+          bool continuousPhi,
           avtCoordSystemConvert::VectorTransformMethod vectorTransformMethod,
           xformFunc xf)
 {
@@ -362,13 +363,68 @@ Transform(vtkDataSet *in_ds,
     vtkPoints *pts = vtkVisItUtility::GetPoints(in_ds);
     vtkPoints *newPts = vtkPoints::New(pts->GetDataType());
     newPts->SetNumberOfPoints(numPts);
-    for (int i = 0 ; i < numPts ; i++)
+
+    // When converting from cartesian to cylindrical with a continuous
+    // phi the points must be converted using the points ids so to be
+    // contiguous. If the points are not part of a VTK_POLY_LINE just
+    // convert the points.
+    if( continuousPhi )
     {
-        double pt[3], newpt[3];
-        pts->GetPoint(i, pt);
-        xf(newpt, pt);
-        newPts->SetPoint(i, newpt);
+        // Set the wrap value for +/- pi at 75% which accounts for
+        // large steps but avoids the "wrap" at 0.
+        double pi_wrap = 0.75 * M_PI;
+
+        vtkPolyData *pd = (vtkPolyData *) in_ds;
+
+        for (int c=0; c<pd->GetNumberOfCells(); ++c)
+        {
+            vtkIdList *idlist = vtkIdList::New();
+
+            pd->GetCellPoints(c, idlist);
+            
+            double lastPhi = 0, angle = 0;
+            
+            for (int j=0; j<idlist->GetNumberOfIds(); ++j)
+            {
+                double pt[3], newpt[3];
+                pts->GetPoint(idlist->GetId(j), pt);
+                xf(newpt, pt, false);
+                
+                if( pd->GetCellType(c) == VTK_POLY_LINE )
+                {
+                    // Check for a wrapped-around from -pi radians to pi
+                    // radians.
+                    if( lastPhi < -pi_wrap && pi_wrap < newpt[1] )
+                    {
+                        angle -= 2.0 * M_PI;
+                    }
+                    else if( newpt[1] < -pi_wrap && pi_wrap < lastPhi )
+                    {
+                        angle += 2.0 * M_PI;
+                    }
+                    
+                    lastPhi = newpt[1];
+                    
+                    newpt[1] += angle;
+                }
+                
+                newPts->SetPoint(idlist->GetId(j), newpt);
+            }
+
+            idlist->Delete();
+        }
     }
+    else
+    {
+        for (int i=0; i<numPts; ++i)
+        {
+            double pt[3], newpt[3];
+            pts->GetPoint(i, pt);
+            xf(newpt, pt, true);
+            newPts->SetPoint(i, newpt);
+        }
+    }
+
     vtkDataSet *rv = CreateNewDataset(in_ds, newPts);
 
     //
@@ -427,7 +483,7 @@ Transform(vtkDataSet *in_ds,
                 pt[0] /= double(numCellPts);
                 pt[1] /= double(numCellPts);
                 pt[2] /= double(numCellPts);
-                xf(newpt, pt); // need to transform it, too
+                xf(newpt, pt, true); // need to transform it, too
                 cellCoordsOld->SetTuple(n, pt);
                 cellCoordsNew->SetTuple(n, newpt);
             }
@@ -507,6 +563,8 @@ Transform(vtkDataSet *in_ds,
     pts->Delete();
     newPts->Delete();
 
+    int dstype = rv->GetDataObjectType();
+
     return rv;
 }
 
@@ -545,6 +603,16 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     else if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         vtkPolyData *pd = (vtkPolyData *) in_ds;
+
+        // VTK_POLY_DATA with only cells with lines is not going to
+        // overlap and most likely contains lines and points. So do
+        // not convert it to a VTK_UNSTRUCTURED_GRID.
+        if( pd->GetNumberOfCells() == pd->GetNumberOfLines() )
+        {
+          in_ds->Register(NULL);
+          return in_ds;
+        }
+
         ugrid = vtkUnstructuredGrid::New();
         needDelete = true;
         ugrid->SetPoints(pd->GetPoints());
@@ -690,40 +758,43 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkDataSet *cur_ds = in_ds;
     vtkDataSet *new_ds;
 
-    if( ct_current == CARTESIAN && outputSys == CYLINDRICAL )
-      new_ds = Transform(cur_ds,
-                         vectorTransformMethod,
-                         CartesianToCylindricalPoint);
+    int dstype = in_ds->GetDataObjectType();
 
+    if( ct_current == CARTESIAN && outputSys == CYLINDRICAL )
+        new_ds = Transform(cur_ds,
+                           continuousPhi, vectorTransformMethod,
+                           CartesianToCylindricalPoint);
     else if( ct_current == CARTESIAN && outputSys == SPHERICAL )
       new_ds = Transform(cur_ds,
-                         vectorTransformMethod,
+                         continuousPhi, vectorTransformMethod,
                          CartesianToSphericalPoint);
 
     else if( ct_current == CYLINDRICAL && outputSys == CARTESIAN )
       new_ds = Transform(cur_ds,
-                         vectorTransformMethod,
+                         continuousPhi, vectorTransformMethod,
                          CylindricalToCartesianPoint);
 
     else if( ct_current == CYLINDRICAL && outputSys == SPHERICAL )
       new_ds = Transform(cur_ds,
-                         vectorTransformMethod,
+                         continuousPhi, vectorTransformMethod,
                          CylindricalToSphericalPoint);
 
     else if( ct_current == SPHERICAL && outputSys == CARTESIAN )
       new_ds = Transform(cur_ds,
-                         vectorTransformMethod,
+                         continuousPhi, vectorTransformMethod,
                          SphericalToCartesianPoint);
 
     else if( ct_current == SPHERICAL && outputSys == CYLINDRICAL )
       new_ds = Transform(cur_ds,
-                         vectorTransformMethod,
+                         continuousPhi, vectorTransformMethod,
                          SphericalToCylindricalPoint);
     else
       return in_ds;
       
     deleteList.push_back(new_ds);
     cur_ds = new_ds;
+
+    dstype = cur_ds->GetDataObjectType();
 
     if (outputSys == SPHERICAL)
     {
@@ -737,6 +808,8 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
         cur_ds = FixWraparounds(cur_ds, 1);
         deleteList.push_back(cur_ds);
     }
+
+    dstype = cur_ds->GetDataObjectType();
 
     ManageMemory(cur_ds);
 
@@ -801,7 +874,9 @@ CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts)
     vtkDataSet *rv = NULL;
 
     int dstype = in_ds->GetDataObjectType();
-    if (dstype == VTK_STRUCTURED_GRID || dstype == VTK_POLY_DATA ||
+
+    if (dstype == VTK_POLY_DATA ||
+        dstype == VTK_STRUCTURED_GRID ||
         dstype == VTK_UNSTRUCTURED_GRID)
     {
         vtkPointSet *rv2 = (vtkPointSet *) in_ds->NewInstance();
@@ -823,6 +898,10 @@ CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts)
         rv2->SetPoints(newPts);
 
         rv = rv2;
+    }
+    else
+    {
+      EXCEPTION1(ImproperUseException, "The dataset type can not be converted.");
     }
 
     return rv;
