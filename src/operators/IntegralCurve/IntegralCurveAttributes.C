@@ -202,44 +202,6 @@ IntegralCurveAttributes::DisplayGeometry_FromString(const std::string &s, Integr
 }
 
 //
-// Enum conversion methods for IntegralCurveAttributes::CoordinateSystem
-//
-
-static const char *CoordinateSystem_strings[] = {
-"AsIs", "CylindricalToCartesian", "CartesianToCylindrical"
-};
-
-std::string
-IntegralCurveAttributes::CoordinateSystem_ToString(IntegralCurveAttributes::CoordinateSystem t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return CoordinateSystem_strings[index];
-}
-
-std::string
-IntegralCurveAttributes::CoordinateSystem_ToString(int t)
-{
-    int index = (t < 0 || t >= 3) ? 0 : t;
-    return CoordinateSystem_strings[index];
-}
-
-bool
-IntegralCurveAttributes::CoordinateSystem_FromString(const std::string &s, IntegralCurveAttributes::CoordinateSystem &val)
-{
-    val = IntegralCurveAttributes::AsIs;
-    for(int i = 0; i < 3; ++i)
-    {
-        if(s == CoordinateSystem_strings[i])
-        {
-            val = (CoordinateSystem)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for IntegralCurveAttributes::IntegrationDirection
 //
 
@@ -556,7 +518,6 @@ void IntegralCurveAttributes::Init()
     pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     displayGeometry = Lines;
-    coordinateSystem = AsIs;
     showLines = true;
     showPoints = false;
     cropBeginFlag = false;
@@ -672,7 +633,6 @@ void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
     pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     displayGeometry = obj.displayGeometry;
-    coordinateSystem = obj.coordinateSystem;
     showLines = obj.showLines;
     showPoints = obj.showPoints;
     cropBeginFlag = obj.cropBeginFlag;
@@ -943,7 +903,6 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
             (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (displayGeometry == obj.displayGeometry) &&
-            (coordinateSystem == obj.coordinateSystem) &&
             (showLines == obj.showLines) &&
             (showPoints == obj.showPoints) &&
             (cropBeginFlag == obj.cropBeginFlag) &&
@@ -1268,7 +1227,6 @@ IntegralCurveAttributes::SelectAll()
     Select(ID_pathlinesPeriod,                    (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
     Select(ID_displayGeometry,                    (void *)&displayGeometry);
-    Select(ID_coordinateSystem,                   (void *)&coordinateSystem);
     Select(ID_showLines,                          (void *)&showLines);
     Select(ID_showPoints,                         (void *)&showPoints);
     Select(ID_cropBeginFlag,                      (void *)&cropBeginFlag);
@@ -1587,12 +1545,6 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     {
         addToParent = true;
         node->AddNode(new DataNode("displayGeometry", DisplayGeometry_ToString(displayGeometry)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_coordinateSystem, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("coordinateSystem", CoordinateSystem_ToString(coordinateSystem)));
     }
 
     if(completeSave || !FieldsEqual(ID_showLines, &defaultObject))
@@ -1987,22 +1939,6 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
             DisplayGeometry value;
             if(DisplayGeometry_FromString(node->AsString(), value))
                 SetDisplayGeometry(value);
-        }
-    }
-    if((node = searchNode->GetNode("coordinateSystem")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetCoordinateSystem(CoordinateSystem(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            CoordinateSystem value;
-            if(CoordinateSystem_FromString(node->AsString(), value))
-                SetCoordinateSystem(value);
         }
     }
     if((node = searchNode->GetNode("showLines")) != 0)
@@ -2410,13 +2346,6 @@ IntegralCurveAttributes::SetDisplayGeometry(IntegralCurveAttributes::DisplayGeom
 {
     displayGeometry = displayGeometry_;
     Select(ID_displayGeometry, (void *)&displayGeometry);
-}
-
-void
-IntegralCurveAttributes::SetCoordinateSystem(IntegralCurveAttributes::CoordinateSystem coordinateSystem_)
-{
-    coordinateSystem = coordinateSystem_;
-    Select(ID_coordinateSystem, (void *)&coordinateSystem);
 }
 
 void
@@ -2921,12 +2850,6 @@ IntegralCurveAttributes::GetDisplayGeometry() const
     return DisplayGeometry(displayGeometry);
 }
 
-IntegralCurveAttributes::CoordinateSystem
-IntegralCurveAttributes::GetCoordinateSystem() const
-{
-    return CoordinateSystem(coordinateSystem);
-}
-
 bool
 IntegralCurveAttributes::GetShowLines() const
 {
@@ -3221,7 +3144,6 @@ IntegralCurveAttributes::GetFieldName(int index) const
     case ID_pathlinesPeriod:                    return "pathlinesPeriod";
     case ID_pathlinesCMFE:                      return "pathlinesCMFE";
     case ID_displayGeometry:                    return "displayGeometry";
-    case ID_coordinateSystem:                   return "coordinateSystem";
     case ID_showLines:                          return "showLines";
     case ID_showPoints:                         return "showPoints";
     case ID_cropBeginFlag:                      return "cropBeginFlag";
@@ -3314,7 +3236,6 @@ IntegralCurveAttributes::GetFieldType(int index) const
     case ID_pathlinesPeriod:                    return FieldType_double;
     case ID_pathlinesCMFE:                      return FieldType_enum;
     case ID_displayGeometry:                    return FieldType_enum;
-    case ID_coordinateSystem:                   return FieldType_enum;
     case ID_showLines:                          return FieldType_bool;
     case ID_showPoints:                         return FieldType_bool;
     case ID_cropBeginFlag:                      return FieldType_bool;
@@ -3407,7 +3328,6 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesPeriod:                    return "double";
     case ID_pathlinesCMFE:                      return "enum";
     case ID_displayGeometry:                    return "enum";
-    case ID_coordinateSystem:                   return "enum";
     case ID_showLines:                          return "bool";
     case ID_showPoints:                         return "bool";
     case ID_cropBeginFlag:                      return "bool";
@@ -3723,11 +3643,6 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
         retval = (displayGeometry == obj.displayGeometry);
         }
         break;
-    case ID_coordinateSystem:
-        {  // new scope
-        retval = (coordinateSystem == obj.coordinateSystem);
-        }
-        break;
     case ID_showLines:
         {  // new scope
         retval = (showLines == obj.showLines);
@@ -3931,7 +3846,6 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         cropEndFlag != obj.cropEndFlag ||
         cropEnd != obj.cropEnd ||
         cropValue != obj.cropValue ||
-        coordinateSystem != obj.coordinateSystem ||
         showPoints != obj.showPoints ||
         showLines != obj.showLines ||
         pathlines != obj.pathlines ||

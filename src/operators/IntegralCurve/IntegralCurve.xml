@@ -45,11 +45,6 @@
         Tubes
         Ribbons
       </Enum>
-      <Enum name="CoordinateSystem">
-        AsIs
-        CylindricalToCartesian
-        CartesianToCylindrical
-      </Enum>
       <Enum name="IntegrationDirection">
         Forward
         Backward
@@ -244,9 +239,6 @@
       </Field>
       <Field name="displayGeometry" label="Display geometry" type="enum" subtype="DisplayGeometry">
         Lines
-      </Field>
-      <Field name="coordinateSystem" label="coordinateSystem" type="enum" subtype="CoordinateSystem">
-        AsIs
       </Field>
       <Field name="showLines" label="Show Lines" type="bool">
         true

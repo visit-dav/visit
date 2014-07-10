@@ -97,12 +97,6 @@ public:
         Tubes,
         Ribbons
     };
-    enum CoordinateSystem
-    {
-        AsIs,
-        CylindricalToCartesian,
-        CartesianToCylindrical
-    };
     enum IntegrationDirection
     {
         Forward,
@@ -228,7 +222,6 @@ public:
     void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetDisplayGeometry(DisplayGeometry displayGeometry_);
-    void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
     void SetShowLines(bool showLines_);
     void SetShowPoints(bool showPoints_);
     void SetCropBeginFlag(bool cropBeginFlag_);
@@ -310,7 +303,6 @@ public:
     double             GetPathlinesPeriod() const;
     PathlinesCMFE      GetPathlinesCMFE() const;
     DisplayGeometry    GetDisplayGeometry() const;
-    CoordinateSystem   GetCoordinateSystem() const;
     bool               GetShowLines() const;
     bool               GetShowPoints() const;
     bool               GetCropBeginFlag() const;
@@ -361,11 +353,6 @@ public:
     static bool DisplayGeometry_FromString(const std::string &, DisplayGeometry &);
 protected:
     static std::string DisplayGeometry_ToString(int);
-public:
-    static std::string CoordinateSystem_ToString(CoordinateSystem);
-    static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
-protected:
-    static std::string CoordinateSystem_ToString(int);
 public:
     static std::string IntegrationDirection_ToString(IntegrationDirection);
     static bool IntegrationDirection_FromString(const std::string &, IntegrationDirection &);
@@ -453,7 +440,6 @@ public:
         ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_displayGeometry,
-        ID_coordinateSystem,
         ID_showLines,
         ID_showPoints,
         ID_cropBeginFlag,
@@ -526,7 +512,6 @@ private:
     double       pathlinesPeriod;
     int          pathlinesCMFE;
     int          displayGeometry;
-    int          coordinateSystem;
     bool         showLines;
     bool         showPoints;
     bool         cropBeginFlag;
@@ -556,6 +541,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbddiiibbbdbdidddbbiibbbbddddis"
+#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbddiibbbdbdidddbbiibbbbddddis"
 
 #endif
