@@ -874,9 +874,9 @@ ContourAttributes::SetDefaultPalette(const ColorControlPointList &defaultPalette
     if(contourMethod == Level)
         EnlargeMultiColor(contourNLevels);
     else if(contourMethod == Value)
-        EnlargeMultiColor(contourValue.size());
+        EnlargeMultiColor((int)contourValue.size());
     else
-        EnlargeMultiColor(contourPercent.size());
+        EnlargeMultiColor((int)contourPercent.size());
 
 }
 
@@ -964,7 +964,7 @@ ContourAttributes::SetContourValue(const doubleVector &contourValue_)
     contourValue = contourValue_;
     Select(ID_contourValue, (void *)&contourValue);
     // Grow the color vector.
-    EnlargeMultiColor(contourValue.size());
+    EnlargeMultiColor((int)contourValue.size());
 
 }
 
@@ -974,7 +974,7 @@ ContourAttributes::SetContourPercent(const doubleVector &contourPercent_)
     contourPercent = contourPercent_;
     Select(ID_contourPercent, (void *)&contourPercent);
     // Grow the color vector.
-    EnlargeMultiColor(contourPercent.size());
+    EnlargeMultiColor((int)contourPercent.size());
 
 }
 

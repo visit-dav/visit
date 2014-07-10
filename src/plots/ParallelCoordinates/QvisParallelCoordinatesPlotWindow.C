@@ -1006,7 +1006,7 @@ QvisParallelCoordinatesPlotWindow::resetAxisExtents()
 void
 QvisParallelCoordinatesPlotWindow::axisSelected(QTreeWidgetItem*)
 {
-    int nitems = atts->GetScalarAxisNames().size();
+    int nitems = (int)atts->GetScalarAxisNames().size();
     QTreeWidgetItem *ci = axisTree->currentItem();
     axisDelButton->setEnabled(nitems > 2 &&
                               ci != NULL);
@@ -1127,7 +1127,7 @@ QvisParallelCoordinatesPlotWindow::moveAxisUp()
 
     // must make a local copy
     stringVector axes = atts->GetScalarAxisNames();
-    int naxes = axes.size();
+    int naxes = (int)axes.size();
 
     // InsertAxis() will reorder axes already in the list, so we
     // just insert all the changed ones in the new desired order
@@ -1175,10 +1175,10 @@ QvisParallelCoordinatesPlotWindow::moveAxisDown()
     
     // must make a local copy
     stringVector axes = atts->GetScalarAxisNames();
-    int naxes = axes.size();
+    int naxes = (int)axes.size();
  
     // can't move last axis down in list
-    if (index >= (int)axes.size()-1)
+    if (index >= naxes-1)
         return;
 
     // InsertAxis() will reorder axes already in the list, so we

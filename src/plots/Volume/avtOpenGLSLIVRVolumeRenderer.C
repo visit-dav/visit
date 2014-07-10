@@ -642,7 +642,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
     {
         debug5 << mName << "Creating nrrd for 2 variables." << endl;
         // Create uchar versions. Put var1 first then opac as var2.
-        int nvals = size[0]*size[1]*size[2];
+        size_t nvals = size[0]*size[1]*size[2];
         unsigned char *cdata = new unsigned char[nvals * size[3]];
         float *dptr[2];
         dptr[0] = (float *)data->GetVoidPointer(0);
@@ -653,7 +653,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
         for(int c = 0; c < 2; ++c)
         {
             float *fdata = dptr[c];
-            for(int k = 0; k < nvals; ++k)
+            for(size_t k = 0; k < nvals; ++k)
             {
                 if(fdata[k] < NO_DATA)
                     ccdata[k] = 0;
@@ -685,12 +685,12 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
       if (data->GetDataType()==VTK_FLOAT)
       {
 #ifdef CREATE_UCHAR_NRRD
-        int nvals = size[0]*size[1]*size[2];
+        size_t nvals = size[0]*size[1]*size[2];
         unsigned char *cdata = new unsigned char[nvals];
         float *fdata = (float *)data->GetVoidPointer(0);
         float d = vmax - vmin;
         float inv_d = 1.f / d;
-        for(int k = 0; k < nvals; ++k)
+        for(size_t k = 0; k < nvals; ++k)
         {
             if(fdata[k] < NO_DATA)
                 cdata[k] = 0;
@@ -721,12 +721,12 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
       else
       {
 #ifdef CREATE_UCHAR_NRRD
-        int nvals = size[0]*size[1]*size[2];
+        size_t nvals = size[0]*size[1]*size[2];
         unsigned char *cdata = new unsigned char[nvals];
         double *fdata = (double *)data->GetVoidPointer(0);
         double d = vmax - vmin;
         double inv_d = 1.f / d;
-        for(int k = 0; k < nvals; ++k)
+        for(size_t k = 0; k < nvals; ++k)
         {
             if(fdata[k] < NO_DATA)
                 cdata[k] = 0;

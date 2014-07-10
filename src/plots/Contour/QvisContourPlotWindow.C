@@ -626,9 +626,9 @@ QvisContourPlotWindow::UpdateMultipleAreaColors()
     if(cm == ContourAttributes::Level)
         nEntries = contourAtts->GetContourNLevels();
     else if(cm == ContourAttributes::Value)
-        nEntries = contourAtts->GetContourValue().size();
+        nEntries = (int)contourAtts->GetContourValue().size();
     else
-        nEntries = contourAtts->GetContourPercent().size();
+        nEntries = (int)contourAtts->GetContourPercent().size();
 
     // Block the signals from the multipleColors widget.
     multipleColors->blockSignals(true);
@@ -756,9 +756,9 @@ QvisContourPlotWindow::UpdateMultipleAreaNames()
     if(cm == ContourAttributes::Level)
         vecSize = contourAtts->GetContourNLevels();
     else if(cm == ContourAttributes::Value)
-        vecSize = contourAtts->GetContourValue().size();
+        vecSize = (int)contourAtts->GetContourValue().size();
     else
-        vecSize = contourAtts->GetContourPercent().size();
+        vecSize = (int)contourAtts->GetContourPercent().size();
 
     if(vecSize == multipleColors->numEntries())
     {

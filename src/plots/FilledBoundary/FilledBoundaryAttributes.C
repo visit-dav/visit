@@ -897,7 +897,7 @@ FilledBoundaryAttributes::SetFromNode(DataNode *parentNode)
         }
         if (!done)
         {
-            multiColor.RemoveColors(index);
+            multiColor.RemoveColors((int)index);
             for (size_t i=index+1; i<boundaryNames.size(); i++)
                 boundaryNames[i-1] = boundaryNames[i];
             boundaryNames.resize(boundaryNames.size() - 1);

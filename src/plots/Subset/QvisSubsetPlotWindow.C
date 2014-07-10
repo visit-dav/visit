@@ -576,7 +576,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     const stringVector &matNames = subsetAtts->GetSubsetNames();
     intVector selectedsubsets;
     bool update = true;
-    size_t i;
+    int i;
     QListWidgetItem *item;
 
     multipleColorList->blockSignals(true);
@@ -584,7 +584,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     //
     // Make a pass through the widget to see how many subsets are selected.
     //
-    for(i = 0; i < (size_t)multipleColorList->count(); ++i)
+    for(i = 0; i < multipleColorList->count(); ++i)
     {
         if(multipleColorList->item(i)->isSelected())
             selectedsubsets.push_back(i);
@@ -597,7 +597,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     {
         // See if the strings are the same..
         bool same = true;
-        for(i = 0; i < matNames.size() && same; ++i)
+        for(i = 0; i < (int)matNames.size() && same; ++i)
         {
             ColorAttribute c(subsetAtts->GetMultiColor()[i]);
             
@@ -608,7 +608,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
         // If the strings are not the same then modifiy the widgets.
         if(!same)
         {
-            for(i = 0; i < matNames.size(); ++i)
+            for(i = 0; i < (int)matNames.size(); ++i)
                 UpdateItem(i);
         }
         else
@@ -617,11 +617,11 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     else if(matNames.size() > (size_t)multipleColorList->count())
     {
         // Set all of the existing names.
-        for(i = 0; i < (size_t)multipleColorList->count(); ++i)
+        for(i = 0; i < multipleColorList->count(); ++i)
             UpdateItem(i);
 
         // Add new entries
-        for(i = multipleColorList->count(); i < matNames.size(); ++i)
+        for(i = multipleColorList->count(); i < (int)matNames.size(); ++i)
         {
             QString        itemText(matNames[i].c_str());
             ColorAttribute c(subsetAtts->GetMultiColor()[i]);
@@ -632,12 +632,12 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     else // if(matNames.size() < multipleColorList->count())
     {
         // Set all of the existing names.
-        for(i = 0; i < matNames.size(); ++i)
+        for(i = 0; i < (int)matNames.size(); ++i)
             UpdateItem(i);
 
         // Remove excess entries
-        size_t numEntries = multipleColorList->count();
-        for(i = matNames.size(); i < numEntries; ++i)
+        int numEntries = multipleColorList->count();
+        for(i = (int)matNames.size(); i < numEntries; ++i)
         {
             QListWidgetItem *item = multipleColorList->takeItem(multipleColorList->count() - 1);
             if(item != 0)
@@ -652,7 +652,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     {
         multipleColorList->clearSelection();
         bool noneSelected = true, first = true;
-        for(i = 0; i < selectedsubsets.size(); ++i)
+        for(i = 0; i < (int)selectedsubsets.size(); ++i)
         {
             if(selectedsubsets[i] < multipleColorList->count())
             {

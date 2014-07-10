@@ -704,8 +704,8 @@ SpreadsheetViewer::PickPointsChanged() const
         {
             changed = true;
         }
-        int nvals = cachedAtts.GetPastPicks().size();
-        for (int i = 0 ; i < nvals ; i++)
+        size_t nvals = cachedAtts.GetPastPicks().size();
+        for (size_t i = 0 ; i < nvals ; i++)
         {
             if (cachedAtts.GetPastPicks()[i] != plotAtts->GetPastPicks()[i])
             {
@@ -2110,9 +2110,9 @@ SpreadsheetViewer::selectPickPoints()
             // Now, go through the old picks 
             const std::vector<double>& pastPicks = plotAtts->GetPastPicks();
             const std::vector<std::string>& pastPickLetters = plotAtts->GetPastPickLetters();
-            int numOldPicks = pastPicks.size() / 2;
+            size_t numOldPicks = pastPicks.size() / 2;
             int old_ijk[3];
-            for (int i = 0 ; i < numOldPicks ; i++)
+            for (size_t i = 0 ; i < numOldPicks ; i++)
             {
                 GetPickIJK((int)pastPicks[2*i], (int)pastPicks[2*i+1], old_ijk);
 

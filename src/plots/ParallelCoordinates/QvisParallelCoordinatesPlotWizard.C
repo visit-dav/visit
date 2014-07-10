@@ -190,10 +190,10 @@ QvisParallelCoordinatesPlotWizard::SetParallelCoordinatesAttributes()
 
     mainPage->GetAxisNames(saxisNames);
 
-    int nvars = saxisNames.size();
+    size_t nvars = saxisNames.size();
     vaxisNames = saxisNames;
 
-    for(int i=0;i < nvars;i++)
+    for(size_t i=0;i < nvars;i++)
     {
         extMins.push_back(-1e+37);
         extMaxs.push_back(+1e+37);

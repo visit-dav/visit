@@ -604,7 +604,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     const stringVector &matNames = boundaryAtts->GetBoundaryNames();
     intVector selectedBoundaries;
     bool update = true;
-    size_t i;
+    int i;
     QListWidgetItem *item;
 
     multipleColorList->blockSignals(true);
@@ -612,7 +612,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     //
     // Make a pass through the widget to see how many boundaries are selected.
     //
-    for(i = 0; i < (size_t)multipleColorList->count(); ++i)
+    for(i = 0; i < multipleColorList->count(); ++i)
     {
         if(multipleColorList->item(i)->isSelected())
             selectedBoundaries.push_back(i);
@@ -625,7 +625,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     {
         // See if the strings are the same..
         bool same = true;
-        for(i = 0; i < matNames.size() && same; ++i)
+        for(i = 0; i < (int)matNames.size() && same; ++i)
         {
             ColorAttribute c(boundaryAtts->GetMultiColor()[i]);
             
@@ -636,7 +636,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
         // If the strings are not the same then modifiy the widgets.
         if(!same)
         {
-            for(i = 0; i < matNames.size(); ++i)
+            for(i = 0; i < (int)matNames.size(); ++i)
                 UpdateItem(i);
         }
         else
@@ -645,11 +645,11 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     else if(matNames.size() > (size_t)multipleColorList->count())
     {
         // Set all of the existing names.
-        for(i = 0; i < (size_t)multipleColorList->count(); ++i)
+        for(i = 0; i < multipleColorList->count(); ++i)
             UpdateItem(i);
 
         // Add new entries
-        for(i = multipleColorList->count(); i < matNames.size(); ++i)
+        for(i = multipleColorList->count(); i < (int)matNames.size(); ++i)
         {
             QString        itemText(matNames[i].c_str());
             ColorAttribute c(boundaryAtts->GetMultiColor()[i]);
@@ -660,12 +660,12 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     else // if(matNames.size() < multipleColorList->count())
     {
         // Set all of the existing names.
-        for(i = 0; i < matNames.size(); ++i)
+        for(i = 0; i < (int)matNames.size(); ++i)
             UpdateItem(i);
 
         // Remove excess entries
         int numEntries = multipleColorList->count();
-        for(i = (int)matNames.size(); i < (size_t)numEntries; ++i)
+        for(i = (int)matNames.size(); i < numEntries; ++i)
         {
             QListWidgetItem *item = multipleColorList->takeItem(multipleColorList->count() - 1);
             if(item != 0)
@@ -680,7 +680,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     {
         multipleColorList->clearSelection();
         bool noneSelected = true, first = true;
-        for(i = 0; i < selectedBoundaries.size(); ++i)
+        for(i = 0; i < (int)selectedBoundaries.size(); ++i)
         {
             if(selectedBoundaries[i] < multipleColorList->count())
             {
