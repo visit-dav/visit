@@ -55,6 +55,9 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <silo.h>
+#ifndef _WIN32
+#include <errno.h>
+#endif
 
 // supress the following since silo uses char * in its API
 #if defined(__clang__)
@@ -98,9 +101,14 @@ void write_root(int driver)
     struct stat buf;
     stat("mmadj_rect_2d_data/", &buf);
     if (S_ISDIR(buf.st_mode))
-        system("rm -rf mmadj_rect_2d_data/");
-#ifndef _WIN32   
-    mkdir("mmadj_rect_2d_data/", S_IRWXU | S_IRWXG | S_IRWXO);
+    {
+        int ierr = system("rm -rf mmadj_rect_2d_data/"); (void) ierr;
+    }
+#ifndef _WIN32
+    if (mkdir("mmadj_rect_2d_data/", S_IRWXU|S_IRWXG|S_IRWXO) && (errno!=EEXIST))
+    {
+        cerr << "ERROR: failed to mkdir mmadj_rect_2d_data" << endl;
+    }
 #else
     _mkdir("mmadj_rect_2d_data/");
 #endif
