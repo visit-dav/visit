@@ -1,0 +1,15 @@
+{
+   "count": 2, 
+   "ftag": "vtk_vtkVisItScalarBarWithOpacityActor.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/avt/Plotter/vtk/vtkVisItScalarBarWithOpacityActor.C", 
+   "warnings": [
+      [
+         "66", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "66", 
+         " warning: extra ';'\n"
+      ]
+   ]
+}

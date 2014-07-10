@@ -1,0 +1,151 @@
+{
+   "count": 36, 
+   "ftag": "STAR_MultiresMultifileReader.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/databases/STAR/MultiresMultifileReader.C", 
+   "warnings": [
+      [
+         "596", 
+         "47: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "596", 
+         "47: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "625", 
+         "52: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "625", 
+         "52: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "628", 
+         "68: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "628", 
+         "68: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "631", 
+         "66: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "631", 
+         "66: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "853", 
+         "33: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "853", 
+         "33: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "857", 
+         "37: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "857", 
+         "37: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "596", 
+         "47: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "596", 
+         "47: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "625", 
+         "52: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "625", 
+         "52: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "628", 
+         "68: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "628", 
+         "68: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "631", 
+         "66: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "631", 
+         "66: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "853", 
+         "33: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "853", 
+         "33: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "857", 
+         "37: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "857", 
+         "37: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "596", 
+         "47: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "596", 
+         "47: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "625", 
+         "52: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "625", 
+         "52: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "628", 
+         "68: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "628", 
+         "68: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "631", 
+         "66: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "631", 
+         "66: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "853", 
+         "33: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "853", 
+         "33: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "857", 
+         "37: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "857", 
+         "37: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ]
+   ]
+}

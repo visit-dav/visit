@@ -1,0 +1,15 @@
+{
+   "count": 2, 
+   "ftag": "vtk_vtkTexturedPointsPainter.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/avt/Plotter/vtk/vtkTexturedPointsPainter.C", 
+   "warnings": [
+      [
+         "105", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "105", 
+         " warning: extra ';'\n"
+      ]
+   ]
+}

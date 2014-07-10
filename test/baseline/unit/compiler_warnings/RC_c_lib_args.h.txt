@@ -1,0 +1,55 @@
+{
+   "count": 12, 
+   "ftag": "RC_c_lib_args.h", 
+   "file": "/g/g11/miller86/visit/trunk/src/databases/paraDIS/RC_cpp_lib/RC_c_lib/args.h", 
+   "warnings": [
+      [
+         "8", 
+         "3: warning: C++ style comments are not allowed in ISO C90\n"
+      ], 
+      [
+         "8", 
+         "3: warning: (this will be reported only once per input file)\n"
+      ], 
+      [
+         "8", 
+         "3: warning: C++ style comments are not allowed in ISO C90\n"
+      ], 
+      [
+         "8", 
+         "3: warning: (this will be reported only once per input file)\n"
+      ], 
+      [
+         "8", 
+         "3: warning: C++ style comments are not allowed in ISO C90\n"
+      ], 
+      [
+         "8", 
+         "3: warning: (this will be reported only once per input file)\n"
+      ], 
+      [
+         "8", 
+         "3: warning: C++ style comments are not allowed in ISO C90\n"
+      ], 
+      [
+         "8", 
+         "3: warning: (this will be reported only once per input file)\n"
+      ], 
+      [
+         "8", 
+         "3: warning: C++ style comments are not allowed in ISO C90\n"
+      ], 
+      [
+         "8", 
+         "3: warning: (this will be reported only once per input file)\n"
+      ], 
+      [
+         "8", 
+         "3: warning: C++ style comments are not allowed in ISO C90\n"
+      ], 
+      [
+         "8", 
+         "3: warning: (this will be reported only once per input file)\n"
+      ]
+   ]
+}

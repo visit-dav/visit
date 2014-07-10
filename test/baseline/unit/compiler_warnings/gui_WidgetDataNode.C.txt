@@ -1,0 +1,51 @@
+{
+   "count": 11, 
+   "ftag": "gui_WidgetDataNode.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/gui/WidgetDataNode.C", 
+   "warnings": [
+      [
+         "300", 
+         "47: warning: invoking macro ARRAY_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "303", 
+         "50: warning: invoking macro ARRAY_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "306", 
+         "51: warning: invoking macro ARRAY_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "309", 
+         "54: warning: invoking macro ARRAY_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "354", 
+         "55: warning: invoking macro VECTOR_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "357", 
+         "58: warning: invoking macro VECTOR_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "360", 
+         "59: warning: invoking macro VECTOR_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "363", 
+         "62: warning: invoking macro VECTOR_TO_STRING argument 4: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ], 
+      [
+         "267", 
+         " warning: ISO C++ does not support the '%lg' gnu_printf format\n"
+      ], 
+      [
+         "309", 
+         " warning: ISO C++ does not support the '%lg' gnu_printf format\n"
+      ], 
+      [
+         "363", 
+         " warning: ISO C++ does not support the '%lg' gnu_printf format\n"
+      ]
+   ]
+}

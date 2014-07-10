@@ -1,0 +1,11 @@
+{
+   "count": 1, 
+   "ftag": "full_vtkVisItClipper.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/visit_vtk/full/vtkVisItClipper.C", 
+   "warnings": [
+      [
+         "71", 
+         " warning: extra ';'\n"
+      ]
+   ]
+}

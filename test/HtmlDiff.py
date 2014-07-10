@@ -39,6 +39,21 @@ class TextFile:
                 retval = ""
         return retval
             
+class TextList:
+    def __init__(self, list):
+        self.list = list 
+        self.idx = 0
+
+    def close(self):
+        self.idx = 0
+        self.list = None
+
+    def readline(self):
+        retval = ""
+        if self.idx < len(self.list):
+            retval = self.list[self.idx]
+            self.idx += 1
+        return retval
 
 class Differencer:
     INSERT="#00ff88"
@@ -51,8 +66,14 @@ class Differencer:
         self.fn1 = f1
         self.fn2 = f2
     def InitIO(self, filename, testname):
-        self.in1 = TextFile(self.fn1, "Warning: No baseline text file: ")
-        self.in2 = TextFile(self.fn2, "Warning: No current text file: ")
+        if type(self.fn1) == type([]):
+            self.in1 = TextList(self.fn1)
+        else:
+            self.in1 = TextFile(self.fn1, "Warning: No baseline text file: ")
+        if type(self.fn2) == type([]):
+            self.in2 = TextList(self.fn2)
+        else:
+            self.in2 = TextFile(self.fn2, "Warning: No current text file: ")
         self.nextleft  = self.in1.readline()
         self.nextright = self.in2.readline()
         self.out = open(filename, "wt")

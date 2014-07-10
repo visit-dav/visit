@@ -1,0 +1,15 @@
+{
+   "count": 2, 
+   "ftag": "Reflect_QvisReflectWidget.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/operators/Reflect/QvisReflectWidget.C", 
+   "warnings": [
+      [
+         "930", 
+         " warning: missing initializer for member 'color::_dummy'\n"
+      ], 
+      [
+         "937", 
+         " warning: missing initializer for member 'color::_dummy'\n"
+      ]
+   ]
+}

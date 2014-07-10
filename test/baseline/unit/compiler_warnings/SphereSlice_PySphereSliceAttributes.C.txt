@@ -1,0 +1,31 @@
+{
+   "count": 6, 
+   "ftag": "SphereSlice_PySphereSliceAttributes.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/operators/SphereSlice/PySphereSliceAttributes.C", 
+   "warnings": [
+      [
+         "196", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "196", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "196", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "196", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "196", 
+         " warning: missing initializer for member 'PyMethodDef::ml_flags'\n"
+      ], 
+      [
+         "196", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ]
+   ]
+}

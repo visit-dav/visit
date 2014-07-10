@@ -1,0 +1,23 @@
+{
+   "count": 4, 
+   "ftag": "IVP_avtCellLocatorBIH.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/avt/IVP/avtCellLocatorBIH.C", 
+   "warnings": [
+      [
+         "64", 
+         " warning: ISO C++ prohibits anonymous structs\n"
+      ], 
+      [
+         "69", 
+         " warning: ISO C++ prohibits anonymous structs\n"
+      ], 
+      [
+         "64", 
+         " warning: ISO C++ prohibits anonymous structs\n"
+      ], 
+      [
+         "69", 
+         " warning: ISO C++ prohibits anonymous structs\n"
+      ]
+   ]
+}

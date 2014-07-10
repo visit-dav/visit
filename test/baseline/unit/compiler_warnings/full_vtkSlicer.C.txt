@@ -1,0 +1,11 @@
+{
+   "count": 1, 
+   "ftag": "full_vtkSlicer.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/visit_vtk/full/vtkSlicer.C", 
+   "warnings": [
+      [
+         "43", 
+         " warning: extra ';'\n"
+      ]
+   ]
+}

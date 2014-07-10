@@ -1,0 +1,19 @@
+{
+   "count": 3, 
+   "ftag": "ModelFit_QvisModelFitWindow.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/operators/ModelFit/QvisModelFitWindow.C", 
+   "warnings": [
+      [
+         "368", 
+         " warning: ISO C++ does not support the '%lf' gnu_printf format\n"
+      ], 
+      [
+         "368", 
+         " warning: ISO C++ does not support the '%lf' gnu_printf format\n"
+      ], 
+      [
+         "370", 
+         " warning: ISO C++ does not support the '%lf' gnu_printf format\n"
+      ]
+   ]
+}

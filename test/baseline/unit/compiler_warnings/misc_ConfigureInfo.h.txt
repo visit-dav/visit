@@ -1,0 +1,19 @@
+{
+   "count": 3, 
+   "ftag": "misc_ConfigureInfo.h", 
+   "file": "/g/g11/miller86/visit/trunk/src/common/misc/ConfigureInfo.h", 
+   "warnings": [
+      [
+         "59", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "59", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "59", 
+         " warning: extra ';'\n"
+      ]
+   ]
+}
