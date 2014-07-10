@@ -60,6 +60,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 #define MAXVAR  4
 #define MAXMAT  5
 #define MAXSPEC 5

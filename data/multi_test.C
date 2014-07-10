@@ -62,6 +62,13 @@
 using std::map;
 using std::vector;
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 #define MAXBLOCKS       100         // maximum number of blocks in an object
 #define MAXNUMVARS      10          // maximum number of vars to output
 #define STRLEN          256 
@@ -3056,8 +3063,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         if (i == 0 || i == 2 || i == 9 || i == 11 ||
             i == 24 || i == 26 || i == 33 || i == 35)
         {
-            sprintf(names7[i], "EMPTY", i);
-            sprintf(names9[i], "EMPTY", i);
+            sprintf(names7[i], "EMPTY");
+            sprintf(names9[i], "EMPTY");
         }
         else
         {
@@ -3068,7 +3075,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
             i == 28 || i == 31)
             sprintf(names10[i], "/block%d/m3vf_on_mats_3", i);
         else
-            sprintf(names10[i], "EMPTY", i);
+            sprintf(names10[i], "EMPTY");
         sprintf(names8[i], "/block%d/d_on_mats_1_3", i);
         sprintf(names11[i], "/block%d/m1vf_on_mats_1", i);
         var1names[i] = names1[i];
@@ -3305,7 +3312,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
             else
                 sprintf(tmpNames[i], "/block%d/d_front", i);
             if (i == 0 || (rand() % 7) == 0)
-                sprintf(tmpNames[i], "EMPTY", i);
+                sprintf(tmpNames[i], "EMPTY");
             tmpVarnames[i] = tmpNames[i];
         }
         DBPutMultivar(dbfile, "d_split", nblocks, tmpVarnames, vartypes, NULL);

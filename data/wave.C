@@ -52,6 +52,13 @@
 
 #include "silo.h"
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 #undef NX
 #define NX 100
 #undef NY
@@ -62,17 +69,17 @@
 #define NT 70
 
 #undef DX
-#define DX 10.
+#define DX 10.0f
 #undef DY
-#define DY 0.5
+#define DY 0.5f
 #undef DZ
-#define DZ 5.
+#define DZ 5.0f
 #undef T0
-#define T0 -2.
+#define T0 -2.0f
 #undef DT
-#define DT 14.
+#define DT 14.0f
 
-#define A  1.
+#define A  1.0f
 
 int driver = DB_PDB;
 int single_file = 0;
@@ -325,18 +332,18 @@ public:
 
     void WriteMaterial(DBfile *db, const char *matvarname, const char *meshName, int nx, int ny, int nz)
     {
-        int i, mdims[3] = {nx,ny,nz};
+        int mdims[3] = {nx,ny,nz};
 
         /* Create a 1..nTotalMaterials material number array. */
         int *allmats = new int[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             allmats[i] = i + 1;
 
         DBoptlist *optList = DBMakeOptlist(2);
 
         // Add material names.
         char **matnames = new char *[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             matnames[i] = (char *)matNames[i].c_str();
         DBAddOption(optList, DBOPT_MATNAMES, matnames);
 
@@ -679,11 +686,11 @@ CreateMaterial(MaterialList &mat, int cycle, bool writeTransientMat)
     float dZ = float(DZ) / float(NZ);
 
     float cellDist = sqrt(dX*dX + dZ*dZ);
-    float RADIUS = WIDTH * 0.25;
+    float RADIUS = WIDTH * 0.25f;
     float LARGE_RADIUS = RADIUS + cellDist;
-    float SIDE_CLEARANCE = RADIUS * 1.25;
+    float SIDE_CLEARANCE = RADIUS * 1.25f;
 
-    float origin[] = {WIDTH * 0.5, LENGTH * 0.5};
+    float origin[] = {WIDTH * 0.5f, LENGTH * 0.5f};
 
     for (int i = 0; i < NX; i++)
     {
@@ -694,7 +701,7 @@ CreateMaterial(MaterialList &mat, int cycle, bool writeTransientMat)
                 int zoneid = k*(NY*NX) + j*NX + i;
                 float x = ((float)i / (float)NX) * DX;
                 float z = ((float)k / (float)NZ) * DZ;
-                float ptMid[] = {z + 0.5 * dZ, x + 0.5 * dX};
+                float ptMid[] = {z + 0.5f * dZ, x + 0.5f * dX};
 
                 if (writeTransientMat && x > 8.0)
                 {

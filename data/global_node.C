@@ -61,6 +61,13 @@
 #include <silo.h>
 #include <visitstream.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 void WriteOutMultivars(DBfile *);
 void WriteOutDomain(DBfile *, int, int, int);
 

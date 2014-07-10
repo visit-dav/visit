@@ -64,6 +64,13 @@
 #include <silo.h>
 #include <visitstream.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 //
 // Mesh dimensions
 //
@@ -207,18 +214,18 @@ public:
 
     void WriteMaterial(DBfile *db, const char *matvarname, const char *meshName, int nx, int ny, int nz)
     {
-        int i, mdims[3] = {nx,ny,nz};
+        int mdims[3] = {nx,ny,nz};
 
         /* Create a 1..nTotalMaterials material number array. */
         int *allmats = new int[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             allmats[i] = i + 1;
 
         DBoptlist *optList = DBMakeOptlist(2);
 
         // Add material names.
         char **matnames = new char *[4];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             matnames[i] = (char *)matNames[i].c_str();
         DBAddOption(optList, DBOPT_MATNAMES, matnames);
 
@@ -505,7 +512,7 @@ public:
         delete [] coordY;
         delete [] coordZ;
 
-        for(int i = 0; i < data.size(); ++i)
+        for(size_t i = 0; i < data.size(); ++i)
             delete data[i];
     }
 
@@ -521,7 +528,7 @@ public:
          DBPutQuadmesh(db, (char *)name, NULL, coords, dims, 3, DB_FLOAT, DB_NONCOLLINEAR, NULL);
 
          // Write the mesh data
-         for(int i = 0; i < data.size(); ++i)
+         for(size_t i = 0; i < data.size(); ++i)
          {
              MeshData *d = data[i];
              if(d->nodal)
@@ -574,7 +581,6 @@ public:
 
     void CreateZonalData(const char *name, float (*zonal)(int,int,int, MeshArray3D *))
     {
-        int ndata = (xdim-1) * (ydim-1) * (zdim-1);
         MeshData *m = new MeshData(name, xdim, ydim, zdim, false);
         data.push_back(m);
 
@@ -591,7 +597,6 @@ public:
         data.push_back(m);
 
         // Create the data.
-        float *fptr = m->data;
         for(int i = 0; i < xdim; ++i)
             for(int j = 0; j < ydim; ++j)
                 for(int k = 0; k < zdim; ++k)

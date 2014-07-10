@@ -49,6 +49,13 @@
 #include <vector>
 #include <silo.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 //
 // Template function for memory reallocation.
 //
@@ -162,20 +169,20 @@ public:
     void WriteMaterial(DBfile *db, const char *matvarname,
          const char *meshName, int nx, int ny, int nz) const
     {
-        int i, mdims[3];
+        int mdims[3];
         mdims[0] = nx;
         mdims[1] = ny;
         mdims[2] = nz;
 
         /* Create a 1..nTotalMaterials material number array. */
         int *allmats = new int[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             allmats[i] = i + 1;
 
         DBoptlist *optList = DBMakeOptlist(2);
         // Add material names.
         char **matnames = new char *[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             matnames[i] = (char *)matNames[i].c_str();
         DBAddOption(optList, DBOPT_MATNAMES, matnames);
 
@@ -723,12 +730,6 @@ void StarData::AdvanceTime()
 void
 StarData::Write(int cycle, int driver) const
 {
-    int pointsInDom[] = {NPOINTS-1, NPOINTS, NPOINTS, NPOINTS,
-                         NPOINTS, NPOINTS, NPOINTS, NPOINTS};
-    float domXOffset[] = {0., 0.6, 0., 0.6, 0., 0.6, 0., 0.6};
-    float domYOffset[] = {0., 0., 0.6, 0.6, 0., 0., 0.6, 0.6};
-    float domZOffset[] = {0., 0., 0., 0., 0.6, 0.6, 0.6, 0.6};
-
     char *multiMesh[NDOMAINS];
     int  multiMeshTypes[NDOMAINS];
     char *multiMat[NDOMAINS];

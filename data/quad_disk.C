@@ -42,6 +42,13 @@
 
 #include <silo.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 //
 // Purpose: Build a simple, 2D, quadmesh with coordinate field chosen such
 // that the mesh takes the shape of a circle. Also, add a node-centered

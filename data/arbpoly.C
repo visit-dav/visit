@@ -42,6 +42,13 @@
 
 #include <silo.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 //
 // Purpose: Build a one zone, arbitrary polyhedral mesh consisting of
 // a single hex that has had one corner cut off.
@@ -53,7 +60,6 @@ int
 main(int argc, char **argv)
 {
     DBfile *dbfile;
-    int N = 21;
     int driver = DB_PDB;
 
     int i = 1;

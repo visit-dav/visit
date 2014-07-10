@@ -49,6 +49,13 @@
 #include <silo.h>
 #include <visitstream.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 // ****************************************************************************
 // File: noise2d.C
 //
@@ -197,18 +204,18 @@ public:
 
     void WriteMaterial(DBfile *db, const char *matvarname, const char *meshName, int nx, int ny)
     {
-        int i, mdims[2] = {nx,ny};
+        int mdims[2] = {nx,ny};
 
         /* Create a 1..nTotalMaterials material number array. */
         int *allmats = new int[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             allmats[i] = i + 1;
 
         DBoptlist *optList = DBMakeOptlist(2);
 
         // Add material names.
         char **matnames = new char *[4];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             matnames[i] = (char *)matNames[i].c_str();
         DBAddOption(optList, DBOPT_MATNAMES, matnames);
 
@@ -544,10 +551,9 @@ public:
         delete [] coordX;
         delete [] coordY;
 
-        int i;
-        for(i = 0; i < scalarData.size(); ++i)
+        for(size_t i = 0; i < scalarData.size(); ++i)
             delete scalarData[i];
-        for(i = 0; i < vectorData.size(); ++i)
+        for(size_t i = 0; i < vectorData.size(); ++i)
             delete vectorData[i];
     }
 
@@ -607,7 +613,7 @@ public:
 
     void CreateGradient(const char *name, const char *gradName)
     {
-        for(int i = 0; i < scalarData.size(); ++i)
+        for(size_t i = 0; i < scalarData.size(); ++i)
         {
             if(scalarData[i]->GetName() == name)
             {
@@ -650,12 +656,11 @@ public:
          WriteMesh(db);
 
          // Write the scalar mesh data
-         int i;
-         for(i = 0; i < scalarData.size(); ++i)
+         for(size_t i = 0; i < scalarData.size(); ++i)
              scalarData[i]->WriteFile(db, meshName.c_str());
 
          // Write the vector mesh data
-         for(i = 0; i < vectorData.size(); ++i)
+         for(size_t i = 0; i < vectorData.size(); ++i)
              vectorData[i]->WriteFile(db, meshName.c_str());
 
          // Write the material data
@@ -811,6 +816,7 @@ public:
 
 
 private:
+    virtual void WriteMesh(DBfile *){}
     virtual void WriteMesh(DBfile *db, const char *name)
     {
          float *coords[2] = {coordX, coordY};

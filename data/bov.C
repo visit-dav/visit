@@ -49,6 +49,13 @@
 #define snprintf _snprintf
 #endif
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 static const float minvals[] = {10.,10.,10.};
 static const float maxvals[] = {20.,20.,20.};
 static const int bx = 17;
@@ -452,19 +459,10 @@ write_nodal_multi_bov()
     int findex = 0;
     for(int k = 0; k < Z_DOMAINS; ++k)
     {
-        float zmin = float(k);
-        float zmax = float(k)+1.f;
-
         for(int j = 0; j < Y_DOMAINS; ++j)
         {
-            float ymin = float(j);
-            float ymax = float(j)+1.f;
-
             for(int i = 0; i < X_DOMAINS; ++i)
             {
-                float xmin = float(i);
-                float xmax = float(i)+1.f;
-
                 float *fptr = data;
                 for(int kk = 0; kk < Z_CELLS; ++kk)
                 {

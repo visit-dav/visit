@@ -9,6 +9,19 @@
 #define H5_USE_16_API
 #include <hdf5.h>
 
+// disable set but unused warning as much of the code
+// in this file captures, but ignores, the return form hdf5
+// calls. presumably this is for easier debugging so we
+// leave it in place.
+#if defined(__GNUC__)
+# define GCC_VERSION (__GNUC__ * 10000 \
+              + __GNUC_MINOR__ * 100 \
+              + __GNUC_PATCHLEVEL__)
+# if GCC_VERSION >= 40600
+#  pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+# endif
+#endif
+
 #define TIME 1.5
 
 #define NX 30
@@ -554,7 +567,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
      *             H5T_NATIVE_DOUBLE
      */
     hid_t     dataset_id, dataspace_id;
-    hsize_t   dims[3];
+    hsize_t   dims[4];
     herr_t    status;
 
     /*
