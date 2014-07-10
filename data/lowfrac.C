@@ -49,6 +49,13 @@
 #include <silo.h>
 #include <visitstream.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 using std::cerr;
 using std::endl;
 
@@ -281,18 +288,18 @@ public:
     void WriteMaterial(DBfile *db, const char *matvarname, const char *meshName, int nx,
  int ny, int nz)
     {
-        int i, mdims[3] = {nx,ny,nz};
+        int mdims[3] = {nx,ny,nz};
 
         /* Create a 1..nTotalMaterials material number array. */
         int *allmats = new int[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             allmats[i] = i + 1;
 
         DBoptlist *optList = DBMakeOptlist(2);
 
         // Add material names.
         char **matnames = new char *[5];
-        for(i = 0; i < matNames.size(); ++i)
+        for(size_t i = 0; i < matNames.size(); ++i)
             matnames[i] = (char *)matNames[i].c_str();
         DBAddOption(optList, DBOPT_MATNAMES, matnames);
 
@@ -490,12 +497,10 @@ main(int argc, char *argv[])
     const int NSAMPLES = 4;
     for(y = 0; y < h; ++y)
     {
-        float ty = float(y) / float(h-1);
         float y0 = y * cellY + yExtents[0];
         float y1 = y0 + cellY;
         for(x = 0; x < w; ++x)
         {
-            float tx = float(x) / float(w-1);
             float x0 = x * cellX + xExtents[0];
             float x1 = x0 + cellX;
 

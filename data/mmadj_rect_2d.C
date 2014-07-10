@@ -56,6 +56,13 @@
 #include <sys/stat.h>
 #include <silo.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 #ifdef _WIN32
   #ifndef S_ISDIR
     #define S_ISDIR(m) (((m &S_IFMT) == S_IFDIR))
@@ -89,7 +96,7 @@ void write_root(int driver)
     
     // create the directory to hold the silo files for our domains.
     struct stat buf;
-    int stat_return = stat("mmadj_rect_2d_data/", &buf);
+    stat("mmadj_rect_2d_data/", &buf);
     if (S_ISDIR(buf.st_mode))
         system("rm -rf mmadj_rect_2d_data/");
 #ifndef _WIN32   

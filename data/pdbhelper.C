@@ -48,6 +48,13 @@
 #include <lite_pdb.h>
 #endif
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 using std::string;
 using std::vector;
 
@@ -479,7 +486,8 @@ public:
     void WriteString(const string &var, const string &val)
     {
         char formatString[100];
-        sprintf(formatString, "%s(%d)", var.c_str(), val.size() + 1);
+        sprintf(formatString, "%s(%lu)", var.c_str(),
+           static_cast<unsigned long>(val.size() + 1));
         PD_write(pdb, formatString, "char", (void*)val.c_str());
     }
 

@@ -41,6 +41,13 @@
 #include <stdio.h>
 #include <silo.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 //
 // Data describing the coordinates and zonelist to define a sphere
 // that approximates a globe.

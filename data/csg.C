@@ -41,6 +41,13 @@
 #include <silo.h>
 #include <math.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 static void build_csg(DBfile *dbfile, char *name);
 static void build_greenman_csg(DBfile *dbfile, char *name);
 static void build_primitives_csg(DBfile *dbfile);
@@ -1019,13 +1026,13 @@ build_primitives_csg(DBfile *dbfile)
             DBCSG_QUADRIC_G
         };
 
-        double theta = 45.0 * 3.1415926/180.0;
-        double a = cos(theta);
-        double b = sin(theta); 
+        float theta = 45.0f * 3.1415926f/180.0f;
+        float a = cos(theta);
+        float b = sin(theta);
         float coeffs[] =
         {
-         // x^2  y^2  z^2  xy   yz      xz    x    y    z    c
-            a*a, 1.0, b*b, 0.0, 0.0, 2*a*b, 0.0, 0.0, 0.0, -1
+         // x^2  y^2   z^2  xy    yz    xz        x     y     z     c
+            a*a, 1.0f, b*b, 0.0f, 0.0f, 2.0f*a*b, 0.0f, 0.0f, 0.0f, -1.0f
             //1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -4
         };
 
@@ -1076,21 +1083,21 @@ build_primitives_csg(DBfile *dbfile)
             DBCSG_QUADRIC_G
         };
 
-        double theta = 45.0 * 3.1415926/180.0;
-        double phi  = 45.0 * 3.1415926/180.0;
-        double a = cos(theta);
-        double b = sin(theta); 
-        double q = cos(-phi);
-        double r = sin(-phi);
-        double a2 = a*a;
-        double b2 = b*b;
-        double q2 = q*q;
-        double r2 = r*r;
-        double R = 2.0;
+        float theta = 45.0 * 3.1415926/180.0;
+        float phi  = 45.0 * 3.1415926/180.0;
+        float a = cos(theta);
+        float b = sin(theta); 
+        float q = cos(-phi);
+        float r = sin(-phi);
+        float a2 = a*a;
+        float b2 = b*b;
+        float q2 = q*q;
+        float r2 = r*r;
+        float R = 2.0;
         float coeffs[] =
         {
-         // x^2     y^2      z^2        xy         yz           xz         x  y  z    c
-         a2+r2*b2,  q2,    b2+r2*a2,  2*q*r*b,   2*q*r*a, -2*a*b+2*a*b*r2, 0, 0, 0, -R*R
+         // x^2    y^2 z^2       xy          yz          xz                     x     y     z     c
+         a2+r2*b2, q2, b2+r2*a2, 2.0f*q*r*b, 2.0f*q*r*a, -2.0f*a*b+2.0f*a*b*r2, 0.0f, 0.0f, 0.0f, -R*R
         };
 
         int nbounds = sizeof(typeflags) / sizeof(typeflags[0]);

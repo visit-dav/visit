@@ -41,6 +41,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 #define false   0
 #define true    1
 
@@ -318,7 +325,7 @@ build_rect2d(DBfile * dbfile, int size)
     float          time;
     double         dtime;
     int            ndims;
-    int            nx, ny;
+    int            nx=0, ny=0;
     int            dims[3], zdims[3];
     float         *coords[3];
     float         *x = NULL, *y = NULL;
@@ -623,7 +630,7 @@ build_curv2d(DBfile * dbfile, int size, int major_order)
     float          time;
     double         dtime;
     int            ndims;
-    int            nx, ny;
+    int            nx=0, ny=0;
     int            sn1, sn2, sz1, sz2;
     int            dims[3], zdims[3];
     int            lo_off[3], hi_off[3];
@@ -1536,8 +1543,8 @@ build_curv3d(DBfile * dbfile, int size, int major_order)
     float     *x = NULL;
     float     *y = NULL;
     float     *z = NULL;
-    double    Xmin,Ymin,Zmin;
-    double    Xmax,Ymax,Zmax;
+    double    Xmin=0.0,Ymin=0.0,Zmin=0.0;
+    double    Xmax=0.0,Ymax=0.0,Zmax=0.0;
 
     int       ndims, zdims[3];
     int       dims[3], dims2[3];
@@ -1566,7 +1573,7 @@ build_curv3d(DBfile * dbfile, int size, int major_order)
 
     double    xave, yave;
     double    xcenter, ycenter;
-    int       nx, ny, nz;
+    int       nx=0, ny=0, nz=0;
     int       sn1, sn2, sn3, sz1, sz2, sz3;
 
     double    theta, dtheta;

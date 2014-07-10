@@ -10,6 +10,19 @@
 #define H5_USE_16_API
 #include <hdf5.h>
  
+// disable set but unused warning as much of the code
+// in this file captures, but ignores, the return form hdf5
+// calls. presumably this is for easier debugging so we
+// leave it in place.
+#if defined(__GNUC__)
+# define GCC_VERSION (__GNUC__ * 10000 \
+              + __GNUC_MINOR__ * 100 \
+              + __GNUC_PATCHLEVEL__)
+# if GCC_VERSION >= 40600
+#  pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+# endif
+#endif
+
 // The number of cells in the X, Y dimensions
 #define NX 30
 #define NY 20

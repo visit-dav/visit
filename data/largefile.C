@@ -48,6 +48,13 @@
 
 #define ONE_MEG 1048576
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 static void
 build_curve (DBfile *dbfile)
 {

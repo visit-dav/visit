@@ -40,6 +40,13 @@
 #include <visitstream.h>
 #include <silo.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 #define NNODES 17890
 #define NHEXES 7939
 #define NBEAMS 4

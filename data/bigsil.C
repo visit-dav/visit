@@ -74,6 +74,13 @@
 #include <silo.h>
 #include <visitstream.h>
 
+// supress the following since silo uses char * in its API
+#if defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
 using std::vector;
 
 void WriteOutMultivars(DBfile *);
@@ -858,7 +865,7 @@ WriteOutMultivars(DBfile *dbfile)
     DBPutMultivar(dbfile, "dist", n_total_domains, distnames, vartypes,optlist);
     DBPutMultimat(dbfile, "mat", n_total_domains, matnames, optlist);
     DBFreeOptlist(optlist);
-    for (int i = 0, groupNum = -1; i < n_total_domains ; i++)
+    for (int i = 0; i < n_total_domains ; i++)
     {
         delete [] meshnames[i];
         delete [] matnames[i];
