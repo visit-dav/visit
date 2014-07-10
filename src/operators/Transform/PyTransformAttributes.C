@@ -225,6 +225,11 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
           break;
     }
 
+    if(atts->GetContinuousPhi())
+        SNPRINTF(tmpStr, 1000, "%scontinuousPhi = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scontinuousPhi = 0\n", prefix);
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm00 = %g\n", prefix, atts->GetM00());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm01 = %g\n", prefix, atts->GetM01());
@@ -837,6 +842,30 @@ TransformAttributes_GetOutputCoordSys(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+TransformAttributes_SetContinuousPhi(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the continuousPhi in the object.
+    obj->data->SetContinuousPhi(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetContinuousPhi(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetContinuousPhi()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 TransformAttributes_SetM00(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
@@ -1339,6 +1368,8 @@ PyMethodDef PyTransformAttributes_methods[TRANSFORMATTRIBUTES_NMETH] = {
     {"GetInputCoordSys", TransformAttributes_GetInputCoordSys, METH_VARARGS},
     {"SetOutputCoordSys", TransformAttributes_SetOutputCoordSys, METH_VARARGS},
     {"GetOutputCoordSys", TransformAttributes_GetOutputCoordSys, METH_VARARGS},
+    {"SetContinuousPhi", TransformAttributes_SetContinuousPhi, METH_VARARGS},
+    {"GetContinuousPhi", TransformAttributes_GetContinuousPhi, METH_VARARGS},
     {"SetM00", TransformAttributes_SetM00, METH_VARARGS},
     {"GetM00", TransformAttributes_GetM00, METH_VARARGS},
     {"SetM01", TransformAttributes_SetM01, METH_VARARGS},
@@ -1465,6 +1496,8 @@ PyTransformAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Spherical") == 0)
         return PyInt_FromLong(long(TransformAttributes::Spherical));
 
+    if(strcmp(name, "continuousPhi") == 0)
+        return TransformAttributes_GetContinuousPhi(self, NULL);
     if(strcmp(name, "m00") == 0)
         return TransformAttributes_GetM00(self, NULL);
     if(strcmp(name, "m01") == 0)
@@ -1560,6 +1593,8 @@ PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = TransformAttributes_SetInputCoordSys(self, tuple);
     else if(strcmp(name, "outputCoordSys") == 0)
         obj = TransformAttributes_SetOutputCoordSys(self, tuple);
+    else if(strcmp(name, "continuousPhi") == 0)
+        obj = TransformAttributes_SetContinuousPhi(self, tuple);
     else if(strcmp(name, "m00") == 0)
         obj = TransformAttributes_SetM00(self, tuple);
     else if(strcmp(name, "m01") == 0)

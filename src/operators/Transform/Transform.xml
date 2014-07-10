@@ -78,6 +78,9 @@
       <Field name="outputCoordSys" label="Desired Coordinate System" type="enum" subtype="CoordinateSystem">
         Spherical
       </Field>
+      <Field name="continuousPhi" label="Continuous Phi" type="bool">
+        false
+      </Field>
       <Field name="m00" label="m00" type="double">
         1.000000
       </Field>

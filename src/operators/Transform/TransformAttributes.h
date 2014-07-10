@@ -132,6 +132,7 @@ public:
     void SetTransformType(TransformType transformType_);
     void SetInputCoordSys(CoordinateSystem inputCoordSys_);
     void SetOutputCoordSys(CoordinateSystem outputCoordSys_);
+    void SetContinuousPhi(bool continuousPhi_);
     void SetM00(double m00_);
     void SetM01(double m01_);
     void SetM02(double m02_);
@@ -173,6 +174,7 @@ public:
     TransformType GetTransformType() const;
     CoordinateSystem GetInputCoordSys() const;
     CoordinateSystem GetOutputCoordSys() const;
+    bool         GetContinuousPhi() const;
     double       GetM00() const;
     double       GetM01() const;
     double       GetM02() const;
@@ -245,6 +247,7 @@ public:
         ID_transformType,
         ID_inputCoordSys,
         ID_outputCoordSys,
+        ID_continuousPhi,
         ID_m00,
         ID_m01,
         ID_m02,
@@ -285,6 +288,7 @@ private:
     int    transformType;
     int    inputCoordSys;
     int    outputCoordSys;
+    bool   continuousPhi;
     double m00;
     double m01;
     double m02;
@@ -309,6 +313,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define TRANSFORMATTRIBUTES_TMFS "bDDdibDdddbdddiiiddddddddddddddddbib"
+#define TRANSFORMATTRIBUTES_TMFS "bDDdibDdddbdddiiibddddddddddddddddbib"
 
 #endif
