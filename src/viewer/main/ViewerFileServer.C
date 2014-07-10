@@ -2052,7 +2052,7 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
 void
 ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failCode)
 {
-    int  argc = args.size();
+    int  argc = (int)args.size();
     char **argv = new char *[args.size() + 1];
 
     // Create an argv array out of the args string vector.
@@ -2521,7 +2521,7 @@ ViewerFileServer::GetMostSuitableCorrelation(const stringVector &dbs) const
     //
     std::string correlationName;
     int score = 0;
-    for(int desiredScore = dbs.size(); desiredScore > 1 && score == 0;
+    for(int desiredScore = (int)dbs.size(); desiredScore > 1 && score == 0;
         --desiredScore)
     {
         for(StringIntMap::const_iterator pos = scores.begin();

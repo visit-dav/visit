@@ -240,7 +240,7 @@ AddOperatorAction::Execute(int)
 
         if( applyToAllWindows )
         {
-          for( unsigned int i=0; i< (unsigned int) windowMgr->GetNumWindows(); ++i )
+          for( int i=0; i< windowMgr->GetNumWindows(); ++i )
           {
             windowMgr->GetWindow(i)->GetPlotList()->
               AddOperator(type, applyOperatorToAllPlots, fromDefault);
@@ -389,7 +389,7 @@ PromoteOperatorAction::Execute()
 
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int) windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i< windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           PromoteOperator(args.GetOperatorType(), applyOperatorToAllPlots);
@@ -465,7 +465,7 @@ DemoteOperatorAction::Execute()
 
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int)windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i< windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           DemoteOperator(args.GetOperatorType(), applyOperatorToAllPlots);
@@ -541,7 +541,7 @@ RemoveOperatorAction::Execute()
 
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int) windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i< windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           RemoveOperator(args.GetOperatorType(), applyOperatorToAllPlots);
@@ -619,7 +619,7 @@ RemoveLastOperatorAction::Execute()
 
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int)windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i<windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           RemoveLastOperator(applyOperatorToAllPlots);
@@ -721,7 +721,7 @@ RemoveAllOperatorsAction::Execute()
 
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int) windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i<windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           RemoveAllOperators(applyOperatorToAllPlots);
@@ -828,7 +828,7 @@ SetOperatorOptionsAction::Execute()
     
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int) windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i<windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           SetPlotOperatorAtts(oper, windowMgr->GetWindow(i)==window,
@@ -1049,7 +1049,7 @@ AddPlotAction::Update()
                 // Update the variable menus for the actions.
                 //
                 bool menuEnabled = false;
-                for(size_t i = 0; i < pluginEntries.size(); ++i)
+                for(int i = 0; i < (int)pluginEntries.size(); ++i)
                 {
                     DeletePlotMenu(i);
                     CreatePlotMenu(i);
@@ -1236,7 +1236,7 @@ AddPlotAction::ConstructMenu(QMenu *menu)
     // Create a new menu and add all of the actions to it.
     actionMenu = new QMenu("Add plot", menu);
 
-    for(size_t i = 0; i < pluginEntries.size(); ++i)
+    for(int i = 0; i < (int)pluginEntries.size(); ++i)
     {
         // Create the menu for the plot.
         CreatePlotMenu(i);
@@ -1464,7 +1464,7 @@ DrawPlotsAction::Execute()
     
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int) windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i<windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           RealizePlots(args.GetBoolFlag());
@@ -1755,7 +1755,7 @@ SetActivePlotsAction::Execute()
     
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i< (unsigned int)windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i<windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           SetActivePlots(activePlots,
@@ -1924,7 +1924,7 @@ SetPlotSILRestrictionAction::Execute()
     
     if( applyToAllWindows )
     {
-      for( unsigned int i=0; i < (unsigned int) windowMgr->GetNumWindows(); ++i )
+      for( int i=0; i<windowMgr->GetNumWindows(); ++i )
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           SetPlotSILRestriction(applySelectionToAllPlots);

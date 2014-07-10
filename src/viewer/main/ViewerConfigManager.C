@@ -611,7 +611,7 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
                     }
                     else
                     {
-                        int nSourceIds = sources.size();
+                        int nSourceIds = (int)sources.size();
                         DataNode *vsNode = viewerNode->GetNode("ViewerSubject");
                         DataNode *sourceMapNode = 0;
                         if(vsNode != 0 && 

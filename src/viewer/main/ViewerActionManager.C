@@ -759,7 +759,7 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
         // object and add the new action group to the manager.
         ActionGroup newAction(ag.GetName());
         newAction.enabled = ag.GetVisible();
-        for(size_t j = 0; j < ag.GetActions().size(); ++j)
+        for(int j = 0; j < (int)ag.GetActions().size(); ++j)
         {
             ActionIndex index = ag.GetAction(j);
             if(index != ViewerRPC::MaxRPC)

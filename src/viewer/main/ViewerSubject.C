@@ -2178,10 +2178,9 @@ ViewerSubject::InitializeWorkArea()
         // If any of the options are missing then use the WindowMetrics
         // class to fill in the blanks.
         //
-        int wmBorder[4], wmShift[2], wmScreen[4];
-
-        ///TODO: override uninitialized warnings
-        wmScreen[0] = wmScreen[1] = wmScreen[2] = wmScreen[3] = 0;
+        int wmBorder[4] = {0, 0, 0, 0};
+        int wmShift[2] = {0, 0};
+        int wmScreen[4] = {0, 0, 0, 0};
 
         if(GetViewerProperties()->GetWindowBorders().size() == 0 ||
            GetViewerProperties()->GetWindowShift().size() == 0 ||
@@ -3663,7 +3662,7 @@ ViewerSubject::ExportWindow()
 
     int resultId = -1;
     /// Broadcast directly to client..
-    for(size_t i = 0; i < clients.size(); ++i) {
+    for(int i = 0; i < (int)clients.size(); ++i) {
         ViewerClientAttributes& client = clients[i]->GetViewerClientAttributes();
         if(client.GetId() == clientId) {
             resultId = i;
@@ -3686,7 +3685,7 @@ ViewerSubject::ExportWindow()
 
     qatts->ClearVars();
 
-    for(size_t i = 0; i < windowIds.size(); ++i)
+    for(int i = 0; i < (int)windowIds.size(); ++i)
     {
         ViewerWindow* vwin = ViewerWindowManager::Instance()->GetWindow(i);
 
@@ -9527,7 +9526,7 @@ ViewerSubject::HandleClientInformation()
             debug3 << "client["<< i << "] = " << client.GetClientName().c_str()
                    << endl;
             debug3 << "methods:" << endl;
-            for(size_t j = 0; j < client.GetMethodNames().size(); ++j)
+            for(int j = 0; j < (int)client.GetMethodNames().size(); ++j)
             {
                 debug3 << "\t" << client.GetMethod(j).c_str() << "("
                        << client.GetMethodPrototype(j).c_str() << ")" << endl;
@@ -10476,7 +10475,7 @@ ViewerSubject::HasInterpreter() const
         ++i)
     {
         const ClientInformation &client = GetViewerState()->GetClientInformationList()->GetClients(i);
-        for(size_t j = 0; j < client.GetMethodNames().size() && !hasInterpreter; ++j)
+        for(int j = 0; j < (int)client.GetMethodNames().size() && !hasInterpreter; ++j)
             hasInterpreter = client.GetMethod(j) == "Interpret" &&
                              client.GetMethodPrototype(j) == "s";
     }
@@ -11946,8 +11945,6 @@ ViewerSubject::OpenWithEngine(const std::string &remoteHost,
 
 void ViewerSubject::DDTConnect()
 {
-    //const bool connect = (bool) GetViewerState()->GetViewerRPC()->GetIntArg1();
-
     DDTManager* manager = DDTManager::getInstance();
     DDTSession* ddt = manager->getSessionNC();
     if (ddt!=NULL && ddt->connected())
