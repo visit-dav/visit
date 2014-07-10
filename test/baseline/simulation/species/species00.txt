@@ -1,0 +1,3 @@
+Simulation executable "species" exists.
+Simulation "species" started.
+VisIt connected to simulation "species".

@@ -54,6 +54,7 @@ SET(PY_TESTS
     point
     polyhedral
     scalar
+    species
     ucdcurve
     unstructured
     updateplots
