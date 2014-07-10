@@ -1,0 +1,187 @@
+{
+   "count": 45, 
+   "ftag": "CracksClipper_PyCracksClipperAttributes.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/operators/CracksClipper/PyCracksClipperAttributes.C", 
+   "warnings": [
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_flags'\n"
+      ], 
+      [
+         "329", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_iter'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_iternext'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_methods'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_members'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_getset'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_base'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_dict'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_descr_get'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_descr_set'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_dictoffset'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_init'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_alloc'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_new'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_free'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_is_gc'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_bases'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_mro'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_cache'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_subclasses'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_weaklist'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_del'\n"
+      ], 
+      [
+         "479", 
+         " warning: missing initializer for member '_typeobject::tp_version_tag'\n"
+      ], 
+      [
+         "546", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "546", 
+         " warning: missing initializer for member 'PyMethodDef::ml_flags'\n"
+      ], 
+      [
+         "546", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "563", 
+         " warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object\n"
+      ]
+   ]
+}

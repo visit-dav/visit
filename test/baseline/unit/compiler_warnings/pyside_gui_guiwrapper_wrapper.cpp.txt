@@ -1,0 +1,103 @@
+{
+   "count": 24, 
+   "ftag": "pyside_gui_guiwrapper_wrapper.cpp", 
+   "file": "/g/g11/miller86/visit/trunk/src/visitpy/pyui/pyside/gui/pyside_gui/guiwrapper_wrapper.cpp", 
+   "warnings": [
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_meth'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_flags'\n"
+      ], 
+      [
+         "526", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_typeobject::tp_del'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_typeobject::tp_version_tag'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_heaptypeobject::as_number'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_heaptypeobject::as_mapping'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_heaptypeobject::as_sequence'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_heaptypeobject::as_buffer'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_heaptypeobject::ht_name'\n"
+      ], 
+      [
+         "588", 
+         " warning: missing initializer for member '_heaptypeobject::ht_slots'\n"
+      ]
+   ]
+}

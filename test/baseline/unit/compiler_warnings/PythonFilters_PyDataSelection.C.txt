@@ -1,0 +1,119 @@
+{
+   "count": 28, 
+   "ftag": "PythonFilters_PyDataSelection.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/avt/PythonFilters/PyDataSelection.C", 
+   "warnings": [
+      [
+         "92", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "92", 
+         " warning: missing initializer for member 'PyMethodDef::ml_flags'\n"
+      ], 
+      [
+         "92", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "92", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "92", 
+         " warning: missing initializer for member 'PyMethodDef::ml_flags'\n"
+      ], 
+      [
+         "92", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_iter'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_iternext'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_methods'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_members'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_getset'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_base'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_dict'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_descr_get'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_descr_set'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_dictoffset'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_init'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_alloc'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_new'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_free'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_is_gc'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_bases'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_mro'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_cache'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_subclasses'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_weaklist'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_del'\n"
+      ], 
+      [
+         "195", 
+         " warning: missing initializer for member '_typeobject::tp_version_tag'\n"
+      ]
+   ]
+}

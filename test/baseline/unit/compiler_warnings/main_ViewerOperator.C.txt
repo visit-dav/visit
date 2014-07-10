@@ -1,0 +1,11 @@
+{
+   "count": 1, 
+   "ftag": "main_ViewerOperator.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/viewer/main/ViewerOperator.C", 
+   "warnings": [
+      [
+         "111", 
+         " warning: base class 'class ViewerBase' should be explicitly initialized in the copy constructor\n"
+      ]
+   ]
+}

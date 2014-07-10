@@ -1,0 +1,23 @@
+{
+   "count": 4, 
+   "ftag": "plugin_PlotPluginManager.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/common/plugin/PlotPluginManager.C", 
+   "warnings": [
+      [
+         "326", 
+         " warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object\n"
+      ], 
+      [
+         "356", 
+         " warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object\n"
+      ], 
+      [
+         "386", 
+         " warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object\n"
+      ], 
+      [
+         "416", 
+         " warning: ISO C++ forbids casting between pointer-to-function and pointer-to-objectBuilding CXX object common/CMakeFiles/visitcommon.dir/state/AnnotationObject.C.o\n"
+      ]
+   ]
+}

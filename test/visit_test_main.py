@@ -1604,8 +1604,10 @@ def CheckInteractive(case_name):
 #   Cyrus Harrison, Tue Nov  6 13:08:56 PST 2012
 #   Fix error code propagation logic.
 #
+#   Mark C. Miller, Wed Jul  9 18:43:41 PDT 2014
+#   Added setFailed and setSkipped args for caller to control these
 # ----------------------------------------------------------------------------
-def TestText(case_name, inText):
+def TestText(case_name, inText, setFailed=None, setSkipped=None):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
@@ -1647,8 +1649,14 @@ def TestText(case_name, inText):
     fout.close()
 
     # did the test fail?
-    failed = (nchanges > 0)
-    skip   =  TestEnv.check_skip(case_name)
+    if setFailed == None:
+        failed = (nchanges > 0)
+    else:
+        failed = setFailed
+    if setSkipped == None:
+        skip   =  TestEnv.check_skip(case_name)
+    else:
+        skip = setSkipped
 
     LogTextTestResult(case_name,nchanges,nlines,failed,skip)
 

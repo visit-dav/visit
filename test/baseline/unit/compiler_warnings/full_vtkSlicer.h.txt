@@ -1,0 +1,35 @@
+{
+   "count": 7, 
+   "ftag": "full_vtkSlicer.h", 
+   "file": "/g/g11/miller86/visit/trunk/src/visit_vtk/full/vtkSlicer.h", 
+   "warnings": [
+      [
+         "39", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "39", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "39", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "39", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "39", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "39", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "39", 
+         " warning: extra ';'\n"
+      ]
+   ]
+}

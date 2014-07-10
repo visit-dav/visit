@@ -1,0 +1,11 @@
+{
+   "count": 1, 
+   "ftag": "visitpy_PySelectionSummary.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/visitpy/visitpy/PySelectionSummary.C", 
+   "warnings": [
+      [
+         "451", 
+         " warning: missing initializer for member 'PyMethodDef::ml_doc/g/g11/miller86/visit/trunk/src/visitpy/visitpy/PyQueryAttributes.C:372: warning: missing initializer for member 'PyMethodDef::ml_doc'\n"
+      ]
+   ]
+}

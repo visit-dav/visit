@@ -1,0 +1,887 @@
+{
+   "count": 220, 
+   "ftag": "ITAPS_FMDB_avtITAPS_FMDBUtility.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/databases/ITAPS_FMDB/avtITAPS_FMDBUtility.C", 
+   "warnings": [
+      [
+         "278", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "278", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "278", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "281", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "281", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "281", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "289", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "289", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "289", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "311", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "311", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "311", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "314", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "314", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "314", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "316", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "316", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "316", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "326", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "326", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "326", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "340", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "340", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "340", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "373", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "373", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "373", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "387", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "387", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "387", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "419", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "419", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "419", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "427", 
+         " warning: ISO C++ does not support the 'hh' gnu_printf length modifier\n"
+      ], 
+      [
+         "447", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "447", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "451", 
+         " warning: format '%p' expects type 'void*', but argument 7 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "451", 
+         " warning: format '%p' expects type 'void*', but argument 7 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "461", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "461", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "461", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "466", 
+         " warning: format '%p' expects type 'void*', but argument 3 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "512", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "512", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "512", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "529", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "529", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "529", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "556", 
+         " warning: label 'funcEnd' defined but not used\n"
+      ], 
+      [
+         "577", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "577", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "577", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "587", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "587", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "587", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "592", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "592", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "592", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "596", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "596", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "596", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "610", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "610", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "610", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "620", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "620", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "620", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "641", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "641", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "641", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "651", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "671", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "671", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "671", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "679", 
+         " warning: ISO C++ does not support the 'hh' gnu_printf length modifier\n"
+      ], 
+      [
+         "695", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "695", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "695", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "696", 
+         " warning: format '%p' expects type 'void*', but argument 4 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "696", 
+         " warning: format '%p' expects type 'void*', but argument 4 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "705", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "705", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "705", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "710", 
+         " warning: format '%p' expects type 'void*', but argument 3 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "726", 
+         " warning: label 'funcEnd' defined but not used\n"
+      ], 
+      [
+         "754", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "278", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "278", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "278", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "281", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "281", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "289", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "289", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "289", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "311", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "311", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "311", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "314", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "314", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "314", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "316", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "316", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "316", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "326", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "326", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "326", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "340", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "340", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "340", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "373", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "373", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "373", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "387", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "387", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "387", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "419", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "419", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "447", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "447", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "447", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "451", 
+         " warning: format '%p' expects type 'void*', but argument 7 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "451", 
+         " warning: format '%p' expects type 'void*', but argument 7 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "461", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "461", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "461", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "466", 
+         " warning: format '%p' expects type 'void*', but argument 3 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "512", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "512", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "512", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "587", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "592", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "592", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "592", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "596", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "596", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "596", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "610", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "610", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "610", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "620", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "620", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "641", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "641", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "641", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "651", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "651", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "651", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "671", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "671", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "671", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "679", 
+         " warning: ISO C++ does not support the 'hh' gnu_printf length modifier\n"
+      ], 
+      [
+         "695", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "695", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "696", 
+         " warning: format '%p' expects type 'void*', but argument 4 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "696", 
+         " warning: format '%p' expects type 'void*', but argument 4 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "705", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "705", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "705", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "710", 
+         " warning: format '%p' expects type 'void*', but argument 3 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "726", 
+         " warning: label 'funcEnd' defined but not used\n"
+      ], 
+      [
+         "754", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "278", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "289", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "387", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "387", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "419", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "419", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "419", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "427", 
+         " warning: ISO C++ does not support the 'hh' gnu_printf length modifier\n"
+      ], 
+      [
+         "447", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "447", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "447", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "451", 
+         " warning: format '%p' expects type 'void*', but argument 7 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "451", 
+         " warning: format '%p' expects type 'void*', but argument 7 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "461", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "512", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "512", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "512", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "529", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "529", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "529", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "556", 
+         " warning: label 'funcEnd' defined but not used\n"
+      ], 
+      [
+         "577", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "577", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "587", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "587", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "587", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "592", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "592", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "592", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "596", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "596", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "596", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "610", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "610", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "610", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "620", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "620", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "620", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "641", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "641", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "641", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "651", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "651", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "651", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "671", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "671", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "671", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "679", 
+         " warning: ISO C++ does not support the 'hh' gnu_printf length modifier\n"
+      ], 
+      [
+         "695", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "695", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "695", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "696", 
+         " warning: format '%p' expects type 'void*', but argument 4 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "696", 
+         " warning: format '%p' expects type 'void*', but argument 4 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "705", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ], 
+      [
+         "705", 
+         " warning: unused variable 'dummyError'\n"
+      ], 
+      [
+         "705", 
+         " warning: suggest explicit braces to avoid ambiguous 'else'\n"
+      ], 
+      [
+         "710", 
+         " warning: format '%p' expects type 'void*', but argument 3 has type 'iBase_EntityHandle_Private*'\n"
+      ], 
+      [
+         "726", 
+         " warning: label 'funcEnd' defined but not used\n"
+      ], 
+      [
+         "754", 
+         " warning: comparison between signed and unsigned integer expressions\n"
+      ]
+   ]
+}

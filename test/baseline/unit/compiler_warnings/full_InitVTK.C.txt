@@ -1,0 +1,19 @@
+{
+   "count": 3, 
+   "ftag": "full_InitVTK.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/visit_vtk/full/InitVTK.C", 
+   "warnings": [
+      [
+         "74", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "75", 
+         " warning: extra ';'\n"
+      ], 
+      [
+         "76", 
+         " warning: extra ';'\n"
+      ]
+   ]
+}

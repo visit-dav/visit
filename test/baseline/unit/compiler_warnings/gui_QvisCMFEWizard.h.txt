@@ -1,0 +1,19 @@
+{
+   "count": 3, 
+   "ftag": "gui_QvisCMFEWizard.h", 
+   "file": "/g/g11/miller86/visit/trunk/src/gui/QvisCMFEWizard.h", 
+   "warnings": [
+      [
+         "146", 
+         " warning: comma at end of enumerator list\n"
+      ], 
+      [
+         "146", 
+         " warning: comma at end of enumerator list\n"
+      ], 
+      [
+         "146", 
+         " warning: comma at end of enumerator list\n"
+      ]
+   ]
+}

@@ -1,0 +1,63 @@
+{
+   "count": 14, 
+   "ftag": "xdmf_writer_xdmf_mpi_example.c", 
+   "file": "/g/g11/miller86/visit/trunk/src/tools/xdmf_writer/xdmf_mpi_example.c", 
+   "warnings": [
+      [
+         "22", 
+         "5: warning: C++ style comments are not allowed in ISO C90\n"
+      ], 
+      [
+         "22", 
+         "5: warning: (this will be reported only once per input file)\n"
+      ], 
+      [
+         "34", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "82", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "85", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "100", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "118", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "170", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "177", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "181", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "185", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "189", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "197", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ], 
+      [
+         "212", 
+         " warning: ISO C90 forbids mixed declarations and code\n"
+      ]
+   ]
+}

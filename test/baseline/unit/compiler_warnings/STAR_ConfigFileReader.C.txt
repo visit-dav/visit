@@ -1,0 +1,23 @@
+{
+   "count": 4, 
+   "ftag": "STAR_ConfigFileReader.C", 
+   "file": "/g/g11/miller86/visit/trunk/src/databases/STAR/ConfigFileReader.C", 
+   "warnings": [
+      [
+         "63", 
+         "20: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "76", 
+         "19: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "123", 
+         "64: warning: ISO C99 requires rest arguments to be used\n"
+      ], 
+      [
+         "123", 
+         "64: warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98\n"
+      ]
+   ]
+}
