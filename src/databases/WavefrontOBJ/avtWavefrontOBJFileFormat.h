@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #ifndef AVT_WAVEFRONT_OBJ_FILE_FORMAT_H
-#define AVT_WAVEFRONt_OBJ_FILE_FORMAT_H
+#define AVT_WAVEFRONT_OBJ_FILE_FORMAT_H
 
 #include <avtSTSDFileFormat.h>
 

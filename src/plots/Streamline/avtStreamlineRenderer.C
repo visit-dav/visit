@@ -261,7 +261,7 @@ avtStreamlineRenderer::SetAtts(const AttributeGroup *a)
 // ****************************************************************************
 
 void
-avtStreamlineRenderer::GlobalSetAmbientCoefficient(float coeff)
+avtStreamlineRenderer::GlobalSetAmbientCoefficient(double coeff)
 {
     ambient_coeff = coeff;
 }

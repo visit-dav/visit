@@ -290,7 +290,6 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     for (it = meshPatchMap.begin(); it != meshPatchMap.end(); ++it)
     {
         string root(it->first);
-        //size_t nB = it->second.size();
 
         avtMeshMetaData *mmd = new avtMeshMetaData;
         mmd->meshType = AVT_UNSTRUCTURED_MESH;

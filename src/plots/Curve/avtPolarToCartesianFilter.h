@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #ifndef AVT_POLARTOCARTESIAN_FILTER_H
-#define AVT_POALRTOCARTESIAN_FILTER_H
+#define AVT_POLARTOCARTESIAN_FILTER_H
 
 #include <avtDataTreeIterator.h>
 
