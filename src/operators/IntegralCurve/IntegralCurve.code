@@ -250,8 +250,6 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         cropEndFlag != obj.cropEndFlag ||
         cropEnd != obj.cropEnd ||
         cropValue != obj.cropValue ||
-        showPoints != obj.showPoints ||
-        showLines != obj.showLines ||
         pathlines != obj.pathlines ||
         pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
         pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||

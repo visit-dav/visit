@@ -255,9 +255,6 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void cropEndProcessText();
     void cropValueChanged(int val);
 
-    void showLinesChanged(bool val);
-    void showPointsChanged(bool val);
-
   // Advanced
     void parallelAlgorithmChanged(int val);
     void maxSLCountChanged(int val);
@@ -359,9 +356,6 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     QCheckBox *cropEndFlag;
     QLineEdit *cropEnd;
     QComboBox *cropValueComboBox;
-
-    QCheckBox    *showLines;
-    QCheckBox    *showPoints;
 
   // Advanced
     QLabel    *parallelAlgoLabel;

@@ -92,23 +92,25 @@ CreateVTKVertex(double p[3], double val,
                 std::vector< std::string > secondaryVariables,
                 double *secondaryVals )
 {
-    vtkPoints *pt = vtkPoints::New();
-    pt->SetNumberOfPoints(1);
-    pt->SetPoint(0, p[0], p[1], p[2]);
+    vtkPolyData *pd = vtkPolyData::New();
+
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(1);
+    points->SetPoint(0, p[0], p[1], p[2]);
     
-    vtkPolyData *point = vtkPolyData::New();
-    point->SetPoints(pt);
-    pt->Delete();
+    pd->SetPoints(points);
+    points->Delete();
 
     vtkIdType ids[1] = {0};
-    point->Allocate(1);
-    point->InsertNextCell(VTK_VERTEX, 1, ids);
+    pd->Allocate(1);
+    pd->InsertNextCell(VTK_VERTEX, 1, ids);
 
     vtkFloatArray *arr = vtkFloatArray::New();
     arr->SetName("colorVar");
     arr->SetNumberOfTuples(1);
     arr->SetTuple1(0, val);
-    point->GetPointData()->SetScalars(arr);
+
+    pd->GetPointData()->SetScalars(arr);
     arr->Delete();
 
     // secondary scalars
@@ -118,11 +120,12 @@ CreateVTKVertex(double p[3], double val,
         secondary->SetName(secondaryVariables[i].c_str());
         secondary->SetNumberOfTuples(1);
         secondary->SetTuple1(0, secondaryVals[i]);
-        point->GetPointData()->AddArray(secondary);
+
+        pd->GetPointData()->AddArray(secondary);
         secondary->Delete();
     }
 
-    return point;
+    return pd;
 }
 
 
@@ -2599,16 +2602,16 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             for( unsigned int i=0; i<secondaryVariables.size(); ++i )
                 secondarys[i]->InsertTuple1(pIdx, s.secondarys[i]);
 
-            if( atts.GetShowPoints() )
-            {
-              double pt[3] = {s.position.x, s.position.y, s.position.z};
+            // if( atts.GetShowPoints() )
+            // {
+            //   double pt[3] = {s.position.x, s.position.y, s.position.z};
 
-              vtkPolyData *vert = CreateVTKVertex(pt, data_value,
-                                                  secondaryVariables,
-                                                  s.secondarys );
-              append->AddInputData(vert);
-              vert->Delete();
-            }
+            //   vtkPolyData *vert = CreateVTKVertex(pt, data_value,
+            //                                       secondaryVariables,
+            //                                       s.secondarys );
+            //   append->AddInputData(vert);
+            //   vert->Delete();
+            // }
 
             pIdx++;
         }
@@ -2702,8 +2705,8 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
          secondarys[i]->Delete();
 
-    if( atts.GetShowLines() )
-    {
+    // if( atts.GetShowLines() )
+    // {
       vtkCleanPolyData *clean = vtkCleanPolyData::New();
       clean->ConvertLinesToPointsOff();
       clean->ConvertPolysToLinesOff();
@@ -2716,9 +2719,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
       vtkPolyData *cleanPD = clean->GetOutput();
       append->AddInputData(cleanPD);
       cleanPD->Delete();
-    }
-    else
-      pd->Delete();
+    // }
+    // else
+    //   pd->Delete();
 
     append->Update();
     vtkPolyData *outPD = append->GetOutput();
