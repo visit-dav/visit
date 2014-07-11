@@ -4663,7 +4663,7 @@ vtkFloatArray* visit_vtkOpenFOAMReaderPrivate::ReadPointsFile()
     dict.ReadNonuniformList<vtkFoamToken::VECTORLIST,
     vtkFoamEntryValue::vectorListTraits<vtkFloatArray, float, 3, false> >(io);
     }
-  catch(vtkFoamError& e)
+  catch(vtkFoamError &e)
     {
     vtkDebugMacro(<<"Error reading line " << io.GetLineNumber()
         << " of " << io.GetFileName().c_str() << ": " << e.c_str());
@@ -4706,7 +4706,7 @@ vtkFoamIntVectorVector * visit_vtkOpenFOAMReaderPrivate::ReadFacesFile(
       dict.ReadLabelListList(io);
       }
     }
-  catch(vtkFoamError& e)
+  catch(vtkFoamError &e)
     {
     vtkDebugMacro(<<"Error reading line " << io.GetLineNumber()
         << " of " << io.GetFileName().c_str() << ": " << e.c_str());
@@ -4730,7 +4730,7 @@ vtkFoamIntVectorVector * visit_vtkOpenFOAMReaderPrivate::ReadOwnerNeighborFiles(
       ownerDict.ReadNonuniformList<vtkFoamToken::LABELLIST,
       vtkFoamEntryValue::listTraits<vtkIntArray, int> >(io);
       }
-    catch(vtkFoamError& e)
+    catch(vtkFoamError &e)
       {
       vtkDebugMacro(<<"Error reading line " << io.GetLineNumber()
           << " of " << io.GetFileName().c_str() << ": " << e.c_str());
@@ -4753,7 +4753,7 @@ vtkFoamIntVectorVector * visit_vtkOpenFOAMReaderPrivate::ReadOwnerNeighborFiles(
       neighborDict.ReadNonuniformList<vtkFoamToken::LABELLIST,
       vtkFoamEntryValue::listTraits<vtkIntArray, int> >(io);
       }
-    catch(vtkFoamError& e)
+    catch(vtkFoamError &e)
       {
       vtkDebugMacro(<<"Error reading line " << io.GetLineNumber()
           << " of " << io.GetFileName().c_str() << ": " << e.c_str());
@@ -4916,7 +4916,7 @@ vtkFoamIntVectorVector * visit_vtkOpenFOAMReaderPrivate::ReadOwnerNeighborFiles(
       {
       cellsDict.ReadLabelListList(io);
       }
-    catch(vtkFoamError& e)
+    catch(vtkFoamError &e)
       {
       vtkDebugMacro(<<"Error reading line " << io.GetLineNumber()
           << " of " << io.GetFileName().c_str() << ": " << e.c_str());
@@ -6551,7 +6551,6 @@ vtkFloatArray *visit_vtkOpenFOAMReaderPrivate::FillField(vtkFoamEntry *entryPtr,
 {
   vtkFloatArray *data;
   vtkFoamEntry &entry = *entryPtr;
-  const vtkStdString &className = ioPtr->GetClassName(); (void) className;
 
   // "uniformValue" keyword is for uniformFixedValue B.C.
   if (entry.FirstValue().GetIsUniform() || entry.GetKeyword() == "uniformValue")
@@ -6621,7 +6620,8 @@ vtkFloatArray *visit_vtkOpenFOAMReaderPrivate::FillField(vtkFoamEntry *entryPtr,
       else
         {
         vtkDebugMacro(<< "Number of components and field class doesn't match "
-                      << "for " << ioPtr->GetFileName().c_str() << ". class = " << className.c_str()
+                      << "for " << ioPtr->GetFileName().c_str() 
+                      << ". class = " << ioPtr->GetClassName().c_str()
                       << ", nComponents = " << nComponents);
         return NULL;
         }
@@ -7316,7 +7316,7 @@ vtkMultiBlockDataSet* visit_vtkOpenFOAMReaderPrivate::MakeLagrangianMesh()
       vtkFoamEntryValue::vectorListTraits<vtkFloatArray, float, 3, true> >(
           io);
       }
-    catch(vtkFoamError& e)
+    catch(vtkFoamError &e)
       {
       vtkDebugMacro(<<"Error reading line " << io.GetLineNumber()
           << " of " << io.GetFileName().c_str() << ": " << e.c_str());
