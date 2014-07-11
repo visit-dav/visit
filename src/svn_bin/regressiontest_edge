@@ -241,7 +241,8 @@ fi
     -DCMAKE_CXX_FLAGS_DEBUG:STRING="-Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     -DCMAKE_C_FLAGS_DEBUG:STRING="-Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     . >> ../buildlog 2>&1
-make -j 12 1>>../make.out 2>>../make.err
+rm -rf ../make.out ../make.err
+make -j 12 1>../make.out 2>../make.err
 if test "$debug" = "true" ; then
     echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
 fi
