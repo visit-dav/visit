@@ -35,12 +35,14 @@
 # DAMAGE.
 #
 #*****************************************************************************
-
 SET(PY_TESTS
-    ANALYZE ANSYS bov chgcar claw curve ddcMD diff Fluent
-    image imgvol lata leos miranda NASTRAN OpenFOAM overlink
+    ANALYZE ANSYS bov chgcar claw curve ddcMD Fluent image
+    imgvol lata leos miranda NASTRAN OpenFOAM overlink
     PATRAN RAW rect scale_mesh shapefile singlemulti tecplot
-    unv vtk Xmdv xyz zipwrapper)
+    unv vtk Xmdv xyz)
+IF(RUN_BROKEN_TESTS)
+  LIST(APPEND PY_TESTS diff zipwrapper)
+ENDIF()
 PY_3RDPARTY_TEST(PY_TESTS BOXLIB boxlib)
 PY_3RDPARTY_TEST(PY_TESTS CGNS CGNS)
 PY_3RDPARTY_TEST(PY_TESTS XDMF xdmf)
