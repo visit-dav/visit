@@ -39,7 +39,7 @@
 /*****************************************************************************
 * Adapted from VTK6/Rendering/OpenGL/vtkOpenGLExtensionMananger
 * Provides OS Mesa support for VisIt in cases where a VTK build does not.
-/*=========================================================================
+=========================================================================
 
   Program:   Visualization Toolkit
   Module:    vtkOSMesaGLExtensionManager.cxx
