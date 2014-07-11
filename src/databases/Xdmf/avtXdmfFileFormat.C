@@ -462,7 +462,6 @@ XdmfAttribute * avtXdmfFileFormat::GetAttributeFromName(XdmfGrid * grid, const c
         name = name.substr(name.rfind("/") + 1, name.length());
     }
 
-    //XdmfAttribute * attribute = NULL;
     for (int i = 0; i < grid->GetNumberOfAttributes(); ++i) {
         if (strcmp(name.c_str(), grid->GetAttribute(i)->GetName()) == 0) {
             return grid->GetAttribute(i);
@@ -768,8 +767,6 @@ vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *m
 
 int avtXdmfFileFormat::GetMeshDataType(XdmfGrid* grid)
 {
-    //XdmfInt32 gridType = grid->GetGridType();
-
     if (grid->GetTopology()->GetClass() == XDMF_UNSTRUCTURED) {
         return VTK_UNSTRUCTURED_GRID;
     }

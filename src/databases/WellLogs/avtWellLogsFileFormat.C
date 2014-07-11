@@ -145,7 +145,7 @@ avtWellLogsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
  */
 
     string matname = "wellID";
-    int nmats = wellNames.size();
+    int nmats = (int)wellNames.size();
     AddMaterialToMetaData(md, matname, meshname, nmats, wellNames);
 }
 
@@ -268,7 +268,7 @@ avtWellLogsFileFormat::ReadFile(void)
                 if (wellId == idx)
                 {
                     wellNames.push_back(s);
-                    wellIds.push_back(wellNames.size()-1);
+                    wellIds.push_back((int)wellNames.size()-1);
                 }
                 else if (utm83EId == idx)
                     X.push_back(atof(s));
@@ -330,7 +330,7 @@ avtWellLogsFileFormat::ReadFile(void)
                         char buffer[1024];
                         sprintf(buffer,"DEP_%d",(int)prevtD);
                         wellNames.push_back(buffer);
-                        id = wellNames.size() - 1;
+                        id = (int)wellNames.size() - 1;
                         idmap[prevtD] = id;
 
                     }
@@ -382,7 +382,7 @@ avtWellLogsFileFormat::ReadFile(void)
             char buffer[1024];
             sprintf(buffer,"DEP_%d",(int)prevtD);
             wellNames.push_back(buffer);
-            id = wellNames.size() - 1;
+            id = (int)wellNames.size() - 1;
             idmap[prevtD] = id;
 
         }
@@ -427,7 +427,7 @@ avtWellLogsFileFormat::GetMesh(const char *meshname)
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     vtkPoints *pts = vtkPoints::New();
    
-    int nWells = X.size();
+    int nWells = (int)X.size();
     int pointsPerWell = 2;
 
     pts->SetNumberOfPoints(nWells*pointsPerWell);
@@ -512,8 +512,8 @@ avtWellLogsFileFormat::GetAuxiliaryData(const char *var, const char *type,
             EXCEPTION1(InvalidVariableException, var);
         }
 
-        int nWells = wellIds.size();
-        int numberOfSegments = wellIds.size(); // may be different in future
+        int nWells = (int)wellIds.size();
+        int numberOfSegments = (int)wellIds.size(); // may be different in future
         avtMaterial *mat = new avtMaterial(nWells, wellNames, numberOfSegments,
                                            &(wellIds[0]), 0, NULL, NULL, NULL, NULL);
         df = avtMaterial::Destruct;

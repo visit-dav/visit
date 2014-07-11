@@ -231,8 +231,6 @@ avtXmdvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtXmdvFileFormat::GetMesh(const char *meshname)
 {
-    int  i;
-
     if (!readInData)
         if (!ReadXmdvFile(true))
             EXCEPTION1(InvalidFilesException, filename);
@@ -240,8 +238,8 @@ avtXmdvFileFormat::GetMesh(const char *meshname)
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(ncells);
-    int nvars = varnames.size();
-    for (i = 0 ; i < ncells ; i++)
+    size_t nvars = varnames.size();
+    for (int i = 0 ; i < ncells ; i++)
     {
         float pt[3];
         pt[0] = (nvars > 0 ? values[nvars*i] : 0.);
@@ -251,7 +249,7 @@ avtXmdvFileFormat::GetMesh(const char *meshname)
     }
     ugrid->Allocate(2*ncells);
     vtkIdType onevertex[1];
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         onevertex[0] = i;
         ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
@@ -283,15 +281,13 @@ avtXmdvFileFormat::GetMesh(const char *meshname)
 vtkDataArray *
 avtXmdvFileFormat::GetVar(const char *varname)
 {
-    int i;
-
     if (!readInData)
         if (!ReadXmdvFile(true))
             EXCEPTION1(InvalidFilesException, filename);
 
     int varIdx = -1;
-    int nvars = varnames.size();
-    for (i = 0 ; i < nvars ; i++)
+    int nvars = (int)varnames.size();
+    for (int i = 0 ; i < nvars ; i++)
         if (varnames[i] == varname)
             varIdx = i;
 
@@ -300,7 +296,7 @@ avtXmdvFileFormat::GetVar(const char *varname)
 
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(ncells);
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         rv->SetTuple1(i, values[i*nvars + varIdx]);
     }

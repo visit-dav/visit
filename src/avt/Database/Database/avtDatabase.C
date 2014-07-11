@@ -86,8 +86,8 @@ using std::vector;
 void
 ConvertSlashes(char *str)
 {
-    int len = strlen(str);
-    for (int i = 0; i < len; i++)
+    size_t len = strlen(str);
+    for (size_t i = 0; i < len; i++)
     {
 #ifndef WIN32
         if (str[i] == '\\')
@@ -2371,7 +2371,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
-        int str_auto_len = strlen(str_auto);
+        size_t str_auto_len = strlen(str_auto);
 
         if (str_auto_len > 0 && str_auto[str_auto_len-1] == '\r')
             str_auto[str_auto_len-1] = '\0';
