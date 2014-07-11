@@ -777,7 +777,7 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "Field")
         {
-            currentField->index = currentAttribute->fields.size();
+            currentField->index = (int)currentAttribute->fields.size();
             currentAttribute->fields.push_back(currentField);
             currentField = NULL;
         }

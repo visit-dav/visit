@@ -73,7 +73,7 @@ avtMultiresControlFilter::ExecuteData(vtkDataSet *in_ds, int i, std::string s)
     size_t lods =
       GetTypedInput()->GetInfo().GetAttributes().GetLevelsOfDetail();
     debug3 << "Setting max resolution to " << lods << "\n";
-    atts.SetMaxResolution(lods);
+    atts.SetMaxResolution((int)lods);
     return in_ds;
 }
 
@@ -105,8 +105,8 @@ avtContract_p avtMultiresControlFilter::ModifyContract(avtContract_p contract)
 
     std::vector<int> domain_list;
     std::back_insert_iterator<std::vector<int> > doms(domain_list);
-    size_t max_domain = sdn->GetNumberOfDomains();
-    for(size_t dom=0; dom < max_domain; ++dom)
+    int max_domain = (int)sdn->GetNumberOfDomains();
+    for(int dom=0; dom < max_domain; ++dom)
     {
         int level = sdn->GetDomainLevel(dom);
         if(level <= atts.GetResolution())

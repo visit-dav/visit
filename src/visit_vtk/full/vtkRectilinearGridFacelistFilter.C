@@ -759,7 +759,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   // in about O(nfaces) time.
   //
   int nOutputCells = 0;
-  int nSides = sideStart.size();
+  int nSides = (int)sideStart.size();
   for (int i = 0 ; i < nSides ; i++)
   {
     int nEntries = rowSize[i]*columnSize[i];

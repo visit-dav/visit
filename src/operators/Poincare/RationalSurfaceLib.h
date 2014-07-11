@@ -51,7 +51,9 @@
 #include <math.h>
 #include <map>
 
+#ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
+#endif
 
 #include <avtVector.h>
 #include <avtPoincareIC.h>

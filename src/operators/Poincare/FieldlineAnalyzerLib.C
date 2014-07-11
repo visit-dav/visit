@@ -281,8 +281,8 @@ template< class TYPE >
 void least_square_fit( std::vector< TYPE > p_windings,
                        double &bestfit_safetyFactor)
 {
-  unsigned int start = p_windings.size() *.75;
-  unsigned int stop  = p_windings.size();
+  unsigned int start = (unsigned int)p_windings.size() *.75;
+  unsigned int stop  = (unsigned int)p_windings.size();
 
   unsigned int cc = 0;
 
@@ -601,7 +601,7 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
   unsigned int freq;
   std::vector< unsigned int > values;
 
-  unsigned int max_groups = stats.size() / max_samples;
+  unsigned int max_groups = (unsigned int)stats.size() / max_samples;
   unsigned int mult = 0;
   double minPercent = 0.6;
 
@@ -612,7 +612,7 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
   // baseResonance should equal the resonance.
   for( unsigned int group=max_groups; group>1; --group )
   {
-    unsigned int num_entries = stats.size() / group;
+    unsigned int num_entries = (unsigned int)stats.size() / group;
 
     values.resize( num_entries );
 
@@ -743,7 +743,7 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
   // order resonance present.
   if( mult > 1 )
   {
-    unsigned int entries = stats.size() / mult;
+    unsigned int entries = (unsigned int)stats.size() / mult;
 
     // Divide the stats up into groups and keep the first two groups.
     if( mult > 2 )
@@ -751,7 +751,7 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
       if( verboseFlag )
         std::cerr << "Splitting into " << mult << " groups " << std::endl;
       
-      unsigned int num_entries = 2 * stats.size() / mult;
+      unsigned int num_entries = 2 * (unsigned int)stats.size() / mult;
       
       if( num_entries && num_entries < stats.size() )
       {
@@ -801,10 +801,10 @@ thresholdStats( std::vector< std::pair< unsigned int, double > >& stats,
 //  unsigned int cutoffIndex = stats.size();
   unsigned int cutoffIndex;
 
-  if( erase ) cutoffIndex = stats.size() / 2;
-  else        cutoffIndex = stats.size();
+  if( erase ) cutoffIndex = (unsigned int)stats.size() / 2;
+  else        cutoffIndex = (unsigned int)stats.size();
 
-  for( unsigned int i=0; i<stats.size(); ++i )
+  for( unsigned int i=0; i<(unsigned int)stats.size(); ++i )
   {
 //    if( stats[i].second <= cutoff ) 
     if( i < cutoffIndex ) 
@@ -1084,7 +1084,7 @@ poloidalWindingCheck( std::vector< unsigned int > &poloidalWindingCounts,
 {
   windingPairStats.clear();
 
-  unsigned int nsets = poloidalWindingCounts.size();
+  unsigned int nsets = (unsigned int)poloidalWindingCounts.size();
 
   // The premise is that for a given toroidal winding the poloidal
   // winding should be consistent between each Nth punction point,
@@ -1097,7 +1097,7 @@ poloidalWindingCheck( std::vector< unsigned int > &poloidalWindingCounts,
   // In this case the different between every 5th value (the toroidal
   // winding) should be 2 (the poloidal winding).
 
-  unsigned int maxToroidalWinding = poloidalWindingCounts.size() / 2;
+  unsigned int maxToroidalWinding = (unsigned int)poloidalWindingCounts.size() / 2;
 
   for( unsigned int toroidalWinding=1;
        toroidalWinding <= maxToroidalWinding;
@@ -1326,7 +1326,7 @@ periodicityStats( std::vector< Point >& points,
   stats.clear();
 
   // Find the base period variance.
-  unsigned int best_period = points.size();
+  unsigned int best_period = (unsigned int)points.size();
   double best_var = 1.0e9;
 
   double base_var = calculateSumOfSquares( points, 1, checkType );
@@ -1440,7 +1440,7 @@ islandChecks( std::vector< Point >& points,
   {
     // Check to see if it overlaps itself - it should or more points
     // need to be obtained.
-    npts = points.size() / toroidalWinding;
+    npts = (unsigned int)points.size() / toroidalWinding;
 
     for( unsigned int j=toroidalWinding, k=j+toroidalWinding;
          k<points.size();
@@ -1677,7 +1677,7 @@ islandChecks( std::vector< Point >& points,
     unsigned int overlap = 0;
 
     // Approximate number of points in the islands. 
-    nodes[i] = points.size() / toroidalWinding;
+    nodes[i] = (unsigned int)points.size() / toroidalWinding;
 
     // Check to see if the island overlaps itself. Only use this if
     // there are two or more turns. Otherwise the it can appear that
@@ -1779,7 +1779,7 @@ islandChecks( std::vector< Point >& points,
         }
         else
         {
-          stop = points.size()-toroidalWinding;
+          stop = (unsigned int)points.size()-toroidalWinding;
         }
 
         // Get the maximum distance from the first point so that the
@@ -2467,7 +2467,7 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
                 << std::endl;
 
       if( index > OLineAxisPhiAngles.size() ) 
-        index = OLineAxisPhiAngles.size();
+        index = (unsigned int)OLineAxisPhiAngles.size();
 
       if( index < OLineAxisPhiAngles.size() ) 
         OLineAxisPhiAngles.erase( OLineAxisPhiAngles.begin()+index,
@@ -2514,7 +2514,7 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
       OLineAxisIndex = 1;
   }
 
-  unsigned int i = OLineAxisPhiAngles.size()-1;
+  unsigned int i = (unsigned int)OLineAxisPhiAngles.size()-1;
   
   if( phiTest < OLineAxisPhiAngles[0] && OLineAxisPhiAngles[i] > 0 )
     phiTest += 2.0 * M_PI;
@@ -2546,7 +2546,7 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
       OLineAxisIndex = 1;
   }
 
-  i = OLineAxisPhiAngles.size()-1;
+  i = (unsigned int)OLineAxisPhiAngles.size()-1;
   
   std::cerr << "Can not find axis point for point " << pt
             << " at phi " << phiTest << "    "
@@ -2780,7 +2780,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     return;
   }
 
-  fi.numPunctures = poloidal_puncture_pts.size();
+  fi.numPunctures = (unsigned int)poloidal_puncture_pts.size();
 
   if( ptList.empty() ||
       poloidal_puncture_pts.empty() ||
@@ -3079,7 +3079,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         }
         
         if( lastDrawable == 0 )
-          lastDrawable = mergedWindingPairStats.size();
+          lastDrawable = (unsigned int)mergedWindingPairStats.size();
 
 
         values.resize( lastDrawable );
@@ -3400,7 +3400,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
       windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
 
-      nnodes = poloidal_puncture_pts.size() / 2;
+      nnodes = (unsigned int)poloidal_puncture_pts.size() / 2;
 
       // Check to see if the fieldline is periodic. I.e. on a rational
       // surface.  If within "delta" of the distance the fieldline is
@@ -3586,7 +3586,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       if( poloidal_puncture_pts.size() < fi.maxPunctures )
       {
         // Get the number of nodes per island.
-        unsigned int nodes = poloidal_puncture_pts.size() / islands / 2;
+        unsigned int nodes = (unsigned int)poloidal_puncture_pts.size() / islands / 2;
         
         // Add two more puncture points per island within and island.
         if( type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
@@ -3636,12 +3636,12 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
           toroidalWinding == poloidalWinding &&
           nnodes <= 5 )
       {
-        nnodes = poloidal_puncture_pts.size() / toroidalWinding / 2;
+        nnodes = (unsigned int)poloidal_puncture_pts.size() / toroidalWinding / 2;
 
         nPuncturesNeeded = poloidal_puncture_pts.size() * 1.05;
 
         if( nPuncturesNeeded - poloidal_puncture_pts.size() < 5 )
-          nPuncturesNeeded = poloidal_puncture_pts.size() + 5;
+          nPuncturesNeeded = (unsigned int)poloidal_puncture_pts.size() + 5;
 
         analysisState = FieldlineProperties::ADDING_POINTS;
 
@@ -3908,7 +3908,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                                islands,
                                toroidalWinding,
                                nnodes,
-                               poloidal_puncture_pts.size(),
+                               (unsigned int)poloidal_puncture_pts.size(),
                                islandSeedPts,
                                axis );
 
@@ -4049,7 +4049,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // group. This only works if there is an overlap between groups.
     for( unsigned int i=0; i<toroidalWinding; ++i ) 
     {
-      nodes[i] = poloidal_puncture_pts.size() / toroidalWinding;
+      nodes[i] = (unsigned int)poloidal_puncture_pts.size() / toroidalWinding;
 
       // The next group
       unsigned int j =
@@ -4078,7 +4078,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       }
 
       if( nodes[i] < 1 )
-        nodes[i] = poloidal_puncture_pts.size() / toroidalWinding;
+        nodes[i] = (unsigned int)poloidal_puncture_pts.size() / toroidalWinding;
 
       nnodes += nodes[i];
     }
@@ -4212,7 +4212,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     }
     else
     {
-      unsigned int nsets = poloidalWindingCounts.size();
+      unsigned int nsets = (unsigned int)poloidalWindingCounts.size();
 
       std::map< unsigned int, unsigned int > differenceCount;
       std::map< unsigned int, unsigned int >::iterator ic;
@@ -4272,7 +4272,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     if( poloidalWinding == poloidalWindingP )
       windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
 
-    nnodes = poloidal_puncture_pts.size() / toroidalWinding;
+    nnodes = (unsigned int)poloidal_puncture_pts.size() / toroidalWinding;
 
     analysisState = FieldlineProperties::OVERRIDE;
   }
@@ -4817,17 +4817,17 @@ islandProperties( std::vector< Point > &points,
   }
 
   if( turns == 0 ) {
-    stopIndex   = points.size() - 1;
+    stopIndex   = (unsigned int)points.size() - 1;
     middleIndex = 0;
     startIndex  = 0;
 
-    nodes = points.size();
+    nodes = (unsigned int)points.size();
   } else if( turns == 1 ) {
-    stopIndex   = points.size() - 1;
+    stopIndex   = (unsigned int)points.size() - 1;
     middleIndex = startIndex;
     startIndex  = 0;
 
-    nodes = points.size();
+    nodes = (unsigned int)points.size();
   } else {
 
     if( turns == 3 ) {
@@ -4868,7 +4868,7 @@ islandProperties( std::vector< Point > &points,
         // No possible over lap.
 //      std::cerr <<  "islandProperties - No possible over lap.\n";
 
-        stopIndex = startIndex + points.size() - 1;
+        stopIndex = startIndex + (unsigned int)points.size() - 1;
       }
     }
 
@@ -4903,8 +4903,8 @@ islandProperties( std::vector< Point > &points,
       
     // No overlap found
     if( turns == 2 ) {
-      stopIndex = startIndex + points.size() - 1;
-      nodes = points.size();
+      stopIndex = startIndex + (unsigned int)points.size() - 1;
+      nodes = (unsigned int)points.size();
 //      std::cerr << "islandProperties - No overlap found\n";
     }
   }
@@ -4920,13 +4920,13 @@ surfaceOverlapCheck( std::vector<std::vector< Point > > &bins,
                      unsigned int windingGroupOffset,
                      unsigned int &nnodes )
 {
-  nnodes = bins[0].size();
+  nnodes = (unsigned int)bins[0].size();
 
   // First make sure none of the groups overlap themselves.
   for( unsigned int i=0; i<toroidalWinding; i++ ) {
 
     if( nnodes > bins[i].size() )
-      nnodes = bins[i].size();
+      nnodes = (unsigned int)bins[i].size();
 
     for( unsigned int j=2; j<nnodes; j++ ) {
 
@@ -5122,7 +5122,7 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
                << "Island properties returned ZERO NODES for island "
                << i << std::endl;
 
-        nodes = bins[i].size();
+        nodes = (unsigned int)bins[i].size();
       }
 
       // No more than one point should be added.
@@ -5164,7 +5164,7 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
                << "Surface properties returned ZERO NODES for surface "
                << std::endl;
 
-      nnodes = bins[0].size();
+      nnodes = (unsigned int)bins[0].size();
 
 //       std::cerr << bins[0].size() << "  ";
 
@@ -5173,7 +5173,7 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
 //      std::cerr << bins[i].size() << "  ";
 
         if( nnodes > bins[i].size())
-          nnodes = bins[i].size();
+          nnodes = (unsigned int)bins[i].size();
       }
 
 //       std::cerr << std::endl;
@@ -5347,7 +5347,7 @@ smoothCurve( std::vector< std::vector < Point > > &bins,
 
       //for( unsigned int s=0; s<add; s++ )
       {
-        unsigned int nodes = bins[i].size();
+        unsigned int nodes = (unsigned int)bins[i].size();
 
        std::vector<std::pair< Point, unsigned int > > newPts(add*nodes);
 
@@ -5497,7 +5497,7 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
         unsigned int prediction_true  = 0;
         unsigned int prediction_false = 0;
 
-        unsigned int modulo = bins[i].size() - 1;
+        unsigned int modulo = (unsigned int)bins[i].size() - 1;
  
         // Insert the remaining points.
         for( unsigned int j=0; j<tmp_bins[i].size(); j++ ) {
@@ -5679,7 +5679,7 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
       for( unsigned int i=1; i<toroidalWinding; i++ ) {
         if( nnodes > bins[i].size())
-          nnodes = bins[i].size();
+          nnodes = (unsigned int)bins[i].size();
       }
     }
 
@@ -5800,7 +5800,7 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
   for( unsigned int i=0; i<toroidalWinding; i++ )
     if( nnodes > bins[i].size() )
-      nnodes = bins[i].size();
+      nnodes = (unsigned int)bins[i].size();
 
   return nnodes;
 }
@@ -6029,7 +6029,7 @@ FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
     else
     {
       // Compute the approximate geometric center 
-      Point center = findSkeletonCenter( s, pointVec.size() );
+      Point center = findSkeletonCenter( s, (unsigned int)pointVec.size() );
 
       centers.push_back( center );
     }
@@ -6503,10 +6503,10 @@ unsigned int Otsu::findMaxVet( std::vector< double > &vet, double &maxVet)
 void Otsu::getHistogram( std::vector< std::pair< unsigned int, double > >& stats,
                          std::vector< unsigned int > &histo )
 {
-  unsigned int nbins = stats.size() / 2;
+  unsigned int nbins = (unsigned int)stats.size() / 2;
 
   if( nbins < 10 )
-    nbins = stats.size();
+    nbins = (unsigned int)stats.size();
 
   double min = 1.0e9, max = -1.0e9;
     
@@ -6605,7 +6605,7 @@ getOtsuThreshold2( std::vector< std::pair< unsigned int, double > >& stats,
  std::vector< unsigned int > histo;
   getHistogram( stats, histo );
   
-  unsigned int nbins = histo.size();
+  unsigned int nbins = (unsigned int)histo.size();
   
   unsigned int index = 0; ///TODO: check on uninitialized var warning
   maxVet = 0;
@@ -6659,7 +6659,7 @@ getOtsuThreshold3( std::vector< std::pair< unsigned int, double > >& stats,
  std::vector< unsigned int > histo;
   getHistogram( stats, histo );
 
-  unsigned int nbins = histo.size();
+  unsigned int nbins = (unsigned int)histo.size();
 
   unsigned int index0 = 0; ///TODO: check on fix for uninitialized warning
   unsigned int index1 = 0; ///TODO: check on fix for uninitialized warning
@@ -6776,7 +6776,7 @@ int chainHull_2D( std::vector< std::pair< Point, unsigned int > > &pts,
     qsort( &(pts[0]), pts.size(),
            sizeof( std::pair< Point, unsigned int > ), ptcmp );
 
-    int n = pts.size();
+    int n = (unsigned int)pts.size();
 
     hullPts.resize( n+1 );
 
@@ -6856,7 +6856,7 @@ int chainHull_2D( std::vector< std::pair< Point, unsigned int > > &pts,
 
     hullPts.resize( top+1 );
 
-    return hullPts.size();
+    return (unsigned int)hullPts.size();
 }
 
 //===================================================================

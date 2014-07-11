@@ -395,7 +395,7 @@ avtCurve2DFileFormat::ReadFile(void)
                 curveNames.push_back(str2);
                 headerName = "";
             }
-            int len = xl.size();
+            size_t len = xl.size();
             bool shouldAddPoint = true;
             if (len > 0)
             {
@@ -678,7 +678,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     // Parenthesis are special characters for variables names, etc, so just
     // change them to square brackets to "go with the flow"...
     //
-    int i, nchars = strlen(line);
+    size_t i, nchars = strlen(line);
     for (i = 0 ; i < nchars ; i++)
     {
         if (line[i] == '(')
@@ -696,7 +696,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
         return HEADER;
     }
     bool allSpace = true;
-    int len = strlen(line);
+    size_t len = strlen(line);
     for (i = 0 ; i < len ; i++)
     {
         if (!isspace(line[i]))

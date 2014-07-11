@@ -463,7 +463,7 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
             inversePlane->SetNormal(n);
             inversePlanes.push_back(inversePlane);
         }
-        int planeCount = planes.size();
+        int planeCount = (int)planes.size();
 
         // Check if we have any work to do.
         if (planeCount == 0)

@@ -2513,7 +2513,7 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
   // Get the wall points.
   std::vector<double> wallList = atts.GetWallList();
   
-  int npts = wallList.size() / 2;
+  size_t npts = wallList.size() / 2;
   
   // Need at least three point plus the first and last must be the
   // same.
@@ -2648,9 +2648,9 @@ avtLineSamplerFilter::CreateFinalOutput(void)
   {
     if( composite_ds ) composite_ds->Delete();
 
-    int nPts = lineSamples[0].size(), tPts = 0, nLines = lineSamples.size();
+    size_t nPts = lineSamples[0].size(), tPts = 0, nLines = lineSamples.size();
 
-    for( int i=0; i<nLines; ++i )
+    for( size_t i=0; i<nLines; ++i )
       tPts += (int)lineSamples[i].size();
 
     if( tPts != nPts * nLines )

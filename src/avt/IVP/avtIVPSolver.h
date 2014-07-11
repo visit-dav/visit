@@ -132,7 +132,7 @@ public:
 
     unsigned int GetDegree() const 
     { 
-        return size()-1; 
+        return (unsigned int)size()-1; 
     }
 
     const double& GetT0() const
@@ -157,13 +157,13 @@ public:
 
     avtVector GetV0() const
     {
-        const unsigned int d = size()-1;
+        const unsigned int d = (unsigned int)size()-1;
         return d / (t1 - t0) * ((*this)[d] - (*this)[d-1]);
     }
 
     avtVector GetV1() const
     {
-        const unsigned int d = size()-1;
+        const unsigned int d = (unsigned int)size()-1;
         return d / (t1 - t0) * ((*this)[1]-(*this)[0]);
     }
 

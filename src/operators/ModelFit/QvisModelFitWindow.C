@@ -350,7 +350,7 @@ QvisModelFitWindow::UpdateWindow(bool doAll)
     int cur_pos = 0;
     for(size_t i = 0; i < numVars.size(); i++)
         for(int j = 0; j < numVars[i]; j++)
-            guiVarNames.insert(std::pair<int, string>(i, Vars[cur_pos++]));
+            guiVarNames.insert(std::pair<int, string>((int)i, Vars[cur_pos++]));
     
     theTable.clear();
     char tableString[20];
@@ -369,7 +369,7 @@ QvisModelFitWindow::UpdateWindow(bool doAll)
                     else
                         sprintf(tableString, "%.5lf", tuples[cur_pos]);
                 }
-                theTable.insert(std::pair<int, tableEntry>(i, tableEntry(j, k, tableString)));
+                theTable.insert(std::pair<int, tableEntry>((int)i, tableEntry(j, k, tableString)));
                 cur_pos++;
             }
 

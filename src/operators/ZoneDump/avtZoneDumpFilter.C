@@ -508,7 +508,7 @@ avtZoneDumpFilter::SaveOutput(const std::string &fname, std::vector<ZoneInfo> &z
     int i;
 
     // get # of found zones
-    int nzones = zones.size();
+    int nzones = (int)zones.size();
 
     // open output file
     ofstream outs(fname.c_str());

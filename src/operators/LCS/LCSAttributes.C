@@ -2807,14 +2807,14 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
     }
 
     if ((sourceType == RegularGrid) &&
-         UseDataSetStart == true &&
+         UseDataSetStart == Subset &&
          POINT_DIFFERS(StartPosition, obj.StartPosition))
     {
         return true;
     }
 
     if ((sourceType == RegularGrid) &&
-         UseDataSetEnd == true &&
+         UseDataSetEnd == Subset &&
          POINT_DIFFERS(EndPosition, obj.EndPosition))
     {
         return true;

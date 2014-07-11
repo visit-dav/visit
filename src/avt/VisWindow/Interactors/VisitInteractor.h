@@ -477,8 +477,8 @@ VisitInteractor::MatrixMult(const double m1[3][3], double const m2[3][3],
 inline void
 VisitInteractor::MatrixPrint(const char *name, const double m[3][3]) const
 {
-    int       i;
-    int       nSpaces = strlen(name) + 3;
+    size_t       i;
+    size_t       nSpaces = strlen(name) + 3;
 
     cout << name << " = ";
     cout << m[0][0] << ", " << m[0][1] << ", " << m[0][2] << endl;

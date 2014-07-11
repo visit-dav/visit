@@ -281,7 +281,7 @@ avtLagrangianFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
 {
     
     avtLagrangianIC *ic = (avtLagrangianIC*)ics[0];
-    int nSamps = ic->GetNumberOfSamples();
+    int nSamps = (int)ic->GetNumberOfSamples();
     
     vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nSamps,VTK_FLOAT);
     vtkFloatArray    *vals = vtkFloatArray::New();

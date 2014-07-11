@@ -833,7 +833,7 @@ avtModelFitFilter::grabOnePoint(doubleVector *point, int numVars, int var_index,
     vtkDataArray *darray;
     char secVarName[1024];
 
-    for(int i = point->size()-1; i >= 0; i--)
+    for(size_t i = point->size()-1; i >= 0; i--)
         point->erase(point->begin()+i); 
 
     size_t varFinder;
@@ -860,7 +860,7 @@ avtModelFitFilter::grabOnePoint(doubleVector *point, int numVars, int var_index,
                     varFinder, selectionType));                              //11
     }//11111111111111111111111111111111111111111111111111111111111111111111111111
 
-    for(int i = Vars.size()-1; i >=0; i--)
+    for(size_t i = Vars.size()-1; i >=0; i--)
         Vars.erase(Vars.begin()+i);
 }
 
@@ -878,7 +878,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
     double delta;
 
     // Is the relationship a fit at all? /////////////////
-    for(int i = mins->size()-1; i >= 0; i--)
+    for(size_t i = mins->size()-1; i >= 0; i--)
         mins->erase(mins->begin()+i); 
 
     for(int j = 0; j < numVars; j++)
@@ -901,7 +901,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
     }
 
     //find all tuples which have a min for the first var in a relationship
-    for(int i = tup_match1->size()-1; i >= 0; i--)
+    for(size_t i = tup_match1->size()-1; i >= 0; i--)
         tup_match1->erase(tup_match1->begin()+i);
 
     for(int k = 0; k < numTups; k++)
@@ -932,7 +932,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
         }
     
         //make sure the min value comes from the same tuple for each variable
-        for(int k = tup_match1->size() - 1; k >= 0; k--)
+        for(size_t k = tup_match1->size() - 1; k >= 0; k--)
         {
             for(l = 0; l < (int)tup_match2.size(); l++)
                 if((*tup_match1)[k] == tup_match2[l])
@@ -941,7 +941,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
                 tup_match1->erase(tup_match1->begin()+k);
         }
     }
-    for(int i = tup_match2.size()-1; i >= 0; i--)
+    for(size_t i = tup_match2.size()-1; i >= 0; i--)
         tup_match2.erase(tup_match2.begin()+i); 
 }
 
@@ -973,7 +973,7 @@ avtModelFitFilter::calculateDistance(doubleVector mins, int distanceType)
     return distance; /// TODO: check fix for return of non-void warning
 }
 
-double avtModelFitFilter::convertToVariableSpace(double value, int varFinder, int fromType)
+double avtModelFitFilter::convertToVariableSpace(double value, size_t varFinder, int fromType)
 {
     if(!fromType)
         return value;
@@ -1017,7 +1017,7 @@ double avtModelFitFilter::convertToVariableSpace(double value, int varFinder, in
 
 }
 double 
-avtModelFitFilter::spaceConvert(double value, int varFinder,  int selectType)
+avtModelFitFilter::spaceConvert(double value, size_t varFinder,  int selectType)
 {
     if(!selectType)
         return value;

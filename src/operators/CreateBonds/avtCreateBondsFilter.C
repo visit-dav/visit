@@ -189,18 +189,18 @@ avtCreateBondsFilter::AtomBondDistances(int elementA, int elementB,
     vector<int>    &element1 = atts.GetAtomicNumber1();
     vector<int>    &element2 = atts.GetAtomicNumber2();
 
-    int n1 = atts.GetAtomicNumber1().size();
-    int n2 = atts.GetAtomicNumber2().size();
-    int n3 = atts.GetMinDist().size();
-    int n4 = atts.GetMaxDist().size();
+    size_t n1 = atts.GetAtomicNumber1().size();
+    size_t n2 = atts.GetAtomicNumber2().size();
+    size_t n3 = atts.GetMinDist().size();
+    size_t n4 = atts.GetMaxDist().size();
     if (n1 != n2 || n1 != n3 || n1 != n4)
     {
         EXCEPTION1(ImproperUseException,
                    "Bond list data arrays were not all the same length.");
     }
-    int n = n1;
+    size_t n = n1;
 
-    for (int i=0; i<n; i++)
+    for (size_t i=0; i<n; i++)
     {
         // a -1 in the element list means "any"
         int e1 = element1[i];
@@ -602,7 +602,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
             for (int k=1; k<nk-1; k++)
             {
                 int index1 = i + ni*(j + nj*(k));
-                int nla1 = atomgrid[index1].size();
+                int nla1 = (int)atomgrid[index1].size();
                 // for each atom in each box
                 for (int la1=0; la1<nla1; la1++)
                 {
@@ -636,7 +636,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
                                 // add this extra layer of boxes, though.
 
                                 int index2 = ii + ni*(jj + nj*(kk));
-                                int nla2 = atomgrid[index2].size();
+                                int nla2 = (int)atomgrid[index2].size();
                                 for (int la2=0; la2<nla2 && ctr<max_per_atom; la2++)
                                 {
                                     if (index1==index2 && la1==la2)

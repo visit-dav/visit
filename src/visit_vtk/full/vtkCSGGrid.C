@@ -2552,7 +2552,7 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
         std::sort(bounds.begin(), bounds.end());
 
         for (size_t i = 0; i < bounds.size(); i++)
-            zoneMap[bounds[i]] = i;
+            zoneMap[bounds[i]] = (int)i;
     }
 
     // Evaluate the cell tags against this region
