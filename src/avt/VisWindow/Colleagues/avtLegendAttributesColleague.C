@@ -90,6 +90,11 @@ SetBool(AnnotationObject &annot, int bit, bool val)
 //    Kathleen Bonnell, Thu Oct  1 14:33:43 PDT 2009
 //    Add support for user control of tick values and labels.
 //
+//    Burlen Loring, Thu Jul 10 17:02:27 PDT 2014
+//    AnnotationObject::SetPosition expects/uses 3 values. We were only
+//    passing arrays of 2 values which lead to "invalid read" reported by
+//    the address sanitizer. changed to use arrays with 3 values.
+//
 // ****************************************************************************
 
 avtLegendAttributesColleague::avtLegendAttributesColleague(
@@ -113,11 +118,11 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
     atts.SetText(text);
 
     // Set the default position.
-    const double defaultPosition[2] = {0.05, 0.9};
+    const double defaultPosition[3] = {0.05, 0.9, 0.0};
     atts.SetPosition(defaultPosition);
 
     // Set the default scale.
-    const double defaultScale[2] = {1.,1.};
+    const double defaultScale[3] = {1.0, 1.0, 1.0};
     atts.SetPosition2(defaultScale);
 
     // Set the default font height.
