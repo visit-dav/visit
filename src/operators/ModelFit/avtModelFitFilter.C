@@ -833,7 +833,7 @@ avtModelFitFilter::grabOnePoint(doubleVector *point, int numVars, int var_index,
     vtkDataArray *darray;
     char secVarName[1024];
 
-    for(size_t i = point->size()-1; i >= 0; i--)
+    for(int i = (int)point->size()-1; i >= 0; i--)
         point->erase(point->begin()+i); 
 
     size_t varFinder;
@@ -860,7 +860,7 @@ avtModelFitFilter::grabOnePoint(doubleVector *point, int numVars, int var_index,
                     varFinder, selectionType));                              //11
     }//11111111111111111111111111111111111111111111111111111111111111111111111111
 
-    for(size_t i = Vars.size()-1; i >=0; i--)
+    for(int i = (int)Vars.size()-1; i >=0; i--)
         Vars.erase(Vars.begin()+i);
 }
 
@@ -878,7 +878,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
     double delta;
 
     // Is the relationship a fit at all? /////////////////
-    for(size_t i = mins->size()-1; i >= 0; i--)
+    for(int i = (int)mins->size()-1; i >= 0; i--)
         mins->erase(mins->begin()+i); 
 
     for(int j = 0; j < numVars; j++)
@@ -901,7 +901,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
     }
 
     //find all tuples which have a min for the first var in a relationship
-    for(size_t i = tup_match1->size()-1; i >= 0; i--)
+    for(int i = (int)tup_match1->size()-1; i >= 0; i--)
         tup_match1->erase(tup_match1->begin()+i);
 
     for(int k = 0; k < numTups; k++)
@@ -932,7 +932,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
         }
     
         //make sure the min value comes from the same tuple for each variable
-        for(size_t k = tup_match1->size() - 1; k >= 0; k--)
+        for(int k = (int)tup_match1->size() - 1; k >= 0; k--)
         {
             for(l = 0; l < (int)tup_match2.size(); l++)
                 if((*tup_match1)[k] == tup_match2[l])
@@ -941,7 +941,7 @@ avtModelFitFilter::findMatches(doubleVector *mins, intVector *tup_match1, double
                 tup_match1->erase(tup_match1->begin()+k);
         }
     }
-    for(size_t i = tup_match2.size()-1; i >= 0; i--)
+    for(int i = (int)tup_match2.size()-1; i >= 0; i--)
         tup_match2.erase(tup_match2.begin()+i); 
 }
 
