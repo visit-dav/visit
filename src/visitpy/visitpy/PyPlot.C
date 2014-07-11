@@ -158,6 +158,8 @@ PyPlot_ToString(const Plot *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sid = %d\n", prefix, atts->GetId());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sembeddedPlotId = %d\n", prefix, atts->GetEmbeddedPlotId());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sbeginFrame = %d\n", prefix, atts->GetBeginFrame());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sendFrame = %d\n", prefix, atts->GetEndFrame());
@@ -582,6 +584,30 @@ Plot_GetId(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+Plot_SetEmbeddedPlotId(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the embeddedPlotId in the object.
+    obj->data->SetEmbeddedPlotId((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Plot_GetEmbeddedPlotId(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetEmbeddedPlotId()));
+    return retval;
+}
+
+/*static*/ PyObject *
 Plot_SetBeginFrame(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
@@ -879,6 +905,8 @@ PyMethodDef PyPlot_methods[PLOT_NMETH] = {
     {"GetActiveOperator", Plot_GetActiveOperator, METH_VARARGS},
     {"SetId", Plot_SetId, METH_VARARGS},
     {"GetId", Plot_GetId, METH_VARARGS},
+    {"SetEmbeddedPlotId", Plot_SetEmbeddedPlotId, METH_VARARGS},
+    {"GetEmbeddedPlotId", Plot_GetEmbeddedPlotId, METH_VARARGS},
     {"SetBeginFrame", Plot_SetBeginFrame, METH_VARARGS},
     {"GetBeginFrame", Plot_GetBeginFrame, METH_VARARGS},
     {"SetEndFrame", Plot_SetEndFrame, METH_VARARGS},
@@ -956,6 +984,8 @@ PyPlot_getattr(PyObject *self, char *name)
         return Plot_GetActiveOperator(self, NULL);
     if(strcmp(name, "id") == 0)
         return Plot_GetId(self, NULL);
+    if(strcmp(name, "embeddedPlotId") == 0)
+        return Plot_GetEmbeddedPlotId(self, NULL);
     if(strcmp(name, "beginFrame") == 0)
         return Plot_GetBeginFrame(self, NULL);
     if(strcmp(name, "endFrame") == 0)
@@ -1010,6 +1040,8 @@ PyPlot_setattr(PyObject *self, char *name, PyObject *args)
         obj = Plot_SetActiveOperator(self, tuple);
     else if(strcmp(name, "id") == 0)
         obj = Plot_SetId(self, tuple);
+    else if(strcmp(name, "embeddedPlotId") == 0)
+        obj = Plot_SetEmbeddedPlotId(self, tuple);
     else if(strcmp(name, "beginFrame") == 0)
         obj = Plot_SetBeginFrame(self, tuple);
     else if(strcmp(name, "endFrame") == 0)
