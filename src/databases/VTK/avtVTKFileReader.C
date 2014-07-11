@@ -265,11 +265,14 @@ avtVTKFileReader::FreeUpResources(void)
 //    I modified the reading of pvti, pvtr and pvts files to handle the case
 //    where the piece extent was a subset of the whole extent.
 //
+//    Burlen Loring, Fri Jul 11 11:19:36 PDT 2014
+//    fix alloc-dealloc-mismatch (operator new [] vs free)
+//
 // ****************************************************************************
 
 avtVTKFileReader::~avtVTKFileReader()
 {
-    free(filename);
+    delete [] filename;
     FreeUpResources();
 }
 
