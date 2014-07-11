@@ -804,61 +804,43 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(correlationDistanceMinDistEdit, SIGNAL(returnPressed()),
             this, SLOT(processCorrelationDistanceMinDistEditText()));
 
-
-    // Create the display group box.
-    QGroupBox *displayGroup = new QGroupBox(central);
-    displayGroup->setTitle(tr("Display"));
-    mainLayout->addWidget(displayGroup, 1, 0);
-
-    QGridLayout *displayLayout = new QGridLayout(displayGroup);
-    displayLayout->setMargin(5);
-    displayLayout->setSpacing(10);
-
-    showLines = new QCheckBox(tr("Show lines"), displayGroup);
-    connect(showLines, SIGNAL(toggled(bool)),
-            this, SLOT(showLinesChanged(bool)));
-    displayLayout->addWidget(showLines, 0, 0);
-
-    showPoints = new QCheckBox(tr("Show points"), displayGroup);
-    connect(showPoints, SIGNAL(toggled(bool)), this,
-            SLOT(showPointsChanged(bool)));
-    displayLayout->addWidget(showPoints, 0, 1);
-
     // Create the crop group
     QGroupBox *cropGrp = new QGroupBox(pageAppearance);
-    cropGrp->setTitle(tr("Crop a portion of the integral curve (for animations)"));
+    cropGrp->setTitle(tr("Crop the integral curve (for animations)"));
     mainLayout->addWidget(cropGrp, 3, 0);
 
     QGridLayout *cropLayout = new QGridLayout(cropGrp);
     cropLayout->setMargin(5);
     cropLayout->setSpacing(10);
 
-    cropBeginFlag = new QCheckBox(tr("Crop from"), cropGrp);
-    connect(cropBeginFlag, SIGNAL(toggled(bool)), this, SLOT(cropBeginFlagChanged(bool)));
-    cropLayout->addWidget(cropBeginFlag, 0, 0);
-
-    cropBegin = new QLineEdit(cropGrp);
-    connect(cropBegin, SIGNAL(returnPressed()), this, SLOT(cropBeginProcessText()));
-    cropLayout->addWidget(cropBegin, 0, 1);
-
-
-    cropEndFlag = new QCheckBox(tr("To"), cropGrp);
-    connect(cropEndFlag, SIGNAL(toggled(bool)), this, SLOT(cropEndFlagChanged(bool)));
-    cropLayout->addWidget(cropEndFlag, 0, 2);
-
-    cropEnd = new QLineEdit(cropGrp);
-    connect(cropEnd, SIGNAL(returnPressed()), this, SLOT(cropEndProcessText()));
-    cropLayout->addWidget(cropEnd, 0, 3);
 
     QLabel *cropValueLabel = new QLabel(tr("Crop value"), cropGrp);
-    cropLayout->addWidget(cropValueLabel, 1, 0);
+    cropLayout->addWidget(cropValueLabel, 0, 0);
 
     cropValueComboBox = new QComboBox(cropGrp);
     cropValueComboBox->addItem(tr("Distance"));
     cropValueComboBox->addItem(tr("Time"));
     cropValueComboBox->addItem(tr("Step numbers"));
     connect(cropValueComboBox, SIGNAL(activated(int)), this, SLOT(cropValueChanged(int)));
-    cropLayout->addWidget(cropValueComboBox, 1, 1);
+    cropLayout->addWidget(cropValueComboBox, 0, 1);
+
+
+    cropBeginFlag = new QCheckBox(tr("From"), cropGrp);
+    connect(cropBeginFlag, SIGNAL(toggled(bool)), this, SLOT(cropBeginFlagChanged(bool)));
+    cropLayout->addWidget(cropBeginFlag, 1, 0);
+
+    cropBegin = new QLineEdit(cropGrp);
+    connect(cropBegin, SIGNAL(returnPressed()), this, SLOT(cropBeginProcessText()));
+    cropLayout->addWidget(cropBegin, 1, 1);
+
+
+    cropEndFlag = new QCheckBox(tr("To"), cropGrp);
+    connect(cropEndFlag, SIGNAL(toggled(bool)), this, SLOT(cropEndFlagChanged(bool)));
+    cropLayout->addWidget(cropEndFlag, 1, 2);
+
+    cropEnd = new QLineEdit(cropGrp);
+    connect(cropEnd, SIGNAL(returnPressed()), this, SLOT(cropEndProcessText()));
+    cropLayout->addWidget(cropEnd, 1, 3);
 
     // Streamlines/Pathline Group.
     QGroupBox *icGrp = new QGroupBox(pageAppearance);
@@ -1325,17 +1307,6 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
                 TurnOff(correlationDistanceMinDistEdit);
                 TurnOff(correlationDistanceMinDistType);
             }
-            break;
-        case IntegralCurveAttributes::ID_showLines:
-            showLines->blockSignals(true);
-            showLines->setChecked(atts->GetShowLines());
-            showLines->blockSignals(false);
-
-            break;
-        case IntegralCurveAttributes::ID_showPoints:
-            showPoints->blockSignals(true);
-            showPoints->setChecked(atts->GetShowPoints());
-            showPoints->blockSignals(false);
             break;
 
         case IntegralCurveAttributes::ID_cropBeginFlag:
@@ -2900,20 +2871,6 @@ void
 QvisIntegralCurveWindow::cropValueChanged(int val)
 {
     atts->SetCropValue((IntegralCurveAttributes::CropValue)val);
-    Apply();
-}
-
-void
-QvisIntegralCurveWindow::showLinesChanged(bool val)
-{
-    atts->SetShowLines(val);
-    Apply();
-}
-
-void
-QvisIntegralCurveWindow::showPointsChanged(bool val)
-{
-    atts->SetShowPoints(val);
     Apply();
 }
 

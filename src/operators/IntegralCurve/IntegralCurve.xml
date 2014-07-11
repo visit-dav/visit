@@ -240,12 +240,6 @@
       <Field name="displayGeometry" label="Display geometry" type="enum" subtype="DisplayGeometry">
         Lines
       </Field>
-      <Field name="showLines" label="Show Lines" type="bool">
-        true
-      </Field>
-      <Field name="showPoints" label="Show Points" type="bool">
-        false
-      </Field>
       <Field name="cropBeginFlag" label="Crop from" type="bool">
         false
       </Field>

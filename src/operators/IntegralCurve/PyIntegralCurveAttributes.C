@@ -552,16 +552,6 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
     }
 
-    if(atts->GetShowLines())
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 0\n", prefix);
-    str += tmpStr;
-    if(atts->GetShowPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
-    str += tmpStr;
     if(atts->GetCropBeginFlag())
         SNPRINTF(tmpStr, 1000, "%scropBeginFlag = 1\n", prefix);
     else
@@ -2124,54 +2114,6 @@ IntegralCurveAttributes_GetDisplayGeometry(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_SetShowLines(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showLines in the object.
-    obj->data->SetShowLines(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IntegralCurveAttributes_GetShowLines(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowLines()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-IntegralCurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showPoints in the object.
-    obj->data->SetShowPoints(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IntegralCurveAttributes_GetShowPoints(PyObject *self, PyObject *args)
-{
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
 IntegralCurveAttributes_SetCropBeginFlag(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
@@ -2809,10 +2751,6 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetPathlinesCMFE", IntegralCurveAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetDisplayGeometry", IntegralCurveAttributes_SetDisplayGeometry, METH_VARARGS},
     {"GetDisplayGeometry", IntegralCurveAttributes_GetDisplayGeometry, METH_VARARGS},
-    {"SetShowLines", IntegralCurveAttributes_SetShowLines, METH_VARARGS},
-    {"GetShowLines", IntegralCurveAttributes_GetShowLines, METH_VARARGS},
-    {"SetShowPoints", IntegralCurveAttributes_SetShowPoints, METH_VARARGS},
-    {"GetShowPoints", IntegralCurveAttributes_GetShowPoints, METH_VARARGS},
     {"SetCropBeginFlag", IntegralCurveAttributes_SetCropBeginFlag, METH_VARARGS},
     {"GetCropBeginFlag", IntegralCurveAttributes_GetCropBeginFlag, METH_VARARGS},
     {"SetCropBegin", IntegralCurveAttributes_SetCropBegin, METH_VARARGS},
@@ -3072,10 +3010,6 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Ribbons") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Ribbons));
 
-    if(strcmp(name, "showLines") == 0)
-        return IntegralCurveAttributes_GetShowLines(self, NULL);
-    if(strcmp(name, "showPoints") == 0)
-        return IntegralCurveAttributes_GetShowPoints(self, NULL);
     if(strcmp(name, "cropBeginFlag") == 0)
         return IntegralCurveAttributes_GetCropBeginFlag(self, NULL);
     if(strcmp(name, "cropBegin") == 0)
@@ -3234,10 +3168,6 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "displayGeometry") == 0)
         obj = IntegralCurveAttributes_SetDisplayGeometry(self, tuple);
-    else if(strcmp(name, "showLines") == 0)
-        obj = IntegralCurveAttributes_SetShowLines(self, tuple);
-    else if(strcmp(name, "showPoints") == 0)
-        obj = IntegralCurveAttributes_SetShowPoints(self, tuple);
     else if(strcmp(name, "cropBeginFlag") == 0)
         obj = IntegralCurveAttributes_SetCropBeginFlag(self, tuple);
     else if(strcmp(name, "cropBegin") == 0)

@@ -222,8 +222,6 @@ public:
     void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetDisplayGeometry(DisplayGeometry displayGeometry_);
-    void SetShowLines(bool showLines_);
-    void SetShowPoints(bool showPoints_);
     void SetCropBeginFlag(bool cropBeginFlag_);
     void SetCropBegin(double cropBegin_);
     void SetCropEndFlag(bool cropEndFlag_);
@@ -303,8 +301,6 @@ public:
     double             GetPathlinesPeriod() const;
     PathlinesCMFE      GetPathlinesCMFE() const;
     DisplayGeometry    GetDisplayGeometry() const;
-    bool               GetShowLines() const;
-    bool               GetShowPoints() const;
     bool               GetCropBeginFlag() const;
     double             GetCropBegin() const;
     bool               GetCropEndFlag() const;
@@ -440,8 +436,6 @@ public:
         ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_displayGeometry,
-        ID_showLines,
-        ID_showPoints,
         ID_cropBeginFlag,
         ID_cropBegin,
         ID_cropEndFlag,
@@ -512,8 +506,6 @@ private:
     double       pathlinesPeriod;
     int          pathlinesCMFE;
     int          displayGeometry;
-    bool         showLines;
-    bool         showPoints;
     bool         cropBeginFlag;
     double       cropBegin;
     bool         cropEndFlag;
@@ -541,6 +533,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbddiibbbdbdidddbbiibbbbddddis"
+#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisiibdbddbddiddidDiiiiibbddiibdbdidddbbiibbbbddddis"
 
 #endif
