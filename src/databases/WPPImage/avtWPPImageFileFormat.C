@@ -299,7 +299,11 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         arr = vtkFloatArray::New();
         arr->SetNumberOfTuples(npts);
         float* data = (float *)arr->GetVoidPointer(0);
+#ifdef WIN32
+        nr = _read(fd, data, (unsigned int)(sizeof(float)*npts));
+#else
         nr = READ(fd,data,sizeof(float)*npts);
+#endif
         if( (size_t)nr != sizeof(float)*npts )
         {
             CLOSE(fd);
@@ -313,7 +317,11 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         arr = vtkDoubleArray::New();
         arr->SetNumberOfTuples(npts);
         double* data = (double *)arr->GetVoidPointer(0);
+#ifdef WIN32
+        nr = _read(fd, data, (unsigned int)(sizeof(double)*npts));
+#else
         nr = READ(fd,data,sizeof(double)*npts);
+#endif
         if( (size_t)nr != sizeof(double)*npts )
         {
             CLOSE(fd); 

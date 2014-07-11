@@ -134,8 +134,6 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &s, vector<string> &v,
                            vector<string> &materials)
 {
-    size_t  i;
-
     scalars = s;
     vectors = v;
     if (materials.size() != 0)
@@ -143,7 +141,7 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
     bool haveCentering = false;
     varCentering = AVT_UNKNOWN_CENT;
-    for (i = 0 ; i < s.size() ; i++)
+    for (size_t i = 0 ; i < s.size() ; i++)
     {
         if (md->GetScalar(s[i]) != NULL)
         {
@@ -163,7 +161,7 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
             debug1 << "Cannot check centering of " << s[i].c_str() 
                    << ", probably an expression.  Hoping for the best."<< endl;
     }
-    for (i = 0 ; i < v.size() ; i++)
+    for (size_t i = 0 ; i < v.size() ; i++)
     {
         if (md->GetVector(v[i]) != NULL)
         {
@@ -230,7 +228,6 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
 void
 avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
-    size_t i, j;
     size_t npts = ds->GetNumberOfPoints();
     size_t ncells = ds->GetNumberOfCells();
     if (varCentering == AVT_UNKNOWN_CENT) 
@@ -279,11 +276,11 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
     ofile << nScalars << " " << nvals << " 1" << endl;
     if (writeOutCoordinates)
         ofile << "x\ny\nz\n";
-    for (i = 0 ; i < scalars.size() ; i++)
+    for (size_t i = 0 ; i < scalars.size() ; i++)
     {
         ofile << scalars[i].c_str() << endl;
     }
-    for (i = 0 ; i < vectors.size() ; i++)
+    for (size_t i = 0 ; i < vectors.size() ; i++)
     {
         ofile << vectors[i].c_str() << "[0]" << endl;
         ofile << vectors[i].c_str() << "[1]" << endl;
@@ -292,7 +289,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     vtkDataArray **arrays_sca = new vtkDataArray*[scalars.size()];
     vtkDataArray **arrays_vec = new vtkDataArray*[vectors.size()];
-    for (i = 0 ; i < scalars.size() ; i++)
+    for (size_t i = 0 ; i < scalars.size() ; i++)
     {
         arrays_sca[i] = (varsAreNodal 
                            ? ds->GetPointData()->GetArray(scalars[i].c_str())
@@ -304,7 +301,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
             EXCEPTION1(InvalidVariableException, scalars[i].c_str());
         }
     }
-    for (i = 0 ; i < vectors.size() ; i++)
+    for (size_t i = 0 ; i < vectors.size() ; i++)
     {
         arrays_vec[i] = (varsAreNodal 
                            ? ds->GetPointData()->GetArray(vectors[i].c_str())
@@ -326,11 +323,11 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
         ofile << bounds[4] << "\t" << bounds[5] << "\t10" << endl;
     }
 
-    for (i = 0 ; i < scalars.size() ; i++)
+    for (size_t i = 0 ; i < scalars.size() ; i++)
     {
         float min = arrays_sca[i]->GetTuple1(0);
         float max = arrays_sca[i]->GetTuple1(0);
-        for (j = 0 ; j < nvals ; j++)
+        for (size_t j = 0 ; j < nvals ; j++)
         {
             float v = arrays_sca[i]->GetTuple1(j);
             min = (min < v ? min : v);
@@ -338,7 +335,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
         }
         ofile << min << "\t" << max << "\t10" << endl;
     }
-    for (i = 0 ; i < vectors.size() ; i++)
+    for (size_t i = 0 ; i < vectors.size() ; i++)
     {
         double vec[3];
         arrays_vec[i]->GetTuple(i, vec);
@@ -348,7 +345,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
         float maxJ = vec[1];
         float minK = vec[2];
         float maxK = vec[2];
-        for (j = 0 ; j < nvals ; j++)
+        for (size_t j = 0 ; j < nvals ; j++)
         {
             arrays_vec[i]->GetTuple(j, vec);
             minI = (minI < vec[0] ? minI : vec[0]);
@@ -364,7 +361,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     ofile << std::scientific << std::setprecision(16);
-    for (j = 0 ; j < nvals ; j++)
+    for (size_t j = 0 ; j < nvals ; j++)
     {
         if (writeOutCoordinates)
         {
@@ -375,7 +372,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
                 vtkVisItUtility::GetCellCenter(ds->GetCell(j), pt);
             ofile << pt[0] << "\t" << pt[1] << "\t" << pt[2] << "\t";
         }
-        for (i = 0 ; i < scalars.size() ; i++)
+        for (size_t i = 0 ; i < scalars.size() ; i++)
         {
             float v = arrays_sca[i]->GetTuple1(j);
             ofile << v;
@@ -387,7 +384,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
             if (needTab)
                 ofile << "\t";
         }
-        for (i = 0 ; i < vectors.size() ; i++)
+        for (size_t i = 0 ; i < vectors.size() ; i++)
         {
             double vec[3];
             arrays_vec[i]->GetTuple(j, vec);

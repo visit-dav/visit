@@ -563,8 +563,6 @@ Transform(vtkDataSet *in_ds,
     pts->Delete();
     newPts->Delete();
 
-    int dstype = rv->GetDataObjectType();
-
     return rv;
 }
 
@@ -758,8 +756,6 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkDataSet *cur_ds = in_ds;
     vtkDataSet *new_ds;
 
-    int dstype = in_ds->GetDataObjectType();
-
     if( ct_current == CARTESIAN && outputSys == CYLINDRICAL )
         new_ds = Transform(cur_ds,
                            continuousPhi, vectorTransformMethod,
@@ -794,8 +790,6 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
     deleteList.push_back(new_ds);
     cur_ds = new_ds;
 
-    dstype = cur_ds->GetDataObjectType();
-
     if (outputSys == SPHERICAL)
     {
         cur_ds = FixWraparounds(cur_ds, 1);
@@ -808,8 +802,6 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
         cur_ds = FixWraparounds(cur_ds, 1);
         deleteList.push_back(cur_ds);
     }
-
-    dstype = cur_ds->GetDataObjectType();
 
     ManageMemory(cur_ds);
 
