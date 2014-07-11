@@ -1429,21 +1429,26 @@ avtCaleFileFormat::GetCycle(void)
 //
 //  Purpose: Return the cycle associated with this file
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Jul 11 10:13:52 PDT 2014
+//    fix global-buffer-overflow. This was caused by  underflow after
+//    subtraction using unsigned integers (occurs when passed in file
+//    name is an empty string). Also allocate the correct size buffer
+//    to hold cycle string during conversion to int and ensure that
+//    it's null terminated before calling atoi.
+//
 // ***************************************************************************
 
 int
 avtCaleFileFormat::GetCycleFromFilename(const char *f) const
 {
-    size_t i,j,n;
-    int c;
-    char cycstr[20];
-    memset(cycstr, 0, 20 * sizeof(char));
-
-    n = strlen(f) - 4; // To get here there had to be a ".pdb" on the file
-
-    j = 0;
-
-    for ( i = n ; i--  > 0 ;)
+    // To get here there had to be a ".pdb" on the file
+    // and note: i is decremented before it's used below.
+    long n = static_cast<long>(strlen(f)) - 4;
+    long j = 0;
+    long i = n;
+    for (; i--  > 0 ;)
     {
         if ((f[i] >= '0') && (f[i] <= '9') && (j < 20))
         {
@@ -1455,17 +1460,19 @@ avtCaleFileFormat::GetCycleFromFilename(const char *f) const
         }
     }
 
+    int c = -1;
+    char *cycstr = NULL;
+
     if (j > 0)
     {
+        cycstr = static_cast<char*>(malloc(j+1*sizeof(char)));
+        cycstr[j] = '\0';
         strncpy(cycstr,f+i+1,j);
         c = atoi(cycstr);
-    }
-    else
-    {
-        c = -1;
+        debug4 << " cycle from name " << cycstr << endl;
+        free(cycstr);
     }
 
-    debug4 << " cycle from name " << cycstr << endl;
     return(c);
 }
 
