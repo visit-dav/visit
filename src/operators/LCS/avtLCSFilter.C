@@ -1090,9 +1090,9 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     for(size_t i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
-        size_t l = (index-offset);
+        int l = (int)(index-offset);
         //std::cout << "l = " << l << " " << nTuples << std::endl;
-        if(l >= 0 && l < remapPoints.size())
+        if(l >= 0 && l < (int)remapPoints.size())
         {
           // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
           //                ((avtLCSIC*)ics[i])->GetStartPoint();
@@ -2094,10 +2094,10 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
         size_t index = ic->id;
-        size_t l = (index-offset);
+        int l = (int)(index-offset);
 
         //std::cout << "l = " << l << " " << nTuples << std::endl;
-        if(l >= 0 && l < remapPoints.size())
+        if(l >= 0 && l < (int)remapPoints.size())
         {
           // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
           //                ((avtLCSIC*)ics[i])->GetStartPoint();
