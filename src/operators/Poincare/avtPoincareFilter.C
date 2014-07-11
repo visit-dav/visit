@@ -950,8 +950,8 @@ avtPoincareFilter::GetIntegralCurvePoints(std::vector<avtIntegralCurve *> &ics)
         // Only move the points needed over to the storage.
         if( poincare_ic->points.size() < poincare_ic->GetNumberOfSamples() )
         {
-          unsigned int start = poincare_ic->points.size();
-          unsigned int stop  = poincare_ic->GetNumberOfSamples();
+          size_t start = poincare_ic->points.size();
+          size_t stop  = poincare_ic->GetNumberOfSamples();
 
           // Get all of the points from the fieldline which are stored
           // as an array and move them into a vector for easier
@@ -1091,7 +1091,7 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     if (ics.size() == 0)
         return;
 
-    int numICs = ics.size();
+    int numICs = (int)ics.size();
 //    int numPts = 0;
     int numEarlyTerminators = 0;
     int numStiff = 0;
@@ -1208,9 +1208,9 @@ avtPoincareFilter::ContinueExecute()
 
       // Because points are added the size will change so get the
       // inital size so that new seeds are not processed.
-      unsigned int nics = ics.size();
+      size_t nics = ics.size();
 
-      for ( unsigned int i=0; i<nics; ++i )
+      for ( size_t i=0; i<nics; ++i )
       {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
         FieldlineProperties &properties = poincare_ic->properties;
@@ -2790,18 +2790,18 @@ pairsortsecond( const std::pair < T, T > s0, const std::pair < T, T > s1 )
 
 void realDFTamp( std::vector< double > &g, std::vector< double > &G )
 {
-  unsigned int N = g.size();
+  size_t N = g.size();
 
   G.resize(N/2);
 
-  for(unsigned int i=0; i<N/2; i++)
+  for(size_t i=0; i<N/2; i++)
   {
     double freq = double(i) / double(N);
 
     double GRe = 0;
     double GIm = 0;
 
-    for( unsigned int j=0; j<N; j++)
+    for( size_t j=0; j<N; j++)
     {
       double a = -2.0 * M_PI * double(j) * freq;
 //    if(inverse) a *= -1.0;
@@ -3179,7 +3179,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                   
                   if( p == 0 && puncturePts[p][bin].size() > 1 )
                   {
-                    int ic = puncturePts[p][bin].size()-2;
+                    size_t ic = puncturePts[p][bin].size()-2;
                     
                     double len = (puncturePts[p][bin][ic]-
                                   puncturePts[p][bin][ic+1]).length();
@@ -3295,7 +3295,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 type == FieldlineProperties::CHAOTIC ||
                 type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
                 type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
-              nnodes = puncturePts[p][0].size();
+              nnodes = (unsigned int)puncturePts[p][0].size();
 
             else if( type == FieldlineProperties::FLUX_SURFACE )
             {
@@ -3393,7 +3393,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             for( unsigned int j=0; j<toroidalWinding; ++j ) 
             {
                 if( nnodes > puncturePts[p][j].size() )
-                    nnodes = puncturePts[p][j].size();
+                    nnodes = (unsigned int)puncturePts[p][j].size();
                 
                 if( puncturePts[p][j].size() < 1 ) 
                 {
@@ -3642,7 +3642,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
     unsigned int islands            = properties.islands;
   
     std::vector< avtPoincareIC *> *children = poincare_ic->properties.children;
-    unsigned int nnodes = children->size();       
+    unsigned int nnodes = (unsigned int)children->size();       
 
     if (2 <= RATIONAL_DEBUG)
       cerr << "Rational Search Parent: ID: " << poincare_ic->id << "  "
@@ -3830,7 +3830,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
       for( unsigned int j=0; j<toroidalWinding && VALID; ++j ) 
       {
         if( nnodes > puncturePts[p][j].size() )
-          nnodes = puncturePts[p][j].size();
+          nnodes = (unsigned int)puncturePts[p][j].size();
         
         if( puncturePts[p][j].size() < 1 ) 
         {
@@ -3889,11 +3889,8 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
         // can be generated.
         if( is_curvemesh ) 
         {
-          int i = puncturePts.size();
-          int j = puncturePts[0].size();
-          int k = puncturePts[0][0].size();
           if (2 <= RATIONAL_DEBUG)
-            cerr << i << ", " << j << ", " << k << std::endl;
+            cerr << puncturePts.size() << ", " << puncturePts[0].size() << ", " << puncturePts[0][0].size() << std::endl;
 
           if (puncturePts[0][0].size() == 2)
             {
@@ -3951,8 +3948,8 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
 {
     vtkAppendPolyData *append = vtkAppendPolyData::New();
     
-    unsigned int nplanes = nodes.size();
-    unsigned int toroidalWindings = nodes[0].size();
+    unsigned int nplanes = (unsigned int)nodes.size();
+    unsigned int toroidalWindings = (unsigned int)nodes[0].size();
 
     // If an island then only points.
     if( showLines && islands == 0 && toroidalWindings > 1 )
@@ -4150,8 +4147,8 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
 {
     vtkAppendPolyData *append = vtkAppendPolyData::New();
     
-    unsigned int nplanes = nodes.size();
-    unsigned int toroidalWindings = nodes[0].size();
+    unsigned int nplanes = (unsigned int)nodes.size();
+    unsigned int toroidalWindings = (unsigned int)nodes[0].size();
     connect = 0;
     if (showLines)
     {
@@ -4286,7 +4283,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
               vtkCellArray *cells = vtkCellArray::New();
               vtkFloatArray *scalars = vtkFloatArray::New();
             
-              cells->InsertNextCell(nodes[p][j].size()+(offset?1:0));
+              cells->InsertNextCell((int)nodes[p][j].size()+(offset?1:0));
               scalars->Allocate    (nodes[p][j].size()+(offset?1:0));
 
               if( color == DATA_WindingGroupOrder )
@@ -4317,7 +4314,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                 // Add one point in from the previous neighbor to create
                 // a complete boundary.
 
-                unsigned int ii = nodes[p][j].size();
+                unsigned int ii = (unsigned int)nodes[p][j].size();
                 unsigned int jj = (j+offset) % toroidalWindings;
                 
                 points->InsertPoint(ii,
@@ -4492,8 +4489,8 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
                                 double color_value,
                                 bool modulo ) 
 {
-    unsigned int nplanes = nodes.size();
-    unsigned int toroidalWindings = nodes[0].size();
+    unsigned int nplanes = (unsigned int)nodes.size();
+    unsigned int toroidalWindings = (unsigned int)nodes[0].size();
     
     int dims[2];
     
@@ -4741,7 +4738,7 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
         scalars = vtkFloatArray::New();
 
         unsigned int npts = period < (nodes.size()-i) ?
-          period : (nodes.size()-i);
+          period : ((unsigned int)nodes.size()-i);
       
         cells->InsertNextCell( npts );
         scalars->Allocate    ( npts );

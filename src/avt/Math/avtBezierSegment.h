@@ -77,12 +77,12 @@ public:
 
     unsigned int degree() const 
     { 
-        return size()-1; 
+        return (unsigned int)size()-1; 
     }
 
     unsigned int order() const
     {
-        return size();
+        return (unsigned int)size();
     }
 
     avtVector firstV() const

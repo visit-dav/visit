@@ -801,8 +801,8 @@ avtLCSFilter::GetInitialLocationsFromNativeMesh(avtDataTree_p inDT)
         vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
         size_t pts = in_ds->GetNumberOfPoints();
 
-        int numberOfSeeds = seedPoints.size();
-        int totalNumberOfSeeds = numberOfSeeds + pts;
+        size_t numberOfSeeds = seedPoints.size();
+        size_t totalNumberOfSeeds = numberOfSeeds + pts;
 
         seedPoints.resize( totalNumberOfSeeds );
 
@@ -1090,9 +1090,9 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     for(size_t i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
-        int l = (index-offset);
+        size_t l = (index-offset);
         //std::cout << "l = " << l << " " << nTuples << std::endl;
-        if(l >= 0 && (size_t)l < remapPoints.size())
+        if(l >= 0 && l < remapPoints.size())
         {
           // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
           //                ((avtLCSIC*)ics[i])->GetStartPoint();
@@ -1282,16 +1282,16 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     Barrier();
 
     CollectIntArraysOnRootProc(all_indices, index_counts,
-                               &indices.front(), indices.size());
+                               &indices.front(), (int)indices.size());
 
     CollectDoubleArraysOnRootProc(all_times, time_counts,
-                                  &times.front(), times.size());
+                                  &times.front(), (int)times.size());
 
     CollectDoubleArraysOnRootProc(all_lengths, time_counts,
-                                  &lengths.front(), lengths.size());
+                                  &lengths.front(), (int)lengths.size());
 
     CollectDoubleArraysOnRootProc(all_points, point_counts,
-                                  &points.front(), points.size());
+                                  &points.front(), (int)points.size());
 
     Barrier();
 
@@ -2094,10 +2094,10 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
         size_t index = ic->id;
-        int l = (index-offset);
+        size_t l = (index-offset);
 
         //std::cout << "l = " << l << " " << nTuples << std::endl;
-        if(l >= 0 && (size_t)l < remapPoints.size())
+        if(l >= 0 && l < remapPoints.size())
         {
           // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
           //                ((avtLCSIC*)ics[i])->GetStartPoint();
@@ -2163,7 +2163,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
       avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
       size_t index = ic->id;
-      int l = (index-offset);
+      size_t l = (index-offset);
 
       if( ic->maxSteps < (unsigned int)maxSteps )
       {
@@ -2262,13 +2262,13 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
     Barrier();
 
     CollectIntArraysOnRootProc(all_indices, index_counts,
-                               &indices.front(), indices.size());
+                               &indices.front(), (int)indices.size());
 
     CollectDoubleArraysOnRootProc(all_points, point_counts,
-                                  &points.front(), points.size());
+                                  &points.front(), (int)points.size());
 
     CollectDoubleArraysOnRootProc(all_times, time_counts,
-                                  &times.front(), times.size());
+                                  &times.front(), (int)times.size());
 
     Barrier();
 
@@ -2592,7 +2592,7 @@ avtLCSFilter::CreateNativeMeshIterativeCalcOutput(std::vector<avtIntegralCurve*>
     CreateMultiBlockIterativeCalcOutput(GetInputDataTree(), GetDataTree(),
                                         ics, offset, minv, maxv, count);
 
-    int nTuples = ics.size();
+    int nTuples = (int)ics.size();
 
     if( 1 || count <= nTuples/10 )
     {
@@ -2751,7 +2751,7 @@ avtLCSFilter::CreateSingleBlockIterativeCalcOutput( vtkDataSet *in_ds,
     avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
     
     size_t index = ic->id;
-    int l = (index-offset);
+    size_t l = (index-offset);
 
     double lambda = exponents->GetTuple1(l);
     
@@ -2977,7 +2977,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     if (ics.size() == 0)
         return;
 
-    int numICs = ics.size();
+    int numICs = (int)ics.size();
 //    int numPts = 0;
     int numEarlyTerminators = 0;
     int numStiff = 0;

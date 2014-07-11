@@ -112,7 +112,7 @@ public:
 
   inline vector<TextureBrick*>& bricks(int i = 0) { return bricks_[i]; }
 
-  inline int nlevels(){ return bricks_.size(); }
+  inline int nlevels(){ return (int)bricks_.size(); }
   void clear();
   
   inline double vmin() const { return vmin_; }

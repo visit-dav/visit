@@ -1043,7 +1043,7 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius
   int leafStart;
   int ijk[3];
   double minDist2;
-  double pcoords[3], point[3], cachedPoint[3], weightsArray[6];
+  double pcoords[3], point[3], cachedPoint[3] = {0., 0., 0.}, weightsArray[6];
   double *weights = weightsArray;
   int nWeights = 6, nPoints;
   int returnVal = 0;

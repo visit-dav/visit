@@ -567,7 +567,7 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     // pairs. This search works because we've sorted the range bins.
     //
     register int bot = 0;
-    register int top = enumerationRanges.size() / 2 - 1;
+    register int top = (int)enumerationRanges.size() / 2 - 1;
     register int mid;
     while (bot <= top)
     {
@@ -775,7 +775,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             selectedEnumMask = 0;
             if (selectedEnumMaskBitArray) selectedEnumMaskBitArray->Delete();
             selectedEnumMaskBitArray = vtkBitArray::New();
-            selectedEnumMaskBitArray->SetNumberOfComponents(((enumerationRanges.size()/2+bpuc-1)/bpuc)*bpuc);
+            selectedEnumMaskBitArray->SetNumberOfComponents((((int)enumerationRanges.size()/2+bpuc-1)/bpuc)*bpuc);
             selectedEnumMaskBitArray->SetNumberOfTuples(1);
             memset(selectedEnumMaskBitArray->GetVoidPointer(0), 0,
                    selectedEnumMaskBitArray->GetSize()/bpuc);
@@ -788,7 +788,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
                     {
                         if ((i/2) < sizeof(unsigned long long)*8)
                             selectedEnumMask |= (((unsigned long long)1)<<(i/2));
-                        selectedEnumMaskBitArray->SetComponent(0, i/2, 1);
+                        selectedEnumMaskBitArray->SetComponent(0, (int)i/2, 1);
                     }
                     else
                         enumerationMap[int(enumerationRanges[i]-minEnumerationValue)] = 1;

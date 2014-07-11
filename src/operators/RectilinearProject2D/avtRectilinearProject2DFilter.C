@@ -232,7 +232,7 @@ avtRectilinearProject2DFilter::Execute()
         for (size_t j = 0; j<=i; ++j)
             if (boxes[i] == boxes[j])
             {
-                representingBox[i] = j;
+                representingBox[i] = (int)j;
                 break;
             }
 
@@ -251,7 +251,7 @@ avtRectilinearProject2DFilter::Execute()
 
     std::vector< std::vector<int> > ijGroup(currNewIJGroup);
     for (size_t i = 0; i < ijGroupNo.size(); ++i)
-        ijGroup[ijGroupNo[i]].push_back(i);
+        ijGroup[ijGroupNo[i]].push_back((int)i);
 
     // Project grids per group to 2D generating one 2D mesh per group
     vtkDataSet** ogrids = new vtkDataSet*[ijGroup.size()];
@@ -429,7 +429,7 @@ avtRectilinearProject2DFilter::Execute()
         ogrids[currGrid++] = ods;
     }
     delete[] rgrids;
-    avtDataTree_p out_tree = new avtDataTree(ijGroup.size(), ogrids, domain_ids);
+    avtDataTree_p out_tree = new avtDataTree((int)ijGroup.size(), ogrids, domain_ids);
     delete[] ogrids;
     SetOutputDataTree(out_tree);
 }

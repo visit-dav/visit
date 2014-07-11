@@ -631,8 +631,8 @@ QvisThresholdWindow::PopulateThresholdVariablesList()
 {
     stringVector curVarNames = atts->GetListedVarNames();
     std::string curVarName, guiVarName;
-    int curVarCount = curVarNames.size();
-    int guiVarCount = guiFullVarNames.size();
+    int curVarCount = (int)curVarNames.size();
+    int guiVarCount = (int)guiFullVarNames.size();
     int guiVarNum = 0;
     int curVarNum;
     

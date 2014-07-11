@@ -860,16 +860,16 @@ void QvisCreateBondsWindow::secondElementChanged(int element)
 
 int QvisCreateBondsWindow::GetListLength()
 {
-    int n1 = atts->GetAtomicNumber1().size();
-    int n2 = atts->GetAtomicNumber2().size();
-    int n3 = atts->GetMinDist().size();
-    int n4 = atts->GetMaxDist().size();
+    size_t n1 = atts->GetAtomicNumber1().size();
+    size_t n2 = atts->GetAtomicNumber2().size();
+    size_t n3 = atts->GetMinDist().size();
+    size_t n4 = atts->GetMaxDist().size();
     if (n1 != n2 || n1 != n3 || n1 != n4)
     {
         EXCEPTION1(ImproperUseException,
                    "Bond list data arrays were not all the same length.");
     }
-    return n1;
+    return (int)n1;
 }
 
 // ****************************************************************************

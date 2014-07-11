@@ -1,4 +1,6 @@
+#ifndef WIN32
 #pragma GCC diagnostic warning "-Wall"
+#endif
 
 /*****************************************************************************
 *
@@ -1470,7 +1472,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     int t1 = visitTimer->StartTimer();
     avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(
-            dimension < 4 ? totalPatches : listOfRepresentativeBoxes.size(), num_levels);
+            dimension < 4 ? totalPatches : (int)listOfRepresentativeBoxes.size(), num_levels);
 
     //
     // Calculate what the refinement ratio is from one level to the next.
@@ -1548,7 +1550,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
                 e[4] = lowK[patch];
                 e[5] = hiK[patch];
 
-                rdb->SetIndicesForAMRPatch(patchNo, my_level, e);
+                rdb->SetIndicesForAMRPatch((int)patchNo, my_level, e);
             }
         }
         rdb->CalculateBoundaries();
@@ -1677,7 +1679,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
             logExts[2] = lowK[patch];
             logExts[5] = hiK[patch]-1;
 
-            dn->SetNestingForDomain(patchNo, my_level, childPatches[patch], logExts);
+            dn->SetNestingForDomain((int)patchNo, my_level, childPatches[patch], logExts);
         }
     }
 
@@ -1783,7 +1785,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = mesh_name;
     mesh->meshType = AVT_AMR_MESH;
-    mesh->numBlocks = dimension < 4 ? totalPatches : listOfRepresentativeBoxes.size();
+    mesh->numBlocks = dimension < 4 ? totalPatches : (int)listOfRepresentativeBoxes.size();
     mesh->blockOrigin = 0;
     mesh->spatialDimension = dimension;
     mesh->topologicalDimension = dimension;
@@ -1853,14 +1855,14 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->LODs = levels_of_detail;
         this->resolution = levels_of_detail; // current acceptable res = max res.
         md->Add(mesh);
-        md->AddGroupInformation(num_levels,listOfRepresentativeBoxes.size(), groupIds);
+        md->AddGroupInformation(num_levels,(int)listOfRepresentativeBoxes.size(), groupIds);
     }
 
     //
     // Add each scalar variable.
     //
     std::list<std::string> addedExpressionNames;
-    int nVars = varnames.size();
+    int nVars = (int)varnames.size();
     for (int i = 0; i < nVars; i++)
     {
         if (dimension == 4)
@@ -2072,7 +2074,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 {
                     if (particleVarnames[j] == yName)
                     {
-                        matchY = j;
+                        matchY = (int)j;
                         break;
                     }
                 }
@@ -2101,7 +2103,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     {
                         if (particleVarnames[j] == zName)
                         {
-                            matchZ = j;
+                            matchZ = (int)j;
                             break;
                         }
                     }
@@ -2989,7 +2991,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         InitializeReader();
 
     int varIdx = -1;
-    int nVars = varnames.size();
+    int nVars = (int)varnames.size();
     for (i = 0 ; i < nVars ; i++)
     {
         if (varnames[i] == varname)
@@ -3299,7 +3301,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
         InitializeReader();
 
     int varIdx = -1;
-    int nVars = varnames.size();
+    int nVars = (int)varnames.size();
     for (i = 0 ; i < nVars ; i++)
     {
         if (varnames[i] == varname)
@@ -3613,7 +3615,7 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
         }
         else
         {
-            itree = new avtIntervalTree(listOfRepresentativeBoxes.size(), 3);
+            itree = new avtIntervalTree((int)listOfRepresentativeBoxes.size(), 3);
             for (std::vector<int>::iterator it = listOfRepresentativeBoxes.begin(); it != listOfRepresentativeBoxes.end(); ++it)
             {
                 double bounds[6];
@@ -3752,7 +3754,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
         mix_next[mix_next.size() - 1] = 0;
     }
 
-    int mixed_size = mix_zone.size();
+    int mixed_size =(int) mix_zone.size();
     // get pointers to pass to avtMaterial.  Windows will except if
     // an empty std::vector's zeroth item is dereferenced.
     int *ml = NULL, *mixm = NULL, *mixn = NULL, *mixz = NULL;

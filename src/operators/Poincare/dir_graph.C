@@ -83,7 +83,7 @@ void DIR_Graph::convert_SKL_to_graph (Skeleton::Skeleton s)
 {
   init_graph();
 
-  int num_edges = s.size();
+  int num_edges = (int)s.size();
   nlist.resize(num_edges + 1);
   elist.resize(num_edges);
 
@@ -183,7 +183,7 @@ void DIR_Graph::trim_leafs()
       if (tmp_nlist[j].pre_node_id == e.node1)
       {
         e.node1 = tmp_nlist[j].node_id;
-        tmp_nlist[j].edges.push_back(i);
+        tmp_nlist[j].edges.push_back((int)i);
         break;
       }
     }
@@ -193,7 +193,7 @@ void DIR_Graph::trim_leafs()
       if (tmp_nlist[j].pre_node_id == e.node2)
       {
         e.node2 = tmp_nlist[j].node_id;
-        tmp_nlist[j].edges.push_back(i);
+        tmp_nlist[j].edges.push_back((int)i);
         break;
       }
     }
@@ -300,7 +300,7 @@ void DIR_Graph::search_shortest_paths_between_pairs_of_leafs()
   for (i=0; i<nlist.size(); i++)
   {
     if (nlist[i].edges.size()<2)
-      leaf_nodes.push_back(i);
+      leaf_nodes.push_back((int)i);
   }
   
   for (i=0; i<leaf_nodes.size()-1; i++)
@@ -344,7 +344,7 @@ void DIR_Graph::get_the_longest_shortest_path()
     if (path_lens[i] > cur_longest_len)
     {
       cur_longest_len = path_lens[i];
-      path_id = i;
+      path_id = (int)i;
     }
   }
 

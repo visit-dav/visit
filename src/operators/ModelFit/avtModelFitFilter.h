@@ -115,8 +115,8 @@ class avtModelFitFilter : public avtPluginDataTreeIterator
     void   findMatches        (doubleVector *, intVector *, 
         doubleVector, int, int, int, int);
     double calculateDistance  (doubleVector, int);
-    double spaceConvert (double, int, int);
-    double convertToVariableSpace(double, int, int);
+    double spaceConvert (double, size_t, int);
+    double convertToVariableSpace(double, size_t, int);
 
     avtCentering             Centering;
     std::vector<vtkDataSet        *>out_ds;

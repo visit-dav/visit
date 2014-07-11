@@ -1466,9 +1466,9 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
     }
     
         
-    int s = points.size ();
+    size_t s = points.size ();
 
-    for (int f = 0; f < s; f++)
+    for (size_t f = 0; f < s; f++)
     {
       vl.push_back (VertexSkelet (points [f], points [(s+f-1)%s], points [(s+f+1)%s]));  // zaroven spocita bisektory
     }
