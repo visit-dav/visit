@@ -139,6 +139,7 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
     lineAtts->CopyAttributes(lA);
 
     CreateLineout(fromDefault, forceSampling);
+    if(!resultsPlot) return;  // Error creating lineout
 
     //  
     // Retrieve the interactivity and sampling setting from LineoutOp Atts.
@@ -214,6 +215,7 @@ ViewerQuery::ViewerQuery(const ViewerQuery *obj, int ts) : SimpleObserver(),
 
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
     resultsPlot = plotList->GetPlot(pid);
+    if(!resultsPlot) return;
     resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction());
 
     //
@@ -458,6 +460,7 @@ ViewerQuery::CreateLineout(const bool fromDefault, const bool forceSampling)
  
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
     resultsPlot = plotList->GetPlot(pid);
+    if(!resultsPlot) return;
 
     resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction());
 

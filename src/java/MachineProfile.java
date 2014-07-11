@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class MachineProfile extends AttributeSubject
 {
-    private static int MachineProfile_numAdditionalAtts = 21;
+    private static int MachineProfile_numAdditionalAtts = 22;
 
     // Enum values
     public final static int CLIENTHOSTDETERMINATION_MACHINENAME = 0;
@@ -71,6 +71,7 @@ public class MachineProfile extends AttributeSubject
 
         host = new String("localhost");
         userName = new String("notset");
+        password = new String("");
         hostAliases = new String("");
         hostNickname = new String("");
         directory = new String("");
@@ -99,6 +100,7 @@ public class MachineProfile extends AttributeSubject
 
         host = new String("localhost");
         userName = new String("notset");
+        password = new String("");
         hostAliases = new String("");
         hostNickname = new String("");
         directory = new String("");
@@ -129,6 +131,7 @@ public class MachineProfile extends AttributeSubject
 
         host = new String(obj.host);
         userName = new String(obj.userName);
+        password = new String(obj.password);
         hostAliases = new String(obj.hostAliases);
         hostNickname = new String(obj.hostNickname);
         directory = new String(obj.directory);
@@ -197,6 +200,7 @@ public class MachineProfile extends AttributeSubject
         // Create the return value
         return ((host.equals(obj.host)) &&
                 (userName.equals(obj.userName)) &&
+                (password.equals(obj.password)) &&
                 (hostAliases.equals(obj.hostAliases)) &&
                 (hostNickname.equals(obj.hostNickname)) &&
                 (directory.equals(obj.directory)) &&
@@ -231,117 +235,124 @@ public class MachineProfile extends AttributeSubject
         Select(1);
     }
 
+    public void SetPassword(String password_)
+    {
+        password = password_;
+        Select(2);
+    }
+
     public void SetHostAliases(String hostAliases_)
     {
         hostAliases = hostAliases_;
-        Select(2);
+        Select(3);
     }
 
     public void SetHostNickname(String hostNickname_)
     {
         hostNickname = hostNickname_;
-        Select(3);
+        Select(4);
     }
 
     public void SetDirectory(String directory_)
     {
         directory = directory_;
-        Select(4);
+        Select(5);
     }
 
     public void SetShareOneBatchJob(boolean shareOneBatchJob_)
     {
         shareOneBatchJob = shareOneBatchJob_;
-        Select(5);
+        Select(6);
     }
 
     public void SetSshPortSpecified(boolean sshPortSpecified_)
     {
         sshPortSpecified = sshPortSpecified_;
-        Select(6);
+        Select(7);
     }
 
     public void SetSshPort(int sshPort_)
     {
         sshPort = sshPort_;
-        Select(7);
+        Select(8);
     }
 
     public void SetSshCommandSpecified(boolean sshCommandSpecified_)
     {
         sshCommandSpecified = sshCommandSpecified_;
-        Select(8);
+        Select(9);
     }
 
     public void SetSshCommand(Vector sshCommand_)
     {
         sshCommand = sshCommand_;
-        Select(9);
+        Select(10);
     }
 
     public void SetUseGateway(boolean useGateway_)
     {
         useGateway = useGateway_;
-        Select(10);
+        Select(11);
     }
 
     public void SetGatewayHost(String gatewayHost_)
     {
         gatewayHost = gatewayHost_;
-        Select(11);
+        Select(12);
     }
 
     public void SetClientHostDetermination(int clientHostDetermination_)
     {
         clientHostDetermination = clientHostDetermination_;
-        Select(12);
+        Select(13);
     }
 
     public void SetManualClientHostName(String manualClientHostName_)
     {
         manualClientHostName = manualClientHostName_;
-        Select(13);
+        Select(14);
     }
 
     public void SetTunnelSSH(boolean tunnelSSH_)
     {
         tunnelSSH = tunnelSSH_;
-        Select(14);
+        Select(15);
     }
 
     public void SetMaximumNodesValid(boolean maximumNodesValid_)
     {
         maximumNodesValid = maximumNodesValid_;
-        Select(15);
+        Select(16);
     }
 
     public void SetMaximumNodes(int maximumNodes_)
     {
         maximumNodes = maximumNodes_;
-        Select(16);
+        Select(17);
     }
 
     public void SetMaximumProcessorsValid(boolean maximumProcessorsValid_)
     {
         maximumProcessorsValid = maximumProcessorsValid_;
-        Select(17);
+        Select(18);
     }
 
     public void SetMaximumProcessors(int maximumProcessors_)
     {
         maximumProcessors = maximumProcessors_;
-        Select(18);
+        Select(19);
     }
 
     public void SetActiveProfile(int activeProfile_)
     {
         activeProfile = activeProfile_;
-        Select(20);
+        Select(21);
     }
 
     // Property getting methods
     public String  GetHost() { return host; }
     public String  GetUserName() { return userName; }
+    public String  GetPassword() { return password; }
     public String  GetHostAliases() { return hostAliases; }
     public String  GetHostNickname() { return hostNickname; }
     public String  GetDirectory() { return directory; }
@@ -370,40 +381,42 @@ public class MachineProfile extends AttributeSubject
         if(WriteSelect(1, buf))
             buf.WriteString(userName);
         if(WriteSelect(2, buf))
-            buf.WriteString(hostAliases);
+            buf.WriteString(password);
         if(WriteSelect(3, buf))
-            buf.WriteString(hostNickname);
+            buf.WriteString(hostAliases);
         if(WriteSelect(4, buf))
-            buf.WriteString(directory);
+            buf.WriteString(hostNickname);
         if(WriteSelect(5, buf))
-            buf.WriteBool(shareOneBatchJob);
+            buf.WriteString(directory);
         if(WriteSelect(6, buf))
-            buf.WriteBool(sshPortSpecified);
+            buf.WriteBool(shareOneBatchJob);
         if(WriteSelect(7, buf))
-            buf.WriteInt(sshPort);
+            buf.WriteBool(sshPortSpecified);
         if(WriteSelect(8, buf))
-            buf.WriteBool(sshCommandSpecified);
+            buf.WriteInt(sshPort);
         if(WriteSelect(9, buf))
-            buf.WriteStringVector(sshCommand);
+            buf.WriteBool(sshCommandSpecified);
         if(WriteSelect(10, buf))
-            buf.WriteBool(useGateway);
+            buf.WriteStringVector(sshCommand);
         if(WriteSelect(11, buf))
-            buf.WriteString(gatewayHost);
+            buf.WriteBool(useGateway);
         if(WriteSelect(12, buf))
-            buf.WriteInt(clientHostDetermination);
+            buf.WriteString(gatewayHost);
         if(WriteSelect(13, buf))
-            buf.WriteString(manualClientHostName);
+            buf.WriteInt(clientHostDetermination);
         if(WriteSelect(14, buf))
-            buf.WriteBool(tunnelSSH);
+            buf.WriteString(manualClientHostName);
         if(WriteSelect(15, buf))
-            buf.WriteBool(maximumNodesValid);
+            buf.WriteBool(tunnelSSH);
         if(WriteSelect(16, buf))
-            buf.WriteInt(maximumNodes);
+            buf.WriteBool(maximumNodesValid);
         if(WriteSelect(17, buf))
-            buf.WriteBool(maximumProcessorsValid);
+            buf.WriteInt(maximumNodes);
         if(WriteSelect(18, buf))
-            buf.WriteInt(maximumProcessors);
+            buf.WriteBool(maximumProcessorsValid);
         if(WriteSelect(19, buf))
+            buf.WriteInt(maximumProcessors);
+        if(WriteSelect(20, buf))
         {
             buf.WriteInt(launchProfiles.size());
             for(int i = 0; i < launchProfiles.size(); ++i)
@@ -412,7 +425,7 @@ public class MachineProfile extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(20, buf))
+        if(WriteSelect(21, buf))
             buf.WriteInt(activeProfile);
     }
 
@@ -427,57 +440,60 @@ public class MachineProfile extends AttributeSubject
             SetUserName(buf.ReadString());
             break;
         case 2:
-            SetHostAliases(buf.ReadString());
+            SetPassword(buf.ReadString());
             break;
         case 3:
-            SetHostNickname(buf.ReadString());
+            SetHostAliases(buf.ReadString());
             break;
         case 4:
-            SetDirectory(buf.ReadString());
+            SetHostNickname(buf.ReadString());
             break;
         case 5:
-            SetShareOneBatchJob(buf.ReadBool());
+            SetDirectory(buf.ReadString());
             break;
         case 6:
-            SetSshPortSpecified(buf.ReadBool());
+            SetShareOneBatchJob(buf.ReadBool());
             break;
         case 7:
-            SetSshPort(buf.ReadInt());
+            SetSshPortSpecified(buf.ReadBool());
             break;
         case 8:
-            SetSshCommandSpecified(buf.ReadBool());
+            SetSshPort(buf.ReadInt());
             break;
         case 9:
-            SetSshCommand(buf.ReadStringVector());
+            SetSshCommandSpecified(buf.ReadBool());
             break;
         case 10:
-            SetUseGateway(buf.ReadBool());
+            SetSshCommand(buf.ReadStringVector());
             break;
         case 11:
-            SetGatewayHost(buf.ReadString());
+            SetUseGateway(buf.ReadBool());
             break;
         case 12:
-            SetClientHostDetermination(buf.ReadInt());
+            SetGatewayHost(buf.ReadString());
             break;
         case 13:
-            SetManualClientHostName(buf.ReadString());
+            SetClientHostDetermination(buf.ReadInt());
             break;
         case 14:
-            SetTunnelSSH(buf.ReadBool());
+            SetManualClientHostName(buf.ReadString());
             break;
         case 15:
-            SetMaximumNodesValid(buf.ReadBool());
+            SetTunnelSSH(buf.ReadBool());
             break;
         case 16:
-            SetMaximumNodes(buf.ReadInt());
+            SetMaximumNodesValid(buf.ReadBool());
             break;
         case 17:
-            SetMaximumProcessorsValid(buf.ReadBool());
+            SetMaximumNodes(buf.ReadInt());
             break;
         case 18:
-            SetMaximumProcessors(buf.ReadInt());
+            SetMaximumProcessorsValid(buf.ReadBool());
             break;
         case 19:
+            SetMaximumProcessors(buf.ReadInt());
+            break;
+        case 20:
             {
                 int len = buf.ReadInt();
                 launchProfiles.clear();
@@ -488,9 +504,9 @@ public class MachineProfile extends AttributeSubject
                     launchProfiles.addElement(tmp);
                 }
             }
-            Select(19);
+            Select(20);
             break;
-        case 20:
+        case 21:
             SetActiveProfile(buf.ReadInt());
             break;
         }
@@ -501,6 +517,7 @@ public class MachineProfile extends AttributeSubject
         String str = new String();
         str = str + stringToString("host", host, indent) + "\n";
         str = str + stringToString("userName", userName, indent) + "\n";
+        str = str + stringToString("password", password, indent) + "\n";
         str = str + stringToString("hostAliases", hostAliases, indent) + "\n";
         str = str + stringToString("hostNickname", hostNickname, indent) + "\n";
         str = str + stringToString("directory", directory, indent) + "\n";
@@ -543,13 +560,13 @@ public class MachineProfile extends AttributeSubject
     public void AddLaunchProfiles(LaunchProfile obj)
     {
         launchProfiles.addElement(new LaunchProfile(obj));
-        Select(19);
+        Select(20);
     }
 
     public void ClearLaunchProfiles()
     {
         launchProfiles.clear();
-        Select(19);
+        Select(20);
     }
 
     public void RemoveLaunchProfiles(int index)
@@ -557,7 +574,7 @@ public class MachineProfile extends AttributeSubject
         if(index >= 0 && index < launchProfiles.size())
         {
             launchProfiles.remove(index);
-            Select(19);
+            Select(20);
         }
     }
 
@@ -576,6 +593,7 @@ public class MachineProfile extends AttributeSubject
     // Attributes
     private String  host;
     private String  userName;
+    private String  password;
     private String  hostAliases;
     private String  hostNickname;
     private String  directory;

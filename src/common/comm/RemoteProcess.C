@@ -117,7 +117,7 @@ struct ThreadCallbackDataStruct
 //
 // Static data
 //
-void (*RemoteProcess::getAuthentication)(const char *, const char *, int) = NULL;
+void (*RemoteProcess::getAuthentication)(const char *, const char *, const char *, int) = NULL;
 bool (*RemoteProcess::changeUsername)(const std::string &, std::string&) = NULL;
 bool RemoteProcess::disablePTY = false;
 Connection* (*RemoteProcess::customConnectionCallback)(int,void*) = NULL;
@@ -1147,8 +1147,8 @@ RemoteProcess::Open(const MachineProfile &profile, int numRead, int numWrite,
     // Start making the connections and start listening.
     if(!StartMakingConnection(host, numRead, numWrite))
     {
-        debug5 << "StartMakingConnection(" << numRead << ", " << numWrite
-               << ") failed. Returning." << endl;
+        debug5 << "StartMakingConnection(" << host << ", " << numRead
+               << ", " << numWrite << ") failed. Returning." << endl;
         return false;
     }
 
@@ -1176,7 +1176,7 @@ RemoteProcess::Open(const MachineProfile &profile, int numRead, int numWrite,
     else
     {
         debug5 << mName << "Calling LaunchRemote" << endl;
-        LaunchRemote(host, profile.UserName(), commandLine);
+        LaunchRemote(host, profile.GetPassword(), profile.UserName(), commandLine);
     }
 
     childDied[GetProcessId()] = false;
@@ -2225,7 +2225,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const MachineProfile &profi
 // ****************************************************************************
 
 void
-RemoteProcess::LaunchRemote(const std::string &host, const std::string &remoteUserName,
+RemoteProcess::LaunchRemote(const std::string &host, const std::string &password, const std::string &remoteUserName,
     const stringVector &args)
 {
     const char *mName = "RemoteProcess::LaunchRemote: ";
@@ -2306,7 +2306,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &remoteUs
     {
         TRY
         {
-            (*getAuthentication)(remoteUserName.c_str(), host.c_str(),
+            (*getAuthentication)(remoteUserName.c_str(), password.c_str(), host.c_str(),
                                  ptyFileDescriptor);
         }
         CATCH(ChangeUsernameException)
@@ -2367,7 +2367,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &remoteUs
                 }
 
                 //recursively call connection..
-                LaunchRemote(host, newUserName, args2);
+                LaunchRemote(host, password, newUserName, args2);
                 return; //unnecessary
             }
             else
@@ -2694,7 +2694,7 @@ RemoteProcess::StrDup(const std::string &str) const
 // ****************************************************************************
 
 void
-RemoteProcess::SetAuthenticationCallback(void (*callback)(const char *, const char *, int))
+RemoteProcess::SetAuthenticationCallback(void (*callback)(const char *, const char *, const char *, int))
 {
     getAuthentication = callback;
 }

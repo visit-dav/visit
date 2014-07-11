@@ -81,6 +81,8 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%suserName = \"%s\"\n", prefix, atts->GetUserName().c_str());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spassword = \"%s\"\n", prefix, atts->GetPassword().c_str());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%shostAliases = \"%s\"\n", prefix, atts->GetHostAliases().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%shostNickname = \"%s\"\n", prefix, atts->GetHostNickname().c_str());
@@ -239,6 +241,30 @@ MachineProfile_GetUserName(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetUserName().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+MachineProfile_SetPassword(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the password in the object.
+    obj->data->SetPassword(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetPassword(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetPassword().c_str());
     return retval;
 }
 
@@ -831,6 +857,8 @@ PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH] = {
     {"GetHost", MachineProfile_GetHost, METH_VARARGS},
     {"SetUserName", MachineProfile_SetUserName, METH_VARARGS},
     {"GetUserName", MachineProfile_GetUserName, METH_VARARGS},
+    {"SetPassword", MachineProfile_SetPassword, METH_VARARGS},
+    {"GetPassword", MachineProfile_GetPassword, METH_VARARGS},
     {"SetHostAliases", MachineProfile_SetHostAliases, METH_VARARGS},
     {"GetHostAliases", MachineProfile_GetHostAliases, METH_VARARGS},
     {"SetHostNickname", MachineProfile_SetHostNickname, METH_VARARGS},
@@ -904,6 +932,8 @@ PyMachineProfile_getattr(PyObject *self, char *name)
         return MachineProfile_GetHost(self, NULL);
     if(strcmp(name, "userName") == 0)
         return MachineProfile_GetUserName(self, NULL);
+    if(strcmp(name, "password") == 0)
+        return MachineProfile_GetPassword(self, NULL);
     if(strcmp(name, "hostAliases") == 0)
         return MachineProfile_GetHostAliases(self, NULL);
     if(strcmp(name, "hostNickname") == 0)
@@ -967,6 +997,8 @@ PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = MachineProfile_SetHost(self, tuple);
     else if(strcmp(name, "userName") == 0)
         obj = MachineProfile_SetUserName(self, tuple);
+    else if(strcmp(name, "password") == 0)
+        obj = MachineProfile_SetPassword(self, tuple);
     else if(strcmp(name, "hostAliases") == 0)
         obj = MachineProfile_SetHostAliases(self, tuple);
     else if(strcmp(name, "hostNickname") == 0)

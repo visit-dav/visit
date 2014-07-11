@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class Plot extends AttributeSubject
 {
-    private static int Plot_numAdditionalAtts = 20;
+    private static int Plot_numAdditionalAtts = 21;
 
     // Enum values
     public final static int STATETYPE_NEWLYCREATED = 0;
@@ -83,6 +83,7 @@ public class Plot extends AttributeSubject
         operatorNames = new Vector();
         activeOperator = -1;
         id = -1;
+        embeddedPlotId = -1;
         beginFrame = -999;
         endFrame = 999;
         keyframes = new Vector();
@@ -109,6 +110,7 @@ public class Plot extends AttributeSubject
         operatorNames = new Vector();
         activeOperator = -1;
         id = -1;
+        embeddedPlotId = -1;
         beginFrame = -999;
         endFrame = 999;
         keyframes = new Vector();
@@ -145,6 +147,7 @@ public class Plot extends AttributeSubject
 
         activeOperator = obj.activeOperator;
         id = obj.id;
+        embeddedPlotId = obj.embeddedPlotId;
         beginFrame = obj.beginFrame;
         endFrame = obj.endFrame;
         keyframes = new Vector();
@@ -230,6 +233,7 @@ public class Plot extends AttributeSubject
                 operatorNames_equal &&
                 (activeOperator == obj.activeOperator) &&
                 (id == obj.id) &&
+                (embeddedPlotId == obj.embeddedPlotId) &&
                 (beginFrame == obj.beginFrame) &&
                 (endFrame == obj.endFrame) &&
                 keyframes_equal &&
@@ -313,52 +317,58 @@ public class Plot extends AttributeSubject
         Select(11);
     }
 
+    public void SetEmbeddedPlotId(int embeddedPlotId_)
+    {
+        embeddedPlotId = embeddedPlotId_;
+        Select(12);
+    }
+
     public void SetBeginFrame(int beginFrame_)
     {
         beginFrame = beginFrame_;
-        Select(12);
+        Select(13);
     }
 
     public void SetEndFrame(int endFrame_)
     {
         endFrame = endFrame_;
-        Select(13);
+        Select(14);
     }
 
     public void SetKeyframes(Vector keyframes_)
     {
         keyframes = keyframes_;
-        Select(14);
+        Select(15);
     }
 
     public void SetDatabaseKeyframes(Vector databaseKeyframes_)
     {
         databaseKeyframes = databaseKeyframes_;
-        Select(15);
+        Select(16);
     }
 
     public void SetIsFromSimulation(boolean isFromSimulation_)
     {
         isFromSimulation = isFromSimulation_;
-        Select(16);
+        Select(17);
     }
 
     public void SetFollowsTime(boolean followsTime_)
     {
         followsTime = followsTime_;
-        Select(17);
+        Select(18);
     }
 
     public void SetDescription(String description_)
     {
         description = description_;
-        Select(18);
+        Select(19);
     }
 
     public void SetSelection(String selection_)
     {
         selection = selection_;
-        Select(19);
+        Select(20);
     }
 
     // Property getting methods
@@ -374,6 +384,7 @@ public class Plot extends AttributeSubject
     public Vector  GetOperatorNames() { return operatorNames; }
     public int     GetActiveOperator() { return activeOperator; }
     public int     GetId() { return id; }
+    public int     GetEmbeddedPlotId() { return embeddedPlotId; }
     public int     GetBeginFrame() { return beginFrame; }
     public int     GetEndFrame() { return endFrame; }
     public Vector  GetKeyframes() { return keyframes; }
@@ -411,20 +422,22 @@ public class Plot extends AttributeSubject
         if(WriteSelect(11, buf))
             buf.WriteInt(id);
         if(WriteSelect(12, buf))
-            buf.WriteInt(beginFrame);
+            buf.WriteInt(embeddedPlotId);
         if(WriteSelect(13, buf))
-            buf.WriteInt(endFrame);
+            buf.WriteInt(beginFrame);
         if(WriteSelect(14, buf))
-            buf.WriteIntVector(keyframes);
+            buf.WriteInt(endFrame);
         if(WriteSelect(15, buf))
-            buf.WriteIntVector(databaseKeyframes);
+            buf.WriteIntVector(keyframes);
         if(WriteSelect(16, buf))
-            buf.WriteBool(isFromSimulation);
+            buf.WriteIntVector(databaseKeyframes);
         if(WriteSelect(17, buf))
-            buf.WriteBool(followsTime);
+            buf.WriteBool(isFromSimulation);
         if(WriteSelect(18, buf))
-            buf.WriteString(description);
+            buf.WriteBool(followsTime);
         if(WriteSelect(19, buf))
+            buf.WriteString(description);
+        if(WriteSelect(20, buf))
             buf.WriteString(selection);
     }
 
@@ -469,27 +482,30 @@ public class Plot extends AttributeSubject
             SetId(buf.ReadInt());
             break;
         case 12:
-            SetBeginFrame(buf.ReadInt());
+            SetEmbeddedPlotId(buf.ReadInt());
             break;
         case 13:
-            SetEndFrame(buf.ReadInt());
+            SetBeginFrame(buf.ReadInt());
             break;
         case 14:
-            SetKeyframes(buf.ReadIntVector());
+            SetEndFrame(buf.ReadInt());
             break;
         case 15:
-            SetDatabaseKeyframes(buf.ReadIntVector());
+            SetKeyframes(buf.ReadIntVector());
             break;
         case 16:
-            SetIsFromSimulation(buf.ReadBool());
+            SetDatabaseKeyframes(buf.ReadIntVector());
             break;
         case 17:
-            SetFollowsTime(buf.ReadBool());
+            SetIsFromSimulation(buf.ReadBool());
             break;
         case 18:
-            SetDescription(buf.ReadString());
+            SetFollowsTime(buf.ReadBool());
             break;
         case 19:
+            SetDescription(buf.ReadString());
+            break;
+        case 20:
             SetSelection(buf.ReadString());
             break;
         }
@@ -519,6 +535,7 @@ public class Plot extends AttributeSubject
         str = str + stringVectorToString("operatorNames", operatorNames, indent) + "\n";
         str = str + intToString("activeOperator", activeOperator, indent) + "\n";
         str = str + intToString("id", id, indent) + "\n";
+        str = str + intToString("embeddedPlotId", embeddedPlotId, indent) + "\n";
         str = str + intToString("beginFrame", beginFrame, indent) + "\n";
         str = str + intToString("endFrame", endFrame, indent) + "\n";
         str = str + intVectorToString("keyframes", keyframes, indent) + "\n";
@@ -544,6 +561,7 @@ public class Plot extends AttributeSubject
     private Vector  operatorNames; // vector of String objects
     private int     activeOperator;
     private int     id;
+    private int     embeddedPlotId;
     private int     beginFrame;
     private int     endFrame;
     private Vector  keyframes; // vector of Integer objects

@@ -117,6 +117,7 @@ public:
     void SetOperatorNames(const stringVector &operatorNames_);
     void SetActiveOperator(int activeOperator_);
     void SetId(int id_);
+    void SetEmbeddedPlotId(int embeddedPlotId_);
     void SetBeginFrame(int beginFrame_);
     void SetEndFrame(int endFrame_);
     void SetKeyframes(const intVector &keyframes_);
@@ -144,6 +145,7 @@ public:
           stringVector &GetOperatorNames();
     int                GetActiveOperator() const;
     int                GetId() const;
+    int                GetEmbeddedPlotId() const;
     int                GetBeginFrame() const;
     int                GetEndFrame() const;
     const intVector    &GetKeyframes() const;
@@ -192,6 +194,7 @@ public:
         ID_operatorNames,
         ID_activeOperator,
         ID_id,
+        ID_embeddedPlotId,
         ID_beginFrame,
         ID_endFrame,
         ID_keyframes,
@@ -216,6 +219,7 @@ private:
     stringVector operatorNames;
     int          activeOperator;
     int          id;
+    int          embeddedPlotId;
     int          beginFrame;
     int          endFrame;
     intVector    keyframes;
@@ -229,6 +233,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PLOT_TMFS "iisbbbssi*s*iiiii*i*bbss"
+#define PLOT_TMFS "iisbbbssi*s*iiiiii*i*bbss"
 
 #endif

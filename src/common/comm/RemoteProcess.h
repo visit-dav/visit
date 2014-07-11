@@ -164,7 +164,7 @@ public:
     void SetProgressCallback(bool (*)(void *, int), void *);
     std::map<int,int> GetPortTunnelMap() { return portTunnelMap; }
 
-    static void SetAuthenticationCallback(void (*)(const char *, const char *, int));
+    static void SetAuthenticationCallback(void (*)(const char *, const char*, const char *, int));
     static void SetChangeUserNameCallback(bool (*)(const std::string &,std::string&));
     static void DisablePTY();
     static void SetCustomConnectionCallback(Connection* (*)(int, void *), void* cbData);
@@ -181,7 +181,7 @@ protected:
                            int numRead, int numWrite);
     virtual void Launch(const stringVector &);
     void LaunchLocal(const stringVector &);
-    void LaunchRemote(const std::string &host, const std::string &remoteUserName, 
+    void LaunchRemote(const std::string &host, const std::string &password, const std::string &remoteUserName, 
                       const stringVector &);
     void KillProcess();
 protected:
@@ -210,7 +210,7 @@ private:
     void                    *progressCallbackData;
     std::map<int,int>        portTunnelMap;
 
-    static void            (*getAuthentication)(const char *, const char *, int);
+    static void            (*getAuthentication)(const char *, const char *, const char *, int);
     static bool            (*changeUsername)(const std::string &, std::string&);
     static bool              disablePTY;
     static Connection*     (*customConnectionCallback)(int,void*);

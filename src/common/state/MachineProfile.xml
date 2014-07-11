@@ -11,6 +11,8 @@
     <Field name="userName" label="userName" type="string" init="true">
       notset
     </Field>
+    <Field name="password" label="password" type="string">
+    </Field>
     <Field name="hostAliases" label="hostAliases" type="string">
     </Field>
     <Field name="hostNickname" label="hostNickname" type="string">

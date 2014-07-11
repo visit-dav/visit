@@ -96,6 +96,7 @@ public:
     virtual void SelectAll();
     void SelectHost();
     void SelectUserName();
+    void SelectPassword();
     void SelectHostAliases();
     void SelectHostNickname();
     void SelectDirectory();
@@ -107,6 +108,7 @@ public:
     // Property setting methods
     void SetHost(const std::string &host_);
     void SetUserName(const std::string &userName_);
+    void SetPassword(const std::string &password_);
     void SetHostAliases(const std::string &hostAliases_);
     void SetHostNickname(const std::string &hostNickname_);
     void SetDirectory(const std::string &directory_);
@@ -131,6 +133,8 @@ public:
           std::string  &GetHost();
     const std::string  &GetUserName() const;
           std::string  &GetUserName();
+    const std::string  &GetPassword() const;
+          std::string  &GetPassword();
     const std::string  &GetHostAliases() const;
           std::string  &GetHostAliases();
     const std::string  &GetHostNickname() const;
@@ -205,6 +209,7 @@ public:
     enum {
         ID_host = 0,
         ID_userName,
+        ID_password,
         ID_hostAliases,
         ID_hostNickname,
         ID_directory,
@@ -232,6 +237,7 @@ protected:
 private:
     std::string          host;
     std::string          userName;
+    std::string          password;
     std::string          hostAliases;
     std::string          hostNickname;
     std::string          directory;
@@ -256,6 +262,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MACHINEPROFILE_TMFS "sssssbbibs*bsisbbibia*i"
+#define MACHINEPROFILE_TMFS "ssssssbbibs*bsisbbibia*i"
 
 #endif

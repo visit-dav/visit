@@ -848,6 +848,97 @@ SetOperatorOptionsAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: AddEmbeddedPlotAction::AddEmbeddedPlotAction
+//
+// Purpose: 
+//   Constructor for the AddEmbeddedPlotAction class.
+//
+// Arguments:
+//   win : The window that owns the action.
+//
+// Programmer: Marc Durant
+// Creation:   June 19, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+AddEmbeddedPlotAction::AddEmbeddedPlotAction(ViewerWindow *win) : ViewerAction(win)
+{
+  SetAllText(tr("Add Plot With Id"));
+}
+
+// ****************************************************************************
+// Method: AddEmbeddedPlotAction::~AddEmbeddedPlotAction
+//
+// Purpose: 
+//   Destructor for the AddEmbeddedPlotAction class.
+//
+// Programmer: Marc Durant
+// Creation:   June 19, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+AddEmbeddedPlotAction::~AddEmbeddedPlotAction()
+{
+}
+
+// ****************************************************************************
+// Method: AddEmbeddedPlotAction::Enabled
+//
+// Purpose: 
+//   This method lets callers know if the action's menu should be enabled.
+//
+// Programmer: Marc Durant
+// Creation:   June 19, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+AddEmbeddedPlotAction::Enabled() const
+{
+  return false;
+}
+
+// ****************************************************************************
+// Method: AddEmbeddedPlotAction::Execute
+//
+// Purpose: 
+//   This method is called when the AddEmbeddedPlotAction must be executed.
+//
+// Programmer: Marc Durant
+// Creation:   June 19, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddEmbeddedPlotAction::Execute()
+{
+  bool replacePlots = windowMgr->GetClientAtts()->GetReplacePlots();
+  bool applyOperator = windowMgr->GetClientAtts()->GetApplyOperator();
+  bool applySelection = windowMgr->GetClientAtts()->GetApplySelection();
+  bool inheritSILRestriction = windowMgr->GetClientAtts()->
+  GetNewPlotsInheritSILRestriction();
+  
+  //
+  // Try and create the plot.
+  //
+  window->GetPlotList()->AddPlot(args.GetPlotType(),
+                                 args.GetVariable().c_str(), replacePlots, applyOperator,
+                                 inheritSILRestriction, applySelection, NULL, args.GetEmbeddedPlotId());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
 // Method: AddPlotAction::AddPlotAction
 //
 // Purpose: 

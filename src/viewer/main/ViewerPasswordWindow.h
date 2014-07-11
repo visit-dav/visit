@@ -93,7 +93,7 @@ public:
     virtual ~ViewerPasswordWindow();
 
     // Callback function for RemoteProcess' authentication callback.
-    static void authenticate(const char *username, const char *host, int fd);
+    static void authenticate(const char *username, const char* password, const char *host, int fd);
 
     static void SetConnectionProgressDialog(ViewerConnectionProgressDialog *d);
 

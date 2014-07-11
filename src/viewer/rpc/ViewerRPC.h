@@ -92,6 +92,7 @@ public:
         SetTimeSliderStateRPC,
         SetActiveTimeSliderRPC,
         AddPlotRPC,
+        AddEmbeddedPlotRPC,
         SetPlotFrameRangeRPC,
         DeletePlotKeyframeRPC,
         MovePlotKeyframeRPC,
@@ -333,6 +334,7 @@ public:
     void SetQueryName(const std::string &queryName_);
     void SetQueryPoint1(const double *queryPoint1_);
     void SetToolId(int toolId_);
+    void SetEmbeddedPlotId(int embeddedPlotId_);
     void SetBoolFlag(bool boolFlag_);
     void SetIntArg1(int intArg1_);
     void SetIntArg2(int intArg2_);
@@ -379,6 +381,7 @@ public:
     const double       *GetQueryPoint1() const;
           double       *GetQueryPoint1();
     int                GetToolId() const;
+    int                GetEmbeddedPlotId() const;
     bool               GetBoolFlag() const;
     int                GetIntArg1() const;
     int                GetIntArg2() const;
@@ -432,6 +435,7 @@ public:
         ID_queryName,
         ID_queryPoint1,
         ID_toolId,
+        ID_embeddedPlotId,
         ID_boolFlag,
         ID_intArg1,
         ID_intArg2,
@@ -467,6 +471,7 @@ private:
     std::string  queryName;
     double       queryPoint1[3];
     int          toolId;
+    int          embeddedPlotId;
     bool         boolFlag;
     int          intArg1;
     int          intArg2;
@@ -480,6 +485,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEWERRPC_TMFS "iiiisssss*iiIiiisi*i*i*ssDibiiissim"
+#define VIEWERRPC_TMFS "iiiisssss*iiIiiisi*i*i*ssDiibiiissim"
 
 #endif

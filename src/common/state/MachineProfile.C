@@ -136,6 +136,7 @@ void MachineProfile::Copy(const MachineProfile &obj)
 
     host = obj.host;
     userName = obj.userName;
+    password = obj.password;
     hostAliases = obj.hostAliases;
     hostNickname = obj.hostNickname;
     directory = obj.directory;
@@ -341,6 +342,7 @@ MachineProfile::operator == (const MachineProfile &obj) const
     // Create the return value
     return ((host == obj.host) &&
             (userName == obj.userName) &&
+            (password == obj.password) &&
             (hostAliases == obj.hostAliases) &&
             (hostNickname == obj.hostNickname) &&
             (directory == obj.directory) &&
@@ -505,6 +507,7 @@ MachineProfile::SelectAll()
 {
     Select(ID_host,                    (void *)&host);
     Select(ID_userName,                (void *)&userName);
+    Select(ID_password,                (void *)&password);
     Select(ID_hostAliases,             (void *)&hostAliases);
     Select(ID_hostNickname,            (void *)&hostNickname);
     Select(ID_directory,               (void *)&directory);
@@ -828,6 +831,13 @@ MachineProfile::SetUserName(const std::string &userName_)
 }
 
 void
+MachineProfile::SetPassword(const std::string &password_)
+{
+    password = password_;
+    Select(ID_password, (void *)&password);
+}
+
+void
 MachineProfile::SetHostAliases(const std::string &hostAliases_)
 {
     hostAliases = hostAliases_;
@@ -1016,6 +1026,18 @@ MachineProfile::GetUserName()
 }
 
 const std::string &
+MachineProfile::GetPassword() const
+{
+    return password;
+}
+
+std::string &
+MachineProfile::GetPassword()
+{
+    return password;
+}
+
+const std::string &
 MachineProfile::GetHostAliases() const
 {
     return hostAliases;
@@ -1185,6 +1207,12 @@ void
 MachineProfile::SelectUserName()
 {
     Select(ID_userName, (void *)&userName);
+}
+
+void
+MachineProfile::SelectPassword()
+{
+    Select(ID_password, (void *)&password);
 }
 
 void
@@ -1452,6 +1480,7 @@ MachineProfile::GetFieldName(int index) const
     {
     case ID_host:                    return "host";
     case ID_userName:                return "userName";
+    case ID_password:                return "password";
     case ID_hostAliases:             return "hostAliases";
     case ID_hostNickname:            return "hostNickname";
     case ID_directory:               return "directory";
@@ -1497,6 +1526,7 @@ MachineProfile::GetFieldType(int index) const
     {
     case ID_host:                    return FieldType_string;
     case ID_userName:                return FieldType_string;
+    case ID_password:                return FieldType_string;
     case ID_hostAliases:             return FieldType_string;
     case ID_hostNickname:            return FieldType_string;
     case ID_directory:               return FieldType_string;
@@ -1542,6 +1572,7 @@ MachineProfile::GetFieldTypeName(int index) const
     {
     case ID_host:                    return "string";
     case ID_userName:                return "string";
+    case ID_password:                return "string";
     case ID_hostAliases:             return "string";
     case ID_hostNickname:            return "string";
     case ID_directory:               return "string";
@@ -1595,6 +1626,11 @@ MachineProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_userName:
         {  // new scope
         retval = (userName == obj.userName);
+        }
+        break;
+    case ID_password:
+        {  // new scope
+        retval = (password == obj.password);
         }
         break;
     case ID_hostAliases:
