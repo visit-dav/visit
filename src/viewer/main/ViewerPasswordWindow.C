@@ -167,7 +167,7 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 // ****************************************************************************
 
 void
-ViewerPasswordWindow::authenticate(const char *username, const char *host,
+ViewerPasswordWindow::authenticate(const char *username, const char* password, const char *host,
                                    int fd)
 {
 #if !defined(_WIN32)
@@ -218,7 +218,12 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         {
             // Password needed. Prompt for it and write it to the FD.
             VisItPasswordWindow::ReturnCode ret = VisItPasswordWindow::PW_Accepted;
-            std::string passwd = instance->password(username, host, false, ret);
+
+            //Start with password that was supplied by machine profile
+            std::string passwd = password;
+            if (passwd.empty()) {
+                passwd = instance->password(username, host, false, ret);
+            }
 
             if (passwd.empty())
             {

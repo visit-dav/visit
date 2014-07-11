@@ -1918,6 +1918,40 @@ ViewerMethods::AddPlot(int type, const std::string &var)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::AddEmbeddedPlot
+//
+//  Purpose:
+//    Add a plot to the plot list with an externally specified id number.
+//
+//  Arguments:
+//    type      The type of plot to add.
+//    var       The variable to use for the plot.
+//    id        The plot id from the external source
+//
+//  Programmer: Marc Durant
+//  Creation:   June 19, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+ViewerMethods::AddEmbeddedPlot(int type, const std::string &var, int id)
+{
+  //
+  // Set the rpc type and arguments.
+  //
+  state->GetViewerRPC()->SetRPCType(ViewerRPC::AddEmbeddedPlotRPC);
+  state->GetViewerRPC()->SetPlotType(type);
+  state->GetViewerRPC()->SetVariable(var);
+  state->GetViewerRPC()->SetEmbeddedPlotId(id);
+  
+  //
+  // Issue the RPC.
+  //
+  state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::CopyActivePlots
 //
 //  Purpose:

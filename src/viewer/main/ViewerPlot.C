@@ -228,6 +228,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     expandedFlag        = GetViewerState()->GetGlobalAttributes()->GetExpandNewPlots();
     errorFlag           = false;
     networkID           = -1;
+    embeddedPlotId      = -1;
     clonedNetworkId     = -1;
     queryAtts           = 0;               
     viewerPlotList      = NULL;
@@ -520,6 +521,7 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
     variableDescription = obj.variableDescription;
     errorFlag           = false;
     networkID           = -1;
+    embeddedPlotId      = -1;
     clonedNetworkId     = -1;
     queryAtts           = (obj.queryAtts != 0) ?
         new PlotQueryInfo(*(obj.queryAtts)) : 0;
@@ -4372,6 +4374,43 @@ ViewerPlot::SetNetworkID(int id)
 }
 
 // ****************************************************************************
+//  Method: ViewerPlot::GetEmbeddedPlotId
+//
+//  Purpose:
+//    Return the embedded plot id for the plot.
+//
+//  Returns:    The embedded plot id for the plot.
+//
+//  Programmer: Marc Durant
+//  Creation:   June 19, 2011
+//
+// Modifications:
+// ****************************************************************************
+
+int
+ViewerPlot::GetEmbeddedPlotId() const
+{
+  return embeddedPlotId;
+}
+
+// ****************************************************************************
+//  Method:  ViewerPlot::SetEmbeddedPlotId
+//
+//  Purpose:
+//    Sets the embedded plot Id of the current plot.
+//
+//  Programmer: Marc Durant
+//  Creation:   June 19, 2011
+//
+// ****************************************************************************
+
+void
+ViewerPlot::SetEmbeddedPlotId(int id)
+{
+  this->embeddedPlotId = id;
+}
+
+// ****************************************************************************
 // Method: ViewerPlot::SetActiveOperatorIndex
 //
 // Purpose: 
@@ -5273,6 +5312,7 @@ ViewerPlot::InitializePlot(Plot &plot) const
     plot.SetBeginFrame(beginCacheIndex);
     plot.SetEndFrame(endCacheIndex);
     plot.SetIsFromSimulation(engineKey.IsSimulation());
+    plot.SetEmbeddedPlotId(embeddedPlotId);
  
     // Set the keyframe indices.
     int j, nIndices;

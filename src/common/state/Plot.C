@@ -103,6 +103,7 @@ void Plot::Init()
     databaseName = "notset";
     activeOperator = -1;
     id = -1;
+    embeddedPlotId = -1;
     beginFrame = -999;
     endFrame = 999;
     isFromSimulation = false;
@@ -140,6 +141,7 @@ void Plot::Copy(const Plot &obj)
     operatorNames = obj.operatorNames;
     activeOperator = obj.activeOperator;
     id = obj.id;
+    embeddedPlotId = obj.embeddedPlotId;
     beginFrame = obj.beginFrame;
     endFrame = obj.endFrame;
     keyframes = obj.keyframes;
@@ -317,6 +319,7 @@ Plot::operator == (const Plot &obj) const
             (operatorNames == obj.operatorNames) &&
             (activeOperator == obj.activeOperator) &&
             (id == obj.id) &&
+            (embeddedPlotId == obj.embeddedPlotId) &&
             (beginFrame == obj.beginFrame) &&
             (endFrame == obj.endFrame) &&
             (keyframes == obj.keyframes) &&
@@ -480,6 +483,7 @@ Plot::SelectAll()
     Select(ID_operatorNames,     (void *)&operatorNames);
     Select(ID_activeOperator,    (void *)&activeOperator);
     Select(ID_id,                (void *)&id);
+    Select(ID_embeddedPlotId,    (void *)&embeddedPlotId);
     Select(ID_beginFrame,        (void *)&beginFrame);
     Select(ID_endFrame,          (void *)&endFrame);
     Select(ID_keyframes,         (void *)&keyframes);
@@ -576,6 +580,13 @@ Plot::SetId(int id_)
 {
     id = id_;
     Select(ID_id, (void *)&id);
+}
+
+void
+Plot::SetEmbeddedPlotId(int embeddedPlotId_)
+{
+    embeddedPlotId = embeddedPlotId_;
+    Select(ID_embeddedPlotId, (void *)&embeddedPlotId);
 }
 
 void
@@ -738,6 +749,12 @@ int
 Plot::GetId() const
 {
     return id;
+}
+
+int
+Plot::GetEmbeddedPlotId() const
+{
+    return embeddedPlotId;
 }
 
 int
@@ -906,6 +923,7 @@ Plot::GetFieldName(int index) const
     case ID_operatorNames:     return "operatorNames";
     case ID_activeOperator:    return "activeOperator";
     case ID_id:                return "id";
+    case ID_embeddedPlotId:    return "embeddedPlotId";
     case ID_beginFrame:        return "beginFrame";
     case ID_endFrame:          return "endFrame";
     case ID_keyframes:         return "keyframes";
@@ -950,6 +968,7 @@ Plot::GetFieldType(int index) const
     case ID_operatorNames:     return FieldType_stringVector;
     case ID_activeOperator:    return FieldType_int;
     case ID_id:                return FieldType_int;
+    case ID_embeddedPlotId:    return FieldType_int;
     case ID_beginFrame:        return FieldType_int;
     case ID_endFrame:          return FieldType_int;
     case ID_keyframes:         return FieldType_intVector;
@@ -994,6 +1013,7 @@ Plot::GetFieldTypeName(int index) const
     case ID_operatorNames:     return "stringVector";
     case ID_activeOperator:    return "int";
     case ID_id:                return "int";
+    case ID_embeddedPlotId:    return "int";
     case ID_beginFrame:        return "int";
     case ID_endFrame:          return "int";
     case ID_keyframes:         return "intVector";
@@ -1086,6 +1106,11 @@ Plot::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_id:
         {  // new scope
         retval = (id == obj.id);
+        }
+        break;
+    case ID_embeddedPlotId:
+        {  // new scope
+        retval = (embeddedPlotId == obj.embeddedPlotId);
         }
         break;
     case ID_beginFrame:

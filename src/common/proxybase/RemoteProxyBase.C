@@ -40,6 +40,7 @@
 #include <RemoteProcess.h>
 #include <ExistingRemoteProcess.h>
 #include <snprintf.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: RemoteProxyBase::RemoteProxyBase
@@ -144,12 +145,12 @@ RemoteProxyBase::Create(const MachineProfile &profile,
     // Create a remote process object for the remote component.
     if(connectCallback == NULL)
     {
-        component = new RemoteProcess(GetVisItString());
+        component = new RemoteProcess(GetVisItString(profile));
     }
     else
     {
         ExistingRemoteProcess *p = 
-            new ExistingRemoteProcess(GetVisItString());
+            new ExistingRemoteProcess(GetVisItString(profile));
         p->SetConnectCallback(connectCallback);
         p->SetConnectCallbackData(connectCallbackData);
         component = p;
@@ -394,11 +395,30 @@ void
 RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
                                      bool addParallelArgs)
 {
-    // Add the directory arugment
+    // For a remote machine, we need to strip all of the extra "-dir" arguments
+    // so that we can use the directory from the machine profile instead.
     if (machine.GetDirectory() != "")
     {
+        //Remove all existing instances of -dir, because they're for the LOCAL machine
+        for (int i = 0; i < argv.size(); i++) {
+            if (argv[i] == "-dir") {
+              // First delete the "-dir"
+              stringVector::iterator it = argv.erase(argv.begin() + i);
+              if (it != argv.end()) {
+                  // If we're not at the end of the list, delete the next argument too
+              argv.erase(it);
+            }
+
+            //Restart at i = 0
+            i = -1;
+          }
+        }
+
         AddArgument("-dir");
         AddArgument(machine.GetDirectory());
+        debug5 <<"MachineProfile directory is NOT empty, so using -dir argument: " <<machine.GetDirectory() <<std::endl;
+    } else {
+      debug5 <<"MachineProfile directory was EMPTY, so keeping -dir arguments." <<std::endl;
     }
 
     const LaunchProfile *launch = machine.GetActiveLaunchProfile();
@@ -617,34 +637,45 @@ RemoteProxyBase::Parallel() const
 //   If we find :/ or :\ in the -dir argument then assume the remote computer
 //   is a Windows computer and we should handle it a little differently.
 //
+//   Marc Durant, Tue Sep 4 15:02:00 MST 2012
+//   Added parameter for the machine profile, 
+//   which allows us to more accurately derive
+//   the path to remote VisIt
 // ****************************************************************************
 
 std::string
-RemoteProxyBase::GetVisItString() const
-{ 
-    // The -dir flag means that the visit script is not in our path, so we
-    // must prepend it to the name of the visit script.  Do that check now.
+RemoteProxyBase::GetVisItString(const MachineProfile &profile) const
+{
     std::string visitString = "visit";
-    for (size_t i = 0 ; i < argv.size() ; ++i)
-    {
-        if (argv[i] == "-dir" && (i + 1) < argv.size())
+    std::string directory = profile.GetDirectory();
+
+    if (directory.size() == 0) {
+        // The -dir flag means that the visit script is not in our path, so we
+        // must prepend it to the name of the visit script.  Do that check now.
+        for (size_t i = 0 ; i < argv.size() ; ++i)
         {
-            const std::string &dirArg = argv[i + 1];
-            visitString = dirArg;
-            // If the dirArg contains these characters then assume the remote path is Windows
-            if(visitString.find(":\\") != std::string::npos || visitString.find(":/") != std::string::npos)
+            if (argv[i] == "-dir" && (i + 1) < argv.size())
             {
-                if (dirArg[dirArg.size() - 1] != '/' && dirArg[dirArg.size()-1] != '\\')
-                    visitString += "\\";
-                visitString += "visit.exe";
+                directory = argv[i + 1];
+                break;
             }
-            else
-            {
-                if (dirArg[dirArg.size() - 1] != '/')
-                    visitString += "/";
-                visitString += "bin/visit";
-            }
-            ++i;
+        }
+    }
+
+    if (directory.size() > 0) {
+        visitString = directory;
+        // If the dirArg contains these characters then assume the remote path is Windows
+        if (visitString.find(":\\") != std::string::npos || visitString.find(":/") != std::string::npos)
+        {
+            if (directory[directory.size() - 1] != '/' && directory[directory.size()-1] != '\\')
+                visitString += "\\";
+            visitString += "visit.exe";
+        }
+        else
+        {
+            if (directory[directory.size() - 1] != '/')
+                visitString += "/";
+            visitString += "bin/visit";
         }
     }
 

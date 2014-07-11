@@ -634,6 +634,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
     AddAction(new SetOperatorOptionsAction(win), ViewerRPC::SetOperatorOptionsRPC);
 
     AddAction(new AddPlotAction(win), ViewerRPC::AddPlotRPC);
+    AddAction(new AddEmbeddedPlotAction(win), ViewerRPC::AddEmbeddedPlotRPC);
     AddAction(new DrawPlotsAction(win), ViewerRPC::DrawPlotsRPC);
     AddAction(new HideActivePlotsAction(win), ViewerRPC::HideActivePlotsRPC);
     AddAction(new DeleteActivePlotsAction(win), ViewerRPC::DeleteActivePlotsRPC);

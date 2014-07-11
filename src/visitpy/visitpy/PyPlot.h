@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PLOT_NMETH 42
+#define PLOT_NMETH 44
 void VISITPY_API           PyPlot_StartUp(Plot *subj, void *data);
 void VISITPY_API           PyPlot_CloseDown();
 VISITPY_API PyMethodDef *  PyPlot_GetMethodTable(int *nMethods);

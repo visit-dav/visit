@@ -280,6 +280,32 @@ private:
 };
 
 // ****************************************************************************
+// Class: AddEmbeddedPlotAction
+//
+// Purpose:
+//   This action adds a plot to the window's plot list, using an id specified
+//   by the embedding code.
+//   It also differs from the regular AddPlot because it isn't exposed in a menu
+//
+// Notes:      
+//
+// Programmer: Marc Durant
+// Creation:   June 19, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class AddEmbeddedPlotAction : public ViewerAction
+{
+public:
+  AddEmbeddedPlotAction(ViewerWindow *win);
+  virtual ~AddEmbeddedPlotAction();  
+  virtual void Execute();
+  virtual bool Enabled() const;
+};
+
+// ****************************************************************************
 // Class: DrawPlotsAction
 //
 // Purpose:

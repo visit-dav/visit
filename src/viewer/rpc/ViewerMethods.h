@@ -263,6 +263,7 @@ public:
     void SetActiveTimeSlider(const std::string &ts);
 
     void AddPlot(int type, const std::string &var);
+    void AddEmbeddedPlot(int type, const std::string &var, int id);
     void CopyActivePlots(void);
     void SetPlotFrameRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);

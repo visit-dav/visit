@@ -2561,7 +2561,7 @@ ViewerPlotList::GetNumVisiblePlots() const
 int
 ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     bool applyOperators, bool inheritSILRestriction, bool applySelection, 
-    DataNode *attributesNode)
+    DataNode *attributesNode, int embeddedPlotId)
 {
     if (databaseName.size() < 1)
     {
@@ -2582,6 +2582,8 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
         {
             Error(tr("VisIt could not create the desired plot."));
             hadError = true;
+        } else {
+            newPlot->SetEmbeddedPlotId(embeddedPlotId);
         }
     }
     CATCH2(VisItException, e)

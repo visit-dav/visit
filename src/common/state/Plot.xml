@@ -39,6 +39,9 @@
     <Field name="id" label="id" type="int">
       -1
     </Field>
+    <Field name="embeddedPlotId" label="embeddedPlotId" type="int">
+      -1
+    </Field>
     <Field name="beginFrame" label="beginFrame" type="int">
       -999
     </Field>

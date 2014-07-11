@@ -133,7 +133,7 @@ public:
 protected:
     void                 SetupAllRPCs();
     virtual void         SetupComponentRPCs() = 0;
-    std::string          GetVisItString() const;
+    std::string          GetVisItString(const MachineProfile &profile) const;
     virtual void         AddExtraArguments();
 
     std::string          componentName;

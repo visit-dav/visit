@@ -30,6 +30,7 @@
       SetTimeSliderStateRPC
       SetActiveTimeSliderRPC
       AddPlotRPC
+      AddEmbeddedPlotRPC
       SetPlotFrameRangeRPC
       DeletePlotKeyframeRPC
       MovePlotKeyframeRPC
@@ -263,6 +264,9 @@
       0.000000
     </Field>
     <Field name="toolId" label="toolId" type="int">
+      0
+    </Field>
+    <Field name="embeddedPlotId" label="embeddedPlotId" type="int">
       0
     </Field>
     <Field name="boolFlag" label="boolFlag" type="bool">

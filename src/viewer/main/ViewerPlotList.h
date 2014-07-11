@@ -385,7 +385,8 @@ public:
     int  GetNumVisiblePlots() const;
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
                  bool applyOperators = false, bool inheritSILRestriction = false,
-                 bool applySelections = false, DataNode *attributesNode = 0);
+                 bool applySelections = false, DataNode *attributesNode = 0,
+                 int embeddedPlotId = -1);
 
     int GetNumberOfCells(bool polysOnly = false) const;
 
