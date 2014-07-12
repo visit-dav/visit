@@ -1,0 +1,19 @@
+{
+  "file": "visitpy/pyui/pyside/gui/pyside_gui/pyside_gui_module_wrapper.cpp", 
+  "warnings": {
+    "240": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "248": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "19": [
+      "warning: missing initializer for member 'PyMethodDef::ml_meth'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_flags'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'"
+    ], 
+    "256": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ]
+  }
+}

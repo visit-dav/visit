@@ -1,0 +1,49 @@
+{
+  "file": "visitpy/common/PyImageObject.C", 
+  "warnings": {
+    "743": [
+      "warning: missing initializer for member '_typeobject::tp_iter'", 
+      "warning: missing initializer for member '_typeobject::tp_iternext'", 
+      "warning: missing initializer for member '_typeobject::tp_methods'", 
+      "warning: missing initializer for member '_typeobject::tp_members'", 
+      "warning: missing initializer for member '_typeobject::tp_getset'", 
+      "warning: missing initializer for member '_typeobject::tp_base'", 
+      "warning: missing initializer for member '_typeobject::tp_dict'", 
+      "warning: missing initializer for member '_typeobject::tp_descr_get'", 
+      "warning: missing initializer for member '_typeobject::tp_descr_set'", 
+      "warning: missing initializer for member '_typeobject::tp_dictoffset'", 
+      "warning: missing initializer for member '_typeobject::tp_init'", 
+      "warning: missing initializer for member '_typeobject::tp_alloc'", 
+      "warning: missing initializer for member '_typeobject::tp_new'", 
+      "warning: missing initializer for member '_typeobject::tp_free'", 
+      "warning: missing initializer for member '_typeobject::tp_is_gc'", 
+      "warning: missing initializer for member '_typeobject::tp_bases'", 
+      "warning: missing initializer for member '_typeobject::tp_mro'", 
+      "warning: missing initializer for member '_typeobject::tp_cache'", 
+      "warning: missing initializer for member '_typeobject::tp_subclasses'", 
+      "warning: missing initializer for member '_typeobject::tp_weaklist'", 
+      "warning: missing initializer for member '_typeobject::tp_del'", 
+      "warning: missing initializer for member '_typeobject::tp_version_tag'"
+    ], 
+    "655": [
+      "warning: ISO C++ does not support the '%lf' gnu_printf format"
+    ], 
+    "657": [
+      "warning: ISO C++ does not support the '%lf' gnu_printf format"
+    ], 
+    "500": [
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_flags'"
+    ], 
+    "604": [
+      "warning: ISO C++ does not support the '%lf' gnu_printf format"
+    ], 
+    "605": [
+      "warning: ISO C++ does not support the '%lf' gnu_printf format"
+    ], 
+    "798": [
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_flags'"
+    ]
+  }
+}

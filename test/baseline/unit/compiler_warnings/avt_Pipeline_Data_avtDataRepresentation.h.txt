@@ -1,0 +1,9 @@
+{
+  "file": "avt/Pipeline/Data/avtDataRepresentation.h", 
+  "warnings": {
+    "59": [
+      "warning: comma at end of enumerator list", 
+      "warning: comma at end of enumerator listIn file included from /g/g11/miller86/visit/trunk/src/avt/Pipeline/Data/avtCommonDataFunctions.h:48,"
+    ]
+  }
+}

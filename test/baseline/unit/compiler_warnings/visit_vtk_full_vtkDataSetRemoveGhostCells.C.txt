@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkDataSetRemoveGhostCells.C", 
+  "warnings": {
+    "70": [
+      "warning: extra ';'"
+    ]
+  }
+}

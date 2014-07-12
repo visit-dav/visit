@@ -1,0 +1,11 @@
+{
+  "file": "common/state/Variant.C", 
+  "warnings": {
+    "152": [
+      "warning: format '%02x' expects type 'unsigned int*', but argument 3 has type 'int*'"
+    ], 
+    "142": [
+      "warning: format '%02x' expects type 'unsigned int*', but argument 3 has type 'int*'"
+    ]
+  }
+}

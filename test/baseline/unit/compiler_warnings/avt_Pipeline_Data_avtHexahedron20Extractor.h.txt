@@ -1,0 +1,8 @@
+{
+  "file": "avt/Pipeline/Data/avtHexahedron20Extractor.h", 
+  "warnings": {
+    "84": [
+      "warning: comma at end of enumerator list"
+    ]
+  }
+}

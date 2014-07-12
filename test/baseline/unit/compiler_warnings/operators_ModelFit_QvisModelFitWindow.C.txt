@@ -1,0 +1,11 @@
+{
+  "file": "operators/ModelFit/QvisModelFitWindow.C", 
+  "warnings": {
+    "368": [
+      "warning: ISO C++ does not support the '%lf' gnu_printf format"
+    ], 
+    "370": [
+      "warning: ISO C++ does not support the '%lf' gnu_printf format"
+    ]
+  }
+}

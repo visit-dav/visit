@@ -1,0 +1,23 @@
+{
+  "file": "plots/Scatter/QvisScatterWidget.C", 
+  "warnings": {
+    "515": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "489": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "427": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "499": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "67": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "409": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ]
+  }
+}

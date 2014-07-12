@@ -1,0 +1,20 @@
+{
+  "file": "databases/MFEM/avtMFEMFileFormat.C", 
+  "warnings": {
+    "162": [
+      "warning: unused variable 'one_dset'"
+    ], 
+    "527": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "522": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "166": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "207": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

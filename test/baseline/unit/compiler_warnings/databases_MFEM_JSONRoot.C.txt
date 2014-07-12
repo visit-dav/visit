@@ -1,0 +1,23 @@
+{
+  "file": "databases/MFEM/JSONRoot.C", 
+  "warnings": {
+    "552": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "233": [
+      "warning: extra ';'"
+    ], 
+    "563": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "246": [
+      "warning: extra ';'"
+    ], 
+    "570": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "573": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

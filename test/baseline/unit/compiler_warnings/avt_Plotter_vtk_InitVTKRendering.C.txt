@@ -1,0 +1,14 @@
+{
+  "file": "avt/Plotter/vtk/InitVTKRendering.C", 
+  "warnings": {
+    "83": [
+      "warning: extra ';'"
+    ], 
+    "84": [
+      "warning: extra ';'"
+    ], 
+    "85": [
+      "warning: extra ';'"
+    ]
+  }
+}

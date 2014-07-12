@@ -1,0 +1,8 @@
+{
+  "file": "databases/Shapefile/dbfFile.h", 
+  "warnings": {
+    "87": [
+      "warning: comma at end of enumerator list"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "file": "avt/Database/Ghost/avtStructuredDomainBoundaries.C", 
+  "warnings": {
+    "625": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "3796": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

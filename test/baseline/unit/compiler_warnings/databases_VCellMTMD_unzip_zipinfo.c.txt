@@ -1,0 +1,29 @@
+{
+  "file": "databases/VCellMTMD/unzip/zipinfo.c", 
+  "warnings": {
+    "673": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "901": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "2023": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "620": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "1717": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "1527": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ], 
+    "1304": [
+      "warning: suggest braces around empty body in an 'else' statement"
+    ], 
+    "894": [
+      "warning: suggest braces around empty body in an 'if' statement"
+    ]
+  }
+}

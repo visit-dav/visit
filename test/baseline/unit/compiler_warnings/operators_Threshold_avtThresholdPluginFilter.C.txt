@@ -1,0 +1,11 @@
+{
+  "file": "operators/Threshold/avtThresholdPluginFilter.C", 
+  "warnings": {
+    "226": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "212": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ]
+  }
+}

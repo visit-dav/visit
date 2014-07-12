@@ -1,0 +1,8 @@
+{
+  "file": "avt/VisWindow/Proxies/VisWindowProtectionProxy.C", 
+  "warnings": {
+    "1118": [
+      "warning: extra ';'"
+    ]
+  }
+}

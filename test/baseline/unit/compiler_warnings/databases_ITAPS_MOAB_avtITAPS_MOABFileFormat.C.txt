@@ -1,0 +1,143 @@
+{
+  "file": "databases/ITAPS_MOAB/avtITAPS_MOABFileFormat.C", 
+  "warnings": {
+    "1235": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1280": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1154": [
+      "warning: unused variable 'tmpError'"
+    ], 
+    "1163": [
+      "warning: label 'funcEnd' defined but not used"
+    ], 
+    "404": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1046": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1303": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "923": [
+      "warning: unused variable 'tmpError'"
+    ], 
+    "546": [
+      "warning: unused variable 'tmpError'"
+    ], 
+    "931": [
+      "warning: label 'funcEnd' defined but not used"
+    ], 
+    "553": [
+      "warning: label 'funcEnd' defined but not used"
+    ], 
+    "304": [
+      "warning: 'junk' may be used uninitialized in this function"
+    ], 
+    "826": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "443": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1340": [
+      "warning: unused variable 'tmpError'"
+    ], 
+    "445": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1349": [
+      "warning: label 'funcEnd' defined but not used"
+    ], 
+    "454": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "841": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1098": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1271": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1231": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "209": [
+      "warning: unused variable 'j'"
+    ], 
+    "483": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1110": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "479": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "227": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "229": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "486": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "619": [
+      "warning: unused variable 'setCount'"
+    ], 
+    "1261": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "467": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1268": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "1013": [
+      "warning: unused variable 'mmd'"
+    ], 
+    "503": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "888": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "249": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "506": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ], 
+    "255": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: unused variable 'dummyError'"
+    ]
+  }
+}

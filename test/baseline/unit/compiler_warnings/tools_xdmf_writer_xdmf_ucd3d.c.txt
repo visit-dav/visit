@@ -1,0 +1,42 @@
+{
+  "file": "tools/xdmf_writer/xdmf_ucd3d.c", 
+  "warnings": {
+    "160": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "69": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "39": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "168": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "10": [
+      "warning: C++ style comments are not allowed in ISO C90", 
+      "warning: (this will be reported only once per input file)"
+    ], 
+    "145": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "179": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "52": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "152": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "20": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "156": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "93": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ]
+  }
+}

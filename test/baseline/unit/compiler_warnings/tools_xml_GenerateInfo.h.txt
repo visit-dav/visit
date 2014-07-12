@@ -1,0 +1,11 @@
+{
+  "file": "tools/xml/GenerateInfo.h", 
+  "warnings": {
+    "1009": [
+      "warning: unknown escape sequence '\\%'"
+    ], 
+    "987": [
+      "warning: unknown escape sequence '\\%'"
+    ]
+  }
+}

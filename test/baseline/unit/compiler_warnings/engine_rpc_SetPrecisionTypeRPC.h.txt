@@ -1,0 +1,8 @@
+{
+  "file": "engine/rpc/SetPrecisionTypeRPC.h", 
+  "warnings": {
+    "77": [
+      "warning: type qualifiers ignored on function return type"
+    ]
+  }
+}

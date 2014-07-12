@@ -1,0 +1,21 @@
+{
+  "file": "databases/STAR/MultiresFileReader.C", 
+  "warnings": {
+    "1112": [
+      "warning: ISO C99 requires rest arguments to be used", 
+      "warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98"
+    ], 
+    "177": [
+      "warning: ISO C99 requires rest arguments to be used", 
+      "warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98"
+    ], 
+    "1107": [
+      "warning: ISO C99 requires rest arguments to be used", 
+      "warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98"
+    ], 
+    "183": [
+      "warning: ISO C99 requires rest arguments to be used", 
+      "warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98"
+    ]
+  }
+}

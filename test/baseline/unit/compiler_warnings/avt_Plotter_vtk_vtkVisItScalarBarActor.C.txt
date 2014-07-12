@@ -1,0 +1,8 @@
+{
+  "file": "avt/Plotter/vtk/vtkVisItScalarBarActor.C", 
+  "warnings": {
+    "74": [
+      "warning: extra ';'"
+    ]
+  }
+}

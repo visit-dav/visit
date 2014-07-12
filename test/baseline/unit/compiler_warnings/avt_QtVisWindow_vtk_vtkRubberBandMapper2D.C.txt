@@ -1,0 +1,8 @@
+{
+  "file": "avt/QtVisWindow/vtk/vtkRubberBandMapper2D.C", 
+  "warnings": {
+    "152": [
+      "warning: extra ';'"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "file": "databases/lata/OpenDXWriter.C", 
+  "warnings": {
+    "312": [
+      "warning: suggest braces around empty body in an 'else' statement"
+    ]
+  }
+}

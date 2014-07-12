@@ -1,0 +1,9 @@
+{
+  "file": "visitpy/common/PySILRestriction.C", 
+  "warnings": {
+    "122": [
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_flags'"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "file": "avt/Plotter/vtk/vtkVisItCubeAxesActor.C", 
+  "warnings": {
+    "45": [
+      "warning: extra ';'"
+    ], 
+    "46": [
+      "warning: extra ';'"
+    ]
+  }
+}

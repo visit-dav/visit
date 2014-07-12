@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkVertexFilter.C", 
+  "warnings": {
+    "61": [
+      "warning: extra ';'"
+    ]
+  }
+}

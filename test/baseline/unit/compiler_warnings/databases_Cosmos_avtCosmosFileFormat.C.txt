@@ -1,0 +1,17 @@
+{
+  "file": "databases/Cosmos/avtCosmosFileFormat.C", 
+  "warnings": {
+    "410": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "591": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "588": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "407": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

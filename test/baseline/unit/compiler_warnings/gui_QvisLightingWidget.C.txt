@@ -1,0 +1,17 @@
+{
+  "file": "gui/QvisLightingWidget.C", 
+  "warnings": {
+    "76": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "77": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "78": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ], 
+    "79": [
+      "warning: missing initializer for member 'color::_dummy'"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "file": "databases/VCellMTMD/ExpressionParser/ASTFloatNode.cpp", 
+  "warnings": {
+    "42": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "file": "gui/QvisText3DInterface.C", 
+  "warnings": {
+    "306": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "323": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "file": "gui/QvisPlotManagerWidget.h", 
+  "warnings": {
+    "329": [
+      "warning: extra ';'"
+    ], 
+    "330": [
+      "warning: extra ';'"
+    ]
+  }
+}

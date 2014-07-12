@@ -1,0 +1,97 @@
+{
+  "file": "tools/makemili/MakeMili.C", 
+  "warnings": {
+    "1280": [
+      "warning: unused variable 'i'"
+    ], 
+    "1281": [
+      "warning: unused variable 'nmaterials'"
+    ], 
+    "1282": [
+      "warning: unused variable 'varInt'"
+    ], 
+    "1288": [
+      "warning: unused variable 'dummy'"
+    ], 
+    "1161": [
+      "warning: unused variable 'i'"
+    ], 
+    "916": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "926": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "554": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1394": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1072": [
+      "warning: unused variable 'i'", 
+      "warning: unused variable 'j'", 
+      "warning: unused variable 'k'"
+    ], 
+    "1074": [
+      "warning: unused variable 'short_name'"
+    ], 
+    "1075": [
+      "warning: unused variable 'long_name'"
+    ], 
+    "1374": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "478": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1209": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1223": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1611": [
+      "warning: unused variable 'oneLine'"
+    ], 
+    "1229": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1112": [
+      "warning: unused variable 'srec_qty'"
+    ], 
+    "603": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "990": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "479": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "484": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "486": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1127": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1388": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "626": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "500": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "501": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "1022": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

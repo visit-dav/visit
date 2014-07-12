@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/lightweight/vtkDebugStream.h", 
+  "warnings": {
+    "48": [
+      "warning: extra ';'"
+    ]
+  }
+}

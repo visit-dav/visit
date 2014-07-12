@@ -1,0 +1,11 @@
+{
+  "file": "databases/paraDIS/RC_cpp_lib/RC_c_lib/debugutil.c", 
+  "warnings": {
+    "138": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "75": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ]
+  }
+}

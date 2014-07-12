@@ -1,0 +1,11 @@
+{
+  "file": "common/plugin/PluginManager.C", 
+  "warnings": {
+    "1748": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "1575": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ]
+  }
+}

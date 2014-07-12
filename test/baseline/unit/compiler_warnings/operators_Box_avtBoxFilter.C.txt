@@ -1,0 +1,11 @@
+{
+  "file": "operators/Box/avtBoxFilter.C", 
+  "warnings": {
+    "105": [
+      "warning: base class 'class vtkUnstructuredGridAlgorithm' should be explicitly initialized in the copy constructor"
+    ], 
+    "74": [
+      "warning: extra ';'"
+    ]
+  }
+}

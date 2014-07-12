@@ -1,0 +1,8 @@
+{
+  "file": "avt/Filters/avtThresholdFilter.C", 
+  "warnings": {
+    "1078": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

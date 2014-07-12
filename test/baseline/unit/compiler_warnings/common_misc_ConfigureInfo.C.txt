@@ -1,0 +1,8 @@
+{
+  "file": "common/misc/ConfigureInfo.C", 
+  "warnings": {
+    "121": [
+      "warning: extra ';'"
+    ]
+  }
+}

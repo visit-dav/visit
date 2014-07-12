@@ -1,0 +1,23 @@
+{
+  "file": "databases/M3DC1/avtM3DC1FileFormat.C", 
+  "warnings": {
+    "1287": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "551": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "2189": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "2478": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "2384": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "2516": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

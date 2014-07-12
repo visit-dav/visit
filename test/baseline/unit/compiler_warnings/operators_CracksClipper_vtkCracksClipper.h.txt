@@ -1,0 +1,11 @@
+{
+  "file": "operators/CracksClipper/vtkCracksClipper.h", 
+  "warnings": {
+    "96": [
+      "warning: extra ';'"
+    ], 
+    "50": [
+      "warning: extra ';'"
+    ]
+  }
+}

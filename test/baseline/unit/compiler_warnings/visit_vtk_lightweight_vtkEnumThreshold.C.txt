@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/lightweight/vtkEnumThreshold.C", 
+  "warnings": {
+    "110": [
+      "warning: extra ';'"
+    ]
+  }
+}

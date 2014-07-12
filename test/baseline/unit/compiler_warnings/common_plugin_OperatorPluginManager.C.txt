@@ -1,0 +1,20 @@
+{
+  "file": "common/plugin/OperatorPluginManager.C", 
+  "warnings": {
+    "336": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "416": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "386": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "476": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "446": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ]
+  }
+}

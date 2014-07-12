@@ -1,0 +1,42 @@
+{
+  "file": "plots/Curve/PyCurveAttributes.C", 
+  "warnings": {
+    "1768": [
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_flags'"
+    ], 
+    "1785": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "1701": [
+      "warning: missing initializer for member '_typeobject::tp_iter'", 
+      "warning: missing initializer for member '_typeobject::tp_iternext'", 
+      "warning: missing initializer for member '_typeobject::tp_methods'", 
+      "warning: missing initializer for member '_typeobject::tp_members'", 
+      "warning: missing initializer for member '_typeobject::tp_getset'", 
+      "warning: missing initializer for member '_typeobject::tp_base'", 
+      "warning: missing initializer for member '_typeobject::tp_dict'", 
+      "warning: missing initializer for member '_typeobject::tp_descr_get'", 
+      "warning: missing initializer for member '_typeobject::tp_descr_set'", 
+      "warning: missing initializer for member '_typeobject::tp_dictoffset'", 
+      "warning: missing initializer for member '_typeobject::tp_init'", 
+      "warning: missing initializer for member '_typeobject::tp_alloc'", 
+      "warning: missing initializer for member '_typeobject::tp_new'", 
+      "warning: missing initializer for member '_typeobject::tp_free'", 
+      "warning: missing initializer for member '_typeobject::tp_is_gc'", 
+      "warning: missing initializer for member '_typeobject::tp_bases'", 
+      "warning: missing initializer for member '_typeobject::tp_mro'", 
+      "warning: missing initializer for member '_typeobject::tp_cache'", 
+      "warning: missing initializer for member '_typeobject::tp_subclasses'", 
+      "warning: missing initializer for member '_typeobject::tp_weaklist'", 
+      "warning: missing initializer for member '_typeobject::tp_del'", 
+      "warning: missing initializer for member '_typeobject::tp_version_tag'"
+    ], 
+    "1351": [
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'/g/g11/miller86/visit/trunk/src/plots/Contour/PyContourAttributes.C:1422: warning: missing initializer for member '_typeobject::tp_descr_set'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'/g/g11/miller86/visit/trunk/src/plots/Contour/PyContourAttributes.C:1422: warning: missing initializer for member '_typeobject::tp_bases'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_flags'"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkVisItFeatureEdges.C", 
+  "warnings": {
+    "35": [
+      "warning: extra ';'"
+    ]
+  }
+}

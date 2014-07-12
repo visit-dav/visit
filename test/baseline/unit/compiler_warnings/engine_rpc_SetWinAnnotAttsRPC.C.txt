@@ -1,0 +1,8 @@
+{
+  "file": "engine/rpc/SetWinAnnotAttsRPC.C", 
+  "warnings": {
+    "522": [
+      "warning: type qualifiers ignored on function return type"
+    ]
+  }
+}

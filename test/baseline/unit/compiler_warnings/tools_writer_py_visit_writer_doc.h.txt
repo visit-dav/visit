@@ -1,0 +1,8 @@
+{
+  "file": "tools/writer/py_visit_writer_doc.h", 
+  "warnings": {
+    "97": [
+      "warning: string length '2622' is greater than the length '509' ISO C90 compilers are required to support"
+    ]
+  }
+}

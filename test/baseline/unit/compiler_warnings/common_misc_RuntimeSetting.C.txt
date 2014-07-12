@@ -1,0 +1,11 @@
+{
+  "file": "common/misc/RuntimeSetting.C", 
+  "warnings": {
+    "341": [
+      "warning: extra ';'"
+    ], 
+    "263": [
+      "warning: extra ';'"
+    ]
+  }
+}
