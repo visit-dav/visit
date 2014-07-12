@@ -53,7 +53,7 @@ typedef enum
     CT_Z,
     CT_Radius,
     CT_Theta,
-    CT_Phi,
+    CT_Phi
 } CoordinateType;
 
 

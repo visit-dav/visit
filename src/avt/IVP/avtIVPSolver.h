@@ -430,13 +430,13 @@ class IVP_API avtIVPSolver
         OUTSIDE_TEMPORAL,
         STEPSIZE_UNDERFLOW,
         STIFFNESS_DETECTED,
-        UNSPECIFIED_ERROR,
+        UNSPECIFIED_ERROR
     };
 
     enum Direction
     {
         DIRECTION_FORWARD  = 0,
-        DIRECTION_BACKWARD = 1,
+        DIRECTION_BACKWARD = 1
     };
 
                     avtIVPSolver();

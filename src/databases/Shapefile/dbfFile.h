@@ -84,7 +84,7 @@ typedef enum
     dbfFieldGeneral,
     dbfFieldShortInt,
     dbfFieldInt,
-    dbfFieldDouble,
+    dbfFieldDouble
 } dbfFieldType_t;
 
 typedef struct

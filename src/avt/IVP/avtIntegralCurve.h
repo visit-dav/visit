@@ -207,7 +207,7 @@ class IVP_API ICStatus
         EXITED_SPATIAL_BOUNDARY       = 0x0020,
         EXITED_TEMPORAL_BOUNDARY      = 0x0040,
         NUMERICAL_ERROR               = 0x0080,
-        BAD_STEP_ERROR                = 0x0100,
+        BAD_STEP_ERROR                = 0x0100
     };
 
     void SetBit(const ICStatusBits &b) {status |= b;}
@@ -315,7 +315,7 @@ class IVP_API avtIntegralCurve
     enum Direction
     {
         DIRECTION_FORWARD  = 0,
-        DIRECTION_BACKWARD = 1,
+        DIRECTION_BACKWARD = 1
     };
 
     enum SerializeFlags
@@ -323,7 +323,7 @@ class IVP_API avtIntegralCurve
         SERIALIZE_ALL     = -1,
         SERIALIZE_NO_OPT  = 0,
         SERIALIZE_STEPS   = 1,
-        SERIALIZE_INC_SEQ = 2,
+        SERIALIZE_INC_SEQ = 2
     };
 
     avtIntegralCurve(const avtIVPSolver* model,

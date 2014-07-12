@@ -86,7 +86,7 @@ class EXPRESSION_API avtRecenterExpression : public avtSingleInputExpressionFilt
     typedef enum {
         Toggle,
         Nodal,
-        Zonal,
+        Zonal
     } RecenterType;
 
   protected:

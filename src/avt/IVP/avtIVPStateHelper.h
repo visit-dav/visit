@@ -64,7 +64,7 @@ public:
     enum Mode
     {
         GET,
-        PUT,
+        PUT
     };
     
                 avtIVPStateHelper( Mode mode, void* data )

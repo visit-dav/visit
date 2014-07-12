@@ -105,7 +105,7 @@ typedef enum
     NODE_PICK,        /* 3 */
     SPREADSHEET_PICK, /* 4 */
     DDT_PICK,         /* 5 */
-    LINEOUT,          /* 6 */
+    LINEOUT           /* 6 */
 }  INTERACTION_MODE;
 
 typedef enum {

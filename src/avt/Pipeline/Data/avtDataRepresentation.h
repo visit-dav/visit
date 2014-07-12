@@ -56,7 +56,7 @@ class  vtkDataSet;
 typedef enum
 {
     DATA_REP_TYPE_EAVL,
-    DATA_REP_TYPE_VTK,
+    DATA_REP_TYPE_VTK
 } DataRepType;
 
 typedef enum

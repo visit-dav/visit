@@ -80,7 +80,7 @@ class PIPELINE_API avtHexahedron27Extractor : public avtHexahedronExtractor
     {
         avtHex27Constant = 0,
         avtHex27Linear,
-        avtHex27Quadratic,
+        avtHex27Quadratic
     };
 
   
