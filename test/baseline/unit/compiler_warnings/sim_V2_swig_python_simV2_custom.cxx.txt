@@ -1,0 +1,11 @@
+{
+  "file": "sim/V2/swig/python/simV2_custom.cxx", 
+  "warnings": {
+    "1099": [
+      "warning: extra ';'"
+    ], 
+    "100": [
+      "warning: extra ';'"
+    ]
+  }
+}

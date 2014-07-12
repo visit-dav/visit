@@ -1,0 +1,8 @@
+{
+  "file": "avt/Expressions/General/avtRecenterExpression.h", 
+  "warnings": {
+    "89": [
+      "warning: comma at end of enumerator list"
+    ]
+  }
+}

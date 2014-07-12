@@ -1,0 +1,9 @@
+{
+  "file": "databases/GMV/gmvread.c", 
+  "warnings": {
+    "116": [
+      "warning: C++ style comments are not allowed in ISO C90", 
+      "warning: (this will be reported only once per input file)"
+    ]
+  }
+}

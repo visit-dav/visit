@@ -1,0 +1,12 @@
+{
+  "file": "sim/V1/lib/VisItControlInterface_V1.c", 
+  "warnings": {
+    "642": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1180": [
+      "warning: C++ style comments are not allowed in ISO C90", 
+      "warning: (this will be reported only once per input file)"
+    ]
+  }
+}

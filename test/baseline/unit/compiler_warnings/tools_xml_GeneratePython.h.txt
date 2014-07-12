@@ -1,0 +1,8 @@
+{
+  "file": "tools/xml/GeneratePython.h", 
+  "warnings": {
+    "3140": [
+      "warning: unknown escape sequence '\\%'"
+    ]
+  }
+}

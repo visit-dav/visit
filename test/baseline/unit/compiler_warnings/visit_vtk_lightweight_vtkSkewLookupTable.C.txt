@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/lightweight/vtkSkewLookupTable.C", 
+  "warnings": {
+    "53": [
+      "warning: extra ';'"
+    ]
+  }
+}

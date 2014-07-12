@@ -1,0 +1,47 @@
+{
+  "file": "operators/Slice/avtSliceFilter.C", 
+  "warnings": {
+    "2114": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2210": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2185": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2189": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2158": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2193": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2162": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2132": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2166": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2136": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2100": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2106": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2140": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ], 
+    "2110": [
+      "warning: ISO C++ does not support the '%lg' gnu_printf format"
+    ]
+  }
+}

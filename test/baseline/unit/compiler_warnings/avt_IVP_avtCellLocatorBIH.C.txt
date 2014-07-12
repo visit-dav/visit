@@ -1,0 +1,11 @@
+{
+  "file": "avt/IVP/avtCellLocatorBIH.C", 
+  "warnings": {
+    "64": [
+      "warning: ISO C++ prohibits anonymous structs"
+    ], 
+    "69": [
+      "warning: ISO C++ prohibits anonymous structs"
+    ]
+  }
+}

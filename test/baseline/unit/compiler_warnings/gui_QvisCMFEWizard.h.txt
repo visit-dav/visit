@@ -1,0 +1,8 @@
+{
+  "file": "gui/QvisCMFEWizard.h", 
+  "warnings": {
+    "146": [
+      "warning: comma at end of enumerator list"
+    ]
+  }
+}

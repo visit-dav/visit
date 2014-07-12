@@ -1,0 +1,8 @@
+{
+  "file": "databases/Vista/avtVistaFileFormat.h", 
+  "warnings": {
+    "138": [
+      "warning: type qualifiers ignored on function return type"
+    ]
+  }
+}

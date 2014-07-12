@@ -1,0 +1,8 @@
+{
+  "file": "avt/Plotter/vtk/vtkVisItTextActor.h", 
+  "warnings": {
+    "61": [
+      "warning: extra ';'"
+    ]
+  }
+}

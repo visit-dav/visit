@@ -1,0 +1,8 @@
+{
+  "file": "avt/Plotter/vtk/vtkOpenGLRectilinearGridMapper.h", 
+  "warnings": {
+    "38": [
+      "warning: extra ';'"
+    ]
+  }
+}

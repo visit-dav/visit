@@ -1,0 +1,25 @@
+{
+  "file": "databases/STAR/avtSTARFileFormat.C", 
+  "warnings": {
+    "641": [
+      "warning: ISO C99 requires rest arguments to be used", 
+      "warning: invoking macro WARNING argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98"
+    ], 
+    "321": [
+      "warning: ISO C99 requires rest arguments to be used", 
+      "warning: invoking macro ERROR argument 2: empty macro arguments are undefined in ISO C90 and ISO C++98"
+    ], 
+    "712": [
+      "warning: ISO C99 requires rest arguments to be used"
+    ], 
+    "713": [
+      "warning: ISO C99 requires rest arguments to be used"
+    ], 
+    "583": [
+      "warning: ISO C99 requires rest arguments to be used"
+    ], 
+    "243": [
+      "warning: ISO C99 requires rest arguments to be used"
+    ]
+  }
+}

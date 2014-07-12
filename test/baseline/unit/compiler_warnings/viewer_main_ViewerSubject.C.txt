@@ -1,0 +1,32 @@
+{
+  "file": "viewer/main/ViewerSubject.C", 
+  "warnings": {
+    "7942": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ], 
+    "7975": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ], 
+    "8008": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ], 
+    "7933": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ], 
+    "7986": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ], 
+    "8019": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ], 
+    "8054": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'DeferredCommandFromSimulation**'"
+    ], 
+    "7964": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ], 
+    "7997": [
+      "warning: format '%p' expects type 'void**', but argument 3 has type 'ViewerWindow**'"
+    ]
+  }
+}

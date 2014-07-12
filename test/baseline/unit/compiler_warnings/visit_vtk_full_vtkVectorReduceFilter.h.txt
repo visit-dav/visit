@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkVectorReduceFilter.h", 
+  "warnings": {
+    "79": [
+      "warning: extra ';'"
+    ]
+  }
+}

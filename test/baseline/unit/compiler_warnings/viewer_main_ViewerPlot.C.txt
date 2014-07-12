@@ -1,0 +1,11 @@
+{
+  "file": "viewer/main/ViewerPlot.C", 
+  "warnings": {
+    "5465": [
+      "warning: type qualifiers ignored on function return type"
+    ], 
+    "342": [
+      "warning: base class 'class ViewerBase' should be explicitly initialized in the copy constructor"
+    ]
+  }
+}

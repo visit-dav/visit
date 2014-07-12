@@ -1,0 +1,8 @@
+{
+  "file": "databases/paraDIS/RC_cpp_lib/Point.h", 
+  "warnings": {
+    "487": [
+      "warning: extra ';'"
+    ]
+  }
+}

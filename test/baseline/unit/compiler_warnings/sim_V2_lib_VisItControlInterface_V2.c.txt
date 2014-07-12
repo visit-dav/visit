@@ -1,0 +1,96 @@
+{
+  "file": "sim/V2/lib/VisItControlInterface_V2.c", 
+  "warnings": {
+    "1923": [
+      "warning: ISO C forbids conversion of function pointer to object pointer type"
+    ], 
+    "3103": [
+      "warning: ISO C forbids conversion of function pointer to object pointer type"
+    ], 
+    "1821": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1822": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1823": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1824": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1825": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1826": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1827": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1828": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1829": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1830": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1831": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1832": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1833": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1835": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1836": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1837": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1838": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1839": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1840": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1843": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "1950": [
+      "warning: ISO C forbids conversion of function pointer to object pointer type"
+    ], 
+    "59": [
+      "warning: C++ style comments are not allowed in ISO C90", 
+      "warning: (this will be reported only once per input file)"
+    ], 
+    "3138": [
+      "warning: ISO C forbids conversion of function pointer to object pointer type"
+    ], 
+    "3166": [
+      "warning: ISO C forbids conversion of function pointer to object pointer type"
+    ], 
+    "3952": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "3958": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "1961": [
+      "warning: ISO C forbids conversion of function pointer to object pointer type"
+    ], 
+    "1912": [
+      "warning: ISO C forbids conversion of function pointer to object pointer type"
+    ]
+  }
+}

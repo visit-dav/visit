@@ -1,0 +1,15 @@
+{
+  "file": "sim/V2/lib/VisIt_DomainList.c", 
+  "warnings": {
+    "62": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "54": [
+      "warning: ISO C forbids conversion", 
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "46": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ]
+  }
+}

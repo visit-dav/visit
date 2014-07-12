@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkTensorReduceFilter.C", 
+  "warnings": {
+    "58": [
+      "warning: extra ';'"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "file": "visit_vtk/full/vtkCSGGrid.h", 
+  "warnings": {
+    "705": [
+      "warning: extra ';'"
+    ], 
+    "133": [
+      "warning: extra ';'"
+    ], 
+    "710": [
+      "warning: extra ';'"
+    ]
+  }
+}

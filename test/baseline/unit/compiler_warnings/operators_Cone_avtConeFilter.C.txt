@@ -1,0 +1,11 @@
+{
+  "file": "operators/Cone/avtConeFilter.C", 
+  "warnings": {
+    "96": [
+      "warning: extra ';'"
+    ], 
+    "115": [
+      "warning: extra ';'"
+    ]
+  }
+}

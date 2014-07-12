@@ -1,0 +1,12 @@
+{
+  "file": "common/state/JSONNode.h", 
+  "warnings": {
+    "127": [
+      "warning: type qualifiers ignored on function return type", 
+      "warning: type qualifiers ignored on function return typeIn file included from /g/g11/miller86/visit/trunk/src/plots/Boundary/avtBoundaryFilter.C:46:", 
+      "warning: type qualifiers ignored on function return typeIn file included from /g/g11/miller86/visit/trunk/src/avt/Pipeline/Data/avtDataAttributes.h:52,", 
+      "warning: type qualifiers ignored on function return typeIn file included from /usr/gapps/visit/thirdparty_shared/2.7.0/vtk/6.1.0/linux-x86_64_gcc-4.4/include/vtk-6.1/vtkRenderer.h:35,", 
+      "warning: type qualifiers ignored on function return typeIn file included from /g/g11/miller86/visit/trunk/src/common/state/MapNode.h:44,"
+    ]
+  }
+}

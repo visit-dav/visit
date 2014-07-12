@@ -1,0 +1,8 @@
+{
+  "file": "avt/Plotter/vtk/vtkOpenGLStructuredGridMapper.C", 
+  "warnings": {
+    "53": [
+      "warning: extra ';'"
+    ]
+  }
+}

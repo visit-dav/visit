@@ -1,0 +1,20 @@
+{
+  "file": "sim/V2/runtime/simv2_TypeTraits.hxx", 
+  "warnings": {
+    "65": [
+      "warning: extra ';'"
+    ], 
+    "66": [
+      "warning: extra ';'"
+    ], 
+    "67": [
+      "warning: extra ';'"
+    ], 
+    "68": [
+      "warning: extra ';'"
+    ], 
+    "69": [
+      "warning: extra ';'"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "file": "avt/IVP/avtStateRecorderIntegralCurve.h", 
+  "warnings": {
+    "109": [
+      "warning: comma at end of enumerator list"
+    ]
+  }
+}

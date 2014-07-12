@@ -1,0 +1,8 @@
+{
+  "file": "avt/Plotter/vtk/vtkTexturedPointsPainter.C", 
+  "warnings": {
+    "105": [
+      "warning: extra ';'"
+    ]
+  }
+}

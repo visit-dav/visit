@@ -1,0 +1,8 @@
+{
+  "file": "databases/Miranda/avtMirandaFileFormat.C", 
+  "warnings": {
+    "2134": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ]
+  }
+}

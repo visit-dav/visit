@@ -1,0 +1,17 @@
+{
+  "file": "visitpy/common/visitmodule.C", 
+  "warnings": {
+    "17412": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "17413": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "17414": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ], 
+    "17415": [
+      "warning: ISO C++ forbids casting between pointer-to-function and pointer-to-object"
+    ]
+  }
+}

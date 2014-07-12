@@ -1,0 +1,14 @@
+{
+  "file": "databases/VCellMTMD/unzip/list.c", 
+  "warnings": {
+    "358": [
+      "warning: suggest braces around empty body in an 'else' statement"
+    ], 
+    "150": [
+      "warning: suggest braces around empty body in an 'else' statement"
+    ], 
+    "446": [
+      "warning: suggest braces around empty body in an 'else' statement"
+    ]
+  }
+}

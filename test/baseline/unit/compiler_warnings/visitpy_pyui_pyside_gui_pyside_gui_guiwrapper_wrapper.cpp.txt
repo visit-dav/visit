@@ -1,0 +1,20 @@
+{
+  "file": "visitpy/pyui/pyside/gui/pyside_gui/guiwrapper_wrapper.cpp", 
+  "warnings": {
+    "588": [
+      "warning: missing initializer for member '_typeobject::tp_del'", 
+      "warning: missing initializer for member '_typeobject::tp_version_tag'", 
+      "warning: missing initializer for member '_heaptypeobject::as_number'", 
+      "warning: missing initializer for member '_heaptypeobject::as_mapping'", 
+      "warning: missing initializer for member '_heaptypeobject::as_sequence'", 
+      "warning: missing initializer for member '_heaptypeobject::as_buffer'", 
+      "warning: missing initializer for member '_heaptypeobject::ht_name'", 
+      "warning: missing initializer for member '_heaptypeobject::ht_slots'"
+    ], 
+    "526": [
+      "warning: missing initializer for member 'PyMethodDef::ml_doc'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_meth'", 
+      "warning: missing initializer for member 'PyMethodDef::ml_flags'"
+    ]
+  }
+}

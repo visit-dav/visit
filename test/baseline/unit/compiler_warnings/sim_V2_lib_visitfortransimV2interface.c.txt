@@ -1,0 +1,13 @@
+{
+  "file": "sim/V2/lib/visitfortransimV2interface.c", 
+  "warnings": {
+    "417": [
+      "warning: C++ style comments are not allowed in ISO C90", 
+      "warning: (this will be reported only once per input file)"
+    ], 
+    "419": [
+      "warning: comparison between signed and unsigned integer expressions", 
+      "warning: signed and unsigned type in conditional expression"
+    ]
+  }
+}

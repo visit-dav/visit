@@ -1,0 +1,8 @@
+{
+  "file": "databases/VCellMTMD/avtVCellMTMDFileFormat.C", 
+  "warnings": {
+    "2532": [
+      "warning: format '%x' expects type 'unsigned int*', but argument 3 has type 'int*'"
+    ]
+  }
+}

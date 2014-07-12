@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkOBJWriter.h", 
+  "warnings": {
+    "56": [
+      "warning: extra ';'"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "file": "sim/V2/ddtsim/mpicompat/openmpi.c", 
+  "warnings": {
+    "110": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "94": [
+      "warning: ISO C90 forbids mixed declarations and code"
+    ], 
+    "61": [
+      "warning: C++ style comments are not allowed in ISO C90", 
+      "warning: (this will be reported only once per input file)"
+    ], 
+    "86": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ], 
+    "109": [
+      "warning: ISO C forbids conversion of object pointer to function pointer type"
+    ]
+  }
+}

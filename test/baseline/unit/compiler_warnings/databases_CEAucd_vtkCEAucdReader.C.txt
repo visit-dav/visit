@@ -1,0 +1,8 @@
+{
+  "file": "databases/CEAucd/vtkCEAucdReader.C", 
+  "warnings": {
+    "45": [
+      "warning: extra ';'"
+    ]
+  }
+}

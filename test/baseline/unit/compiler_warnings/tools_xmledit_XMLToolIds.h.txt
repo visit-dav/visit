@@ -1,0 +1,8 @@
+{
+  "file": "tools/xmledit/XMLToolIds.h", 
+  "warnings": {
+    "13": [
+      "warning: comma at end of enumerator list"
+    ]
+  }
+}

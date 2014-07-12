@@ -1,0 +1,11 @@
+{
+  "file": "avt/Expressions/General/avtConnComponentsExpression.C", 
+  "warnings": {
+    "3252": [
+      "warning: comparison between signed and unsigned integer expressions"
+    ], 
+    "2719": [
+      "warning: extra ';'"
+    ]
+  }
+}

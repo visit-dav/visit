@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkVectorGlyph.h", 
+  "warnings": {
+    "75": [
+      "warning: extra ';'"
+    ]
+  }
+}

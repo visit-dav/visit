@@ -1,0 +1,11 @@
+{
+  "file": "databases/paraDIS/paraDIS_lib/paradis.C", 
+  "warnings": {
+    "3040": [
+      "warning: format '%lu' expects type 'long unsigned int*', but argument 3 has type 'long int*'"
+    ], 
+    "129": [
+      "warning: extra ';'"
+    ]
+  }
+}

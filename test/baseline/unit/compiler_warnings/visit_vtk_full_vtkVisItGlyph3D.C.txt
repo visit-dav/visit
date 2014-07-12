@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/full/vtkVisItGlyph3D.C", 
+  "warnings": {
+    "39": [
+      "warning: extra ';'"
+    ]
+  }
+}

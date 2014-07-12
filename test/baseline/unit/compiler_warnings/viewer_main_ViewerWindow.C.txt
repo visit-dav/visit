@@ -1,0 +1,29 @@
+{
+  "file": "viewer/main/ViewerWindow.C", 
+  "warnings": {
+    "9185": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'const ViewerWindow*'"
+    ], 
+    "9159": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'const ViewerWindow*'"
+    ], 
+    "2568": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'ViewerWindow*'"
+    ], 
+    "9133": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'const ViewerWindow*'"
+    ], 
+    "2545": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'ViewerWindow*'"
+    ], 
+    "9256": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'ViewerWindow*'"
+    ], 
+    "9211": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'const ViewerWindow*'"
+    ], 
+    "2591": [
+      "warning: format '%p' expects type 'void*', but argument 4 has type 'ViewerWindow*'"
+    ]
+  }
+}

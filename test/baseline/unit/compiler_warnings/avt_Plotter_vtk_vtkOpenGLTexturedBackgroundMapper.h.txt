@@ -1,0 +1,8 @@
+{
+  "file": "avt/Plotter/vtk/vtkOpenGLTexturedBackgroundMapper.h", 
+  "warnings": {
+    "66": [
+      "warning: extra ';'"
+    ]
+  }
+}

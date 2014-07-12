@@ -1,0 +1,11 @@
+{
+  "file": "visit_vtk/osmesa/vtkVisItOSMesaRenderingFactory.C", 
+  "warnings": {
+    "44": [
+      "warning: extra ';'"
+    ], 
+    "45": [
+      "warning: extra ';'"
+    ]
+  }
+}

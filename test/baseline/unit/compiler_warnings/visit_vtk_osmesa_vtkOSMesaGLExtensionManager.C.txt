@@ -1,0 +1,8 @@
+{
+  "file": "visit_vtk/osmesa/vtkOSMesaGLExtensionManager.C", 
+  "warnings": {
+    "104": [
+      "warning: extra ';'"
+    ]
+  }
+}
