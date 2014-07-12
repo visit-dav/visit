@@ -110,7 +110,7 @@ class PLOTTER_API  avtLegend
         VerticalTextOnRight,
         VerticalTextOnLeft,
         HorizontalTextOnTop,
-        HorizontalTextOnBottom,
+        HorizontalTextOnBottom
     } LegendOrientation;
 
                                   avtLegend();

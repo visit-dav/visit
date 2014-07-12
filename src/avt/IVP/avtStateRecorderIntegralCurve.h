@@ -106,7 +106,7 @@ public:
         SAMPLE_SECONDARY2 = 0x0100,
         SAMPLE_SECONDARY3 = 0x0200,
         SAMPLE_SECONDARY4 = 0x0400,
-        SAMPLE_SECONDARY5 = 0x0800,
+        SAMPLE_SECONDARY5 = 0x0800
     };
 
     struct Sample

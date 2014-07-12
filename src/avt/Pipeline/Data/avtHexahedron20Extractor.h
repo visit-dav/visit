@@ -81,7 +81,7 @@ class PIPELINE_API avtHexahedron20Extractor : public avtHexahedronExtractor
     {
         avtHex20Constant = 0,
         avtHex20Linear,
-        avtHex20Quadratic,
+        avtHex20Quadratic
     };
 
     // Default domain approximation

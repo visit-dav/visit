@@ -73,7 +73,7 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
     {
         CARTESIAN = 0,                /* 0 */
         CYLINDRICAL,                  /* 1 */
-        SPHERICAL,                    /* 2 */
+        SPHERICAL                     /* 2 */
     };
 
     enum VectorTransformMethod

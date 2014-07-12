@@ -10,7 +10,7 @@ enum
     ID_XML2CMAKE = 4,
     ID_XML2INFO = 5,
     ID_XML2AVT = 6,
-    ID_XML_MAX = 7,
+    ID_XML_MAX = 7
 };
 
 #endif
