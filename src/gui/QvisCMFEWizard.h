@@ -143,7 +143,7 @@ private:
         Page_DonorAndTargetSpecification, // page1
         Page_TimeSpecification,           // page2
         Page_InterpSelection,             // page3
-        Page_ActivityDescription,         // page4
+        Page_ActivityDescription          // page4
     };
 
     void CreateDonorTypePage();          // page0
