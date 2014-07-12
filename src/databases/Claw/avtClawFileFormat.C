@@ -71,15 +71,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+#include <limits>
+#include <algorithm>
+#include <sstream>
 
 using std::map;
 using std::string;
 using std::vector;
+using std::ostringstream;
 
 // ****************************************************************************
 //  Function: InitTimeHeader 
@@ -903,6 +908,9 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
 //    X, Y, and Z for calculating logical coordinates (we were getting
 //    negative logical coords before).
 //
+//    Burlen Loring, Fri Jul 11 17:41:14 PDT 2014
+//    fix out-of-bounds index of vector reported by gcc STL debug mode.
+//
 // ****************************************************************************
 
 void
@@ -917,17 +925,15 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
     map<int, GridHeader_t> levelsMap = gridHeaderMaps[timeState];
 
     int num_dims = timeHdr.ndims;
-    int num_levels = levelsMap.size();
-    int num_patches = gridHdrs.size();
+    size_t num_levels = levelsMap.size();
+    size_t num_patches = gridHdrs.size();
 
     // first, look to see if we don't already have it cached
     void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                   timeState, -1);
-    if (*vrTmp == NULL && num_patches > 0)
+    if ((*vrTmp == NULL) && (num_patches > 0))
     {
-        int i;
-
         //
         // build the avtDomainNesting object
         //
@@ -941,7 +947,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         //
         vector<int> ratios(3,1);
         dn->SetLevelRefinementRatios(0, ratios);
-        for (i = 1; i < num_levels; i++)
+        for (size_t i = 1; i < num_levels; ++i)
         {
            ratios[0] = (int) (levelsMap[i-1].dx / levelsMap[i].dx+0.5);
            ratios[1] = (int) (levelsMap[i-1].dy / levelsMap[i].dy+0.5);
@@ -949,20 +955,20 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
            dn->SetLevelRefinementRatios(i, ratios);
         }
 
-        float lowestX = gridHdrs[i].xlow;
-        float lowestY = gridHdrs[i].ylow;
-        float lowestZ = gridHdrs[i].zlow;
-        for (i = 0 ; i < num_patches ; i++)
+        double lowestX = std::numeric_limits<double>::max();
+        double lowestY = std::numeric_limits<double>::max();
+        double lowestZ = std::numeric_limits<double>::max();
+        for (size_t i = 0; i < num_patches; ++i)
         {
-            lowestX = (lowestX < gridHdrs[i].xlow ? lowestX : gridHdrs[i].xlow);
-            lowestY = (lowestY < gridHdrs[i].ylow ? lowestY : gridHdrs[i].ylow);
-            lowestZ = (lowestZ < gridHdrs[i].zlow ? lowestZ : gridHdrs[i].zlow);
+            lowestX = std::min(lowestX, gridHdrs[i].xlow);
+            lowestY = std::min(lowestY, gridHdrs[i].ylow);
+            lowestZ = std::min(lowestZ, gridHdrs[i].zlow);
         }
 
         //
         // set each domain's level, children and logical extents
         //
-        for (i = 0; i < num_patches; i++)
+        for (size_t i = 0; i < num_patches; ++i)
         {
             vector<int> childPatches;
             float x0 = gridHdrs[i].xlow;
@@ -971,7 +977,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
             float y1 = y0 + gridHdrs[i].my * gridHdrs[i].dy;
             float z0 = gridHdrs[i].zlow;
             float z1 = z0 + gridHdrs[i].mz * gridHdrs[i].dz;
-            for (int j = 0; j < num_patches; j++)
+            for (size_t j = 0; j < num_patches; j++)
             {
                 if (gridHdrs[j].AMR_level != gridHdrs[i].AMR_level+1)
                     continue;
@@ -1023,7 +1029,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         sdb = new avtRectilinearDomainBoundaries(canComputeNeighborsFromExtents);
 
         sdb->SetNumDomains(num_patches);
-        for (int i = 0 ; i < num_patches ; i++)
+        for (size_t i = 0 ; i < num_patches ; ++i)
         {
             int e[6];
             e[0] = (int) (gridHdrs[i].xlow / gridHdrs[i].dx + 0.5);
@@ -1151,6 +1157,11 @@ avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
 //  Modifications:
 //    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
 //    Changed naux to ndims 
+//
+//    Burlen Loring, Fri Jul 11 18:32:43 PDT 2014
+//    fix invalid write when null terminating string, and handle
+//    failed file system operations.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1188,9 +1199,23 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     char *buf = new char[dsLength+1];
     string fullFileName = rootDir + "/" + gridFilenames[timeState];
     int fd = open(fullFileName.c_str(), O_RDONLY);
+    if (fd < 0)
+    {
+        ostringstream oss;
+        oss << "open \"" << fullFileName
+          << "\" failed with error \"" << strerror(errno) << "\"";
+        EXCEPTION1(InvalidFilesException, oss.str().c_str());
+    }
     lseek(fd, dsOffset, SEEK_SET);
-    int nread = read(fd, buf, dsLength);
-    buf[nread+1] = '\0';
+    ssize_t nread = read(fd, buf, dsLength);
+    if (nread < 0)
+    {
+        ostringstream oss;
+        oss << "read " << dsLength << " from \"" << fullFileName
+          << "\" failed with error \"" << strerror(errno) << "\"";
+        EXCEPTION1(InvalidFilesException, oss.str().c_str());
+    }
+    buf[nread] = '\0';
     close(fd);
 
     // find the character offset within first line of desired column
