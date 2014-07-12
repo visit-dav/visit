@@ -9,79 +9,89 @@ src_dir = test_root_path("..","src")
 tpb_dir = test_root_path("..","src","third_party_builtin")
 qtssh_dir = test_root_path("..","src","tools","qtssh")
 
-if not os.path.exists(test_root_path("..","buildlog")):
+if not os.path.exists(test_root_path("..","make.err")):
     Exit(113)
 
-mfile = open(test_root_path("..","buildlog"))
+mfile = open(test_root_path("..","make.err"))
 cur_warnings={}
+tot_warn_cnt = 0
+tot_file_cnt = 0
 for line in mfile:
     if "warning" in line.lower():
+
+        # get name of file generating warning
+        line = line[0:-1] # remove trailing newline
         warnline = line.partition(":")
-        warnfile = warnline[0]
+        warnfile1 = warnline[0]
+        warnfile2 = warnfile1.partition("]")
+        if warnfile2[1] == "]":
+            warnfile = warnfile2[2].replace(" ","")
+        else:
+            warnfile = warnfile2[0]
+
         if warnfile[0:len(src_dir):1] != src_dir: 
-            continue # ignore files not in our src dir
+            continue # ignore files not in our src dir, not our code
         if warnfile[0:len(tpb_dir):1] == tpb_dir: 
-            continue # ignore files in third_party_builtin
+            continue # ignore files in third_party_builtin, not our code
         if warnfile[0:len(data_dir):1] == data_dir: 
-            continue # ignore files in data dir 
+            continue # ignore files in data dir, not relevant to VisIt for users
         if warnfile[0:len(qtssh_dir):1] == qtssh_dir: 
-            continue # ignore files in qtssh dir 
-        warnftag = "_".join(warnfile.split("/")[-2::1])
+            continue # ignore files in qtssh dir, not our code 
+
+        warnfilesrc = warnfile[len(src_dir)+1::1]
         if warnline[1] == ":" and os.path.exists(warnfile):
             msginfo = warnline[2].partition(":")
-            lineno = msginfo[0]
-            msg = msginfo[2]
-            if warnftag in cur_warnings:
-                cur_warnings[warnftag]["count"] += 1
-                cur_warnings[warnftag]["warnings"].append((lineno,msg))
+            if not msginfo[0].isdigit():
+                continue # probably a garbled message in make.err
+            lineno = int(msginfo[0])
+            rawmsg = msginfo[2]
+            idx = rawmsg.find("warning")
+            if idx > -1:
+                msg = rawmsg[idx::1]
             else:
-                cur_warnings[warnftag] = {"file":warnfile, "ftag":warnftag, "count":1, "warnings":[(lineno,msg)]}
+                msg = rawmsg
+            if warnfilesrc in cur_warnings:
+                if lineno in cur_warnings[warnfilesrc]["warnings"]:
+                    if msg not in cur_warnings[warnfilesrc]["warnings"][lineno]:
+                        cur_warnings[warnfilesrc]["warnings"][lineno].append(msg)
+                        tot_warn_cnt += 1
+                else:
+                    cur_warnings[warnfilesrc]["warnings"][lineno] = [msg]
+                    tot_warn_cnt += 1
+            else:
+                cur_warnings[warnfilesrc] = {"file":warnfilesrc, "warnings":{lineno:[msg]}}
+                tot_warn_cnt += 1
+                tot_file_cnt += 1
+
 mfile.close()
 
-#
-# Examine all files in current and compare to base
-#
-for ftag in cur_warnings:
-    base_count = 0
-    ftag = cur_warnings[ftag]["ftag"]
-    cur_count = cur_warnings[ftag]["count"]
-    cur_txt = json.dumps(cur_warnings[ftag], indent=3)
-
-    bfile = test_root_path("baseline","unit","compiler_warnings","%s.txt"%ftag)
-    if os.path.exists(bfile):
-        try:
-            bf = open(bfile,"r")
-            base_warnings = json.load(bf)
-            bf.close()
-            base_count = base_warnings["count"]
-            base_txt = json.dumps(base_warnings, indent=3)
-        except:
-            base_count = 0
-            base_txt = "Unable to read baseline file"
-
-    failIt = cur_count > base_count
-    skipIt = cur_count == base_count
-
-    TestText(ftag, cur_txt, failIt, skipIt)
+TestCWText("TOTAL_WARNINGS", "%d"%tot_warn_cnt, tot_warn_cnt)
+TestCWText("TOTAL_FILES", "%d"%tot_file_cnt, tot_file_cnt)
 
 #
-# finish any remaining files that were in base but not in current
+# Examine all files in current
+#
+for srcfile in cur_warnings:
+    cur_count = 0
+    for lineno in cur_warnings[srcfile]["warnings"]:
+        cur_count += len(cur_warnings[srcfile]["warnings"][lineno])
+    cur_txt = json.dumps(cur_warnings[srcfile],indent=2)
+    TestCWText(srcfile.replace("/","_"), cur_txt, cur_count)
+
+#
+# finish any remaining files that are in base but not in current
 #
 bdir = test_root_path("baseline","unit","compiler_warnings")
 for f in os.listdir(bdir):
     bfn = "%s/%s"%(bdir,f)
-    if os.path.isdir(bfn):
-        continue
+    srcfile=""
     try:
-        bf = open(bfn,"r")
-        base_warnings = json.load(bf)
-        bf.close()
-        readIt = 1
+        base_warnings = json.load(open("%s/%s"%(bdir,f)))
+        srcfile = base_warnings["file"]
     except:
-        readIt = 0
-    if readIt:
-        if base_warnings["ftag"] in cur_warnings:
-            continue
-        TestText(base_warnings["ftag"], "", 0, 1)
+        pass
+    if not srcfile or srcfile in cur_warnings:
+        continue
+    TestCWText(srcfile.replace("/","_"), "", 0)
 
 Exit()

@@ -1607,7 +1607,7 @@ def CheckInteractive(case_name):
 #   Mark C. Miller, Wed Jul  9 18:43:41 PDT 2014
 #   Added setFailed and setSkipped args for caller to control these
 # ----------------------------------------------------------------------------
-def TestText(case_name, inText, setFailed=None, setSkipped=None):
+def TestText(case_name, inText):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
@@ -1649,14 +1649,8 @@ def TestText(case_name, inText, setFailed=None, setSkipped=None):
     fout.close()
 
     # did the test fail?
-    if setFailed == None:
-        failed = (nchanges > 0)
-    else:
-        failed = setFailed
-    if setSkipped == None:
-        skip   =  TestEnv.check_skip(case_name)
-    else:
-        skip = setSkipped
+    failed = (nchanges > 0)
+    skip   =  TestEnv.check_skip(case_name)
 
     LogTextTestResult(case_name,nchanges,nlines,failed,skip)
 
@@ -1667,6 +1661,151 @@ def TestText(case_name, inText, setFailed=None, setSkipped=None):
     # set error codes
     if failed and not skip:
         TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+
+
+# Test Compiler Warning text
+def TestCWText(src_file_name, cur_warn_text, cur_warn_count):
+    """
+    Write out text to file, diff it with the baseline, and log the result.
+    """
+    CheckInteractive(src_file_name)
+
+    # create file names
+    (cur, diff, base, altbase, modeSpecific) = GenFileNames(src_file_name.replace("/","_"), ".txt")
+
+    base_warn_count = 0
+    if os.path.isfile(base):
+        base_warn_text = open(base).read()
+        base_warn_json = json.loads(base_warn_text)
+        if src_file_name[0:5] == "TOTAL":
+            base_warn_count = int(base_warn_json)
+        else:
+            base_warn_count = 0
+            for lineno in base_warn_json["warnings"]:
+                base_warn_count += len(base_warn_json["warnings"][lineno])
+    else:
+        Log("Warning: No baseline text file: %s" % base)
+        base = test_module_path("notext.txt")
+        base_warn_text = "notext"
+
+    # Filter out unwanted text
+    cur_warn_text = FilterTestText(cur_warn_text, base_warn_text)
+
+    # save the current text output (in current)
+    fout = open(cur, 'w')
+    fout.write(cur_warn_text)
+    fout.close()
+    fout = open(out_path("html","%s.txt"%src_file_name.replace("/","_")),"w")
+    fout.write(cur_warn_text)
+    fout.close()
+
+    nchanges = 0
+    nlines   = 0
+
+    # diff the baseline and current text files
+    d = HtmlDiff.Differencer(base, cur)
+    # change to use difflib
+    (nchanges, nlines) = d.Difference(out_path("html","%s.html"%src_file_name), src_file_name)
+
+    # save the diff output
+    # TODO_WINDOWS THIS WONT WORK ON WINDOWS
+    # we can use difflib
+    #diff_cmd = "diff " + base + " " + cur
+    #res = sexe(diff_cmd,ret_output = True)
+    #fout = open(diff, 'w')
+    #fout.write(res["output"])
+    #fout.close()
+
+    # did the test fail?
+    failed = 0
+    if cur_warn_count > base_warn_count:
+        failed = 1
+    elif cur_warn_count == base_warn_count:
+        failed = nchanges + nlines > 0
+    skip   =  TestEnv.check_skip(src_file_name)
+
+    LogCWTextTestResult(src_file_name,cur_warn_count,base_warn_count,failed,skip)
+
+    # Increment the number of skips if appropriate
+    if skip:
+        TestEnv.results["numskip"] += 1
+
+    # set error codes
+    if failed and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+
+
+# ----------------------------------------------------------------------------
+#  Method: LogTextTestLineResult
+#
+#  Programmer: Mark C. Miller
+#  Date:       Thu Jul 10 12:10:41 PDT 2014
+# ----------------------------------------------------------------------------
+def LogCWTextTestResult(src_file_name,cur_warn_count,base_warn_count,failed,skip):
+    """
+    Log the result of a text based test.
+    """
+    if failed:
+        if skip:
+            status = "skipped"
+        else:
+            status = "failed"
+    else:
+        status = "passed"
+    # write html result
+    Log("    Test case '%s' %s" % (src_file_name,status.upper()))
+    JSONCWTextTestResult(src_file_name,status,cur_warn_count,base_warn_count,failed,skip)
+    HTMLCWTextTestResult(src_file_name,status,cur_warn_count,base_warn_count,failed,skip)
+
+# ----------------------------------------------------------------------------
+#  Method: JSONCWTextTestResult
+#
+#  Programmer: Mark C. Miller
+#  Date:       Thu Jul 10 12:10:41 PDT 2014
+# ----------------------------------------------------------------------------
+def JSONCWTextTestResult(src_file_name,status,ccnt,bcnt,failed,skip):
+    res = json_results_load()
+    t_res = {'name':    src_file_name,
+             'status':  status,
+             'curr_warning_count':   ccnt,
+             'base_warning_count':   bcnt}
+    res["sections"][-1]["cases"].append(t_res)
+    json_results_save(res)
+
+
+# ----------------------------------------------------------------------------
+#  Method: HTMLCWTextTestResult
+#
+#  Programmer: Mark C. Miller
+#  Date:       Thu Jul 10 12:10:41 PDT 2014
+# ----------------------------------------------------------------------------
+def HTMLCWTextTestResult(src_file_name,status,ccnt,bcnt,failed,skip):
+    """
+    Creates html entry for the result of a text based test.
+    """
+    # TODO use template file
+    html = html_output_file_handle()
+    # write to the html file
+    color = "#00ff00"
+    if failed:
+        if skip:
+            color = "#0000ff"
+        else:
+            color = "#ff0000"
+    html.write(" <tr>\n")
+    html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % \
+        (color, src_file_name.replace("/","_"), src_file_name.replace("/","_")))
+    html.write("  <td colspan=2><a href=\"%s.txt\">warnings</a></td>\n"%src_file_name.replace("/","_"))
+    html.write("  <td align=center>%d</td>\n"%bcnt)
+    html.write("  <td align=center>%d</td>\n"%ccnt)
+    if bcnt < ccnt:
+        color = "#ff0000"
+    elif bcnt > ccnt:
+        color = "#00ff00"
+    else:
+        color = "#0000ff"
+    html.write("  <td bgcolor=\"%s\" align=center>%d</td>\n"%(color, bcnt-ccnt))
+    html.write(" </tr>\n")
 
 # ----------------------------------------------------------------------------
 # Function: AssertTrue
