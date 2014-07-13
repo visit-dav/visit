@@ -1745,6 +1745,9 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
 //    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
 //    Assume PDB won't modify our char*'s, and cast any literals as needed.
 //
+//    Burlen Loring, Sat Jul 12 13:22:38 PDT 2014
+//    fix out-of-bounds index when vectors are empty.
+//
 // ****************************************************************************
 
 void *
@@ -1785,17 +1788,16 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
     // pure materials, the value -1.0 will represent 0% of a material,
     // and 2.0 will represent 100% of a material.
     vector<vector<float> > values(num_materials);
-    size_t i, j;
 
     // Initially, all zones are set to 0% for all materials
     // We make storage for the received zones to make computation
     // easier, but we won't use the data when it comes to making
     // the material.
-    for (i = 0 ; i < (size_t)num_materials ; i++)
+    for (int i = 0 ; i < num_materials ; ++i)
     {
         values[i].resize(total_zones, -1.0f);
     }
-    
+
     // Read in the tags
     m_tags = MAKE_N(pdb_taglist, 1);
     if (PD_read(m_pdbFile, (char*)"MeshTags", m_tags) == false)
@@ -1804,21 +1806,22 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
         EXCEPTION1(InvalidVariableException, "No meshtag data.");
     }
 
-    // Now we go through the materials, and deal with them accordingly. 
-    for (i = 0; i < (size_t)num_materials; i++)
+    // Now we go through the materials, and deal with them accordingly.
+    for (int i = 0; i < num_materials; ++i)
     {
         string base = m_names[i];
-       
+
         string matName = "mat_" + base + "_zones";
-     
-        for (j = 0; j < (size_t)m_tags->num_tags; ++j)
+
+        int j = 0;
+        for (; j < m_tags->num_tags; ++j)
             if (!strcmp(m_tags->tags[j].tagname, matName.c_str()))
                 break;
-       
-        if (j == (size_t)m_tags->num_tags)
+
+        if (j == m_tags->num_tags)
             continue;           // Material is not in this domain
 
-        int tsize = m_tags->tags[j].size;            
+        int tsize = m_tags->tags[j].size;
         vector<int> ids(tsize);
 
         if (PD_read(m_pdbFile, (char*)matName.c_str(), &(ids[0])) == false)
@@ -1830,19 +1833,20 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
         // These id's have this material. To what degree, we're not
         // yet sure, but we'll set them all to pure (100%), and find
         // later which ones are factional.
-        for (j = 0; j < ids.size(); ++j)
+        for (size_t q = 0; q < ids.size(); ++q)
         {
-            int zone = ids[j];
+            int zone = ids[q];
             values[i][zone] = 2.0f;
         }
 
         string mixedName = "mat_" + base + "_mixedZones";
 
-        for (j = 0; j < (size_t)m_tags->num_tags; ++j)        
+        j = 0;
+        for (; j < m_tags->num_tags; ++j)
             if (!strcmp(m_tags->tags[j].tagname, mixedName.c_str()))
                 break;
 
-        if (j == (size_t)m_tags->num_tags)
+        if (j == m_tags->num_tags)
             continue;           // It's an exclusive material.
 
         tsize = m_tags->tags[j].size;
@@ -1853,7 +1857,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
             Close();
             EXCEPTION1(InvalidFilesException, my_filenames[domain].c_str());
         }
-        
+
         // We now have the ids of the mixed zones.
         // This implies that there is a list of fractions of the same
         // size.
@@ -1868,23 +1872,23 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
         }
 
         // Now set the appropriate values for those zones
-        for (j = 0; j < ids.size(); ++j)
+        for (size_t q = 0; q < ids.size(); ++q)
         {
-            int zone = ids[j];
-            values[i][zone] = static_cast<float>(fractions[j]);
+            int zone = ids[q];
+            values[i][zone] = static_cast<float>(fractions[q]);
         }
     }
 
-    // We've collected the data we need from the files.    
+    // We've collected the data we need from the files.
     Close();
 
     // Now to build into appropriate data structures.
     // Go through the first num_real (which leaves out the recvzones).
-    for (i = 0; i < (size_t)num_real; ++i)
+    for (int i = 0; i < num_real; ++i)
     {
         bool pure = false;
         // First look for pure materials
-        for (j = 0; j < (size_t)num_materials; ++j)
+        for (int j = 0; j < num_materials; ++j)
         {
             if (values[j][i] > 1.5f)
             {
@@ -1892,16 +1896,16 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
                 // For pure materials, the material_list value is that material.
                 // All other tables are left alone.
                 material_list[i] = j;
-                break;                
+                break;
             }
-        } 
+        }
         if (pure)
             continue;
-        
-        // For unpure materials, we need to add entries to the tables.  
+
+        // For unpure materials, we need to add entries to the tables.
         material_list[i] = -1 * (1 + (int)mix_zone.size());
         int numMatch = 0;
-        for (j = 0; j < (size_t)num_materials; ++j)
+        for (int j = 0; j < num_materials; ++j)
         {
             if (values[j][i] < 0)
                 continue;
@@ -1916,7 +1920,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
         if (numMatch == 0)
         {
             char msg[1024];
-            sprintf(msg, "Zone %ld of domain %d does not have "
+            sprintf(msg, "Zone %d of domain %d does not have "
                          "any materials defined on it.  VisIt treats this "
                          "as an error condition.", i, domain);
             EXCEPTION1(VisItException, msg);
@@ -1927,16 +1931,17 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
     }
 
     // Now give all the receive zones a bogus value.
-    for (i = num_real ; i < (size_t)total_zones ; i++)
+    for (int i = num_real; i < total_zones; ++i)
         material_list[i] = 0;
 
     int mixed_size = mix_zone.size();
     avtMaterial * mat = new avtMaterial(num_materials, mat_names, total_zones,
                                         &(material_list[0]), mixed_size,
-                                        &(mix_mat[0]), &(mix_next[0]),
-                                        &(mix_zone[0]), &(mix_vf[0]));
-
-    return (void*) mat;    
+                                        (mixed_size?&mix_mat[0]:NULL),
+                                        (mixed_size?&mix_next[0]:NULL),
+                                        (mixed_size?&mix_zone[0]:NULL),
+                                        (mixed_size?&mix_vf[0]:NULL));
+    return (void*) mat;
 }
 
 
@@ -2585,41 +2590,53 @@ avtKullLiteFileFormat::ReadMeshFromFile(void)
 //    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
 //    Assume PDB won't modify our char*'s, and cast any literals as needed.
 //
+//    Burlen Loring, Sat Jul 12 16:38:51 PDT 2014
+//    fix heap-buffer-overflow resulting from non-null terminated
+//    string and clean up test for 3d/2d.
+//
 // ****************************************************************************
 
 bool
 avtKullLiteFileFormat::GetMeshDimension(void)
 {
-    char *typeofmesh = MAKE_N(char, 1024);
-    if (PD_read(m_pdbFile, (char*)"typeofmesh", &typeofmesh) == false)
+    char *tmpTypeofmesh = NULL;
+    if (!PD_read(m_pdbFile, (char*)"typeofmesh", &tmpTypeofmesh))
     {
         Close();
         EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, does "
-                   " not have \"typeofmesh\".");
+                   " not have valid \"tmpTypeofmesh\".");
     }
+    // in some cases the string returned from the preceding read
+    // is *NOT* null terminated. here we ensure that it is.
+    int len = SC_arrlen(tmpTypeofmesh);
+    char *typeofmesh = static_cast<char*>(malloc(len+1));
+    strncpy(typeofmesh, tmpTypeofmesh, len);
+    typeofmesh[len] = '\0';
+    SFREE(tmpTypeofmesh);
 
     bool meshIs3d = false;
-    int search_str_len = strlen(typeofmesh);
-    if (search_str_len >= strlen("polyhedral") &&
-        strstr(typeofmesh, "polyhedral") != NULL)
+
+    if (strstr(typeofmesh, "polyhedral") != NULL)
         meshIs3d = true;
-    else if (search_str_len >= strlen("hexahedral") &&
-             strstr(typeofmesh, "hexahedral") != NULL)
+    else
+    if (strstr(typeofmesh, "hexahedral") != NULL)
         meshIs3d = true;
-    else if (search_str_len >= strlen("polygonal") &&
-             strstr(typeofmesh, "polygonal") != NULL)
+    else
+    if (strstr(typeofmesh, "polygonal") != NULL)
         meshIs3d = false;
-    else if (search_str_len >= strlen("quadrilateral") &&
-             strstr(typeofmesh, "quadrilateral") != NULL)
+    else
+    if (strstr(typeofmesh, "quadrilateral") != NULL)
         meshIs3d = false;
     else
     {
         Close();
+        free(typeofmesh);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, "
                    "\"typeofmesh\" is not a recognized type.");
     }
-  
-    SFREE(typeofmesh);
+
+    free(typeofmesh);
+
     return meshIs3d;
 }
 
