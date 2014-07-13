@@ -82,6 +82,11 @@ PointSorter(const void *p1, const void *p2)
 //    passed array -- so call AverageYValsForDuplicateX to ensure that is
 //    the case.
 //
+//    Burlen Loring, Sat Jul 12 18:37:01 PDT 2014
+//    fix out-of-bounds indexing of x1 and x2 vectors that was occuring
+//    as index ranged from 0 to x1.size() + x2.size(). added logic to
+//    skip operations on either x1 or x2 when indices are invalid.
+//
 // ****************************************************************************
 
 void 
@@ -97,7 +102,7 @@ PutOnSameXIntervals(int on1, const float *ox1, const float *oy1, int on2,
    
     size_t n1 = x1.size();
     size_t n2 = x2.size();
-    size_t  total_n_pts = n1 + n2;
+    size_t total_n_pts = n1 + n2;
 
     //
     // We want to put the line segments along the same x-intervals.  So we
@@ -113,7 +118,7 @@ PutOnSameXIntervals(int on1, const float *ox1, const float *oy1, int on2,
     qsort(all_xs, total_n_pts, sizeof(float), PointSorter);
 
     //
-    // Repeats will through the algorithm off, so sort those out now.
+    // Repeats will throw the algorithm off, so sort those out now.
     //
     floatVector unique_x;
     for (i = 0 ; i < total_n_pts ; i++)
@@ -135,53 +140,61 @@ PutOnSameXIntervals(int on1, const float *ox1, const float *oy1, int on2,
         if ((unique_x[i] < x1[0]) || (unique_x[i] > x1[n1-1]) ||
             (unique_x[i] < x2[0]) || (unique_x[i] > x2[n2-1]))
         {
-            if (unique_x[i] == x1[nextIndForCurve1])
+            if ( (nextIndForCurve1 < n1)
+              && (unique_x[i] == x1[nextIndForCurve1]) )
                 nextIndForCurve1++;
-            if (unique_x[i] == x2[nextIndForCurve2])
+            if ( (nextIndForCurve2 < n2)
+              && (unique_x[i] == x2[nextIndForCurve2]) )
                 nextIndForCurve2++;
             continue;
         }
 
-        if (unique_x[i] == x1[nextIndForCurve1])
+        if (nextIndForCurve1 < n1)
         {
-            // The point to consider is from curve 1.  Simply push back the
-            // Y-value and indicate that we are now focused on the next point.
-            newCurve1Vals.push_back(y1[nextIndForCurve1]);
-            nextIndForCurve1++;
-        }
-        else
-        {
-            // We haven't seen x1[nextIndForCurve] yet, so we know
-            // that unique_x[i] must be less than it.  In addition, we know
-            // that x1[nextIndForCurve-1] must be valid, since otherwise
-            // we would have skipped unique_x[i] as "out of range".
-            float x_begin = x1[nextIndForCurve1-1];
-            float x_end  = x1[nextIndForCurve1];
-            float percent = (unique_x[i] - x_begin) / (x_end - x_begin);
-            float slope = y1[nextIndForCurve1] - y1[nextIndForCurve1-1];
-            float y = percent * slope + y1[nextIndForCurve1-1];
-            newCurve1Vals.push_back(y);
+            if (unique_x[i] == x1[nextIndForCurve1])
+            {
+                // The point to consider is from curve 1.  Simply push back the
+                // Y-value and indicate that we are now focused on the next point.
+                newCurve1Vals.push_back(y1[nextIndForCurve1]);
+                nextIndForCurve1++;
+            }
+            else
+            {
+                // We haven't seen x1[nextIndForCurve] yet, so we know
+                // that unique_x[i] must be less than it.  In addition, we know
+                // that x1[nextIndForCurve-1] must be valid, since otherwise
+                // we would have skipped unique_x[i] as "out of range".
+                float x_begin = x1[nextIndForCurve1-1];
+                float x_end  = x1[nextIndForCurve1];
+                float percent = (unique_x[i] - x_begin) / (x_end - x_begin);
+                float slope = y1[nextIndForCurve1] - y1[nextIndForCurve1-1];
+                float y = percent * slope + y1[nextIndForCurve1-1];
+                newCurve1Vals.push_back(y);
+            }
         }
 
-        if (unique_x[i] == x2[nextIndForCurve2])
+        if (nextIndForCurve2 < n2)
         {
-            // The point to consider is from curve 2.  Simply push back the
-            // Y-value and indicate that we are now focused on the next point.
-            newCurve2Vals.push_back(y2[nextIndForCurve2]);
-            nextIndForCurve2++;
-        }
-        else
-        {
-            // We haven't seen x2[nextIndForCurve] yet, so we know
-            // that unique_x[i] must be less than it.  In addition, we know
-            // that x2[nextIndForCurve-1] must be valid, since otherwise
-            // we would have skipped unique_x[i] as "out of range".
-            float x_begin = x2[nextIndForCurve2-1];
-            float x_end  = x2[nextIndForCurve2];
-            float percent = (unique_x[i] - x_begin) / (x_end - x_begin);
-            float slope = y2[nextIndForCurve2] - y2[nextIndForCurve2-1];
-            float y = percent * slope + y2[nextIndForCurve2-1];
-            newCurve2Vals.push_back(y);
+            if (unique_x[i] == x2[nextIndForCurve2])
+            {
+                // The point to consider is from curve 2.  Simply push back the
+                // Y-value and indicate that we are now focused on the next point.
+                newCurve2Vals.push_back(y2[nextIndForCurve2]);
+                nextIndForCurve2++;
+            }
+            else
+            {
+                // We haven't seen x2[nextIndForCurve] yet, so we know
+                // that unique_x[i] must be less than it.  In addition, we know
+                // that x2[nextIndForCurve-1] must be valid, since otherwise
+                // we would have skipped unique_x[i] as "out of range".
+                float x_begin = x2[nextIndForCurve2-1];
+                float x_end  = x2[nextIndForCurve2];
+                float percent = (unique_x[i] - x_begin) / (x_end - x_begin);
+                float slope = y2[nextIndForCurve2] - y2[nextIndForCurve2-1];
+                float y = percent * slope + y2[nextIndForCurve2-1];
+                newCurve2Vals.push_back(y);
+            }
         }
 
         usedX.push_back(unique_x[i]);
