@@ -2601,7 +2601,7 @@ class MainLauncher(object):
                     self.warning("""
 VisIt does not recognize your terminal application so it will ignore the -newconsole argument.""")
             else:
-                args = self.xterm + ["-title", title, "-e"] + [string.join(newcmd, " ")]
+                args = self.xterm + ["-geometry", "120x40", "-title", title, "-e"] + [string.join(newcmd, " ")]
         return args
 
     ############################################################################
