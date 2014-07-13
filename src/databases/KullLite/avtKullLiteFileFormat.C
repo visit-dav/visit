@@ -2604,7 +2604,7 @@ avtKullLiteFileFormat::GetMeshDimension(void)
     {
         Close();
         EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, does "
-                   " not have valid \"tmpTypeofmesh\".");
+                   " not have \"typeofmesh\".");
     }
     // in some cases the string returned from the preceding read
     // is *NOT* null terminated. here we ensure that it is.
