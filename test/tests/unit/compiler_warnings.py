@@ -1,9 +1,14 @@
+# ----------------------------------------------------------------------------
+#  CLASSES: nightly
+#
+#  Test Case:  compiler_warnings.py
+#
+#  Tests:      changes in compiler warnings
+#
+#  Mark C. Miller, Tue Jan 11 10:19:23 PST 2011
+# ----------------------------------------------------------------------------
 import os.path, json
 
-#
-# Examine warning messages in make output, building a single, large dictionary
-# spanning all source files that produced warnings.
-#   
 data_dir = test_root_path("..","data")
 src_dir = test_root_path("..","src")
 tpb_dir = test_root_path("..","src","third_party_builtin")
@@ -12,6 +17,10 @@ qtssh_dir = test_root_path("..","src","tools","qtssh")
 if not os.path.exists(test_root_path("..","make.err")):
     Exit(113)
 
+#
+# Examine warning messages in make output, building a single, large dictionary
+# spanning all source files that produced warnings.
+#   
 mfile = open(test_root_path("..","make.err"))
 cur_warnings={}
 tot_warn_cnt = 0
