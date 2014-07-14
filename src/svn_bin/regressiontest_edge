@@ -238,8 +238,8 @@ fi
     -DVISIT_BUILD_ALL_PLUGINS=1 \
     -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
     -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
-    -DCMAKE_CXX_FLAGS_DEBUG:STRING="-Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-    -DCMAKE_C_FLAGS_DEBUG:STRING="-Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+    -DCMAKE_CXX_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+    -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
 make -k -j 12 1>../make.out 2>../make.err
