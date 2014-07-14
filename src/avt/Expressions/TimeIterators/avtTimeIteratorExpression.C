@@ -469,6 +469,11 @@ avtTimeIteratorExpression::ConstructContractWithVarnames(void)
 //  Programmer:   Hank Childs
 //  Creation:     February 14, 2009
 //
+//  Modifications:
+//    Burlen Loring, Mon Jul 14 15:31:15 PDT 2014
+//    fix out-of-bounds index into cycles/times arrays (in execute method)
+//    by clamping to the last available cycle/time.
+//
 // ****************************************************************************
 
 void
@@ -494,21 +499,19 @@ avtTimeIteratorExpression::FinalizeTimeLoop()
         msg += ".\n";
         EXCEPTION1(ImproperUseException, msg);
     }
-
-    numTimeSlicesToProcess = (lastTimeSlice-firstTimeSlice)/timeStride+1;
-
     if (lastTimeSlice >= numStates)
     {
         std::string msg(GetType());
         msg += ":  Clamping end time to number of available timesteps.";
         avtCallback::IssueWarning(msg.c_str());
+        lastTimeSlice = numStates - 1;
     }
 
-    //
+    numTimeSlicesToProcess = (lastTimeSlice-firstTimeSlice)/timeStride+1;
+    actualLastTimeSlice = firstTimeSlice + (numTimeSlicesToProcess-1)*timeStride;
+
     // Ensure that the specified lastTimeSlice is included,
     // regardless of the timeStride.
-    //
-    actualLastTimeSlice = firstTimeSlice + (numTimeSlicesToProcess-1)*timeStride;
     if (actualLastTimeSlice < lastTimeSlice)
     {
         numTimeSlicesToProcess++;
