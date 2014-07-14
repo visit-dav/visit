@@ -1705,16 +1705,7 @@ def TestCWText(src_file_name, cur_warn_text, cur_warn_count):
     # diff the baseline and current text files
     d = HtmlDiff.Differencer(base, cur)
     # change to use difflib
-    (nchanges, nlines) = d.Difference(out_path("html","%s.html"%src_file_name), src_file_name)
-
-    # save the diff output
-    # TODO_WINDOWS THIS WONT WORK ON WINDOWS
-    # we can use difflib
-    #diff_cmd = "diff " + base + " " + cur
-    #res = sexe(diff_cmd,ret_output = True)
-    #fout = open(diff, 'w')
-    #fout.write(res["output"])
-    #fout.close()
+    (nchanges, nlines) = d.Difference(out_path("html","%s.html"%src_file_name.replace("/","_")), src_file_name)
 
     # did the test fail?
     failed = 0
@@ -1794,7 +1785,7 @@ def HTMLCWTextTestResult(src_file_name,status,ccnt,bcnt,failed,skip):
             color = "#ff0000"
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % \
-        (color, src_file_name.replace("/","_"), src_file_name.replace("/","_")))
+        (color, src_file_name.replace("/","_"), src_file_name))
     html.write("  <td colspan=2><a href=\"%s.txt\">warnings</a></td>\n"%src_file_name.replace("/","_"))
     html.write("  <td align=center>%d</td>\n"%bcnt)
     html.write("  <td align=center>%d</td>\n"%ccnt)

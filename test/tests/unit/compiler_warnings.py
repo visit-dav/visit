@@ -85,7 +85,7 @@ for srcfile in cur_warnings:
     for lineno in cur_warnings[srcfile]["warnings"]:
         cur_count += len(cur_warnings[srcfile]["warnings"][lineno])
     cur_txt = json.dumps(cur_warnings[srcfile],indent=2)
-    TestCWText(srcfile.replace("/","_"), cur_txt, cur_count)
+    TestCWText(srcfile, cur_txt, cur_count)
 
 #
 # finish any remaining files that are in base but not in current
@@ -101,6 +101,6 @@ for f in os.listdir(bdir):
         pass
     if not srcfile or srcfile in cur_warnings:
         continue
-    TestCWText(srcfile.replace("/","_"), "", 0)
+    TestCWText(srcfile, "", 0)
 
 Exit()
