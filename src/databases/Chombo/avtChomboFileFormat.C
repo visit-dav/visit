@@ -1,7 +1,3 @@
-#ifndef WIN32
-#pragma GCC diagnostic warning "-Wall"
-#endif
-
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
