@@ -1035,38 +1035,11 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("doRotate")) != 0)
         SetDoRotate(node->AsBool());
     if((node = searchNode->GetNode("rotateOrigin")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
-        {
-            SetRotateOrigin(node->AsDoubleArray());
-        }
-        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
-        {
-            const float *fa = node->AsFloatArray();
-            double da[3] = {fa[0], fa[1], fa[2]};
-            SetRotateOrigin(da);
-        }
-    }
+        SetRotateOrigin(node->AsDoubleArray());
     if((node = searchNode->GetNode("rotateAxis")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
-        {
-            SetRotateAxis(node->AsDoubleArray());
-        }
-        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
-        {
-            const float *fa = node->AsFloatArray();
-            double da[3] = {fa[0], fa[1], fa[2]};
-            SetRotateAxis(da);
-        }
-    }
+        SetRotateAxis(node->AsDoubleArray());
     if((node = searchNode->GetNode("rotateAmount")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_NODE)
-            SetRotateAmount(node->AsDouble());
-        else if(node->GetNodeType() == FLOAT_NODE)
-            SetRotateAmount((double)node->AsFloat());
-    }
+        SetRotateAmount(node->AsDouble());
     if((node = searchNode->GetNode("rotateType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1086,62 +1059,21 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("doScale")) != 0)
         SetDoScale(node->AsBool());
     if((node = searchNode->GetNode("scaleOrigin")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
-        {
-            SetScaleOrigin(node->AsDoubleArray());
-        }
-        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
-        {
-            const float *fa = node->AsFloatArray();
-            double da[3] = {fa[0], fa[1], fa[2]};
-            SetScaleOrigin(da);
-        }
-    }
+        SetScaleOrigin(node->AsDoubleArray());
     if((node = searchNode->GetNode("scaleX")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_NODE)
-            SetScaleX(node->AsDouble());
-        else if(node->GetNodeType() == FLOAT_NODE)
-            SetScaleX((double)node->AsFloat());
-    }
+        SetScaleX(node->AsDouble());
     if((node = searchNode->GetNode("scaleY")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_NODE)
-            SetScaleY(node->AsDouble());
-        else if(node->GetNodeType() == FLOAT_NODE)
-            SetScaleY((double)node->AsFloat());
-    }
+        SetScaleY(node->AsDouble());
     if((node = searchNode->GetNode("scaleZ")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_NODE)
-            SetScaleZ(node->AsDouble());
-        else if(node->GetNodeType() == FLOAT_NODE)
-            SetScaleZ((double)node->AsFloat());
-    }
+        SetScaleZ(node->AsDouble());
     if((node = searchNode->GetNode("doTranslate")) != 0)
         SetDoTranslate(node->AsBool());
     if((node = searchNode->GetNode("translateX")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_NODE)
-            SetTranslateX(node->AsDouble());
-        else if(node->GetNodeType() == FLOAT_NODE)
-            SetTranslateX((double)node->AsFloat());
-    }
+        SetTranslateX(node->AsDouble());
     if((node = searchNode->GetNode("translateY")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_NODE)
-            SetTranslateY(node->AsDouble());
-        else if(node->GetNodeType() == FLOAT_NODE)
-            SetTranslateY((double)node->AsFloat());
-    }
+        SetTranslateY(node->AsDouble());
     if((node = searchNode->GetNode("translateZ")) != 0)
-    {
-        if(node->GetNodeType() == DOUBLE_NODE)
-            SetTranslateZ(node->AsDouble());
-        else if(node->GetNodeType() == FLOAT_NODE)
-            SetTranslateZ((double)node->AsFloat());
-    }
+        SetTranslateZ(node->AsDouble());
     if((node = searchNode->GetNode("transformType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1190,6 +1122,8 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
                 SetOutputCoordSys(value);
         }
     }
+    if((node = searchNode->GetNode("continuousPhi")) != 0)
+        SetContinuousPhi(node->AsBool());
     if((node = searchNode->GetNode("m00")) != 0)
         SetM00(node->AsDouble());
     if((node = searchNode->GetNode("m01")) != 0)
@@ -1243,6 +1177,7 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("transformVectors")) != 0)
         SetTransformVectors(node->AsBool());
 }
+
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////

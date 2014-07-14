@@ -78,7 +78,7 @@
       <Field name="outputCoordSys" label="Desired Coordinate System" type="enum" subtype="CoordinateSystem">
         Spherical
       </Field>
-      <Field name="continuousPhi" label="Continuous Phi" type="bool">
+      <Field name="continuousPhi" label="ContinuousPhi" type="bool">
         false
       </Field>
       <Field name="m00" label="m00" type="double">
@@ -132,7 +132,6 @@
       <Field name="m33" label="m33" type="double">
         1.000000
       </Field>
-
       <Field name="invertLinearTransform" label="invertLinearTransform" type="bool">
         false
       </Field>
@@ -145,8 +144,6 @@
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
-      </Function>
-      <Function name="SetFromNode" user="false" member="true">
       </Function>
       <Include file="source" quoted="false">
         BoxExtents.h
