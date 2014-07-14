@@ -263,8 +263,7 @@ QvisTransformWindow::CreateWindowContents()
             this, SLOT(translateZProcessText()));
     mainLayout->addWidget(translateZ, 8,6);
     
-    transformVectors1 = new QCheckBox(tr("Transform vectors"),
-                                 firstPage);
+    transformVectors1 = new QCheckBox(tr("Transform vectors"), firstPage);
     mainLayout->addWidget(transformVectors1, 9, 0);
     connect(transformVectors1, SIGNAL(toggled(bool)),
             this, SLOT(transformVectorsChanged(bool)));
@@ -310,10 +309,11 @@ QvisTransformWindow::CreateWindowContents()
     outputCoord->addButton(oSph, 2);
     outputCoordLayout->addWidget(oSph, 2, 0);
 
-    continuousPhi = new QCheckBox(tr("phi on a semi-infinite domain"), outputFrame);
+    continuousPhi = new QCheckBox(tr("phi on a semi-infinite domain"),
+                                  outputFrame);
+    outputCoordLayout->addWidget(continuousPhi, 1, 1);
     connect(continuousPhi, SIGNAL(toggled(bool)),
             this, SLOT(continuousPhiChanged(bool)));
-    outputCoordLayout->addWidget(continuousPhi, 1, 1);
 
     continuousPhiLabel = new QLabel(tr("     (lines only)"), secondPage);
     outputCoordLayout->addWidget(continuousPhiLabel, 2, 1);   
@@ -404,8 +404,7 @@ QvisTransformWindow::CreateWindowContents()
     connect(linearInvert, SIGNAL(toggled(bool)),
             this, SLOT(linearInvertChanged(bool)));
 
-    transformVectors3 = new QCheckBox(tr("Transform vectors"),
-                                 thirdPage);
+    transformVectors3 = new QCheckBox(tr("Transform vectors"), thirdPage);
     thirdPageLayout->addWidget(transformVectors3, 5, 2, 1, 2);
     connect(transformVectors3, SIGNAL(toggled(bool)),
             this, SLOT(transformVectorsChanged(bool)));
@@ -635,6 +634,7 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             continuousPhi->blockSignals(true);
             continuousPhi->setChecked(atts->GetContinuousPhi());
             continuousPhi->blockSignals(false);
+            break;
           case TransformAttributes::ID_m00:
             temp.setNum(atts->GetM00());
             m00->setText(temp);
