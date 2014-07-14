@@ -728,6 +728,13 @@ avtBasicNETCDFReader::ReturnDimStartsAndCounts(int timeState, const intVector &d
 //
 //   Mark C. Miller, Wed Nov 20 14:42:56 PST 2013
 //   Handle mesh construction for zone centered variants of variables too. 
+//
+//   Burlen Loring, Mon Jul 14 13:03:55 PDT 2014
+//   fix out of bounds index into vector of dimension id's. added a check
+//   to prevent out of bounds access into coordvals array (x-axis values)
+//   when it's a different length than the variable (y-axis values). In
+//   that case id values are used instead.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -762,11 +769,11 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
                 // get it then we just use indices.
                 float *coordvals = 0;                
                 int status;
-                size_t sz;
+                size_t sz = 0;
                 char dimName[NC_MAX_NAME+1];
                 debug4 << mName << "Looking for X coordinate dimension name" << endl;
-                if((status = nc_inq_dim(fileObject->GetFileHandle(), 
-                    meshDims->second[meshDims->second[0]], dimName, &sz)) == NC_NOERR)
+                if((status = nc_inq_dim(fileObject->GetFileHandle(),
+                    meshDims->second[0], dimName, &sz)) == NC_NOERR)
                 {
                     TypeEnum dvart = NO_TYPE;
                     int dvarndims = 0;
@@ -787,10 +794,10 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
                 // Assemble the curve.
                 int nPts = mesh->second[0];
                 vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
-                vtkFloatArray *xc = vtkFloatArray::SafeDownCast(
-                    rg->GetXCoordinates());
-                for (int j = 0 ; j < nPts ; j++)
-                    xc->SetValue(j, (coordvals != 0) ? coordvals[j] : (float)j); 
+                vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+                bool validCoords = coordvals && (sz == static_cast<size_t>(nPts));
+                for (int j = 0 ; j < nPts ; ++j)
+                    xc->SetValue(j, validCoords ? coordvals[j] : (float)j);
 
                 rg->GetPointData()->SetScalars(yv);
                 retval = rg;
