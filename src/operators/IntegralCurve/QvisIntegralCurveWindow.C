@@ -813,9 +813,8 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cropLayout->setMargin(5);
     cropLayout->setSpacing(10);
 
-
-    QLabel *cropValueLabel = new QLabel(tr("Crop value"), cropGrp);
-    cropLayout->addWidget(cropValueLabel, 0, 0);
+    // Create the crop value.
+    cropLayout->addWidget(new QLabel(tr("Crop value"), cropGrp), 0, 0);
 
     cropValueComboBox = new QComboBox(cropGrp);
     cropValueComboBox->addItem(tr("Distance"));
