@@ -48,6 +48,7 @@
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkCellArray.h>
+#include <vtkFloatArray.h>
 #include <NonQueryableInputException.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -256,25 +257,33 @@ avtStreamlineInfoQuery::PostExecute()
 // Creation:    November  9, 2010
 //
 //  Modifications:
+//    Burlen Loring, Mon Jul 14 16:29:04 PDT 2014
+//    fix bad casts
 //
 // ****************************************************************************
 
 void
 avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
 {
-    if (!data->IsA("vtkPolyData") ||
-        data->GetPointData()->GetArray("colorVar") == NULL ||
-        data->GetPointData()->GetArray("params") == NULL)
+    vtkPolyData *ds = dynamic_cast<vtkPolyData *>(data);
+
+    vtkFloatArray *vtkscalar
+      = dynamic_cast<vtkFloatArray*>(data->GetPointData()->GetArray("colorVar"));
+
+    vtkFloatArray *vtkparam
+      = dynamic_cast<vtkFloatArray*>(data->GetPointData()->GetArray("params"));
+
+
+    if (!ds || !vtkscalar || !vtkparam)
     {
         EXCEPTION1(NonQueryableInputException,"Streamline Info query only valid on streamline plots");
     }
-    
-    vtkPolyData *ds = (vtkPolyData *)data;
+
     vtkPoints *points = ds->GetPoints();
     vtkCellArray *lines = ds->GetLines();
     vtkIdType *segments = lines->GetPointer();
-    float *scalar = (float *)data->GetPointData()->GetArray("colorVar");
-    float *param = (float *)data->GetPointData()->GetArray("params");
+    float *scalar = vtkscalar->GetPointer(0);
+    float *param = vtkparam->GetPointer(0);
 
     vtkIdType *segptr = segments;
     double pt[3], p0[3];
