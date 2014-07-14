@@ -1888,6 +1888,10 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Wed Aug 22 09:01:36 PDT 2012
 //    Fixed leak of matnames
+//
+//    Burlen Loring, Mon Jul 14 15:52:49 PDT 2014
+//    fix alloc-dealloc-mismatch (operator new [] vs free) of matnames
+//
 // ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
@@ -1979,7 +1983,7 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
 
             delete [] matnos;
             for (j = 0; j < nmats; j++)
-                free(matnames[j]);
+                delete [] matnames[j];
             delete [] matnames;
 
             if (newmat)
