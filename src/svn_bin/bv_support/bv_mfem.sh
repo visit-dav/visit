@@ -83,6 +83,81 @@ function bv_mfem_dry_run
   fi
 }
 
+function apply_mfem_patch
+{
+    #
+    # mfem ignores CXX, CXX , CFLAGS, etc, so we have to patch them into 
+    # their main makefiles (GNUMakefile & makefile)
+    #
+
+
+    info "Patching mfem"
+    patch -p0 << \EOF
+*** GNUmakefile.orig    Mon Jul 14 14:43:58 2014
+--- GNUmakefile Mon Jul 14 15:00:57 2014
+***************
+*** 10,19 ****
+  # Software Foundation) version 2.1 dated February 1999.
+  
+  # Serial compiler
+! CC         = g++
+! CCOPTS     =
+! DEBUG_OPTS = -g -DMFEM_DEBUG
+! OPTIM_OPTS = -O3
+  DEPCC      = $(CC)
+  
+  # Parallel compiler
+--- 10,19 ----
+  # Software Foundation) version 2.1 dated February 1999.
+  
+  # Serial compiler
+! CC         = ${CXX}
+! CCOPTS     = ${CXXFLAGS}
+! DEBUG_OPTS = ${CXXFLAGS} -g -DMFEM_DEBUG
+! OPTIM_OPTS = ${CXXFLAGS}
+  DEPCC      = $(CC)
+  
+  # Parallel compiler
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "mfem patch 1 failed."
+      return 1
+    fi
+
+    patch -p0 << \EOF
+*** makefile.orig   Mon Jul 14 14:44:03 2014
+--- makefile    Mon Jul 14 14:45:03 2014
+***************
+*** 10,18 ****
+  # Software Foundation) version 2.1 dated February 1999.
+  
+  # Serial compiler
+! CC         = g++
+! CCOPTS     = -O3
+! DEBUG_OPTS = -g -DMFEM_DEBUG
+  
+  # Parallel compiler
+  MPICC      = mpicxx
+--- 10,18 ----
+  # Software Foundation) version 2.1 dated February 1999.
+  
+  # Serial compiler
+! CC         = ${CXX}
+! CCOPTS     = ${CXXFLAGS}
+! DEBUG_OPTS = ${CXXFLAGS} -g -DMFEM_DEBUG
+  
+  # Parallel compiler
+  MPICC      = mpicxx
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "mfem patch 2 failed."
+      return 1
+    fi
+
+return 0
+
+}
+
 # *************************************************************************** #
 #                            Function 8, build_mfem
 #
@@ -100,20 +175,37 @@ function build_mfem
        warn "Unable to prepare mfem build directory. Giving Up!"
        return 1
     fi
-    
+
     #
     # Call configure
     #
     #info "Configuring mfem . . ."
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
 
+
+
+    apply_mfem_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_MFEM == 1 ]] ; then
+            warn "Giving up on MFEM build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory which had " \
+                 "already been patched ... that is, that the patch is " \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
     #
-    # mfem as an scons configure -- we will use their makefile for now
+    # mfem as an scons configure, we don't support scons, so we 
+    # simply use their makefile
     #
 
     #
     # Build mfem
     #
+
     info "Building mfem . . . (~2 minutes)"
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
