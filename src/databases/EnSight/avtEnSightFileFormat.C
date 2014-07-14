@@ -125,6 +125,9 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Support FORTAN output files (lines padded to end with spaces).
 //    Use std strings to avoid indexing bugs.
 //
+//    Burlen Loring, Mon Jul 14 14:44:40 PDT 2014
+//    fix out of bounds index into string during wildcard substitution.
+//
 // ****************************************************************************
 
 void
@@ -222,7 +225,7 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
     //
 
     string model_name = model_line.substr(lastword);
-    for (size_t i = 0 ; i < model_line.size(); i++)
+    for (size_t i = 0 ; i < model_name.size(); ++i)
     {
         if (model_name[i] == '*')
         {
