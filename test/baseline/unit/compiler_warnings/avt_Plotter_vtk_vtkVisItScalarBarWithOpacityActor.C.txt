@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkVisItScalarBarWithOpacityActor.C", 
-  "warnings": {
-    "66": [
-      "warning: extra ';'"
-    ]
-  }
-}

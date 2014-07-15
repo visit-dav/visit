@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/lightweight/vtkPolyDataRelevantPointsFilter.C", 
-  "warnings": {
-    "58": [
-      "warning: extra ';'"
-    ]
-  }
-}

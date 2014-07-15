@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/lightweight/vtkVisItPointLocator.C", 
-  "warnings": {
-    "27": [
-      "warning: extra ';'"
-    ]
-  }
-}

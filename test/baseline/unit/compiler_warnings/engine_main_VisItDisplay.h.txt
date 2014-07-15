@@ -1,8 +1,0 @@
-{
-  "file": "engine/main/VisItDisplay.h", 
-  "warnings": {
-    "114": [
-      "warning: extra ';'"
-    ]
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkVisItTextActor.C", 
-  "warnings": {
-    "45": [
-      "warning: extra ';'"
-    ]
-  }
-}

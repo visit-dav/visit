@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkBackgroundActor.C", 
-  "warnings": {
-    "60": [
-      "warning: extra ';'"
-    ]
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "file": "avt/Pipeline/Sinks/avtDatabaseWriter.C", 
-  "warnings": {
-    "617": [
-      "warning: comparison between signed and unsigned integer expressions"
-    ]
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "file": "databases/paraDIS_tecplot/RC_cpp_lib/Point.h", 
-  "warnings": {
-    "456": [
-      "warning: extra ';'"
-    ]
-  }
-}

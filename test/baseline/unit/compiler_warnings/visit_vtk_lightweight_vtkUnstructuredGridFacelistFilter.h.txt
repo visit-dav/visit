@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/lightweight/vtkUnstructuredGridFacelistFilter.h", 
-  "warnings": {
-    "49": [
-      "warning: extra ';'"
-    ]
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/lightweight/vtkDebugStream.C", 
-  "warnings": {
-    "52": [
-      "warning: extra ';'"
-    ]
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "file": "avt/Filters/avtCoordSystemConvert.C", 
-  "warnings": {
-    "566": [
-      "warning: unused variable 'dstype'"
-    ]
-  }
-}

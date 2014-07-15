@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkVisItClipper.C", 
-  "warnings": {
-    "71": [
-      "warning: extra ';'"
-    ]
-  }
-}

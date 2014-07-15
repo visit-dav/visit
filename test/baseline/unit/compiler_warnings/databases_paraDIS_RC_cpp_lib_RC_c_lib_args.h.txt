@@ -1,9 +1,0 @@
-{
-  "file": "databases/paraDIS/RC_cpp_lib/RC_c_lib/args.h", 
-  "warnings": {
-    "8": [
-      "warning: C++ style comments are not allowed in ISO C90", 
-      "warning: (this will be reported only once per input file)"
-    ]
-  }
-}

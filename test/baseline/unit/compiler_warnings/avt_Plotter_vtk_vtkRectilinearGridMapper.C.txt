@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkRectilinearGridMapper.C", 
-  "warnings": {
-    "29": [
-      "warning: extra ';'"
-    ]
-  }
-}

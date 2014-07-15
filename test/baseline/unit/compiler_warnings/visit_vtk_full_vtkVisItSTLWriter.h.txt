@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkVisItSTLWriter.h", 
-  "warnings": {
-    "56": [
-      "warning: extra ';'"
-    ]
-  }
-}

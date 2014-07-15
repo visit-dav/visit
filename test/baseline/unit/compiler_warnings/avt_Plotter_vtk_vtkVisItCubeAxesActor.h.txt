@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkVisItCubeAxesActor.h", 
-  "warnings": {
-    "87": [
-      "warning: extra ';'"
-    ]
-  }
-}

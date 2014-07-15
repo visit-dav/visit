@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkSurfaceFilter.h", 
-  "warnings": {
-    "84": [
-      "warning: extra ';'"
-    ]
-  }
-}

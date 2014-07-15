@@ -1,8 +1,0 @@
-{
-  "file": "databases/STAR/avtSTARFileFormat.h", 
-  "warnings": {
-    "46": [
-      "warning: anonymous variadic macros were introduced in C99"
-    ]
-  }
-}

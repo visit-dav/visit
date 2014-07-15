@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkVisItPolyDataNormals2D.h", 
-  "warnings": {
-    "64": [
-      "warning: extra ';'"
-    ]
-  }
-}

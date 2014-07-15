@@ -1,8 +1,0 @@
-{
-  "file": "gui/QualifiedFilename.C", 
-  "warnings": {
-    "349": [
-      "warning: comparison between signed and unsigned integer expressions"
-    ]
-  }
-}

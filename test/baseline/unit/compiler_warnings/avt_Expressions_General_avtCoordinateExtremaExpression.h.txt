@@ -1,8 +1,0 @@
-{
-  "file": "avt/Expressions/General/avtCoordinateExtremaExpression.h", 
-  "warnings": {
-    "56": [
-      "warning: comma at end of enumerator list"
-    ]
-  }
-}

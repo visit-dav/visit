@@ -1,8 +1,0 @@
-{
-  "file": "databases/VTK/vtkVisItXMLPDataReader.C", 
-  "warnings": {
-    "32": [
-      "warning: extra ';'"
-    ]
-  }
-}

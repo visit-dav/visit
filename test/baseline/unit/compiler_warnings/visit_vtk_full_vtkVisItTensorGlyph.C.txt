@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkVisItTensorGlyph.C", 
-  "warnings": {
-    "32": [
-      "warning: extra ';'"
-    ]
-  }
-}

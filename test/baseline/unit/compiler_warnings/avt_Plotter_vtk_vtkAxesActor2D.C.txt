@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkAxesActor2D.C", 
-  "warnings": {
-    "43": [
-      "warning: extra ';'"
-    ]
-  }
-}

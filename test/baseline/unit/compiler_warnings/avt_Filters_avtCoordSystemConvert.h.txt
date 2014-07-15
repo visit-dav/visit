@@ -1,8 +1,0 @@
-{
-  "file": "avt/Filters/avtCoordSystemConvert.h", 
-  "warnings": {
-    "76": [
-      "warning: comma at end of enumerator list"
-    ]
-  }
-}

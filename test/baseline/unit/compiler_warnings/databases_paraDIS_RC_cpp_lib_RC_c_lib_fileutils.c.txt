@@ -1,8 +1,0 @@
-{
-  "file": "databases/paraDIS/RC_cpp_lib/RC_c_lib/fileutils.c", 
-  "warnings": {
-    "57": [
-      "warning: comparison of unsigned expression < 0 is always false"
-    ]
-  }
-}

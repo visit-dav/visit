@@ -1,8 +1,0 @@
-{
-  "file": "databases/OpenFOAM/visit_vtkOpenFOAMReader.h", 
-  "warnings": {
-    "58": [
-      "warning: extra ';'"
-    ]
-  }
-}

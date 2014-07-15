@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkVisItTubeFilter.C", 
-  "warnings": {
-    "28": [
-      "warning: extra ';'"
-    ]
-  }
-}

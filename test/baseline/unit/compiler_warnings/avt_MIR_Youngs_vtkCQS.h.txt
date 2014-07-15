@@ -1,8 +1,0 @@
-{
-  "file": "avt/MIR/Youngs/vtkCQS.h", 
-  "warnings": {
-    "26": [
-      "warning: extra ';'"
-    ]
-  }
-}

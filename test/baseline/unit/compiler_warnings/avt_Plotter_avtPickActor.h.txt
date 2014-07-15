@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/avtPickActor.h", 
-  "warnings": {
-    "99": [
-      "warning: type qualifiers ignored on function return type"
-    ]
-  }
-}

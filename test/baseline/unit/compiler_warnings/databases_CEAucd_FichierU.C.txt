@@ -1,8 +1,0 @@
-{
-  "file": "databases/CEAucd/FichierU.C", 
-  "warnings": {
-    "95": [
-      "warning: comparison between signed and unsigned integer expressions"
-    ]
-  }
-}
