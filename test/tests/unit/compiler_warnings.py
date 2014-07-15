@@ -9,14 +9,15 @@
 # ----------------------------------------------------------------------------
 import os.path, json
 
-skip_messages = \
-[ \
-    "missing initializer for member '_typeobject::", \
-    "missing initializer for member 'PyMethodDef::", \
-    "ISO C++ forbids casting between pointer-to-function and pointer-to-object", \
-    "ISO C forbids conversion of object pointer to function pointer type", \
-    "extra ';'" \
-]
+def ShouldSkip(srcfile, msg):
+    srcfile_tmp = "global skip list"
+    if srcfile in skip_list:
+        srcfile_tmp = srcfile
+    for skipmsg in skip_list[srcfile_tmp][0]:
+        minlen = min(len(skipmsg),len(msg))
+        if msg[0:minlen] == skipmsg[0:minlen]:
+            return 1
+    return 0
 
 data_dir = test_root_path("..","data")
 src_dir = test_root_path("..","src")
@@ -25,6 +26,24 @@ qtssh_dir = test_root_path("..","src","tools","qtssh")
 
 if not os.path.exists(test_root_path("..","make.err")):
     Exit(113)
+
+#
+# Read per-file skip list and zero any line numbers
+#
+skip_list = {}
+try:
+    skip_list = json.load(open(test_root_path("tests","unit","compiler_warnings_skips.json")))
+except:
+    pass
+for s in skip_list:
+    for l in skip_list[s]:
+        for m in skip_list[s][l]:
+            skip_list[s][l][m] = 0
+        if l == 0:
+            continue
+        skip_list[s][0] = skip_list[s][l];
+        del skip_list[s][l]
+
 
 #
 # Examine warning messages in make output, building a single, large dictionary
@@ -70,13 +89,7 @@ for line in mfile:
             if msg[0:len("warning: ")] == "warning: ":
                 msg = msg[len("warning: ")::1]
 
-            shouldSkip = 0
-            for skipmsg in skip_messages:
-                minlen = min(len(skipmsg),len(msg))
-                if msg[0:minlen] == skipmsg[0:minlen]:
-                    shouldSkip = 1
-                    break
-            if shouldSkip:
+            if ShouldSkip(src_file, msg):
                 continue
 
             if src_file in warning_counts:
@@ -112,7 +125,7 @@ TestText("warning_counts_by_file", counts_txt)
 f = open(test_root_path("html","warning_counts_by_file.html"),"a")
 f.write("<pre>\n")
 f.write("\n\n\nWarning message strings currently being skipped if matched...\n");
-f.write(json.dumps(skip_messages,indent=4))
+f.write(json.dumps(skip_list,indent=4))
 f.write("\n\n\nWarning message details by file and line number...\n");
 f.write(json.dumps(warning_messages,indent=4))
 f.write("</pre>\n")
