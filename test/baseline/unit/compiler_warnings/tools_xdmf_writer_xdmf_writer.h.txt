@@ -1,9 +1,0 @@
-{
-  "file": "tools/xdmf_writer/xdmf_writer.h", 
-  "warnings": {
-    "11": [
-      "warning: C++ style comments are not allowed in ISO C90", 
-      "warning: (this will be reported only once per input file)"
-    ]
-  }
-}

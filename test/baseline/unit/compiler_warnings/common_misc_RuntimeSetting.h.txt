@@ -1,8 +1,0 @@
-{
-  "file": "common/misc/RuntimeSetting.h", 
-  "warnings": {
-    "81": [
-      "warning: extra ';'"
-    ]
-  }
-}

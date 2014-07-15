@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkOnionPeelFilter.C", 
-  "warnings": {
-    "76": [
-      "warning: extra ';'"
-    ]
-  }
-}

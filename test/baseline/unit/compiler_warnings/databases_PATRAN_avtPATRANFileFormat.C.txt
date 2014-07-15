@@ -1,8 +1,0 @@
-{
-  "file": "databases/PATRAN/avtPATRANFileFormat.C", 
-  "warnings": {
-    "622": [
-      "warning: comparison between signed and unsigned integer expressions"
-    ]
-  }
-}

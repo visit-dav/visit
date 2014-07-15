@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkVisItDataSetMapper.h", 
-  "warnings": {
-    "47": [
-      "warning: extra ';'"
-    ]
-  }
-}

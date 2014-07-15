@@ -1,9 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkStructuredGridMapper.h", 
-  "warnings": {
-    "35": [
-      "warning: extra ';'", 
-      "warning: extra ';'In file included from /usr/gapps/visit/thirdparty_shared/2.7.0/vtk/6.1.0/linux-x86_64_gcc-4.4/include/vtk-6.1/vtkPolyDataPainter.h:45,"
-    ]
-  }
-}

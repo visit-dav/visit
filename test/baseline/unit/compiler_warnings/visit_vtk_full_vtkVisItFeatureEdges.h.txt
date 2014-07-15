@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkVisItFeatureEdges.h", 
-  "warnings": {
-    "58": [
-      "warning: extra ';'"
-    ]
-  }
-}

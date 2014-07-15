@@ -1,8 +1,0 @@
-{
-  "file": "viewer/main/ViewerPlot.h", 
-  "warnings": {
-    "362": [
-      "warning: type qualifiers ignored on function return type"
-    ]
-  }
-}

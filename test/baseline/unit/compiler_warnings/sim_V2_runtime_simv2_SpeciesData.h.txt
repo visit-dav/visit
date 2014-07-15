@@ -1,8 +1,0 @@
-{
-  "file": "sim/V2/runtime/simv2_SpeciesData.h", 
-  "warnings": {
-    "58": [
-      "warning: extra ';'"
-    ]
-  }
-}

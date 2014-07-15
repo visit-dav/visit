@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/osmesa/vtkOSMesaGLRenderWindow.h", 
-  "warnings": {
-    "84": [
-      "warning: extra ';'"
-    ]
-  }
-}

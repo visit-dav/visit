@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkCSGCell.C", 
-  "warnings": {
-    "46": [
-      "warning: extra ';'"
-    ]
-  }
-}

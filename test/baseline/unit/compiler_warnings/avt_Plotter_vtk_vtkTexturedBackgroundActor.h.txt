@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkTexturedBackgroundActor.h", 
-  "warnings": {
-    "68": [
-      "warning: extra ';'"
-    ]
-  }
-}

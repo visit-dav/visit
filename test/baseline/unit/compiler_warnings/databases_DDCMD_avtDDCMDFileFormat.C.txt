@@ -1,8 +1,0 @@
-{
-  "file": "databases/DDCMD/avtDDCMDFileFormat.C", 
-  "warnings": {
-    "259": [
-      "warning: extra ';'"
-    ]
-  }
-}

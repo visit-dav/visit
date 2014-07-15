@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/lightweight/vtkCellIntersections.C", 
-  "warnings": {
-    "69": [
-      "warning: extra ';'"
-    ]
-  }
-}

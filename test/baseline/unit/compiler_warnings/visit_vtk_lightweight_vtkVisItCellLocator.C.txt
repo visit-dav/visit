@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/lightweight/vtkVisItCellLocator.C", 
-  "warnings": {
-    "42": [
-      "warning: extra ';'"
-    ]
-  }
-}

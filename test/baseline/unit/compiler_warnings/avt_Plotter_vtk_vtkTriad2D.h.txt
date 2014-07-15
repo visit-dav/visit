@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkTriad2D.h", 
-  "warnings": {
-    "69": [
-      "warning: extra ';'"
-    ]
-  }
-}

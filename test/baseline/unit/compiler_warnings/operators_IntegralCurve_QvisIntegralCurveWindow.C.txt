@@ -1,8 +1,0 @@
-{
-  "file": "operators/IntegralCurve/QvisIntegralCurveWindow.C", 
-  "warnings": {
-    "1222": [
-      "warning: ISO C++ does not support the '%lf' gnu_printf format"
-    ]
-  }
-}

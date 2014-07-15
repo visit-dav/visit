@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/avtOpenGLExtensionManager.C", 
-  "warnings": {
-    "115": [
-      "warning: extra ';'"
-    ]
-  }
-}

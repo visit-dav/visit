@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/vtk/vtkMultiFontVectorText.C", 
-  "warnings": {
-    "11": [
-      "warning: extra ';'"
-    ]
-  }
-}

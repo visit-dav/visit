@@ -1,8 +1,0 @@
-{
-  "file": "operators/ThreeSlice/avtThreeSliceFilter.C", 
-  "warnings": {
-    "440": [
-      "warning: ISO C++ does not support the '%lg' gnu_printf format"
-    ]
-  }
-}

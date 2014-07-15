@@ -1,8 +1,0 @@
-{
-  "file": "avt/QtVisWindow/vtk/vtkDashedXorGridMapper2D.C", 
-  "warnings": {
-    "149": [
-      "warning: extra ';'"
-    ]
-  }
-}

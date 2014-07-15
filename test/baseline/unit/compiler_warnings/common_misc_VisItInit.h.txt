@@ -1,8 +1,0 @@
-{
-  "file": "common/misc/VisItInit.h", 
-  "warnings": {
-    "84": [
-      "warning: type qualifiers ignored on function return type"
-    ]
-  }
-}

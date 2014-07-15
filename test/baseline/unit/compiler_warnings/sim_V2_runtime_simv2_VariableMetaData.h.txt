@@ -1,8 +1,0 @@
-{
-  "file": "sim/V2/runtime/simv2_VariableMetaData.h", 
-  "warnings": {
-    "72": [
-      "warning: extra ';'"
-    ]
-  }
-}

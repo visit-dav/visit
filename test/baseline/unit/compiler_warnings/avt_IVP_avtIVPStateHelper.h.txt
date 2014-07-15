@@ -1,8 +1,0 @@
-{
-  "file": "avt/IVP/avtIVPStateHelper.h", 
-  "warnings": {
-    "67": [
-      "warning: comma at end of enumerator list"
-    ]
-  }
-}

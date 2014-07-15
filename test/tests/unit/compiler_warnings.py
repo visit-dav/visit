@@ -5,9 +5,18 @@
 #
 #  Tests:      changes in compiler warnings
 #
-#  Mark C. Miller, Tue Jan 11 10:19:23 PST 2011
+#  Mark C. Miller, Sun Jul 13 21:45:49 PDT 2014
 # ----------------------------------------------------------------------------
 import os.path, json
+
+skip_messages = \
+[ \
+    "missing initializer for member '_typeobject::", \
+    "missing initializer for member 'PyMethodDef::", \
+    "ISO C++ forbids casting between pointer-to-function and pointer-to-object", \
+    "ISO C forbids conversion of object pointer to function pointer type", \
+    "extra ';'" \
+]
 
 data_dir = test_root_path("..","data")
 src_dir = test_root_path("..","src")
@@ -22,9 +31,8 @@ if not os.path.exists(test_root_path("..","make.err")):
 # spanning all source files that produced warnings.
 #   
 mfile = open(test_root_path("..","make.err"))
-cur_warnings={}
-tot_warn_cnt = 0
-tot_file_cnt = 0
+warning_counts ={}
+warning_messages = {}
 for line in mfile:
     if "warning" in line.lower():
 
@@ -47,7 +55,7 @@ for line in mfile:
         if warnfile[0:len(qtssh_dir):1] == qtssh_dir: 
             continue # ignore files in qtssh dir, not our code 
 
-        warnfilesrc = warnfile[len(src_dir)+1::1]
+        src_file = warnfile[len(src_dir)+1::1]
         if warnline[1] == ":" and os.path.exists(warnfile):
             msginfo = warnline[2].partition(":")
             if not msginfo[0].isdigit():
@@ -59,48 +67,55 @@ for line in mfile:
                 msg = rawmsg[idx::1]
             else:
                 msg = rawmsg
-            if warnfilesrc in cur_warnings:
-                if lineno in cur_warnings[warnfilesrc]["warnings"]:
-                    if msg not in cur_warnings[warnfilesrc]["warnings"][lineno]:
-                        cur_warnings[warnfilesrc]["warnings"][lineno].append(msg)
-                        tot_warn_cnt += 1
+            if msg[0:len("warning: ")] == "warning: ":
+                msg = msg[len("warning: ")::1]
+
+            shouldSkip = 0
+            for skipmsg in skip_messages:
+                minlen = min(len(skipmsg),len(msg))
+                if msg[0:minlen] == skipmsg[0:minlen]:
+                    shouldSkip = 1
+                    break
+            if shouldSkip:
+                continue
+
+            if src_file in warning_counts:
+                warning_counts[src_file] += 1
+                if lineno in warning_messages[src_file]:
+                    if msg in warning_messages[src_file][lineno]:
+                        warning_messages[src_file][lineno][msg] += 1
+                    else:
+                        warning_messages[src_file][lineno][msg] = 1
                 else:
-                    cur_warnings[warnfilesrc]["warnings"][lineno] = [msg]
-                    tot_warn_cnt += 1
+                    warning_messages[src_file][lineno] = {msg:1}
             else:
-                cur_warnings[warnfilesrc] = {"file":warnfilesrc, "warnings":{lineno:[msg]}}
-                tot_warn_cnt += 1
-                tot_file_cnt += 1
+                warning_counts[src_file] = 1
+                warning_messages[src_file] = {lineno:{msg:1}}
 
 mfile.close()
 
-TestCWText("TOTAL_WARNINGS", "%d"%tot_warn_cnt, tot_warn_cnt)
-TestCWText("TOTAL_FILES", "%d"%tot_file_cnt, tot_file_cnt)
+#
+# Generate the (sorted) warning counts data
+#
+counts_txt = "{\n"
+keys = warning_counts.keys()
+keys.sort()
+for k in keys:
+    counts_txt += "\"%s\": %d,\n"%(k,warning_counts[k])
+counts_txt += "\"last line\": 0\n}\n"
+TestText("warning_counts_by_file", counts_txt)
 
 #
-# Examine all files in current
+# Ok, tricky here. Append all the warning details to the html file
+# so others can actually see it
 #
-for srcfile in cur_warnings:
-    cur_count = 0
-    for lineno in cur_warnings[srcfile]["warnings"]:
-        cur_count += len(cur_warnings[srcfile]["warnings"][lineno])
-    cur_txt = json.dumps(cur_warnings[srcfile],indent=2)
-    TestCWText(srcfile, cur_txt, cur_count)
-
-#
-# finish any remaining files that are in base but not in current
-#
-bdir = test_root_path("baseline","unit","compiler_warnings")
-for f in os.listdir(bdir):
-    bfn = "%s/%s"%(bdir,f)
-    srcfile=""
-    try:
-        base_warnings = json.load(open("%s/%s"%(bdir,f)))
-        srcfile = base_warnings["file"]
-    except:
-        pass
-    if not srcfile or srcfile in cur_warnings:
-        continue
-    TestCWText(srcfile, "", 0)
+f = open(test_root_path("html","warning_counts_by_file.html"),"a")
+f.write("<pre>\n")
+f.write("\n\n\nWarning essage strings currently being skipped if matched...\n");
+f.write(json.dumps(skip_messages,indent=4))
+f.write("\n\n\nWarning message details by file and line number...\n");
+f.write(json.dumps(warning_messages,indent=4))
+f.write("</pre>\n")
+f.close()
 
 Exit()

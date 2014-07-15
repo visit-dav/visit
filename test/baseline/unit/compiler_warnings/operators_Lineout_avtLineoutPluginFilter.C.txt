@@ -1,8 +1,0 @@
-{
-  "file": "operators/Lineout/avtLineoutPluginFilter.C", 
-  "warnings": {
-    "220": [
-      "warning: ISO C++ does not support the '%lg' gnu_printf format"
-    ]
-  }
-}

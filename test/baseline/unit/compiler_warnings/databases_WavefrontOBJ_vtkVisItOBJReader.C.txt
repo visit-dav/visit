@@ -1,8 +1,0 @@
-{
-  "file": "databases/WavefrontOBJ/vtkVisItOBJReader.C", 
-  "warnings": {
-    "26": [
-      "warning: extra ';'"
-    ]
-  }
-}

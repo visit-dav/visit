@@ -1,8 +1,0 @@
-{
-  "file": "avt/Plotter/avtLegend.h", 
-  "warnings": {
-    "113": [
-      "warning: comma at end of enumerator list"
-    ]
-  }
-}

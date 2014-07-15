@@ -1,8 +1,0 @@
-{
-  "file": "avt/MIR/Youngs/vtkDataSetGradient.C", 
-  "warnings": {
-    "38": [
-      "warning: extra ';'"
-    ]
-  }
-}

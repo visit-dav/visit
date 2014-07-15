@@ -1,8 +1,0 @@
-{
-  "file": "operators/CracksClipper/vtkCrackWidthFilter.C", 
-  "warnings": {
-    "57": [
-      "warning: extra ';'"
-    ]
-  }
-}

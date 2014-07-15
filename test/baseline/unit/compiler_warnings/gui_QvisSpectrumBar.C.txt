@@ -1,8 +1,0 @@
-{
-  "file": "gui/QvisSpectrumBar.C", 
-  "warnings": {
-    "2872": [
-      "warning: comparison between signed and unsigned integer expressions"
-    ]
-  }
-}

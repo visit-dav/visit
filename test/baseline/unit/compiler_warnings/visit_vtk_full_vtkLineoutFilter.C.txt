@@ -1,8 +1,0 @@
-{
-  "file": "visit_vtk/full/vtkLineoutFilter.C", 
-  "warnings": {
-    "57": [
-      "warning: extra ';'"
-    ]
-  }
-}
