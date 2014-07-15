@@ -26,6 +26,10 @@
 #    Kathleen Biagas, Thu Sep 12 09:08:00 PDT 2013
 #    Added TestPolar to test new polar conversion capability.
 #
+#    Kathleen Biagas, Tue Jul 15 14:16:33 MST 2014
+#    Added TestScale, which demonstrates the need to scale curves with values
+#    greater than 1e37 or less than 1e-37.
+#
 # ----------------------------------------------------------------------------
 
 def Test1():
@@ -409,7 +413,44 @@ def TestPolar():
     Test("polar_curve_08")
     DeleteAllPlots()
     CloseDatabase(data_path("curve_test_data/circle.ultra"))
- 
+
+def TestScale():
+    OpenDatabase(data_path("curve_test_data/need_scale.ultra"))
+    AddPlot("Curve", "toobig")
+    DrawPlots()
+    Test("curve_scale_00")
+
+    t = TransformAttributes()
+    t.doScale =1
+    t.scaleX=1e-15
+    t.scaleY=1e-15
+    t.scaleZ=1e-15
+    AddOperator("Transform")
+    SetOperatorOptions(t)
+    DrawPlots()
+    ResetView()
+  
+    Test("curve_scale_01")
+
+    RemoveLastOperator()
+    ChangeActivePlotsVar("toosmall")
+    DrawPlots()
+    ResetView()
+
+    Test("curve_scale_02")
+
+    t.scaleX=1e+15
+    t.scaleY=1e+15
+    t.scaleZ=1e+15
+    AddOperator("Transform")
+    SetOperatorOptions(t)
+    DrawPlots()
+    ResetView()
+
+    Test("curve_scale_03")
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("curve_test_data/need_scale.ultra"))
 
 def Main():
     Test1()
@@ -417,6 +458,7 @@ def Main():
     TestPointsAndSymbols()
     TestTimeCue()
     TestPolar()
+    TestScale()
 
 Main()
 Exit()
