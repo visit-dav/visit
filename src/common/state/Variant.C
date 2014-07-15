@@ -2796,6 +2796,12 @@ Variant::ToXMLNode(bool encodeString) const
 }
 
 JSONNode
+Variant::ToJSONNode(bool encodeString) const
+{
+    return this->ToJSONNode(encodeString, true);
+}
+
+JSONNode
 Variant::ToJSONNode(bool encodeString, bool id) const
 {
     (void) id;
