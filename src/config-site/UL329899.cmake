@@ -1,4 +1,4 @@
-#/usr/local/graphics/visit/cmake/2.8.10.2/linux-x86_64_gcc-4.6/bin/cmake
+#/usr/local/graphics/visit/cmake/2.8.12.2/linux-x86_64_gcc-4.6/bin/cmake
 ##
 ## ./build_visit generated host.cmake, modified by Paul Selby
 ## created: Fri May 10 17:47:39 BST 2013
@@ -15,8 +15,8 @@ SET(VISITARCH linux-x86_64_gcc-4.6)
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -Wall" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -Wall" TYPE STRING)
 
 ##
 ## Parallel Options
@@ -27,6 +27,11 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL_LINKER_FLAGS "-Wl,--export-dynamic")
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS "/usr/lib64/mpi/gcc/openmpi/lib64/libmpi.so")
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/usr/lib64/mpi/gcc/openmpi/lib64")
+
+##
+## VisIt Thread Option
+##
+VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
 ##############################################################
 ##
@@ -44,7 +49,7 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/usr/lib64/mpi/gcc/openmpi/lib64")
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.6/${VISITARCH})
 
 ##
 ## Qt
@@ -54,7 +59,7 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 ##
 ## VTK
 ##
-SETUP_VTK_VERSION(6.0.0)
+SETUP_VTK_VERSION(6.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ##
 
@@ -89,7 +94,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.2.1/${VISITARCH}/)
 
 ##
 ## Silo
