@@ -400,7 +400,7 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
     if (machine.GetDirectory() != "")
     {
         //Remove all existing instances of -dir, because they're for the LOCAL machine
-        for (int i = 0; i < argv.size(); i++) {
+        for (int i = 0; i < (int) argv.size(); i++) {
             if (argv[i] == "-dir") {
               // First delete the "-dir"
               stringVector::iterator it = argv.erase(argv.begin() + i);
