@@ -240,9 +240,10 @@ fi
     -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
     -DCMAKE_CXX_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+    -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
-make -k -j 12 1>../make.out 2>../make.err
+/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make --output-sync=line -k -j 12 1>../make.out 2>../make.err
 if test $? -ne 0; then
     echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
     exit 1
