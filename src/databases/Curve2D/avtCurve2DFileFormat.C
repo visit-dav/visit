@@ -45,7 +45,7 @@
 #include <vector>
 #include <string>
 
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
@@ -315,6 +315,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Mon Jul 23 12:06:38 PDT 2012
 //    Build lightweight rectilinear grids on mdserver.
 //
+//    Kathleen Biagas, Tue Jul 15 14:16:46 MST 2014
+//    Change from using float to double.
+//
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
@@ -364,8 +367,8 @@ avtCurve2DFileFormat::ReadFile(void)
     // Read in all of the points and store where there are lines between them
     // so we can re-construct them later.
     //
-    vector<float> xl;
-    vector<float> yl;
+    vector<double> xl;
+    vector<double> yl;
     vector<bool>  breakpoint_following;
     vector<int>   cutoff;
     vector<avtCentering> centering;
@@ -375,12 +378,11 @@ avtCurve2DFileFormat::ReadFile(void)
     curveCycle = INVALID_CYCLE;
     CurveToken lastt = VALID_POINT;
     bool justStartedNewCurve = false;
-    //float lastx;
     xl.reserve(1000);
     yl.reserve(1000);
     while (!ifile.eof())
     {
-        float   x, y;
+        double   x, y;
         string  lineName;
         CurveToken t = GetPoint(ifile, x, y, lineName);
         switch (t)
@@ -547,9 +549,9 @@ avtCurve2DFileFormat::ReadFile(void)
 #ifdef MDSERVER
         vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
 #else
-        vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+        vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_DOUBLE);
  
-        vtkFloatArray    *vals = vtkFloatArray::New();
+        vtkDoubleArray    *vals = vtkDoubleArray::New();
         vals->SetNumberOfComponents(1);
         vals->SetNumberOfTuples(nPts);
         if (curveNames.size() != 0) 
@@ -559,13 +561,13 @@ avtCurve2DFileFormat::ReadFile(void)
 
         rg->GetPointData()->SetScalars(vals);
         vals->Delete();
-        vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+        vtkDoubleArray *xc = vtkDoubleArray::SafeDownCast(rg->GetXCoordinates());
 #endif
 
-        double dmin = FLT_MAX;
-        double dmax = -FLT_MAX;
-        double smin = FLT_MAX;
-        double smax = -FLT_MAX;
+        double dmin = DBL_MAX;
+        double dmax = -DBL_MAX;
+        double smin = DBL_MAX;
+        double smax = -DBL_MAX;
         for (int j = 0 ; j < nPts ; j++)
         {
             double X, Y;
@@ -662,10 +664,13 @@ avtCurve2DFileFormat::ReadFile(void)
 //    Jeremy Meredith, Fri Jan  8 16:32:40 EST 2010
 //    Only to ASCII check in strict mode since it's basically the whole file.
 //
+//    Kathleen Biagas, Tue Jul 15 14:16:46 MST 2014
+//    Change from using float to double.
+//
 // ****************************************************************************
 
 CurveToken
-avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
+avtCurve2DFileFormat::GetPoint(ifstream &ifile, double &x, double &y, string &ln)
 {
     char line[256];
     ifile.getline(line, 256, '\n');
@@ -730,7 +735,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     char *ystr = NULL;
 
     errno = 0;
-    x = (float) strtod(line, &ystr);
+    x = strtod(line, &ystr);
     if (((x == 0.0) && (ystr == line)) || (errno == ERANGE))
     {
         return INVALID_POINT;
@@ -750,7 +755,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
 
     char *tmpstr;
     errno = 0;
-    y = (float) strtod(ystr, &tmpstr);
+    y = strtod(ystr, &tmpstr);
     if (((y == 0.0) && (tmpstr == ystr)) || (errno == ERANGE))
     {
         return INVALID_POINT;

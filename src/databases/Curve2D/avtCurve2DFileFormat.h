@@ -82,6 +82,9 @@ class     vtkRectilinearGrid;
 //    Kathleen Bonnell, Tue Jan 20 11:02:57 PST 2009
 //    Added spatialExtents. 
 //
+//    Kathleen Biagas, Tue Jul 15 14:16:07 MST 2014
+//    Change 'GetPoint' args from float to double.
+//
 // ****************************************************************************
 
 typedef enum
@@ -122,7 +125,7 @@ class avtCurve2DFileFormat : public avtSTSDFileFormat
     int                        curveCycle;
 
     void                  ReadFile(void);
-    CurveToken            GetPoint(ifstream &, float &, float &,
+    CurveToken            GetPoint(ifstream &, double &, double &,
                                    std::string &);
 };
 
