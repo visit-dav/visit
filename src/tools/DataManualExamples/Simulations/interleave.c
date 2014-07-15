@@ -88,7 +88,7 @@ void simulate_one_timestep(simulation_data *sim)
 {
     ++sim->cycle;
     sim->time += 0.0134;
-    printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+    printf("Simulating time step: cycle=%d, time=%g\n", sim->cycle, sim->time);
     sim_sleep(1);
 }
 
@@ -336,7 +336,6 @@ SimGetMetaData(void *cbdata)
     if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
     {
         int i;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -370,7 +369,7 @@ SimGetMetaData(void *cbdata)
         }
             
         /* Add some commands. */
-        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        for(i = 0; i < (int) (sizeof(cmd_names)/sizeof(const char *)); ++i)
         {
             visit_handle cmd = VISIT_INVALID_HANDLE;
             if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)

@@ -9,10 +9,11 @@ write_rect2d(DBfile *dbfile)
     float y[] = {0., 2., 2.25, 2.55,  5.};
     int dims[] = {4, 5};
     int ndims = 2;
-    float *coords[] = {x, y};
+    float *coords[2];
     /* Create an option list for saving cycle and time values. */
     int cycle = 100;
     double dtime = 1.23456789;
+    coords[0] = x; coords[1] = y;
     DBoptlist *optlist = DBMakeOptlist(2);
     DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
     DBAddOption(optlist, DBOPT_DTIME, (void *)&dtime);

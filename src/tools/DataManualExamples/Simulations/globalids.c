@@ -350,7 +350,7 @@ void simulate_one_timestep(simulation_data *sim)
     sim->time += (M_PI / 10.);
 
     if(sim->par_rank == 0)
-        printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+        printf("Simulating time step: cycle=%d, time=%g\n", sim->cycle, sim->time);
 
     simulation_data_update(sim);
 
@@ -409,7 +409,7 @@ void SlaveProcessCallback(void *cbdata)
 /* Process commands from viewer on all processors. */
 int ProcessVisItCommand(simulation_data *sim)
 {
-    int command;
+    int command = VISIT_COMMAND_FAILURE;
     if (sim->par_rank==0)
     {  
         int success = VisItProcessEngineCommand();
@@ -504,7 +504,7 @@ ProcessConsoleCommand(simulation_data *sim)
 
 void mainloop(simulation_data *sim)
 {
-    int blocking, visitstate, err = 0;
+    int blocking, visitstate = 0, err = 0;
 
     /* If we're not running by default then simulate once there's something
      * once VisIt connects.
@@ -713,12 +713,9 @@ SimGetMetaData(void *cbdata)
     if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
     {
         int i;
-        double extents[6];
 
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
-        visit_handle emd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -750,7 +747,7 @@ SimGetMetaData(void *cbdata)
         }
 
         /* Add some commands. */
-        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        for(i = 0; i < (int) (sizeof(cmd_names)/sizeof(const char *)); ++i)
         {
             visit_handle cmd = VISIT_INVALID_HANDLE;
             if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)

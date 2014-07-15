@@ -152,7 +152,7 @@ void simulate_one_timestep(simulation_data *sim)
 {
     ++sim->cycle;
     sim->time += 0.0134;
-    printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+    printf("Simulating time step: cycle=%d, time=%g\n", sim->cycle, sim->time);
     sim_sleep(1);
 
     VisItTimeStepChanged();
@@ -434,7 +434,7 @@ SimGetMetaData(void *cbdata)
         }
 
         /* Add some custom commands. */
-        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        for(i = 0; i < (int) (sizeof(cmd_names)/sizeof(const char *)); ++i)
         {
             visit_handle cmd = VISIT_INVALID_HANDLE;
             if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
@@ -520,7 +520,7 @@ visit_handle
 SimGetVariable(int domain, const char *name, void *cbdata)
 {
     visit_handle h = VISIT_INVALID_HANDLE;
-    int nComponents = 1, nTuples = 0;
+    int nComponents = 1;
 
     if(VisIt_VariableData_alloc(&h) == VISIT_OKAY)
     {
@@ -578,7 +578,6 @@ visit_handle
 SimGetDomainNesting(const char *name, void *cbdata)
 {
     visit_handle h = VISIT_INVALID_HANDLE;
-    simulation_data *sim = (simulation_data *)cbdata;
 
     if(VisIt_DomainNesting_alloc(&h) != VISIT_ERROR)
     {
@@ -596,6 +595,7 @@ SimGetDomainNesting(const char *name, void *cbdata)
          */
 #ifdef VARYING_NUMBER_OF_PATCHES
         int np = NPATCHES-1;
+        simulation_data *sim = (simulation_data *)cbdata;
         if(sim->cycle % 2 == 1)
         {
             np = NPATCHES;

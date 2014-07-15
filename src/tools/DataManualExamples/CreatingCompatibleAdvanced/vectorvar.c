@@ -58,7 +58,8 @@ write_curv3d(DBfile *dbfile)
     };
     int dims[] = {4, 3, 2};
     int ndims = 3;
-    float *coords[] = {(float*)x, (float*)y, (float*)z};
+    float *coords[3];
+    coords[0] = (float*)x; coords[1] = (float*)y; coords[2] = (float*)z;
     DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
                   DB_FLOAT, DB_NONCOLLINEAR, NULL);
 }

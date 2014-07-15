@@ -27,7 +27,6 @@
 
 #ifdef PARALLEL
 MPI_Comm comm;
-//#define comm MPI_COMM_WORLD
 #endif
 
 /* Data Access Function prototypes */
@@ -135,9 +134,10 @@ life_data_allocate(life_data *life, int par_rank, int par_size)
 void
 life_data_simulate(life_data *life, int par_rank, int par_size)
 {
-    int nsum, i, j, JPNN, JNN, JMNN, source, dest;
+    int nsum, i, j, JPNN, JNN, JMNN;
     int *true_life = NULL, *working_life = NULL;
 #ifdef PARALLEL
+    int source, dest;
     MPI_Status status;
     MPI_Request request;
 #endif
@@ -452,7 +452,7 @@ void SlaveProcessCallback(void)
 /* Process commands from viewer on all processors. */
 int ProcessVisItCommand(simulation_data *sim)
 {
-    int command;
+    int command = VISIT_COMMAND_FAILURE;
     if (sim->par_rank==0)
     {  
         int success = VisItProcessEngineCommand();
@@ -552,7 +552,7 @@ ProcessConsoleCommand(simulation_data *sim)
 
 void mainloop(simulation_data *sim)
 {
-    int blocking, visitstate, err = 0;
+    int blocking, visitstate = 0, err = 0;
 
     if (sim->par_rank == 0)
     {
@@ -644,7 +644,9 @@ void mainloop(simulation_data *sim)
 
 int main(int argc, char **argv)
 {
+#ifdef PARALLEL
     int i, customcomm = 0;
+#endif
     simulation_data sim;
     simulation_data_ctor(&sim);
 
@@ -756,7 +758,6 @@ SimGetMetaData(void *cbdata)
         int i;
         visit_handle m1 = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -792,7 +793,7 @@ SimGetMetaData(void *cbdata)
         }
 
         /* Add some custom commands. */
-        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        for(i = 0; i < (int) (sizeof(cmd_names)/sizeof(const char *)); ++i)
         {
             visit_handle cmd = VISIT_INVALID_HANDLE;
             if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
