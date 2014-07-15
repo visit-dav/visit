@@ -26,12 +26,18 @@
 #    Mark C. Miller, Tue Jun 29 16:51:46 PDT 2010
 #    Changed exit code if we're in scalable mode from 116 (skip) to
 #    121 (not applicable)
+#
+#    Kathleen Biagas, Tue Jul 15 11:10:27 MST 2014 
+#    Don't need VISITARCHHOME on Windows, but do need 'outputToCurrentDirectory'
+#
 # ----------------------------------------------------------------------------
 
 import sys
 import os
+import platform
 from os.path import join as pjoin
-sys.path.append(pjoin(os.environ['VISITARCHHOME'],"lib"))
+if not platform.system() == "Windows":
+    sys.path.append(pjoin(os.environ['VISITARCHHOME'],"lib"))
 
 import visit_writer
 
@@ -70,6 +76,7 @@ sw = GetSaveWindowAttributes()
 sw.format = sw.ULTRA
 sw.family = 0
 sw.fileName = "tmp"
+sw.outputToCurrentDirectory = 1
 SetSaveWindowAttributes(sw)
 
 import string
