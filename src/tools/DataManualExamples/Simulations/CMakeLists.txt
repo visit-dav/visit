@@ -72,6 +72,10 @@
 #   Brad Whitlock, Fri Jun 13 14:03:00 PDT 2014
 #   Add globalids example.
 #
+#   Kathleen Biagas, Wed Jul 16 11:49:03 MST 2014
+#   Use 'project' on Windows instead of 'all_simulations' when
+#   VISIT_DATA_MANUAL_EXAMPLES not turned on.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -81,7 +85,11 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 # This target depends on all the simulations so we make this target if we want
 # to build any of the simulations.
 IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
-    ADD_CUSTOM_TARGET(all_simulations)
+    IF (WIN32)
+        PROJECT(VISIT_SIMULATION_EXAMPLES)
+    ELSE()
+        ADD_CUSTOM_TARGET(all_simulations)
+    ENDIF()
 ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
 
 IF(VISIT_STATIC)
@@ -123,12 +131,12 @@ FUNCTION(SET_SIMULATION_PROPERTIES target)
         RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/Simulations
         FOLDER tools/DataManualExamples/Simulations
     )
-    IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
+    IF(NOT VISIT_DATA_MANUAL_EXAMPLES AND NOT WIN32)
         SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
             EXCLUDE_FROM_ALL TRUE
         )
         ADD_DEPENDENCIES(all_simulations sim_${target})
-    ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
+    ENDIF()
 ENDFUNCTION(SET_SIMULATION_PROPERTIES)
 
 # We need more libraries on Linux and Windows
