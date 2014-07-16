@@ -53,6 +53,7 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDoubleArray.h>
+#include <vtkAppendFilter.h>
 
 #include <vtkVisItUtility.h>
 #include <vtkIdList.h>
@@ -602,15 +603,20 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     {
         vtkPolyData *pd = (vtkPolyData *) in_ds;
 
-        // VTK_POLY_DATA with only cells with lines is not going to
-        // overlap and most likely contains lines and points. So do
-        // not convert it to a VTK_UNSTRUCTURED_GRID.
-        if( pd->GetNumberOfCells() == pd->GetNumberOfLines() )
-        {
-          in_ds->Register(NULL);
-          return in_ds;
-        }
+        // Use the append filter to change the polydata into an
+        // unstructured grid.
+        vtkAppendFilter *appendFilter = vtkAppendFilter::New();
+        appendFilter->AddInputData(pd);
+        appendFilter->Update();
 
+        ugrid = vtkUnstructuredGrid::New();
+        ugrid->ShallowCopy(appendFilter->GetOutput());
+        appendFilter->Delete();
+
+        needDelete = true;
+
+        // ARS - The above code is simpler.
+#ifdef COMMENTOIUT
         ugrid = vtkUnstructuredGrid::New();
         needDelete = true;
         ugrid->SetPoints(pd->GetPoints());
@@ -629,6 +635,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
             ugrid->InsertNextCell(pd->GetCellType(i), idlist);
         }
         idlist->Delete();
+#endif
     }
     else
     {
@@ -662,7 +669,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     }
 
     int ncells = ugrid->GetNumberOfCells();
-    new_grid->Allocate(2*ncells*8);
+    new_grid->Allocate(2*ncells);
     vtkCellData *out_cd = new_grid->GetCellData();
     vtkCellData *in_cd  = in_ds->GetCellData();
     out_cd->CopyAllocate(in_cd, 2*ncells);
@@ -675,9 +682,13 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     {
         vtkIdType *ids, cellNPts;
         ugrid->GetCellPoints(i, cellNPts, ids);
+
         bool closeToZero = false;
         bool closeToTwoPi = false;
-        bool closeToLow[8];
+        bool *closeToLow = new bool[cellNPts];
+
+        vtkIdType *new_ids = new vtkIdType[cellNPts];
+
         for (j = 0 ; j < cellNPts ; j++)
         {
             double pt[3];
@@ -688,29 +699,31 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
                 closeToZero  = true;
             closeToLow[j] = (pt[comp_idx] < pi ? false : true);
         }
+
         if (closeToTwoPi && closeToZero)
         {
             // Make two cells -- start with the one close to 0 radians.
-            vtkIdType low_ids[8];
             for (j = 0 ; j < cellNPts ; j++)
-                low_ids[j] = (closeToLow[j] ? 2*ids[j] : 2*ids[j]+1);
-            new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, low_ids);
+                new_ids[j] = (closeToLow[j] ? 2*ids[j] : 2*ids[j]+1);
+            new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, new_ids);
             out_cd->CopyData(in_cd, i, cellCnt++);
             
-            vtkIdType hi_ids[8];
             for (j = 0 ; j < cellNPts ; j++)
-                hi_ids[j] = (!closeToLow[j] ? 2*ids[j] : 2*ids[j]+1);
-            new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, hi_ids);
+                new_ids[j] = (!closeToLow[j] ? 2*ids[j] : 2*ids[j]+1);
+            new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, new_ids);
             out_cd->CopyData(in_cd, i, cellCnt++);
+
         }
         else
         {
-            vtkIdType new_ids[8];
             for (j = 0 ; j < cellNPts ; j++)
                 new_ids[j] = 2*ids[j];
             new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, new_ids);
             out_cd->CopyData(in_cd, i, cellCnt++);
         }
+
+        delete[] closeToLow;
+        delete[] new_ids;
     }
     new_grid->Squeeze();
     new_pts->Delete();
@@ -799,8 +812,11 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
     else if (outputSys == CYLINDRICAL)
     {
-        cur_ds = FixWraparounds(cur_ds, 1);
-        deleteList.push_back(cur_ds);
+        if( ct_current != CARTESIAN || !continuousPhi )
+        {
+          cur_ds = FixWraparounds(cur_ds, 1);
+          deleteList.push_back(cur_ds);
+        }
     }
 
     ManageMemory(cur_ds);
