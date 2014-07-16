@@ -17,7 +17,7 @@ void ggcm_grid_gse(float *xg, float *yg, float *zg,
 }
 
 /** alias for ggcm_grid_gse */
-__deprecated void ggcmGridGSE(float *xg, float *yg, float *zg, 
+ggcm__deprecated void ggcmGridGSE(float *xg, float *yg, float *zg, 
                               float *x_gse, float *y_gse, float *z_gse,
                               const int nx, const int ny, const int nz) {
     ggcm_grid_gse(xg, yg, zg, x_gse, y_gse, z_gse, nx, ny, nz);
