@@ -8,7 +8,7 @@
 #include <math.h>
 
 /* these should be fixed to have more graceful error handling. */
-__deprecated float ***matrixAllocate(int l, int m, int n)
+ggcm__deprecated float ***matrixAllocate(int l, int m, int n)
 {
     int i, j;
     float ***A;
@@ -37,7 +37,7 @@ __deprecated float ***matrixAllocate(int l, int m, int n)
     return A;
 }
 
-__deprecated void matrixFree(float ***A, int l, int m, int n)
+ggcm__deprecated void matrixFree(float ***A, int l, int m, int n)
 {
     int i, j;
 

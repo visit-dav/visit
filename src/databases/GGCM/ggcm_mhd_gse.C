@@ -50,7 +50,7 @@ void ggcm_mhd_gse(float ***fg, float ***fg_gse, int nx, int ny, int nz,
 }
 
 /** alias for ggcm_mhd_gse */
-__deprecated void ggcmMHDGSE(float ***fg, float ***fg_gse,
+ggcm__deprecated void ggcmMHDGSE(float ***fg, float ***fg_gse,
                              int nx, int ny, int nz,
                              char field_name[128]) {
     ggcm_mhd_gse(fg, fg_gse, nx, ny, nz, field_name);

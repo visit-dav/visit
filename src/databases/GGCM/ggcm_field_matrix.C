@@ -56,7 +56,7 @@ float ***ggcm_field_matrix(const MHDdata * data, int nx, int ny, int nz,
 }
 
 /** alias for ggcm_field_matrix */
-__deprecated float ***ggcmFieldMatrix(const MHDdata *data,
+ggcm__deprecated float ***ggcmFieldMatrix(const MHDdata *data,
                                       int nx, int ny, int nz,
                                       char field_name[128]) {
     return ggcm_field_matrix(data, nx, ny, nz, field_name);

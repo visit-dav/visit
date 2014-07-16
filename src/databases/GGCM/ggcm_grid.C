@@ -29,6 +29,6 @@ float *ggcm_grid(MHDdata *data, int *ndim, char * const grid_name)
 }
 
 /** alias for ggcm_grid */
-__deprecated float *ggcmGrid(MHDdata *data, int *ndim, char * const grid_name) {
+ggcm__deprecated float *ggcmGrid(MHDdata *data, int *ndim, char * const grid_name) {
     return ggcm_grid(data, ndim, grid_name);
 }

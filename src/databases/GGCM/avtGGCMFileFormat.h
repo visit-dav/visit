@@ -71,8 +71,8 @@ class avtGGCMFileFormat : public avtMTSDFileFormat
         /** subset contract information */
         std::vector<avtDataSelection_p> selList;
         std::vector<bool> *selsApplied;
-        float min[3];    /**< minimums for {x,y,z} dimensions */
-        float max[3];    /**< maximums for {x,y,z} dimensions */
+        double min[3];   /**< minimums for {x,y,z} dimensions */
+        double max[3];   /**< maximums for {x,y,z} dimensions */
         bool restricted; /**< should we obey min[],max[]? */
 
     private:

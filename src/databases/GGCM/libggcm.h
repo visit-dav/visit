@@ -4,9 +4,9 @@
 #include <stdio.h>
 
 #if __GNUC__ >= 3
-# define __deprecated   __attribute__ ((deprecated))
+# define ggcm__deprecated   __attribute__ ((deprecated))
 #else
-# define __deprecated   /* no deprecated */
+# define ggcm__deprecated   /* no deprecated */
 #endif
 
 #ifdef __cplusplus
@@ -72,7 +72,7 @@ typedef struct MHDdata_st {
 /** initialize an MHDdata record */
 void ggcm_init_mhd(MHDdata *data);
 /** initialize an MHDdata record */
-__deprecated void initMHD(MHDdata *data);
+ggcm__deprecated void initMHD(MHDdata *data);
 
 /** ggcm_read_mhd reads all the wrn ASCII-encoded MHD data requested
  * by the "field_list[]" character array from the file specified by the
@@ -89,7 +89,7 @@ MHDdata *ggcm_read_mhd(const char *file_name, const char *field_list[]);
  * first structure of the list is returned.  The order of the list is
  * the order the data fields were found in the file -- not necessarily
  * the order they were specified in the "field_list" array. */
-__deprecated MHDdata *readMHDFile(const char *file_name,
+ggcm__deprecated MHDdata *readMHDFile(const char *file_name,
                                   const char *field_list[], long file_start);
 
 /** creates a list which contains all of the metadata for a given GGCM file,
@@ -102,12 +102,12 @@ MHDdata *ggcm_read_metadata(const char *filename);
 void ggcm_free_data(MHDdata *);
 /** traverses the MHDdata structure, deleting 'data' as it goes. stop when it
  * encounters a NULL pointer. Finally, free()s the pointer to the structure. */
-__deprecated void freeMHDData(MHDdata *md);
+ggcm__deprecated void freeMHDData(MHDdata *md);
 
 /** matrix [de]allocation routines */
 
-__deprecated float ***matrixAllocate(int l, int m, int n);
-__deprecated void matrixFree(float ***A, int l, int m, int n);
+ggcm__deprecated float ***matrixAllocate(int l, int m, int n);
+ggcm__deprecated void matrixFree(float ***A, int l, int m, int n);
 
 /** allocates a matrix with the specified number of dimensions */
 float ***m_alloc(unsigned int x, unsigned int y, unsigned int z);
@@ -117,7 +117,7 @@ void m_free(float ***M);
 /** create a GGCM grid array */
 float *ggcm_grid(MHDdata *data, int *ndim, char * const grid_name);
 /** create a GGCM grid array */
-__deprecated float *ggcmGrid(MHDdata *data, int *ndim, char * const grid_name);
+ggcm__deprecated float *ggcmGrid(MHDdata *data, int *ndim, char * const grid_name);
 
 /** Our fields are stored in an MHDdata record, in no particular order
  * (actually it depends on the input order, which we don't rely on).  This
@@ -130,7 +130,7 @@ float *ggcm_field(MHDdata * data, int nx, int ny, int nz,
 float ***ggcm_field_matrix(const MHDdata * data, int nx, int ny, int nz,
                            char field_name[128]);
 /** Create a 3D GGCM MHD field matrix */
-__deprecated float ***ggcmFieldMatrix(const MHDdata *data,
+ggcm__deprecated float ***ggcmFieldMatrix(const MHDdata *data,
                                       int nx, int ny, int nz,
                                       char field_name[128]);
 
@@ -139,7 +139,7 @@ void ggcm_grid_gse(float *xg, float *yg, float *zg,
                    float *x_gse, float *y_gse, float *z_gse,
                    const int nx, const int ny, const int nz);
 /** Convert 1D grid arrays from MHD to GSE coordinates */
-__deprecated void ggcmGridGSE(float *xg, float *yg, float *zg, 
+ggcm__deprecated void ggcmGridGSE(float *xg, float *yg, float *zg, 
                               float *x_gse, float *y_gse, float *z_gse,
                               const int nx, const int ny, const int nz);
 
@@ -147,7 +147,7 @@ __deprecated void ggcmGridGSE(float *xg, float *yg, float *zg,
 void ggcm_mhd_gse(float ***fg, float ***fg_gse, int nx, int ny, int nz,
                   char field_name[128]);  
 /** Convert 3D GGCM field matrices from MHD to GSE coordinates */
-__deprecated void ggcmMHDGSE(float ***fg, float ***fg_gse,
+ggcm__deprecated void ggcmMHDGSE(float ***fg, float ***fg_gse,
                              int nx, int ny, int nz,
                              char field_name[128]);
 
