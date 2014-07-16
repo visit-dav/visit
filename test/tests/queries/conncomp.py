@@ -21,6 +21,8 @@
 #    Changed sil selection for Exodus.
 # ----------------------------------------------------------------------------
 
+import json
+
 OpenDatabase(silo_data_path("rect2d.silo"), 0)
 
 
@@ -65,6 +67,10 @@ TestText("conncomp_1d_var_sum",res)
 Query("Connected Component Weighted Variable Sum")
 res = GetQueryOutputString()
 TestText("conncomp_1d_weighted_var_sum",res)
+
+Query("Connected Components Summary")
+res = GetQueryOutputObject()
+TestText("conncomp_1d_summary",json.dumps(res,indent=2))
 
 DeleteAllPlots()
 
@@ -113,7 +119,9 @@ Query("Connected Component Weighted Variable Sum")
 res = GetQueryOutputString()
 TestText("conncomp_2d_weighted_var_sum",res)
 
-
+Query("Connected Components Summary")
+res = GetQueryOutputObject()
+TestText("conncomp_2d_summary",json.dumps(res,indent=2))
 
 DeleteAllPlots()
 
@@ -177,6 +185,11 @@ Query("Connected Component Volume")
 res = GetQueryOutputString()
 TestText("conncomp_3d_volume_t1",res)
 
+Query("Connected Components Summary")
+res = GetQueryOutputObject()
+TestText("conncomp_3d_summary_t1",json.dumps(res,indent=2))
+
+
 SetTimeSliderState(11);
 # test as displacement evolves
 Test("conncomp_3d_t2");
@@ -194,6 +207,10 @@ Query("Connected Component Volume")
 res = GetQueryOutputString()
 TestText("conncomp_3d_volume_t2",res)
 
+Query("Connected Components Summary")
+res = GetQueryOutputObject()
+TestText("conncomp_3d_summary_t2",json.dumps(res,indent=2))
+
 
 SetTimeSliderState(20);
 Test("conncomp_3d_t3");
@@ -210,6 +227,12 @@ TestText("conncomp_3d_centroid_t3",res)
 Query("Connected Component Volume")
 res = GetQueryOutputString()
 TestText("conncomp_3d_volume_t3",res)
+
+
+Query("Connected Components Summary")
+res = GetQueryOutputObject()
+TestText("conncomp_3d_summary_t3",json.dumps(res,indent=2))
+
 
 
 
