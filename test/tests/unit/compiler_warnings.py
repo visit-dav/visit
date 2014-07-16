@@ -122,7 +122,7 @@ TestText("warning_counts_by_file", counts_txt)
 # Ok, tricky here. Append all the warning details to the html file
 # so others can actually see it
 #
-f = open(test_root_path("html","warning_counts_by_file.html"),"a")
+f = open(out_path("html","warning_counts_by_file.html"),"a")
 f.write("<pre>\n")
 f.write("\n\n\nWarning message strings currently being skipped if matched...\n");
 f.write(json.dumps(skip_list,indent=4))
