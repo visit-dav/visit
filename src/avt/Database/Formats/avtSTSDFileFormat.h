@@ -95,6 +95,10 @@ class     avtIOInformation;
 //
 //    Mark C. Miller, Fri Oct 29 09:58:43 PDT 2010
 //    Moved implementation of SetDatabaseMetaData to the .C file.
+//
+//    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
+//    Pass mesh name to PopulateIOInformation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormat : public avtFileFormat
@@ -115,9 +119,12 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
     virtual vtkDataArray  *GetVectorVar(const char *);
 
     virtual void           ActivateTimestep(void)
-                               { avtFileFormat::ActivateTimestep(); };
-    virtual void           PopulateIOInformation(avtIOInformation& ioInfo)
-                               { avtFileFormat::PopulateIOInformation(ioInfo); };
+                           { avtFileFormat::ActivateTimestep(); };
+    virtual bool           PopulateIOInformation(const std::string &meshname,
+                                                 avtIOInformation& ioInfo)
+                           {
+                               return avtFileFormat::PopulateIOInformation(meshname, ioInfo);
+                           }
     virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md);
 
   protected:

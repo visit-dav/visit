@@ -52,14 +52,22 @@
 
 #define FREE(ptr) if(ptr != NULL){free(ptr); ptr = NULL;}
 
+#define INT_CAST(VAL) ((int)(VAL))
+#define FLOAT_CAST(VAL) ((float)(VAL))
+
+#define MAXPARTS 3
+
 #define VISIT_COMMAND_PROCESS 0
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
 
+#define SIM_STOPPED       0
+#define SIM_RUNNING       1
+
 /* Data Access Function prototypes */
 visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
-visit_handle SimGetCurve(const char *name, void *);
+visit_handle SimGetMaterial(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetDomainList(const char *, void *);
 
@@ -72,13 +80,18 @@ typedef struct
 {
     int   nnodes;
     int   ncells;
+    int   nodeDataSize;
+    int   cellDataSize;
+
     float extents[6];
     float *xyz;
+    int   connectivitySize;
     int   connectivityLen;
     int   *connectivity;
     int   *globalNodeIds;
     int   *globalCellIds;
     float *data;
+    float *data2;
 } ucdmesh;
 
 void
@@ -95,19 +108,518 @@ ucdmesh_dtor(ucdmesh *m)
     FREE(m->globalNodeIds);
     FREE(m->globalCellIds);
     FREE(m->data);
+    FREE(m->data2);
+}
+
+/******************************************************************************
+ * Surface Mesh functions
+ ******************************************************************************/
+
+typedef ucdmesh surfacemesh;
+
+#define SURFACEMESH_ALLOC_INCR 1000
+
+void
+surfacemesh_ctor(surfacemesh *m)
+{
+    memset(m, 0, sizeof(surfacemesh));
+
+    m->nodeDataSize = SURFACEMESH_ALLOC_INCR;
+    m->xyz = (float *)malloc(3 * sizeof(float) * m->nodeDataSize);
+    m->globalNodeIds = (int *)malloc(sizeof(float) * m->nodeDataSize);
+
+    m->connectivitySize = SURFACEMESH_ALLOC_INCR;
+    m->connectivity = (int *)malloc(sizeof(int) * m->connectivitySize);
+
+    m->cellDataSize = SURFACEMESH_ALLOC_INCR;
+    m->globalCellIds = (int *)malloc(sizeof(int) * m->cellDataSize);
+    m->data = (float *)malloc(sizeof(float) * m->cellDataSize);
+    m->data2 = (float *)malloc(sizeof(float) * m->cellDataSize);
 }
 
 void
-ucdmesh_init(float ext[6], int nx, int ny, int nz)
+surfacemesh_dtor(surfacemesh *m)
 {
+    ucdmesh_dtor(m);
+}
+
+int
+surfacemesh_addpoint(surfacemesh *m, float x, float y, float z, int id)
+{
+    if(m->nnodes+1 >= m->nodeDataSize)
+    {
+        m->nodeDataSize += SURFACEMESH_ALLOC_INCR;
+        m->xyz = (float *)realloc(m->xyz, 3 * sizeof(float) * m->nodeDataSize);
+        m->globalNodeIds = (int *)realloc(m->globalNodeIds, sizeof(int) * m->nodeDataSize);
+    }
+
+    m->xyz[m->nnodes*3  ] = x;
+    m->xyz[m->nnodes*3+1] = y;
+    m->xyz[m->nnodes*3+2] = z;
+    m->globalNodeIds[m->nnodes] = id;
+    m->nnodes++;
+
+    return m->nnodes-1;
+}
+
+int
+surfacemesh_addcell(surfacemesh *m, const int *conn, int nconn, float value, float value2, int id)
+{
+    int i, *ptr;
+
+    if((m->connectivityLen + nconn) >= m->connectivitySize)
+    {
+        m->connectivitySize += SURFACEMESH_ALLOC_INCR;
+        m->connectivity = (int *)realloc(m->connectivity, 3 * sizeof(int) * m->connectivitySize);
+    }
+
+    if(m->ncells+1 >= m->cellDataSize)
+    {
+        m->cellDataSize += SURFACEMESH_ALLOC_INCR;
+        m->globalCellIds = (int *)realloc(m->globalCellIds, sizeof(int) * m->cellDataSize);
+        m->data = (float *)realloc(m->data, sizeof(float) * m->cellDataSize);
+        m->data2 = (float *)realloc(m->data2, sizeof(float) * m->cellDataSize);
+    }
+
+    ptr = m->connectivity + m->connectivityLen;
+    for(i = 0; i < nconn; ++i)
+        ptr[i] = conn[i];
+    m->connectivityLen += nconn;
+
+    m->globalCellIds[m->ncells] = id;
+    m->data[m->ncells] = value;   
+    m->data2[m->ncells] = value2;   
+    m->ncells++;
+
+    return m->ncells-1;
+}
+
+void
+surfacemesh_extract(surfacemesh *m, surfacemesh *output, 
+    int(*keepcell)(surfacemesh *, int, int *, int, void*), void *cbdata)
+{
+    int i, *conn, lconn, cell = 0, npts;
+    int *old2new = (int *)malloc(sizeof(int) * m->nnodes);
+    for(i = 0; i < m->nnodes; ++i)
+        old2new[i] = -1;
+
+    conn = m->connectivity;
+    for(cell = 0; cell < m->ncells; ++cell)
+    {
+        if(conn[0] == VISIT_CELL_TRI)
+            npts = 3;
+        else if(conn[0] == VISIT_CELL_QUAD)
+            npts = 4;
+        else
+            break;
+        lconn = npts+1;
+        if((*keepcell)(m, cell, conn, lconn, cbdata) > 0)
+        {
+            int newconn[5];
+            newconn[0] = conn[0];
+            for(i = 1; i < lconn; ++i)
+            {
+                int a = conn[i];
+                if(old2new[a] == -1)
+                {
+                    old2new[a] = surfacemesh_addpoint(output,
+                                     m->xyz[3*a],
+                                     m->xyz[3*a+1],
+                                     m->xyz[3*a+2],
+                                     m->globalNodeIds[a]);
+                }
+                newconn[i] = old2new[a];
+            }
+            surfacemesh_addcell(output, newconn, lconn, m->data[cell], m->data2[cell], m->globalCellIds[cell]);
+        }
+        conn += lconn;
+    }
+
+    FREE(old2new);
+}
+
+void
+surfacemesh_cell_center(surfacemesh *m, const int *conn, int lconn, float *X, float *Y, float *Z)
+{
+    float x = 0.f,y = 0.f,z = 0.f, npts;
+    int i;
+    /* Cell center */
+    npts = FLOAT_CAST(lconn-1);
+    for(i = 1; i < lconn; ++i)
+    {
+        x += m->xyz[3*conn[i]+0];
+        y += m->xyz[3*conn[i]+1];
+        z += m->xyz[3*conn[i]+2];
+    }
+    *X = x / npts;
+    *Y = y / npts;
+    *Z = z / npts;
+}
+
+void
+surfacemesh_data_extents(surfacemesh *m, float *e0, float *e1)
+{
+    int i;
+    float ext[2];
+    ext[0] = ext[1] = (m->ncells>0) ? m->data[0] : 0.f;
+    for(i = 1; i < m->ncells; ++i)
+    {
+        ext[0] = (m->data[i] < ext[0]) ? m->data[i] : ext[0];
+        ext[1] = (m->data[i] > ext[1]) ? m->data[i] : ext[1];
+    }
+    *e0 = ext[0];
+    *e1 = ext[1];
+}
+
+void
+surfacemesh_print(surfacemesh *m)
+{
+    int i;
+    printf("nnodes=%d\n", m->nnodes);
+    printf("ncells=%d\n", m->ncells);
+    printf("nodeDataSize=%d\n", m->nodeDataSize);
+    printf("cellDataSize=%d\n", m->cellDataSize);
+    printf("extents={%f,%f,%f,%f,%f,%f}\n", 
+        m->extents[0], m->extents[1], m->extents[2], 
+        m->extents[3], m->extents[4], m->extents[5]);
+    printf("xyz = {\n");
+    for(i = 0; i < m->nnodes; ++i)
+        printf("%d: %f, %f, %f\n", i, m->xyz[3*i],m->xyz[3*i+1],m->xyz[3*i+2]);
+    printf("}\n");
+    printf("connectivitySize=%d\n", m->connectivitySize);
+    printf("connectivityLen=%d\n", m->connectivityLen);
+    printf("connectivity = {");
+    for(i = 0; i < m->connectivityLen; ++i)
+       printf("%d, ", m->connectivity[i]);
+    printf("}\n");
+    printf("globalNodeIds = {");
+    for(i = 0; i < m->nnodes; ++i)
+       printf("%d, ", m->globalNodeIds[i]);
+    printf("}\n");
+    printf("globalCellIds = {");
+    for(i = 0; i < m->ncells; ++i)
+       printf("%d, ", m->globalCellIds[i]);
+    printf("}\n");
+    printf("data = {");
+    for(i = 0; i < m->ncells; ++i)
+       printf("%f, ", m->data[i]);
+    printf("}\n");
+    printf("data2 = {");
+    for(i = 0; i < m->ncells; ++i)
+       printf("%f, ", m->data2[i]);
+    printf("}\n");
+}
+
+/******************************************************************************
+ * Functions to create 6.14 20-bit fixed point numbers that we can use to
+ * encode XYZ points with less precision to make them more likely to match.
+ ******************************************************************************/
+int
+float_to_fixed6_14(float x)
+{
+    return INT_CAST(x * pow(2.,14.)) & 0xfffff;
+}
+
+float
+fixed6_14_to_float(int x)
+{
+    float x1;
+    if((x & 0x80000) > 0)
+    {
+        int x2 = x | 0xfff80000;
+        x1 = (FLOAT_CAST(x2) * pow(2, -14.));
+    }
+    else
+        x1 = (FLOAT_CAST(x) * pow(2, -14.));
+    return x1;
+}
+
+typedef unsigned long point_key;
+
+point_key
+encode_point(float x, float y, float z)
+{
+    unsigned long X = (unsigned long)float_to_fixed6_14(x);
+    unsigned long Y = (unsigned long)float_to_fixed6_14(y);
+    unsigned long Z = (unsigned long)float_to_fixed6_14(z);
+    return (X << 40) | (Y << 20) | Z;
+}
+
+void
+decode_point(point_key pt, float *x, float *y, float *z)
+{
+    *x = fixed6_14_to_float( (int)((pt >> 40) & 0xfffff) );
+    *y = fixed6_14_to_float( (int)((pt >> 20) & 0xfffff) );
+    *z = fixed6_14_to_float( (int)((pt)       & 0xfffff) );
+}
+
+int
+point_key_equal(point_key k0, point_key k1)
+{
+    return k0 == k1;
+}
+
+/******************************************************************************
+ * Functions to make a set of unique points
+ ******************************************************************************/
+
+#define UNIQUEPOINTS_ALLOC_INCR 1000
+
+typedef struct
+{
+    int        capacity;
+    int        size;
+    point_key *data;
+} unique_points;
+
+void
+unique_points_ctor(unique_points *p)
+{
+    p->capacity = UNIQUEPOINTS_ALLOC_INCR;
+    p->size = 0;
+    p->data = (point_key *)malloc(p->capacity * sizeof(point_key));
+}
+
+void
+unique_points_dtor(unique_points *p)
+{
+    FREE(p->data);
+}
+
+int
+unique_points_lookup(unique_points *p, point_key k)
+{
+    int i;
+    for(i = 0; i < p->size; ++i)
+    {
+        if(point_key_equal(k, p->data[i]))
+            return i;
+    }
+    return -1;
+}
+
+int
+unique_points_insert(unique_points *p, point_key k)
+{
+    if(p->size+1 > p->capacity)
+    {
+        p->capacity += UNIQUEPOINTS_ALLOC_INCR;
+        p->data = (point_key *)realloc(p->data, p->capacity * sizeof(point_key));
+    }
+    p->data[p->size++] = k;
+    return p->size-1;
+}
+
+/******************************************************************************
+ * Functions to make cylinder geometry
+ ******************************************************************************/
+
+void
+ConstructDisk(surfacemesh *m, unique_points *p, const float center[3],
+    float radius,  float degrees, int radialDiv, int verticalDiv, float height)
+{
+    int r,r1,r2,a,i,centerPt,nAngles,nRadii,ring1;
+    float *tr, minRadius, mat;
+
+    /* Add points */
+    unique_points_insert(p, encode_point(center[0], center[1], height));
+    surfacemesh_addpoint(m, center[0], center[1], height, m->nnodes);
+
+    centerPt = m->nnodes-1;
+    nAngles = INT_CAST(360. / degrees);
+    nRadii = radialDiv;
+    ring1 = m->nnodes;
+
+    tr = (float *)malloc(nRadii * sizeof(float));
+    for(r = 0; r < nRadii; ++r)
+        tr[r] = FLOAT_CAST(r+1) / FLOAT_CAST(nRadii);
+    minRadius = 0.;
+
+    for(r = 0; r < nRadii; ++r)
+    {
+        float rad = (1.-tr[r])*minRadius + tr[r] * radius;
+
+        for(a = 0; a < nAngles; ++a)
+        {
+            float ta,angle,x,y,z;
+            ta = FLOAT_CAST(a) / FLOAT_CAST(nAngles);
+            angle = ta * 2. * M_PI;
+            x = center[0] + rad*cos(angle);
+            y = center[1] + rad*sin(angle);
+            z = height;
+
+            unique_points_insert(p, encode_point(x,y,z));
+            surfacemesh_addpoint(m, x,y,z, m->nnodes);
+        } 
+    }
+    FREE(tr);
+
+    /* Connect the points into triangles. */
+    for(i = 0; i < nAngles; ++i)
+    {
+        int conn[4];
+        conn[0] = VISIT_CELL_TRI;
+        conn[1] = centerPt;
+        conn[2] = centerPt+1+i;
+        conn[3] = (i==nAngles-1) ? (centerPt+1) : (centerPt+2+i);
+        surfacemesh_addcell(m, conn, 4, 0.f, 2.f, m->ncells);
+    }
+
+    /* Make quads */
+    for(r = 0; r < nRadii-1; ++r)
+    {
+        r1 = nRadii/3;
+        r2 = 2*nRadii/3;
+        if(r < r2)
+            mat = (r < r1) ? 2.f : 1.f;
+        else 
+            mat = 0.f;
+        for(a = 0; a < nAngles; ++a)
+        {
+            int conn[4], nextA;
+
+            nextA = (a == nAngles-1) ? 0 : (a+1);
+            conn[0] = VISIT_CELL_QUAD;
+            conn[1] = ring1 + (r * nAngles + a);
+            conn[2] = ring1 + ((r+1) * nAngles + a);
+            conn[3] = ring1 + ((r+1) * nAngles + nextA);
+            conn[4] = ring1 + (r * nAngles + nextA);
+
+            surfacemesh_addcell(m, conn, 5, 0.f, mat, m->ncells);
+        }
+    }
+}
+
+void
+ConstructWalls(surfacemesh *m, unique_points *p, const float center[3],
+    float radius, float degrees, int radialDiv, int verticalDiv,
+    float z0, float z1)
+{
+    /* Add points */
+    int r,a,nAngles,nDiv,*ptids,idx,id;
+    float th,h,ta,angle,x,y,z;
+
+    nAngles = (int)(360. / degrees);
+    nDiv = verticalDiv;
+    ptids = (int *)malloc(nAngles * nDiv * sizeof(int));
+    idx = 0;
+    for(r = 0; r < nDiv; ++r)
+    {
+        th = FLOAT_CAST(r) / FLOAT_CAST(nDiv-1);
+        h = (1.-th)*z0 + th*z1;
+        for(a = 0; a < nAngles; ++a)
+        {
+            ta = FLOAT_CAST(a) / FLOAT_CAST(nAngles);
+            angle = ta * 2. * M_PI;
+            x = center[0] + radius*cos(angle);
+            y = center[1] + radius*sin(angle);
+            z = h;
+
+            /* Make sure that points are unique */
+            point_key k = encode_point(x,y,z);
+            id = unique_points_lookup(p, k);
+            if(id == -1)
+            {
+                id = unique_points_insert(p,k);
+                surfacemesh_addpoint(m, x,y,z, m->nnodes);
+            }
+
+            ptids[idx++] = id;
+        } 
+    }
+
+    for(r = 0; r < nDiv-1; ++r)
+    {
+        for(a = 0; a < nAngles; ++a)
+        {
+            int conn[5], nextA;
+            nextA = (a == nAngles-1) ? 0 : (a+1);
+            conn[0] = VISIT_CELL_QUAD;
+            conn[1] = ptids[ (r * nAngles + a) ];
+            conn[2] = ptids[ ((r+1) * nAngles + a) ];
+            conn[3] = ptids[ ((r+1) * nAngles + nextA) ];
+            conn[4] = ptids[ (r * nAngles + nextA) ];
+            surfacemesh_addcell(m, conn, 5, 0.f, 0.f, m->ncells);
+        }
+    }
+
+    FREE(ptids);
+}
+
+float
+compute_angle(float xyz[3], float center[3])
+{
+    float x,y,r,cosphi,angle;
+    x = xyz[0]-center[0];
+    y = xyz[1]-center[1];
+    r = sqrt(x * x + y * y);
+    cosphi = (r >= 1.e-10) ? x/r : 1.;
+    angle  = acos(cosphi);
+    if (y < 0.)
+        angle = 2. * M_PI - angle;
+    return angle;
+}
+
+void
+compute_cell_angles(surfacemesh *m, float center[3])
+{
+    int *conn, lconn, cell = 0, npts;
+    float xyz[3];
+
+    conn = m->connectivity;
+    for(cell = 0; cell < m->ncells; ++cell)
+    {
+        if(conn[0] == VISIT_CELL_TRI)
+            npts = 3;
+        else if(conn[0] == VISIT_CELL_QUAD)
+            npts = 4;
+        else
+            break;
+        lconn = npts+1;
+
+        surfacemesh_cell_center(m, conn, lconn, &xyz[0], &xyz[1], &xyz[2]);
+        m->data[cell] = compute_angle(xyz, center);
+        conn += lconn;
+    }
+}
+
+void
+create_cylinder_surface(surfacemesh *m, const float *extents)
+{
+    float degrees = 5.f;
+    int radialDiv = 20;
+    int verticalDiv = 20;
+    float z0,z1, center[3], radius, eps = 0.05f;
+
+    unique_points p;
+    unique_points_ctor(&p);
+
+    center[0] = (extents[0] + extents[3]) / 2.f;
+    center[1] = (extents[1] + extents[4]) / 2.f;
+    center[2] = (extents[2] + extents[5]) / 2.f;
+    z0 = extents[2] + eps;
+    z1 = extents[5] - eps;
+
+    radius = (extents[3] - center[0]) * 0.8f;
+
+    /* Create ground*/
+    ConstructDisk(m,&p, center, radius, degrees, radialDiv, verticalDiv, z0);
+
+    /* Create ceiling*/
+    ConstructDisk(m,&p, center, radius, degrees, radialDiv, verticalDiv, z1);
+
+    /* Create wall*/
+    ConstructWalls(m,&p, center, radius, degrees, radialDiv, verticalDiv, z0, z1);
+
+    /* Compute an angle for each cell. */
+    compute_cell_angles(m, center);
+
+    unique_points_dtor(&p);
 }
 
 /******************************************************************************
  * Simulation data and functions
  ******************************************************************************/
-
-#define SIM_STOPPED       0
-#define SIM_RUNNING       1
 
 typedef struct
 {
@@ -127,6 +639,10 @@ typedef struct
     int             ijk_split[3];
     int             owns[8];
     ucdmesh         domains[8];
+
+    int             surface_npartitions;
+    int             surface_partitions[8];
+    surfacemesh    *surfaces;
 } simulation_data;
 
 void
@@ -142,9 +658,9 @@ simulation_data_ctor(simulation_data *sim)
     sim->done = 0;
     sim->echo = 0;
 
-    sim->nx = 101;
-    sim->ny = 101;
-    sim->nz = 101;
+    sim->nx = 51;
+    sim->ny = 51;
+    sim->nz = 51;
     sim->extents[0] = 0.f;
     sim->extents[1] = 0.f;
     sim->extents[2] = 0.f;
@@ -157,6 +673,9 @@ simulation_data_ctor(simulation_data *sim)
 
     for(i = 0; i < 8; ++i)
         ucdmesh_ctor(&sim->domains[i]);
+
+    sim->surface_npartitions = 0;
+    sim->surfaces = NULL;
 }
 
 void
@@ -166,14 +685,25 @@ simulation_data_dtor(simulation_data *sim)
 
     for(i = 0; i < 8; ++i)
         ucdmesh_dtor(&sim->domains[i]);
+
+    if(sim->surfaces != NULL)
+    {
+        for(i = 0; i < sim->surface_npartitions; ++i)
+            surfacemesh_dtor(&sim->surfaces[i]);
+        FREE(sim->surfaces);
+    }
 }
 
 const int dom2i[8] = {0,1,0,1,0,1,0,1};
 const int dom2j[8] = {0,0,1,1,0,0,1,1};
 const int dom2k[8] = {0,0,0,0,1,1,1,1};
 
+/* Update the "mesh" ucdmesh. The mesh gets split into octants, forming 8
+ * domains. The split point moves around so we get domains that shrink and
+ * grow.
+ */
 void
-simulation_data_update(simulation_data *sim)
+simulation_data_update_ucdmesh(simulation_data *sim)
 {
     float angle,rad,x,y,z,cx,cy,cz,dx,dy,dz,sx,sy,sz;
     int d,i,j,k, idx, ijk_start[3], ijk_end[3],nx,ny,nz;
@@ -181,16 +711,6 @@ simulation_data_update(simulation_data *sim)
     /* Get rid of the old meshes. */
     for(i = 0; i < 8; ++i)
         ucdmesh_dtor(&sim->domains[i]);
-
-    /* Determine which meshes we'll work on based on the rank. */
-    for(i = 0; i < 8; i++)
-    {
-        int owner_of_domain = i % sim->par_size;
-        if(sim->par_rank == owner_of_domain)
-            sim->owns[i] = 1;
-        else
-            sim->owns[i] = 0;
-    }
 
     angle = sim->time;
 
@@ -202,8 +722,8 @@ simulation_data_update(simulation_data *sim)
     dz = sim->extents[5] - sim->extents[2];
     rad = sqrt(dx*dx + dz*dz) / 10.;
     sx = ((sim->extents[0] + sim->extents[3]) / 2) + rad * cos(angle);
-    sy = ((sim->extents[1] + sim->extents[4]) / 2);
-    sz = ((sim->extents[2] + sim->extents[5]) / 2) + rad * sin(angle);
+    sy = ((sim->extents[1] + sim->extents[4]) / 2) + rad * sin(angle);
+    sz = ((sim->extents[2] + sim->extents[5]) / 2);
 
     /* We have a new x,y,z. Figure out where that is in ijk. */
     i = (int)(sim->nx * ((sx - sim->extents[0]) / dx));
@@ -313,28 +833,196 @@ simulation_data_update(simulation_data *sim)
     }
 }
 
-const char *cmd_names[] = {"halt", "step", "run"};
+/* Select a cell if it is in a box. */
+int
+cell_in_box(surfacemesh *m, int cell, int *conn, int lconn, void *args)
+{
+    float x = 0.f,y = 0.f,z = 0.f,*extents;
+    int valid;
+    surfacemesh_cell_center(m, conn, lconn, &x, &y, &z);
+    extents = (float *)args;
+    valid = (x >= extents[0] && x < extents[3]) &&
+            (y >= extents[1] && y < extents[4]) &&
+            (z >= extents[2] && z < extents[5]);
 
-/******************************************************************************
- * Functions to really populate data
- ******************************************************************************/
+    return valid;
+}
 
+/* Select a cell if its angle is within range. */
+int
+cell_in_angle_range(surfacemesh *m, int cell, int *conn, int lconn, void *args)
+{
+    float *angles;
+    int valid;
+    angles = (float *)args;
+    valid = (m->data[cell] >= angles[0] && m->data[cell] < angles[1]);
 
-/******************************************************************************
- *
- * Purpose: Create the data that the simulation will use.
- *
- * Programmer: Brad Whitlock
- * Date:       Fri Aug 12 14:59:38 PDT 2011
- *
- * Modifications:
- *
- *****************************************************************************/
+    return valid;
+}
+
+/* Make a cylinder surface and divide it up into pieces using the octants from
+ * the other mesh. We then further divide up each octant using angular values
+ * stored on the cells in order to make a variable number of domains per
+ * octant. We end up forcing the surface domains within an octant to be assigned
+ * to the same processor. We can enforce this mapping within VisIt via the
+ * domain list.
+ */
 
 void
-read_input_deck(simulation_data *sim)
+simulation_data_update_surfacemesh(simulation_data *sim)
 {
+    int i, j, p, idx, idx2, np, *ncells, needclean;
+    float t, angle[2], angle_ranges[MAXPARTS+1];
+    surfacemesh surface, partial;
+
+    /* Clean up previous surfaces */
+    for(i = 0; i < sim->surface_npartitions; ++i)
+        surfacemesh_dtor(&sim->surfaces[i]);
+    FREE(sim->surfaces);
+
+    /* Determine the number of partitions for each surface.*/
+    p = (sim->cycle % MAXPARTS) + 1;
+    sim->surface_npartitions = 0;
+    for(i = 0; i < 8; ++i)
+    {
+        sim->surface_partitions[i] = p;
+        sim->surface_npartitions += p;
+        if(p+1 > MAXPARTS)
+            p = 1;
+        else
+            p++;
+    }
+
+    /* Allocate new storage */
+    sim->surfaces = (surfacemesh *)malloc(sizeof(surfacemesh) * sim->surface_npartitions);
+    memset(sim->surfaces, 0, sizeof(surfacemesh) * sim->surface_npartitions);
+
+    /* Create initial surface */
+    surfacemesh_ctor(&surface);
+    create_cylinder_surface(&surface, sim->extents);
+
+    /* Partition spatially. */
+    idx = 0;
+    ncells = (int *)malloc(sizeof(int) * sim->surface_npartitions);
+    memset(ncells, 0, sizeof(int) * sim->surface_npartitions);
+    for(i = 0; i < 8; ++i)
+    {
+        if(sim->owns[i])
+        {
+            surfacemesh_ctor(&partial);
+            surfacemesh_extract(&surface, &partial,
+                                cell_in_box, sim->domains[i].extents);
+
+            if(sim->surface_partitions[i] == 1)
+            {
+                /* Steal the partial mesh.*/
+                memcpy(&sim->surfaces[idx], &partial, sizeof(surfacemesh));
+                memset(&partial, 0, sizeof(surfacemesh));
+                ncells[idx] = sim->surfaces[idx].ncells;
+                idx++;
+            }
+            else
+            {
+                /* Partition among angles. */
+                surfacemesh_data_extents(&partial, &angle[0], &angle[1]);
+                for(j = 0; j < sim->surface_partitions[i]+1; ++j)
+                {
+                    t = FLOAT_CAST(j) / FLOAT_CAST(sim->surface_partitions[i]);
+                    angle_ranges[j] = (1.-t)*angle[0] + t*angle[1];
+                }
+                angle_ranges[0] -= M_PI/2.f;
+                angle_ranges[sim->surface_partitions[i]] += M_PI/2.f;
+                np = sim->surface_partitions[i];
+                for(j = 0; j < np; ++j)
+                {
+                    surfacemesh_ctor(&sim->surfaces[idx]);
+                    surfacemesh_extract(&partial, &sim->surfaces[idx],
+                                        cell_in_angle_range, &angle_ranges[j]);
+
+                    ncells[idx] = sim->surfaces[idx].ncells;
+                    idx++;
+                }
+
+                surfacemesh_dtor(&partial);
+            }
+        }
+        else
+        {
+            for(j = 0; j < sim->surface_partitions[i]; ++j)
+                ncells[idx++] = 0;
+        }
+    }
+
+    surfacemesh_dtor(&surface);
+
+#ifdef PARALLEL
+    /* Sum the ncells array across processors. */
+    {
+    int *ncells2 = (int *)malloc(sizeof(int) * sim->surface_npartitions);
+    MPI_Allreduce(ncells, ncells2, sim->surface_npartitions, MPI_INT, MPI_SUM, sim->par_comm);
+    FREE(ncells);
+    ncells = ncells2;
+    }
+#endif
+
+    /* Get rid of any empty meshes. */
+    needclean = 0;
+    for(i = 0; i < sim->surface_npartitions; ++i)
+        needclean |= (ncells[i] == 0);
+    if(needclean)
+    {
+        surfacemesh *newsurf = (surfacemesh *)malloc(sizeof(surfacemesh) * sim->surface_npartitions);
+        memset(newsurf, 0, sizeof(surfacemesh) * sim->surface_npartitions);
+
+        idx = 0; idx2 = 0;
+        for(i = 0; i < 8; ++i)
+        {
+            np = sim->surface_partitions[i];
+            for(j = 0; j < np; ++j)
+            {
+                if(ncells[idx] == 0)
+                {
+                    sim->surface_partitions[i]--;
+                    sim->surface_npartitions--;
+                    surfacemesh_dtor(&sim->surfaces[idx]);
+                }
+                else
+                {
+                    memcpy(&newsurf[idx2], &sim->surfaces[idx], sizeof(surfacemesh));
+                    ++idx2;
+                }
+                ++idx;
+            }
+        }
+
+        FREE(sim->surfaces);
+        sim->surfaces = newsurf;
+    }
+
+    FREE(ncells);
 }
+
+/* Update the simulation data for the current time step. */
+void
+simulation_data_update(simulation_data *sim)
+{
+    int i;
+    /* Determine which meshes we'll work on based on the rank. */
+    for(i = 0; i < 8; i++)
+    {
+        int owner_of_domain = i % sim->par_size;
+        if(sim->par_rank == owner_of_domain)
+            sim->owns[i] = 1;
+        else
+            sim->owns[i] = 0;
+    }
+
+    simulation_data_update_ucdmesh(sim);
+    simulation_data_update_surfacemesh(sim);
+}
+
+
+const char *cmd_names[] = {"halt", "step", "run"};
 
 /******************************************************************************
  ******************************************************************************
@@ -547,6 +1235,7 @@ void mainloop(simulation_data *sim)
 
                 VisItSetGetMetaData(SimGetMetaData, (void*)sim);
                 VisItSetGetMesh(SimGetMesh, (void*)sim);
+                VisItSetGetMaterial(SimGetMaterial, (void*)sim);
                 VisItSetGetVariable(SimGetVariable, (void*)sim);
                 VisItSetGetDomainList(SimGetDomainList, (void*)sim);
             }
@@ -593,7 +1282,7 @@ void mainloop(simulation_data *sim)
  * Purpose: This is the main function for the program.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Aug 12 15:05:36 PDT 2011
+ * Date:       Mon Jun 23 15:28:41 PDT 2014
  *
  * Input Arguments:
  *   argc : The number of command line arguments.
@@ -676,9 +1365,6 @@ int main(int argc, char **argv)
             NULL, NULL, SimulationFilename());
     }
 
-    /* Read input problem setup, geometry, data.*/
-    read_input_deck(&sim);
-
     /* Call the main loop. */
     mainloop(&sim);
 
@@ -691,6 +1377,7 @@ int main(int argc, char **argv)
 }
 
 /* DATA ACCESS FUNCTIONS */
+const char *matNames[] = {"outer", "middle", "inner"};
 
 /******************************************************************************
  *
@@ -716,6 +1403,7 @@ SimGetMetaData(void *cbdata)
 
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
+        visit_handle mat = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -744,6 +1432,50 @@ SimGetMetaData(void *cbdata)
             VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
 
             VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+
+        /* Add surface mesh metadata. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "surface");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_UNSTRUCTURED);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 3);
+            VisIt_MeshMetaData_setNumDomains(mmd, sim->surface_npartitions);
+
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
+
+        /* Add a surface mesh variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "angle");
+            VisIt_VariableMetaData_setMeshName(vmd, "surface");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "matid");
+            VisIt_VariableMetaData_setMeshName(vmd, "surface");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+        /* Add a material */
+        if(VisIt_MaterialMetaData_alloc(&mat) == VISIT_OKAY)
+        {
+            VisIt_MaterialMetaData_setName(mat, "surfacemat");
+            VisIt_MaterialMetaData_setMeshName(mat, "surface");
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[0]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[1]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[2]);
+
+            VisIt_SimulationMetaData_addMaterial(md, mat);
         }
 
         /* Add some commands. */
@@ -806,6 +1538,81 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             VisIt_UnstructuredMesh_setGlobalCellIds(h, glc);
         }
     }
+    else if(strcmp(name, "surface") == 0)
+    {
+        /* Check for invalid requests. */
+        if(sim->surfaces[domain].nnodes == 0)
+        {
+            fprintf(stderr, "Rank %d was asked for domain %d that it does not own.\n", sim->par_rank, domain);
+            return h;
+        }
+
+        if(VisIt_UnstructuredMesh_alloc(&h) != VISIT_ERROR)
+        {
+            visit_handle hxyz, hc, gln, glc;
+
+            VisIt_VariableData_alloc(&hxyz);
+            VisIt_VariableData_setDataF(hxyz, VISIT_OWNER_SIM, 3, sim->surfaces[domain].nnodes, sim->surfaces[domain].xyz);
+            VisIt_UnstructuredMesh_setCoords(h, hxyz);
+
+            VisIt_VariableData_alloc(&hc);
+            VisIt_VariableData_setDataI(hc, VISIT_OWNER_SIM, 1, sim->surfaces[domain].connectivityLen,
+                sim->surfaces[domain].connectivity);
+            VisIt_UnstructuredMesh_setConnectivity(h, sim->surfaces[domain].ncells, hc);
+
+            /* Global Node Ids */
+            VisIt_VariableData_alloc(&gln);
+            VisIt_VariableData_setDataI(gln, VISIT_OWNER_SIM, 1, 
+                sim->surfaces[domain].nnodes, sim->surfaces[domain].globalNodeIds);
+            VisIt_UnstructuredMesh_setGlobalNodeIds(h, gln);
+
+            /* Global Cell Ids */
+            VisIt_VariableData_alloc(&glc);
+            VisIt_VariableData_setDataI(glc, VISIT_OWNER_SIM, 1, 
+                sim->surfaces[domain].ncells, sim->surfaces[domain].globalCellIds);
+            VisIt_UnstructuredMesh_setGlobalCellIds(h, glc);
+        }
+    }
+    return h;
+}
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns material data.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jun 20 14:43:48 PDT 2014
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+visit_handle
+SimGetMaterial(int domain, const char *name, void *cbdata)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    simulation_data *sim = (simulation_data *)cbdata;
+
+    /* Allocate a VisIt_MaterialData */
+    if(strcmp(name, "surfacemat") == 0)
+    {
+        int cell, matnos[3];
+        VisIt_MaterialData_alloc(&h);
+
+        /* Tell the object we'll be adding cells to it using add*Cell functions */
+        VisIt_MaterialData_appendCells(h, sim->surfaces[domain].ncells);
+
+        /* Fill in the VisIt_MaterialData */
+        VisIt_MaterialData_addMaterial(h, matNames[0], &matnos[0]);
+        VisIt_MaterialData_addMaterial(h, matNames[1], &matnos[1]);
+        VisIt_MaterialData_addMaterial(h, matNames[2], &matnos[2]);
+
+        for(cell = 0; cell < sim->surfaces[domain].ncells; ++cell)
+        {
+            int idx = (int)sim->surfaces[domain].data2[cell];
+            VisIt_MaterialData_addCleanCell(h, cell, matnos[idx]);
+        }
+    }
 
     return h;
 }
@@ -833,6 +1640,18 @@ SimGetVariable(int domain, const char *name, void *cbdata)
         VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
             sim->domains[domain].nnodes, sim->domains[domain].data);
     }
+    else if(strcmp(name, "angle") == 0)
+    {
+        VisIt_VariableData_alloc(&h);
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
+            sim->surfaces[domain].ncells, sim->surfaces[domain].data);
+    }
+    else if(strcmp(name, "matid") == 0)
+    {
+        VisIt_VariableData_alloc(&h);
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
+            sim->surfaces[domain].ncells, sim->surfaces[domain].data2);
+    }
 
     return h;
 }
@@ -841,8 +1660,11 @@ SimGetVariable(int domain, const char *name, void *cbdata)
  *
  * Purpose: This callback function returns a domain list.
  *
+ * Notes: This callback demonstrates that we can return unique domain 
+ *        decompositions for different multimeshes.
+ *
  * Programmer: Brad Whitlock
- * Date:       Fri Jun 13 13:49:52 PDT 2014
+ * Date:       Fri Jun 20 17:37:09 PDT 2014
  *
  * Modifications:
  *
@@ -851,26 +1673,70 @@ SimGetVariable(int domain, const char *name, void *cbdata)
 visit_handle
 SimGetDomainList(const char *name, void *cbdata)
 {
-    visit_handle h = VISIT_INVALID_HANDLE;
-    if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
+    visit_handle h, hdl;
+    int i, j, *iptr = NULL, dcount, ndoms, dom;
+    simulation_data *sim = (simulation_data *)cbdata;
+    h = VISIT_INVALID_HANDLE;
+
+    if(strcmp(name, "surface") == 0)
     {
-        visit_handle hdl;
-        int i, *iptr = NULL, dcount = 0;
-        int ndoms = 8;
-        simulation_data *sim = (simulation_data *)cbdata;
-
-        iptr = (int *)malloc(ndoms * sizeof(int));
-        memset(iptr, 0, ndoms * sizeof(int));
-
-        for(i = 0; i < ndoms; i++)
+        if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
         {
-            if(sim->owns[i] == 1)
-                iptr[dcount++] = i;
-        }
+            dcount = 0;
+            ndoms = sim->surface_npartitions;
 
-        VisIt_VariableData_alloc(&hdl);
-        VisIt_VariableData_setDataI(hdl, VISIT_OWNER_VISIT, 1, dcount, iptr);
-        VisIt_DomainList_setDomains(h, ndoms, hdl);
+            iptr = (int *)malloc(ndoms * sizeof(int));
+            memset(iptr, 0, ndoms * sizeof(int));
+
+            dom = 0;
+            for(i = 0; i < 8; i++)
+            {
+                if(sim->owns[i] == 1)
+                {
+                    for(j = 0; j < sim->surface_partitions[i]; ++j)
+                        iptr[dcount++] = dom++;
+                }
+                else
+                {
+                    dom += sim->surface_partitions[i];
+                }
+            }
+
+#if 0
+printf("rank %d owns: ", sim->par_rank);
+for(i = 0; i < dcount; i++)
+   printf("%d, ", iptr[i]);
+printf("\n");
+#endif
+            VisIt_VariableData_alloc(&hdl);
+            VisIt_VariableData_setDataI(hdl, VISIT_OWNER_VISIT, 1, dcount, iptr);
+            VisIt_DomainList_setDomains(h, ndoms, hdl);
+        }
+    }
+    else if(strcmp(name, "mesh") == 0)
+    {
+        if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
+        {
+            dcount = 0;
+            ndoms = 8;
+
+            iptr = (int *)malloc(ndoms * sizeof(int));
+            memset(iptr, 0, ndoms * sizeof(int));
+
+            for(i = 0; i < ndoms; i++)
+            {
+                if(sim->owns[i] == 1)
+                    iptr[dcount++] = i;
+            }
+
+            VisIt_VariableData_alloc(&hdl);
+            VisIt_VariableData_setDataI(hdl, VISIT_OWNER_VISIT, 1, dcount, iptr);
+            VisIt_DomainList_setDomains(h, ndoms, hdl);
+        }
+    }
+    else
+    {
+        printf("SimGetDomainList: unknown mesh=%s\n", name);
     }
     return h;
 }

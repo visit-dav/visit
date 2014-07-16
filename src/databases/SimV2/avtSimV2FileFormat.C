@@ -2616,18 +2616,22 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
 //    Brad Whitlock, Mon Aug  6 15:21:01 PDT 2012
 //    Allow for empty domain lists.
 //
+//    Brad Whitlock, Thu Jun 19 11:20:12 PDT 2014
+//    Pass the mesh name.
+//
 // ****************************************************************************
 
-void
-avtSimV2FileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
+bool
+avtSimV2FileFormat::PopulateIOInformation(const std::string &meshname,
+    avtIOInformation &ioInfo)
 {
 #ifndef MDSERVER
     const char *mName = "avtSimV2FileFormat::PopulateIOInformation: ";
 
     // TODO: pass in a mesh name
-    visit_handle h = simv2_invoke_GetDomainList("any");
+    visit_handle h = simv2_invoke_GetDomainList(meshname.c_str());
     if (h == VISIT_INVALID_HANDLE)
-        return;
+        return false;
 
     int rank = 0;
     int size = 1;
@@ -2642,7 +2646,7 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     {
         debug1 << mName << "Could not get domain list data" << endl;
         simv2_FreeObject(h);
-        return;
+        return false;
     }
 
     int owner, dataType, nComps, nTuples = 0;
@@ -2653,7 +2657,7 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     {
         debug1 << mName << "Could not get domain list data" << endl;
         simv2_FreeObject(h);
-        return;
+        return false;
     }
 
     vector< vector<int> > hints;
@@ -2670,14 +2674,15 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
                    << " was given in the domain list. Valid numbers are in [0,"
                    << alldoms << "]" << endl;
             simv2_FreeObject(h);
-            return;
+            return false;
         }
     }
     ioInfo.AddHints(hints);
     ioInfo.SetNDomains(alldoms);
 
     simv2_FreeObject(h);
+    return true;
 #else
-    (void)ioInfo;
+    return false;
 #endif
 }

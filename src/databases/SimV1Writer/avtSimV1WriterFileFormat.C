@@ -197,8 +197,9 @@ avtSimV1WriterFileFormat::GetVectorVar(int domain, const char *varname)
 //  Creation:    Thu Nov 9 14:10:45 PST 2006
 //
 // ****************************************************************************
-void
-avtSimV1WriterFileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
+bool
+avtSimV1WriterFileFormat::PopulateIOInformation(const std::string &, avtIOInformation& ioInfo)
 {
     EXCEPTION1(ImproperUseException, "avtSimV1WriterFileFormat::PopulateIOInformation: is not to be called.");
+    return false;
 }

@@ -93,6 +93,10 @@ class     avtIOInformation;
 //
 //    Mark C. Miller, Fri Oct 29 09:58:43 PDT 2010
 //    Moved implementation of SetDatabaseMetaData to the .C file.
+//
+//    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
+//    Pass mesh name to PopulateIOInformation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTMDFileFormat : public avtFileFormat
@@ -107,8 +111,11 @@ class DATABASE_API avtSTMDFileFormat : public avtFileFormat
 
     virtual void           ActivateTimestep(void)
                                { avtFileFormat::ActivateTimestep(); };
-    virtual void           PopulateIOInformation(avtIOInformation& ioInfo)
-                               { avtFileFormat::PopulateIOInformation(ioInfo); };
+    virtual bool           PopulateIOInformation(const std::string &meshname,
+                                                 avtIOInformation& ioInfo)
+                           {
+                               return avtFileFormat::PopulateIOInformation(meshname, ioInfo);
+                           }
     virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md);
 
     void                   SetTimestep(int ts, int ns) 

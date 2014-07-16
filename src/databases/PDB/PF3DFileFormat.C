@@ -2193,15 +2193,18 @@ PF3DFileFormat::GetVar(int dom, const char *varName)
 // Creation:   Thu Jun 22 17:38:37 PST 2006
 //
 // Modifications:
+//    Brad Whitlock, Thu Jun 19 11:47:43 PDT 2014
+//    Pass meshname.
 //   
 // ****************************************************************************
 
-void
-PF3DFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
+bool
+PF3DFileFormat::PopulateIOInformation(const std::string &meshname,
+    avtIOInformation &ioInfo)
 {
     const char *mName = "avtPF3DFileFormat::PopulateIOInformation: ";
     int nGroups = master.Get_num_grp_size();
-
+    bool retval = false;
     if(nGroups > 0)
     {
         std::vector<std::vector<int> > groups;
@@ -2227,7 +2230,10 @@ PF3DFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
         ioInfo.SetNDomains(master.GetNDomains());
         ioInfo.AddHints(groups);
+        retval = true;
     }
+
+    return retval;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

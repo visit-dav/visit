@@ -343,8 +343,11 @@ class     vtkUnstructuredGrid;
 //    Make cache available externally so filters from the pipeline can cache
 //    their data structures.
 //
-//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
-//   Added support for ensemble databases. (multiple time values)
+//    Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//    Added support for ensemble databases. (multiple time values)
+//
+//    Brad Whitlock, Thu Jun 19 11:12:19 PDT 2014
+//    Pass mesh name to PopulateIOInformation.
 //
 // ****************************************************************************
 
@@ -396,7 +399,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual void               PopulateSIL(avtSIL *, int=0,
                                    bool treatAllDBsAsTimeVarying = false);
-    virtual void               PopulateIOInformation(int ts, avtIOInformation &);
+    virtual bool               PopulateIOInformation(int ts, const std::string &meshname,
+                                                     avtIOInformation &);
     virtual void               SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int timeState);
     virtual void               SetDatabaseMetaData(avtDatabaseMetaData *md,
                                    int timeState = 0,

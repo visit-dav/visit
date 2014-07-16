@@ -3321,12 +3321,16 @@ avtGenericDatabase::PopulateSIL(avtSIL *sil, int timeState,
 //    Mark C. Miller, Tue Mar 16 14:40:19 PST 2004
 //    Added timestep argument
 //
+//    Brad Whitlock, Thu Jun 19 11:13:21 PDT 2014
+//    Pass meshname.
+//
 // ****************************************************************************
 
-void
-avtGenericDatabase::PopulateIOInformation(int ts, avtIOInformation &ioInfo)
+bool
+avtGenericDatabase::PopulateIOInformation(int ts, const std::string &meshname,
+    avtIOInformation &ioInfo)
 {
-    Interface->PopulateIOInformation(ts, ioInfo);
+    return Interface->PopulateIOInformation(ts, meshname, ioInfo);
 }
 
 // ****************************************************************************

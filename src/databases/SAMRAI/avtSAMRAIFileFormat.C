@@ -2397,17 +2397,22 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 //  Programmer:  Mark C. Miller 
 //  Creation:    August 19. 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jun 19 11:46:01 PDT 2014
+//    Pass mesh name.
+//
 // ****************************************************************************
 
-void
-avtSAMRAIFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
+bool
+avtSAMRAIFileFormat::PopulateIOInformation(const std::string &meshname,
+    avtIOInformation &ioInfo)
 {
     if (num_patches <= 1)
     {
         debug5 << "No need to do I/O optimization because there is only "
                << "one patch" << endl;
         ioInfo.SetNDomains(1);
-        return;
+        return true;
     }
 
     if (num_clusters <= 1)
@@ -2415,7 +2420,7 @@ avtSAMRAIFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
         debug5 << "No need to do I/O optimization because there is only "
                << "one file for all patches" << endl;
         ioInfo.SetNDomains(num_patches);
-        return;
+        return true;
     }
 
     //
@@ -2440,6 +2445,7 @@ avtSAMRAIFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
     ioInfo.SetNDomains(num_patches);
     ioInfo.AddHints(groups);
+    return true;
 }
 
 // ****************************************************************************

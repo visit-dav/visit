@@ -36,50 +36,30 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                            avtSimV1WriterFileFormat.h                     //
-// ************************************************************************* //
+#ifndef PY_ENGINEPROPERTIES_H
+#define PY_ENGINEPROPERTIES_H
+#include <Python.h>
+#include <EngineProperties.h>
+#include <visitpy_exports.h>
 
-#ifndef AVT_SIMV1_WRITER_FILE_FORMAT_H
-#define AVT_SIMV1_WRITER_FILE_FORMAT_H
-
-#include <database_exports.h>
-#include <avtSTMDFileFormat.h>
-
-// ****************************************************************************
-//  Class: avtSimV1WriterFileFormat
 //
-//  Purpose:
-//      Does nothing. It's just a place holder so this plugin can write 
-//      out data.
+// Functions exposed to the VisIt module.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Nov 9 14:08:29 PST 2006
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-class avtSimV1WriterFileFormat : public avtSTMDFileFormat
-{
-  public:
-                       avtSimV1WriterFileFormat(const char *);
-    virtual           ~avtSimV1WriterFileFormat() {;};
-
-    virtual const char    *GetType(void)   { return "SimV1Writer"; };
-    virtual void           FreeUpResources(void); 
-    virtual int            GetCycle() { return -1; }
-
-    virtual vtkDataSet    *GetMesh(int, const char *);
-    virtual vtkDataArray  *GetVar(int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, const char *);
-
-    virtual bool           PopulateIOInformation(const std::string &meshname,
-                                                 avtIOInformation& ioInfo);
-
-  protected:
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
-};
-
+#define ENGINEPROPERTIES_NMETH 12
+void VISITPY_API           PyEngineProperties_StartUp(EngineProperties *subj, void *data);
+void VISITPY_API           PyEngineProperties_CloseDown();
+VISITPY_API PyMethodDef *  PyEngineProperties_GetMethodTable(int *nMethods);
+bool VISITPY_API           PyEngineProperties_Check(PyObject *obj);
+VISITPY_API EngineProperties *  PyEngineProperties_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *     PyEngineProperties_New();
+VISITPY_API PyObject *     PyEngineProperties_Wrap(const EngineProperties *attr);
+void VISITPY_API           PyEngineProperties_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyEngineProperties_SetDefaults(const EngineProperties *atts);
+std::string VISITPY_API    PyEngineProperties_GetLogString();
+std::string VISITPY_API    PyEngineProperties_ToString(const EngineProperties *, const char *);
+VISITPY_API PyObject *     PyEngineProperties_getattr(PyObject *self, char *name);
+int VISITPY_API            PyEngineProperties_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyEngineProperties_methods[ENGINEPROPERTIES_NMETH];
 
 #endif
+

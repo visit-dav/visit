@@ -1636,16 +1636,20 @@ avtSimV1FileFormat::GetCurve(const char *name)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 9, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jun 19 11:23:43 PDT 2014
+//    Add meshname string argument.
+//
 // ****************************************************************************
-void
-avtSimV1FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
+bool
+avtSimV1FileFormat::PopulateIOInformation(const std::string &, avtIOInformation& ioInfo)
 {
      if (!cb.GetDomainList)
-        return;
+        return false;
 
      VisIt_DomainList *dl = cb.GetDomainList();
      if (!dl)
-         return;
+         return false;
 
      int rank = 0;
      int size = 1;
@@ -1664,4 +1668,5 @@ avtSimV1FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
      ioInfo.AddHints(hints);
 
      ioInfo.SetNDomains(dl->nTotalDomains);
+     return true;
 }

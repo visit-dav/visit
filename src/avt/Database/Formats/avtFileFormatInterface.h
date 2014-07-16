@@ -219,8 +219,11 @@ class    avtVariableCache;
 //    Hank Childs, Wed Dec 22 15:11:13 PST 2010
 //    Added method for telling file format that the pipeline is streaming.
 //
-//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
-//   Added support for ensemble databases. (multiple time values)
+//    Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//    Added support for ensemble databases. (multiple time values)
+//
+//    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
+//    Pass mesh name to PopulateIOInformation.
 //
 // ****************************************************************************
 
@@ -246,7 +249,8 @@ class DATABASE_API avtFileFormatInterface
 
     virtual void            FreeUpResources(int, int) = 0;
     virtual void            ActivateTimestep(int ts) = 0;
-    virtual void            PopulateIOInformation(int ts, avtIOInformation &) = 0;
+    virtual bool            PopulateIOInformation(int ts, const std::string &meshname, 
+                                                  avtIOInformation &) = 0;
 
     bool                    HasInvariantMetaData(void);
     bool                    HasInvariantSIL(void);

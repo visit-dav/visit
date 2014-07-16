@@ -309,6 +309,9 @@ typedef struct {
 //   delete's of raw pointers held stl containers. make names of
 //   variables used to limit cache sizes describe their purpose.
 //
+//   Brad Whitlock, Thu Jun 19 10:47:28 PDT 2014
+//   I changed how getting IO information works. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -337,8 +340,6 @@ class DATABASE_API avtDatabase
     int                         GetMostRecentTimestep() const;
 
     virtual void                ActivateTimestep(int stateIndex) {;}; 
-    virtual void                PopulateIOInformation(int stateIndex,
-                                    avtIOInformation& ioInfo) {;};
 
     virtual avtVariableCache   *GetCache(void) { return NULL; };
     virtual void                ClearCache(void);
@@ -348,7 +349,9 @@ class DATABASE_API avtDatabase
     virtual bool                CanDoStreaming(avtDataRequest_p);
     virtual int                 NumStagesForFetch(avtDataRequest_p);
 
-    const avtIOInformation     &GetIOInformation(int stateIndex);
+    virtual bool                GetIOInformation(int stateIndex, 
+                                                 const std::string &meshname,
+                                                 avtIOInformation &info);
 
     static bool                 OnlyServeUpMetaData(void)
                                      { return onlyServeUpMetaData; };
@@ -407,8 +410,6 @@ class DATABASE_API avtDatabase
     std::list<CachedMDEntry>               metadata;
     std::list<CachedSILEntry>              sil;
     std::vector<avtDataObjectSource *>     sourcelist;
-    avtIOInformation                       ioInfo;
-    bool                                   gotIOInfo;
     static bool                            onlyServeUpMetaData;
     std::string                            fileFormat;
     std::string                            fullDBName;
@@ -440,6 +441,10 @@ class DATABASE_API avtDatabase
                                     int=0, bool=false) = 0;
     virtual void                PopulateSIL(avtSIL *, int=0,
                                     bool treatAllDBsAsTimeVarying = false) = 0;
+
+    virtual bool                PopulateIOInformation(int stateIndex,
+                                                      const std::string &meshname,
+                                                      avtIOInformation& ioInfo) { return false;}
 
     void                        PopulateDataObjectInformation(avtDataObject_p&,
                                                   const char *,

@@ -294,6 +294,9 @@ static vtkDataArray *CreateDataArray(int silotype, void *data, int numvals);
 //    Cyrus Harrison, Wed Mar 13 09:22:30 PDT 2013
 //    Init useLocalDomainBoundries.
 //
+//    Brad Whitlock, Thu Jun 19 11:38:46 PDT 2014
+//    Set ioInfoValid.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -320,6 +323,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     haveAmrGroupInfo = false;
     useLocalDomainBoundries = false;
     hasDisjointElements = false;
+    ioInfoValid = false;
     topDir = "/";
     siloDriver = DB_UNKNOWN;
     dbfiles = new DBfile*[MAX_FILES];
@@ -14707,7 +14711,45 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, const char *mesh)
 }
 
 // ****************************************************************************
-//  Method: avtSiloFileFormat::PopulateIOInformation
+// Method: avtSiloFileFormat::PopulateIOInformation(
+//
+// Purpose:
+//   Makes I/O groupings based on the layouts of the files.
+//
+// Arguments:
+//   meshname : The name of the mesh whose io information we want.
+//   io       : The IO information object we're populating.
+//
+// Returns:    True on success; false on failure
+//
+// Note:       Calls the original version of the method which was renamed to
+//             PopulateIOInformationEx. This method tries to get the IO
+//             information once and reuses any cached results. This behavior
+//             was moved down from the avtDatabase level so file formats could
+//             decide how often they really get the IO information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 11:40:24 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtSiloFileFormat::PopulateIOInformation(const std::string &meshname, avtIOInformation &io)
+{
+    if(!ioInfoValid)
+    {
+        ioInfoValid = PopulateIOInformationEx(meshname, ioInfo);
+    }
+
+    io = ioInfo;
+
+    return ioInfoValid;
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::PopulateIOInformationEx
 //
 //  Purpose:
 //      Makes I/O groupings based on the layouts of the files.
@@ -14740,11 +14782,17 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, const char *mesh)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Brad Whitlock, Thu Jun 19 11:43:13 PDT 2014
+//    I renamed the method to PopulateIOInformationEx and pass in the the
+//    mesh name. Note that the mesh name is not currently used but the intent
+//    is to allow different ioInfo for different multi-meshes.
+//
 // ****************************************************************************
 
-void
-avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
+bool
+avtSiloFileFormat::PopulateIOInformationEx(const std::string &meshname, avtIOInformation &ioInfo)
 {
+    bool retval = false;
     TRY
     {
         int   i, j;
@@ -14754,7 +14802,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
         {
             debug1 << "Cannot populate I/O info since there are no meshes" << endl;
             ioInfo.SetNDomains(0);
-            EXCEPTION0(ImproperUseException);
+            return false;
         }
         
         //
@@ -14779,7 +14827,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
                 debug1 << "Cannot populate I/O Information since the meshes have "
                        << "a different number of blocks." << endl;
                 ioInfo.SetNDomains(0);
-                EXCEPTION0(ImproperUseException);
+                return false;
             }
         }
 
@@ -14788,7 +14836,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
             debug5 << "No need to do I/O optimization because there is only "
                    << "one block" << endl;
             ioInfo.SetNDomains(1);
-            EXCEPTION0(ImproperUseException);
+            return true;
         }
 
         //
@@ -14809,7 +14857,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
             debug1 << "Cannot populate I/O Information because unable "
                    << "to get multimesh object \"" << meshname.c_str() << "\"." << endl;
             ioInfo.SetNDomains(0);
-            EXCEPTION0(ImproperUseException);
+            return false;
         }
 
         vector<string> filenames;
@@ -14841,13 +14889,15 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
         ioInfo.SetNDomains(mm->nblocks);
         ioInfo.AddHints(groups);
-
+        retval = true;
     }
     CATCHALL
     {
         debug1 << "Unable to populate I/O information" << endl;
     }
     ENDTRY
+
+    return retval;
 }
 
 
