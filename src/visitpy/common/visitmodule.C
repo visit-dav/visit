@@ -5039,7 +5039,7 @@ visit_GetEngineList(PyObject *self, PyObject *args)
     {
         PyErr_Clear();
     }
-printf("getSimName=%d\n", getSimName);
+
     // Allocate a tuple the with enough entries to hold the engine list.
     const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
     const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
@@ -5047,15 +5047,12 @@ printf("getSimName=%d\n", getSimName);
     for(size_t i = 0; i < engines.size(); ++i)
     {
         PyObject *name = PyString_FromString(engines[i].c_str());
-printf("name=%p\n", name);
         if(name == NULL)
             continue;
         if(getSimName != 0)
         {
-printf("making tuple\n");
             PyObject *sim = PyString_FromString(sims[i].c_str());
 
-printf("making tuple2\n");
             PyObject *tup = PyTuple_New(2);
             PyTuple_SET_ITEM(tup, 0, name);
             PyTuple_SET_ITEM(tup, 1, sim);
