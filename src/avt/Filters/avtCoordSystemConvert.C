@@ -82,6 +82,7 @@ avtCoordSystemConvert::avtCoordSystemConvert()
 {
     inputSys  = CARTESIAN;
     outputSys = CARTESIAN;
+    continuousPhi = false;
     vectorTransformMethod = AsDirection;
 }
 
@@ -667,7 +668,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
         out_pd->CopyData(in_pd, i, 2*i);
         out_pd->CopyData(in_pd, i, 2*i+1);
     }
-
+ 
     int ncells = ugrid->GetNumberOfCells();
     new_grid->Allocate(2*ncells);
     vtkCellData *out_cd = new_grid->GetCellData();
