@@ -62,7 +62,6 @@
 #include <avtDataset.h>
 #include <avtExpressionTypeConversions.h>
 #include <avtExtents.h>
-#include <avtIOInformation.h>
 #include <avtIntervalTree.h>
 #include <avtMultiresSelection.h>
 #include <avtSIL.h>
@@ -476,11 +475,14 @@ avtDatabase::ComputeDomainSpatialBounds(double globalWidth, int domCount, int do
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added support for ignoring bad extents from dbs.
+//
+//    Brad Whitlock, Thu Jun 19 10:45:57 PDT 2014
+//    Removed gotIOInfo.
+//
 // ****************************************************************************
 
 avtDatabase::avtDatabase()
 {
-    gotIOInfo         = false;
     invariantMetaData = NULL;
     invariantSIL      = NULL;
     fileFormat        = "<unknown>";
@@ -1271,6 +1273,10 @@ avtDatabase::GetMostRecentTimestep(void) const
 //
 //    Mark C. Miller, Thu Feb 12 11:35:34 PST 2009
 //    Added call to convert 1D vars to curves
+//
+//    Brad Whitlock, Thu Jun 19 10:36:38 PDT 2014
+//    Removed code to get IO info.
+//
 // ****************************************************************************
 
 void
@@ -1307,12 +1313,6 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
         AddVectorMagnitudeExpressions(md);
 
     Convert1DVarMDsToCurveMDs(md);
-
-    if (! OnlyServeUpMetaData())
-    {
-        PopulateIOInformation(timeState, ioInfo);
-        gotIOInfo = true;
-    }
 
     // put the metadata at the front of the MRU cache
     CachedMDEntry tmp = {md, timeState};
@@ -2233,14 +2233,16 @@ avtDatabase::FreeUpResources(void)
 //    Mark C. Miller, Tue Mar 16 14:49:26 PST 2004
 //    Made it call PopulateIOInformation directly 
 //
+//    Brad Whitlock, Thu Jun 19 10:45:07 PDT 2014
+//    I made it call/return PopulateIOInformation always.
+//
 // ****************************************************************************
 
-const avtIOInformation &
-avtDatabase::GetIOInformation(int stateIndex)
+bool
+avtDatabase::GetIOInformation(int stateIndex, const std::string &meshname,
+    avtIOInformation &ioInfo)
 {
-    if (!gotIOInfo)
-        PopulateIOInformation(stateIndex, ioInfo);
-    return ioInfo;
+    return PopulateIOInformation(stateIndex, meshname, ioInfo);
 }
 
 

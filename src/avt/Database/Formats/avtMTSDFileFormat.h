@@ -108,6 +108,9 @@ class     avtIOInformation;
 //    Hank Childs, Tue Apr 10 15:12:58 PDT 2012
 //    Add method SetReadAllCyclesAndTimes.
 //
+//    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
+//    Pass mesh name to PopulateIOInformation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormat : public avtFileFormat
@@ -133,8 +136,11 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
 
     virtual void           ActivateTimestep(int ts)
                                { avtFileFormat::ActivateTimestep(); };
-    virtual void           PopulateIOInformation(int ts, avtIOInformation& ioInfo)
-                               { avtFileFormat::PopulateIOInformation(ioInfo); };
+    virtual bool           PopulateIOInformation(int ts, const std::string &meshname,
+                                                 avtIOInformation& ioInfo)
+                           {
+                               return avtFileFormat::PopulateIOInformation(meshname, ioInfo);
+                           };
     virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md, int ts = 0);
 
     void                   SetReadAllCyclesAndTimes(bool b) 

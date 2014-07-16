@@ -854,16 +854,24 @@ avtMTSDFileFormatInterface::ActivateTimestep(int ts)
 //    MTSD files can now be grouped not just into a faux MD format by having
 //    more than one block, but also into a longer sequence of MT files,
 //    each chunk with one or more timesteps.
+//
+//    Brad Whitlock, Thu Jun 19 11:07:28 PDT 2014
+//    Pass the mesh name.
+//
 // ****************************************************************************
-void
-avtMTSDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation &ioInfo)
+
+bool
+avtMTSDFileFormatInterface::PopulateIOInformation(int ts, const std::string &meshname,
+    avtIOInformation &ioInfo)
 {
     int tsGroup = GetTimestepGroupForTimestep(ts);
     int localTS = GetTimestepWithinGroup(ts);
+    bool retval = false;
     for (int i = 0 ; i < nBlocks ; i++)
     {
-        chunks[tsGroup][i]->PopulateIOInformation(localTS, ioInfo);
+        retval |= chunks[tsGroup][i]->PopulateIOInformation(localTS, meshname, ioInfo);
     }
+    return retval;
 }
 
 

@@ -86,7 +86,8 @@ public:
     virtual double        GetTime(void);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    virtual void          PopulateIOInformation(avtIOInformation &);
+    virtual bool          PopulateIOInformation(const std::string &meshname,
+                                                avtIOInformation &);
 
     virtual void         *GetAuxiliaryData(const char *var, int dom,
                                            const char *type, void *,

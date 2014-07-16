@@ -416,6 +416,48 @@ LoadBalancer::CheckDynamicLoadBalancing(avtContract_p input)
     return true;
 }
 
+// ****************************************************************************
+// Method: LoadBalancer::GetMeshName
+//
+// Purpose:
+//   Get the mesh name for the variable in the pipeline.
+//
+// Arguments:
+//   input      : The input contract
+//   stateIndex : The time state (since it may not yet be valid in the contract).
+//
+// Returns:    The name of the mesh.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 12:57:27 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+LoadBalancer::GetMeshName(avtContract_p input, int stateIndex)
+{
+    const LBInfo &lbinfo = pipelineInfo[input->GetPipelineIndex()];
+    avtDatabase *db = dbMap[lbinfo.db];
+
+    avtDataRequest_p data = input->GetDataRequest();
+    avtDatabaseMetaData *md = db->GetMetaData(stateIndex);
+    string meshName;
+
+    TRY
+    {
+        meshName = md->MeshForVar(data->GetVariable());
+    }
+    CATCHALL
+    {
+    }
+    ENDTRY
+
+    return meshName;
+}
 
 // ****************************************************************************
 //  Method: LoadBalancer::DetermineAppropriateScheme
@@ -666,6 +708,11 @@ LoadBalancer::Reduce(avtContract_p input)
     // set up MPI message tags
     static int lastDomDoneMsg = GetUniqueMessageTag();
     static int newDomToDoMsg = GetUniqueMessageTag();
+
+    // Make sure that we have domain to file mapping available.
+    LBInfo &lbInfo(pipelineInfo[input->GetPipelineIndex()]);
+    std::string meshName = GetMeshName(input, dbState[lbInfo.db]);
+    GetIOInformation(lbInfo.db, dbState[lbInfo.db], meshName);
 
     if (scheme == LOAD_BALANCE_STREAM)
     {
@@ -1040,12 +1087,11 @@ LoadBalancer::Reduce(avtContract_p input)
 //      that should be used when balancing a load.
 //
 //  Arguments:
-//      name     The name of the database.
-//      ioinfo   Information about which domains should be grouped together on
-//               the same processor.
+//    db        : The name of the database.
+//    db_ptr    : The pointer to the database.
+//    timeState : The time state that we want to read.
 //
-//  Notes:  This will need to expand to support IO restrictions for
-//          clustered (non-global) file systems.
+//  Notes:  
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 26, 2001
@@ -1069,18 +1115,67 @@ LoadBalancer::Reduce(avtContract_p input)
 //    Make the decision to do DBPLUGIN_DYNAMIC load balancing on a per
 //    input basis.
 //
+//    Brad Whitlock, Thu Jun 19 12:03:31 PDT 2014
+//    Only store the database pointer. IO information processing was moved.
+//
 // ****************************************************************************
 
 void
-LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr, int time)
+LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr, int timeState)
 {
-    const avtIOInformation& io = db_ptr->GetIOInformation(time);
-
     dbMap[db] = db_ptr;
-    ioMap[db].ioInfo = io;
-    ioMap[db].fileMap.resize(io.GetNDomains());
+    dbState[db] = timeState;
+}
 
-    debug4 << "LoadBalancer::AddDatabase - db=" << db.c_str() << endl;
+// ****************************************************************************
+// Method: LoadBalancer::GetIOInformation
+//
+// Purpose:
+//   Gets the I/O information that should be used when balancing a load.
+//
+// Arguments:
+//   db       : The database name
+//   time     : The time step
+//   meshname : The name of the mesh whose IO information we're requesting.
+//
+// Returns:    True on success; False on failure.
+//
+// Note:       This code was moved from AddDatabase.
+//             This will need to expand to support IO restrictions for
+//             clustered (non-global) file systems.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 12:18:26 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+LoadBalancer::GetIOInformation(const string &db, int time, const string &meshname)
+{
+    const char *mName = "LoadBalancer::GetIOInformation: ";
+
+    // Get the cached database pointer.
+    bool retval = false;
+    std::map<std::string, avtDatabase *>::iterator it = dbMap.find(db);
+    if(it == dbMap.end())
+        return retval;
+
+    // Get the IOInformation for that database. Nearly all formats will ignore
+    // the meshname and return the same domain to file mapping over and over.
+    // Certain formats will use the mesh name to return a new domain to file
+    // mapping. This comes up mainly in simulations that provide different
+    // multimeshes.
+    debug4 << mName << "Calling plugin's GetIOInformation: time=" << time
+           << ", meshname=" << meshname << endl;
+    avtIOInformation io;
+    retval = it->second->GetIOInformation(time, meshname, io);
+    ioMap[db].ioInfo = io;
+
+    // Populate the domain to file map.
+    ioMap[db].fileMap.resize(io.GetNDomains());
+    debug4 << mName << "db=" << db.c_str() << endl;
     debug4 << "    iohints=[";
     const HintList &hints = io.GetHints();
     for (size_t i=0; i<hints.size(); i++)
@@ -1098,6 +1193,8 @@ LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr, int time)
         }
     }
     debug4 << "]  " << endl;
+
+    return retval;
 }
 
 // ****************************************************************************

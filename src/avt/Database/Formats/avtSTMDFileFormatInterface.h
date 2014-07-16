@@ -99,6 +99,9 @@ class avtIOInformation;
 //    Hank Childs, Tue Dec 20 14:15:33 CST 2011
 //    Add method CreateCacheNameIncludingSelections.
 //
+//    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
+//    Pass mesh name to PopulateIOInformation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTMDFileFormatInterface : public avtFileFormatInterface
@@ -126,7 +129,9 @@ class DATABASE_API avtSTMDFileFormatInterface : public avtFileFormatInterface
 
     virtual void            ActivateTimestep(int ts);
 
-    virtual void            PopulateIOInformation(int ts, avtIOInformation& ioInfo);
+    virtual bool            PopulateIOInformation(int ts,
+                                                  const std::string &meshname,
+                                                  avtIOInformation& ioInfo);
 
   protected:
     avtSTMDFileFormat     **timesteps;

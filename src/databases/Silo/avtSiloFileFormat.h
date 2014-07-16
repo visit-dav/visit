@@ -44,6 +44,7 @@
 #define AVT_SILO_FILE_FORMAT_H
 
 #include <avtDataSelection.h>
+#include <avtIOInformation.h>
 #include <avtSTMDFileFormat.h>
 #include <void_ref_ptr.h>
 
@@ -277,6 +278,9 @@ typedef struct _GroupInfo
 //    Cyrus Harrison, Wed Mar 13 09:55:42 PDT 2013
 //    Added useLocalDomainBoundries.
 //
+//    Brad Whitlock, Thu Jun 19 11:24:21 PDT 2014
+//    Pass meshname to PopulateIOInformation.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -301,7 +305,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     avtFacelist          *GetExternalFacelist(int, const char *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    virtual void          PopulateIOInformation(avtIOInformation &);
+    virtual bool          PopulateIOInformation(const std::string &meshname, avtIOInformation &);
 
     int                   GetCycle();
     int                   GetCycleFromFilename(const char *f) const;
@@ -328,6 +332,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     bool                  metadataIsTimeVaryingChecked;
     bool                  hasDisjointElements;
     std::string           codeNameGuess;
+
+    bool                  ioInfoValid;
+    avtIOInformation      ioInfo;
 
     std::set<std::string> domainDirs;
 
@@ -519,6 +526,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     avtSiloMultiSpecCacheEntry *QueryMultiSpec(const char *path, const char *name);
 
     void                        CheckForTimeVaryingMetadata(DBfile *toc);
+
+    bool                  PopulateIOInformationEx(const std::string &meshname,
+                                                  avtIOInformation &ioInfo);
 };
 
 

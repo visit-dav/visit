@@ -98,6 +98,7 @@
 #include <DatabaseCorrelation.h>
 #include <DBPluginInfoAttributes.h>
 #include <EngineList.h>
+#include <EngineProperties.h>
 #include <ExportDBAttributes.h>
 #include <FileOpenOptions.h>
 #include <GlobalAttributes.h>
@@ -148,6 +149,7 @@
 #include <PyColorControlPointList.h>
 #include <PyConstructDataBinningAttributes.h>
 #include <PyDatabaseCorrelation.h>
+#include <PyEngineProperties.h>
 #include <PyExportDBAttributes.h>
 #include <PyExpression.h>
 #include <PyExpressionList.h>
@@ -5023,6 +5025,8 @@ visit_SaveSession(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Brad Whitlock, Wed Jul 16 11:17:28 PDT 2014
+//   Make it possible to return the sim name.
 //
 // ****************************************************************************
 
@@ -5030,17 +5034,99 @@ STATIC PyObject *
 visit_GetEngineList(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-    NO_ARGUMENTS();
-
+    int getSimName = 0;
+    if(!PyArg_ParseTuple(args, "i", &getSimName))
+    {
+        PyErr_Clear();
+    }
+printf("getSimName=%d\n", getSimName);
     // Allocate a tuple the with enough entries to hold the engine list.
     const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
+    const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
     PyObject *retval = PyTuple_New(engines.size());
     for(size_t i = 0; i < engines.size(); ++i)
     {
         PyObject *name = PyString_FromString(engines[i].c_str());
+printf("name=%p\n", name);
         if(name == NULL)
             continue;
-        PyTuple_SET_ITEM(retval, i, name);
+        if(getSimName != 0)
+        {
+printf("making tuple\n");
+            PyObject *sim = PyString_FromString(sims[i].c_str());
+
+printf("making tuple2\n");
+            PyObject *tup = PyTuple_New(2);
+            PyTuple_SET_ITEM(tup, 0, name);
+            PyTuple_SET_ITEM(tup, 1, sim);
+
+            PyTuple_SET_ITEM(retval, i, tup);
+        }
+        else
+        {
+            PyTuple_SET_ITEM(retval, i, name);
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_GetEngineProperties
+//
+// Purpose:
+//   Returns an EngineProperties object for the specified engine/sim.
+//
+// Notes:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 11:17:28 PDT 2014
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetEngineProperties(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    char *engine = NULL, *sim = NULL;
+    if(!PyArg_ParseTuple(args, "ss", &engine, &sim))
+    {
+        if(!PyArg_ParseTuple(args, "s", &engine))
+            PyErr_Clear();
+    }
+
+    PyObject *retval = PyEngineProperties_New();
+    if(engine != NULL)
+    {
+        const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
+        const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
+        int index = -1;
+        for(size_t i = 0; i < engines.size(); ++i)
+        {
+            if(engines[i] == engine)
+            {
+                if(sim != NULL)
+                {
+                    if(sims[i] == sim)
+                    {
+                        index = (int)i; 
+                        break;
+                    }
+                }
+                else
+                {
+                    index = (int)i;
+                    break;
+                }
+            }
+        }
+
+        // Poke the desired engine properties into the new object.
+        if(index != -1)
+        {
+            EngineProperties *props = PyEngineProperties_FromPyObject(retval);
+            *props = GetViewerState()->GetEngineList()->GetProperties(index);
+        }
     }
 
     return retval;
@@ -16705,6 +16791,9 @@ AddMethod(const char *methodName,
 //   Kathleen Biagas, Wed Oct 26 09:28:41 PDT 2011
 //   Add GetPickOutputObject.
 //
+//   Brad Whitlock, Wed Jul 16 11:52:54 PDT 2014
+//   Add GetEngineProperties.
+//
 // ****************************************************************************
 
 static void
@@ -16850,6 +16939,7 @@ AddProxyMethods()
     AddMethod("GetDefaultFileOpenOptions", visit_GetDefaultFileOpenOptions,
                                           visit_GetDefaultFileOpenOptions_doc);
     AddMethod("GetEngineList", visit_GetEngineList, visit_GetEngineList_doc);
+    AddMethod("GetEngineProperties", visit_GetEngineProperties, visit_GetEngineProperties_doc);
     AddMethod("GetExportOptions", visit_GetExportOptions, NULL);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes,
                                                 visit_GetGlobalAttributes_doc);
@@ -17269,6 +17359,9 @@ AddProxyMethods()
 //   Brad Whitlock, Wed Jun  6 13:36:36 PDT 2012
 //   Add KeyframeAttributes.
 //
+//   Brad Whitlock, Wed Jul 16 11:50:08 PDT 2014
+//   Add EngineProperties.
+//
 // ****************************************************************************
 
 static void
@@ -17284,6 +17377,7 @@ AddExtensions()
     ADD_EXTENSION(PyColorControlPoint_GetMethodTable);
     ADD_EXTENSION(PyColorControlPointList_GetMethodTable);
     ADD_EXTENSION(PyConstructDataBinningAttributes_GetMethodTable);
+    ADD_EXTENSION(PyEngineProperties_GetMethodTable);
     ADD_EXTENSION(PyExportDBAttributes_GetMethodTable);
     ADD_EXTENSION(PyExpression_GetMethodTable);
     ADD_EXTENSION(PyExpressionList_GetMethodTable);
@@ -17383,6 +17477,9 @@ AddExtensions()
 //   Kathleen Biagas, Mon Jun 23 09:52:42 MST 2014
 //   Add QueryOvertimeAttributes.
 //
+//   Brad Whitlock, Wed Jul 16 11:50:44 PDT 2014
+//   Add EngineProperties.
+//
 // ****************************************************************************
 
 static void
@@ -17391,6 +17488,7 @@ InitializeExtensions()
     PyAnimationAttributes_StartUp(GetViewerState()->GetAnimationAttributes(), 0);
     PyAnnotationAttributes_StartUp(GetViewerState()->GetAnnotationAttributes(), 0);
     PyConstructDataBinningAttributes_StartUp(GetViewerState()->GetConstructDataBinningAttributes(), 0);
+    PyEngineProperties_StartUp(0, 0);
     PyExportDBAttributes_StartUp(GetViewerState()->GetExportDBAttributes(), 0);
     PyExpression_StartUp(0, 0);
     PyExpressionList_StartUp(GetViewerState()->GetExpressionList(), 0);
@@ -17450,6 +17548,9 @@ InitializeExtensions()
 //   Brad Whitlock, Wed Jun  6 13:35:46 PDT 2012
 //   Add KeyframeAttributes.
 //
+//   Brad Whitlock, Wed Jul 16 11:50:44 PDT 2014
+//   Add EngineProperties.
+//
 // ****************************************************************************
 
 static void
@@ -17457,6 +17558,7 @@ CloseExtensions()
 {
     PyAnimationAttributes_CloseDown();
     PyAnnotationAttributes_CloseDown();
+    PyEngineProperties_CloseDown();
     PyGlobalAttributes_CloseDown();
     PyKeyframeAttributes_CloseDown();
     PyMaterialAttributes_CloseDown();

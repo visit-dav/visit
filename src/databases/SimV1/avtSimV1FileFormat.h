@@ -93,7 +93,8 @@ class avtSimV1FileFormat : public avtSTMDFileFormat
                                             const char *type, void *,
                                             DestructorFunction &df);
 
-    virtual void           PopulateIOInformation(avtIOInformation& ioInfo);
+    virtual bool           PopulateIOInformation(const std::string &meshname,
+                                                 avtIOInformation& ioInfo);
 
   protected:
     avtSimulationInformation simInfo;

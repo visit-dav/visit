@@ -160,7 +160,9 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
 
     virtual void            FreeUpResources(int, int);
     virtual void            ActivateTimestep(int ts);
-    virtual void            PopulateIOInformation(int ts, avtIOInformation &) { return; };
+    virtual bool            PopulateIOInformation(int ts, 
+                               const std::string &meshName,avtIOInformation &)
+                               { return false; }
 
   protected:
     virtual int             GetNumberOfFileFormats(void) { return 1; };

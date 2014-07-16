@@ -675,14 +675,18 @@ avtMTMDFileFormatInterface::ActivateTimestep(int ts)
 //    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
 //    MTMD files can now be grouped into longer sequences.
 //
+//    Brad Whitlock, Thu Jun 19 11:08:46 PDT 2014
+//    Pass mesh name.
+//
 // ****************************************************************************
 
-void
-avtMTMDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation& ioInfo)
+bool
+avtMTMDFileFormatInterface::PopulateIOInformation(int ts, const std::string &meshname,
+    avtIOInformation& ioInfo)
 {
     int tsGroup = GetTimestepGroupForTimestep(ts);
     int localTS = GetTimestepWithinGroup(ts);
-    chunks[tsGroup]->PopulateIOInformation(localTS, ioInfo);
+    return chunks[tsGroup]->PopulateIOInformation(localTS, meshname, ioInfo);
 }
 
 

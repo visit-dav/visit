@@ -657,14 +657,18 @@ avtSTMDFileFormatInterface::ActivateTimestep(int ts)
 //    Brad Whitlock, Tue May 4 13:47:45 PST 2004
 //    Reenabled exception.
 //
+//    Brad Whitlock, Thu Jun 19 10:59:53 PDT 2014
+//    Added meshname.
+//    
 // ****************************************************************************
 
-void
-avtSTMDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation& ioInfo)
+bool
+avtSTMDFileFormatInterface::PopulateIOInformation(int ts, const std::string &meshname,
+    avtIOInformation& ioInfo)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
         EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
-    timesteps[ts]->PopulateIOInformation(ioInfo);
+    return timesteps[ts]->PopulateIOInformation(meshname, ioInfo);
 }

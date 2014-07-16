@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtSAMRAIFileFormat.h                           //
+//                             avtSAMRAIFileFormat.h                         //
 // ************************************************************************* //
 
 #ifndef AVT_SAMRAI_FILE_FORMAT_H
@@ -130,7 +130,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     double                GetTime(void);
 
     void                  PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    void                  PopulateIOInformation(avtIOInformation &ioInfo);
+    bool                  PopulateIOInformation(const std::string &meshname,
+                                                avtIOInformation &ioInfo);
     void                  RegisterVariableList(const char *,
                                                const std::vector<CharStrRef> &);
 

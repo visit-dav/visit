@@ -131,6 +131,9 @@ class     avtVariableCache;
 //    Add method for mangling names used for caching when selections are
 //    present.
 //
+//    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
+//    Pass mesh name to PopulateIOInformation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -147,9 +150,8 @@ class DATABASE_API avtFileFormat
 
     virtual void          FreeUpResources(void);
     void                  RegisterDatabaseMetaData(avtDatabaseMetaData *);
-    virtual void          PopulateIOInformation(avtIOInformation &);
-    virtual void          PopulateIOInformation(int,avtIOInformation & io)
-                            { PopulateIOInformation(io); }
+    virtual bool          PopulateIOInformation(const std::string &meshname,
+                                                avtIOInformation &);
     void                  SetCache(avtVariableCache *);
 
     void                  SetStrictMode(bool v) { strictMode = v;    }

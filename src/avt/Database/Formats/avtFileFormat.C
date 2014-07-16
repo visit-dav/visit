@@ -259,18 +259,23 @@ avtFileFormat::ActivateTimestep(void)
 //
 //  Purpose:
 //      This is defined so that individual file formats will not have to
-//      provide information abotu I/O if it does not make sense for that 
+//      provide information about I/O if it does not make sense for that 
 //      format.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 11, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jun 19 11:10:31 PDT 2014
+//    Pass meshname.
+//
 // ****************************************************************************
 
-void
-avtFileFormat::PopulateIOInformation(avtIOInformation &)
+bool
+avtFileFormat::PopulateIOInformation(const std::string &meshname, avtIOInformation &)
 {
-    debug5 << "No I/O info provided for file format " << GetType() << endl;
+    debug5 << GetType() << ": No I/O info provided for mesh " << meshname << endl;
+    return false;
 }
 
 

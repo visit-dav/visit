@@ -126,7 +126,8 @@ visitpy/PyColorControlPointList.C
 visitpy/PyColorTableAttributes.C 
 visitpy/PyConstructDataBinningAttributes.C 
 visitpy/PyDatabaseCorrelation.C 
-visitpy/PyDBOptionsAttributes.C 
+visitpy/PyDBOptionsAttributes.C
+visitpy/PyEngineProperties.C 
 visitpy/PyExportDBAttributes.C 
 visitpy/PyExpression.C 
 visitpy/PyExpressionList.C 
