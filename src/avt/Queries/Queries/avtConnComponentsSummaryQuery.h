@@ -68,8 +68,9 @@ class vtkDataSet;
 // 
 //      Component Fields:
 //       x,y,z              Component centroid location
-//       comp_area          Component area (if 2D data)
-//       comp_volume        Component volume (if 3D or revolved volume data)
+//       comp_length        Component length (if 1D topo data)
+//       comp_area          Component area   (if 2D topo data)
+//       comp_volume        Component volume (if 3D topo or revolved volume data)
 //       comp_sum           Component variable sum 
 //       comp_weighted_sum  Component weighted variable sum
 //       comp_bb_{x,y,z}_{min,max} Component bounding box values.
@@ -93,6 +94,9 @@ class vtkDataSet;
 //
 //    Kathleen Biagas, Fri Jul 15 16:05:35 PDT 2011
 //    Added GetDefaultInputParams.
+//
+//    Cyrus Harrison, Wed Jul 16 13:54:00 PDT 2014
+//    Added PrepareMapNodeResult.
 //
 // ****************************************************************************
 
@@ -156,8 +160,9 @@ class QUERY_API avtConnComponentsSummaryQuery
     virtual avtDataObject_p    ApplyFilters(avtDataObject_p);
     virtual void               VerifyInput(void);
 
-    virtual void               SaveComponentResults(std::string fname);
-    virtual void               PrepareComponentResults(std::vector<double> &);
+    void                       SaveComponentResults(std::string fname);
+    void                       PrepareComponentResults(std::vector<double> &);
+    void                       PrepareMapNodeResult(MapNode &result_node);
 };
 
 
