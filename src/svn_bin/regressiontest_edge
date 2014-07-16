@@ -238,8 +238,8 @@ fi
     -DVISIT_BUILD_ALL_PLUGINS=1 \
     -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
     -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
-    -DCMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-    -DCMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+    -DCMAKE_CXX_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+    -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
