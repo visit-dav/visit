@@ -2072,6 +2072,9 @@ def SimFile(sim2):
 def TestSimulation(sim, sim2):
     return Simulation(SimVisItDir(), SimProgram(sim), SimFile(sim2))
 
+def TestParallelSimulation(sim, sim2, np):
+    return Simulation(SimVisItDir(), SimProgram(sim), SimFile(sim2), np)
+
 # ----------------------------------------------------------------------------
 #  Class: Simulation
 #
@@ -2079,10 +2082,12 @@ def TestSimulation(sim, sim2):
 #  Date:       Wed Dec 18, 2013
 #
 #  Modifications:
+#    Brad Whitlock, Fri Jun 27 11:14:56 PDT 2014
+#    Added some parallel launch code.    
 #
 # ----------------------------------------------------------------------------
 class Simulation(object):
-    def __init__(self, vdir, s, sim2):
+    def __init__(self, vdir, s, sim2, np=1):
         self.simulation = s
         self.host = "localhost"
         self.sim2 = sim2
@@ -2090,18 +2095,51 @@ class Simulation(object):
         self.p = None
         self.connected = False
         self.extraargs = []
+        self.np = np
 
     def startsim(self):
         """
         Start up the simulation.
         """
+        # Close any compute engine that the test script launched already.
+        CloseComputeEngine()
+        # Start up the simulation.
         tfile = self.sim2 + ".trace"
-        #args = ["xterm", "-e", 
         args = [self.simulation, "-dir", self.visitdir, "-trace", tfile, "-sim2", self.sim2]
         for a in self.extraargs:
             args = args + [a]
+        if self.np > 1:
+            # TODO: subclass MainLauncher, use internallauncher function to start
+            # up the parallel engine using the host profile XML's for the current
+            # host so we get the proper way of submitting parallel jobs.
+
+            # For now...
+            import socket
+            if "edge" in socket.gethostname():
+                do_submit = 0
+                if do_submit:
+                    msubscript = os.path.join(os.path.abspath(os.curdir), string.replace(self.sim2, "sim2", "msub"))
+                    f = open(msubscript, "wt")
+                    f.write("#!/bin/sh\n")
+                    f.write("cd %s\n" % os.path.abspath(os.curdir))
+                    f.write("ulimit -c 0\n")
+                    f.write("srun -n %d" % self.np)
+                    for a in args:
+                        f.write(" %s" % a)
+                    f.write("\n")
+                    f.close()
+                    args = ["msub", "-l", "nodes=1:ppn=12", msubscript]
+                else:
+                    args = ["srun", "-n", str(self.np)] + args
+            else:
+                args = ["mpiexec", "-n", str(self.np)] + args
+        s="Running: "
+        for a in args:
+            s = s + a + " "
+        print s
         self.p = subprocess.Popen(args, 
                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+           
         return self.p != None
 
     def addargument(self, arg):
@@ -2114,6 +2152,7 @@ class Simulation(object):
         """
         Connect to the simulation."
         """
+        print "Connecting to simulation ", self.simulation
         ret = OpenDatabase(self.sim2)
         if ret:
             self.connected = True
