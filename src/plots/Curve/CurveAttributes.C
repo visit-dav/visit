@@ -1922,14 +1922,14 @@ CurveAttributes::ProcessOldVersions(DataNode *parentNode,
         DataNode *k = 0;
         if (( k = searchNode->GetNode("renderMode")) != 0)
         {
-            int rm = k->AsInt();
+            std::string mode = k->AsString();
             searchNode->RemoveNode(k, true);
-            if (rm == 0) // asLines
+            if (mode == "RenderAsLines") // asLines
             {
                 searchNode->AddNode(new DataNode("showLines", true));
                 searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Static)));
             }
-            else 
+            else
             {
                 searchNode->AddNode(new DataNode("showLines", false));
                 searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Dynamic)));
