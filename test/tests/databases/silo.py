@@ -563,42 +563,4 @@ for varname in ("3D/n1", "3D/n2", "3D/n2g", "3D/n3", "3D/n3r",
     Test("silo_%d"%testNum)
     testNum = testNum + 1
 
-
-DeleteAllPlots()
-CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
-
-TestSection("Scalar and Vector ASCII Label Plots")
-
-OpenDatabase(silo_data_path("rect2d.silo"))
-AddPlot("Label", "ascii")
-DrawPlots()
-ResetView()
-v = GetView2D()
-v.windowCoords = (0.62, 0.71, 0.23, 0.32)
-SetView2D(v)
-Test("silo_%d"%testNum)
-testNum = testNum + 1
-
-DeleteAllPlots()
-AddPlot("Label", "asciiw")
-DrawPlots()
-ResetView()
-v = GetView2D()
-v.windowCoords = (0.62, 0.71, 0.23, 0.32)
-SetView2D(v)
-Test("silo_%d"%testNum)
-testNum = testNum + 1
-
-DeleteAllPlots()
-CloseDatabase(silo_data_path("rect2d.silo"))
-
-TestSection("Curve with polar coordinates")
-
-OpenDatabase(silo_data_path("multi_rect2d.silo"))
-AddPlot("Curve","circle")
-DrawPlots()
-ResetView()
-Test("silo_%d"%testNum)
-testNum = testNum + 1
-
 Exit()
