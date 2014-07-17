@@ -23,7 +23,11 @@
 #    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
 #    Use named arguments. 
 #
+#    Cyrus Harrison, Wed Jul 16 15:58:54 PDT 2014
+#    Added test cases to exercise centroid override
+#
 # ----------------------------------------------------------------------------
+import json
 
 # Turn off all annotation
 a = AnnotationAttributes()
@@ -41,6 +45,24 @@ DrawPlots()
 Query("Spherical Compactness Factor")
 text = GetQueryOutputString()
 TestText("scf_01", text)
+
+res = GetQueryOutputObject()
+TestText("scf_01_obj", json.dumps(res,indent=2))
+
+Query("Spherical Compactness Factor",centroid="default")
+text = GetQueryOutputString()
+TestText("scf_01_default_txt", text)
+
+res = GetQueryOutputObject()
+TestText("scf_01_default_obj", json.dumps(res,indent=2))
+
+Query("Spherical Compactness Factor",centroid=[1.0,0.0,0.0])
+text = GetQueryOutputString()
+TestText("scf_01_override_txt", text)
+
+res = GetQueryOutputObject()
+TestText("scf_01_override_obj", json.dumps(res,indent=2))
+
 
 AddOperator("Revolve")
 DrawPlots()
@@ -60,6 +82,14 @@ SetActiveWindow(2)
 SetAnnotationAttributes(a)
 Test("scf_03")
 
+SetActiveWindow(1)
+QueryOverTime("Spherical Compactness Factor", stride=10,centroid=[1.0,0.0,0.0])
+
+SetActiveWindow(2)
+SetAnnotationAttributes(a)
+Test("scf_03_override")
+
+
 DeleteAllPlots()
 OpenDatabase(silo_data_path("rect2d.silo"))
 
@@ -78,6 +108,16 @@ DrawPlots()
 Query("Elliptical Compactness Factor")
 t = GetQueryOutputString()
 TestText("scf_05", t)
+
+res = GetQueryOutputObject()
+TestText("scf_05_obj", json.dumps(res,indent=2))
+
+Query("Elliptical Compactness Factor",centroid=[1.0,0.0,0.0])
+text = GetQueryOutputString()
+TestText("scf_05_override_txt", text)
+
+res = GetQueryOutputObject()
+TestText("scf_05_override_obj", json.dumps(res,indent=2))
 
 AddOperator("Revolve")
 DrawPlots()
