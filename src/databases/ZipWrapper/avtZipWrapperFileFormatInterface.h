@@ -192,7 +192,6 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
 
       DatabasePluginManager       *pluginManager;
       std::vector<std::vector<std::string> >      inputFileList;
-      int                          inputFileListSize;
       int                          inputFileBlockCount;
       int                          nTimesteps;
       int                          dbType;

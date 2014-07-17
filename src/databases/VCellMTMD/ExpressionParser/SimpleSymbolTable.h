@@ -21,7 +21,7 @@ class SimpleSymbolTable : public SymbolTable
 public:    
     SimpleSymbolTable(std::string* symbols, int symbolCount, ValueProxy** valueProxies=0);    
     //SimpleSymbolTable(std::string* symbols, NameScope* namescopeVal);    
-    ~SimpleSymbolTable(void);    
+    virtual ~SimpleSymbolTable();    
     SymbolTableEntry* getEntry(std::string identifier);    
     SymbolTableEntry* getLocalEntry(std::string identifier);    
     

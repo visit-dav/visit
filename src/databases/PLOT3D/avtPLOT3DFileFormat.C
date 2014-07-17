@@ -1183,18 +1183,14 @@ int vtkVisItPLOT3DReader::ReadGridDimensions(FILE *fp,
 
 int vtkVisItPLOT3DReader::FindNumberOfGrids(FILE *fp)
 {
-  int numGrids;
-  if (this->GridType == MULTI_GRID || this->Compression == COMPRESSED_ASCII) 
+  int numGrids = 1;
+  if ((this->GridType == MULTI_GRID) || (this->Compression == COMPRESSED_ASCII))
   {
-    int error = ReadNumbers(fp,1,&numGrids);
-    if (error)
+    if (ReadNumbers(fp,1,&numGrids))
     {
       return 1;
     }
   }
-  else
-    numGrids = 1;
-
   return numGrids;
 }
 
@@ -1203,7 +1199,6 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
 {
   vtkFloatArray *newDensity, *newEnergy;
   vtkFloatArray *newMomentum;
-  int i, gridFound, offset;
   float m[3], params[4];
   int numGrids, numPts = 0;
 
@@ -1218,7 +1213,7 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
   }
 
 
-  // If first time reading soluton file then find the initial offset 
+  // If first time reading soluton file then find the initial offset
   // as well as find the gridsize(s) and Dmensions.
   //
   if (SolutionOffsets == NULL)
@@ -1227,7 +1222,7 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
     GridSizes = new int [this->NumberOfGrids];
     GridDimensions = new int [3*this->NumberOfGrids];
 
-    for (int i = 0; i < this->NumberOfGrids; i++) 
+    for (int i = 0; i < this->NumberOfGrids; ++i)
     {
       SolutionOffsets[i] = -1;
     }
@@ -1252,35 +1247,35 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
   }
 
 
-  
-  for (i =0; i < this->NumberOfGrids; i++)
+
+  for (int i =0; i < this->NumberOfGrids; ++i)
   {
     if (this->Dimension == THREE)
     {
       GridSizes[i] = GridDimensions[3 * i] * GridDimensions[1 + 3 * i]
                                            * GridDimensions[2 + 3 * i];
-    } 
+    }
     else if (this->Dimension == TWO)
-    {  
+    {
       GridSizes[i] = GridDimensions[2 * i] * GridDimensions[1 + 2 * i];
     }
   }
-  
-  if (0 <= this->GridNumber && this->GridNumber < this->NumberOfGrids) 
+
+  int gridFound = 0;
+  if ((this->GridNumber >= 0) && (this->GridNumber < this->NumberOfGrids))
   {
     gridFound = 1;
     numPts = GridSizes[this->GridNumber];
-    
     if (this->Dimension == THREE)
     {
-      output->SetDimensions(GridDimensions[3 * GridNumber], 
-                             GridDimensions[1 + 3 * GridNumber], 
-                             GridDimensions[2 + 3 * GridNumber]);
+      output->SetDimensions(GridDimensions[3 * GridNumber],
+                            GridDimensions[1 + 3 * GridNumber],
+                            GridDimensions[2 + 3 * GridNumber]);
     }
     else if (this->Dimension == TWO)
     {
-      output->SetDimensions(GridDimensions[2 * GridNumber], 
-                             GridDimensions[1 + 2 * GridNumber], 1);
+      output->SetDimensions(GridDimensions[2 * GridNumber],
+                            GridDimensions[1 + 2 * GridNumber], 1);
     }
   }
 
@@ -1299,7 +1294,7 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
 
 
   //seek to correct spot and read solution
-  offset = ComputeSolutionOffset(fp);
+  int offset = ComputeSolutionOffset(fp);
   fseek (fp, (long)(offset), SEEK_SET);
 
   //read solution parameters
@@ -1328,7 +1323,7 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
 
 
   error = ReadNumbers(fp,numPts,this->TempStorage);
-  if (error) 
+  if (error)
   {
     newDensity->Delete();
     newMomentum->Delete();
@@ -1338,7 +1333,7 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
   }
   else //successful read
   {
-    for (i=0; i < this->NumberOfPoints; i++) 
+    for (int i=0; i < this->NumberOfPoints; ++i)
     {
       newDensity->SetValue(i,this->TempStorage[i]);
     }
@@ -1352,8 +1347,8 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
   {
     error = ReadNumbers(fp,2*this->NumberOfPoints,this->TempStorage);
   }
-  
-  if (error) 
+
+  if (error)
   {
     newDensity->Delete();
     newMomentum->Delete();
@@ -1363,7 +1358,7 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
   }
   else //successful read, load coordinates into vector object
   {
-    for (i=0; i < this->NumberOfPoints; i++)
+    for (int i=0; i < this->NumberOfPoints; ++i)
     {
       m[0] = this->TempStorage[i];
       m[1] = this->TempStorage[this->NumberOfPoints+i];
@@ -1374,13 +1369,13 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
       else
       {
         m[2] = 0;
-      }      
+      }
       newMomentum->SetTuple(i,m);
     }
   }
 
   error = ReadNumbers(fp,numPts,this->TempStorage);
-  if (error) 
+  if (error)
   {
     newDensity->Delete();
     newMomentum->Delete();
@@ -1394,7 +1389,7 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
     {
       SolutionOffsets[this->GridNumber + 1] = ftell(fp);
     }
-    for (i=0; i < this->NumberOfPoints; i++) 
+    for (int i=0; i < this->NumberOfPoints; ++i)
     {
       newEnergy->SetValue(i,this->TempStorage[i]);
     }
@@ -1423,11 +1418,8 @@ int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
 
 int vtkVisItPLOT3DReader::ReadFunctionFile(FILE *fp,vtkStructuredGrid *output)
 {
-  int numGrids;
-  output = output;     // what is this for?
-  
-  numGrids = this->FindNumberOfGrids(fp);
-  
+  int numGrids = this->FindNumberOfGrids(fp);
+
   if (numGrids != this->NumberOfGrids)
     {
     vtkErrorMacro(<<"Data mismatch in function file!");
@@ -1441,9 +1433,8 @@ int vtkVisItPLOT3DReader::ReadFunctionFile(FILE *fp,vtkStructuredGrid *output)
 int vtkVisItPLOT3DReader::ReadVectorFunctionFile(FILE *fp,
                                                   vtkStructuredGrid *output)
 {
-  int numGrids= this->FindNumberOfGrids(fp);
+  int numGrids = this->FindNumberOfGrids(fp);
 
-  output = output;
   if (numGrids != this->NumberOfGrids)
     {
     vtkErrorMacro(<<"Data mismatch in vector function file!");

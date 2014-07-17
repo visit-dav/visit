@@ -68,7 +68,6 @@ private:
     int jj_ntk;    
     Token* jj_scanpos, *jj_lastpos;    
     int jj_la;      
-    bool jj_semLA;    
     int jj_gen;    
     int* jj_la1;    
             

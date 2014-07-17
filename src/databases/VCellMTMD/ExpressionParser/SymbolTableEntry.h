@@ -20,7 +20,8 @@ class Expression;
 class NameScope;    
     
 class SymbolTableEntry {    
-public:    
+public:
+    virtual ~SymbolTableEntry(){}
     virtual double getConstantValue()=0;    
     virtual VCell::Expression* getExpression()=0;    
     virtual int getIndex()=0;    

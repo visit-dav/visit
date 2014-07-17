@@ -64,6 +64,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMixedVariable.h>
 #include <avtVariableCache.h>
+#include <avtMaterial.h>
 
 #include <Expression.h>
 #include <DebugStream.h>
@@ -109,27 +110,32 @@ avtCaleHDF5FileFormat::ReadHDF_Entry(hid_t group, const char* name, void* ptr)
     {
         sprintf(msg,"Error %d reading dataset for %s from file\n",hdf_dataset,name) ;
         EXCEPTION1(InvalidVariableException, msg) ;
+        return -1;
     }
     hid_t hdf_type = H5Dget_type(hdf_dataset) ;
-    if (hdf_type < 0.0)
+    if (hdf_type < 0)
     {
+        H5Dclose(hdf_dataset);
         sprintf(msg,"Error %d reading datatype for %s from file\n",hdf_type,name) ;
         EXCEPTION1(InvalidVariableException, msg) ;
+        return -1;
     }
     herr_t hdf_err = H5Dread(hdf_dataset, hdf_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, ptr);
-    if (hdf_err < 0.0)
+    if (hdf_err < 0)
     {
+        H5Dclose(hdf_dataset);
         sprintf(msg,"Error %d reading %s from file\n",hdf_err,name) ;
-        EXCEPTION1(InvalidVariableException, msg) ;
+        EXCEPTION1(InvalidVariableException, msg);
     }
-    hdf_err |= H5Dclose(hdf_dataset) ;
-    if (hdf_err < 0.0)
+    hdf_err = H5Dclose(hdf_dataset);
+    if (hdf_err < 0)
     {
+        H5Dclose(hdf_dataset);
         sprintf(msg,"Error %d closing dataset, %s\n",hdf_err,name) ;
         EXCEPTION1(InvalidVariableException, msg) ;
+        return -1;
     }
-
-    return hdf_err ;
+    return 0;
 }
 
 // ****************************************************************************
@@ -171,14 +177,14 @@ SymbolInformation(hid_t hdf_fid, const char *name, TypeEnum *t,
 
     hid_t hdf_dataset = H5Dopen(hdf_fid, name, H5P_DEFAULT) ;
     debug4 << "HDF5File::SymbolExists: name=" << name << " dataset " << hdf_dataset << endl;
-    if (hdf_dataset < 0.0)
+    if (hdf_dataset < 0)
     {
         sprintf(msg,"Error %d reading dataset for %s from file\n",hdf_dataset,name) ;
         EXCEPTION1(InvalidVariableException, msg) ;
     }
     hid_t hdf_type = H5Dget_type(hdf_dataset) ;
     debug4 << " hdf_type " << hdf_type << endl ;
-    if (hdf_type < 0.0)
+    if (hdf_type < 0)
     {
         sprintf(msg,"Error %d reading datatype for %s from file\n",hdf_type,name) ;
         EXCEPTION1(InvalidVariableException, msg) ;
@@ -491,14 +497,14 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     hdf_err =           ReadHDF_Entry(GetHDF5File(),"/parameters/nfpa",&nfpa);
     parec *palist = new parec[nfpa];
     hdf_err  = ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/npbin",&npbin);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/rdifmix",&rdifmix);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ngrps",&ngrps);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"fpalist",palist);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/iftmode",&iftmode);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/npbin",&npbin);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/rdifmix",&rdifmix);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ngrps",&ngrps);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"fpalist",palist);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/iftmode",&iftmode);
 
-    if (hdf_err < 0.0)
+    if (hdf_err < 0)
     {
         EXCEPTION1(InvalidDBTypeException,
             "Corrupt dump; error reading array related variables.");
@@ -747,7 +753,7 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }  trcname_str;
 
     hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/nreg",&nreg);
-    if (hdf_err < 0.0)
+    if (hdf_err < 0)
     {
         EXCEPTION1(InvalidDBTypeException,
             "Corrupt dump; error reading # of materials.");
@@ -758,7 +764,7 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         trcname_str *rname = new trcname_str[nreg+1];
 
         hdf_err = ReadHDF_Entry(GetHDF5File(),"/ppa/rname",rname);
-        if (hdf_err < 0.0)
+        if (hdf_err < 0)
         {
             EXCEPTION1(InvalidDBTypeException,
                 "Corrupt dump; error reading material names.");
@@ -794,11 +800,11 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     int ifstr, ifstrain, iftpstr, ifmhda, ifmhdb;
     hdf_err =                      ReadHDF_Entry(GetHDF5File(), "/parameters/ifstr",&ifstr);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifstrain",&ifstrain);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/iftpstr",&iftpstr);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifmhda",&ifmhda);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifmhdb",&ifmhdb);
-    if (hdf_err < 0.0)
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifstrain",&ifstrain);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/iftpstr",&iftpstr);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifmhda",&ifmhda);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifmhdb",&ifmhdb);
+    if (hdf_err < 0)
     {
         EXCEPTION1(InvalidDBTypeException,
             "Corrupt dump; error reading memory layout parameters.");
@@ -919,9 +925,9 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
 
     int ntp, ncp, ncurves;
-    hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
-    if (hdf_err < 0.0)
+    hdf_err =                    ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
+    if (hdf_err < 0)
     {
         ntp = ncp = 0;
     }
@@ -1043,22 +1049,22 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
         // Create a VTK object for "hydro" mesh
         //int ndims = 2;
         int dims[3] = {1,1,1};
-        int kmax, lmax, lp, nnalls = 0, namix;
-        int nk, nl, hdf_err;
+        int kmax = 0, lmax = 0, lp = 0, nnalls = 0, namix;
+        int nk = 0, nl = 0, hdf_err = 0;
 
         if (kminmesh == -1)
             GetUsedMeshLimits();
         // Read the ndims and number of X,Y,Z nodes from file.
-        hdf_err =                     ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
+        hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
         double *z = new double[nnalls];
         double *r = new double[nnalls];
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/z",z);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/r",r);
-        if (hdf_err < 0.0)
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/z",z);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/r",r);
+        if (hdf_err < 0)
         {
             EXCEPTION1(InvalidDBTypeException,
                        "Corrupt dump; error reading mesh related parameters.");
@@ -1167,11 +1173,12 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
     }
     else // check for time or cycle plot
     {
-        int ntp, ncp, ncurves, ntimes, tplen, foundit=0; (void) ntimes;
-        herr_t hdf_err; (void) hdf_err;
-        hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
-        double *ttime, *data;
+        int ntp = 0, ncp = 0;
+
+        herr_t hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
+        if (hdf_err >= 0)
+            hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
+
         typedef struct {
            char tplab[30] ; /*!< curve label */
            int type ;       /*!< the data type */
@@ -1179,14 +1186,19 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
            hvl_t h5_tpdat_arr ; /*!< the curve data */
            int tpx ;       /*!< unused */
            }   h5_tpcur ;
+
         typedef struct {
            int ntimes ;    /*!< max number of times allowed */
            int ncurs ;     /*!< number of curves */
            }   h5_tpdat ;
 
-        h5_tpcur *h5_tpcurve ;
+        h5_tpcur *h5_tpcurve = NULL;
         h5_tpdat *h5_tpdata = new h5_tpdat[ntp] ;
         h5_tpdat *h5_cpdata = new h5_tpdat[ncp] ;
+
+        double *ttime = NULL;
+        double *data = NULL;
+        int ncurves=0, tplen=0, foundit=0;
 
         if (ntp > 0)
             ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",h5_tpdata) ;
@@ -1195,7 +1207,6 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
         {
             char dataname[128];
             ncurves    = h5_tpdata[i-1].ncurs ;
-            ntimes     = h5_tpdata[i-1].ntimes ;
             h5_tpcurve = new h5_tpcur[ncurves] ;
 
             sprintf(dataname,"/ppa/tpcurs_%d",i) ;
@@ -1248,7 +1259,6 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
             {
                 char dataname[128];
                 ncurves    = h5_cpdata[i-1].ncurs ;
-                ntimes     = h5_cpdata[i-1].ntimes ;
                 h5_tpcurve = new h5_tpcur[ncurves] ;
 
                 sprintf(dataname,"/ppa/cpcurs_%d",i) ;
@@ -1350,17 +1360,17 @@ avtCaleHDF5FileFormat::GetVar(const char *varname)
 
     debug4 << mName << varname << endl;
 
-    int kmax, lmax, lp, nnalls, namix, nvals, hdf_err, nk, nl;
-    int npbin, ngrps, rdifmix;
-    int length, group, grplen;
-    hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/npbin",&npbin);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/rdifmix",&rdifmix);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ngrps",&ngrps);
+    int kmax=0, lmax=0, lp=0, nnalls=0, namix=0, nvals=0, hdf_err=0, nk=0, nl=0;
+    int npbin=0, ngrps=0, rdifmix=0;
+    int length=0, group=0, grplen=0;
+    hdf_err                    = ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/npbin",&npbin);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/rdifmix",&rdifmix);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ngrps",&ngrps);
     length = namix;
     char    vstring[33];
 
@@ -1633,7 +1643,6 @@ avtCaleHDF5FileFormat::GetTime(void)
     return dtime;
 }
 
-#include <avtMaterial.h>
 // ***************************************************************************
 //  Method: avtCaleHDF5FileFormat::GetAuxiliaryData
 //
@@ -1658,19 +1667,19 @@ avtCaleHDF5FileFormat::GetAuxiliaryData(const char *var,
     debug4 << mName << "type " << type << " var " << var << endl;
     if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        int i, kmax, lmax, lp, nnalls, namix, hdf_err;
-        int nreg, nregx, nk, nl, mixmax;
+        int i=0, kmax=0, lmax=0, lp=0, nnalls=0, namix=0, hdf_err=0;
+        int nreg=0, nregx=0, nk=0, nl=0, mixmax=0;
         int dims[3] = {1,1,1}, ndims = 2;
 
         debug4 << mName << "Asked to read material information." << endl;
         hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/mixmax",&mixmax);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nregx",&nregx);
-        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nreg",&nreg);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/mixmax",&mixmax);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nregx",&nregx);
+        if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nreg",&nreg);
 
         if (kminmesh == -1)
             GetUsedMeshLimits();
@@ -1746,7 +1755,7 @@ avtCaleHDF5FileFormat::GetAuxiliaryData(const char *var,
 
             int maxmixindx, ir, j;
             hdf_err =                     ReadHDF_Entry(GetHDF5File(),"/arrays/ireg",ireg);
-            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/zmass",zmass);
+            if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/zmass",zmass);
 
             for ( i = 0 ; i < nnalls ; i++ )
             {
@@ -1763,14 +1772,14 @@ avtCaleHDF5FileFormat::GetAuxiliaryData(const char *var,
             int *nmatlst = new int[namix];
             int *grdlst  = new int[mixmax];
             hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/arrays/nmatlst",nmatlst);
-            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/grdlst",grdlst);
+            if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/grdlst",grdlst);
 
             int *rlen  = new int[nregx];
             int *rlencln  = new int[nregx];
             int *rlenmix  = new int[nregx];
-            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlen",rlen);
-            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlencln",rlencln);
-            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlenmix",rlenmix);
+            if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlen",rlen);
+            if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlencln",rlencln);
+            if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlenmix",rlenmix);
 
             int **rndx = new int*[nreg+1];
             int **rndxmix = new int*[nreg+1];
@@ -1956,22 +1965,21 @@ void
 avtCaleHDF5FileFormat::GetUsedMeshLimits (void)
 {
     int ibc;
-    int kmax, lmax, nbc, nbcx;
-    hid_t hdf_err ;
+    int kmax=0, lmax=0, nbc=0, nbcx=0;
 
-    hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nbc",&nbc);
-    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nbcx",&nbcx);
+    hid_t hdf_err              = ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nbc",&nbc);
+    if (hdf_err >= 0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nbcx",&nbcx);
 
     int *bck1 = new int[nbcx];
     int *bck2 = new int[nbcx];
     int *bcl1 = new int[nbcx];
     int *bcl2 = new int[nbcx];
-    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bck1",bck1);
-    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bck2",bck2);
-    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bcl1",bcl1);
-    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bcl2",bcl2);
+    if (hdf_err >= 0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bck1",bck1);
+    if (hdf_err >= 0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bck2",bck2);
+    if (hdf_err >= 0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bcl1",bcl1);
+    if (hdf_err >= 0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bcl2",bcl2);
 
     kminmesh = kmax;
     lminmesh = lmax;

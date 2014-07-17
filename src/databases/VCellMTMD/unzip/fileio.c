@@ -1418,15 +1418,12 @@ int UZ_EXP UzpMessageNull(pG, buf, size, flag)
 /* Function UzpInput() */   /* GRR:  this is a placeholder for now */
 /***********************/
 
-int UZ_EXP UzpInput(zvoid *pG, uch *buf, int *size, int flag)
+int UZ_EXP UzpInput(zvoid *, uch *, int *size, int)
     //zvoid *pG;    /* globals struct:  always passed */
     //uch *buf;     /* preformatted string to be printed */
     //int *size;    /* (address of) size of buf and of returned string */
     //int flag;     /* flag bits (bit 0: no echo) */
 {
-    /* tell picky compilers to shut up about "unused variable" warnings */
-    pG = pG; buf = buf; flag = flag;
-
     *size = 0;
     return 0;
 

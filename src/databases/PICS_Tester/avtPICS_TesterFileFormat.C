@@ -271,8 +271,6 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
         EXCEPTION1(VisItException, "Invalid mesh requested!");
     }
 
-    int i;
-
     double sizePerBlock = 1.0/numBlocks[timestate];
     int xOff = domain % numBlocks[timestate];
     int yOff = (domain/numBlocks[timestate]) % numBlocks[timestate];
@@ -407,7 +405,6 @@ avtPICS_TesterFileFormat::GetVar(int timestate, int domain, const char *varname)
 vtkDataArray *
 avtPICS_TesterFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
 {
-    int ncomps = 3;
     int dims[3] = { numCells[timestate]+1, numCells[timestate]+1, numCells[timestate]+1 };
     if (! is3D)
         dims[2] = 1;

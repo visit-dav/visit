@@ -111,8 +111,6 @@ private:  // helper functions
 private: // class data members
     int                 mResolution;                // current resolution
     int                 mNumFiles;                  // number of files
-    int                 mFirstTimeStep;             // time value of first step
-    int                 mTimeStepIncrement;         // stride between steps
     std::string         mCurrentVarName;
     int                 mCurrentTimeState;
     std::string         mFilename;                  // name of metadata file

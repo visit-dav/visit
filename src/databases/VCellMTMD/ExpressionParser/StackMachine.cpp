@@ -22,12 +22,14 @@
 #include <iostream>    
 #include <algorithm>    
 #include <string>
+#include <sstream>
 using std::cout;    
 using std::endl;    
 using std::max;    
 using std::min;    
 using std::string;
 using std::vector;
+using std::ostringstream;
     
 using namespace VCell;
 
@@ -384,8 +386,10 @@ double StackMachine::evaluate(double* values){
                 }    
                 *tos = MathUtil::factorial(*tos);    
                 break;    
-            default:    
-                throw Exception("StackMachine: unknown stack element type " + token->type);    
+            default:
+                ostringstream oss;
+                oss << "StackMachine: unknown stack element type " <<  token->type;
+                throw Exception(oss.str().c_str());    
         }    
         if (tos >= workingStack) {    
             if (MathUtil::double_infinity == -*tos || MathUtil::double_infinity == *tos) {    
