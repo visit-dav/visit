@@ -4121,8 +4121,9 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType xri  = QueryList::XRayImage;
     QueryList::WindowType sli  = QueryList::StreamlineInfo;
     QueryList::WindowType lsi  = QueryList::LineSamplerInfo;
-    QueryList::WindowType pick  = QueryList::Pick;
-    QueryList::WindowType line  = QueryList::Lineout;
+    QueryList::WindowType pick    = QueryList::Pick;
+    QueryList::WindowType line    = QueryList::Lineout;
+    QueryList::WindowType compact = QueryList::Compactness;
 
     QueryList::QueryMode qo = QueryList::QueryOnly;
     QueryList::QueryMode qt = QueryList::QueryAndTime;
@@ -4164,8 +4165,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Localized Compactness Factor", dq, sr, basic, 1, 0, qt);
-    queryTypes->AddQuery("Elliptical Compactness Factor", dq, sr, basic, 1, 0, qt);
-    queryTypes->AddQuery("Spherical Compactness Factor", dq, sr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Elliptical Compactness Factor", dq, sr, compact, 1, 0, qt);
+    queryTypes->AddQuery("Spherical Compactness Factor", dq, sr, compact, 1, 0, qt);
     queryTypes->AddQuery("Average Mean Curvature", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Average Value", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
