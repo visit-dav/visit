@@ -105,7 +105,7 @@
                                         <Field name="centering" type="string">Natural</Field>
                                         <Field name="colorTableName" type="string">hot</Field>
                                         <Field name="invertColorTable" type="bool">false</Field>
-                                        <Field name="opacityType" type="string">FullyOpaque</Field>
+                                        <Field name="opacityType" type="int">1</Field>
                                         <Field name="opacityVariable" type="string"></Field>
                                         <Field name="opacity" type="double">1</Field>
                                         <Field name="opacityVarMin" type="double">0</Field>
@@ -215,7 +215,7 @@
                                         <Field name="centering" type="string">Natural</Field>
                                         <Field name="colorTableName" type="string">hot</Field>
                                         <Field name="invertColorTable" type="bool">false</Field>
-                                        <Field name="opacityType" type="string">FullyOpaque</Field>
+                                        <Field name="opacityType" type="int">1</Field>
                                         <Field name="opacityVariable" type="string"></Field>
                                         <Field name="opacity" type="double">1</Field>
                                         <Field name="opacityVarMin" type="double">0</Field>
