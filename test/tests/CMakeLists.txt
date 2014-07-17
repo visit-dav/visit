@@ -53,8 +53,14 @@
 #   Burlen Loring, Mon May 26 15:53:01 PDT 2014
 #   Switch to threshold based diffing
 #
+#   Burlen Loring, Thu Jul 17 10:49:46 PDT 2014
+#   Fix scoping bug in PY_3RDPARTIES_TEST function that
+#   prevented tests from being added to the list.
+#
 # ****************************************************************************
 
+# macro that takes a module name and list of tests and creates
+# coresponding test commands to be invoked by ctest
 MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
     SET(TEST_EXTRA_ARGS ${ARGN})
     SET(TESTSUITE_PLATFORM_ARGS)
@@ -106,7 +112,7 @@ FUNCTION(PY_3RDPARTIES_TEST)
     SET(MVALS LIBNAMES TESTNAMES)
     CMAKE_PARSE_ARGUMENTS(PY3T "${OPTS}" "${VALS}" "${MVALS}" ${ARGN})
     SET(LIBS_FOUND TRUE)
-    FOREACH(PY3T_LIBNAME PY3T_LIBNAMES)
+    FOREACH(PY3T_LIBNAME ${PY3T_LIBNAMES})
         SET(LOCATOR "${PY3T_LIBNAME}_FOUND")
         IF(NOT ${LOCATOR})
             SET(LIBS_FOUND FALSE)
@@ -114,7 +120,7 @@ FUNCTION(PY_3RDPARTIES_TEST)
     ENDFOREACH()
     IF(LIBS_FOUND)
         #MESSAGE(STATUS "adding tests for ${PY3T_LIBNAMES}")
-        LIST(APPEND ${PY3T_TESTLIST} ${PY3T_TESTNAMES} ${ARGN})
+        SET(${PY3T_TESTLIST}  ${${PY3T_TESTLIST}} ${PY3T_TESTNAMES} PARENT_SCOPE)
     ENDIF()
 ENDFUNCTION()
 
