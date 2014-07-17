@@ -3105,7 +3105,7 @@
                 <Field name="drawFocusAs" type="string">BinsOfConstantColor</Field>
             </Object>
             <Object name="PoincareAttributes">
-                <Field name="opacityType" type="string">Explicit</Field>
+                <Field name="opacityType" type="int">2</Field>
                 <Field name="opacity" type="double">1</Field>
                 <Field name="minPunctures" type="int">50</Field>
                 <Field name="maxPunctures" type="int">500</Field>
@@ -3201,7 +3201,7 @@
                 <Field name="pointSizePixels" type="int">2</Field>
                 <Field name="lineStyle" type="int">0</Field>
                 <Field name="lineWidth" type="int">0</Field>
-                <Field name="opacityType" type="string">Explicit</Field>
+                <Field name="opacityType" type="int">2</Field>
             </Object>
             <Object name="ScatterAttributes">
                 <Field name="var1" type="string">default</Field>
@@ -3348,7 +3348,7 @@
                 <Field name="headRadiusAbsolute" type="double">0.25</Field>
                 <Field name="headRadiusBBox" type="double">0.02</Field>
                 <Field name="headHeightRatio" type="double">2</Field>
-                <Field name="opacityType" type="string">FullyOpaque</Field>
+                <Field name="opacityType" type="int">1</Field>
                 <Field name="opacityVariable" type="string"></Field>
                 <Field name="opacity" type="double">1</Field>
                 <Field name="opacityVarMin" type="double">0</Field>
@@ -4783,7 +4783,7 @@
                                         <Field name="pointSizePixels" type="int">2</Field>
                                         <Field name="lineStyle" type="int">0</Field>
                                         <Field name="lineWidth" type="int">0</Field>
-                                        <Field name="opacityType" type="string">Explicit</Field>
+                                        <Field name="opacityType" type="int">2</Field>
                                     </Object>
                                     <Object name="plotKeyframes">
                                         <Object name="AttributeSubjectMap">
@@ -4811,7 +4811,7 @@
                                                     <Field name="pointSizePixels" type="int">2</Field>
                                                     <Field name="lineStyle" type="int">0</Field>
                                                     <Field name="lineWidth" type="int">0</Field>
-                                                    <Field name="opacityType" type="string">Explicit</Field>
+                                                    <Field name="opacityType" type="int">2</Field>
                                                 </Object>
                                             </Object>
                                         </Object>
