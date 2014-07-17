@@ -37,8 +37,11 @@
 *****************************************************************************/
 
 #include <DataNode.h>
+#include "ImproperUseException.h"
 
 #include <cstring>
+#include <sstream>
+using std::ostringstream;
 
 // Static members. These are returned from the As functions when there
 // is no data. It ensures that the references that are returned are safe.
@@ -521,183 +524,327 @@ DataNode::FreeData()
 char
 DataNode::AsChar() const
 {
-    return *((char *)Data);
+    return AsValue<char>();
 }
 
 unsigned char
 DataNode::AsUnsignedChar() const
 {
-    return *((unsigned char *)Data);
+    return AsValue<unsigned char>();
 }
 
 int
 DataNode::AsInt() const
 {
-    return *((int *)Data);
+    return AsValue<int>();
 }
 
 long
 DataNode::AsLong() const
 {
-    return *((long *)Data);
+    return AsValue<long>();
 }
 
 float
 DataNode::AsFloat() const
 {
-    float rv = 0.f;
-    if (NodeType == FLOAT_NODE)
-        rv = *((float *)Data);
-    else if (NodeType == DOUBLE_NODE)
-        rv = float(*((double *)Data));
-    return rv;
+    return AsValue<float>();
 }
 
 double
 DataNode::AsDouble() const
 {
-    double rv = 0.;
-    if (NodeType == DOUBLE_NODE)
-        rv =  *((double *)Data);
-    else if (NodeType == FLOAT_NODE)
-        rv = double(*((float*)Data));
-    return rv;
+    return AsValue<double>();
 }
 
 const std::string &
 DataNode::AsString() const
 {
-    if(NodeType == STRING_NODE && Data != 0)
-        return *((std::string *)Data);
-    else
-        return bogusString;
+    return AsClass<std::string>(bogusString);
 }
 
 bool
 DataNode::AsBool() const
 {
-    return *((bool *)Data);
+    return AsValue<bool>();
 }
 
 const char *
 DataNode::AsCharArray() const
 {
-    return (const char *)Data;
+    return AsArray<char>();
 }
 
 const unsigned char *
 DataNode::AsUnsignedCharArray() const
 {
-    return (const unsigned char *)Data;
+    return AsArray<unsigned char>();
 }
 
 const int *
 DataNode::AsIntArray() const
 {
-    return (const int *)Data;
+    return AsArray<int>();
 }
 
 const long *
 DataNode::AsLongArray() const
 {
-    return (const long *)Data;
+    return AsArray<long>();
 }
 
 const float *
 DataNode::AsFloatArray() const
 {
-    return (const float *)Data;
+    return AsArray<float>();
 }
 
 const double *
 DataNode::AsDoubleArray() const
 {
-    return (const double *)Data;
+    return AsArray<double>();
 }
 
 const std::string *
 DataNode::AsStringArray() const
 {
-    return (const std::string *)Data;
+    return AsArray<std::string>();
 }
 
 const bool *
 DataNode::AsBoolArray() const
 {
-    return (const bool *)Data;
+    return AsArray<bool>();
 }
 
 const charVector &
 DataNode::AsCharVector() const
 {
-    if(NodeType == CHAR_VECTOR_NODE && Data != 0)
-        return *((charVector *)Data);
-    else
-        return bogusCharVector;
+    return AsClass<charVector>(bogusCharVector);
 }
 
 const unsignedCharVector &
 DataNode::AsUnsignedCharVector() const
 {
-    if(NodeType == UNSIGNED_CHAR_VECTOR_NODE && Data != 0)
-        return *((unsignedCharVector *)Data);
-    else
-        return bogusUnsignedCharVector;
+    return AsClass<unsignedCharVector>(bogusUnsignedCharVector);
 }
 
 const intVector &
 DataNode::AsIntVector() const
 {
-    if(NodeType == INT_VECTOR_NODE && Data != 0)
-        return *((intVector *)Data);
-    else
-        return bogusIntVector;
+    return AsClass<intVector>(bogusIntVector);
 }
 
 const longVector &
 DataNode::AsLongVector() const
 {
-    if(NodeType == LONG_VECTOR_NODE && Data != 0)
-        return *((longVector *)Data);
-    else
-        return bogusLongVector;
+    return AsClass<longVector>(bogusLongVector);
 }
 
 const floatVector &
 DataNode::AsFloatVector() const
 {
-    if(NodeType == FLOAT_VECTOR_NODE && Data != 0)
-        return *((floatVector *)Data);
-    else
-        return bogusFloatVector;
+    return AsClass<floatVector>(bogusFloatVector);
 }
 
 const doubleVector &
 DataNode::AsDoubleVector() const
 {
-    if(NodeType == DOUBLE_VECTOR_NODE && Data != 0)
-        return *((doubleVector *)Data);
-    else
-        return bogusDoubleVector;
+    return AsClass<doubleVector>(bogusDoubleVector);
 }
 
 const stringVector &
 DataNode::AsStringVector() const
 {
-    if(NodeType == STRING_VECTOR_NODE && Data != 0)
-        return *((stringVector *)Data);
-    else
-        return bogusStringVector;
+    return AsClass<stringVector>(bogusStringVector);
 }
 
 
 const MapNode &
 DataNode::AsMapNode() const
 {
-    if(NodeType == MAP_NODE_NODE && Data != 0)
-        return *((MapNode *)Data);
-    else
-        return bogusMapNode;
+    return AsClass<MapNode>(bogusMapNode);
+}
+
+// traits classes for supported data types
+template <typename T> struct DataNodeTraits;
+template<> struct DataNodeTraits <char> { static const int Code = CHAR_NODE; };
+template<> struct DataNodeTraits <unsigned char> { static const int Code = UNSIGNED_CHAR_NODE; };
+template<> struct DataNodeTraits <int> { static const int Code = INT_NODE; };
+template<> struct DataNodeTraits <long> { static const int Code = LONG_NODE; };
+template<> struct DataNodeTraits <float> { static const int Code = FLOAT_NODE; };
+template<> struct DataNodeTraits <double> { static const int Code = DOUBLE_NODE; };
+template<> struct DataNodeTraits <std::string> { static const int Code = STRING_NODE; };
+template<> struct DataNodeTraits <bool> { static const int Code = BOOL_NODE; };
+template<> struct DataNodeTraits <char*> { static const int Code = CHAR_ARRAY_NODE; };
+template<> struct DataNodeTraits <unsigned char*> { static const int Code = UNSIGNED_CHAR_ARRAY_NODE; };
+template<> struct DataNodeTraits <int*> { static const int Code = INT_ARRAY_NODE; };
+template<> struct DataNodeTraits <long*> { static const int Code = LONG_ARRAY_NODE; };
+template<> struct DataNodeTraits <float*> { static const int Code = FLOAT_ARRAY_NODE; };
+template<> struct DataNodeTraits <double*> { static const int Code = DOUBLE_ARRAY_NODE; };
+template<> struct DataNodeTraits <std::string*> { static const int Code = STRING_ARRAY_NODE; };
+template<> struct DataNodeTraits <bool*> { static const int Code = BOOL_ARRAY_NODE; };
+template<> struct DataNodeTraits <charVector> { static const int Code = CHAR_VECTOR_NODE; };
+template<> struct DataNodeTraits <unsignedCharVector> { static const int Code = UNSIGNED_CHAR_VECTOR_NODE; };
+template<> struct DataNodeTraits <intVector> { static const int Code = INT_VECTOR_NODE; };
+template<> struct DataNodeTraits <longVector> { static const int Code = LONG_VECTOR_NODE; };
+template<> struct DataNodeTraits <floatVector> { static const int Code = FLOAT_VECTOR_NODE; };
+template<> struct DataNodeTraits <doubleVector> { static const int Code = DOUBLE_VECTOR_NODE; };
+template<> struct DataNodeTraits <stringVector> { static const int Code = STRING_VECTOR_NODE; };
+template<> struct DataNodeTraits <boolVector> { static const int Code = BOOL_VECTOR_NODE; };
+template<> struct DataNodeTraits <MapNode> { static const int Code = MAP_NODE_NODE; };
+
+// ****************************************************************************
+// Method: DataNode::AsArray
+//
+// Purpose:
+//   helper for casting from void * to supported static array
+//   types. the main point of this method is to throw an exception
+//   for the cases that would result in invalid reinterpret
+//   cast and thus lead to undefined behavior.
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Jul 16 11:26:26 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+template <typename RetType>
+const RetType *DataNode::AsArray() const
+{
+    if (NodeType != DataNodeTraits<RetType*>::Code)
+    {
+        // invalid cast from void*
+        ostringstream oss;
+        oss << "Error: DataNode::AsArray Key=" << Key
+          << ", cast from " << NodeTypeName(NodeType)
+          << " to " << NodeTypeName(DataNodeTraits<RetType*>::Code);
+        cerr << oss.str() << endl;
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
+        return NULL;
+    }
+    if (!Data || !Length)
+    {
+        // object has no data to cast or would not
+        // cast to a valid array
+        ostringstream oss;
+        oss << "DataNode::AsArray Key=" << Key
+          << ", Acccess to uninitialized object detected";
+        cerr << "Error: " << oss.str() << endl;
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
+        return NULL;
+    }
+    return reinterpret_cast<RetType*>(Data);
+}
+
+// ****************************************************************************
+// Method: DataNode::AsClass
+//
+// Purpose:
+//   helper for casting from void * to supported class types
+//   the main point of this method is to throw an exception
+//   for the cases that would result in invalid reinterpret
+//   cast and thus lead to undefined behavior.
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Jul 16 11:26:26 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+template <typename RetType>
+const RetType &DataNode::AsClass(RetType &substitute) const
+{
+    if (NodeType != DataNodeTraits<RetType>::Code)
+    {
+        // invalid cast from void*
+        ostringstream oss;
+        oss << "Error: DataNode::AsClass Key=" << Key
+          << ", no cast from " << NodeTypeName(NodeType)
+          << " to " << NodeTypeName(DataNodeTraits<RetType>::Code);
+        cerr << oss.str() << endl;
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
+        return substitute;
+    }
+    if (!Data)
+    {
+        // object has no data to cast
+        ostringstream oss;
+        oss << "Error: DataNode::AsClass Key=" << Key
+          << ", Acccess to uninitialized object detected";
+        cerr << oss.str() << endl;
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
+        return substitute;
+    }
+    return *reinterpret_cast<RetType*>(Data);
+}
+
+// ****************************************************************************
+// Method: DataNode::AsValue
+//
+// Purpose:
+//   helper for casting from void * to a single value
+//   the main point of this method is to throw an exception
+//   for the cases that would result in invalid reinterpret
+//   cast and thus undefined behavior.
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Jul 16 11:26:26 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+template <typename RetType>
+RetType DataNode::AsValue() const
+{
+    RetType value = RetType();
+    if (!Data)
+    {
+        // object has no data to cast
+        ostringstream oss;
+        oss << "Error: DataNode::AsClass Key=" << Key
+          << ", Acccess to uninitialized object detected";
+        cerr << oss.str() << endl;
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
+        return value;
+    }
+    // cast from our internal void * to a pointer of it's
+    // actual type then dereference and cast to the requested
+    // type
+    switch (NodeType)
+    {
+        case CHAR_NODE:
+            value = static_cast<RetType>(*reinterpret_cast<char*>(Data));
+            break;
+        case UNSIGNED_CHAR_NODE:
+            value = static_cast<RetType>(*reinterpret_cast<unsigned char*>(Data));
+            break;
+        case INT_NODE:
+            value = static_cast<RetType>(*reinterpret_cast<int*>(Data));
+            break;
+        case LONG_NODE:
+            value = static_cast<RetType>(*reinterpret_cast<long*>(Data));
+            break;
+        case FLOAT_NODE:
+            value = static_cast<RetType>(*reinterpret_cast<float*>(Data));
+            break;
+        case DOUBLE_NODE:
+            value = static_cast<RetType>(*reinterpret_cast<double*>(Data));
+            break;
+        case BOOL_NODE:
+            value = static_cast<RetType>(*reinterpret_cast<bool*>(Data));
+            break;
+        default:
+            // invalid cast attempted
+            ostringstream oss;
+            oss << "Error: DataNode::AsValue Key=" << Key
+              << ", no cast from " << NodeTypeName(NodeType)
+              << " to " << NodeTypeName(DataNodeTraits<RetType>::Code);
+            cerr << oss.str() << endl;
+            EXCEPTION1(ImproperUseException, oss.str().c_str());
+            break;
+    }
+    return value;
 }
 
 //
@@ -1369,20 +1516,19 @@ DataNode::GetChildren()
 // Enum name lookup stuff.
 //
 
-static const char *NodeTypeNameLookup[] = {
-"",
-"char", "unsigned char", "int", "long", "float",
-"double", "string", "bool",
-"charArray", "unsignedCharArray", "intArray", "longArray", "floatArray",
-"doubleArray", "stringArray", "boolArray",
-"charVector", "unsignedCharVector", "intVector", "longVector", "floatVector",
-"doubleVector", "stringVector", "boolVector", "MapNode"
-};
-
-const char *
-NodeTypeName(NodeTypeEnum e)
+const char *NodeTypeName(int e)
 {
-    return NodeTypeNameLookup[(int)e];
+    static const char *NodeTypeNameLookup[] = {
+        "",
+        "char", "unsigned char", "int", "long", "float",
+        "double", "string", "bool",
+        "charArray", "unsignedCharArray", "intArray", "longArray", "floatArray",
+        "doubleArray", "stringArray", "boolArray",
+        "charVector", "unsignedCharVector", "intVector", "longVector", "floatVector",
+        "doubleVector", "stringVector", "boolVector", "MapNode"
+        };
+
+    return NodeTypeNameLookup[e];
 }
 
 // ****************************************************************************
@@ -1400,20 +1546,16 @@ NodeTypeName(NodeTypeEnum e)
 //   
 // ****************************************************************************
 
-NodeTypeEnum
-GetNodeType(const char *str)
+NodeTypeEnum GetNodeType(const char *str)
 {
-    bool found = false;
-    int retval = 0;
-
-    for(int i = 1; i < 24 && !found; ++i)
+    for(int i = 1; i < 24; ++i)
     {
-        found = (strcmp(str, NodeTypeNameLookup[i]) == 0);
-        if(found)
-            retval = i;
+        if (strcmp(str, NodeTypeName(i)) == 0)
+        {
+            return static_cast<NodeTypeEnum>(i);
+        }
     }
-
-    return (NodeTypeEnum)retval;
+    return INTERNAL_NODE;
 }
 
 // ****************************************************************************
