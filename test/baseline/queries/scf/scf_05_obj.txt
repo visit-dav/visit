@@ -1,0 +1,12 @@
+{
+  "biggest_y_radius": 1.019177897309995, 
+  "override_centroid": 0, 
+  "biggest_x_radius": 0.5744229258319027, 
+  "centroid": [
+    0.499999997656228, 
+    0.0, 
+    0.0
+  ], 
+  "elliptical_compactness_factor": 0.9451582930111738, 
+  "biggest_z_radius": 1.019177897309995
+}

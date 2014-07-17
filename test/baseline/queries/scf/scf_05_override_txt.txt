@@ -1,0 +1,1 @@
+Elliptical Compactness Factor = 0.439991.  Using centroid for ellipse origin.  Centroid used was (1, 0, 0).  Best fitting axes were 0.72187,0.909152,0.909152.
