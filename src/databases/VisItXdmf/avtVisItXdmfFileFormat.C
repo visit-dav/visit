@@ -3119,6 +3119,8 @@ avtVisItXdmfFileFormat::PopulateCellInformation(vtkUnstructuredGrid *ugrid,
                 cellCount = 20;
                 break;
               default:
+                vtkCellType = 0;
+                cellCount = 0;
                 avtCallback::IssueWarning("GetMesh: Invalid GeometryType.");
                 break;
             }
@@ -3246,8 +3248,6 @@ avtVisItXdmfFileFormat::GetUnstructuredMesh(MeshInfo *meshInfo)
     //
     // Create the cell structures.
     //
-    int iCell = 0;
-    int index = 0;
     switch (meshInfo->cellType)
     {
       case MeshInfo::CELL_POLYVERTEX:

@@ -17,7 +17,7 @@ class SimpleSymbolTableEntry : public SymbolTableEntry
 {    
 public:    
     SimpleSymbolTableEntry(std::string& nameValue, int indexVal, NameScope* namescopeVal, ValueProxy* proxyVal);    
-    ~SimpleSymbolTableEntry(void);    
+    virtual ~SimpleSymbolTableEntry();    
     double getConstantValue();    
     VCell::Expression* getExpression();    
     int getIndex();    

@@ -80,7 +80,6 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
 
   private:
     std::vector<vtkPolyData *> pds;
-    bool                       doBinary;
 
 #ifdef PARALLEL
     void SendPolyDataToRank0();

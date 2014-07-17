@@ -176,7 +176,7 @@ FichierU::FichierU(const string& fileName, ifstream* istr, long offset, long tai
                     if(_nbMat==-1) _nbMat = (int)_matNames.size();
                     else if( _nbMat!= (int) _matNames.size() )
                     {
-                       cerr<<"Attention! "<<_nbMat<<"materiaux annoncés, mais seulement "<<_matNames.size()<<" décris"<<endl;
+                       cerr<<"Attention! "<<_nbMat<<"materiaux annonces, mais seulement "<<_matNames.size()<<" decris"<<endl;
                     }
                  }
                  else if(field=="EXIST_GD_CENTREES")

@@ -1989,8 +1989,9 @@ void avtVCellMTMDFileFormat::calcUCDMembraneQuads(){
             membrQuadNodes[i*4+3] = coordIndex0.x+1 +((coordIndex0.y)*xNodeCount) +(zBase*xyNodeCount);
 
         }else{
-            string temp = "No boundary found for MembraneElement "+i;
-            throw temp.c_str();
+            ostringstream oss;
+            oss << "No boundary found for MembraneElement " << i;
+            throw oss.str().c_str();
         }
     }
 }

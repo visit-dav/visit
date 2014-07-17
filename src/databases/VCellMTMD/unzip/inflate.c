@@ -941,8 +941,8 @@ static int inflate_dynamic(__G)
   unsigned l;           /* last length */
   unsigned m;           /* mask for bit lengths table */
   unsigned n;           /* number of lengths to get */
-  struct huft *tl;      /* literal/length code table */
-  struct huft *td;      /* distance code table */
+  struct huft *tl=NULL; /* literal/length code table */
+  struct huft *td=NULL; /* distance code table */
   int bl;               /* lookup bits for tl */
   int bd;               /* lookup bits for td */
   unsigned nb;          /* number of bit length codes */

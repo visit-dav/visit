@@ -1139,7 +1139,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   if (mesh3==true)
     {          
       
-      avtMeshMetaData *md_2D;
+      avtMeshMetaData *md_2D = NULL;
       
       if(IsGeoRef)
         md_2D = new avtMeshMetaData(TWOD_Mesh, 

@@ -1652,11 +1652,19 @@ int avtunvFileFormat::getNbfreeSets ()
 #endif
             // Outer boundary is not the first one:
             if (imax != iorder)
+            {
                 for (itre = freeelts.begin(); itre != freeelts.end(); itre++)
+                {
                     if (itre->matid == iorder)
+                    {
                         itre->matid = imax;
+                    }
                     else if (itre->matid == imax)
+                    {
                         itre->matid = iorder;
+                    }
+                }
+            }
         }
 
         // Paints the matid array:

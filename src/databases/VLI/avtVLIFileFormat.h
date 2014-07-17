@@ -105,7 +105,6 @@ class avtVLIFileFormat : public avtMTMDFileFormat
     int                            *eport;
     void                           *ptid;
     volatile int                    socket;
-    int                            *scount;
     std::vector<avtDataSelection_p> selList;
     std::vector<bool>              *selsApplied;
     std::vector<int>                registeredVars;

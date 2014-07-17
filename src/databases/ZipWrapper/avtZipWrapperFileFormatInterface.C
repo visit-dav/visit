@@ -469,7 +469,7 @@ avtZipWrapperFileFormatInterface::Finalize()
 avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     const char *const *list, int nl, int nb, const DBOptionsAttributes *rdopts,
     CommonDatabasePluginInfo *zwinfo) : 
-    inputFileListSize(nl), inputFileBlockCount(nb),
+    inputFileBlockCount(nb),
     decompressedFilesCache(FreeUpCacheSlot)
 {
     procNum = 0;

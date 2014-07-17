@@ -100,7 +100,7 @@ using std::string;
 
 int AllocateSocket(std::string hostname, int port) {
   struct sockaddr_in sn;
-  int s, cnt = 0, bindStatus = -1;
+  int s, bindStatus = -1;
   struct hostent *he;
 
   bzero((char*)&sn, sizeof(sn));
@@ -143,7 +143,7 @@ int RequestConnection(char *host, int port) {
 }
 
 int InvokeRemoteCall(std::string host, int port, int call) {
-    int conn, value;  
+    int conn;  
     char in_buffer[4], out_buffer[4];
     char *server = (char *)host.c_str();
 
@@ -500,6 +500,7 @@ void *avtVLIFileFormat::threadPacer(void *in) {
                 }
                 sleep(30);
         }
+        return NULL;
 }
 
 // ****************************************************************************
@@ -882,7 +883,7 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
         int nservers = procCount;
         int diff = -1;
         int indx = -1;
-        int run;
+        int run = 0;
         for(i = 0; i < nattr; ++i) {
                 int d_i = bounds[2*i+1] - bounds[2*i] + 1;
                 if (d_i > diff) diff = d_i, indx = i;
