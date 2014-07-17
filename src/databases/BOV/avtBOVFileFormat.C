@@ -292,6 +292,10 @@ avtBOVFileFormat::ActivateTimestep(void)
 //    full_size, etc. Add missing origin for {x,y,z}_stop expressions
 //    causing regression test failure.
 //
+//    Gunther H. Weber, Thu Jul 17 12:57:42 PDT 2014
+//    Only adjust bounds if dividing bricks (if there are multiple brick files,
+//    they already contain appropriate duplicate values)
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -331,7 +335,7 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     double y_step = dimensions[1] / (ny);
     double z_step = dimensions[2] / (nz);
 
-    if (nodalCentering)
+    if (divideBrick && nodalCentering)
     {
         x_step = bricklet_size[0] * (dimensions[0] / (full_size[0] - 1));
         y_step = bricklet_size[1] * (dimensions[1] / (full_size[1] - 1));
@@ -365,9 +369,9 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         if (x_off >= nx-1)
             dx -= 1;
     }
-    if (! nodalCentering) 
+    if (! nodalCentering)
         dx += 1;
-    else if (x_off < nx - 1)
+    else if (divideBrick && (x_off < nx - 1))
         dx += 1;
 
     x->SetNumberOfTuples(dx);
@@ -390,9 +394,9 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         if (y_off >= ny-1)
             dy -= 1;
     }
-    if (! nodalCentering) 
+    if (! nodalCentering)
         dy += 1;
-    else if (y_off < ny - 1)
+    else if (divideBrick && (y_off < ny - 1))
         dy += 1;
 
     // Don't fill in gaps
@@ -421,11 +425,11 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
             if (z_off >= nz-1)
                 dz -= 1;
         }
-        if (! nodalCentering) 
+        if (! nodalCentering)
             dz += 1;
-        else if (z_off < nz - 1)
+        else if (divideBrick && (z_off < nz - 1))
             dz += 1;
- 
+
         // Don't fill in gaps
         if (!fillSpace)
             z_stop -= (z_step / dz);
