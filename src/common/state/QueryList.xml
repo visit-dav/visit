@@ -22,6 +22,7 @@
       StreamlineInfo
       Pick
       Lineout
+      Compactness
     </Enum>
     <Enum name="Groups">
       CurveRelated

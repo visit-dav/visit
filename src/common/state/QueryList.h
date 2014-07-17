@@ -85,7 +85,8 @@ public:
         LineSamplerInfo,
         StreamlineInfo,
         Pick,
-        Lineout
+        Lineout,
+        Compactness
     };
     enum Groups
     {

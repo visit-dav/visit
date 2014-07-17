@@ -945,6 +945,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Biagas, Fri Jun 10 08:59:32 PDT 2011
 //   Added pickQueryWidget.
 //
+//   Cyrus Harrison, Thu Jul 17 09:16:39 PDT 2014
+//   Added GUI case for Compactness queries.
+//
 // ****************************************************************************
 
 void
@@ -1125,6 +1128,12 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         {
             showDumpCoordinates = true;
             showDumpValues = true;
+        }
+        else if (winT == QueryList::Compactness)
+        {
+            labels[0]->setText(tr("Centroid"));
+            textFields[0]->setText("default");
+            showWidgets[0] = true;
         }
 
         // hide and show the right text widgets.
@@ -1578,6 +1587,25 @@ QvisQueryWindow::ExecuteStandardQuery()
         {
             if (!pickQueryWidget->GetQueryParameters(queryParams))
                 noErrors = false;
+        }
+        else if(winT == QueryList::Compactness)
+        {
+            string cen_txt = textFields[0]->text().simplified().toStdString();
+            if(cen_txt != "default")
+            {
+                doubleVector vals(3,0.0);
+                int vlen = sscanf(cen_txt.c_str(), "%lg %lg %lg",
+                                  &vals[0], &vals[1], &vals[2]);
+
+                if(vlen > 0)
+                {
+                    queryParams["centroid"] = vals;
+                }
+                else
+                {
+                    noErrors = false;
+                }
+            }
         }
 
         if(!timeQueryOptions->isCheckable() || timeQueryOptions->isChecked())

@@ -109,6 +109,36 @@ avtEllipticalCompactnessFactorQuery::~avtEllipticalCompactnessFactorQuery()
     delete rev_volume;
 }
 
+// ****************************************************************************
+//  Method: avtEllipticalCompactnessFactorQuery::SetInputParams
+//
+//  Purpose:
+//    Set the input parameters.
+//
+//  Programmer: Cyrus Harrison
+//  Creation: Wed Jul 16 15:58:54 PDT 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtEllipticalCompactnessFactorQuery::SetInputParams(const MapNode &params)
+{
+    if(params.HasNumericVectorEntry("centroid"))
+    {
+        overrideCentroid = true;
+
+        doubleVector cvals;
+        params.GetEntry("centroid")->ToDoubleVector(cvals);
+        centroid[0] = cvals[0];
+        centroid[1] = cvals[1];
+        centroid[2] = cvals[2];
+    }else
+    {
+        overrideCentroid = false;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtEllipticalCompactnessFactorQuery::PreExecute
@@ -126,6 +156,9 @@ avtEllipticalCompactnessFactorQuery::~avtEllipticalCompactnessFactorQuery()
 //    Kathleen Biagas, Tue Apr 22 07:51:19 MST 2014
 //    Use double instead of float.
 //
+//    Cyrus Harrison, Wed Jul 16 15:52:57 PDT 2014
+//    Added support for user selected center.
+//
 // ****************************************************************************
 
 void
@@ -133,8 +166,12 @@ avtEllipticalCompactnessFactorQuery::PreExecute(void)
 {
     avtTwoPassDatasetQuery::PreExecute();
 
-    for (int i = 0 ; i < 3 ; i++)
-        centroid[i] = 0.;
+    if(!overrideCentroid)
+    {
+        centroid[0] = 0.;
+        centroid[1] = 0.;
+        centroid[2] = 0.;
+    }
     total_volume = 0.;
 
     bounds[0] = +DBL_MAX;
@@ -163,23 +200,30 @@ avtEllipticalCompactnessFactorQuery::PreExecute(void)
 //    Kathleen Biagas, Tue Apr 22 07:51:19 MST 2014
 //    Use double instead of float.
 //
+//    Cyrus Harrison, Wed Jul 16 15:52:57 PDT 2014
+//    Added support for user selected center.
+//
 // ****************************************************************************
 
 void
 avtEllipticalCompactnessFactorQuery::MidExecute(void)
 {
     SumDoubleAcrossAllProcessors(total_volume);
-    double C_tmp[3] = { 0, 0, 0 };
-    SumDoubleArrayAcrossAllProcessors(centroid, C_tmp, 3);
-    if (total_volume != 0.)
+
+    if(!overrideCentroid)
     {
-        C_tmp[0] /= total_volume;
-        C_tmp[1] /= total_volume;
-        C_tmp[2] /= total_volume;
+        double C_tmp[3] = { 0, 0, 0 };
+        SumDoubleArrayAcrossAllProcessors(centroid, C_tmp, 3);
+        if (total_volume != 0.)
+        {
+            C_tmp[0] /= total_volume;
+            C_tmp[1] /= total_volume;
+            C_tmp[2] /= total_volume;
+        }
+        centroid[0] = C_tmp[0];
+        centroid[1] = C_tmp[1];
+        centroid[2] = C_tmp[2];
     }
-    centroid[0] = C_tmp[0];
-    centroid[1] = C_tmp[1];
-    centroid[2] = C_tmp[2];
 
     // we need to unify the bounds across all processors.
     UnifyMinMax(bounds,6);
@@ -269,6 +313,9 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
 //    Kathleen Biagas, Tue Feb 25 16:12:44 PST 2014
 //    Add Xml results.
 //
+//    Cyrus Harrison, Wed Jul 16 15:52:57 PDT 2014
+//    Added support for user selected center.
+//
 // ****************************************************************************
 
 void
@@ -316,6 +363,8 @@ avtEllipticalCompactnessFactorQuery::PostExecute(void)
     ec[0] = ellipse_center[0];
     ec[1] = ellipse_center[1];
     ec[2] = ellipse_center[2];
+
+    result_node["override_centroid"] = overrideCentroid;
     result_node["centroid"] = ec;
     result_node["elliptical_compactness_factor"] = biggestVal / total_volume;
     SetXmlResult(result_node.ToXML());
@@ -335,6 +384,9 @@ avtEllipticalCompactnessFactorQuery::PostExecute(void)
 //  Modifications:
 //    Kathleen Biagas, Tue Apr 22 07:51:19 MST 2014
 //    Use double instead of float for volume.
+//
+//    Cyrus Harrison, Wed Jul 16 15:52:57 PDT 2014
+//    Added support for user selected center.
 //
 // ****************************************************************************
 
@@ -357,9 +409,14 @@ avtEllipticalCompactnessFactorQuery::Execute1(vtkDataSet *ds, const int dom)
         vtkVisItUtility::GetCellCenter(cell, center);
         double volume = var->GetTuple1(i);
         volume = (volume < 0 ? -volume : volume);
-        centroid[0] += volume*center[0];
-        centroid[1] += volume*center[1];
-        centroid[2] += volume*center[2];
+
+        if(!overrideCentroid)
+        {
+            centroid[0] += volume*center[0];
+            centroid[1] += volume*center[1];
+            centroid[2] += volume*center[2];
+        }
+
         bounds[0] = (center[0] < bounds[0] ? center[0] : bounds[0]);
         bounds[1] = (center[0] > bounds[1] ? center[0] : bounds[1]);
         bounds[2] = (center[1] < bounds[2] ? center[1] : bounds[2]);

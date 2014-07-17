@@ -81,6 +81,7 @@ public class QueryList extends AttributeSubject
     public final static int WINDOWTYPE_STREAMLINEINFO = 13;
     public final static int WINDOWTYPE_PICK = 14;
     public final static int WINDOWTYPE_LINEOUT = 15;
+    public final static int WINDOWTYPE_COMPACTNESS = 16;
 
     public final static int GROUPS_CURVERELATED = 0;
     public final static int GROUPS_MESHRELATED = 1;

@@ -69,6 +69,10 @@ class avtRevolvedVolume;
 //  Programmer: Hank Childs
 //  Creation:   July 14, 2005
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Jul 16 15:52:57 PDT 2014
+//    Added support for user selected center.
+//
 // ****************************************************************************
 
 class QUERY_API avtSphericalCompactnessFactorQuery 
@@ -83,7 +87,12 @@ class QUERY_API avtSphericalCompactnessFactorQuery
     virtual const char             *GetDescription(void)
                          {return "Calculating Spherical Compactness Factor";};
 
+    virtual void              SetInputParams(const MapNode &);
+
   protected:
+
+    bool                            overrideCentroid;
+
     double                          centroid[3];
     double                          sphere_center[3];
     double                          radius;
