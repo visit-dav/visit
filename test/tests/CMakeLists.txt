@@ -57,39 +57,67 @@
 #   Fix scoping bug in PY_3RDPARTIES_TEST function that
 #   prevented tests from being added to the list.
 #
+#   Burlen Loring, Thu Jul 17 10:49:46 PDT 2014
+#   Added support for testsuites modes.
+#
 # ****************************************************************************
+
+# by default run the same modes as edge, these could be restricted on
+# the ctest command line by using the -L option.
+SET(_MODE_FLAGS "serial")
+IF(VISIT_PARALLEL)
+    LIST(APPEND _MODE_FLAGS "parallel")
+    IF(ICET_FOUND)
+        LIST(APPEND _MODE_FLAGS "scalable,parallel,icet")
+    ENDIF()
+ENDIF()
+SET(TESTSUITE_MODE_FLAGS ${_MODE_FLAGS} CACHE STRING
+    "testsuite modes eg. serial;parallel;scalable,parallel,icet")
+SET(TESTSUITE_OPTIONS "" CACHE STRING
+    "additional arguments to pass to testsuite.")
+MARK_AS_ADVANCED(TESTSUITE_MODE_FLAGS TESTSUITE_OPTIONS)
+
+SET(TESTSUITE_PLATFORM_ARGS)
+SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/visit.exe")
+IF(WIN32)
+    # windows needs skiplist to various prevent crashes
+    # and msvc needs configuration specific paths
+    IF(MSVC_IDE)
+        SET(TESTSUITE_VISIT_EXEC ${CMAKE_BINARY_DIR}/exe/$<CONFIGURATION>/visit.exe)
+    ENDIF()
+ELSE()
+    # TODO -- verify we get it right with the skiplist on.
+    # run all tests on unix like systems
+    LIST(APPEND TESTSUITE_PLATFORM_ARGS "--no-skiplist")
+ENDIF()
 
 # macro that takes a module name and list of tests and creates
 # coresponding test commands to be invoked by ctest
 MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
     SET(TEST_EXTRA_ARGS ${ARGN})
-    SET(TESTSUITE_PLATFORM_ARGS)
-    SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/visit.exe")
-    IF(WIN32)
-        # windows needs skiplist to various prevent crashes
-        # and msvc needs configuration specific paths
-        IF(MSVC_IDE)
-            SET(TESTSUITE_VISIT_EXEC ${CMAKE_BINARY_DIR}/exe/$<CONFIGURATION>/visit.exe)
-        ENDIF()
-    ELSE()
-        # run all tests on unix like systems
-        LIST(APPEND TESTSUITE_PLATFORM_ARGS "--no-skiplist")
-    ENDIF()
     SET(N_PY_TESTS)
     LIST(LENGTH PY_TESTS N_PY_TESTS)
     MESSAGE(STATUS "Configuring ${N_PY_TESTS} python tests for ${MODULE_NAME}")
-    FOREACH(PY_TEST ${PY_TESTS})
-        ADD_TEST(
-            NAME Test${MODULE_NAME}_${PY_TEST}
-            COMMAND ${PYTHON_EXECUTABLE} "${VISIT_TEST_DIR}/visit_test_suite.py"
-            -n 1 --no-data-check --ctest --lessverbose
-            --cleanup-delay=1 --threshold-diff
-            ${TESTSUITE_PLATFORM_ARGS} ${TEST_EXTRA_ARGS}
-            -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
-            -e ${CMAKE_BINARY_DIR}/bin/visit
-            -o ${CMAKE_BINARY_DIR}/PyTestOutput
-            ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
-            )
+    FOREACH(MODE_FLAGS ${TESTSUITE_MODE_FLAGS})
+        # compute suffix
+        STRING(REGEX REPLACE "([a-z])[a-z]*,*" "\\1" MODE_SUFFIX ${MODE_FLAGS})
+        # add the test
+        FOREACH(PY_TEST ${PY_TESTS})
+            SET(PY_TEST_NAME Test${MODULE_NAME}_${PY_TEST}_${MODE_SUFFIX})
+            ADD_TEST(
+                NAME ${PY_TEST_NAME}
+                COMMAND ${PYTHON_EXECUTABLE} "${VISIT_TEST_DIR}/visit_test_suite.py"
+                -n 1 --no-data-check --ctest --lessverbose --cleanup-delay=1 --threshold-diff
+                ${TESTSUITE_PLATFORM_ARGS} ${TEST_EXTRA_ARGS} ${TESTSUITE_OPTIONS}
+                -m ${MODE_FLAGS} -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
+                -e ${CMAKE_BINARY_DIR}/bin/visit -o ${CMAKE_BINARY_DIR}/PyTestOutput
+                ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
+                )
+        # set labels
+        SET(MODE_NAME)
+        STRING(REPLACE "," "_" MODE_NAME ${MODE_FLAGS})
+        SET_TESTS_PROPERTIES(${PY_TEST_NAME} PROPERTIES LABELS ${MODE_NAME})
+        ENDFOREACH()
     ENDFOREACH()
 ENDMACRO()
 
@@ -120,7 +148,7 @@ FUNCTION(PY_3RDPARTIES_TEST)
     ENDFOREACH()
     IF(LIBS_FOUND)
         #MESSAGE(STATUS "adding tests for ${PY3T_LIBNAMES}")
-        SET(${PY3T_TESTLIST}  ${${PY3T_TESTLIST}} ${PY3T_TESTNAMES} PARENT_SCOPE)
+        SET(${PY3T_TESTLIST} ${${PY3T_TESTLIST}} ${PY3T_TESTNAMES} PARENT_SCOPE)
     ENDIF()
 ENDFUNCTION()
 
@@ -136,4 +164,5 @@ SUBDIRS(
     rendering
     session
     unit
-    simulation)
+    simulation
+    )
