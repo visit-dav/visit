@@ -91,7 +91,7 @@
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="SetSubsetName" user="false" member="true">
-      </Function> 
+      </Function>
       <Function name="CreateNode" user="false" member="true">
       </Function>
       <Function name="SpreadsheetViewerPluginInfo::InitializePlotAtts" user="false" member="true">
@@ -119,6 +119,8 @@
       <Function name="SpreadsheetViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
       <Function name="SpreadsheetViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Include file="header" quoted="false">
         PlaneAttributes.h
