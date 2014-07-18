@@ -37,14 +37,16 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtDataTreeIterator.C                              //
+//                           avtDataTreeIterator.C                           //
 // ************************************************************************* //
 
 #include <vtkDataSet.h>
 
+#include <avtDataRepresentation.h>
 #include <avtDataTree.h>
 #include <avtDataTreeIterator.h>
 
+#include <ImproperUseException.h>
 
 // ****************************************************************************
 //  Method: avtDataTreeIterator constructor
@@ -151,6 +153,76 @@ avtDataTreeIterator::ReleaseData(void)
 //      Serves as a wrapper for the ExecuteDomain method.
 //
 //  Arguments:
+//      in_dr   The data representation to pass to the derived type.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 9, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001
+//    Made this method return avtDataTree.
+//
+//    Kathleen Bonnell, Wed Sep 19 13:35:35 PDT 2001 
+//    Added string argument so that labels will get passed on. 
+// 
+//    Hank Childs, Fri Oct 19 10:56:55 PDT 2001
+//    Allow for derived types to return NULL.
+//
+//    Hank Childs, Wed Sep 11 09:17:46 PDT 2002
+//    Pass the label down to the derived types as well.
+//
+//    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
+//    Choose better file names when doing a "-dump" in parallel.
+//
+//    Hank Childs, Tue Jul  5 09:41:28 PDT 2005
+//    Fix cut-n-paste bug with last change.
+//
+//    Hank Childs, Wed Aug 31 09:10:11 PDT 2005
+//    Make sure that -dump in parallel increments the dump index.
+//
+//    Hank Childs, Thu Dec 21 15:38:53 PST 2006
+//    Removed -dump functionality, since it is now handled at a lower level.
+//
+//    Eric Brugger, Fri Jul 18 14:45:40 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtDataTreeIterator::ExecuteDataTree(avtDataRepresentation *in_dr)
+{
+    avtDataRepresentation *out_dr = ExecuteData(in_dr);
+    if (out_dr == (avtDataRepresentation *)-1)
+    {
+        vtkDataSet *out_ds = ExecuteData(in_dr->GetDataVTK(),
+                                         in_dr->GetDomain(),
+                                         in_dr->GetLabel());
+        if (out_ds == NULL)
+        {
+            return NULL;
+        }
+
+        return new avtDataTree(out_ds, in_dr->GetDomain(), in_dr->GetLabel());
+    }
+
+    if (out_dr == NULL)
+    {
+        return NULL;
+    }
+
+    return new avtDataTree(1, out_dr);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataTreeIterator::ExecuteDataTree
+//
+//  Purpose:
+//      Defines the pure virtual function executedomaintree.  
+//      Serves as a wrapper for the ExecuteDomain method.
+//
+//  Arguments:
 //      ds      The vtkDataSet to pass to the derived type.
 //      dom     The domain number of the input dataset.
 //      label   The label associated with this datset.
@@ -196,4 +268,57 @@ avtDataTreeIterator::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
     }
 
     return new avtDataTree(out_ds, dom, label);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataTreeIterator::ExecuteData
+//
+//  Purpose:
+//      This defines a default ExecuteData method in case a filter has not
+//      been converted to use avtDataRepresentation. This method should be
+//      made pure virtual when all the filters have been converted.
+//
+//  Arguments:
+//      in_dr   Not used.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Jul 18 14:45:40 PDT 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataRepresentation *
+avtDataTreeIterator::ExecuteData(avtDataRepresentation*)
+{
+    return (avtDataRepresentation*) -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataTreeIterator::ExecuteData
+//
+//  Purpose:
+//      This defines a default ExecuteData method for filters that have been
+//      converted to use avtDataRepresentation. This method should never be
+//      called. This method should be removed when all the filters have been
+//      converted.
+//
+//  Arguments:
+//      ds      Not used.
+//      dom     Not used.
+//      label   Not used.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Jul 18 14:45:40 PDT 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtDataTreeIterator::ExecuteData(vtkDataSet*, int, std::string)
+{
+    EXCEPTION0(ImproperUseException);
 }

@@ -56,9 +56,10 @@ class  avtExtents;
 //
 //  Purpose:
 //      A derived type of avtDatasetToDatasetFilter.  This will iterate over 
-//      each vtkDataSet from an input avtDataTree.  This particular flavor
-//      is "SIMO": Single Input Multiple Output, meaning that the output for
-//      a single vtkDataSet can and likely will be multiple vtkDataSet outputs.
+//      each avtDataRepresentation from an input avtDataTree.  This particular
+//      flavor is "SIMO": Single Input Multiple Output, meaning that the
+//      output for a single avtDataRepresentation can and likely will be
+//      multiple avtDataRepresentation outputs.
 //
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2000
@@ -92,6 +93,9 @@ class  avtExtents;
 //    Hank Childs, Mon Dec 27 10:58:14 PST 2004
 //    Made inheritance virtual.
 //
+//    Eric Brugger, Fri Jul 18 13:24:47 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtSIMODataTreeIterator : virtual public 
@@ -107,7 +111,8 @@ class PIPELINE_API avtSIMODataTreeIterator : virtual public
 
     virtual void             Execute(void);
     virtual void             Execute(avtDataTree_p inDT, avtDataTree_p &outDT);
-    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *,int,std::string) = 0;
+    virtual avtDataTree_p    ExecuteDataTree(avtDataRepresentation *);
+    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *,int,std::string);
 
     virtual bool             ThreadSafe(void) { return(true); };
     void                     FinishExecute(void);
