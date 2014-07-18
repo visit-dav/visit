@@ -1328,3 +1328,51 @@ SpreadsheetAttributes::ChangesRequireRecalculation(const SpreadsheetAttributes &
     return (subsetName != obj.subsetName);
 }
 
+// ****************************************************************************
+// Method: SpreadsheetAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method handles some old fields by converting them to new fields.
+//
+// Programmer: Burlen Loring
+// Creation:   Fri Jul 18 15:20:59 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+SpreadsheetAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("SpreadsheetAttributes");
+    if(searchNode == 0)
+        return;
+
+    // deal with the changes in r7405 where type of currentPick was
+    // changed from double[3] to int. Since that patch pick related
+    // attributes are no longer recorded in session files so we will
+    // need to ignore them here.
+    if(VersionLessThan(configVersion, "2.0.0"))
+    {
+        const char *pickAtts[] = {
+            "currentPick",
+            "currentPickType",
+            "currentPickValid",
+            "currentPickLetter",
+            "pastPicks",
+            "pastPickLetters"
+            };
+        for (size_t i=0; i<6; ++i)
+        {
+            DataNode *pickAtt = searchNode->GetNode(pickAtts[i]);
+            if (pickAtt)
+            {
+                searchNode->RemoveNode(pickAtt, true);
+            }
+        }
+    }
+}
+
