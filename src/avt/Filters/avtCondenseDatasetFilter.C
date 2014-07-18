@@ -102,10 +102,9 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //      Sends the specified input and output through the CondenseDataset filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   November 07, 2000
@@ -155,14 +154,21 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Burlen Loring, Mon Apr 14 15:56:19 PDT 2014
 //    Don't take two references to the output
 //
+//    Eric Brugger, Fri Jul 18 16:07:04 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtCondenseDatasetFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
     int i;
 
     //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     // Remove any variable that has "VTK" or "AVT" in its name.  Make a for
     // loop with two iterations.  Iteration #1 is to determine if we have
     // to strip out arrays.  Iteration #2 is to strip out the arrays.  The
@@ -348,8 +354,8 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         out_ds = no_vars;
     }
 
-    if (out_ds != in_ds)
-        ManageMemory(out_ds);
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
 
     if (needToDeleteOutDs)
         out_ds->Delete();
@@ -357,7 +363,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     if (needToDeleteNoVars)
         no_vars->Delete();
 
-    return out_ds;
+    return out_dr;
 }
 
 

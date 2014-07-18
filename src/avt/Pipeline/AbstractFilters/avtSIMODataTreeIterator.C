@@ -37,22 +37,21 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtSIMODataTreeIterator.C                           //
+//                         avtSIMODataTreeIterator.C                         //
 // ************************************************************************* //
 
 #include <avtSIMODataTreeIterator.h>
 
-#include <vtkDataSet.h>
-
 #include <avtCommonDataFunctions.h>
+#include <avtDataRepresentation.h>
 #include <avtDataTree.h>
+#include <avtExecutionManager.h>
 #include <avtExtents.h>
 
-#include <IncompatibleDomainListsException.h>
+#include <ImproperUseException.h>
 #include <DebugStream.h>
 
 #include <string>
-#include "avtExecutionManager.h"
 
 
 // ****************************************************************************
@@ -184,6 +183,52 @@ avtSIMODataTreeIterator::Execute(void)
     SetOutputDataTree(newTree);
 }
 
+
+// ****************************************************************************
+//  Method: avtSIMODataTreeIterator::ExecuteDataTree
+//
+//  Purpose:
+//      This is a default ExecuteDataTree method for filters that have not
+//      been converted to use an avtDataRepresentation. Once all the filters
+//      have been converted to work with avtDataRepresentations this method
+//      can be removed.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Jul 18 13:45:44 PDT 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtSIMODataTreeIterator::ExecuteDataTree(avtDataRepresentation *dr)
+{
+    return ExecuteDataTree(dr->GetDataVTK(), dr->GetDomain(), dr->GetLabel());
+}
+
+
+// ****************************************************************************
+//  Method: avtSIMODataTreeIterator::ExecuteDataTree
+//
+//  Purpose:
+//      This function is used to call the execute data tree method on the
+//      data leaves. This method should be implemented in the filters that
+//      derive from it and it is an error to call it.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Jul 18 13:45:44 PDT 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtSIMODataTreeIterator::ExecuteDataTree(vtkDataSet *, int, std::string)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
+
 // ****************************************************************************
 //  Method: avtSIMODataTreeIterator::ExecuteDataTreeOnThread
 //
@@ -199,6 +244,9 @@ avtSIMODataTreeIterator::Execute(void)
 //    Kevin Bensema, Thu 1 August 12:39 PDT 2013
 //    Fixed memory leak by deleting SIMOWorkItem pointer passed in.
 //
+//    Eric Brugger, Fri Jul 18 13:45:44 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 typedef struct StructSIMOWorkItem 
@@ -213,15 +261,11 @@ avtSIMODataTreeIterator::ExecuteDataTreeOnThread(void *cbdata)
 {
     SIMOWorkItem *work = (SIMOWorkItem *)cbdata;
 
-    vtkDataSet *in_ds = work->inDT->GetDataRepresentation().GetDataVTK();
-    int dom           = work->inDT->GetDataRepresentation().GetDomain();
-    std::string label = work->inDT->GetDataRepresentation().GetLabel();
-  
     //
     // We own the returned dataset because you cannot delete it if
     // it only has one reference and you want to return it.
     //
-    avtDataTree_p retDT = work->This->ExecuteDataTree(in_ds, dom, label);
+    avtDataTree_p retDT = work->This->ExecuteDataTree(&(work->inDT->GetDataRepresentation()));
     if( *(retDT) )
         work->outDT->operator=( *(retDT) );
 

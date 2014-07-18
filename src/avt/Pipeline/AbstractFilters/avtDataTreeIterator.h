@@ -91,6 +91,9 @@
 //    Hank Childs, Thu Dec 21 09:17:43 PST 2006
 //    Remove support for debug dumps.
 //
+//    Eric Brugger, Fri Jul 18 14:00:24 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDataTreeIterator : virtual public avtSIMODataTreeIterator
@@ -104,8 +107,10 @@ class PIPELINE_API avtDataTreeIterator : virtual public avtSIMODataTreeIterator
   protected:
     vtkDataSet              *lastDataset;
 
+    virtual avtDataTree_p    ExecuteDataTree(avtDataRepresentation *);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *, int, std::string);
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string) = 0;
+    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
 
     void                     ManageMemory(vtkDataSet *);
 };

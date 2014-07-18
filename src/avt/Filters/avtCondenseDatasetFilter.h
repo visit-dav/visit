@@ -48,11 +48,6 @@
 #include <avtDataTreeIterator.h>
 
 
-class vtkPolyDataRelevantPointsFilter;
-class vtkUnstructuredGridRelevantPointsFilter;
-class vtkDataSet;
-
-
 // ****************************************************************************
 //  Class: avtCondenseDatasetFilter
 //
@@ -85,6 +80,9 @@ class vtkDataSet;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Eric Brugger, Fri Jul 18 16:04:48 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCondenseDatasetFilter : public avtDataTreeIterator
@@ -102,7 +100,7 @@ class AVTFILTERS_API avtCondenseDatasetFilter : public avtDataTreeIterator
     void                 BypassHeuristic(bool val) {bypassHeuristic = val; };
 
   protected:
-    virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual bool         FilterUnderstandsTransformedRectMesh();
 
   private:
