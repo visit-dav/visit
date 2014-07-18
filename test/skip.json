@@ -1,5 +1,8 @@
 { "skip_list":[
  {"mode":"serial","tests":[
+                    {"category":"unit","file":"compiler_warnings.py"},
+                    {"category":"simulation","file":"globalids.py"},
+                    {"category":"simulation","file":"domainlist.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
                     {"category":"databases","file":"diff.py"},
