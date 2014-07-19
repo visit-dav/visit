@@ -227,6 +227,8 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
+    // User-defined methods
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

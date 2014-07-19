@@ -2132,3 +2132,68 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
 
+// ****************************************************************************
+// Method: TransformAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method handles some old fields by converting them to new fields.
+//
+// Programmer: Burlen Loring
+// Creation:   Fri Jul 18 15:20:59 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+TransformAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("TransformAttributes");
+    if(searchNode == 0)
+        return;
+
+    // deal with the changes in r19090 where type for a number of attributes
+    // was changed from float/floatArray to double/doubleArray.
+    if(VersionLessThan(configVersion, "2.6.0"))
+    {
+        const char *floatArrayAtts[] = {
+            "rotateOrigin",
+            "rotateAxis",
+            "scaleOrigin",
+            };
+        for (size_t i=0; i<3; ++i)
+        {
+            DataNode *floatArrayAtt = searchNode->GetNode(floatArrayAtts[i]);
+            if (floatArrayAtt)
+            {
+                const float *f = floatArrayAtt->AsFloatArray();
+                double d[3] = {f[0], f[1], f[2]};
+                searchNode->RemoveNode(floatArrayAtts[i], true);
+                searchNode->AddNode(new DataNode(floatArrayAtts[i], d, 3));
+            }
+        }
+        const char *floatAtts[] = {
+            "rotateAmount",
+            "scaleX",
+            "scaleY",
+            "scaleZ",
+            "translateX",
+            "translateY",
+            "translateZ"
+            };
+        for (size_t i=0; i<7; ++i)
+        {
+            DataNode *floatAtt = searchNode->GetNode(floatAtts[i]);
+            if (floatAtt)
+            {
+                float f = floatAtt->AsFloat();
+                searchNode->RemoveNode(floatAtts[i], true);
+                searchNode->AddNode(new DataNode(floatAtts[i], double(f)));
+            }
+        }
+    }
+}
+
