@@ -1143,7 +1143,7 @@
                 </Object>
                 <Field name="normal" type="string">Z</Field>
                 <Field name="sliceIndex" type="int">0</Field>
-                <Field name="currentPick" type="int">0</Field>
+                <Field name="currentPick" type="doubleArray" length="3">0 0 0</Field>
                 <Field name="currentPickValid" type="bool">false</Field>
                 <Field name="pastPicks" type="doubleVector"></Field>
                 <Field name="currentPickLetter" type="string"></Field>
@@ -1642,12 +1642,12 @@
             </Object>
             <Object name="TransformAttributes">
                 <Field name="doRotate" type="bool">false</Field>
-                <Field name="rotateOrigin" type="doubleArray" length="3">0 0 0 </Field>
-                <Field name="rotateAxis" type="doubleArray" length="3">0 0 1 </Field>
+                <Field name="rotateOrigin" type="floatArray" length="3">0 0 0 </Field>
+                <Field name="rotateAxis" type="floatArray" length="3">0 0 1 </Field>
                 <Field name="rotateAmount" type="float">0</Field>
                 <Field name="rotateType" type="string">Deg</Field>
                 <Field name="doScale" type="bool">false</Field>
-                <Field name="scaleOrigin" type="doubleArray" length="3">0 0 0 </Field>
+                <Field name="scaleOrigin" type="floatArray" length="3">0 0 0 </Field>
                 <Field name="scaleX" type="float">1</Field>
                 <Field name="scaleY" type="float">1</Field>
                 <Field name="scaleZ" type="float">1</Field>

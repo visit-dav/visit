@@ -1640,17 +1640,17 @@
                 <Field name="doRotate" type="bool">false</Field>
                 <Field name="rotateOrigin" type="doubleArray" length="3">0 0 0 </Field>
                 <Field name="rotateAxis" type="doubleArray" length="3">0 0 1 </Field>
-                <Field name="rotateAmount" type="float">0</Field>
+                <Field name="rotateAmount" type="double">0</Field>
                 <Field name="rotateType" type="string">Deg</Field>
                 <Field name="doScale" type="bool">false</Field>
                 <Field name="scaleOrigin" type="doubleArray" length="3">0 0 0 </Field>
-                <Field name="scaleX" type="float">1</Field>
-                <Field name="scaleY" type="float">1</Field>
-                <Field name="scaleZ" type="float">1</Field>
+                <Field name="scaleX" type="double">1</Field>
+                <Field name="scaleY" type="double">1</Field>
+                <Field name="scaleZ" type="double">1</Field>
                 <Field name="doTranslate" type="bool">false</Field>
-                <Field name="translateX" type="float">0</Field>
-                <Field name="translateY" type="float">0</Field>
-                <Field name="translateZ" type="float">0</Field>
+                <Field name="translateX" type="double">0</Field>
+                <Field name="translateY" type="double">0</Field>
+                <Field name="translateZ" type="double">0</Field>
                 <Field name="transformType" type="string">Similarity</Field>
                 <Field name="inputCoordSys" type="string">Cartesian</Field>
                 <Field name="outputCoordSys" type="string">Spherical</Field>
