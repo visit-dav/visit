@@ -75,6 +75,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 using std::string;
 
@@ -150,7 +151,12 @@ int InvokeRemoteCall(std::string host, int port, int call) {
     conn = RequestConnection(server, port);
 
     sprintf(out_buffer, "%.3d", call);
-    write(conn, out_buffer, 4);
+    if (write(conn, out_buffer, 4) < 0)
+    {
+        int eno = errno;
+        debug1 << "write failed " << strerror(eno) << endl;
+    }
+
 
     if (read(conn, in_buffer, 4) == 4) {
         if (atoi(in_buffer)) {
@@ -408,7 +414,11 @@ void *avtVLIFileFormat::threadCommServer(void *in) {
                         }
                         
                         if (this->procNum == 0) {
-                                write(conn, &d, 1);
+                                if (write(conn, &d, 1) < 0)
+                                {
+                                    int eno = errno;
+                                    debug1 << "write failed " << strerror(eno) << endl;
+                                }
                                 VLIDEBUG << "**** Approval notice sent (" << d << ")" << endl;
                         }
                         if (d == '1') this->info = true; 
@@ -431,13 +441,26 @@ void *avtVLIFileFormat::threadCommServer(void *in) {
                         // Forward messages to all comm servers
                         for (int i = 1; i < this->procCount; ++i) {
                                 int c2 = RequestConnection((char *)this->ehostname[i].c_str(), this->eport[i]);
-                                write(c2, &c, 1);
+                                if (write(c2, &c, 1) < 0)
+                                {
+                                    int eno = errno;
+                                    debug1 << "write failed " << strerror(eno) << endl;
+                                }
                                 if (c == 'i') {
-                                        write(c2, buf, 39);
+                                        if (write(c2, buf, 39) < 0)
+                                        {
+                                            int eno = errno;
+                                            debug1 << "write failed " << strerror(eno) << endl;
+                                        }
                                         char sbuf[255]; 
                                         for (int j = 0; j < this->config->getNoDataServers(); ++j) {
                                                 sprintf(sbuf, "%s:%d", this->shostname[j].c_str(), this->sport[j]);
-                                                write(c2, sbuf, 255);
+                                                if (write(c2, sbuf, 255) < 0)
+                                                {
+                                                    int eno = errno;
+                                                    debug1 << "write failed " << strerror(eno) << endl;
+                                                }
+
                                         }
                                 }
                         }
@@ -557,7 +580,7 @@ void avtVLIFileFormat::startServers(void) {
                 
                 syscall.append(" &");
                 VLIDEBUG << "---- executing \"" << syscall.c_str() << "\"\n";
-                system(syscall.c_str());
+                int rv = system(syscall.c_str()); (void)rv;
         }
 #endif
 }
@@ -700,7 +723,8 @@ float avtVLIFileFormat::ConvertToFloat(unsigned short data, int attrib) {
 // ****************************************************************************
 
 int IsInVector(std::vector<int> v, int i) {
-        for (int k = 0; k < v.size(); ++k) if (v[k] == i) return k;
+        int nv = static_cast<int>(v.size());
+        for (int k = 0; k < nv; ++k) if (v[k] == i) return k;
         return -1;
 }
 
@@ -717,7 +741,7 @@ int IsInVector(std::vector<int> v, int i) {
 
 void avtVLIFileFormat::ClearCache() {
     VLIDEBUG << "---- Clearcache()... ";
-    int i, nattr = config->getDataset()->getNAttributes();
+    size_t i, nattr = config->getDataset()->getNAttributes();
     if (queryObjects.size() < nattr + 1) {
         queryObjects.resize(nattr + 1, NULL);
         VLIDEBUG << "done!" << endl;
@@ -757,7 +781,7 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
                 <<(varname?varname:"(null)")<<"\")\n"<<endl;
         
         // Initialize queryObject if necessary
-        if (queryObjects.size() < nattr + 1) {
+        if (static_cast<int>(queryObjects.size()) < nattr + 1) {
                 queryObjects.resize(nattr + 1, NULL);
         }
 
@@ -816,14 +840,16 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
         int dims = 0;
         const int *axis = config->getAxis();
         for(i = 0; i < 3; ++i) if (axis[i] != -1) dims++;
-        for (i = 0; i < registeredVars.size(); ++i) {
+        int nRegisteredVars = static_cast<int>(registeredVars.size());
+        for (i = 0; i < nRegisteredVars; ++i) {
                 int v = registeredVars[i];
                 if ( (IsInVector(request, v) < dims) && (queryObjects[v] == NULL) )
                         request.push_back(v);
         }
 
         VLIDEBUG << "---- Request: { ";
-        for(i = 0; i < request.size(); ++i) VLIDEBUG << request[i] << ", ";
+        int nRequest = static_cast<int>(request.size());
+        for(i = 0; i < nRequest; ++i) VLIDEBUG << request[i] << ", ";
         VLIDEBUG << "}" << endl;
 
         // Init bounds
@@ -841,7 +867,8 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
         }
 
         // Restrict Threshold variables
-        for(i = 0; i < selList.size(); ++i)
+        int nSelList = static_cast<int>(selList.size());
+        for(i = 0; i < nSelList; ++i)
         {
                 if (std::string(selList[i]->GetType()) == std::string("Data Range Selection"))
                 {
@@ -909,11 +936,24 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
 
         for(i = 0; i < nservers; ++i) {
                 conn[i] = InvokeRemoteCall(this->shostname[i], this->sport[i], 0);
-                int nr = request.size();
-                write(conn[i], &nr, sizeof(int));
-                for(j = 0; j < request.size(); ++j)
-                        write(conn[i], &request[j], sizeof(int));
-                write(conn[i], bounds, 2 * nattr * sizeof(int));
+                if (write(conn[i], &nRequest, sizeof(int)) < 0)
+                {
+                    int eno = errno;
+                    debug1 << "write failed " << strerror(eno) << endl;
+                }
+                for(j = 0; j < nRequest; ++j)
+                {
+                    if (write(conn[i], &request[j], sizeof(int)) < 0)
+                    {
+                        int eno = errno;
+                        debug1 << "write failed " << strerror(eno) << endl;
+                    }
+                }
+                if (write(conn[i], bounds, 2 * nattr * sizeof(int)) < 0)
+                {
+                    int eno = errno;
+                    debug1 << "write failed " << strerror(eno) << endl;
+                }
         }
         for(i = 0; i < nservers; ++i) {
                 ServerRead(conn[i], &n[i], sizeof(int), -1);
@@ -932,7 +972,7 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
                 i = dims;
         } else i = 0; 
 
-        for(; i < request.size(); ++i) {
+        for(; i < nRequest; ++i) {
                 vtkFloatArray *arr = vtkFloatArray::New();
                 queryObjects[request[i]] = (vtkObject *)arr;
                 arr->SetNumberOfTuples(nnodes);
@@ -952,7 +992,7 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
                                         }
                                 }
                         }
-                        for(;k < request.size(); ++k) {
+                        for(;k < nRequest; ++k) {
                                 ServerRead(conn[i], &data, sizeof(unsigned short), -1);
                                 *(cnt[request[k]])++ = ConvertToFloat(data, request[k]);
                         }
@@ -1107,7 +1147,7 @@ void avtVLIFileFormat::RegisterDataSelections(const std::vector<avtDataSelection
 
     ClearCache();
 
-    for(int i = 0; i < sels.size(); ++i)
+    for(size_t i = 0; i < sels.size(); ++i)
     {
         VLIDEBUG << "RegisterDataSelections(): " << sels[i]->GetType();
         if (std::string(sels[i]->GetType()) == "Data Range Selection")
@@ -1133,23 +1173,22 @@ void avtVLIFileFormat::RegisterDataSelections(const std::vector<avtDataSelection
 
 void avtVLIFileFormat::RegisterVariableList(const char *primVar, const std::vector<CharStrRef> &vars2nd) {
     std::vector<std::string> vars;
-    int i;
 
     // Temporarily put variables in a single vector for ease of access
     vars.push_back(std::string(primVar));
-    for(i = 0; i < vars2nd.size(); ++i) 
+    for(size_t i = 0; i < vars2nd.size(); ++i)
         vars.push_back(std::string(*(vars2nd[i])));
 
     // Now loop through vector to mark registered known variables for class
     registeredVars.clear();
-    for(i = 0; i < vars.size(); ++i)
+    for(size_t i = 0; i < vars.size(); ++i)
     {
         // Find variable
         VLIDataset* ds = config->getDataset();
-        int cnt = ds->getNAttributes();
+        size_t cnt = ds->getNAttributes();
         int nv = -1;
         
-        for(int j = 0; j < cnt; ++j)
+        for(size_t j = 0; j < cnt; ++j)
             if (vars[i].compare(ds->getAttribute(j)->GetName()) == 0) nv = j;
         
         // If found, register variable
@@ -1157,7 +1196,7 @@ void avtVLIFileFormat::RegisterVariableList(const char *primVar, const std::vect
     }
 
     VLIDEBUG << "RegisterVariableList(): ";
-    for(int j=0;j<registeredVars.size();++j) VLIDEBUG<<registeredVars[j]<<", ";
+    for(size_t j=0;j<registeredVars.size();++j) VLIDEBUG<<registeredVars[j]<<", ";
     VLIDEBUG << endl;
 }
 

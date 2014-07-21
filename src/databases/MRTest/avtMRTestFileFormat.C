@@ -376,12 +376,12 @@ avtMRTestFileFormat::GetSelection()
     // transform matrix and cell area in case there isn't a multi resolution
     // data selection.
     //
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; ++i)
         transformMatrix[i] = DBL_MAX;
     cellArea = .002;
 
     selection = NULL;
-    for (int i = 0; i < selectionsList.size(); i++)
+    for (size_t i = 0; i < selectionsList.size(); ++i)
     {
         if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
         {
@@ -919,12 +919,11 @@ avtMRTestFileFormat::GetVar3d()
     CalculateMesh3d(tileXmin, tileXmax, tileYmin, tileYmax, tileZmin, tileZmax,
                     nx, ny, nz);
 
-    double xStart, yStart, zStart;
+    double xStart, yStart;
     double xDelta, yDelta, zDelta;
 
     xStart = 4. * (tileXmin - meshXmin) / (meshXmax - meshXmin);
     yStart = 4. * (tileYmin - meshYmin) / (meshYmax - meshYmin);
-    zStart = 4. * (tileZmin - meshZmin) / (meshZmax - meshZmin);
 
     xDelta = (tileXmax - tileXmin) / nx;
     yDelta = (tileYmax - tileYmin) / ny;
