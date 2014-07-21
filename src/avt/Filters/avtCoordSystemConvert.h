@@ -44,6 +44,7 @@
 #define AVT_CoordConvert_FILTER_H
 
 #include <filters_exports.h>
+
 #include <avtDataTreeIterator.h>
 
 // ****************************************************************************
@@ -63,6 +64,9 @@
 //    Jeremy Meredith, Fri Aug  7 15:33:18 EDT 2009
 //    Added selectable vector transform method.
 //    Made the coord system enum be within the class namespace.
+//
+//    Eric Brugger, Mon Jul 21 10:19:29 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -104,7 +108,7 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
 
     VectorTransformMethod vectorTransformMethod;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void          PostExecute(void);
 
     virtual void          UpdateDataObjectInfo(void);

@@ -662,6 +662,10 @@ avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
 //  Programmer: Hank Childs
 //  Creation:   November 30, 2013
 //
+//  Modifications:
+//    Eric Brugger, Mon Jul 21 12:06:33 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 void
@@ -695,7 +699,8 @@ avtConnComponentsExpression::LabelBoundaryNeighbors(vtkDataSet *data_set)
 
     // use external routine to find which cells are external
     avtFacelistFilter *flf = new avtFacelistFilter();
-    avtDataTree_p tree = flf->FindFaces(clone_ds, -1, "",
+    avtDataRepresentation clone_dr(clone_ds, -1, "");
+    avtDataTree_p tree = flf->FindFaces(&clone_dr,
                                   GetInput()->GetInfo(), false, false,
                                   true, true, NULL);
     delete flf;

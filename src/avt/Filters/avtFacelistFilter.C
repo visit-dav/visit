@@ -228,11 +228,9 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //      structured meshes.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      domain     The domain number for in_ds.
-//      label      The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data tree.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 26, 2002
@@ -275,12 +273,19 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    Hank Childs, Fri Feb  4 13:46:18 PST 2011
 //    Split most of routine into the static function "FindFaces".
 //
+//    Eric Brugger, Mon Jul 21 11:28:02 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, 
-                                   std::string label)
+avtFacelistFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the domain.
+    //
+    int domain = in_dr->GetDomain();
+
     avtFacelist *fl = NULL;
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
     if (v.GetUsingAllData() && v.GetZonesPreserved())
@@ -289,7 +294,7 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         fl = md->GetExternalFacelist(domain);
     }
 
-    return FindFaces(in_ds, domain, label, GetInput()->GetInfo(), 
+    return FindFaces(in_dr, GetInput()->GetInfo(), 
                      create3DCellNumbers, forceFaceConsolidation, 
                      createEdgeListFor2DDatasets, mustCreatePolyData, fl);
 }
@@ -299,7 +304,7 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //  Method: avtFacelistFilter::FindFaces
 //
 //  Purpose:
-//      Finds the faces for a single domain.  A static function that can be
+//      Finds the faces for a single domain.  A public function that can be
 //      called outside of a pipeline.
 //
 //  Notes:      Most of this routine used to be located in ExecuteDataTree.
@@ -307,15 +312,26 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //  Programmer: Hank Childs
 //  Creation:   February 4, 2010
 //
+//  Modifications:
+//    Eric Brugger, Mon Jul 21 11:28:02 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtFacelistFilter::FindFaces(vtkDataSet *in_ds, int domain, std::string label,
+avtFacelistFilter::FindFaces(avtDataRepresentation *in_dr,
                              avtDataObjectInformation &info,
                              bool create3DCellNumbers, bool forceFaceConsolidation,
                              bool createEdgeListFor2DDatasets,
                              bool mustCreatePolyData, avtFacelist *fl)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     int tDim = info.GetAttributes().GetTopologicalDimension();
     //int sDim = info.GetAttributes().GetSpatialDimension();
     //int dis_elem = info.GetValidity().GetDisjointElements();

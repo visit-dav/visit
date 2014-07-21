@@ -498,10 +498,9 @@ avtContourFilter::PreExecute(void)
 //      Sends the specified input and output through the contour filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      domain     The domain number.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data tree.
 //
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2000
@@ -607,11 +606,21 @@ avtContourFilter::PreExecute(void)
 //    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
 //    Call Update on the filter, not the data object.
 //
+//    Eric Brugger, Mon Jul 21 10:15:17 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p 
-avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
+avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     int tt1 = visitTimer->StartTimer();
 
     char *contourVar = (activeVariable != NULL ? activeVariable 

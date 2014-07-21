@@ -52,7 +52,7 @@
 //  Class: avtFeatureEdgesFilter
 //
 //  Purpose:
-//      Extracts feature edges of a dataset.
+//      Extracts feature edges of a data representation.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   March 12, 2002
@@ -67,6 +67,9 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Eric Brugger, Mon Jul 21 11:41:16 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFeatureEdgesFilter : public avtDataTreeIterator
@@ -80,7 +83,7 @@ class AVTFILTERS_API avtFeatureEdgesFilter : public avtDataTreeIterator
                                  { return "Extracting feature edges"; };
 
   protected:
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void             UpdateDataObjectInfo(void);
 };
 
