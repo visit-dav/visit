@@ -526,8 +526,8 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
          for(long long y = start[1]; y < end[1]; ++y)
          {
              // Read in a line of data in x.
-             fread((void *)ptr, sizeof(T), nxelem, fp);
-             ptr += nxelem;
+             size_t nread = fread((void *)ptr, sizeof(T), nxelem, fp);
+             ptr += nread;
 
              // Seek to the next line
              if(y < end[1]-1)

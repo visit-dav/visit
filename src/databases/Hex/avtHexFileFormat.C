@@ -149,10 +149,10 @@ avtHexFileFormat::GetMesh(int dom, const char *name)
 vtkDataArray *
 avtHexFileFormat::GetVar(int, const char *name)
 {
-    int i, npts = points.size()/3;
+    int npts = points.size()/3;
     int nhexes = hexnodes.size() / 8;
 
-    for (i = 0 ; i < cellvarnames.size(); i++)
+    for (size_t i = 0 ; i < cellvarnames.size(); ++i)
     {
         if (cellvarnames[i] == string(name))
         {
@@ -164,7 +164,7 @@ avtHexFileFormat::GetVar(int, const char *name)
         }
     }
 
-    for (i = 0 ; i < pointvarnames.size(); i++)
+    for (size_t i = 0 ; i < pointvarnames.size(); ++i)
     {
         if (pointvarnames[i] == string(name))
         {
@@ -198,12 +198,11 @@ avtHexFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    int i;
-    for (i=0; i < cellvarnames.size(); i++)
+    for (size_t i=0; i < cellvarnames.size(); ++i)
     {
         md->Add(new avtScalarMetaData(cellvarnames[i], "Mesh", AVT_ZONECENT));
     }
-    for (i=0; i < pointvarnames.size(); i++)
+    for (size_t i=0; i < pointvarnames.size(); ++i)
     {
         md->Add(new avtScalarMetaData(pointvarnames[i], "Mesh", AVT_NODECENT));
     }
