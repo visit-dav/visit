@@ -476,7 +476,7 @@ ConstructDisk(surfacemesh *m, unique_points *p, const float center[3],
             mat = 0.f;
         for(a = 0; a < nAngles; ++a)
         {
-            int conn[4], nextA;
+            int conn[5], nextA;
 
             nextA = (a == nAngles-1) ? 0 : (a+1);
             conn[0] = VISIT_CELL_QUAD;
