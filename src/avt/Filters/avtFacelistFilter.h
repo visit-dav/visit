@@ -47,7 +47,6 @@
 
 #include <avtSIMODataTreeIterator.h>
 
-
 class   vtkRectilinearGridFacelistFilter;
 class   vtkStructuredGridFacelistFilter;
 class   vtkUnstructuredGridFacelistFilter;
@@ -124,6 +123,9 @@ class   avtMultiFacelist;
 //    David Camp, Tue May 21 13:56:12 PDT 2013
 //    Removed the static method for the threading code.
 //
+//    Eric Brugger, Mon Jul 21 11:27:19 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
@@ -144,8 +146,7 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
     void                                 SetMustCreatePolyData(bool val)
                                               { mustCreatePolyData = val; };
 
-    avtDataTree_p                        FindFaces(vtkDataSet *, int, 
-                                                   std::string, 
+    avtDataTree_p                        FindFaces(avtDataRepresentation *,
                                                    avtDataObjectInformation &,
                                                    bool = false, bool = false, 
                                                    bool = false, bool = false,
@@ -157,8 +158,7 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
     bool                                 mustCreatePolyData;
     int                                  forceFaceConsolidation;
 
-    virtual avtDataTree_p                ExecuteDataTree(vtkDataSet *, int,
-                                                     std::string);
+    virtual avtDataTree_p                ExecuteDataTree(avtDataRepresentation *);
     vtkDataSet                           *Take2DFaces(vtkDataSet *, bool, bool);
     vtkDataSet                           *FindEdges(vtkDataSet *);
     avtDataTree_p                        Take3DFaces(vtkDataSet *, int,

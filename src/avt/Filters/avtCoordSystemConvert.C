@@ -740,11 +740,9 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
 //      Sends the specified input and output through the CoordConvert filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Hank Childs
 //  Creation:   Fri Jun 27 16:41:32 PST 2003
@@ -757,11 +755,19 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
 //    Jeremy Meredith, Fri Aug  7 15:35:29 EDT 2009
 //    Call a common transform function to avoid code duplication.
 //
+//    Eric Brugger, Mon Jul 21 10:33:06 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtCoordSystemConvert::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     std::vector<vtkDataSet *> deleteList;
 
     CoordSystem ct_current = inputSys;
@@ -798,7 +804,7 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
                          continuousPhi, vectorTransformMethod,
                          SphericalToCylindricalPoint);
     else
-      return in_ds;
+      return in_dr;
       
     deleteList.push_back(new_ds);
     cur_ds = new_ds;
@@ -819,14 +825,15 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
         }
     }
 
-    ManageMemory(cur_ds);
+    avtDataRepresentation *out_dr = new avtDataRepresentation(cur_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
 
     for (unsigned int i = 0 ; i < deleteList.size() ; i++)
     {
          deleteList[i]->Delete();
     }
 
-    return cur_ds;
+    return out_dr;
 }
 
 

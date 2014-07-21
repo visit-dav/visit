@@ -130,6 +130,9 @@ avtFindExternalExpression::~avtFindExternalExpression()
 //    Change the avtFacelistFilter::FindFaces from a static function to a 
 //    normal function for the thread code to work.
 //
+//    Eric Brugger, Mon Jul 21 12:09:02 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -152,7 +155,8 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsI
     arr->Delete();
 
     avtFacelistFilter *flf = new avtFacelistFilter();
-    avtDataTree_p tree = flf->FindFaces(new_ds, -1, "",
+    avtDataRepresentation new_dr(new_ds, -1, "");
+    avtDataTree_p tree = flf->FindFaces(&new_dr,
                                   GetInput()->GetInfo(), false, false,
                                   true, true, NULL);
     delete flf;
