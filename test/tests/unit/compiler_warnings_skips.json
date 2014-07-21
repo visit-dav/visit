@@ -7,6 +7,11 @@
             "ISO C forbids conversion of object pointer to function pointer type": 0
         }
     }, 
+    "common/state/JSONNode.h": {
+        "0": {
+            "type qualifiers ignored on function return type": 0
+        }
+    }, 
     "avt/MIR/Youngs/vtkDataSetGradient.C": {
         "0": {
             "extra ';'": 0
