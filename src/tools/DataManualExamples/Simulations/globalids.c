@@ -509,6 +509,8 @@ ConstructWalls(surfacemesh *m, unique_points *p, const float center[3],
         h = (1.-th)*z0 + th*z1;
         for(a = 0; a < nAngles; ++a)
         {
+            point_key k;
+
             ta = FLOAT_CAST(a) / FLOAT_CAST(nAngles);
             angle = ta * 2. * M_PI;
             x = center[0] + radius*cos(angle);
@@ -516,7 +518,7 @@ ConstructWalls(surfacemesh *m, unique_points *p, const float center[3],
             z = h;
 
             /* Make sure that points are unique */
-            point_key k = encode_point(x,y,z);
+            k = encode_point(x,y,z);
             id = unique_points_lookup(p, k);
             if(id == -1)
             {
