@@ -157,7 +157,6 @@
 "tools/DataManualExamples/Simulations/curve.c": 2,
 "tools/DataManualExamples/Simulations/domainbounds.c": 10,
 "tools/DataManualExamples/Simulations/ghostcells.c": 42,
-"tools/DataManualExamples/Simulations/globalids.c": 6,
 "tools/DataManualExamples/Simulations/mandelbrot.C": 3,
 "tools/DataManualExamples/Simulations/material.c": 3,
 "tools/DataManualExamples/Simulations/materialvar.c": 4,
