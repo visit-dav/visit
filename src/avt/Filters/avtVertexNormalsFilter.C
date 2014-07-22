@@ -101,11 +101,9 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //      Sends the specified input and output through the VertexNormals filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Hank Childs 
 //  Creation:   December 31, 2001
@@ -158,26 +156,34 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Hank Childs, Thu Dec 28 15:25:50 PST 2006
 //    Add support for direct normals calculation of structured grids.
 //
+//    Eric Brugger, Tue Jul 22 12:19:31 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
     if (atts.GetSpatialDimension() != 3 || atts.GetTopologicalDimension() != 2)
     {
-        return in_ds;
+        return in_dr;
     }
 
     if (GetInput()->GetInfo().GetValidity().NormalsAreInappropriate())
     {
-        return in_ds;
+        return in_dr;
     }
 
     if (GetInput()->GetInfo().GetValidity().GetDisjointElements() == true)
     {
-        return in_ds;
+        return in_dr;
     }
 
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
@@ -202,11 +208,13 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         normals->Update();
     
         vtkPolyData *out_ds = normals->GetOutput();
-        //out_ds->SetSource(NULL);
-        ManageMemory(out_ds);
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
         normals->Delete();
     
-        return out_ds;
+        return out_dr;
     }
     else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
@@ -230,16 +238,18 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         normals->Update();
     
         vtkStructuredGrid *out_ds = normals->GetOutput();
-        //out_ds->SetSource(NULL);
-        ManageMemory(out_ds);
-        normals->Delete();
     
-        return out_ds;
+        avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        normals->Delete();
+
+        return out_dr;
     }
 
     // Don't know what to do with other grid types.
     debug1 << "Sent unsupported grid type into normals filter" << endl;
-    return in_ds;
+    return in_dr;
 }
 
 

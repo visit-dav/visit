@@ -75,6 +75,9 @@
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Eric Brugger, Tue Jul 22 12:19:04 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtVertexNormalsFilter : public avtDataTreeIterator
@@ -88,7 +91,7 @@ class AVTFILTERS_API avtVertexNormalsFilter : public avtDataTreeIterator
                              { return "Calculating normals"; };
 
   protected:
-    virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual bool         FilterUnderstandsTransformedRectMesh();
 };
 

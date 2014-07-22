@@ -48,11 +48,6 @@
 #include <avtDataTreeIterator.h>
 
 
-class vtkDataSet;
-class vtkCellDataToPointData;
-class vtkPointDataToCellData;
-
-
 // ****************************************************************************
 //  Class: avtShiftCenteringFilter
 //
@@ -85,6 +80,9 @@ class vtkPointDataToCellData;
 //    For ease of reading code, I forced the argument to be avtCentering, not
 //    integer.
 //
+//    Eric Brugger, Tue Jul 22 08:00:59 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtShiftCenteringFilter : public avtDataTreeIterator
@@ -100,7 +98,7 @@ class AVTFILTERS_API avtShiftCenteringFilter : public avtDataTreeIterator
   protected:
     avtCentering            centeringTarget;
 
-    virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void            UpdateDataObjectInfo(void);
     virtual avtContract_p
                             ModifyContract(avtContract_p);

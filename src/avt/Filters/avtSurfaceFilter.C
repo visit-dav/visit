@@ -199,11 +199,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //      to a scaled version of the point/cell data.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label as a string.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset. 
+//  Returns:      The output data representation. 
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 05, 2001 
@@ -287,11 +285,19 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Fri Sep 7 13:13:09 MST 2012
 //    Preserve scalars data type when using input scalars.
 //
+//    Eric Brugger, Tue Jul 22 09:07:32 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtSurfaceFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     vtkDataArray *inScalars = NULL;
     vtkDataArray *outScalars  = NULL;
     bool zf = atts.GetZeroFlag();
@@ -443,12 +449,14 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     if (cd2pd != NULL)
         cd2pd->Delete();
 
-    ManageMemory(outUG);
-    outUG->Delete();
-
     filter->Delete();
 
-    return (vtkDataSet*) outUG;
+    avtDataRepresentation *outDR = new avtDataRepresentation(outUG,
+        inDR->GetDomain(), inDR->GetLabel());
+
+    outUG->Delete();
+
+    return outDR;
 }
 
 

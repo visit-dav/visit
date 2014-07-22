@@ -746,16 +746,23 @@ avtWorldSpaceToImageSpaceTransform::UpdateDataObjectInfo(void)
 //    If we are looking at polydata (point meshes), then do the same 
 //    perspective trick as we do for curvilinear and unstructured meshes.
 //
+//    Eric Brugger, Tue Jul 22 12:32:39 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtWorldSpaceToImageSpaceTransform::ExecuteData(vtkDataSet *in_ds, int domain,
-                                                std::string label)
+avtDataRepresentation *
+avtWorldSpaceToImageSpaceTransform::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     if (passThruRectilinear && 
                             in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        return in_ds;
+        return in_dr;
     }
 
     // Since we're applying a transform to the data, an existing
@@ -784,11 +791,16 @@ avtWorldSpaceToImageSpaceTransform::ExecuteData(vtkDataSet *in_ds, int domain,
         outatts.SetRectilinearGridTransform(new_xform);
     }
 
-    vtkDataSet *mid_ds = avtTransform::ExecuteData(in_ds, domain, label);
+    avtDataRepresentation *mid_dr = avtTransform::ExecuteData(in_dr);
 
     // We only need to convert to w-buffer coords if we have perspective view.
     if (view.orthographic)
-        return mid_ds;
+        return mid_dr;
+
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *mid_ds = mid_dr->GetDataVTK();
 
     // If we have a rectilinear grid, it will be dealt with in the
     // mass voxel extractor.  Otherwise, we need to change the z-buffer
@@ -817,7 +829,7 @@ avtWorldSpaceToImageSpaceTransform::ExecuteData(vtkDataSet *in_ds, int domain,
         }
     }
 
-    return mid_ds;
+    return mid_dr;
 }
 
 

@@ -37,16 +37,18 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtStaggeringFilter.h                          //
+//                           avtStaggeringFilter.h                           //
 // ************************************************************************* //
 
 #ifndef AVT_STAGGERING_FILTER_H
 #define AVT_STAGGERING_FILTER_H
 
 #include <filters_exports.h>
+
 #include <avtDataTreeIterator.h>
 
 #include <string>
+
 
 // ****************************************************************************
 //  Class: avtStaggeringFilter
@@ -57,6 +59,8 @@
 //  Creation:   April 24, 2012 
 //
 //  Modifications:
+//      Eric Brugger, Tue Jul 22 08:56:12 PDT 2014
+//      Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -71,7 +75,7 @@ class AVTFILTERS_API avtStaggeringFilter : public avtDataTreeIterator
                                   { return "Preparing pipeline"; };
 
   protected:
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
                               ModifyContract(avtContract_p);

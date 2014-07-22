@@ -120,11 +120,9 @@ avtSmoothPolyDataFilter::SetSmoothingLevel(int sl)
 //      Sends the specified input and output through the SmoothPolyData filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      inDR       The input data representation.
 //
-//  Returns:       The output geometry.
+//  Returns:       The output data representation.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   December  6, 2002
@@ -140,17 +138,25 @@ avtSmoothPolyDataFilter::SetSmoothingLevel(int sl)
 //    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
 //    Call Update on the filter, not the data object.
 //
+//    Eric Brugger, Tue Jul 22 08:24:19 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtSmoothPolyDataFilter::ExecuteData(vtkDataSet *inDS, int, string)
+avtDataRepresentation *
+avtSmoothPolyDataFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     // Detect no-ops
     if (smoothingLevel == 0 ||
         GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 2 ||
         GetInput()->GetInfo().GetAttributes().GetSpatialDimension()     != 3)
     {
-        return inDS;
+        return inDR;
     }
 
     // We only work on surface data
@@ -202,11 +208,13 @@ avtSmoothPolyDataFilter::ExecuteData(vtkDataSet *inDS, int, string)
         outDS = newDS;
     }
 
-    ManageMemory(outDS);
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
+        inDR->GetDomain(), inDR->GetLabel());
+
     newDS->Delete();
     smoothPolyData->Delete();
     if (geom)
         geom->Delete();
 
-    return outDS;
+    return outDR;
 }
