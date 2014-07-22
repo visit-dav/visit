@@ -47,9 +47,6 @@
 
 #include <avtDataTreeIterator.h>
 
-class     vtkDataSet;
-class     vtkDataSetRemoveGhostCells;
-
 
 // ****************************************************************************
 //  Class: avtGhostZoneFilter
@@ -83,6 +80,9 @@ class     vtkDataSetRemoveGhostCells;
 //
 //    Hank Childs, Sun Oct 28 10:48:50 PST 2007
 //    Add a mode for removing only ghost zones of a certain type.
+//
+//    Eric Brugger, Mon Jul 21 13:22:09 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -118,7 +118,7 @@ class AVTFILTERS_API avtGhostZoneFilter : public avtDataTreeIterator
     unsigned char               ghostNodeTypesToRemove;
     unsigned char               ghostZoneTypesToRemove;
 
-    virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void                UpdateDataObjectInfo(void);
     virtual bool                FilterUnderstandsTransformedRectMesh();
 };

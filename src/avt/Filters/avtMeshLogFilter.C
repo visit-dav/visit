@@ -178,33 +178,41 @@ avtMeshLogFilter_ScaleValuesHelper(vtkDataArray *a, bool inv,
 //    Kathleen Biagas, Fri Mar 23 18:34:01 MST 2012
 //    Use new templated methods for scaling. 
 //
+//    Eric Brugger, Mon Jul 21 14:26:26 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtMeshLogFilter::ExecuteData(vtkDataSet *ds, int, std::string)
+avtDataRepresentation *
+avtMeshLogFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
-    if (xScaleMode == LINEAR && yScaleMode == LINEAR)
-        return ds;
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
 
-    vtkDataSet *rv = ds->NewInstance();
-    rv->ShallowCopy(ds);
+    if (xScaleMode == LINEAR && yScaleMode == LINEAR)
+        return in_dr;
+
+    vtkDataSet *out_ds = in_ds->NewInstance();
+    out_ds->ShallowCopy(in_ds);
         
-    if (rv->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    if (out_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         if (xScaleMode == LOG)
         {
             avtMeshLogFilter_ScaleValuesHelper(
-                ((vtkRectilinearGrid*)rv)->GetXCoordinates(), useInvLogX);
+                ((vtkRectilinearGrid*)out_ds)->GetXCoordinates(), useInvLogX);
         }
         if (yScaleMode == LOG)
         {
             avtMeshLogFilter_ScaleValuesHelper(
-                ((vtkRectilinearGrid*)rv)->GetYCoordinates(), useInvLogY);
+                ((vtkRectilinearGrid*)out_ds)->GetYCoordinates(), useInvLogY);
         }
     }
     else 
     {
-        vtkDataArray *points = ((vtkPointSet*)rv)->GetPoints()->GetData();
+        vtkDataArray *points = ((vtkPointSet*)out_ds)->GetPoints()->GetData();
         if (xScaleMode == LOG)
         {
             avtMeshLogFilter_ScaleValuesHelper(points, useInvLogX, 0, 3); 
@@ -214,8 +222,13 @@ avtMeshLogFilter::ExecuteData(vtkDataSet *ds, int, std::string)
             avtMeshLogFilter_ScaleValuesHelper(points, useInvLogY, 1, 3); 
         }
     }
-    ManageMemory(rv);
-    return rv;
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    out_ds->Delete();
+
+    return out_dr;
 }
 
 

@@ -43,11 +43,10 @@
 #ifndef AVT_LINE_SCAN_FILTER_H
 #define AVT_LINE_SCAN_FILTER_H
 
+#include <filters_exports.h>
 
 #include <avtDataTreeIterator.h>
 #include <avtVector.h>
-#include <filters_exports.h>
-#include <string>
 
 
 // ****************************************************************************
@@ -71,6 +70,10 @@
 //    the same direction and evenly distributed in space.  In 2D,
 //    use a rectangular column of rays.  Rays may not cover the 
 //    entire mesh.  FYI, this is unrelated to "CylindricalExecute"
+//
+//    Eric Brugger, Mon Jul 21 13:32:33 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtLineScanFilter : public avtDataTreeIterator
@@ -116,7 +119,7 @@ class AVTFILTERS_API avtLineScanFilter : public avtDataTreeIterator
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
 
-    virtual vtkDataSet             *ExecuteData(vtkDataSet *, int,std::string);
+    virtual avtDataRepresentation  *ExecuteData(avtDataRepresentation *);
     virtual vtkDataSet             *CartesianExecute(vtkDataSet *);
     virtual vtkDataSet             *CylindricalExecute(vtkDataSet *);
 };

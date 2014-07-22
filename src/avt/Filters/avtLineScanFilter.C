@@ -671,20 +671,36 @@ avtLineScanFilter::PostExecute(void)
 //    Dave Bremer, Wed Dec 20 16:22:06 PST 2006
 //    Only use the cylindrical execute mode if we are in two dimensions.
 //
+//    Eric Brugger, Mon Jul 21 13:32:57 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtLineScanFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
+avtDataRepresentation *
+avtLineScanFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
+    vtkDataSet *out_ds = NULL;
     if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ &&
         GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
-        return CylindricalExecute(ds);
+        out_ds = CylindricalExecute(in_ds);
     }
     else
     {
-        return CartesianExecute(ds);
+        out_ds = CartesianExecute(in_ds);
     }
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    out_ds->Delete();
+
+    return out_dr;
 }
 
 
@@ -701,6 +717,9 @@ avtLineScanFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
 //  
 //    Hank Childs, Mon Jun 15 22:56:06 PDT 2009
 //    Fix stupid off-by-one when there are more than two intersections.
+//
+//    Eric Brugger, Mon Jul 21 13:32:57 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -909,9 +928,6 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
     output->SetLines(line_cells);
     line_cells->Delete();
 
-    ManageMemory(output);
-    output->Delete();
-
     UpdateProgress(extraMsg*(currentNode+1), extraMsg*totalNodes);
     return output;
 }
@@ -925,6 +941,10 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
 //
 //  Programmer: Hank Childs
 //  Creation:   July 28, 2006
+//
+//  Modifications:
+//    Eric Brugger, Mon Jul 21 13:32:57 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -1115,9 +1135,6 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
     vtk_line_id->Delete();
     output->SetLines(line_cells);
     line_cells->Delete();
-
-    ManageMemory(output);
-    output->Delete();
 
     UpdateProgress(extraMsg*(currentNode+1), extraMsg*totalNodes);
     return output;

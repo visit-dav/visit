@@ -47,8 +47,6 @@
 
 #include <avtDataTreeIterator.h>
 
-
-class vtkDataSet;
 class vtkPolyData;
 
 
@@ -69,6 +67,9 @@ class vtkPolyData;
 //
 //    Hank Childs, Thu Aug 21 22:03:57 PDT 2003
 //    Added more point glyphs.
+//
+//    Eric Brugger, Mon Jul 21 16:50:52 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -95,7 +96,7 @@ class AVTFILTERS_API avtPointToGlyphFilter : public avtDataTreeIterator
     vtkPolyData         *glyph3D;
     vtkPolyData         *glyph2D;
 
-    virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void         UpdateDataObjectInfo(void);
 
     void                 SetUpGlyph();
