@@ -101,7 +101,6 @@
 "operators/Box/avtBoxFilter.C": 2,
 "operators/Cylinder/avtCylinderFilter.C": 28,
 "operators/IntegralCurve/QvisIntegralCurveWindow.C": 3,
-"operators/IntegralCurve/avtIntegralCurveFilter.C": 2,
 "operators/Isosurface/avtIsosurfaceFilter.C": 8,
 "operators/Isovolume/avtIsovolumeFilter.C": 8,
 "operators/LineSampler/QvisLineSamplerWindow.C": 6,
