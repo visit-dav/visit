@@ -88,6 +88,8 @@ for line in mfile:
                 msg = rawmsg
             if msg[0:len("warning: ")] == "warning: ":
                 msg = msg[len("warning: ")::1]
+            msg_ascii = msg.decode('unicode_escape').encode('ascii','ignore')
+            msg = msg_ascii
 
             if ShouldSkip(src_file, msg):
                 continue
@@ -122,9 +124,31 @@ TestText("warning_counts_by_file", counts_txt)
 # Ok, tricky here. Append all the warning details to the html file
 # so others can actually see it
 #
+uniq_msgs = {}
+tot_files = len(warning_counts)
+tot_cnt = 0
+tot_uniq_cnt = 0
+for srcfile in warning_messages:
+    for lineno in warning_messages[srcfile]:
+        for msg in warning_messages[srcfile][lineno]:
+            if msg not in uniq_msgs:
+                uniq_msgs[msg] = 1
+            else:
+                uniq_msgs[msg] += 1
+            tot_uniq_cnt += 1
+            tot_cnt += len(warning_messages[srcfile][lineno])
+
+
 f = open(out_path("html","warning_counts_by_file.html"),"a")
 f.write("<pre>\n")
-f.write("\n\n\nWarning message strings currently being skipped if matched...\n");
+f.write("\n\n\nTotal warnings %d\n"%tot_cnt)
+f.write("Total files with warnings %d\n"%tot_files)
+f.write("Total unique warnings %d\n"%tot_uniq_cnt)
+f.write("Unique warning messages by count...\n")
+sorted_uniq_msgs = sorted(uniq_msgs, key=uniq_msgs.get, reverse=True)
+for msg in sorted_uniq_msgs:
+    f.write("%d: \"%s\"\n"%(uniq_msgs[msg],msg))
+f.write("\n\n\nWarning message strings currently being skipped if matched...\n")
 f.write(json.dumps(skip_list,indent=4))
 f.write("\n\n\nWarning message details by file and line number...\n");
 f.write(json.dumps(warning_messages,indent=4))
