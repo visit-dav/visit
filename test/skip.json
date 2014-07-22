@@ -36,6 +36,7 @@
                     {"category":"plots","file":"pics.py"}
                   ]},
  {"mode":"parallel","tests":[
+                    {"category":"simulation","file":"domainlist.py"},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
                     {"category":"databases","file":"diff.py"},
@@ -65,6 +66,7 @@
                     {"category":"plots","file":"streamline_geom.py","cases":["streamline_geom_10","streamline_geom_11","streamline_geom_12","streamline_geom_13","streamline_geom_14"]}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
+                    {"category":"simulation","file":"domainlist.py"},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
                     {"category":"database","file": "silo.py","cases":["silo_04","silo_05"]},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
