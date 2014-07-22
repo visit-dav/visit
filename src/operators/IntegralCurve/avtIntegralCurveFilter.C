@@ -86,7 +86,7 @@ std::string avtIntegralCurveFilter::tangentsArrayName = "tangents";
 //    Remove rad argument.
 //    
 // ****************************************************************************
-
+#if 0
 static vtkPolyData *
 CreateVTKVertex(double p[3], double val,
                 std::vector< std::string > secondaryVariables,
@@ -127,7 +127,7 @@ CreateVTKVertex(double p[3], double val,
 
     return pd;
 }
-
+#endif
 
 // ****************************************************************************
 //  Method: avtIntegralCurveFilter constructor
