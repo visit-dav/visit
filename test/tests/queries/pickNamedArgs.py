@@ -11,6 +11,8 @@
 #  Date:       July 11, 2014 
 #
 #  Modifications:
+#    Kathleen Biagas, Tue Jul 22 11:51:27 MST 2014
+#    Added Pick_ByGlobalId.
 #
 # ---------------------------------------------------------------------------- 
 
@@ -139,10 +141,69 @@ def PickUsingQueryResults():
     pick_out = PickByZone(domain=res['max_domain'], element=res['max_element_num'])
     s = s + "Pick for zone at 'd' maximum: \n" + GetPickOutput() 
     TestText("Pick_UsingQueryResults", s)
+    ResetPickLetter()
     DeleteAllPlots()
     CloseDatabase(silo_data_path("multi_rect3d.silo"))
  
+
+
+def doGlobalPicks(centering):
+    s = "Global node pick on %s_centered data:\n\n" %centering
+    d = PickByGlobalNode(element=246827)
+    s = s + "dictionary output:\n" + str(d) + "\n\n"
+    s = s + "string output: " + GetPickOutput() + "\n\n"
+
+    s = s + "\nGlobal zone pick on %s_centered data:\n\n" %centering
+    d = PickByGlobalZone(element=237394)
+    s = s + "dictionary output:\n" + str(d) + "\n\n"
+    s = s + "string output: " + GetPickOutput() + "\n\n"
+
+    return s
+
+def PickByGlobalElement():
+    OpenDatabase(silo_data_path("global_node.silo"))
+
+    AddPlot("Pseudocolor", "dist")
+    DrawPlots()
+    ResetView()
+    p = GetPickAttributes()
+    p.showGlobalIds = 0
+    SetPickAttributes(p)
+
+    s = "NOT SHOWING GLOBAL IDS\n\n"
+    s = s + doGlobalPicks("node")
+
+    #  Repeat, showing global ids
+    p.showGlobalIds = 1
+    SetPickAttributes(p)
+
+    s = s + "SHOWING GLOBAL IDS\n\n"
+    s = s + doGlobalPicks("node")
+
+    p.showGlobalIds = 0
+    SetPickAttributes(p)
+
+    # now use a zone-centered var
+    ChangeActivePlotsVar("p")
+
+    s = s + "NOT SHOWING GLOBAL IDS\n\n"
+    s = s + doGlobalPicks("zone")
+
+    #  Repeat, showing global ids
+    p.showGlobalIds = 1
+    SetPickAttributes(p)
+
+    s = s + "SHOWING GLOBAL IDS\n\n"
+    s = s + doGlobalPicks("zone")
+   
+    TestText("Pick_ByGlobalElement", s)
+    # cleanup
+    p.showGlobalIds = 0
+    SetPickAttributes(p)
+    DeleteAllPlots()
+    ResetPickLetter()
+
 TimePick()
 PickUsingQueryResults()
+PickByGlobalElement()
 Exit()
-
