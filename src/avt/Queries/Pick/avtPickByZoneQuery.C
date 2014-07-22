@@ -127,6 +127,10 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Kathleen Bonnell, Tue Jan 30 16:25:23 PST 2007 
 //    Send zoneid to RetrieveVarInfo.
 //
+//    Kathleen Biagas, Tue Jul 22 11:40:28 MST 2014
+//    Don't convert element names to global unless user requested them to be
+//    shown in global.
+//
 // ****************************************************************************
 
 void
@@ -136,7 +140,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     {
         return;
     }
-    int userZoneId = pickAtts.GetElementNumber();
+
     if (!pickAtts.GetElementIsGlobal())
     {
         if (dom != pickAtts.GetDomain()) 
@@ -153,6 +157,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         return; 
     }
 
+    int userZoneId = pickAtts.GetElementNumber();
     int zoneid = userZoneId;
     int maxEls = ds->GetNumberOfCells();
     if (pickAtts.GetMatSelected() &&  !pickAtts.GetElementIsGlobal())
@@ -213,7 +218,8 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     {
        zoneid =  GetCurrentZoneForOriginal(ds, pickAtts.GetElementNumber());
        userZoneId = zoneid;
-       ConvertElNamesToGlobal();
+       if (pickAtts.GetShowGlobalIds())
+           ConvertElNamesToGlobal();
     }
 
     pickAtts.SetElementNumber(userZoneId+cellOrigin);

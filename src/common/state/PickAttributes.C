@@ -3394,6 +3394,9 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
 //   Only print timeStep information if requested and not -1.
 //
+//   Kathleen Biagas, Tue Jul 22 11:35:33 MST 2014
+//   Account for global ids.
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -3485,10 +3488,12 @@ PickAttributes::PrintSelf(ostream &os)
         os << "Zone " ;
         if (showZoneId)
         {
-            if (!elementIsGhost)
-                os<< elementNumber << " ";
-            else 
+            if (elementIsGhost)
                 os<< elementNumber << "(ghost) ";
+            else if (elementIsGlobal)
+                os<< elementNumber << "(global) ";
+            else 
+                os<< elementNumber << " ";
         }
         if (showZoneDomainLogicalCoords && !dzoneCoords.empty())
         {
@@ -3505,10 +3510,12 @@ PickAttributes::PrintSelf(ostream &os)
         os << "Node ";
         if (showNodeId)
         {
-            if (!elementIsGhost)
-                os << elementNumber << " ";
-            else 
+            if (elementIsGhost)
                 os << elementNumber << "(ghost) ";
+            else if (elementIsGlobal)
+                os << elementNumber << "(global) ";
+            else 
+                os << elementNumber << " ";
         }
         if (showNodePhysicalCoords && !pnodeCoords.empty())
         {
@@ -4539,6 +4546,8 @@ PickAttributes::SetRayPoint2(const doubleVector &_v)
 // Creation:    September 22, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Tue Jul 22 11:35:33 MST 2014
+//   Account for showing global ids.
 //
 // ****************************************************************************
 
@@ -4554,13 +4563,19 @@ PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
     if (!fulfilled)
         return;
 
-    if (pickType == Zone || pickType == DomainZone)
+    if ((pickType == Zone || pickType == DomainZone) && showZoneId)
     {
-        m["zone_id"] = elementNumber;
+        if (globalElement == -1)
+            m["zone_id"] = elementNumber;
+        else 
+            m["zone_id"] = globalElement;
     }
-    else if (pickType == Node || pickType == DomainNode)
+    else if ((pickType == Node || pickType == DomainNode) && showNodeId)
     {
-        m["node_id"] = elementNumber;
+        if (globalElement == -1)
+            m["node_id"] = elementNumber;
+        else 
+            m["node_id"] = globalElement;
     }
 
     doubleVector p;
@@ -4631,26 +4646,22 @@ PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
         std::string ghostName;
         if (pickType == Zone || pickType == DomainZone)
         {
-            if (!showGlobal)
-                elName = "incident_nodes";
-            else 
-                elName = "global_incident_nodes"; 
+            elName = "incident_nodes";
             ghostName = "ghost_incident_nodes";
             showId = showNodeId;
         }
         else if (pickType == Node || pickType == DomainNode)
         {
-            if (!showGlobal)
-                elName = "incident_zones";
-            else 
-                elName = "global_incident_zones"; 
+            elName = "incident_zones";
             ghostName = "ghost_incident_zones";
             showId = showZoneId;
         }
         if (showId)
         {
-            m[elName] = incidentElements;
-#if 0
+            if (showGlobal)
+                m[elName] = globalIncidentElements;
+            else 
+                m[elName] = incidentElements;
             intVector els, ghostEls;
             for (size_t i = 0; i < incidentElements.size(); ++i)
             {
@@ -4664,7 +4675,6 @@ PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
             m[elName] = els;
             if (!ghostEls.empty())
                 m[ghostName] = ghostEls;
-#endif
         }
     }
 
