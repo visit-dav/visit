@@ -407,11 +407,9 @@ avtPointToGlyphFilter::SetScaleByVariableEnabled(bool s)
 //      Sends the specified input and output through the PointToGlyph filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_ds      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Hank Childs 
 //  Creation:   June 22, 2002
@@ -437,18 +435,26 @@ avtPointToGlyphFilter::SetScaleByVariableEnabled(bool s)
 //    Jeremy Meredith, Tue May  4 12:25:07 PDT 2004
 //    Added support for un-glyphed point meshes (glyph type 3).
 //
+//    Eric Brugger, Mon Jul 21 16:51:14 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtPointToGlyphFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     if (in_ds == NULL || in_ds->GetNumberOfCells() <= 0)
     {
         return NULL;
     }
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
     {
-        return in_ds;
+        return in_dr;
     }
 
     vtkPolyData *glyph = NULL;
@@ -493,11 +499,17 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         geom->SetInputData(ds);
         vtkPolyData *output = geom->GetOutput();
         geom->Update();
-        ManageMemory(output);
+        output->Register(NULL);
         pdrp->Delete();
         ugrp->Delete();
         geom->Delete();
-        return output;
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(output,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        output->Delete();
+
+        return out_dr;
     }
 
     //
@@ -522,6 +534,10 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     glyphFilter->Update();
 
     vtkDataSet *output = glyphFilter->GetOutput();
+    output->Register(NULL);
+    pdrp->Delete();
+    ugrp->Delete();
+    glyphFilter->Delete();
 
     //
     // The VTK glyphing routine does not copy point data.  Copy that over
@@ -548,11 +564,12 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     out_pd->Delete();
     ids->Delete();
 
-    ManageMemory(output);
-    glyphFilter->Delete();
-    pdrp->Delete();
-    ugrp->Delete();
-    return output;
+    avtDataRepresentation *out_dr = new avtDataRepresentation(output,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    output->Delete();
+
+    return out_dr;
 }
 
 

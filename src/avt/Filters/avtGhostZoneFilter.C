@@ -107,11 +107,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //      Sends the specified input and output through the GhostZone filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      domain     The domain number.
-//      <unused>   The label associated with this dataset.
+//      in_ds      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 1, 2001
@@ -156,15 +154,24 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Bug fix: Consider ghostZoneTypesToRemove and ghostNodeTypesToRemove
 //    when checking if data is all ghost.
 //
+//    Eric Brugger, Mon Jul 21 13:22:30 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
+avtDataRepresentation *
+avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set and domain number.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+
     if (in_ds->GetNumberOfCells() == 0)
     {
         debug5 << "No Cells in input! domain:  " << domain << endl;
-        return in_ds;
+        return in_dr;
     }
 
     bool haveGhostZones = 
@@ -177,7 +184,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         //  No ghost cells, no need to use this filter.
         //
         debug5 << "No Ghost Zones present! domain:  " << domain << endl;
-        return in_ds;
+        return in_dr;
     }
 
     //
@@ -237,7 +244,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         debug5 << "Allow rectilinear grid to travel through with ghost data;"
                << " depending on mapper to remove ghost data during render." 
                << endl;
-        return in_ds;
+        return in_dr;
     }
 
     if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID && 
@@ -246,7 +253,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         debug5 << "Allow structured grid to travel through with ghost data;"
                << " depending on mapper to remove ghost data during render." 
                << endl;
-        return in_ds;
+        return in_dr;
     }
 
     debug5 << "Using vtkDataSetRemoveGhostCells" << endl;
@@ -266,16 +273,22 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     //
     filter->Update();
     vtkDataSet *outDS = filter->GetOutput();
+    outDS->Register(NULL);
+    filter->Delete();
 
     if (outDS->GetNumberOfCells() == 0)
     {
+        outDS->Delete();
         outDS = NULL;
     }
 
-    ManageMemory(outDS);
-    filter->Delete();
+    avtDataRepresentation *out_dr = new avtDataRepresentation(outDS,
+        in_dr->GetDomain(), in_dr->GetLabel());
 
-    return outDS;
+    if (outDS != NULL)
+        outDS->Delete();
+
+    return out_dr;
 }
 
 

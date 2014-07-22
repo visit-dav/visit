@@ -37,10 +37,12 @@
 *****************************************************************************/
 #ifndef AVT_MISSING_DATA_FILTER_H
 #define AVT_MISSING_DATA_FILTER_H
+
 #include <filters_exports.h>
-#include <avtDataTreeIterator.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtDataTreeIterator.h>
+
 
 // ****************************************************************************
 // Class: avtMissingDataFilter
@@ -59,6 +61,9 @@
 //   Added canDoCollectiveCommunication flag to detect and handle when we
 //   are streaming.
 //   
+//   Eric Brugger, Mon Jul 21 14:40:46 PDT 2014
+//   Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMissingDataFilter : public avtDataTreeIterator
@@ -77,7 +82,7 @@ public:
 
 protected:
     virtual void          PreExecute(void);
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void          PostExecute(void);
 
     virtual avtContract_p ModifyContract(avtContract_p);

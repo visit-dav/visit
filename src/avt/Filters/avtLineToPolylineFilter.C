@@ -95,11 +95,9 @@ avtLineToPolylineFilter::~avtLineToPolylineFilter()
 //      Groups connected line cells into polyline cells.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      inDR       The input data representation.
 //
-//  Returns:       The output polydata.
+//  Returns:       The output data representation.
 //
 //  Note: The cell data copying is untested.
 //
@@ -111,6 +109,9 @@ avtLineToPolylineFilter::~avtLineToPolylineFilter()
 //    Tom Fogal, Mon Apr 26 17:27:44 MDT 2010
 //    Break out of a loop to prevent incrementing a singular iterator.
 //    Use `empty' instead of 'size'.
+//
+//    Eric Brugger, Mon Jul 21 13:51:51 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -148,9 +149,14 @@ struct edge
     vtkIdType first, second, cellid;
 };
 
-vtkDataSet *
-avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtLineToPolylineFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     if (inDS->GetDataObjectType() != VTK_POLY_DATA)
     {
         // We only work on line data
@@ -160,7 +166,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 1)
     {
-        return inDS;
+        return inDR;
     }
 
     int total = visitTimer->StartTimer();
@@ -173,7 +179,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     lines->Delete();
 
     vtkCellData *inCD = input->GetCellData();
-    vtkCellData *outCD  = output->GetCellData();
+    vtkCellData *outCD = output->GetCellData();
 
     // Copy the vert cell data
     for(vtkIdType i = 0; i < input->GetVerts()->GetNumberOfCells(); ++i)
@@ -205,7 +211,6 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     }
 
     int grouping = visitTimer->StartTimer();
-    //int lineOffset = input->GetVerts()->GetNumberOfCells();
     int ptsBufSize = 200;
     pts = new vtkIdType[ptsBufSize];
     while(!freeEdges.empty())
@@ -309,12 +314,14 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     for(int i = 0; i < input->GetStrips()->GetNumberOfCells(); ++i)
         outCD->CopyData(inCD, fromTSOffset + i, toCellId++);
 
-    ManageMemory(output);
-    output->Delete();
-
     visitTimer->StopTimer(total, "avtLineToPolylineFilter::ExecuteData");
 
-    return output;
+    avtDataRepresentation *outDR= new avtDataRepresentation(output,
+        inDR->GetDomain(), inDR->GetLabel());
+
+    output->Delete();
+
+    return outDR;
 }
 
 

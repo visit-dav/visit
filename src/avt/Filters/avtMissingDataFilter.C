@@ -224,9 +224,9 @@ avtMissingDataFilter::PreExecute()
 //   Remove missing data for a single domain.
 //
 // Arguments:
-//   in_ds : The input dataset for which we're removing missing data.
+//   in_dr     The input data representation.
 //
-// Returns:    A new dataset that does not contain the missing data.
+// Returns:    The new data representation.
 //
 // Note:       
 //
@@ -238,11 +238,19 @@ avtMissingDataFilter::PreExecute()
 //    Gunther H. Weber, Thu Feb 16 19:38:05 PST 2012
 //    Recompute "missing" if necessary in second pass.
 //
+//    Eric Brugger, Mon Jul 21 14:41:07 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtMissingDataFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtMissingDataFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     vtkDataSet *out_ds = NULL;
 
     if(contract->GetDataRequest()->MissingDataBehavior() == 
@@ -288,8 +296,6 @@ avtMissingDataFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                 missingData->Delete();
 
                 input2 = newds;
-                ManageMemory(input2);
-                input2->Delete();
 
                 debug5 << "Missing data has been identified" << endl;
             }
@@ -374,7 +380,7 @@ avtMissingDataFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                     }
                     thres->Update();
                     out_ds = thres->GetOutput();
-                    ManageMemory(out_ds);
+                    out_ds->Register(NULL);
                     thres->Delete();
 
                     // Remove the missing data array from the out_ds.
@@ -412,7 +418,13 @@ avtMissingDataFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         }
     }
 
-    return out_ds;
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    if (out_ds != in_ds)
+        out_ds->Delete();
+
+    return out_dr;
 }
 
 // ****************************************************************************
