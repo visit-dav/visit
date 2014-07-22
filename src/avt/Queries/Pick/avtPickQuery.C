@@ -1675,7 +1675,6 @@ void
 avtPickQuery::ConvertElNamesToGlobal(void)
 {
     // var names were retrieved from DB, not global, so convert them. 
-    size_t i;
     char buff[24];
     stringVector globalElName;
     SNPRINTF(buff, 24, "(%d)", pickAtts.GetGlobalElement());
@@ -1683,7 +1682,7 @@ avtPickQuery::ConvertElNamesToGlobal(void)
     intVector globalIds = pickAtts.GetGlobalIncidentElements();   
 
     stringVector names;
-    for (i = 0; i < globalIds.size(); i++)
+    for (size_t i = 0; i < globalIds.size(); i++)
     { 
         SNPRINTF(buff, 24, "(%d)", globalIds[i]);
         names.push_back(buff);
@@ -1692,7 +1691,7 @@ avtPickQuery::ConvertElNamesToGlobal(void)
     bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone ||
                     pickAtts.GetPickType() == PickAttributes::DomainZone;
 
-    for (i = 0; i < (size_t)pickAtts.GetNumVarInfos(); i++)
+    for (int i = 0; i < pickAtts.GetNumVarInfos(); i++)
     { 
         if (zonePick)
         {

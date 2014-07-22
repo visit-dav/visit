@@ -134,6 +134,9 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Kathleen Bonnell, Mon Oct  8 18:54:53 PDT 2007 
 //    Completed support for node origin. 
 //
+//    Kathleen Biagas, Tue Jul 22 11:38:50 MST 2014
+//    Don't convert to Global ids unless user wants ids shown as global.
+//
 // ****************************************************************************
 
 void
@@ -219,7 +222,8 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     {
         nodeid = GetCurrentNodeForOriginal(ds, pickAtts.GetElementNumber());
         usernodeid = nodeid;
-        ConvertElNamesToGlobal();
+        if (pickAtts.GetShowGlobalIds())
+            ConvertElNamesToGlobal();
     }
     pickAtts.SetElementNumber(usernodeid + nodeOrigin);
     if (pickAtts.GetMatSelected())

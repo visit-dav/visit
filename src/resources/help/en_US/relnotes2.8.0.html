@@ -107,6 +107,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a memory leak in unstructured grid ghost cell generation based on global node ids.</li>
   <li>Fixed a problem preventing ghost cells from being generated for 2D unstructured cell types. This fixes a bug where wireframe FilledBoundary plots were showing wireframes along domain boundaries.</li>
   <li>Fixed a problem-sized memory leak in the Clip operator after processing domains that resulted in zero clipped geometry.</li>
+  <li>Fixed a pick bug where global ids would sometimes not be reported correctly.</li>
 </ul>
 
 <a name="Config_changes"></a>

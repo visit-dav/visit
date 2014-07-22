@@ -2759,6 +2759,10 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //
 //   Jonathan Byrd, Fri Feb 1 2013
 //   Add DDT pick support for domain & element
+//
+//   Kathleen Biagas, Tue Jul 22 11:42:14 PDT 2014
+//   Don't create output string if output is suppressed.
+//
 // ****************************************************************************
 
 void
@@ -2839,33 +2843,35 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
                 win->ValidateQuery(pickAtts, NULL);
             } // else no valid position could be determined, data was transformed
 
-            //
+            // Create output string if messages are not suppressed
+            if (!suppressQueryOutput)
+            {
+                string msg;
+                pickAtts->CreateOutputString(msg);
+                if ( pickAtts->GetPickPoint()[0] == FLT_MAX &&
+                     pickAtts->GetPickType() != PickAttributes::CurveNode &&
+                     pickAtts->GetPickType() != PickAttributes::CurveZone)
+                {
+                    string append;
+                    if (pickAtts->GetPickType() == PickAttributes::Zone  ||
+                        pickAtts->GetPickType() == PickAttributes::DomainZone)
+                    {
+                        append = "Mesh was transformed and chosen zone is not "
+                            "part of transformed mesh.\nNo pick letter will "
+                            "be displayed.";
+                    }
+                    else
+                    {
+                        append = "Mesh was transformed and chosen node is not "
+                            "part of transformed mesh.\nNo pick letter will "
+                            "be displayed.";
+                    }
+                    msg += append;
+                }
+                Message(msg.c_str(), false);
+            }
             // Send pick attributes to the client.
             //
-            string msg;
-            pickAtts->CreateOutputString(msg);
-            if ( pickAtts->GetPickPoint()[0] == FLT_MAX &&
-                 pickAtts->GetPickType() != PickAttributes::CurveNode &&
-                 pickAtts->GetPickType() != PickAttributes::CurveZone)
-            {
-                string append;
-                if (pickAtts->GetPickType() == PickAttributes::Zone  ||
-                    pickAtts->GetPickType() == PickAttributes::DomainZone)
-                {
-                    append = "Mesh was transformed and chosen zone is not "
-                        "part of transformed mesh.\nNo pick letter will "
-                        "be displayed.";
-                }
-                else
-                {
-                    append = "Mesh was transformed and chosen node is not "
-                        "part of transformed mesh.\nNo pick letter will "
-                        "be displayed.";
-                }
-                msg += append;
-            }
-            if (!suppressQueryOutput)
-                Message(msg.c_str(), false);
             UpdatePickAtts();
 
             //
