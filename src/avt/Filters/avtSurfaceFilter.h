@@ -50,10 +50,6 @@
 #include <SurfaceFilterAttributes.h>
 
 
-class vtkDataSet;
-class vtkSurfaceFilter;
-
-
 // ****************************************************************************
 //  Class: avtSurfaceFilter
 //
@@ -103,6 +99,9 @@ class vtkSurfaceFilter;
 //    Hank Childs, Fri Mar  4 08:47:07 PST 2005
 //    Removed cd2pd.
 //
+//    Eric Brugger, Tue Jul 22 09:06:43 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSurfaceFilter : public avtDataTreeIterator
@@ -133,7 +132,7 @@ class AVTFILTERS_API avtSurfaceFilter : public avtDataTreeIterator
     double                  SkewTheValue(const double);
     void                    CalculateScaleValues(double *, double*);
 
-    virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void            UpdateDataObjectInfo(void);
     virtual void            VerifyInput(void);
     virtual void            PreExecute(void);

@@ -251,9 +251,7 @@ avtTransform::~avtTransform()
 //      Executes the transform on the specified domain.
 //
 //  Arguments:
-//      in_ds       The input dataset.
-//      <unnamed>   The domain number.
-//      <unnamed>   The label.
+//      in_dr       The input data representation.
 //
 //  Programmer: Hank Childs
 //  Creation:   November 27, 2000
@@ -293,21 +291,36 @@ avtTransform::~avtTransform()
 //    Kathleen Biagas, Fri Jan 25 16:39:17 PST 2013
 //    Call Update on filter, not data object.
 //
+//    Eric Brugger, Tue Jul 22 12:07:56 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtTransform::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     vtkMatrix4x4 *mat = GetTransform();
     if (IsIdentity(mat))
     {
-        return in_ds;
+        return in_dr;
     }
 
     int  datatype = in_ds->GetDataObjectType();
     if (datatype == VTK_RECTILINEAR_GRID)
     {
-        return TransformRectilinear((vtkRectilinearGrid *) in_ds);
+        vtkDataSet *out_ds = TransformRectilinear((vtkRectilinearGrid *) in_ds);
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        out_ds->Delete();
+
+        return out_dr;
     }
 
     vtkTransformFilter *transform = vtkTransformFilter::New();
@@ -337,10 +350,12 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
     transform->Update();
     vtkPointSet *out_ds = transform->GetOutput();
 
-    ManageMemory(out_ds);
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
     transform->Delete();
 
-    return out_ds;
+    return out_dr;
 }
 
 
@@ -361,6 +376,9 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    If we're doing a transform on curve data that would cause it to need 
 //    to change to polydata or something else, just store the transform so
 //    we can do the right thing later.
+//
+//    Eric Brugger, Tue Jul 22 12:07:56 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -404,9 +422,6 @@ avtTransform::TransformRectilinear(vtkRectilinearGrid *rgrid)
         for(int i = 0; i < 16; ++i)
             ct->SetTuple1(i, t->GetElement(i / 4, i % 4));
         out->GetFieldData()->AddArray(ct);
-
-        ManageMemory(out);
-        out->Delete();
 
         rv = out;
     }
@@ -491,6 +506,9 @@ avtTransform::OutputIsRectilinear(vtkMatrix4x4 *mat)
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
 //    Use NewInstance instead of MakeObject, to match new vtk api.
 //
+//    Eric Brugger, Tue Jul 22 12:07:56 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -554,14 +572,6 @@ avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
     out->SetZCoordinates(z_new);
     z_new->Delete();
 
-    //
-    // We want to reduce the reference count of this dataset so it doesn't get
-    // leaked.  But where to store it?  Fortunately, our base class handles
-    // this for us.
-    //
-    ManageMemory(out);
-    out->Delete();
-
     return out;
 }
 
@@ -603,6 +613,9 @@ avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
 //
 //    Kathleen Biagas, Tue Aug 21 16:49:12 MST 2012
 //    Preserve coordinate type.
+//
+//    Eric Brugger, Tue Jul 22 12:07:56 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -721,14 +734,7 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
         arr->Delete();
     }
 
-    //
-    // We want to reduce the reference count of this dataset so it doesn't get
-    // leaked.  But where to store it?  Fortunately, our base class handles
-    // this for us.
-    //
-    ManageMemory(out);
     trans->Delete();
-    out->Delete();
 
     return out;
 }

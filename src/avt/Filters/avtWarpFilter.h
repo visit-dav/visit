@@ -44,8 +44,8 @@
 #define AVT_WARP_FILTER_H
 
 #include <filters_exports.h>
-#include <avtDataTreeIterator.h>
 
+#include <avtDataTreeIterator.h>
 
 
 // ****************************************************************************
@@ -61,6 +61,9 @@
 //    Kathleen Bonnell, Fri Nov 17 13:05:53 PST 2006
 //    Needs FILTERS api for windows build.
 //
+//    Eric Brugger, Tue Jul 22 12:24:30 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWarpFilter : public avtDataTreeIterator
@@ -74,7 +77,7 @@ class AVTFILTERS_API avtWarpFilter : public avtDataTreeIterator
                                   { return "Warping dataset"; };
 
   protected:
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              PostExecute(void);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p

@@ -47,6 +47,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -96,11 +97,9 @@ avtWarpFilter::~avtWarpFilter()
 //    Takes in an input dataset and warps it by the point data scalars.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer:   Kathleen Bonnell
 //  Creation:     July 12, 2006
@@ -112,13 +111,19 @@ avtWarpFilter::~avtWarpFilter()
 //    Kathleen Biagas, Tue Aug 21 16:48:31 MST 2012
 //    Preserve coordinate type.
 //
+//    Eric Brugger, Tue Jul 22 12:24:55 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-#include <vtkVisItUtility.h>
-
-vtkDataSet *
-avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
+avtDataRepresentation *
+avtWarpFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     if (inDS->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
         EXCEPTION1(ImproperUseException, "Expecting RectlinearGrid");
@@ -194,9 +199,12 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
     verts->Delete();
     lines->Delete();
 
-    ManageMemory(polys);
+    avtDataRepresentation *outDR = new avtDataRepresentation(polys,
+        inDR->GetDomain(), inDR->GetLabel());
+
     polys->Delete();
-    return polys;
+
+    return outDR;
 }
 
 

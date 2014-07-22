@@ -116,10 +116,9 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //      necessary.
 //
 //  Arguments:
-//      inDS       The input dataset.
-//      <unused>   The domain number.
+//      inDR       The input data representation.
 //
-//  Returns:       The output dataset. 
+//  Returns:       The output data representation. 
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 19, 2001 
@@ -173,12 +172,20 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    Kathleen Biagas, Thu Sep 6 15:18:27 MST 2012
 //    Preserve data type.
 //
+//    Eric Brugger, Tue Jul 22 08:01:18 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
 {
-    size_t  i, j, k;
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
+    size_t i, j, k;
 
     vtkDataSet *newDS = (vtkDataSet *) inDS->NewInstance();
     newDS->ShallowCopy(inDS);
@@ -411,13 +418,12 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         outDS = inDS;
     }
 
-    if (outDS == newDS)
-    {
-        ManageMemory(outDS);
-    }
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
+        inDR->GetDomain(), inDR->GetLabel());
+
     newDS->Delete();
 
-    return outDS;
+    return outDR;
 }
 
 

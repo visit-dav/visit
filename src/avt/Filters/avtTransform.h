@@ -95,6 +95,9 @@ class     vtkRectilinearGrid;
 //    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
 //    Flag for vector transformations.
 //
+//    Eric Brugger, Tue Jul 22 12:07:11 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
@@ -106,13 +109,13 @@ class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
     virtual const char         *GetType(void) { return "avtTransform"; };
     virtual const char         *GetDescription(void)
                                         { return "Transforming data"; };
-    void                 SetVectorTransform(bool b)
+    void                        SetVectorTransform(bool b)
                                                { transformVectors = b; }
 
   protected:
     bool transformVectors;
 
-    virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual vtkMatrix4x4       *GetTransform() = 0;
     virtual void                UpdateDataObjectInfo(void);
 
