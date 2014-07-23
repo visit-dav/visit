@@ -58,6 +58,8 @@
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
+#include "QvisCollapsiblePanel.h"
+
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow
 //
@@ -190,22 +192,46 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 void
 QvisPseudocolorPlotWindow::CreateWindowContents()
 { 
-    QTabWidget *propertyTabs = new QTabWidget(central);
-    topLayout->addWidget(propertyTabs);
+    propertyStack = new QvisCollapsibleStack(central);
+    propertyStack->setParent( this );
+    topLayout->addWidget(propertyStack);
 
-    // ----------------------------------------------------------------------
-    // Data tab
-    // ----------------------------------------------------------------------
+    // // ----------------------------------------------------------------------
+    // // Data tab
+    // // ----------------------------------------------------------------------
     QWidget *dataTab = new QWidget(central);
-    propertyTabs->addTab(dataTab, tr("Data"));
     CreateDataTab(dataTab);
 
-    // ----------------------------------------------------------------------
-    // Geometry tab
-    // ----------------------------------------------------------------------
+    QvisCollapsiblePanel* dataFrame =
+      propertyStack->addPanel( tr("Data"), dataTab);
+
+    // // ----------------------------------------------------------------------
+    // // Geometry tab
+    // // ----------------------------------------------------------------------
     QWidget *geometryTab = new QWidget(central);
-    propertyTabs->addTab(geometryTab, tr("Geometry"));
     CreateGeometryTab(geometryTab);
+
+    QvisCollapsiblePanel* geometryFrame =
+      propertyStack->addPanel( tr("Geometry"), geometryTab);
+
+    geometryFrame->collapse();
+
+    // QTabWidget *propertyTabs = new QTabWidget(central);
+    // topLayout->addWidget(propertyTabs);
+
+    // // ----------------------------------------------------------------------
+    // // Data tab
+    // // ----------------------------------------------------------------------
+    // QWidget *dataTab = new QWidget(central);
+    // propertyTabs->addTab(dataTab, tr("Data"));
+    // CreateDataTab(dataTab);
+
+    // // ----------------------------------------------------------------------
+    // // Geometry tab
+    // // ----------------------------------------------------------------------
+    // QWidget *geometryTab = new QWidget(central);
+    // propertyTabs->addTab(geometryTab, tr("Geometry"));
+    // CreateGeometryTab(geometryTab);
 
     // ----------------------------------------------------------------------
     // Extras tab
