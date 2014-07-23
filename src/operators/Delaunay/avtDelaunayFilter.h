@@ -43,12 +43,9 @@
 #ifndef AVT_Delaunay_FILTER_H
 #define AVT_Delaunay_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <DelaunayAttributes.h>
-
-
-class vtkDataSet;
 
 
 // ****************************************************************************
@@ -59,6 +56,10 @@ class vtkDataSet;
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   February 25, 2009
+//
+//  Modifications:
+//    Eric Brugger, Wed Jul 23 11:59:54 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -80,7 +81,7 @@ class avtDelaunayFilter : public avtPluginDataTreeIterator
   protected:
     DelaunayAttributes   atts;
 
-    virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     void                 UpdateDataObjectInfo();
 
 };

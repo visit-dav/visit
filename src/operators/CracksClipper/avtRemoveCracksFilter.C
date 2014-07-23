@@ -269,11 +269,9 @@ avtRemoveCracksFilter::Equivalent(const AttributeGroup *a)
 //    Sends the specified input and output through the Cracks filter.
 //
 //  Arguments:
-//    in_ds     The input dataset.
-//    dom       The domain number.
-//    <unused>  The label.
+//    in_dr     The input data representation.
 //
-//  Returns:    The output dataset.
+//  Returns:    The output data representation.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
@@ -282,11 +280,20 @@ avtRemoveCracksFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
 //    RemoveCracks has been restructured, only called once now.
 //
+//    Eric Brugger, Wed Jul 23 11:18:15 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet*
-avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
+avtDataRepresentation *
+avtRemoveCracksFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set and domain number.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+
     if (in_ds == NULL || in_ds->GetNumberOfCells() == 0)
         return NULL;
 
@@ -331,12 +338,16 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     if (!NeedsProcessing(useThis, needsProc))
     {
         rv = defaultReturn;
-        ManageMemory(defaultReturn);
-        defaultReturn->Delete();
         numOCells->Delete();
         oz->Delete();
         useThis->Delete();
-        return rv;
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        rv->Delete();
+
+        return out_dr;
     }
 
     //
@@ -362,16 +373,20 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     //
     if (mw[0] == 0 && mw[1] == 0 && mw[2] == 0)
     {
-        debug5 << "avtRemoveCracksFilter not processing domain " << dom
+        debug5 << "avtRemoveCracksFilter not processing domain " << domain
                << "  because all crack widths are zero" << endl;
         cwf->Delete();
         rv = defaultReturn;
-        ManageMemory(defaultReturn);
-        defaultReturn->Delete();
         numOCells->Delete();
         oz->Delete();
         useThis->Delete();
-        return rv;
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        rv->Delete();
+
+        return out_dr;
     }
 
     vtkDataSet *output = RemoveCracks(cwf->GetOutput());
@@ -385,8 +400,6 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     {
         RemoveExtraArrays(output, true);
         rv = output;
-        ManageMemory(output);
-        output->Delete();
     }
     if (rv != NULL)
         rv->GetFieldData()->AddArray(numOCells);
@@ -397,7 +410,10 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     numOCells->Delete();
     defaultReturn->Delete();
 
-    return rv;
+    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    return out_dr;
 }
 
 

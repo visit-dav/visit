@@ -44,11 +44,12 @@
 #define AVT_Box_FILTER_H
 
 #include <avtPluginDataTreeIterator.h>
+
 #include <BoxAttributes.h>
 
-class     vtkDataSet;
-class     vtkRectilinearGrid;
-class     vtkUnstructuredGrid;
+class vtkDataSet;
+class vtkRectilinearGrid;
+class vtkUnstructuredGrid;
 
 
 // ****************************************************************************
@@ -72,6 +73,9 @@ class     vtkUnstructuredGrid;
 //    Made this derive again from avtPluginDataTreeIterator instead of
 //    avtSIMODataTreeIterator.
 // 
+//    Eric Brugger, Tue Jul 22 17:07:12 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtBoxFilter : public avtPluginDataTreeIterator
@@ -93,7 +97,7 @@ class avtBoxFilter : public avtPluginDataTreeIterator
     BoxAttributes   atts;
     int             selID;
 
-    virtual vtkDataSet    *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     vtkRectilinearGrid    *RectilinearExecute(vtkRectilinearGrid *);
     vtkUnstructuredGrid   *GeneralExecute(vtkDataSet *);
     virtual void           UpdateDataObjectInfo(void);

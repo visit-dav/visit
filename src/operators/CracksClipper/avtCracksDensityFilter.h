@@ -43,12 +43,9 @@
 #ifndef AVT_CracksDensity_FILTER_H
 #define AVT_CracksDensity_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <CracksClipperAttributes.h>
-
-
-class vtkDataSet;
 
 
 // ****************************************************************************
@@ -63,6 +60,9 @@ class vtkDataSet;
 //  Modifications:
 //    Kathleen Biagas, Tue Aug 14 15:14:57 MST 2012
 //    Add 'varname' ivar.
+//
+//    Eric Brugger, Wed Jul 23 11:13:24 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -86,7 +86,7 @@ class avtCracksDensityFilter : public avtPluginDataTreeIterator
   protected:
     CracksClipperAttributes atts;
     std::string           varname;
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 };
 
 

@@ -43,13 +43,12 @@
 #ifndef AVT_DUALMESH_FILTER_H
 #define AVT_DUALMESH_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <DualMeshAttributes.h>
 
-
-class vtkDataSet;
 class vtkDataArray;
+
 
 // ****************************************************************************
 //  Class: avtDualMeshFilter
@@ -74,6 +73,9 @@ class vtkDataArray;
 //    Brad Whitlock, Wed Aug 15 12:21:41 PDT 2012
 //    Override ModifyContract.
 //
+//    Eric Brugger, Wed Jul 23 12:06:25 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtDualMeshFilter : public avtPluginDataTreeIterator
@@ -97,7 +99,7 @@ class avtDualMeshFilter : public avtPluginDataTreeIterator
     int                  actualMode;
 
     virtual void         UpdateDataObjectInfo(void);
-    virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void         ExamineContract(avtContract_p contract);
     virtual avtContract_p ModifyContract(avtContract_p);
 

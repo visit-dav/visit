@@ -43,20 +43,18 @@
 #ifndef AVT_Cone_FILTER_H
 #define AVT_Cone_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
-#include <ConeAttributes.h>
 
+#include <ConeAttributes.h>
 
 class vtkClipPolyData;
 class vtkCone;
-class vtkVisItCutter;
 class vtkDataSet;
 class vtkImplicitBoolean;
 class vtkPlane;
-class vtkTransformPolyDataFilter;
-
 class vtkPolarTransformFilter;
+class vtkTransformPolyDataFilter;
+class vtkVisItCutter;
 
 
 // ****************************************************************************
@@ -80,6 +78,9 @@ class vtkPolarTransformFilter;
 //    Moved the VTK pointers into a struct to allocate the destroy them for
 //    changes to the code for threading. Also added functions to create and
 //    destroy the VTK objects.
+//
+//    Eric Brugger, Wed Jul 23 08:37:40 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -117,7 +118,7 @@ class avtConeFilter : public avtPluginDataTreeIterator
         vtkPlane                    *planeToClipByLength;
     } avtConeFilterVTKObjects;
 
-    virtual vtkDataSet          *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void                 UpdateDataObjectInfo(void);
     void                         SetUpClipping(avtConeFilterVTKObjects &obj);
     void                         SetUpCone(avtConeFilterVTKObjects &obj);

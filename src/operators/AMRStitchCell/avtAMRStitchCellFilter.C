@@ -335,24 +335,32 @@ avtAMRStitchCellFilter::PreExecute(void)
 //      Create dual grid and stitch cell data sets and add them to a data tree
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      domain     The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Gunther H. Weber
 //  Creation:   Thu Jul 8 15:14:01 PST 2010
 //
+//  Modifications:
+//    Eric Brugger, Tue Jul 22 17:02:41 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p 
-avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
-        std::string str)
+avtAMRStitchCellFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set, the domain number and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     // Diagnostic output
     debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Processing domain ";
-    debug5 << domain << " (" << str << ")" << std::endl;
+    debug5 << domain << " (" << label << ")" << std::endl;
 
     // Obtain level
     const int level = domainNesting->GetDomainLevel(domain);
@@ -369,7 +377,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         // Return an empty data set for levels or patches that are disabled for
         // debugging.
         vtkDataSet *ods[2] = { 0, 0 };
-        return new avtDataTree(2, ods, domain, str);
+        return new avtDataTree(2, ods, domain, label);
     }
 
     // Ensure that we are working on rectilinear grid
@@ -875,7 +883,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
     delete[] refinedInSameLevelDomain;
 
     // Create data tree
-    avtDataTree_p rv = new avtDataTree(2, out_ds, domain, str);
+    avtDataTree_p rv = new avtDataTree(2, out_ds, domain, label);
 
     // Clean-up intermediate results
     for (int dsNo=0; dsNo<2; ++dsNo)
