@@ -262,24 +262,31 @@ ShouldAtomsBeBonded(double dmin, double dmax,
 //      Sends the specified input and output through the CreateBonds filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 27, 2010
 //
-//   Jeremy Meredith, Tue Feb 22 21:36:07 EST 2011
-//   Added support for non-polydata mesh types through the geometry filter.
-//   Sure, it may be a little blunt, but it doesn't hurt anything and allows
-//   e.g. Silo point meshes (which are unstructured, not poly data) to work.
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 22 21:36:07 EST 2011
+//    Added support for non-polydata mesh types through the geometry filter.
+//    Sure, it may be a little blunt, but it doesn't hurt anything and allows
+//    e.g. Silo point meshes (which are unstructured, not poly data) to work.
+//
+//    Eric Brugger, Wed Jul 23 11:25:16 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
-vtkDataSet *
-avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, string)
+avtDataRepresentation *
+avtCreateBondsFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     vtkGeometryFilter *geom = NULL;
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
@@ -301,7 +308,7 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, string)
             maxBondDist = maxDist[i];
     }
     if (maxBondDist <= 0.)
-        return in_ds;
+        return in_dr;
 
     //
     // Find the actual extents
@@ -345,7 +352,13 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, string)
     }
     if (geom)
         geom->Delete();
-    return out_ds;
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    out_ds->Delete();
+
+    return out_dr;
 }
 
 
@@ -372,6 +385,9 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, string)
 //
 //   Kathleen Biagas, Tue Aug 21 16:08:27 MST 2012
 //   Preserve coordinate type.
+//
+//   Eric Brugger, Wed Jul 23 11:25:16 PDT 2014
+//   Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -400,6 +416,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     {
         debug1 << "avtCreateBondsFilter: did not find appropriate point array\n";
         debug1 << "   -- returning original data set with no bonds changed.\n";
+        in->Register(NULL);
         return in;
     }
 
@@ -695,8 +712,6 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
 
     delete[] atomgrid;
 
-    ManageMemory(out);
-    out->Delete();
     return out;    
 }
 
@@ -738,6 +753,9 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
 //    Kathleen Biagas, Tue Aug 21 16:08:27 MST 2012 
 //    Preserve coordinate type.
 //
+//    Eric Brugger, Wed Jul 23 11:25:16 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -762,6 +780,7 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
     {
         debug1 << "avtCreateBondsFilter: did not find appropriate point array\n";
         debug1 << "   -- returning original data set with no bonds changed.\n";
+        in->Register(NULL);
         return in;
     }
 
@@ -1011,8 +1030,6 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
             origCellNums->SetTuple1(i,-1);
     }
 
-    ManageMemory(out);
-    out->Delete();
     return out;
 }
 
