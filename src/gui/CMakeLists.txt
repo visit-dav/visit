@@ -221,6 +221,7 @@ SimCommandSlots.C
 SplashScreen.C
 WidgetDataNode.C
 mini3D.C
+QvisCollapsiblePanel.C
 )
 
 # The subset of the sources that have Q_OBJECT in their header.
@@ -356,6 +357,7 @@ QvisKeyframeWidget.h
 QvisKeyframePlotRangeWidget.h
 QvisViewportWidget.h
 QvisXRayImageQueryWidget.h
+QvisCollapsiblePanel.h
 )
 
 QT_WRAP_CPP(gui GUILIB_SOURCES ${GUILIB_MOC_SOURCES})
