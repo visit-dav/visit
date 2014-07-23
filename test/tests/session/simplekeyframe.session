@@ -2556,7 +2556,7 @@
                                                     <Field name="pointSize" type="double">0.05</Field>
                                                     <Field name="pointType" type="string">Point</Field>
                                                     <Field name="skewFactor" type="double">1</Field>
-                                                    <Field name="opacityType" type="int">2</Field>
+                                                    <Field name="opacityType" type="string">Constant</Field>
                                                     <Field name="opacity" type="double">1</Field>
                                                     <Field name="colorTableName" type="string">hot</Field>
                                                     <Field name="smoothingLevel" type="int">0</Field>
@@ -2577,7 +2577,7 @@
                                                     <Field name="pointSize" type="double">0.05</Field>
                                                     <Field name="pointType" type="string">Point</Field>
                                                     <Field name="skewFactor" type="double">100</Field>
-                                                    <Field name="opacityType" type="int">2</Field>
+                                                    <Field name="opacityType" type="string">Constant</Field>
                                                     <Field name="opacity" type="double">0.509804</Field>
                                                     <Field name="colorTableName" type="string">hot</Field>
                                                     <Field name="smoothingLevel" type="int">0</Field>
