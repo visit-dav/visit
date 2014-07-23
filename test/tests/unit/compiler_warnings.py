@@ -7,7 +7,11 @@
 #
 #  Mark C. Miller, Sun Jul 13 21:45:49 PDT 2014
 # ----------------------------------------------------------------------------
-import os.path, json
+import time, os.path, json
+
+# To reduce noise, only run this test on Sunday evenings
+if time.strftime("%A", time.localtime()) != "Sunday":
+    Exit(119)
 
 def ShouldSkip(srcfile, msg):
     srcfile_tmp = "global skip list"
@@ -24,8 +28,9 @@ src_dir = test_root_path("..","src")
 tpb_dir = test_root_path("..","src","third_party_builtin")
 qtssh_dir = test_root_path("..","src","tools","qtssh")
 
+# skip this test if we don't have the make.err file
 if not os.path.exists(test_root_path("..","make.err")):
-    Exit(113)
+    Exit(119)
 
 #
 # Read per-file skip list and zero any line numbers
