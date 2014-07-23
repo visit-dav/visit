@@ -506,7 +506,7 @@ MapNode::ToJSONNodeData(bool encodeString) const
     }
     else // save value, if we have a value
     {
-        node = Variant::ToJSONNode(encodeString);
+        node = Variant::ToJSONNode(encodeString,true);
     }
 
     return node;

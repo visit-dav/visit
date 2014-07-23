@@ -2634,7 +2634,7 @@ Variant::ToXML(const string &indent, bool encodeString) const
 string
 Variant::ToJSON(const string &indent, bool encodeString) const
 {
-    return ToJSONNode(encodeString).ToString(indent);
+    return ToJSONNode(encodeString, true).ToString(indent);
 }
 
 // ****************************************************************************
@@ -2795,11 +2795,6 @@ Variant::ToXMLNode(bool encodeString) const
     return node;
 }
 
-JSONNode
-Variant::ToJSONNode(bool encodeString) const
-{
-    return this->ToJSONNode(encodeString, true);
-}
 
 JSONNode
 Variant::ToJSONNode(bool encodeString, bool id) const
