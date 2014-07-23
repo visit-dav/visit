@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-  <Plugin name="Pseudocolor" type="plot" label="Pseudocolor" version="1.0" enabled="true" vartype="scalar,species" iconFile="Pseudocolor.xpm">
+  <Plugin name="Pseudocolor" type="plot" label="Pseudocolor" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Pseudocolor.xpm">
     <Files components="V">
       avtPseudocolorFilter.C
     </Files>
     <Files components="E">
       avtPseudocolorFilter.C
     </Files>
-    <Attribute name="PseudocolorAttributes" purpose="Attributes for the pseudocolor plot" persistent="true" codefile="Pseudocolor.code">
+    <Attribute name="PseudocolorAttributes" purpose="Attributes for the pseudocolor plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Pseudocolor.code">
       <Enum name="Scaling">
         Linear
         Log
@@ -57,15 +57,12 @@
         Absolute
         FractionOfBBox
       </Enum>
-
       <Field name="scaling" label="Scale" type="enum" subtype="Scaling">
         Linear
       </Field>
-
       <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
         1.000000
       </Field>
-
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
       </Field>
@@ -81,11 +78,9 @@
       <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
-
       <Field name="centering" label="Centering" type="enum" subtype="Centering">
         Natural
       </Field>
-
       <Field name="colorTableName" label="Color table" type="colortable">
         hot
       </Field>
@@ -112,7 +107,6 @@
       <Field name="opacityVarMaxFlag" label="opactityVarMaxFlag" type="bool">
         false
       </Field>
-
       <Field name="pointSize" label="Point size" type="double">
         0.050000
       </Field>
@@ -128,7 +122,6 @@
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         2
       </Field>
-
       <Field name="lineType" label="Line Type" type="enum" subtype="LineType">
         Line
       </Field>
@@ -138,7 +131,6 @@
       <Field name="lineWidth" label="lineWidth" type="linewidth">
         0
       </Field>
-
       <Field name="tubeDisplayDensity" label="tubeDisplayDensity" type="int">
         10
       </Field>
@@ -151,7 +143,6 @@
       <Field name="tubeRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="tubeRadiusSizeType:FractionOfBBox">
         0.005000
       </Field>
-
       <Field name="varyTubeRadius" label="varyTubeRadius" type="bool">
         false
       </Field>
@@ -160,14 +151,12 @@
       <Field name="varyTubeRadiusFactor" label="varyTubeRadiusFactor" type="double">
         10.000000
       </Field>
-
       <Field name="endPointType" label="End point type" type="enum" subtype="EndPointType">
         None
       </Field>
       <Field name="endPointStyle" label="End point style" type="enum" subtype="EndPointStyle">
         Spheres
       </Field>
-
       <Field name="endPointRadiusSizeType" label="endPointRadiusSizeType" type="enum" subtype="SizeType">
         FractionOfBBox
       </Field>
@@ -180,7 +169,6 @@
       <Field name="endPointRatio" label="endPointRatio" type="double">
         2.000000
       </Field>
-
       <Field name="renderSurfaces" label="Render surfaces" type="int">
         1
       </Field>
@@ -193,14 +181,12 @@
       <Field name="smoothingLevel" label="Smoothing" type="int">
         0
       </Field>
-
-       <Field name="legendFlag" label="Legend" type="bool">
+      <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
       <Field name="lightingFlag" label="Lighting" type="bool">
         true
       </Field>
-
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="Print" user="true" member="true">
