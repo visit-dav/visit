@@ -122,7 +122,7 @@ class STATE_API JSONNode
     JSONNode(const stringVector& v);
     virtual  ~JSONNode();
 
-    JSONType GetType() const { return type; } const
+    JSONType GetType() const { return type; }
 
     bool isNullValue()   const { return json.num.nullValue; }
     bool   GetBool()    const { return json.num.boolValue; }
