@@ -31,12 +31,12 @@ function bv_cgns_depends_on
 
 function bv_cgns_info
 {
-export CGNS_FILE=${CGNS_FILE:-"cgns-3.0.8-Source.tar.gz"}
-export CGNS_VERSION=${CGNS_VERSION:-"3.0.8"}
-export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.0"}
-export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgns-3.0.8-Source/src"}
-export CGNS_MD5_CHECKSUM="812a9a49c98ef32b7cae9954808d6f3e"
-export CGNS_SHA256_CHECKSUM=""
+export CGNS_FILE=${CGNS_FILE:-"cgnslib_3.2.1.tar.gz"}
+export CGNS_VERSION=${CGNS_VERSION:-"3.2.1"}
+export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.2"}
+export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgnslib_3.2.1/src"}
+export CGNS_MD5_CHECKSUM="2d26f88b2058dcd0ee5ce58f483bfccb"
+export CGNS_SHA256_CHECKSUM="34306316f04dbf6484343a4bc611b3bf912ac7dbc3c13b581defdaebbf6c1fc3"
 
 }
 
@@ -127,11 +127,11 @@ function build_cgns
     fi
     info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-       ./configure $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+       ./configure --enable-64bit $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       ./configure $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+       ./configure --enable-64bit $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
        warn "CGNS configure failed.  Giving up"
