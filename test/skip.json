@@ -50,6 +50,7 @@
                     {"category":"plots","file":"pathlines.py","platform":"win"}
                   ]},
  {"mode":"parallel","tests":[
+                    {"category":"queries","file": "py_queries.py"},
                     {"category":"plots","file": "sl_termination.py"},
                     {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
@@ -94,6 +95,7 @@
                     {"category":"databases","file":"claw.py","platform":"win"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
+                    {"category":"queries","file": "py_queries.py"},
                     {"category":"plots","file": "sl_termination.py"},
                     {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
