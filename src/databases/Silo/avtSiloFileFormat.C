@@ -133,14 +133,6 @@ using StringHelpers::Absname;
 using StringHelpers::Basename;
 using StringHelpers::Dirname;
 
-#ifdef DBGetDataReadMask
-typedef unsigned long long DBReadMaskType_t;
-#else
-typedef long DBReadMaskType_t;
-#endif
-static DBReadMaskType_t SetSiloReadMask(DBReadMaskType_t mask);
-static DBReadMaskType_t GetSiloReadMask(void);
-
 static void      ExceptionGenerator(char *);
 static void      ExceptionGenerator(char *);
 static char     *GenerateName(const char *, const char *, const char *);
@@ -349,32 +341,6 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
             debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
     }
 
-    // This block of logic does the following. Sets default ignore of force single
-    // to false. But, for older versions of Silo which either do not define
-    // SILO_VERSION_GE macro (e.g. really, really old) or which do define it but
-    // are older than version 4.8, we set ignore of force single to true. In
-    // addition, if the user had set read options to NOT dontForceSingle, then
-    // we'll also put a message in the debug logs about it.
-    bool ignoreForceSingle = false;
-#ifndef SILO_VERSION_GE
-    ignoreForceSingle = true;
-#else
-#if !SILO_VERSION_GE(4,8,0)
-    ignoreForceSingle = true;
-#endif
-#endif
-    if (ignoreForceSingle)
-    {
-        if (forceSingle)
-        {
-            debug1 << "Ignoring Force Single setting of 1 which would have...\n"
-                   << "...otherwise caused the Silo library to try to force all datatype'd\n"
-                   << "...arrays to float because the old version of the Silo library being\n"
-                   << "...used here does NOT correctly honor the force single setting." << endl;
-        }
-        forceSingle = 0;
-    }
-
     //
     // Set any necessary Silo library behavior 
     //
@@ -391,9 +357,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     // underlying file DOES NOT contain checksums and will cause only
     // a small performance hit if it does.
     //
-#ifdef E_CHECKSUM
     DBSetEnableChecksums(1);
-#endif
 }
 
 
@@ -592,12 +556,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     else if ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) != NULL)
     {
         debug1 << "Succeeding in opening Silo file with DB_UNKNOWN driver" << endl;
-        siloDriver = DB_UNKNOWN;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,5,1)
         siloDriver = DBGetDriverType(dbfiles[f]);
-#endif
-#endif
     }
     else
     {
@@ -621,25 +580,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
             toc->nmultimat + toc->nmultimatspecies + toc->nqmesh +
             toc->nqvar + toc->nucdmesh + toc->nucdvar + toc->nptmesh +
             toc->nptvar + toc->nvar + toc->nmat + toc->nobj + toc->ndir
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,9,0)
-            + toc->nmrgtree + toc->ngroupelmap + toc->nmrgvar
-#else
-#if SILO_VERSION_GE(4,6,1)
-            + toc->nmrgtrees + toc->ngroupelmaps + toc->nmrgvars
-#endif
-#endif
-#endif
-
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,9,0)
-            + toc->narray;
-#else
-            + toc->narrays;
-#endif
-#else
-            + toc->narrays;
-#endif
+            + toc->nmrgtree + toc->ngroupelmap + toc->nmrgvar + toc->narray;
 
         //
         // We don't appear to have any silo objects, so we'll fail it
@@ -1205,7 +1146,7 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // to read the extra data arrays, except for material names and 
     // numbers and colors.
     //
-    SetSiloReadMask(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
+    DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
 
     //
     // Do a recursive search through the subdirectories.
@@ -1221,7 +1162,7 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // To be nice to other functions, tell Silo to turn back on reading all
     // of the data.
-    SetSiloReadMask(DBAll);
+    DBSetDataReadMask2(DBAll);
 }
 
 // ****************************************************************************
@@ -1810,12 +1751,8 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                         }
                         ndims = um->ndims;
                         tdims = ndims;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,1)
                         if (um->topo_dim != -1)
                             tdims = um->topo_dim;
-#endif
-#endif
                         cellOrigin = um->origin;
                         if (um->units[0] != NULL)
                             xUnits = um->units[0];
@@ -1992,8 +1929,6 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 vector<int> amr_group_ids;
                 vector<string> amr_block_names;
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,2)
                 if (mm->mrgtree_name != 0)
                 {
                     // So far, we've coded only for MRG trees representing AMR hierarchies
@@ -2003,21 +1938,9 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
 
                     HandleMrgtreeNodelistVars(dbfile, name_w_dir, mm->mrgtree_name, md);
                 }
-#endif
-#endif
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,2)
                 if (mt == AVT_UNSTRUCTURED_MESH)
                     mmd->disjointElements = hasDisjointElements || mm->disjoint_mode != 0; 
-#else
-                if (mt == AVT_UNSTRUCTURED_MESH)
-                    mmd->disjointElements = hasDisjointElements;
-#endif
-#else
-                if (mt == AVT_UNSTRUCTURED_MESH)
-                    mmd->disjointElements = hasDisjointElements;
-#endif
 
                 if (num_amr_groups > 0)
                 {
@@ -2282,24 +2205,16 @@ avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
                 extents_to_use = extents;
             }
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,2)
                 if (um->mrgtree_name != 0)
                 {
                     // So far, we've coded only for MRG trees representing AMR hierarchies
                     HandleMrgtreeNodelistVars(dbfile, name_w_dir, um->mrgtree_name, md);
                 }
-#endif
-#endif
 
             // Handle data-specified topological dimension if its available
             int tdims = um->ndims;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,1)
             if (um->topo_dim != -1)
                 tdims = um->topo_dim;
-#endif
-#endif
 
             if (!DBIsEmptyUcdmesh(um))
             {
@@ -2524,7 +2439,6 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
     int ncsgmesh, char **csgmesh_names,
     const char *dirname, avtDatabaseMetaData *md)
 {
-#ifdef DBCSG_INNER
     size_t i,j;
     for (i = 0 ; i < (size_t)ncsgmesh ; i++)
     {
@@ -2542,10 +2456,10 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
 
            // We want to read the header for the csg zonelist too
            // so we can serve up the "zones" of a csg mesh as "blocks"
-           DBReadMaskType_t mask = GetSiloReadMask();
-           SetSiloReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
+           unsigned long long mask = DBGetDataReadMask2();
+           DBSetDataReadMask2(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
            csgm = DBGetCsgmesh(correctFile, realvar.c_str());
-           SetSiloReadMask(mask);
+           DBSetDataReadMask2(mask);
            if (csgm == NULL || csgm->zones == NULL)
            {
                debug1 << "Unable to read mesh \"" << csgmesh_names[i]
@@ -2622,7 +2536,6 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
         if (csgm) DBFreeCsgmesh(csgm);
         if (name_w_dir) delete [] name_w_dir;
     }
-#endif
 }
 
 // ****************************************************************************
@@ -2827,8 +2740,6 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
 
                 if (valid_var)
                 {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,2)
                     if (mv->mmesh_name != 0)
                     {
                         meshname = mv->mmesh_name;
@@ -2837,8 +2748,6 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                                << meshname.c_str() << "\"" << endl;
                     }
                     else
-#endif
-#endif
                     {
                         // NOTE: There is an explicit assumption that the corresponding
                         //       multimesh has already been read.  Thus it must reside
@@ -2876,11 +2785,9 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             DBfile *correctFile = dbfile;
             string  varUnits;
             int nvals = 1;
-#ifdef DBOPT_MISSING_VALUE
             double missing_value = DB_MISSING_VALUE_NOT_SET;
             if (mv->missing_value != DB_MISSING_VALUE_NOT_SET)
                 missing_value = mv->missing_value;
-#endif
             if (valid_var && mv)
             {
                 DetermineFileAndDirectory(mb_varname.c_str(),"",
@@ -2906,11 +2813,9 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         treatAsASCII = (uv->ascii_labels);
                         if(uv->units != 0)
                             varUnits = string(uv->units);
-#ifdef DBOPT_MISSING_VALUE
                         if (missing_value == DB_MISSING_VALUE_NOT_SET &&
                             uv->missing_value != DB_MISSING_VALUE_NOT_SET)
                             missing_value = uv->missing_value;
-#endif
                         DBFreeUcdvar(uv);
                     }
                     break;
@@ -2932,11 +2837,9 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         treatAsASCII = (qv->ascii_labels);
                         if(qv->units != 0)
                             varUnits = string(qv->units);
-#ifdef DBOPT_MISSING_VALUE
                         if (missing_value == DB_MISSING_VALUE_NOT_SET &&
                             qv->missing_value != DB_MISSING_VALUE_NOT_SET)
                             missing_value = qv->missing_value;
-#endif
                         DBFreeQuadvar(qv);
                     }
                     break;
@@ -2957,17 +2860,13 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         treatAsASCII = (pv->ascii_labels);
                         if(pv->units != 0)
                             varUnits = string(pv->units);
-#ifdef DBOPT_MISSING_VALUE
                         if (missing_value == DB_MISSING_VALUE_NOT_SET &&
                             pv->missing_value != DB_MISSING_VALUE_NOT_SET)
                             missing_value = pv->missing_value;
-#endif
                         DBFreeMeshvar(pv);
                     }
                     break;
 
-
-#ifdef DBCSG_INNER
                   case DB_CSGVAR:
                     {
                         DBcsgvar *csgv = DBGetCsgvar(correctFile, realvar.c_str());
@@ -2985,15 +2884,12 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         treatAsASCII = (csgv->ascii_labels);
                         if(csgv->units != 0)
                             varUnits = string(csgv->units);
-#ifdef DBOPT_MISSING_VALUE
                         if (missing_value == DB_MISSING_VALUE_NOT_SET &&
                             csgv->missing_value != DB_MISSING_VALUE_NOT_SET)
                             missing_value = csgv->missing_value;
-#endif
                         DBFreeCsgvar(csgv);
                     }
                     break;
-#endif
                   default:
                     ; // No-op. Compiler complains about a break here.
                 }
@@ -3020,7 +2916,6 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                     strstr(multivar_names[i], "rlxstat") != 0)
                     AddAle3drlxstatEnumerationInfo(smd);
 
-#ifdef DBOPT_MISSING_VALUE
                 if (missing_value != DB_MISSING_VALUE_NOT_SET)
                 {
                     double arr[2] = {0., 0.};
@@ -3028,8 +2923,6 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                     smd->SetMissingData(arr);
                     smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                 }
-#endif
-              
                 md->Add(smd);
             }
             else if (treatAsASCII)
@@ -3158,7 +3051,6 @@ avtSiloFileFormat::ReadQuadvars(DBfile *dbfile,
                         smd->units = string(qv->units);
                     }
 
-#ifdef DBOPT_MISSING_VALUE
                     if (qv->missing_value != DB_MISSING_VALUE_NOT_SET)
                     {
                         double arr[2] = {0., 0.};
@@ -3166,8 +3058,6 @@ avtSiloFileFormat::ReadQuadvars(DBfile *dbfile,
                         smd->SetMissingData(arr);
                         smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                     }
-#endif
-
                     md->Add(smd);
                 }
                 else if (qv->ascii_labels)
@@ -3291,7 +3181,6 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
                         smd->units = string(uv->units);
                     }
 
-#ifdef DBOPT_MISSING_VALUE
                     if (uv->missing_value != DB_MISSING_VALUE_NOT_SET)
                     {
                         double arr[2] = {0., 0.};
@@ -3299,8 +3188,6 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
                         smd->SetMissingData(arr);
                         smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                     }
-#endif
-
                     md->Add(smd);
                 }
                 else if (uv->ascii_labels)
@@ -3409,7 +3296,6 @@ avtSiloFileFormat::ReadPointvars(DBfile *dbfile,
                         smd->hasUnits = true;
                         smd->units = string(pv->units);
                     }
-#ifdef DBOPT_MISSING_VALUE
                     if (pv->missing_value != DB_MISSING_VALUE_NOT_SET)
                     {
                         double arr[2] = {0., 0.};
@@ -3417,7 +3303,6 @@ avtSiloFileFormat::ReadPointvars(DBfile *dbfile,
                         smd->SetMissingData(arr);
                         smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                     }
-#endif
                     md->Add(smd);
                 }
                 else if (pv->ascii_labels)
@@ -3480,7 +3365,6 @@ avtSiloFileFormat::ReadCSGvars(DBfile *dbfile,
     int ncsgvar, char **csgvar_names,
     const char *dirname, avtDatabaseMetaData *md)
 {
-#ifdef DBCSG_INNER
     int i;
     for (i = 0 ; i < ncsgvar ; i++)
     {
@@ -3597,7 +3481,6 @@ avtSiloFileFormat::ReadCSGvars(DBfile *dbfile,
         if (name_w_dir) delete [] name_w_dir;
         if (meshname_w_dir) delete [] meshname_w_dir;
     }
-#endif
 }
 
 // ****************************************************************************
@@ -3677,7 +3560,6 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
                     //
                     // Deal with material colors
                     //
-#ifdef DBOPT_MATCOLORS
                     if (mat->matcolors)
                     {
                         if (mat->matcolors[j] && mat->matcolors[j][0])
@@ -3685,7 +3567,6 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
                         else
                             matcolors.push_back("");
                     }
-#endif
                 }
 
                 meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
@@ -3851,12 +3732,8 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                     minfo_matcolors = mat->matcolors;
 
                     bool invalidateVar = false;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
                     if (mm->nmatnos > 0 && mm->nmatnos != mat->nmat)
                         invalidateVar = true;
-#endif
-#endif
                     if (invalidateVar)
                     {
                         debug1 << "Invalidating material \"" << multimat_names[i] 
@@ -3871,15 +3748,11 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             }
             else
             {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
                 //Get all the info from the multi-mat.
                 minfo_nmats     = mm->nmatnos;
                 minfo_matnos    = mm->matnos;
                 minfo_matnames  = mm->material_names;
                 minfo_matcolors = mm->matcolors;
-#endif
-#endif
             }
 
             //
@@ -3909,7 +3782,6 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                     matnames.push_back(num);
                     delete[] num;
 
-#ifdef DBOPT_MATCOLORS
                     if (minfo_matcolors)
                     {
                         if (minfo_matcolors[j] && minfo_matcolors[j][0])
@@ -3917,11 +3789,8 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                         else
                             matcolors.push_back("");
                     }
-#endif
                 }
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,2)
                 if (mm->mmesh_name != 0)
                 {
                     meshname = mm->mmesh_name;
@@ -3930,8 +3799,6 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                            << meshname.c_str() << "\"" << endl;
                 }
                 else
-#endif
-#endif
                 {
                     meshname = DetermineMultiMeshForSubVariable(dbfile,
                                                                 multimat_names[i],
@@ -4330,7 +4197,6 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
     int ndefvars, char **defvars_names,
     const char *dirname, avtDatabaseMetaData *md)
 {
-#ifdef DB_VARTYPE_SCALAR
     for (int i = 0; i < ndefvars; i++)
     {
         DBdefvars *defv = 0;
@@ -4389,7 +4255,6 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
         if (defv) DBFreeDefvars(defv);
 
     }
-#endif
 }
 
 // ****************************************************************************
@@ -4469,13 +4334,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     COPY_TOC_ENTRY(matspecies);
     COPY_TOC_ENTRY(multimatspecies);
     COPY_TOC_ENTRY(curve);
-#ifdef DBCSG_INNER
     COPY_TOC_ENTRY(csgvar);
     COPY_TOC_ENTRY(csgmesh);
-#endif
-#ifdef DB_VARTYPE_SCALAR
     COPY_TOC_ENTRY(defvars);
-#endif
 
     // Miscellany in the root directory
     char *searchpath_str = NULL;
@@ -4615,13 +4476,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     FREE_COPIED_TOC_ENTRY(multimatspecies);
     FREE_COPIED_TOC_ENTRY(curve);
     FREE_COPIED_TOC_ENTRY(dir);
-#ifdef DBCSG_INNER
     FREE_COPIED_TOC_ENTRY(csgmesh);
     FREE_COPIED_TOC_ENTRY(csgvar);
-#endif
-#ifdef DB_VARTYPE_SCALAR
     FREE_COPIED_TOC_ENTRY(defvars);
-#endif
 }
 
 // ****************************************************************************
@@ -5626,15 +5483,15 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
 
     // guard against improper read mask that occurs when treat all dbs as 
     // time varying is enabled. 
-    DBReadMaskType_t prev_read_mask = GetSiloReadMask();
-    SetSiloReadMask(prev_read_mask | DBMMADJNodelists | DBMMADJZonelists);
+    unsigned long long prev_read_mask = DBGetDataReadMask2();
+    DBSetDataReadMask2(prev_read_mask | DBMMADJNodelists | DBMMADJZonelists);
 
     // Get the MultiMeshAdjacency object
     DBmultimeshadj *mmadj_obj = DBGetMultimeshadj(dbfile,
                                                   "Domain_Decomposition",
                                                   0,NULL);
     // restore prev read mask
-    SetSiloReadMask(prev_read_mask);
+    DBSetDataReadMask2(prev_read_mask);
     bool ok = true;
     // Make sure we only have structured meshes.
     DBReadVar(dbfile, "NumDomains", &ndomains);
@@ -6067,8 +5924,8 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname,
     double  *extents_to_use = NULL;
     bool hideFromGUI = true; ///TODO: check on uninit var
 
-    DBReadMaskType_t mask = GetSiloReadMask();
-    SetSiloReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
+    unsigned long long mask = DBGetDataReadMask2();
+    DBSetDataReadMask2(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
 
     string mb_csgname = "";
     for (i = 0; i < mm->nblocks; i++)
@@ -6139,7 +5996,7 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname,
         DBFreeCsgmesh(csgm);
 
     }
-    SetSiloReadMask(mask);
+    DBSetDataReadMask2(mask);
 
 
     // a value for meshnum of -1 at this point indicates
@@ -6949,9 +6806,9 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
         //
         // Read the mesh header and just the zonelist for it.
         //
-        DBReadMaskType_t oldMask = SetSiloReadMask(DBUMZonelist|DBZonelistInfo);
+        unsigned long long oldMask = DBSetDataReadMask2(DBUMZonelist|DBZonelistInfo);
         DBucdmesh  *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
-        SetSiloReadMask(oldMask);
+        DBSetDataReadMask2(oldMask);
 
         if (um == NULL)
         {
@@ -7040,9 +6897,9 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
     GetMeshHelper(&domain, meshName.c_str(), 0, 0, &domain_file, domain_mesh);
 
     // Only get the mesh header information, none of the problem sized data.
-    DBReadMaskType_t oldMask = SetSiloReadMask(0x0);
+    unsigned long long oldMask = DBSetDataReadMask2(0x0);
     DBucdmesh  *um = DBGetUcdmesh(domain_file, domain_mesh.c_str());
-    SetSiloReadMask(oldMask);
+    DBSetDataReadMask2(oldMask);
     if (!um)
     {
         debug3 << "Unable to get mesh \"" << meshName << "\" for domain " << domain << endl;
@@ -7743,12 +7600,8 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
         vectors = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
     else if(uv->datatype == DB_FLOAT)
         vectors = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     else if(uv->datatype == DB_LONG_LONG)
         vectors = CopyUcdVar<long long,vtkLongLongArray>(uv, *remap);
-#endif
-#endif
     else if(uv->datatype == DB_LONG)
         vectors = CopyUcdVar<long,vtkLongArray>(uv, *remap);
     else if(uv->datatype == DB_INT)
@@ -7887,12 +7740,8 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
         vectors = CopyQuadVectorVar<double,vtkDoubleArray>(qv);
     else if(qv->datatype == DB_FLOAT)
         vectors = CopyQuadVectorVar<float,vtkFloatArray>(qv);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     else if(qv->datatype == DB_LONG_LONG)
         vectors = CopyQuadVectorVar<long long,vtkLongLongArray>(qv);
-#endif
-#endif
     else if(qv->datatype == DB_LONG)
         vectors = CopyQuadVectorVar<long,vtkLongArray>(qv);
     else if(qv->datatype == DB_INT)
@@ -8020,12 +7869,8 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
         vectors = CopyPointVectorVar<double,vtkDoubleArray>(mv);
     else if(mv->datatype == DB_FLOAT)
         vectors = CopyPointVectorVar<float,vtkFloatArray>(mv);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     else if(mv->datatype == DB_LONG_LONG)
         vectors = CopyPointVectorVar<long long,vtkLongLongArray>(mv);
-#endif
-#endif
     else if(mv->datatype == DB_LONG)
         vectors = CopyPointVectorVar<long,vtkLongArray>(mv);
     else if(mv->datatype == DB_INT)
@@ -8121,15 +7966,9 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
     //
     // Sort out the bad cases.
     //
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
     if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_QUAD_CURV &&
         type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH &&
         type != DB_CSGMESH && type != DB_CURVE)
-#else
-    if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_QUAD_CURV &&
-        type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH &&
-        type != DB_CURVE)
-#endif
     {
         EXCEPTION1(InvalidVariableException, mesh);
     }
@@ -8154,11 +7993,7 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
     }
     else
     {
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
         if (domain != 0 && type != DB_CSGMESH)
-#else
-        if (domain != 0)
-#endif
         {
             EXCEPTION2(BadDomainException, domain, 1);
         }
@@ -8296,12 +8131,10 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     {
         rv = GetPointMesh(domain_file, directory_mesh.c_str(), domain);
     }
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
     else if (type == DB_CSGMESH)
     {
         rv = GetCSGMesh(domain_file, directory_mesh.c_str(), domain);
     }
-#endif
     else if (type == DB_CURVE)
     {
         rv = GetCurve(domain_file, directory_mesh.c_str());
@@ -8380,8 +8213,6 @@ CreateDataArray(int silotype, void *data, int numvals)
         da = d;
         break;
     }
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     case DB_LONG_LONG:
     {
         vtkLongLongArray *d = vtkLongLongArray::New();
@@ -8389,8 +8220,6 @@ CreateDataArray(int silotype, void *data, int numvals)
         da = d;
         break;
     }
-#endif
-#endif
     case DB_FLOAT:
     default:
     {
@@ -8455,8 +8284,6 @@ ConvertToFloat(int silotype, void *data, int nels)
             retval[i] = (float)ptr[i];
         }
         break;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     case DB_LONG_LONG:
         { const long long *ptr = (const long long *)data;
         retval = new float[nels];
@@ -8464,8 +8291,6 @@ ConvertToFloat(int silotype, void *data, int nels)
             retval[i] = (float)ptr[i];
         }
         break;
-#endif
-#endif
     case DB_LONG:
         { const long *ptr = (const long *)data;
         retval = new float[nels];
@@ -8529,7 +8354,7 @@ static void
 TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
     avtMaterial *mat, vtkUnstructuredGrid *ugrid,
     const intVector& restrictToMats,
-    void **_newvals, void **_newmixvals)
+    void ***_newvals, void ***_newmixvals)
 {
     size_t i, j;
     int nzones = mat->GetNZones();
@@ -8660,8 +8485,8 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
             }
         }
     }
-    *_newvals = newvals;
-    *_newmixvals = newmixvals;
+    *_newvals = (void**) newvals;
+    *_newmixvals = (void**) newmixvals;
 }
 
 // ****************************************************************************
@@ -8748,7 +8573,7 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
     }
 
     int i, nzones = mat->GetNZones(), nnodes = ugrid?ugrid->GetNumberOfPoints():0;
-    void *newvals=0, *newmixvals=0;
+    void **newvals=0, **newmixvals=0;
     if (uv->datatype == DB_DOUBLE)
         TraverseMaterialForSubsettedUcdvar<double>(uv, mat, ugrid, restrictToMats,
             &newvals, &newmixvals);
@@ -8767,22 +8592,16 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
     else if (uv->datatype == DB_LONG)
         TraverseMaterialForSubsettedUcdvar<long>(uv, mat, ugrid, restrictToMats,
             &newvals, &newmixvals);
-#ifdef DB_LONG_LONG
     else if (uv->datatype == DB_LONG_LONG)
         TraverseMaterialForSubsettedUcdvar<long long>(uv, mat, ugrid, restrictToMats,
             &newvals, &newmixvals);
-#endif
 
     // Overwite DBucdvar's old contents with stuff we just expanded.
     for (i = 0; i < uv->nvals; i++)
         free(uv->vals[i]);
     free(uv->vals);
     uv->nels = ugrid?nnodes:nzones;
-#ifdef DB_DTPTR
-    uv->vals = (DB_DTPTR**) newvals;
-#else
-    uv->vals = (float**) newvals;
-#endif
+    uv->vals = newvals;
     if (uv->mixvals)
     {
         for (i = 0; i < uv->nvals; i++)
@@ -8790,11 +8609,7 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
         free(uv->mixvals);
     }
     uv->mixlen = mat->GetMixlen();
-#ifdef DB_DTPTR
-    uv->mixvals = (DB_DTPTR**) newmixvals;
-#else
-    uv->mixvals = (float**) newmixvals;
-#endif
+    uv->mixvals = newmixvals;
 }
 
 // ****************************************************************************
@@ -8913,12 +8728,8 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
         scalars = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
     else if(uv->datatype == DB_FLOAT)
         scalars = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     else if(uv->datatype == DB_LONG_LONG)
         scalars = CopyUcdVar<long long,vtkLongLongArray>(uv, *remap);
-#endif
-#endif
     else if(uv->datatype == DB_LONG)
         scalars = CopyUcdVar<long,vtkLongArray>(uv, *remap);
     else if(uv->datatype == DB_INT)
@@ -9071,12 +8882,8 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
             CopyAndReorderQuadVar((double *) var2, nx, ny, nz, var);
         else if (qv->datatype == DB_LONG)
             CopyAndReorderQuadVar((long *) var2, nx, ny, nz, var);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
         else if (qv->datatype == DB_LONG_LONG)
             CopyAndReorderQuadVar((long long *) var2, nx, ny, nz, var);
-#endif
-#endif
         else if (qv->datatype == DB_LONG)
             CopyAndReorderQuadVar((long *) var2, nx, ny, nz, var);
         else if (qv->datatype == DB_INT)
@@ -9310,21 +9117,9 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 //    Added support for LONG LONG types.
 // ****************************************************************************
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
 void
 avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     void *gzoneno, int lgzoneno, int gnznodtype)
-#else
-void
-avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
-    int *gzoneno, int lgzoneno)
-#endif
-#else
-void
-avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
-    int *gzoneno, int lgzoneno)
-#endif
 {
     //
     // Lookup an arb. poly remap data we might need.
@@ -9343,20 +9138,11 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     DBucdvar tmp;
     tmp.centering = DB_ZONECENT;
     tmp.datatype = DB_INT;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
     tmp.datatype = gnznodtype;
-#endif
-#endif
     tmp.nels = lgzoneno;
     tmp.nvals = 1;
-#ifdef DB_DTPTR
-    tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1]; 
-    tmp.vals[0] = (DB_DTPTR*) gzoneno; 
-#else
-    tmp.vals = (float**) new float*[1]; 
-    tmp.vals[0] = (float*) gzoneno; 
-#endif
+    tmp.vals = (void**) malloc(sizeof(void*)); /* use malloc because this is a Silo object */
+    tmp.vals[0] = (void*) gzoneno; 
 
     vtkDataArray *arr = NULL; //TODO: check for fix of uninit variable
     if (tmp.datatype == DB_SHORT)
@@ -9365,13 +9151,9 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
         arr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
     else if (tmp.datatype == DB_LONG)
         arr = CopyUcdVar<long,vtkLongArray>(&tmp, *remap);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     else if (tmp.datatype == DB_LONG_LONG)
         arr = CopyUcdVar<long long,vtkLongLongArray>(&tmp, *remap);
-#endif
-#endif
-    delete [] tmp.vals;
+    free(tmp.vals);
 
     //
     // Cache this VTK object but in the VoidRefCache, not the VTK cache
@@ -9717,15 +9499,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     //
     if (um->gnodeno != NULL)
     {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
         vtkDataArray *arr = CreateDataArray(um->gnznodtype, um->gnodeno, um->nnodes); 
-#else
-        vtkDataArray *arr = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
-#endif
-#else
-        vtkDataArray *arr = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
-#endif
         um->gnodeno = 0; // vtkDataArray now owns the data.
 
         //
@@ -9750,22 +9524,9 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         ReadInConnectivity(ugrid, um, mesh, domain);
         rv = ugrid;
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
         if (um->zones->gzoneno != NULL)
             HandleGlobalZoneIds(mesh, domain, um->zones->gzoneno,
                 um->zones->nzones, um->zones->gnznodtype);
-#else
-        if (um->zones->gzoneno != NULL)
-            HandleGlobalZoneIds(mesh, domain, um->zones->gzoneno,
-                um->zones->nzones);
-#endif
-#else
-        if (um->zones->gzoneno != NULL)
-            HandleGlobalZoneIds(mesh, domain, um->zones->gzoneno,
-                um->zones->nzones);
-#endif
-
     }
     else if (fl != NULL && um->phzones == NULL)
     {
@@ -9792,21 +9553,9 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         }
         ReadInArbConnectivity(mesh, ugrid, um, domain);
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
         if (um->phzones->gzoneno != NULL)
             HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
                 um->phzones->nzones, um->phzones->gnznodtype);
-#else
-        if (um->phzones->gzoneno != NULL)
-            HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
-                um->phzones->nzones);
-#endif
-#else
-        if (um->phzones->gzoneno != NULL)
-            HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
-                um->phzones->nzones);
-#endif
     }
 
     points->Delete();
@@ -10450,17 +10199,12 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         tmp.datatype = DB_CHAR;
         tmp.nels = numCells;
         tmp.nvals = 1;
-#ifdef DB_DTPTR
-        tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1];
-        tmp.vals[0] = (DB_DTPTR*) gvals;
-#else
-        tmp.vals = (float**) new float*[1];
-        tmp.vals[0] = (float*) gvals;
-#endif
+        tmp.vals = (void**) malloc(sizeof(void*)); /* use malloc because this is a Silo object */
+        tmp.vals[0] = (void*) gvals;
         vector<int> noremap;
         vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp,
             cellReMap?*cellReMap:noremap);
-        delete [] tmp.vals;
+        free(tmp.vals);
         delete [] gvals;
 
         ghostZones->SetName("avtGhostZones");
@@ -11578,15 +11322,10 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
         tmp.datatype = DB_CHAR;
         tmp.nels = phzl->nzones;
         tmp.nvals = 1;
-#ifdef DB_DTPTR
-        tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1];
-        tmp.vals[0] = (DB_DTPTR*) gvals;
-#else
-        tmp.vals = (float**) new float*[1];
-        tmp.vals[0] = (float*) gvals;
-#endif
+        tmp.vals = (void**) malloc(sizeof(void*));
+        tmp.vals[0] = (void*) gvals;
         vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp, *remap);
-        delete [] tmp.vals;
+        free(tmp.vals);
         delete [] gvals;
 
         //
@@ -12059,8 +11798,6 @@ CreateCurve(DBcurve *cur, const char *curvename, int vtkType)
     yv->SetNumberOfComponents(1);
     yv->SetNumberOfTuples(cur->npts);
     yv->SetName(curvename);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,9,2)
     if (cur->coord_sys == DB_SPHERICAL || cur->coord_sys == DB_CYLINDRICAL)
     {
         for (int i = 0 ; i < cur->npts; i++)
@@ -12072,8 +11809,6 @@ CreateCurve(DBcurve *cur, const char *curvename, int vtkType)
         }
     }
     else
-#endif
-#endif
     {
         for (int i = 0 ; i < cur->npts; i++)
         {
@@ -12139,12 +11874,8 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
         rg = CreateCurve<float,vtkFloatArray>(cur, curvename, VTK_FLOAT);
     else if (cur->datatype == DB_DOUBLE)
         rg = CreateCurve<double,vtkDoubleArray>(cur, curvename, VTK_DOUBLE);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,0)
     else if (cur->datatype == DB_LONG_LONG)
         rg = CreateCurve<long long,vtkLongLongArray>(cur, curvename, VTK_LONG_LONG);
-#endif
-#endif
     else if (cur->datatype == DB_LONG)
         rg = CreateCurve<long,vtkLongArray>(cur, curvename, VTK_LONG);
     else if (cur->datatype == DB_INT)
@@ -12714,15 +12445,7 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn, int domain)
     //
     if (pm->gnodeno != NULL)
     {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
         vtkDataArray *arr = CreateDataArray(pm->gnznodtype, pm->gnodeno, pm->nels); 
-#else
-        vtkDataArray *arr = CreateDataArray(DB_INT, pm->gnodeno, pm->nels); 
-#endif
-#else
-        vtkDataArray *arr = CreateDataArray(DB_INT, pm->gnodeno, pm->nels); 
-#endif
         pm->gnodeno = 0; // vtkDataArray now owns the data.
 
         //
@@ -12777,9 +12500,6 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn, int domain)
 vtkDataSet *
 avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 {
-#ifndef DBCSG_INNER // remove after silo-4.5 is released
-    return 0;
-#else
 #ifdef MDSERVER
     return 0;
 #else
@@ -12879,7 +12599,6 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
     csgcopy->ShallowCopy(csggrid);
     return csgcopy;
 
-#endif
     return 0;
 #endif
 }
@@ -14011,10 +13730,10 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
-    DBReadMaskType_t mask = GetSiloReadMask();
-    SetSiloReadMask(DBUMGlobNodeNo);
+    unsigned long long mask = DBGetDataReadMask2();
+    DBSetDataReadMask2(DBUMGlobNodeNo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
-    SetSiloReadMask(mask);
+    DBSetDataReadMask2(mask);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
 
@@ -14025,15 +13744,7 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
         debug5 << "Reading in domain " << dom << ", global node ids for " << mesh << endl;
         debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
         rv = CreateDataArray(um->gnznodtype, um->gnodeno, um->nnodes);
-#else
-        rv = CreateDataArray(DB_INT, um->gnodeno, um->nnodes);
-#endif
-#else
-        rv = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
-#endif
         um->gnodeno = 0; // vtkDataArray owns the data now.
 
     }
@@ -14102,25 +13813,17 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
 
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
-    DBReadMaskType_t mask = GetSiloReadMask();
-    SetSiloReadMask(DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo);
+    unsigned long long mask = DBGetDataReadMask2();
+    DBSetDataReadMask2(DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
-    SetSiloReadMask(mask);
+    DBSetDataReadMask2(mask);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
 
     vtkDataArray *rv = NULL;
     if (um->zones->gzoneno != NULL)
     {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
         rv = CreateDataArray(um->zones->gnznodtype, um->zones->gzoneno, um->zones->nzones); 
-#else
-        rv = CreateDataArray(DB_INT, um->zones->gzoneno, um->zones->nzones); 
-#endif
-#else
-        rv = CreateDataArray(DB_INT, um->zones->gzoneno, um->zones->nzones); 
-#endif
         um->zones->gzoneno = 0; // vtkDataArray owns the data now.
     }
 
@@ -14399,31 +14102,19 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
     char **matnames = NULL;
     char *buffer = NULL;
     bool haveMatnames = silomat->matnames;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
     if (mm&&mm->material_names)
         haveMatnames = true;
-#endif
-#endif
     if (haveMatnames)
     {
         int nmat = silomat->nmat;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
         if (mm&&mm->nmatnos>0) 
             nmat = mm->nmatnos;
-#endif
-#endif
         int max_dlen = 0;
         for (int i = 0 ; i < nmat ; i++)
         {
             int matno = silomat->matnos[i];
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
             if (mm&&mm->matnos)
                 matno = mm->matnos[i];
-#endif
-#endif
             int dlen = int(log10(float(matno+1))) + 1;
             if(dlen>max_dlen)
                 max_dlen = dlen;
@@ -14437,14 +14128,10 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
             matnames[i] = buffer + (256+max_dlen)*i;
             int matno = silomat->matnos[i];
             const char *matname = silomat->matnames[i];
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
             if (mm&&mm->matnos)
                 matno = mm->matnos[i];
             if (mm&&mm->material_names)
                 matname = mm->material_names[i];
-#endif
-#endif
             sprintf(matnames[i], "%d %s", matno, matname);
         }
     }
@@ -14474,13 +14161,8 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
         tmp.datatype = DB_INT;
         tmp.nels = nzones;
         tmp.nvals = 1;
-#ifdef DB_DTPTR
-        tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1];
-        tmp.vals[0] = (DB_DTPTR*) silomat->matlist;
-#else
-        tmp.vals = (float**) new float*[1];
-        tmp.vals[0] = (float*) silomat->matlist;
-#endif
+        tmp.vals = (void**) malloc(sizeof(void*)); /* use malloc because this is a Silo object */
+        tmp.vals[0] = (void*) silomat->matlist;
         matListArr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
 
         //
@@ -14490,19 +14172,15 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
         silomat->dims[0] = (int) remap->size();
         silomat->dims[1] = 1;
         silomat->dims[2] = 1;
-        delete [] tmp.vals;
+        free(tmp.vals);
     }
 
     int nummats = silomat->nmat;
     int *matnos = silomat->matnos;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
     if (mm&&mm->nmatnos>0)
         nummats = mm->nmatnos;
     if (mm&&mm->matnos)
         matnos = mm->matnos;
-#endif
-#endif
     if(silomat->datatype != DB_FLOAT)
     {
         debug5 << "IMPORTANT: The Silo reader is converting mix_vf data for "
@@ -14517,11 +14195,7 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
             silomat->dims, silomat->major_order,
             matListArr?(int*)(matListArr->GetVoidPointer(0)):silomat->matlist,
             silomat->mixlen, silomat->mix_mat, silomat->mix_next, silomat->mix_zone,
-            mix_vf, dom_string
-#ifdef DBOPT_ALLOWMAT0
-                              ,silomat->allowmat0
-#endif
-            );
+            mix_vf, dom_string ,silomat->allowmat0);
     }
 
     if(mix_vf && mix_vf != (float*)silomat->mix_vf)
@@ -14683,10 +14357,10 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, const char *mesh)
     // We want to get just the facelist.  So we need to get the ReadMask,
     // set it to read facelists, then set it back.
     VisitMutexLock("avtSiloFileFormat::CalcExternalFacelist");
-    DBReadMaskType_t mask = GetSiloReadMask();
-    SetSiloReadMask(DBUMFacelist | DBFacelistInfo);
+    unsigned long long mask = DBGetDataReadMask2();
+    DBSetDataReadMask2(DBUMFacelist | DBFacelistInfo);
     DBucdmesh *um = DBGetUcdmesh(correctFile, realvar.c_str());
-    SetSiloReadMask(mask);
+    DBSetDataReadMask2(mask);
     VisitMutexUnlock("avtSiloFileFormat::CalcExternalFacelist");
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
@@ -16437,8 +16111,6 @@ GatherChildMRGTreeRegionNames(DBfile *dbfile, const DBmrgtnode *top, vector<stri
 //    maps are gathered and condensed and the groupel type.
 // ****************************************************************************
 
-#ifdef SILO_VERSION_GE 
-#if SILO_VERSION_GE(4,6,3)
 static DBgroupelmap * 
 GetCondensedGroupelMap(DBfile *dbfile, string mrgtnm_abspath,
     DBmrgtnode *rootNode, int forceSingle, int gpel_type)
@@ -16557,8 +16229,6 @@ GetCondensedGroupelMap(DBfile *dbfile, string mrgtnm_abspath,
     DBForceSingle(forceSingle);
     return retval;
 }
-#endif
-#endif
 
 // ****************************************************************************
 //  Function: HandleMrgtreeAMRGroups
@@ -16592,8 +16262,6 @@ HandleMrgtreeAMRGroups(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_na
     avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names,
     int forceSingle)
 {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
     int i, j;
     bool probablyAnAMRMesh = true; (void) probablyAnAMRMesh;
     DBgroupelmap *gm = 0;  (void) gm;
@@ -16695,8 +16363,6 @@ HandleMrgtreeAMRGroups(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_na
 
     DBFreeMrgtree(mrgTree);
     return;
-#endif
-#endif
 }
 
 // ****************************************************************************
@@ -16748,8 +16414,6 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     return;
 
 #else
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
 
     int i, j;
     int num_levels = 0;
@@ -17033,8 +16697,6 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
        DBFreeGroupelmap(chldgm);
 
 #endif
-#endif
-#endif
 }
 
 // ****************************************************************************
@@ -17082,9 +16744,6 @@ static void
 HandleMrgtreeNodelistVars(DBfile *dbfile, const string& mname, const string& tname,
     avtDatabaseMetaData *md)
 {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
-
     DBmrgtree *mrgt = DBGetMrgtree(dbfile, tname.c_str());
     if (!mrgt)
     {
@@ -17109,9 +16768,6 @@ HandleMrgtreeNodelistVars(DBfile *dbfile, const string& mname, const string& tna
             DBSetCwr(mrgt, "..");
         }
     }
-
-#endif
-#endif
 }
 
 // ****************************************************************************
@@ -17139,8 +16795,6 @@ HandleMrgtreeNodelistVars(DBfile *dbfile, const string& mname, const string& tna
 static int
 MultiMatHasAllMatInfo(const DBmultimat *const mm)
 {
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
     if (mm->nmatnos <= 0)
         return 0; // has nothing
 
@@ -17158,8 +16812,6 @@ MultiMatHasAllMatInfo(const DBmultimat *const mm)
     }
     else
         return 1;
-#endif
-#endif
     return 0;
 }
 
@@ -17213,22 +16865,4 @@ static string ResolveSiloIndObjAbsPath(
         indirect_objname_incl_any_abs_or_rel_path.c_str(), "/");
     retval = string(indobj_abspath);
     return retval;
-}
-
-static DBReadMaskType_t SetSiloReadMask(DBReadMaskType_t mask)
-{
-#ifdef DBSetDataReadMask
-    return DBSetDataReadMask2(mask);
-#else
-    return DBSetDataReadMask(mask);
-#endif
-}
-
-static DBReadMaskType_t GetSiloReadMask(void)
-{
-#ifdef DBSetDataReadMask
-    return DBGetDataReadMask2();
-#else
-    return DBGetDataReadMask();
-#endif
 }
