@@ -1,14 +1,14 @@
-#/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/2.7.4/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit2_7_0 generated host.cmake
-## created: Wed Oct  9 10:51:13 PDT 2013
-## system: Linux edge84 2.6.32-358.11.1.2chaos.ch5.1.x86_64 #1 SMP Wed Jul 24 17:45:01 PDT 2013 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_7_3 generated host.cmake
+## created: Tue Jul 22 13:25:54 PDT 2014
+## system: Linux edge83 2.6.32-431.17.2.1chaos.ch5.2.x86_64 #1 SMP Fri May 16 11:55:35 PDT 2014 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.7.0)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.7.4)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
 
@@ -28,11 +28,11 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich-gnu/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich-gnu/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich-gnu/lib/shared -L/usr/local/tools/mvapich-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich-gnu/lib/shared" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich-gnu/lib/shared")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich2-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich2-gnu/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl pmi)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich2-gnu/lib")
 
 ##
 ## Turn on DDT support.
@@ -72,11 +72,6 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 ##
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ##
-
-##
-## ADIOS
-##
-#VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/ADIOS/1.3/${VISITARCH})
 
 ##
 ## AdvIO
@@ -173,11 +168,6 @@ ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUM
 ITAPS_LINK_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.4/GRUMMP/0.6.5/${VISITARCH}/lib)
 
 ##
-## MANTA
-##
-#VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR ${VISITHOME}/manta/2540/${VISITARCH})
-
-##
 ## MFEM 
 ##
 VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/68e941f8fe/${VISITARCH})
@@ -197,6 +187,11 @@ VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 ## Note: This is using Silo configured with --enable-json
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ${VISITHOME}/silo/4.10/${VISITARCH}/json/lib json TYPE STRING)
+
+##
+## Uintah
+##
+VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/1.6.0beta/${VISITARCH})
 
 ##
 ## Xdmf
