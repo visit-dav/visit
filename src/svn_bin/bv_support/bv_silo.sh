@@ -1,19 +1,28 @@
 function bv_silo_initialize
 {
-export DO_SILO="no"
-export ON_SILO="off"
+    export DO_SILO="no"
+    export ON_SILO="off"
+    export DO_SILEX="no"
+    add_extra_commandline_args "silo" "silex" 0 "Enable silex when building Silo"
 }
 
 function bv_silo_enable
 {
-DO_SILO="yes"
-ON_SILO="on"
+    DO_SILO="yes"
+    ON_SILO="on"
 }
 
 function bv_silo_disable
 {
-DO_SILO="no"
-ON_SILO="off"
+    DO_SILO="no"
+    ON_SILO="off"
+}
+
+function bv_silo_silex
+{
+    info "Enabling silex in Silo build"
+    DO_SILEX="yes"
+    bv_silo_enable
 }
 
 function bv_silo_depends_on
@@ -37,13 +46,13 @@ function bv_silo_depends_on
 
 function bv_silo_info
 {
-export SILO_VERSION=${SILO_VERSION:-"4.9.1"}
+export SILO_VERSION=${SILO_VERSION:-"4.10"}
 export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.9"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
-export SILO_MD5_CHECKSUM="aea6992437e1ed75cddcec1d91c6ff36"
-export SILO_SHA256_CHECKSUM="4908eb77577e26948aedee5976deedc3d2c1fd01b6fc5bd9cb61772cbbe2a56e"
+export SILO_MD5_CHECKSUM="a700464ea46264170c1475b1b2029504"
+export SILO_SHA256_CHECKSUM="c00e3b221dcd9ad5efeffcba328bca2766aabb04438dea181ba93604302dfafd"
 }
 
 function bv_silo_print
@@ -57,6 +66,7 @@ function bv_silo_print
 function bv_silo_print_usage
 {
 printf "%-15s %s [%s]\n" "--silo" "Build Silo support" "$DO_SILO"
+printf "%-15s %s [%s]\n" "--silex" "Enable silex when building Silo" "$DO_SILEX"
 }
 
 function bv_silo_graphical
@@ -173,11 +183,15 @@ function build_silo
     else
        WITHSZIPARG="--without-szlib"
     fi
-    if [[ "$DO_QT" != "yes" || "$OPSYS" == "Darwin" || "$DO_STATIC_BUILD" == "yes" || "$IS_QT5" == "yes" ]] ; then
-       WITHSILOQTARG="--disable-silex"
+    if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" || "$IS_QT5" == "yes" ]] ; then
+       WITHSILOQTARG='--disable-silex'
     else
        export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-       WITHSILOQTARG='--with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
+       if [[ "$OPSYS" == "Darwin" ]] ; then
+           WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
+       else
+           WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
+       fi
     fi
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
