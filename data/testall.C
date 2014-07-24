@@ -333,7 +333,9 @@ build_rect2d(DBfile * dbfile, int size)
     char          *meshname = NULL, *var1name = NULL, *var2name = NULL;
     char          *var3name = NULL, *var4name = NULL, *matname = NULL;
 
-    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *ascii=NULL;
+    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *distarr=NULL;
+
+    char          *ascii=NULL, *asciiw=NULL;
 
     int            nmats;
     int            matnos[9];
@@ -373,7 +375,9 @@ build_rect2d(DBfile * dbfile, int size)
     u = ALLOC_N (float, (nx + 1) * (ny + 1));
     v = ALLOC_N (float, (nx + 1) * (ny + 1));
     t = ALLOC_N (float, (nx + 1) * (ny + 1));
-    ascii = ALLOC_N (float, nx * ny);
+    distarr = ALLOC_N (float, nx * ny);
+    ascii = ALLOC_N (char, nx * ny);
+    asciiw = ALLOC_N (char, nx * ny * 9);
     matlist = ALLOC_N (int, nx * ny);
     mix_next = ALLOC_N (int, 40 * ny);
     mix_mat  = ALLOC_N (int, 40 * ny);
@@ -475,16 +479,48 @@ build_rect2d(DBfile * dbfile, int size)
        {
           for (j = 0; j < ny; j++)
           {
-            dist = sqrt ((x[i] - xcenter) * (x[i] - xcenter) +
-                         (y[j] - ycenter) * (y[j] - ycenter));
-            ascii[j*nx+i] = dist;
-            if (dist>maxdist) maxdist = dist;
+            distarr[j*nx+i] = sqrt ((x[i] - xcenter) * (x[i] - xcenter) +
+                                    (y[j] - ycenter) * (y[j] - ycenter));
+            if (distarr[j*nx+i]>maxdist) maxdist = distarr[j*nx+i];
           }
        }
+
+#define PUT_LABEL(S)              \
+{   char const *tmp = #S;         \
+    for (int q = 0; q < 9; q++)   \
+        asciiw[q*nx*ny+i] = '\0'; \
+    for (int q = 0; q < 9; q++)   \
+        asciiw[q*nx*ny+i] = tmp[q]; \
+    break;                        \
+}
+
        for (i = 0; i < nx*ny; i++)
        {
-          ascii[i] = 'A' + 26*ascii[i]/maxdist;
-       }
+          ascii[i] = (char) ((int) ('A' + 26*distarr[i]/maxdist));
+          switch (ascii[i])
+          {
+              case 'A': case 'B':
+              case 'C': case 'D':
+                  PUT_LABEL(Leonard);
+              case 'E': case 'F':
+              case 'G': case 'H':
+                  PUT_LABEL(Sheldon);
+              case 'I': case 'J':
+              case 'K': case 'L':
+                  PUT_LABEL(Penny);
+              case 'M': case 'N':
+              case 'O': case 'P':
+                  PUT_LABEL(Amy Farrah Fowler);
+              case 'Q': case 'R':
+              case 'S': case 'T':
+                  PUT_LABEL(Bernadet);
+              case 'U': case 'V':
+              case 'W': case 'X':
+                  PUT_LABEL(Kruthrapali);
+              default: 
+                  PUT_LABEL(Wolowitz);
+           }
+        }
     }
 
     //
@@ -596,10 +632,27 @@ build_rect2d(DBfile * dbfile, int size)
     if (ascii)
     {
        j = true;
+       void *arr[9];
+       char *arrnames[] = {"L0","L1","L2","L3","L4","L5","L6","L7","L8"};
+
        varOptList = rect2d_var_optlist("Labels", &cycle, &time, &dtime);
        DBAddOption (varOptList, DBOPT_ASCII_LABEL, &j);
+
        DBPutQuadvar1(dbfile, "ascii", meshname, ascii, zdims, ndims, NULL, 0,
-                     DB_FLOAT, DB_ZONECENT, varOptList);
+                     DB_CHAR, DB_ZONECENT, varOptList);
+
+       arr[0] = &asciiw[0*nx*ny];
+       arr[1] = &asciiw[1*nx*ny];
+       arr[2] = &asciiw[2*nx*ny];
+       arr[3] = &asciiw[3*nx*ny];
+       arr[4] = &asciiw[4*nx*ny];
+       arr[5] = &asciiw[5*nx*ny];
+       arr[6] = &asciiw[6*nx*ny];
+       arr[7] = &asciiw[7*nx*ny];
+       arr[8] = &asciiw[8*nx*ny];
+       DBPutQuadvar(dbfile, "asciiw", meshname, 9, arrnames, arr, zdims, ndims, NULL, 0,
+                     DB_CHAR, DB_ZONECENT, varOptList);
+
        DBFreeOptlist(varOptList);
     }
 
@@ -615,7 +668,9 @@ build_rect2d(DBfile * dbfile, int size)
     FREE (u);
     FREE (v);
     FREE (t);
+    FREE (distarr);
     FREE (ascii);
+    FREE (asciiw);
     FREE (matlist);
     FREE (mix_next);
     FREE (mix_mat);
@@ -883,10 +938,10 @@ build_curv2d(DBfile * dbfile, int size, int major_order)
     DBPutQuadmesh(dbfile, meshname, NULL, coords, dims, ndims, DB_FLOAT,
                   DB_NONCOLLINEAR, optlist);
 
-    DBPutQuadvar1(dbfile, var1name, meshname, (float *)d, zdims, ndims, NULL,
+    DBPutQuadvar1(dbfile, var1name, meshname, d, zdims, ndims, NULL,
                   0, DB_DOUBLE, DB_ZONECENT, optlist);
 
-    DBPutQuadvar1(dbfile, var2name, meshname, (float *)p, zdims, ndims, NULL,
+    DBPutQuadvar1(dbfile, var2name, meshname, p, zdims, ndims, NULL,
                   0, DB_DOUBLE, DB_ZONECENT, optlist);
 
     DBPutQuadvar1(dbfile, var3name, meshname, u, dims, ndims, NULL, 0,
