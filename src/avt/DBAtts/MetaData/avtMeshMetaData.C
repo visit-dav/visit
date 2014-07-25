@@ -129,6 +129,7 @@ void avtMeshMetaData::Init()
     hideFromGUI = false;
     LODs = 1;
     presentGhostZoneTypes = 0;
+    zonesWereSplit = false;
 
     avtMeshMetaData::SelectAll();
 }
@@ -218,6 +219,7 @@ void avtMeshMetaData::Copy(const avtMeshMetaData &obj)
     hideFromGUI = obj.hideFromGUI;
     LODs = obj.LODs;
     presentGhostZoneTypes = obj.presentGhostZoneTypes;
+    zonesWereSplit = obj.zonesWereSplit;
 
     avtMeshMetaData::SelectAll();
 }
@@ -455,7 +457,8 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             (containsExteriorBoundaryGhosts == obj.containsExteriorBoundaryGhosts) &&
             (hideFromGUI == obj.hideFromGUI) &&
             (LODs == obj.LODs) &&
-            (presentGhostZoneTypes == obj.presentGhostZoneTypes));
+            (presentGhostZoneTypes == obj.presentGhostZoneTypes) &&
+            (zonesWereSplit == obj.zonesWereSplit));
 }
 
 // ****************************************************************************
@@ -650,6 +653,7 @@ avtMeshMetaData::SelectAll()
     Select(ID_hideFromGUI,                    (void *)&hideFromGUI);
     Select(ID_LODs,                           (void *)&LODs);
     Select(ID_presentGhostZoneTypes,          (void *)&presentGhostZoneTypes);
+    Select(ID_zonesWereSplit,                 (void *)&zonesWereSplit);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -735,6 +739,7 @@ avtMeshMetaData::GetFieldName(int index) const
     case ID_hideFromGUI:                    return "hideFromGUI";
     case ID_LODs:                           return "LODs";
     case ID_presentGhostZoneTypes:          return "presentGhostZoneTypes";
+    case ID_zonesWereSplit:                 return "zonesWereSplit";
     default:  return "invalid index";
     }
 }
@@ -810,6 +815,7 @@ avtMeshMetaData::GetFieldType(int index) const
     case ID_hideFromGUI:                    return FieldType_bool;
     case ID_LODs:                           return FieldType_int;
     case ID_presentGhostZoneTypes:          return FieldType_int;
+    case ID_zonesWereSplit:                 return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -885,6 +891,7 @@ avtMeshMetaData::GetFieldTypeName(int index) const
     case ID_hideFromGUI:                    return "bool";
     case ID_LODs:                           return "int";
     case ID_presentGhostZoneTypes:          return "int";
+    case ID_zonesWereSplit:                 return "bool";
     default:  return "invalid index";
     }
 }
@@ -1194,6 +1201,11 @@ avtMeshMetaData::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_presentGhostZoneTypes:
         {  // new scope
         retval = (presentGhostZoneTypes == obj.presentGhostZoneTypes);
+        }
+        break;
+    case ID_zonesWereSplit:
+        {  // new scope
+        retval = (zonesWereSplit == obj.zonesWereSplit);
         }
         break;
     default: retval = false;

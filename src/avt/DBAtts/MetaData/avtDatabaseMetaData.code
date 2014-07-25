@@ -1810,6 +1810,33 @@ avtDatabaseMetaData::SetContainsGlobalZoneIds(std::string name, bool val)
     }
 }
 
+Function: SetZonesWereSplit
+Declaration: void         SetZonesWereSplit(std::string name, bool);
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetZonesWereSplit
+//
+//  Purpose:
+//      Sets whether a particular mesh's zones were split
+//
+//  Programmer:  Kathleen Biagas 
+//  Creation:    July 23, 2014
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetZonesWereSplit(std::string name, bool val)
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (GetMeshes(i).name == name)
+        {
+            GetMeshes(i).zonesWereSplit = val;
+            return;
+        }
+    }
+}
+
 Function: AddGroupInformation
 Declaration: void         AddGroupInformation(int nGroups, int nBlocks, intVector &blockIds);
 Definition:

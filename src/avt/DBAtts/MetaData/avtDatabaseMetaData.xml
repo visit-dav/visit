@@ -190,6 +190,8 @@
     </Function>
     <Function name="SetContainsGlobalZoneIds" user="true" member="true">
     </Function>
+    <Function name="SetZonesWereSplit" user="true" member="true">
+    </Function>
     <Function name="AddGroupInformation" user="true" member="true">
     </Function>
     <Function name="SetExtents" user="true" member="true">

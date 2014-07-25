@@ -11356,6 +11356,12 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             delete cellReMap;
         }
     }
+    else
+    {
+        // Let the rest of VisIt know that the mesh was split from its
+        // original form.
+        metadata->SetZonesWereSplit(meshname, true);
+    }
 }
 
 // ****************************************************************************

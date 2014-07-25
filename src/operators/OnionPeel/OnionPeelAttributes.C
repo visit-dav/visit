@@ -138,6 +138,7 @@ void OnionPeelAttributes::Init()
     logical = false;
     requestedLayer = 0;
     seedType = SeedCell;
+    honorOriginalMesh = true;
 
     OnionPeelAttributes::SelectAll();
 }
@@ -167,6 +168,7 @@ void OnionPeelAttributes::Copy(const OnionPeelAttributes &obj)
     logical = obj.logical;
     requestedLayer = obj.requestedLayer;
     seedType = obj.seedType;
+    honorOriginalMesh = obj.honorOriginalMesh;
 
     OnionPeelAttributes::SelectAll();
 }
@@ -331,7 +333,8 @@ OnionPeelAttributes::operator == (const OnionPeelAttributes &obj) const
             (index == obj.index) &&
             (logical == obj.logical) &&
             (requestedLayer == obj.requestedLayer) &&
-            (seedType == obj.seedType));
+            (seedType == obj.seedType) &&
+            (honorOriginalMesh == obj.honorOriginalMesh));
 }
 
 // ****************************************************************************
@@ -475,14 +478,15 @@ OnionPeelAttributes::NewInstance(bool copy) const
 void
 OnionPeelAttributes::SelectAll()
 {
-    Select(ID_adjacencyType,  (void *)&adjacencyType);
-    Select(ID_useGlobalId,    (void *)&useGlobalId);
-    Select(ID_categoryName,   (void *)&categoryName);
-    Select(ID_subsetName,     (void *)&subsetName);
-    Select(ID_index,          (void *)&index);
-    Select(ID_logical,        (void *)&logical);
-    Select(ID_requestedLayer, (void *)&requestedLayer);
-    Select(ID_seedType,       (void *)&seedType);
+    Select(ID_adjacencyType,     (void *)&adjacencyType);
+    Select(ID_useGlobalId,       (void *)&useGlobalId);
+    Select(ID_categoryName,      (void *)&categoryName);
+    Select(ID_subsetName,        (void *)&subsetName);
+    Select(ID_index,             (void *)&index);
+    Select(ID_logical,           (void *)&logical);
+    Select(ID_requestedLayer,    (void *)&requestedLayer);
+    Select(ID_seedType,          (void *)&seedType);
+    Select(ID_honorOriginalMesh, (void *)&honorOriginalMesh);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -561,6 +565,12 @@ OnionPeelAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("seedType", SeedIdType_ToString(seedType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_honorOriginalMesh, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("honorOriginalMesh", honorOriginalMesh));
     }
 
 
@@ -643,6 +653,8 @@ OnionPeelAttributes::SetFromNode(DataNode *parentNode)
                 SetSeedType(value);
         }
     }
+    if((node = searchNode->GetNode("honorOriginalMesh")) != 0)
+        SetHonorOriginalMesh(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -703,6 +715,13 @@ OnionPeelAttributes::SetSeedType(OnionPeelAttributes::SeedIdType seedType_)
 {
     seedType = seedType_;
     Select(ID_seedType, (void *)&seedType);
+}
+
+void
+OnionPeelAttributes::SetHonorOriginalMesh(bool honorOriginalMesh_)
+{
+    honorOriginalMesh = honorOriginalMesh_;
+    Select(ID_honorOriginalMesh, (void *)&honorOriginalMesh);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -775,6 +794,12 @@ OnionPeelAttributes::GetSeedType() const
     return SeedIdType(seedType);
 }
 
+bool
+OnionPeelAttributes::GetHonorOriginalMesh() const
+{
+    return honorOriginalMesh;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -821,14 +846,15 @@ OnionPeelAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_adjacencyType:  return "adjacencyType";
-    case ID_useGlobalId:    return "useGlobalId";
-    case ID_categoryName:   return "categoryName";
-    case ID_subsetName:     return "subsetName";
-    case ID_index:          return "index";
-    case ID_logical:        return "logical";
-    case ID_requestedLayer: return "requestedLayer";
-    case ID_seedType:       return "seedType";
+    case ID_adjacencyType:     return "adjacencyType";
+    case ID_useGlobalId:       return "useGlobalId";
+    case ID_categoryName:      return "categoryName";
+    case ID_subsetName:        return "subsetName";
+    case ID_index:             return "index";
+    case ID_logical:           return "logical";
+    case ID_requestedLayer:    return "requestedLayer";
+    case ID_seedType:          return "seedType";
+    case ID_honorOriginalMesh: return "honorOriginalMesh";
     default:  return "invalid index";
     }
 }
@@ -853,14 +879,15 @@ OnionPeelAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_adjacencyType:  return FieldType_enum;
-    case ID_useGlobalId:    return FieldType_bool;
-    case ID_categoryName:   return FieldType_string;
-    case ID_subsetName:     return FieldType_string;
-    case ID_index:          return FieldType_intVector;
-    case ID_logical:        return FieldType_bool;
-    case ID_requestedLayer: return FieldType_int;
-    case ID_seedType:       return FieldType_enum;
+    case ID_adjacencyType:     return FieldType_enum;
+    case ID_useGlobalId:       return FieldType_bool;
+    case ID_categoryName:      return FieldType_string;
+    case ID_subsetName:        return FieldType_string;
+    case ID_index:             return FieldType_intVector;
+    case ID_logical:           return FieldType_bool;
+    case ID_requestedLayer:    return FieldType_int;
+    case ID_seedType:          return FieldType_enum;
+    case ID_honorOriginalMesh: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -885,14 +912,15 @@ OnionPeelAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_adjacencyType:  return "enum";
-    case ID_useGlobalId:    return "bool";
-    case ID_categoryName:   return "string";
-    case ID_subsetName:     return "string";
-    case ID_index:          return "intVector";
-    case ID_logical:        return "bool";
-    case ID_requestedLayer: return "int";
-    case ID_seedType:       return "enum";
+    case ID_adjacencyType:     return "enum";
+    case ID_useGlobalId:       return "bool";
+    case ID_categoryName:      return "string";
+    case ID_subsetName:        return "string";
+    case ID_index:             return "intVector";
+    case ID_logical:           return "bool";
+    case ID_requestedLayer:    return "int";
+    case ID_seedType:          return "enum";
+    case ID_honorOriginalMesh: return "bool";
     default:  return "invalid index";
     }
 }
@@ -957,6 +985,11 @@ OnionPeelAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_seedType:
         {  // new scope
         retval = (seedType == obj.seedType);
+        }
+        break;
+    case ID_honorOriginalMesh:
+        {  // new scope
+        retval = (honorOriginalMesh == obj.honorOriginalMesh);
         }
         break;
     default: retval = false;

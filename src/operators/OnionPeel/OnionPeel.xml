@@ -33,6 +33,9 @@
       <Field name="seedType" label="Seed Type" type="enum" subtype="SeedIdType">
         SeedCell
       </Field>
+      <Field name="honorOriginalMesh" label="honorOriginalMesh" type="bool">
+        true
+      </Field>
       <Function name="OnionPeelViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
     </Attribute>

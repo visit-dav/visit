@@ -475,6 +475,11 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spresentGhostZoneTypes = %d\n", prefix, atts->presentGhostZoneTypes);
     str += tmpStr;
+    if(atts->zonesWereSplit)
+        SNPRINTF(tmpStr, 1000, "%szonesWereSplit = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%szonesWereSplit = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -2027,6 +2032,30 @@ avtMeshMetaData_GetPresentGhostZoneTypes(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+avtMeshMetaData_SetZonesWereSplit(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the zonesWereSplit in the object.
+    obj->data->zonesWereSplit = (ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtMeshMetaData_GetZonesWereSplit(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->zonesWereSplit?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
@@ -2133,6 +2162,8 @@ PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
     {"GetLODs", avtMeshMetaData_GetLODs, METH_VARARGS},
     {"SetPresentGhostZoneTypes", avtMeshMetaData_SetPresentGhostZoneTypes, METH_VARARGS},
     {"GetPresentGhostZoneTypes", avtMeshMetaData_GetPresentGhostZoneTypes, METH_VARARGS},
+    {"SetZonesWereSplit", avtMeshMetaData_SetZonesWereSplit, METH_VARARGS},
+    {"GetZonesWereSplit", avtMeshMetaData_GetZonesWereSplit, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2311,6 +2342,8 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
         return avtMeshMetaData_GetLODs(self, NULL);
     if(strcmp(name, "presentGhostZoneTypes") == 0)
         return avtMeshMetaData_GetPresentGhostZoneTypes(self, NULL);
+    if(strcmp(name, "zonesWereSplit") == 0)
+        return avtMeshMetaData_GetZonesWereSplit(self, NULL);
 
     return Py_FindMethod(PyavtMeshMetaData_methods, self, name);
 }
@@ -2427,6 +2460,8 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtMeshMetaData_SetLODs(self, tuple);
     else if(strcmp(name, "presentGhostZoneTypes") == 0)
         obj = avtMeshMetaData_SetPresentGhostZoneTypes(self, tuple);
+    else if(strcmp(name, "zonesWereSplit") == 0)
+        obj = avtMeshMetaData_SetZonesWereSplit(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

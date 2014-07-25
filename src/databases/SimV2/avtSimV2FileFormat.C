@@ -1409,6 +1409,9 @@ CreateUnstructuredMeshGlobalNodeIds(visit_handle h)
 //    Brad Whitlock, Fri Jun 13 10:56:13 PDT 2014
 //    I added global nodes/cell support.
 //
+//    Kathleen Biagas, Fri Jul 25 09:13:45 MST 2014
+//    Set a new mesh meta data flag when polyhdral zones are split.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1456,6 +1459,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
                 cache->CacheVoidRef(meshname,
                                     AUXILIARY_DATA_POLYHEDRAL_SPLIT,
                                     timestep, domain, vr);
+                metadata->SetZonesWereSplit(meshname, true);
             }
             else
             {

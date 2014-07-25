@@ -372,6 +372,7 @@ public:
     void         SetContainsOriginalNodes(std::string name, bool);
     void         SetContainsGlobalNodeIds(std::string name, bool);
     void         SetContainsGlobalZoneIds(std::string name, bool);
+    void         SetZonesWereSplit(std::string name, bool);
     void         AddGroupInformation(int nGroups, int nBlocks, intVector &blockIds);
     void         SetExtents(std::string, const double *);
     void         UnsetExtents();
