@@ -246,15 +246,13 @@ function build_silo
         mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
         mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
         mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        cp src/silo/silo.h   \
+        cp src/silo/*.h src/silo/*.inc \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        cp src/silo/silo.inc \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        cp src/silo/pmpio.h \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        test -e src/pdb/lite_pdb.h && cp src/pdb/lite_pdb.h \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        test -e src/score/lite_score.h && cp src/score/lite_score.h \
+        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_private.h
+        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_win32_compatibility.h
+        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_f.h
+        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_drivers.h
+        cp src/pdb/lite_pdb.h src/score/lite_score.h \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
         test -e tools/silex/silex && cp tools/silex/silex \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
