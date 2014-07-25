@@ -546,7 +546,8 @@ class ENGINE_MAIN_API NetworkManager
     void          PickForIntersection(const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
     std::string   GetQueryParameters(const std::string &qName);
-    void          ExportDatabases(const intVector &, ExportDBAttributes *);
+    void          ExportDatabases(const intVector &, const ExportDBAttributes &, 
+                                  const std::string &timeSuffix);
     void          ConstructDataBinning(const int, ConstructDataBinningAttributes *);
     avtDataBinning *GetDataBinning(const char *);
 
@@ -565,7 +566,7 @@ class ENGINE_MAIN_API NetworkManager
     static void   SetStereoEnabled();
 
  protected:
-    void               ExportSingleDatabase(int, ExportDBAttributes *);
+    void               ExportSingleDatabase(int, const ExportDBAttributes &);
 
     virtual avtImage_p RenderGeometry();
     void               RenderSetup(intVector& networkIds, bool getZBuffer,

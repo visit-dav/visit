@@ -4492,6 +4492,7 @@ NetworkManager::GetDataBinning(const char *name)
 //  Arguments:
 //    ids        The networks to use.
 //    atts       The export database attributes.
+//    timeSuffix A string that represents a time to be appended to the filename.
 //
 //  Note:        Work partially supported by DOE Grant SC0007548.
 //
@@ -4499,12 +4500,27 @@ NetworkManager::GetDataBinning(const char *name)
 //  Creation:    Fri Jan 24 16:54:20 PST 2014
 //
 //  Modifications:
+//    Brad Whitlock, Thu Jul 24 22:27:34 EDT 2014
+//    Pass timeSuffix.
 //
 // ****************************************************************************
 
 void
-NetworkManager::ExportDatabases(const intVector &ids, ExportDBAttributes *atts)
+NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &atts,
+    const std::string &timeSuffix)
 {
+    // Determine the filename and extension.
+    std::string filename, ext;
+    const std::string &f = atts.GetFilename();
+    std::string::size_type idx = f.rfind(".");
+    if(idx != std::string::npos)
+    {
+        filename = f.substr(0, idx);
+        ext = f.substr(idx, f.size() - idx);
+    }
+    else
+        filename = f;
+
     if(ids.size() > 1)
     {
         // FUTURE: Get the plugin info here, create the writer.
@@ -4516,26 +4532,18 @@ NetworkManager::ExportDatabases(const intVector &ids, ExportDBAttributes *atts)
         for(size_t i = 0; i < ids.size(); ++i)
         {
             // Rig up a temporary ExportDBAttributes where we change the filename a little.
-            ExportDBAttributes eAtts(*atts);
-            char suffix[20];
-            const std::string &f = eAtts.GetFilename();
-            std::string::size_type idx = f.rfind(".");
-            if(idx != std::string::npos)
-            {
-                std::string filename(f.substr(0, idx));
-                std::string ext(f.substr(idx, f.size() - idx));
-                SNPRINTF(suffix, 20, "_%02d", int(i));
-                eAtts.SetFilename(filename + suffix + ext);
-            }
+            ExportDBAttributes eAtts(atts);
+            char plotid[4];
+            SNPRINTF(plotid, 4, "_%02d", int(i));
+
+            if(atts.GetAllTimes())
+                eAtts.SetFilename(filename + plotid + std::string("_") + timeSuffix + ext);
             else
-            {
-                SNPRINTF(suffix, 20, "_%02d", int(i));
-                eAtts.SetFilename(f + suffix);
-            }
+                eAtts.SetFilename(filename + plotid + ext);
 
             TRY
             {
-                ExportSingleDatabase(ids[i], &eAtts);
+                ExportSingleDatabase(ids[i], eAtts);
             }
             CATCH2(VisItException, e)
             {
@@ -4553,7 +4561,14 @@ NetworkManager::ExportDatabases(const intVector &ids, ExportDBAttributes *atts)
         }
     }
     else if(!ids.empty())
-        ExportSingleDatabase(ids[0], atts);
+    {
+        ExportDBAttributes eAtts(atts);
+        if(atts.GetAllTimes())
+            eAtts.SetFilename(filename + timeSuffix + ext);
+        else
+            eAtts.SetFilename(filename + ext);
+        ExportSingleDatabase(ids[0], eAtts);
+    }
 }
 
 // ****************************************************************************
@@ -4596,7 +4611,7 @@ NetworkManager::ExportDatabases(const intVector &ids, ExportDBAttributes *atts)
 // ****************************************************************************
 
 void
-NetworkManager::ExportSingleDatabase(int id, ExportDBAttributes *atts)
+NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
 {
     if ((size_t)id >= networkCache.size())
     {
@@ -4637,7 +4652,7 @@ NetworkManager::ExportSingleDatabase(int id, ExportDBAttributes *atts)
         EXCEPTION0(ImproperUseException);
     }
 
-    const std::string &db_type = atts->GetDb_type_fullname();
+    const std::string &db_type = atts.GetDb_type_fullname();
     if (!GetDatabasePluginManager()->PluginAvailable(db_type))
     {
         char msg[1024];
@@ -4655,7 +4670,7 @@ NetworkManager::ExportSingleDatabase(int id, ExportDBAttributes *atts)
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    DBOptionsAttributes opts = atts->GetOpts();
+    DBOptionsAttributes opts = atts.GetOpts();
     info->SetWriteOptions(&opts);
     avtDatabaseWriter *wrtr = info->GetWriter();
     if (wrtr == NULL)
@@ -4680,13 +4695,13 @@ NetworkManager::ExportSingleDatabase(int id, ExportDBAttributes *atts)
         wrtr->SetInput(dob);
 
         std::string qualFilename;
-        if (atts->GetDirname() == "")
-            qualFilename = atts->GetFilename();
+        if (atts.GetDirname() == "")
+            qualFilename = atts.GetFilename();
         else
-            qualFilename = atts->GetDirname() + std::string(VISIT_SLASH_STRING)
-                         + atts->GetFilename();
+            qualFilename = atts.GetDirname() + std::string(VISIT_SLASH_STRING)
+                         + atts.GetFilename();
         bool doAll = false;
-        std::vector<std::string> vars = atts->GetVariables();
+        std::vector<std::string> vars = atts.GetVariables();
         if (vars.size() == 1 && vars[0] == "<all>")
         {
             doAll = true;

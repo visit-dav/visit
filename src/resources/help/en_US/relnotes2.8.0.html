@@ -35,6 +35,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>VisIt's Export mechanism has been enhanced so that all active plots in the plot list are considered for export. The current implementation will create numbered files with one file per plot, though this leaves some room for future improvement.</li>
   <li>VisIt now features a database plugin that enables VisIt to export <i>FieldView XDB</i> extract files for subsequent analysis in Intelligent Light's commercial post-processing software, FieldView.</li>
+  <li>VisIt's Export mechanism has been enhanced so that all time states in a dataset can be exported. Click the <i>"Export all time states"</i> check box in the Export window to enable exporting all time states.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -111,8 +112,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a problem preventing ghost cells from being generated for 2D unstructured cell types. This fixes a bug where wireframe FilledBoundary plots were showing wireframes along domain boundaries.</li>
   <li>Fixed a problem-sized memory leak in the Clip operator after processing domains that resulted in zero clipped geometry.</li>
   <li>Fixed a pick bug where global ids would sometimes not be reported correctly.</li>
-  <li>Fixed crash with Silo data and material subsetted variables.</li>
-</ul>
+  <li>Fixed crash with Silo data and material subsetted variables.</li>  <li>Fixed a bug where export attributes were not saved to VisIt's config file.</li></ul>
 
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 2.8</font></b></p>

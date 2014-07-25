@@ -164,7 +164,8 @@ public:
     void                     Query(const std::vector<int> &,
                                    const QueryAttributes *,
                                    QueryAttributes &);
-    void                     ExportDatabases(const intVector &ids, const ExportDBAttributes *);
+    void                     ExportDatabases(const intVector &ids, const ExportDBAttributes &,
+                                             const std::string &timeSuffix);
     void                     ConstructDataBinning(int, const ConstructDataBinningAttributes *);
 
     const SelectionSummary  &CreateNamedSelection(int id, const SelectionProperties &props);

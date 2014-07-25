@@ -3199,8 +3199,7 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
     wM->CreateNode(vsNode, dbToSource, detailed);
     if(detailed)
         ViewerQueryManager::Instance()->CreateNode(vsNode);
-    if(detailed)
-        ViewerEngineManager::Instance()->CreateNode(vsNode);
+    ViewerEngineManager::Instance()->CreateNode(vsNode, detailed);
 }
 
 // ****************************************************************************
@@ -5811,6 +5810,44 @@ ViewerSubject::ConstructDataBinning()
 }
 
 // ****************************************************************************
+// Method: GetActivePlotNetworkIds
+//
+// Purpose: 
+//   Gets the network ids for the active plots.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 25 00:03:23 EDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+GetActivePlotNetworkIds(ViewerPlotList *plist, intVector &networkIds, EngineKey &key)
+{
+    intVector plotIDs;
+    networkIds.clear();
+    plist->GetActivePlotIDs(plotIDs);
+    if (plotIDs.empty())
+        return 1;
+    for(size_t i = 0; i < plotIDs.size(); ++i)
+    {
+        const ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
+        const EngineKey &engineKey = plot->GetEngineKey();
+        if(i == 0)
+            key = engineKey;
+        else
+        {
+            if(key != engineKey)
+                return 2;
+        }
+
+        networkIds.push_back(plot->GetNetworkID());
+    }
+    return 0;
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::ExportDatabase
 //
 // Purpose: 
@@ -5830,48 +5867,93 @@ ViewerSubject::ConstructDataBinning()
 //   Allow more than one plot to be exported.
 //   Work partially supported by DOE Grant SC0007548.
 //
+//   Brad Whitlock, Thu Jul 24 21:52:34 EDT 2014
+//   Add export for all time states.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ExportDatabase()
 {
     //
-    // Perform the RPC.
+    // Get the network ids and check that they are all on the same engine.
     //
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
     ViewerPlotList *plist = win->GetPlotList();
-    intVector plotIDs;
-    plist->GetActivePlotIDs(plotIDs);
-    if (plotIDs.size() <= 0)
+    intVector networkIds;
+    EngineKey key;
+    int err = GetActivePlotNetworkIds(plist, networkIds, key);
+    if(err == 1)
     {
         Error(tr("To export a database, you must have an active plot.  No database was saved."));
         return;
     }
-    intVector networkIds;
-    EngineKey key;
-    for(size_t i = 0; i < plotIDs.size(); ++i)
+    else if(err == 2)
     {
-        ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
-
-        const EngineKey   &engineKey = plot->GetEngineKey();
-        if(i == 0)
-            key = engineKey;
-        else
-        {
-            if(key != engineKey)
-            {
-                Error(tr("To export the database for multiple plots, all plots "
-                         "must be processed by the same compute engine."));
-                return;
-            }
-        }
-
-        networkIds.push_back(plot->GetNetworkID());
+        Error(tr("To export the database for multiple plots, all plots "
+                 "must be processed by the same compute engine."));
+        return;
     }
 
     TRY
     {
-        if (ViewerEngineManager::Instance()->ExportDatabases(key, networkIds))
+        ExportDBAttributes exportAtts(*ViewerEngineManager::GetExportDBAtts());
+
+        // Do export of all time states.
+        if(!key.IsSimulation() && exportAtts.GetAllTimes() && plist->HasActiveTimeSlider())
+        {
+            // Get the time slider information.
+            int state = 0, nStates = 0;
+            plist->GetTimeSliderStates(plist->GetActiveTimeSlider(), state, nStates);
+
+            // Iterate through time and export the current time state.
+            char digits[10];
+            std::string filename(exportAtts.GetFilename());
+            int status = 0;
+            for(int i = 0; i < nStates && status == 0; ++i)
+            {
+                // Make a new filename for the exported file.
+                if(nStates >= 10000)
+                    SNPRINTF(digits, 10, "%08d", i);
+                else
+                    SNPRINTF(digits, 10, "%04d", i);
+                std::string timeSuffix(digits);
+
+                TRY
+                {
+                    plist->SetTimeSliderState(i);
+                    int err = GetActivePlotNetworkIds(plist, networkIds, key);
+                    if(err == 0)
+                    {
+                        if(ViewerEngineManager::Instance()->ExportDatabases(key, networkIds, exportAtts, timeSuffix))
+                            Message(tr("Exported database time state %1").arg(i));
+                        else
+                            status = 1;
+                    }
+                    else
+                        status = 1;
+
+                    if(status == 1)
+                    {
+                        Error(tr("Unable to export database time "
+                                 "state %1. Stopping export.").arg(i));
+                    }
+                }
+                CATCH2(VisItException,e)
+                {
+                    Error(tr("An unexpected error prevented export of "
+                             "database time state %1. Stopping export. %2").
+                          arg(i).arg(e.Message().c_str()));
+                    status = 2;
+                }
+                ENDTRY
+            }
+
+            // Go back to the original state.
+            plist->SetTimeSliderState(state);
+        }
+        // Do export of current time state.
+        else if (ViewerEngineManager::Instance()->ExportDatabases(key, networkIds, exportAtts, ""))
         {
             Message(tr("Exported database"));
         }

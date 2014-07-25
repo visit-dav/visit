@@ -265,6 +265,9 @@ QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Kathleen Biagas, Wed Apr 23 15:31:45 PDT 2014
 //   Enable directorySelectButton based on host for active plot (if any).
 // 
+//   Brad Whitlock, Thu Jul 24 13:55:34 EDT 2014
+//   Added check box for doing all time steps.
+//
 // ****************************************************************************
 
 void
@@ -272,11 +275,16 @@ QvisExportDBWindow::CreateWindowContents()
 {
     // Create a group box for the file information.
     QGroupBox *infoBox = new QGroupBox(central);
-    infoBox->setTitle(tr("Output description"));
+    infoBox->setTitle(tr("Output"));
     topLayout->addWidget(infoBox);
 
     QGridLayout *infoLayout = new QGridLayout(infoBox);
     infoLayout->setMargin(5);
+
+    allTimes = new QCheckBox(tr("Export all time states"), infoBox);
+    connect(allTimes, SIGNAL(toggled(bool)),
+            this, SLOT(allTimesToggled(bool)));
+    infoLayout->addWidget(allTimes, 0, 0, 1, 2);
 
     filenameLineEdit = new QLineEdit(infoBox);
     connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
@@ -410,6 +418,9 @@ QvisExportDBWindow::CreateWindowContents()
 //   Kathleen Biagas, Wed Apr 23 14:50:24 MST 2014
 //   Make directorySelectButton also dependent upon the plot being local.
 //
+//   Brad Whitlock, Thu Jul 24 13:55:34 EDT 2014
+//   Added check box for doing all time steps.
+//
 // ****************************************************************************
 
 void
@@ -440,6 +451,11 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
 
         switch (i)
         {
+          case ExportDBAttributes::ID_allTimes:
+            allTimes->blockSignals(true);
+            allTimes->setChecked(exportDBAtts->GetAllTimes());
+            allTimes->blockSignals(false);
+            break;
           case ExportDBAttributes::ID_db_type:
             {
                 fileFormatComboBox->blockSignals(true);
@@ -962,4 +978,32 @@ QvisExportDBWindow::delimiterChanged(int val)
 {
     delimiter = val;
     UpdateVariablesList();
+}
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::allTimesToggled
+//
+// Purpose:
+//   This is a Qt slot function that we call when the allTimes checkbox is toggled.
+//
+// Arguments:
+//   val  : The new toggle value
+//
+// Returns:    
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 24 14:12:23 EDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExportDBWindow::allTimesToggled(bool val)
+{
+    exportDBAtts->SetAllTimes(val);
+    SetUpdate(false);
+    Apply();
 }

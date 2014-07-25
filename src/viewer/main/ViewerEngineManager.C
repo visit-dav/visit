@@ -3424,10 +3424,18 @@ ViewerEngineManager::SetExportDBAtts(ExportDBAttributes *e)
 //    Allow exporting of multiple plots.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Brad Whitlock, Thu Jul 24 21:52:34 EDT 2014
+//    Pass in the export attributes.
+//
+//    Brad Whitlock, Thu Jul 24 22:18:34 EDT 2014
+//    Pass timeSuffix.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ExportDatabases(const EngineKey &ek, const intVector &ids)
+ViewerEngineManager::ExportDatabases(const EngineKey &ek, 
+    const intVector &ids, const ExportDBAttributes &expAtts, 
+    const std::string &timeSuffix)
 {
     ENGINE_PROXY_RPC_BEGIN("ExportDatabase");
     // If we're trying to export to a simulation but the data is not from
@@ -3441,7 +3449,7 @@ ViewerEngineManager::ExportDatabases(const EngineKey &ek, const intVector &ids)
     }
     else
     {
-        engine->GetEngineMethods()->ExportDatabases(ids, exportDBAtts);
+        engine->GetEngineMethods()->ExportDatabases(ids, expAtts, timeSuffix);
     }
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -3729,10 +3737,13 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
 //   Make sure the "RunningEngines" machine profile as written only has a
 //   single launch profile (the active one) -- this simplifies later parsing.
 //
+//   Brad Whitlock, Fri Jul 25 1:12:23 EDT 2014
+//   Add export atts.
+//
 // ****************************************************************************
 
 void
-ViewerEngineManager::CreateNode(DataNode *parentNode) const
+ViewerEngineManager::CreateNode(DataNode *parentNode, bool detailed) const
 {
     bool haveNonSimEngines = false;
     EngineMap::const_iterator it;
@@ -3743,10 +3754,11 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
     parentNode->AddNode(vemNode);
 
     // save material and mesh management attributes
-    GetMaterialClientAtts()->CreateNode(vemNode,true,true);
-    GetMeshManagementClientAtts()->CreateNode(vemNode,true,true);
+    GetMaterialClientAtts()->CreateNode(vemNode,detailed,true);
+    GetMeshManagementClientAtts()->CreateNode(vemNode,detailed,true);
+    GetExportDBAtts()->CreateNode(vemNode, detailed, true);
 
-    if(haveNonSimEngines)
+    if(detailed && haveNonSimEngines)
     {
         DataNode *runningEnginesNode = new DataNode("RunningEngines");
         vemNode->AddNode(runningEnginesNode);
@@ -3789,6 +3801,9 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
 //   Brad Whitlock, Wed Feb 13 14:45:27 PST 2008
 //   Added configVersion.
 //
+//   Brad Whitlock, Fri Jul 25 1:12:23 EDT 2014
+//   Add export atts.
+//
 // ****************************************************************************
 
 void
@@ -3807,12 +3822,15 @@ ViewerEngineManager::SetFromNode(DataNode *parentNode,
     // we call SetFromNode.
     GetMaterialClientAtts()->ProcessOldVersions(vem_node, configVersion.c_str());
     GetMeshManagementClientAtts()->ProcessOldVersions(vem_node, configVersion.c_str());
+    GetExportDBAtts()->ProcessOldVersions(vem_node, configVersion.c_str());
 
     // restore material and mesh management attributes
     GetMaterialClientAtts()->SetFromNode(vem_node);
     GetMeshManagementClientAtts()->SetFromNode(vem_node);
+    GetExportDBAtts()->SetFromNode(vem_node);
     GetMaterialClientAtts()->Notify();
     GetMeshManagementClientAtts()->Notify();
+    GetExportDBAtts()->Notify();
 }
 
 

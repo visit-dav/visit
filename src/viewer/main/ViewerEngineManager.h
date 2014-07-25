@@ -325,6 +325,9 @@ class SelectionProperties;
 //    Allow exporting of multiple plots.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Brad Whitlock, Thu Jul 24 21:52:34 EDT 2014
+//    Pass in the export attributes to ExportDatabases.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -451,7 +454,9 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ReleaseData(const EngineKey &ek, int id);
     bool CloneNetwork(const EngineKey &ek, int id, 
                       const QueryOverTimeAttributes *qatts);
-    bool ExportDatabases(const EngineKey &ek, const intVector &ids);
+    bool ExportDatabases(const EngineKey &ek, const intVector &ids,
+                         const ExportDBAttributes &expAtts, 
+                         const std::string &timeSuffix);
     bool ConstructDataBinning(const EngineKey &ek, int id);
 
     bool CreateNamedSelection(const EngineKey &ek, int, const SelectionProperties &);
@@ -460,7 +465,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool LoadNamedSelection(const EngineKey &ek, const std::string &);
     bool SaveNamedSelection(const EngineKey &ek, const std::string &);
 
-    void CreateNode(DataNode *) const;
+    void CreateNode(DataNode *, bool detailed) const;
     void SetFromNode(DataNode *, const std::string &);
 
     bool UpdateExpressions(const EngineKey &ek, const ExpressionList &eL);

@@ -57,12 +57,13 @@ import java.util.Vector;
 
 public class ExportDBAttributes extends AttributeSubject
 {
-    private static int ExportDBAttributes_numAdditionalAtts = 6;
+    private static int ExportDBAttributes_numAdditionalAtts = 7;
 
     public ExportDBAttributes()
     {
         super(ExportDBAttributes_numAdditionalAtts);
 
+        allTimes = false;
         db_type = new String("");
         db_type_fullname = new String("");
         filename = new String("visit_ex_db");
@@ -75,6 +76,7 @@ public class ExportDBAttributes extends AttributeSubject
     {
         super(ExportDBAttributes_numAdditionalAtts + nMoreFields);
 
+        allTimes = false;
         db_type = new String("");
         db_type_fullname = new String("");
         filename = new String("visit_ex_db");
@@ -89,6 +91,7 @@ public class ExportDBAttributes extends AttributeSubject
 
         int i;
 
+        allTimes = obj.allTimes;
         db_type = new String(obj.db_type);
         db_type_fullname = new String(obj.db_type_fullname);
         filename = new String(obj.filename);
@@ -126,7 +129,8 @@ public class ExportDBAttributes extends AttributeSubject
             variables_equal = variables1.equals(variables2);
         }
         // Create the return value
-        return ((db_type.equals(obj.db_type)) &&
+        return ((allTimes == obj.allTimes) &&
+                (db_type.equals(obj.db_type)) &&
                 (db_type_fullname.equals(obj.db_type_fullname)) &&
                 (filename.equals(obj.filename)) &&
                 (dirname.equals(obj.dirname)) &&
@@ -135,43 +139,50 @@ public class ExportDBAttributes extends AttributeSubject
     }
 
     // Property setting methods
+    public void SetAllTimes(boolean allTimes_)
+    {
+        allTimes = allTimes_;
+        Select(0);
+    }
+
     public void SetDb_type(String db_type_)
     {
         db_type = db_type_;
-        Select(0);
+        Select(1);
     }
 
     public void SetDb_type_fullname(String db_type_fullname_)
     {
         db_type_fullname = db_type_fullname_;
-        Select(1);
+        Select(2);
     }
 
     public void SetFilename(String filename_)
     {
         filename = filename_;
-        Select(2);
+        Select(3);
     }
 
     public void SetDirname(String dirname_)
     {
         dirname = dirname_;
-        Select(3);
+        Select(4);
     }
 
     public void SetVariables(Vector variables_)
     {
         variables = variables_;
-        Select(4);
+        Select(5);
     }
 
     public void SetOpts(DBOptionsAttributes opts_)
     {
         opts = opts_;
-        Select(5);
+        Select(6);
     }
 
     // Property getting methods
+    public boolean             GetAllTimes() { return allTimes; }
     public String              GetDb_type() { return db_type; }
     public String              GetDb_type_fullname() { return db_type_fullname; }
     public String              GetFilename() { return filename; }
@@ -183,16 +194,18 @@ public class ExportDBAttributes extends AttributeSubject
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteString(db_type);
+            buf.WriteBool(allTimes);
         if(WriteSelect(1, buf))
-            buf.WriteString(db_type_fullname);
+            buf.WriteString(db_type);
         if(WriteSelect(2, buf))
-            buf.WriteString(filename);
+            buf.WriteString(db_type_fullname);
         if(WriteSelect(3, buf))
-            buf.WriteString(dirname);
+            buf.WriteString(filename);
         if(WriteSelect(4, buf))
-            buf.WriteStringVector(variables);
+            buf.WriteString(dirname);
         if(WriteSelect(5, buf))
+            buf.WriteStringVector(variables);
+        if(WriteSelect(6, buf))
             opts.Write(buf);
     }
 
@@ -201,23 +214,26 @@ public class ExportDBAttributes extends AttributeSubject
         switch(index)
         {
         case 0:
-            SetDb_type(buf.ReadString());
+            SetAllTimes(buf.ReadBool());
             break;
         case 1:
-            SetDb_type_fullname(buf.ReadString());
+            SetDb_type(buf.ReadString());
             break;
         case 2:
-            SetFilename(buf.ReadString());
+            SetDb_type_fullname(buf.ReadString());
             break;
         case 3:
-            SetDirname(buf.ReadString());
+            SetFilename(buf.ReadString());
             break;
         case 4:
-            SetVariables(buf.ReadStringVector());
+            SetDirname(buf.ReadString());
             break;
         case 5:
+            SetVariables(buf.ReadStringVector());
+            break;
+        case 6:
             opts.Read(buf);
-            Select(5);
+            Select(6);
             break;
         }
     }
@@ -225,6 +241,7 @@ public class ExportDBAttributes extends AttributeSubject
     public String toString(String indent)
     {
         String str = new String();
+        str = str + boolToString("allTimes", allTimes, indent) + "\n";
         str = str + stringToString("db_type", db_type, indent) + "\n";
         str = str + stringToString("db_type_fullname", db_type_fullname, indent) + "\n";
         str = str + stringToString("filename", filename, indent) + "\n";
@@ -236,6 +253,7 @@ public class ExportDBAttributes extends AttributeSubject
 
 
     // Attributes
+    private boolean             allTimes;
     private String              db_type;
     private String              db_type_fullname;
     private String              filename;

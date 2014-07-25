@@ -53,7 +53,8 @@
 //
 // ****************************************************************************
 
-ExportDatabaseRPC::ExportDatabaseRPC() : BlockingRPC("i*a"), ids(), exportDBAtts()
+ExportDatabaseRPC::ExportDatabaseRPC() : BlockingRPC("i*as"), ids(), exportDBAtts(),
+    timeSuffix()
 {
 }
 
@@ -92,13 +93,18 @@ ExportDatabaseRPC::~ExportDatabaseRPC()
 //    Allow more than one network.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Brad Whitlock, Thu Jul 24 22:16:34 EDT 2014
+//    Pass time suffix.
+//
 // ****************************************************************************
 
 void
-ExportDatabaseRPC::operator()(const intVector &ids_, const ExportDBAttributes *atts)
+ExportDatabaseRPC::operator()(const intVector &ids_, const ExportDBAttributes &atts, 
+    const std::string &s)
 {
     SetIDs(ids_);
     SetExportDBAtts(atts);
+    SetTimeSuffix(s);
 
     Execute();
 }
@@ -121,6 +127,7 @@ ExportDatabaseRPC::SelectAll()
 {
     Select(0, (void*)&ids);
     Select(1, (void*)&exportDBAtts);
+    Select(2, (void*)&timeSuffix);
 }
 
 
@@ -180,9 +187,9 @@ ExportDatabaseRPC::GetIDs() const
 // ****************************************************************************
  
 void
-ExportDatabaseRPC::SetExportDBAtts(const ExportDBAttributes *atts)
+ExportDatabaseRPC::SetExportDBAtts(const ExportDBAttributes &atts)
 {
-    exportDBAtts = *atts;
+    exportDBAtts = atts;
     Select(1, (void*)&exportDBAtts);
 }
 
@@ -198,8 +205,21 @@ ExportDatabaseRPC::SetExportDBAtts(const ExportDBAttributes *atts)
 //
 // ****************************************************************************
  
-ExportDBAttributes *
-ExportDatabaseRPC::GetExportDBAtts()
+const ExportDBAttributes &
+ExportDatabaseRPC::GetExportDBAtts() const
 {
-    return &exportDBAtts;
+    return exportDBAtts;
+}
+
+void
+ExportDatabaseRPC::SetTimeSuffix(const std::string &s)
+{
+    timeSuffix = s;
+    Select(2, (void*)&timeSuffix);
+}
+
+const std::string &
+ExportDatabaseRPC::GetTimeSuffix() const
+{
+    return timeSuffix;
 }

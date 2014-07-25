@@ -61,7 +61,6 @@ class PlotInfoAttributes;
     VIEWER_REGISTER_OBJECT(DatabaseMetaData,         avtDatabaseMetaData, false)\
     VIEWER_REGISTER_OBJECT(SILAttributes,            SILAttributes, false)\
     VIEWER_REGISTER_OBJECT(DBPluginInfoAttributes,   DBPluginInfoAttributes, false)\
-    VIEWER_REGISTER_OBJECT(ExportDBAttributes,       ExportDBAttributes, false)\
     VIEWER_REGISTER_OBJECT(ConstructDataBinningAttributes,   ConstructDataBinningAttributes, false)\
     VIEWER_REGISTER_OBJECT(ClientMethod,             ClientMethod, false)\
     VIEWER_REGISTER_OBJECT(ClientInformation,        ClientInformation, false)\
@@ -69,6 +68,7 @@ class PlotInfoAttributes;
     VIEWER_REGISTER_OBJECT(SimulationUIValues,       SimulationUIValues, false)\
     /*The following objects can be sent to the viewer anytime.*/\
     VIEWER_BEGIN_FREELY_EXCHANGED_STATE\
+    VIEWER_REGISTER_OBJECT(ExportDBAttributes,       ExportDBAttributes, false)\
     VIEWER_REGISTER_OBJECT(PluginManagerAttributes,  PluginManagerAttributes, false)\
     VIEWER_REGISTER_OBJECT(AppearanceAttributes,     AppearanceAttributes, true)\
     VIEWER_REGISTER_OBJECT(GlobalAttributes,         GlobalAttributes, true)\
