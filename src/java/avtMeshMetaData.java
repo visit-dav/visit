@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class avtMeshMetaData extends AttributeSubject
 {
-    private static int avtMeshMetaData_numAdditionalAtts = 51;
+    private static int avtMeshMetaData_numAdditionalAtts = 52;
 
     public avtMeshMetaData()
     {
@@ -152,6 +152,7 @@ public class avtMeshMetaData extends AttributeSubject
         hideFromGUI = false;
         LODs = 1;
         presentGhostZoneTypes = 0;
+        zonesWereSplit = false;
     }
 
     public avtMeshMetaData(int nMoreFields)
@@ -246,6 +247,7 @@ public class avtMeshMetaData extends AttributeSubject
         hideFromGUI = false;
         LODs = 1;
         presentGhostZoneTypes = 0;
+        zonesWereSplit = false;
     }
 
     public avtMeshMetaData(avtMeshMetaData obj)
@@ -343,6 +345,7 @@ public class avtMeshMetaData extends AttributeSubject
         hideFromGUI = obj.hideFromGUI;
         LODs = obj.LODs;
         presentGhostZoneTypes = obj.presentGhostZoneTypes;
+        zonesWereSplit = obj.zonesWereSplit;
 
         SelectAll();
     }
@@ -478,7 +481,8 @@ public class avtMeshMetaData extends AttributeSubject
                 (containsExteriorBoundaryGhosts == obj.containsExteriorBoundaryGhosts) &&
                 (hideFromGUI == obj.hideFromGUI) &&
                 (LODs == obj.LODs) &&
-                (presentGhostZoneTypes == obj.presentGhostZoneTypes));
+                (presentGhostZoneTypes == obj.presentGhostZoneTypes) &&
+                (zonesWereSplit == obj.zonesWereSplit));
     }
 
     // Property setting methods
@@ -830,6 +834,12 @@ public class avtMeshMetaData extends AttributeSubject
         Select(50);
     }
 
+    public void SetZonesWereSplit(boolean zonesWereSplit_)
+    {
+        zonesWereSplit = zonesWereSplit_;
+        Select(51);
+    }
+
     // Property getting methods
     public String               GetName() { return name; }
     public String               GetOriginalName() { return originalName; }
@@ -882,6 +892,7 @@ public class avtMeshMetaData extends AttributeSubject
     public boolean              GetHideFromGUI() { return hideFromGUI; }
     public int                  GetLODs() { return LODs; }
     public int                  GetPresentGhostZoneTypes() { return presentGhostZoneTypes; }
+    public boolean              GetZonesWereSplit() { return zonesWereSplit; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -988,6 +999,8 @@ public class avtMeshMetaData extends AttributeSubject
             buf.WriteInt(LODs);
         if(WriteSelect(50, buf))
             buf.WriteInt(presentGhostZoneTypes);
+        if(WriteSelect(51, buf))
+            buf.WriteBool(zonesWereSplit);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1148,6 +1161,9 @@ public class avtMeshMetaData extends AttributeSubject
         case 50:
             SetPresentGhostZoneTypes(buf.ReadInt());
             break;
+        case 51:
+            SetZonesWereSplit(buf.ReadBool());
+            break;
         }
     }
 
@@ -1205,6 +1221,7 @@ public class avtMeshMetaData extends AttributeSubject
         str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
         str = str + intToString("LODs", LODs, indent) + "\n";
         str = str + intToString("presentGhostZoneTypes", presentGhostZoneTypes, indent) + "\n";
+        str = str + boolToString("zonesWereSplit", zonesWereSplit, indent) + "\n";
         return str;
     }
 
@@ -1261,5 +1278,6 @@ public class avtMeshMetaData extends AttributeSubject
     private boolean              hideFromGUI;
     private int                  LODs;
     private int                  presentGhostZoneTypes;
+    private boolean              zonesWereSplit;
 }
 

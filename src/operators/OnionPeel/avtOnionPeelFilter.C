@@ -287,6 +287,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    seed cell was specified as a global cell number and material interface
 //    reconstruction was applied.
 //
+//    Kathleen Biagas, Fri Jul 25 12:58:09 MST 2014
+//    Use new att 'honorOriginalMesh' in determining whether to reconstruct.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -453,6 +456,8 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
 
     vtkDataSet *outds = NULL;
 
+    bool reconstruct = !GetInput()->GetInfo().GetValidity().GetZonesPreserved()
+                       && atts.GetHonorOriginalMesh();
     if (opf)
     {
         opf->SetInputData(ds);
@@ -460,8 +465,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         opf->SetAdjacencyType(atts.GetAdjacencyType());
         opf->SetSeedIdIsForCell((int)
             (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
-        opf->SetReconstructOriginalCells((int)
-            !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
+        opf->SetReconstructOriginalCells(reconstruct ? 1 : 0);
         opf->Update();
         outds = opf->GetOutput();
     }
@@ -472,8 +476,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         poly_opf->SetAdjacencyType(atts.GetAdjacencyType());
         poly_opf->SetSeedIdIsForCell((int)
             (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
-        poly_opf->SetReconstructOriginalCells((int)
-            !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
+        poly_opf->SetReconstructOriginalCells(reconstruct ? 1 : 0);
         poly_opf->Update();
         outds = poly_opf->GetOutput();
     }

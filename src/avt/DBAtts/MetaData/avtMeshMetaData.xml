@@ -175,6 +175,9 @@
     <Field name="presentGhostZoneTypes" label="Present ghost zone types" type="int" access="public">
       0
     </Field>
+    <Field name="zonesWereSplit" label="Orignal zones were split" type="bool" access="public">
+      false
+    </Field>
     <Function name="avtMeshMetaData2" user="true" member="true">
     </Function>
     <Function name="avtMeshMetaData3" user="true" member="true">

@@ -804,6 +804,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Burlen Loring, Sun Apr 27 15:17:23 PDT 2014
 //    Cleanup -Wall warnings
 //
+//    Kathleen Biagas, Wed Jul 23 16:45:34 PDT 2014
+//    Invalidate zones if meshmetadata reports the zones were split as can be
+//    the case for arbitrary polyhedral meshes.
+//
 // ****************************************************************************
 
 void
@@ -864,6 +868,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             // pipeline executions that were no longer valid.
             validity.InvalidateZones();
             validity.InvalidateNodes();
+        }
+        if (mmd->zonesWereSplit)
+        {
+            validity.InvalidateZones();
         }
 
         //

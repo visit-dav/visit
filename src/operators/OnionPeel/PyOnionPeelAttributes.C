@@ -138,6 +138,11 @@ PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *pref
           break;
     }
 
+    if(atts->GetHonorOriginalMesh())
+        SNPRINTF(tmpStr, 1000, "%shonorOriginalMesh = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%shonorOriginalMesh = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -399,6 +404,30 @@ OnionPeelAttributes_GetSeedType(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+OnionPeelAttributes_SetHonorOriginalMesh(PyObject *self, PyObject *args)
+{
+    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the honorOriginalMesh in the object.
+    obj->data->SetHonorOriginalMesh(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+OnionPeelAttributes_GetHonorOriginalMesh(PyObject *self, PyObject *args)
+{
+    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetHonorOriginalMesh()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyOnionPeelAttributes_methods[ONIONPEELATTRIBUTES_NMETH] = {
@@ -419,6 +448,8 @@ PyMethodDef PyOnionPeelAttributes_methods[ONIONPEELATTRIBUTES_NMETH] = {
     {"GetRequestedLayer", OnionPeelAttributes_GetRequestedLayer, METH_VARARGS},
     {"SetSeedType", OnionPeelAttributes_SetSeedType, METH_VARARGS},
     {"GetSeedType", OnionPeelAttributes_GetSeedType, METH_VARARGS},
+    {"SetHonorOriginalMesh", OnionPeelAttributes_SetHonorOriginalMesh, METH_VARARGS},
+    {"GetHonorOriginalMesh", OnionPeelAttributes_GetHonorOriginalMesh, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -473,6 +504,8 @@ PyOnionPeelAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "SeedNode") == 0)
         return PyInt_FromLong(long(OnionPeelAttributes::SeedNode));
 
+    if(strcmp(name, "honorOriginalMesh") == 0)
+        return OnionPeelAttributes_GetHonorOriginalMesh(self, NULL);
 
     return Py_FindMethod(PyOnionPeelAttributes_methods, self, name);
 }
@@ -503,6 +536,8 @@ PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = OnionPeelAttributes_SetRequestedLayer(self, tuple);
     else if(strcmp(name, "seedType") == 0)
         obj = OnionPeelAttributes_SetSeedType(self, tuple);
+    else if(strcmp(name, "honorOriginalMesh") == 0)
+        obj = OnionPeelAttributes_SetHonorOriginalMesh(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

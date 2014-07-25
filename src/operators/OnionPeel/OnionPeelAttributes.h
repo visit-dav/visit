@@ -109,6 +109,7 @@ public:
     void SetLogical(bool logical_);
     void SetRequestedLayer(int requestedLayer_);
     void SetSeedType(SeedIdType seedType_);
+    void SetHonorOriginalMesh(bool honorOriginalMesh_);
 
     // Property getting methods
     NodeFace          GetAdjacencyType() const;
@@ -122,6 +123,7 @@ public:
     bool              GetLogical() const;
     int               GetRequestedLayer() const;
     SeedIdType        GetSeedType() const;
+    bool              GetHonorOriginalMesh() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -156,6 +158,7 @@ public:
         ID_logical,
         ID_requestedLayer,
         ID_seedType,
+        ID_honorOriginalMesh,
         ID__LAST
     };
 
@@ -168,11 +171,12 @@ private:
     bool        logical;
     int         requestedLayer;
     int         seedType;
+    bool        honorOriginalMesh;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define ONIONPEELATTRIBUTES_TMFS "ibssi*bii"
+#define ONIONPEELATTRIBUTES_TMFS "ibssi*biib"
 
 #endif

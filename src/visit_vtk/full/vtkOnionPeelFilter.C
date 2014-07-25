@@ -194,6 +194,10 @@ vtkOnionPeelFilter::SetBadSeedCallback(BadSeedCallback cb, void *args)
 //    Renamed 'SeedCellId to 'SeedId', 'numCells' arg to 'numIds'.
 //    Added code to handle seedId that is a node.
 //
+//    Kathleen Biagas, Wed Jul 23 16:40:51 MST 2014
+//    Add maxId for error reporting when reconstructing original zones, 
+//    otherwise numIds used which is incorrect in this instance.
+//
 // ****************************************************************************
 bool 
 vtkOnionPeelFilter::Initialize(vtkDataSet *input)
@@ -303,11 +307,12 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
         }
         else 
         {
-            this->FindCellsCorrespondingToOriginal(input, this->SeedId, this->layerCellIds);
+            int maxId=-1;
+            this->FindCellsCorrespondingToOriginal(input, this->SeedId, this->layerCellIds, maxId);
             if (this->layerCellIds->GetNumberOfIds() == 0) 
             {
                 if (bsc_callback != NULL) 
-                    bsc_callback(bsc_args, SeedId, numIds, false);
+                    bsc_callback(bsc_args, SeedId, (maxId == -1 ? numIds: maxId), false);
                 vtkWarningMacro(<<"SeedId " << this->SeedId 
                                 << " is not available from current data.");
                 return false; //unsuccessful initialization
@@ -355,6 +360,7 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
             vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
                 input->GetCellData()->GetArray("avtOriginalCellNumbers"));
 
+            int maxId = -1;
             if (origCells)
             {
                 unsigned int *oc = origCells->GetPointer(0);
@@ -367,14 +373,14 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
                         int index = cellId *nc + comp;;
                         origIds->InsertNextId(oc[index]);
                 }
-                FindCellsCorrespondingToOriginal(input, origIds, this->layerCellIds);
+                FindCellsCorrespondingToOriginal(input, origIds, this->layerCellIds, maxId);
                 origIds->Delete();
             }
             
             if (this->layerCellIds->GetNumberOfIds() == 0) 
             {
                 if (bsc_callback != NULL) 
-                    bsc_callback(bsc_args, SeedId, numIds, false);
+                    bsc_callback(bsc_args, SeedId, (maxId == -1? numIds: maxId), false);
                 vtkWarningMacro(<<"SeedId " << this->SeedId 
                                 << " is not available from current data.");
                 return false; //unsuccessful initialization
@@ -489,7 +495,9 @@ vtkOnionPeelFilter::Grow(vtkDataSet *input)
                         int index = cellId *nc + comp;;
                         origIds->InsertNextId(oc[index]);
                     }
-                    FindCellsCorrespondingToOriginal(input, origIds, this->layerCellIds);
+                    int maxId = -1;
+                    FindCellsCorrespondingToOriginal(input, origIds, this->layerCellIds, maxId);
+                    (void) maxId;
                     origIds->Delete();
                 }
             }
@@ -949,11 +957,14 @@ vtkOnionPeelFilter::SetSeedId(const int seed)
 //   Kathleen Bonnell, Tue Jun 14 11:45:21 PDT 2005
 //   Correct 'n' for loop counting.
 //  
+//   Kathleen Biagas, Wed Jul 23 16:42:06 MST 2014
+//   Added maxId, used in error reporting.
+//
 //=======================================================================
 
 void
 vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
-    int orig, vtkIdList *group)
+    int orig, vtkIdList *group, int &maxId)
 {
     vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
         input->GetCellData()->GetArray("avtOriginalCellNumbers"));
@@ -964,9 +975,11 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
         int nc = origCells->GetNumberOfComponents();
         int n = origCells->GetNumberOfTuples() *nc;
         int comp = nc -1;
+        maxId = -1;
         for (int i = comp; i < n; i+=nc )
         {
             int id = i / nc;
+            maxId = (int)oc[i] > maxId ? (int)oc[i] : maxId; 
             if (oc[i] == (unsigned int)orig && group->IsId(id) == -1)
                 group->InsertNextId(id);
         }
@@ -995,11 +1008,14 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
 //   Kathleen Bonnell, Tue Jun 14 11:45:21 PDT 2005
 //   Correct 'n' for loop counting.
 //  
+//   Kathleen Biagas, Wed Jul 23 16:42:06 MST 2014
+//   Added maxId, used in error reporting.
+//
 //=======================================================================
 
 void
 vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
-    vtkIdList *origs, vtkIdList *group)
+    vtkIdList *origs, vtkIdList *group, int &maxId)
 {
     vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
         input->GetCellData()->GetArray("avtOriginalCellNumbers"));
@@ -1010,9 +1026,11 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
         int nc = origCells->GetNumberOfComponents();
         int n = origCells->GetNumberOfTuples()*nc;
         int comp = nc -1;
+        maxId = -1;
         for (int i = comp; i < n; i+=nc)
         {
             int id = i / nc;
+            maxId = (int)oc[i] > maxId ? (int)oc[i] : maxId;
             if (origs->IsId(oc[i]) != -1 && group->IsId(id) == -1)
                 group->InsertNextId(id);
         }

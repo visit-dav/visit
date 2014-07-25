@@ -101,6 +101,10 @@ class vtkIdList;
 //    Jeremy Meredith, Thu Aug  7 14:21:23 EDT 2008
 //    Adjacency type string should have been const char*.
 //
+//    Kathleen Biagas, Wed Jul 23 16:43:42 MST 2014
+//    Added 'maxId' arg to FindCellsCorrespondingToOriginal, used in
+//    error reporting.
+//
 //*****************************************************************************
 
 typedef void (*BadSeedCallback)(void *, int, int, bool);
@@ -172,8 +176,8 @@ protected:
 
   void FindCellNeighborsByNodeAdjacency(vtkDataSet *, vtkIdList *, vtkIdList*);
   void FindCellNeighborsByFaceAdjacency(vtkDataSet *, vtkIdList *, vtkIdList*);
-  void FindCellsCorrespondingToOriginal(vtkDataSet *, int, vtkIdList*);
-  void FindCellsCorrespondingToOriginal(vtkDataSet *, vtkIdList *, vtkIdList*);
+  void FindCellsCorrespondingToOriginal(vtkDataSet *, int, vtkIdList*, int &);
+  void FindCellsCorrespondingToOriginal(vtkDataSet *, vtkIdList *, vtkIdList*, int &);
   void FindNodesCorrespondingToOriginal(vtkDataSet *, int, vtkIdList*);
 
 // Protected Data Members

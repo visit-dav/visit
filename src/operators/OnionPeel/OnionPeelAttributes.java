@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class OnionPeelAttributes extends AttributeSubject implements Plugin
 {
-    private static int OnionPeelAttributes_numAdditionalAtts = 8;
+    private static int OnionPeelAttributes_numAdditionalAtts = 9;
 
     // Enum values
     public final static int NODEFACE_NODE = 0;
@@ -84,6 +84,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         logical = false;
         requestedLayer = 0;
         seedType = SEEDIDTYPE_SEEDCELL;
+        honorOriginalMesh = true;
     }
 
     public OnionPeelAttributes(int nMoreFields)
@@ -99,6 +100,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         logical = false;
         requestedLayer = 0;
         seedType = SEEDIDTYPE_SEEDCELL;
+        honorOriginalMesh = true;
     }
 
     public OnionPeelAttributes(OnionPeelAttributes obj)
@@ -120,6 +122,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         logical = obj.logical;
         requestedLayer = obj.requestedLayer;
         seedType = obj.seedType;
+        honorOriginalMesh = obj.honorOriginalMesh;
 
         SelectAll();
     }
@@ -155,7 +158,8 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
                 index_equal &&
                 (logical == obj.logical) &&
                 (requestedLayer == obj.requestedLayer) &&
-                (seedType == obj.seedType));
+                (seedType == obj.seedType) &&
+                (honorOriginalMesh == obj.honorOriginalMesh));
     }
 
     public String GetName() { return "OnionPeel"; }
@@ -210,6 +214,12 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         Select(7);
     }
 
+    public void SetHonorOriginalMesh(boolean honorOriginalMesh_)
+    {
+        honorOriginalMesh = honorOriginalMesh_;
+        Select(8);
+    }
+
     // Property getting methods
     public int     GetAdjacencyType() { return adjacencyType; }
     public boolean GetUseGlobalId() { return useGlobalId; }
@@ -219,6 +229,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
     public boolean GetLogical() { return logical; }
     public int     GetRequestedLayer() { return requestedLayer; }
     public int     GetSeedType() { return seedType; }
+    public boolean GetHonorOriginalMesh() { return honorOriginalMesh; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -239,6 +250,8 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(requestedLayer);
         if(WriteSelect(7, buf))
             buf.WriteInt(seedType);
+        if(WriteSelect(8, buf))
+            buf.WriteBool(honorOriginalMesh);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -269,6 +282,9 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         case 7:
             SetSeedType(buf.ReadInt());
             break;
+        case 8:
+            SetHonorOriginalMesh(buf.ReadBool());
+            break;
         }
     }
 
@@ -293,6 +309,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         if(seedType == SEEDIDTYPE_SEEDNODE)
             str = str + "SEEDIDTYPE_SEEDNODE";
         str = str + "\n";
+        str = str + boolToString("honorOriginalMesh", honorOriginalMesh, indent) + "\n";
         return str;
     }
 
@@ -306,5 +323,6 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
     private boolean logical;
     private int     requestedLayer;
     private int     seedType;
+    private boolean honorOriginalMesh;
 }
 

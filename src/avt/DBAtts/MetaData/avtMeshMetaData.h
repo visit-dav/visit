@@ -161,6 +161,7 @@ public:
         ID_hideFromGUI,
         ID_LODs,
         ID_presentGhostZoneTypes,
+        ID_zonesWereSplit,
         ID__LAST
     };
 
@@ -216,12 +217,13 @@ public:
     bool                 hideFromGUI;
     int                  LODs;
     int                  presentGhostZoneTypes;
+    bool                 zonesWereSplit;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMESHMETADATA_TMFS "ssbiiiibIbiissssssbDDiisss*aiisss*i*i*bibbbbibFFbDibbii"
+#define AVTMESHMETADATA_TMFS "ssbiiiibIbiissssssbDDiisss*aiisss*i*i*bibbbbibFFbDibbiib"
 
 #endif
