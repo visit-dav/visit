@@ -73,8 +73,8 @@ static PyObject *NewRadialResampleAttributes(int);
 std::string
 PyRadialResampleAttributes_ToString(const RadialResampleAttributes *atts, const char *prefix)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetIsFast())
         SNPRINTF(tmpStr, 1000, "%sisFast = 1\n", prefix);
@@ -696,7 +696,6 @@ PyRadialResampleAttributes_GetLogString()
 static void
 PyRadialResampleAttributes_CallLogRoutine(Subject *subj, void *data)
 {
-    RadialResampleAttributes *atts = (RadialResampleAttributes *)subj;
     typedef void (*logCallback)(const std::string &);
     logCallback cb = (logCallback)data;
 
