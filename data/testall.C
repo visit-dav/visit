@@ -333,9 +333,9 @@ build_rect2d(DBfile * dbfile, int size)
     char          *meshname = NULL, *var1name = NULL, *var2name = NULL;
     char          *var3name = NULL, *var4name = NULL, *matname = NULL;
 
-    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *distarr=NULL;
+    float         *d=NULL, *p=NULL, *u=NULL, *v=NULL, *t=NULL, *ascii=NULL, *distarr=NULL;
 
-    char          *ascii=NULL, *asciiw=NULL;
+    char          *asciiw=NULL;
 
     int            nmats;
     int            matnos[9];
@@ -376,7 +376,7 @@ build_rect2d(DBfile * dbfile, int size)
     v = ALLOC_N (float, (nx + 1) * (ny + 1));
     t = ALLOC_N (float, (nx + 1) * (ny + 1));
     distarr = ALLOC_N (float, nx * ny);
-    ascii = ALLOC_N (char, nx * ny);
+    ascii = ALLOC_N (float, nx * ny);
     asciiw = ALLOC_N (char, nx * ny * 9);
     matlist = ALLOC_N (int, nx * ny);
     mix_next = ALLOC_N (int, 40 * ny);
@@ -489,15 +489,15 @@ build_rect2d(DBfile * dbfile, int size)
 {   char const *tmp = #S;         \
     for (int q = 0; q < 9; q++)   \
         asciiw[q*nx*ny+i] = '\0'; \
-    for (int q = 0; q < 9; q++)   \
+    for (int q = 0; q < 9 && q < (int) strlen(#S); q++)   \
         asciiw[q*nx*ny+i] = tmp[q]; \
     break;                        \
 }
 
        for (i = 0; i < nx*ny; i++)
        {
-          ascii[i] = (char) ((int) ('A' + 26*distarr[i]/maxdist));
-          switch (ascii[i])
+          ascii[i] = 'A' + 26*distarr[i]/maxdist;
+          switch ((int) ascii[i])
           {
               case 'A': case 'B':
               case 'C': case 'D':
@@ -639,7 +639,7 @@ build_rect2d(DBfile * dbfile, int size)
        DBAddOption (varOptList, DBOPT_ASCII_LABEL, &j);
 
        DBPutQuadvar1(dbfile, "ascii", meshname, ascii, zdims, ndims, NULL, 0,
-                     DB_CHAR, DB_ZONECENT, varOptList);
+                     DB_FLOAT, DB_ZONECENT, varOptList);
 
        arr[0] = &asciiw[0*nx*ny];
        arr[1] = &asciiw[1*nx*ny];
@@ -2007,8 +2007,8 @@ build_ucd3d(DBfile * dbfile, int size)
     double         dtime;
     float         *coords[3];
     float          x[2646], y[2646], z[2646];
-    double         Xmin,Ymin,Zmin;
-    double         Xmax,Ymax,Zmax;
+    double         Xmin=0,Ymin=0,Zmin=0;
+    double         Xmax=0,Ymax=0,Zmax=0;
     int            first;
     int            nfaces, nzones, nnodes;
     int            lfacelist, lzonelist;
