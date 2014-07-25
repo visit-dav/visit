@@ -1046,6 +1046,31 @@ class GDBDebugger(Debugger):
         return args
 
 ###############################################################################
+# Class: LLDBDebugger
+#
+# Purpose:    Launch a VisIt component under lldb.
+#
+# Programmer: Cyrus Harrison
+# Date:       Fri Jul 25 15:55:19 PDT 2014
+#
+# Modifications:
+#
+###############################################################################
+
+class LLDBDebugger(Debugger):
+    def __init__(self, launcher):
+        super(LLDBDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["lldb"]
+
+    def CreateCommand(self, args):
+        #lldb_args = ["process","launch","--tty","--"]
+        lldb_args = ["--"]
+        return self.Executable() + lldb_args + [args[0]] + self.DebuggerArguments() + args[1:]
+
+
+###############################################################################
 # Class: TotalviewDebugger
 #
 # Purpose:    Launch a VisIt component under totalview.
@@ -2619,6 +2644,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Cyrus Harrison, Fri May 10 15:55:49 PDT 2013
     #   Added ddt.
     #
+    #   Cyrus Harrison, Fri Jul 25 15:59:02 PDT 2014
+    #   Added lldb.
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
@@ -2627,7 +2655,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "strace",
                 "apitrace",
                 "debug-malloc",
-                "ddt"]
+                "ddt",
+                "lldb"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -2643,6 +2672,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     # Modifications:
     #   Kathleen Biagas, Mon Apr  8 14:19:36 PDT 2013
     #   Added apitrace.
+    #
+    #   Cyrus Harrison, Fri Jul 25 15:59:02 PDT 2014
+    #   Added lldb.
     #
     ############################################################################
 
@@ -2661,6 +2693,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return DebugMallocDebugger(self)
         elif debugger == "ddt":
             return DDTDebugger(self)
+        elif debugger == "lldb":
+            return LLDBDebugger(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 
