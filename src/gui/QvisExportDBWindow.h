@@ -87,6 +87,9 @@ class PlotList;
 //   Kathleen Biagas, Wed Apr 23 14:46:51 MST 2014
 //   Add plotList.
 //
+//   Brad Whitlock, Thu Jul 24 13:55:34 EDT 2014
+//   Added check box for doing all time steps.
+//
 // ****************************************************************************
 
 class GUI_API QvisExportDBWindow : public QvisPostableWindowSimpleObserver
@@ -122,6 +125,7 @@ protected slots:
     void addVariable(const QString &);
     void selectOutputDirectory();
     void delimiterChanged(int);
+    void allTimesToggled(bool);
 private:
     DBPluginInfoAttributes *dbPluginInfoAtts;
     ExportDBAttributes     *exportDBAtts;
@@ -138,6 +142,7 @@ private:
     QComboBox           *fileFormatComboBox;
     QvisVariableButton  *varsButton;
     QLineEdit           *varsLineEdit;
+    QCheckBox           *allTimes;
 };
 
 #endif

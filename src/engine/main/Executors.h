@@ -1793,7 +1793,7 @@ RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
     TRY
     {
-        netmgr->ExportDatabases(rpc->GetIDs(), rpc->GetExportDBAtts());
+        netmgr->ExportDatabases(rpc->GetIDs(), rpc->GetExportDBAtts(), rpc->GetTimeSuffix());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

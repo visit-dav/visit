@@ -95,6 +95,7 @@ public:
     void SelectOpts();
 
     // Property setting methods
+    void SetAllTimes(bool allTimes_);
     void SetDb_type(const std::string &db_type_);
     void SetDb_type_fullname(const std::string &db_type_fullname_);
     void SetFilename(const std::string &filename_);
@@ -103,6 +104,7 @@ public:
     void SetOpts(const DBOptionsAttributes &opts_);
 
     // Property getting methods
+    bool                      GetAllTimes() const;
     const std::string         &GetDb_type() const;
           std::string         &GetDb_type();
     const std::string         &GetDb_type_fullname() const;
@@ -130,7 +132,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_db_type = 0,
+        ID_allTimes = 0,
+        ID_db_type,
         ID_db_type_fullname,
         ID_filename,
         ID_dirname,
@@ -140,6 +143,7 @@ public:
     };
 
 private:
+    bool                allTimes;
     std::string         db_type;
     std::string         db_type_fullname;
     std::string         filename;
@@ -151,6 +155,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXPORTDBATTRIBUTES_TMFS "sssss*a"
+#define EXPORTDBATTRIBUTES_TMFS "bsssss*a"
 
 #endif

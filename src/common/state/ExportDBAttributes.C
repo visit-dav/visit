@@ -56,6 +56,7 @@
 
 void ExportDBAttributes::Init()
 {
+    allTimes = false;
     filename = "visit_ex_db";
     dirname = ".";
 
@@ -79,6 +80,7 @@ void ExportDBAttributes::Init()
 
 void ExportDBAttributes::Copy(const ExportDBAttributes &obj)
 {
+    allTimes = obj.allTimes;
     db_type = obj.db_type;
     db_type_fullname = obj.db_type_fullname;
     filename = obj.filename;
@@ -242,7 +244,8 @@ bool
 ExportDBAttributes::operator == (const ExportDBAttributes &obj) const
 {
     // Create the return value
-    return ((db_type == obj.db_type) &&
+    return ((allTimes == obj.allTimes) &&
+            (db_type == obj.db_type) &&
             (db_type_fullname == obj.db_type_fullname) &&
             (filename == obj.filename) &&
             (dirname == obj.dirname) &&
@@ -391,6 +394,7 @@ ExportDBAttributes::NewInstance(bool copy) const
 void
 ExportDBAttributes::SelectAll()
 {
+    Select(ID_allTimes,         (void *)&allTimes);
     Select(ID_db_type,          (void *)&db_type);
     Select(ID_db_type_fullname, (void *)&db_type_fullname);
     Select(ID_filename,         (void *)&filename);
@@ -428,6 +432,12 @@ ExportDBAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     bool addToParent = false;
     // Create a node for ExportDBAttributes.
     DataNode *node = new DataNode("ExportDBAttributes");
+
+    if(completeSave || !FieldsEqual(ID_allTimes, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("allTimes", allTimes));
+    }
 
     if(completeSave || !FieldsEqual(ID_db_type, &defaultObject))
     {
@@ -507,6 +517,8 @@ ExportDBAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("allTimes")) != 0)
+        SetAllTimes(node->AsBool());
     if((node = searchNode->GetNode("db_type")) != 0)
         SetDb_type(node->AsString());
     if((node = searchNode->GetNode("db_type_fullname")) != 0)
@@ -524,6 +536,13 @@ ExportDBAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+ExportDBAttributes::SetAllTimes(bool allTimes_)
+{
+    allTimes = allTimes_;
+    Select(ID_allTimes, (void *)&allTimes);
+}
 
 void
 ExportDBAttributes::SetDb_type(const std::string &db_type_)
@@ -570,6 +589,12 @@ ExportDBAttributes::SetOpts(const DBOptionsAttributes &opts_)
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+bool
+ExportDBAttributes::GetAllTimes() const
+{
+    return allTimes;
+}
 
 const std::string &
 ExportDBAttributes::GetDb_type() const
@@ -707,6 +732,7 @@ ExportDBAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_allTimes:         return "allTimes";
     case ID_db_type:          return "db_type";
     case ID_db_type_fullname: return "db_type_fullname";
     case ID_filename:         return "filename";
@@ -737,6 +763,7 @@ ExportDBAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_allTimes:         return FieldType_bool;
     case ID_db_type:          return FieldType_string;
     case ID_db_type_fullname: return FieldType_string;
     case ID_filename:         return FieldType_string;
@@ -767,6 +794,7 @@ ExportDBAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_allTimes:         return "bool";
     case ID_db_type:          return "string";
     case ID_db_type_fullname: return "string";
     case ID_filename:         return "string";
@@ -799,6 +827,11 @@ ExportDBAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_allTimes:
+        {  // new scope
+        retval = (allTimes == obj.allTimes);
+        }
+        break;
     case ID_db_type:
         {  // new scope
         retval = (db_type == obj.db_type);

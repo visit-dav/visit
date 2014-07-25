@@ -83,7 +83,7 @@ FieldViewXDBGeneralPluginInfo::GetVersion() const
 const char *
 FieldViewXDBGeneralPluginInfo::GetID() const
 {
-    return "FIELDVIEWFieldViewXDB_1.0";
+    return "FieldViewXDB_1.0";
 }
 // ****************************************************************************
 //  Method: FieldViewXDBGeneralPluginInfo::EnabledByDefault

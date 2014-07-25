@@ -69,23 +69,25 @@ class ENGINE_RPC_API ExportDatabaseRPC : public BlockingRPC
     virtual const std::string TypeName() const { return "ExportDatabaseRPC"; }
 
     // Invocation method
-    void operator()(const intVector &, const ExportDBAttributes *);
+    void operator()(const intVector &, const ExportDBAttributes &, const std::string &);
 
     // Property selection methods
     virtual void SelectAll();
 
     // Property setting methods
     void SetIDs(const intVector &ids);
-    void SetExportDBAtts(const ExportDBAttributes *);
+    void SetExportDBAtts(const ExportDBAttributes &);
+    void SetTimeSuffix(const std::string &);
 
     // Property getting methods
-    const intVector     &GetIDs() const;
-    ExportDBAttributes *GetExportDBAtts();
-
+    const intVector          &GetIDs() const;
+    const ExportDBAttributes &GetExportDBAtts() const;
+    const std::string        &GetTimeSuffix() const;
 
   private:
     intVector            ids;
     ExportDBAttributes   exportDBAtts; 
+    std::string          timeSuffix;
 };
 
 #endif
