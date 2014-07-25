@@ -2301,7 +2301,9 @@ InitTestEnv()
 #keep as global var for now
 SILO_MODE = TestEnv.SILO_MODE
 
-
-
+#
+# Run our test script using "Source"
+#
+visit.Source(TestEnv.params["script"])
 
 

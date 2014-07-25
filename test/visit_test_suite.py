@@ -269,7 +269,6 @@ def launch_visit_test(args):
         sexe_res = sexe(rcmd,
                         suppress_output=(not (opts["verbose"] or opts["less_verbose"])),
                         echo=opts["verbose"],
-                        file_stdin=os.path.abspath(test), # pass the test file as stdin
                         timeout=opts["limit"] * 1.1) # proc kill swtich at 110% of the selected timeout
         json_res_file = pjoin(opts["result_dir"],"json","%s_%s.json" %(test_cat,test_base))
         if os.path.isfile(json_res_file):
