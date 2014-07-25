@@ -46,6 +46,8 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Fri Jul 25 15:10:11 MST 2014
+#    Added ArbPoly test, which demonstrates use of new att: honorOriginalMesh.
 # ----------------------------------------------------------------------------
 
 def TestBigSil():
@@ -381,6 +383,46 @@ def TestBoundary():
     Test("ops_onionpeel_26")
     DeleteAllPlots()
 
+def TestArbPoly():
+    TestSection("Arbitrary Polyhedra, honor original mesh")
+    OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+    DefineScalarExpression("gzid", "global_zoneid(<3D/mesh1>)")
+    AddPlot("Mesh", "3D/mesh1")
+    AddPlot("Pseudocolor", "gzid")
+    pc = PseudocolorAttributes()
+    pc.colorTableName="levels"
+    SetPlotOptions(pc)
+    AddOperator("OnionPeel")
+    DrawPlots()
+    ResetView()
+    op = OnionPeelAttributes()
+
+    SetQueryOutputToObject()
+    # there are only 11 zones in original mesh
+    # when NumZonesQuery is fixed, can use it instead
+    # SetActivePlots(0)
+    # numZones = Query("NumZones", use_actual_data=0)['num_zones']
+    # SetActivePlots(1)
+    numZones = 11 
+    for i in range(numZones):
+        op.index = i
+        SetOperatorOptions(op)
+        DrawPlots()
+        Test("poly_originalMesh_%02d"%i)
+
+    TestSection("Arbitrary Polyhedra, honor actual mesh")
+    op.honorOriginalMesh = 0
+    SetActivePlots(0)
+    numZones = Query("NumZones", use_actual_data=1)['num_zones']
+    print "numZones: ", numZones
+    SetActivePlots(1)
+    for i in range (numZones):
+        op.index = i
+        SetOperatorOptions(op)
+        DrawPlots()
+        Test("poly_actualMesh%02d"%i)
+
+    DeleteAllPlots()
 
 def Main():
     TestBigSil()
@@ -390,6 +432,7 @@ def Main():
     TestNodeId()
     TestFilledBoundary()
     TestBoundary()
+    TestArbPoly()
 
 Main()
 Exit()

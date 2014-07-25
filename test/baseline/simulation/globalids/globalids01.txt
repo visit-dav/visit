@@ -74,6 +74,7 @@ GetMeshes(0).containsExteriorBoundaryGhosts = 0
 GetMeshes(0).hideFromGUI = 0
 GetMeshes(0).LODs = 1
 GetMeshes(0).presentGhostZoneTypes = 0
+GetMeshes(0).zonesWereSplit = 0
 GetMeshes(1).name = "surface"
 GetMeshes(1).originalName = "surface"
 GetMeshes(1).validVariable = 1
@@ -131,6 +132,7 @@ GetMeshes(1).containsExteriorBoundaryGhosts = 0
 GetMeshes(1).hideFromGUI = 0
 GetMeshes(1).LODs = 1
 GetMeshes(1).presentGhostZoneTypes = 0
+GetMeshes(1).zonesWereSplit = 0
 #subsets does not contain any avtSubsetsMetaData objects.
 GetScalars(0).name = "radial"
 GetScalars(0).originalName = "radial"
