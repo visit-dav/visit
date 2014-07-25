@@ -122,6 +122,7 @@ RectilinearProject2D
 Reflect
 Replicate
 Resample
+RadialResample
 Revolve
 Slice
 Smooth

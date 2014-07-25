@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+  <Plugin name="RadialResample" type="operator" label="Radial Resample" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Geometry">
+    <LIBS components="ESer">
+      avtivp_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtivp_par
+    </LIBS>
+    <Attribute name="RadialResampleAttributes" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="isFast" label="Fast Mode" type="bool">
+        false
+      </Field>
+      <Field name="minTheta" label="Min Elevation" type="float">
+        0.000000
+      </Field>
+      <Field name="maxTheta" label="Max Elevation" type="float">
+        90.000000
+      </Field>
+      <Field name="deltaTheta" label="Delta Elevation" type="float">
+        5.000000
+      </Field>
+      <Field name="radius" label="Radius" type="float">
+        0.500000
+      </Field>
+      <Field name="deltaRadius" label="Delta Radius" type="float">
+        0.050000
+      </Field>
+      <Field name="center" label="Center" type="floatArray" length="3">
+        0.500000
+        0.500000
+        0.500000
+      </Field>
+      <Field name="is3D" label="3D Resampling" type="bool">
+        true
+      </Field>
+      <Field name="minAzimuth" label="Min Azimuth" type="float" enabler="is3D:true">
+        0.000000
+      </Field>
+      <Field name="maxAzimuth" label="Max Azimuth" type="float" enabler="is3D:true">
+        180.000000
+      </Field>
+      <Field name="deltaAzimuth" label="Delta Azimuth" type="float" enabler="is3D:true">
+        5.000000
+      </Field>
+    </Attribute>
+  </Plugin>
