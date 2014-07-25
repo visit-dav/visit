@@ -195,6 +195,11 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Kathleen Biagas, Thu May 24 19:20:19 MST 2012  
 //    Ensure runFile has path-separators properly escaped on Windows.
 //
+//    Cyrus Harrison, Wed Jul 23 16:16:49 PDT 2014
+//    Change the cli to act more like a standard python interpreter:
+//     1) Switch to using args after "-s" as sys.argv
+//     2) add "-ni"  + "-non-interactive" command line switches.
+//
 // ****************************************************************************
 
 int
@@ -203,13 +208,25 @@ main(int argc, char *argv[])
     int  retval = 0;
     int  debugLevel = 0;
     bool bufferDebug = false;
-    bool verbose = false, s_found = false;
+    bool verbose = false;
+    bool s_found = false;
     bool pyside = false;
-    bool pyside_gui = false,pyside_viewer = false;
-    char *runFile = 0, *loadFile = 0;
+    bool pyside_gui = false;
+    bool pyside_viewer = false;
+    char *runFile = 0;
+    char *loadFile = 0;
     char **argv2 = new char *[argc];
     char **argv_after_s = new char *[argc];
-    int  argc2 = 0, argc_after_s = 0; 
+
+    int    argc_py_style = 0;
+    char **argv_py_style = new char *[argc];
+    
+    bool scriptOnly = false;
+                      
+    int i=0;
+        
+    int argc2 = 0;
+    int argc_after_s = 0; 
     char* uifile = 0;
     const char* pyuiembedded_str = "-pyuiembedded"; //pass it along to client
 
@@ -222,7 +239,7 @@ main(int argc, char *argv[])
 #endif
 
     // Parse the arguments
-    for(int i = 0; i < argc; ++i)
+    for(i = 0; i < argc; ++i)
     {
         if(strcmp(argv[i], "-debug") == 0)
         {
@@ -321,6 +338,14 @@ main(int argc, char *argv[])
             // into visit's cli using pipes, and is the equivalent
             // of the "-i" flag in python.
             Py_InteractiveFlag++;
+            Py_InspectFlag++;
+        }
+        else if( (strcmp(argv[i], "-ni") == 0) || (strcmp(argv[i], "-non-interactive") == 0))
+        {
+            scriptOnly = true;
+            Py_InteractiveFlag=0;
+            Py_InspectFlag=0;
+            
         }
         else if(strcmp(argv[i], "-format") == 0)
         {
@@ -426,8 +451,25 @@ main(int argc, char *argv[])
         Py_Initialize();
         PyEval_InitThreads();
         Py_SetProgramName(argv[0]);
-        PySys_SetArgv(argc, argv);
 
+        // prep sys.argv
+        // to confirm to python conventions, we want sys.argv to include runFile and argv_after_s
+
+        if(runFile != 0)
+        {
+            argv_py_style[argc_py_style] = runFile;
+            argc_py_style++;
+        }
+
+        for(i=0;i<argc_after_s;i++)
+        {
+            argv_py_style[argc_py_style] = argv_after_s[i];
+            argc_py_style++;
+        }
+        
+    
+        PySys_SetArgv(argc_py_style, argv_py_style);
+                
         PyRun_SimpleString((char*)"import sys");
         PyRun_SimpleString((char*)"import os");
         PyRun_SimpleString((char*)"from os.path import join as pjoin");
@@ -444,6 +486,22 @@ main(int argc, char *argv[])
         // Initialize the VisIt module.
         cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
                       argc_after_s, argv_after_s);
+
+
+        // add original args to visit.argv_full, just in case 
+        // some one needs to access them.
+        
+        PyObject *visit_module = PyImport_AddModule("visit"); //borrowed
+        PyObject *visit_dict   = PyModule_GetDict(visit_module); //borrowed
+        PyObject *py_argv_full = PyList_New(argc);
+    
+        for (int i = 0; i < argc; i++) 
+        {
+            // takes over reference
+            PyList_SET_ITEM(py_argv_full, i, PyString_FromString(argv[i]));
+        }
+
+        PyDict_SetItemString(visit_dict, "argv_full", py_argv_full);
 
         if(pyside || pyside_gui)
         {
@@ -499,10 +557,6 @@ main(int argc, char *argv[])
                 PyRun_SimpleString((char*)"GetUIWindow().show()");
         }
 
-        // Initialize the VisIt module.
-        //cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
-        //              argc_after_s, argv_after_s);
-
         // setup source file and source stack variables
         PyRun_SimpleString((char*)"import os\n"
                                   "__visit_script_file__  = '<None>'\n"
@@ -549,19 +603,19 @@ main(int argc, char *argv[])
         // If a database was specified, load it.
         if(loadFile != 0)
         {
-             char *command = new char[strlen(loadFile) + 10 + 16];
-             std::vector<std::string> split = SplitValues(loadFile, ',');
-             if (split.size() == 2)
-             {
-                 sprintf(command, "OpenDatabase(\"%s\", 0, \"%s\")",
-                         split[0].c_str(), split[1].c_str());
-             }  
-             else
-             {
-                 sprintf(command, "OpenDatabase(\"%s\")", loadFile);
-             }
-             PyRun_SimpleString(command);
-             delete [] command;
+            std::ostringstream command;
+            std::vector<std::string> split = SplitValues(loadFile, ',');
+            
+            if(split.size() == 2)
+            {
+                command << "OpenDatabase(\"" << split[0] << ", 0, \"" << split[1] << "\")";
+            }  
+            else
+            {
+                command << "OpenDatabase(\"" << loadFile << "\")";
+            }
+            PyRun_SimpleString(command.str().c_str());
+            
 #ifdef WIN32
              delete [] loadFile;
 #endif
@@ -578,29 +632,29 @@ main(int argc, char *argv[])
             pycmd += "__visit_script_path__ = ";
             pycmd += "os.path.split(__visit_script_file__)[0]\n";
             pycmd += "sys.path.append(__visit_script_path__)\n";
-            PyRun_SimpleString(pycmd.c_str());
 
+            PyRun_SimpleString(pycmd.c_str());
+            
             cli_runscript(runFile);
+
 #ifdef WIN32
              delete [] runFile;
 #endif
         }
 
-        // Enter the python interpreter loop.
-        //int argc3 = 1;
-        //char *argv3 = argv[0];
-        //retval = Py_Main(argc3, &argv3);
 
-        char **argv3 = new char*[argc+1];
-        int ii;
-        for (ii = 1 ; ii < argc ; ii++)
+        if(!scriptOnly)
         {
-            argv3[ii+1] = argv[ii];
+            PyObject *rl_module = PyImport_ImportModule("readline");
+            if (rl_module == NULL)
+                PyErr_Clear();
+            else
+                Py_DECREF(rl_module);
+            retval = PyRun_InteractiveLoop(stdin,"<stdin>");
         }
-        argv3[0] = argv[0];
-        argv3[1] = (char*)"-";
-        retval = Py_Main(argc+1, argv3);
-        delete[] argv3;
+
+
+        Py_Finalize();
 
     }
     CATCH(VisItException &e)
@@ -619,9 +673,17 @@ main(int argc, char *argv[])
     }
     ENDTRY
 
+#ifdef WIN32
+    // cleanup allocs that were necessary for windows (runFile may be used in argv_py_style)
+    if(runFile !=0)
+        delete [] runFile;
+#endif
+
     // Delete the argv2 array.
     delete [] argv2;
     delete [] argv_after_s;
+    delete [] argv_py_style;
+
 
     return retval;
 }
