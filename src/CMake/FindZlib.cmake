@@ -58,7 +58,11 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-    SET_UP_THIRD_PARTY(ZLIB lib include zlib1)
+    IF(ZLIB_LIB_NAME)
+        SET_UP_THIRD_PARTY(ZLIB lib include ${ZLIB_LIB_NAME})
+    ELSE()
+        SET_UP_THIRD_PARTY(ZLIB lib include zlib1)
+    ENDIF()
     IF (ZLIB_FOUND)
         # use full path here, instead of just lib file.
         SET(ZLIB_LIBRARY "${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
