@@ -1368,6 +1368,11 @@ avtPICSFilter::Execute(void)
 //  Programmer: Hank Childs
 //  Creation:   September 29, 2010
 //
+//  Modifications:
+//
+//    David Camp, Thu Jul 17 12:55:02 PDT 2014
+//    Changed the names of the parallel algorithms to match the GUI.
+//
 // ****************************************************************************
 
 const char *
@@ -1385,12 +1390,12 @@ AlgorithmToString(int algo)
     }
     if (algo == PICS_PARALLEL_MASTER_SLAVE)
     {
-        static const char *s = "Master Slave";
+        static const char *s = "Parallelize over curves and domains";
         return s;
     }
     if (algo == PICS_SERIAL)
     {
-        static const char *s = "Serial";
+        static const char *s = "Parallelize over curves";
         return s;
     }
     if (algo == PICS_VISIT_SELECTS)

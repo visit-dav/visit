@@ -104,7 +104,9 @@ const struct Setting s::settings[] = {
     {"x-args", "", false, "-x-args", "VISIT_X_ARGS",
      "Arguments to pass to X servers that VisIt starts up."},
     {"x-display", "", false, "-display", "VISIT_DISPLAY",
-     "Sets the display variable that VisIt will use when launching X servers."}
+     "Sets the display variable that VisIt will use when launching X servers."},
+    {"threads", "0", false, "-threads", "VISIT_THREADS",
+     "Sets the number of threads VisIt will use."}
 };
 
 // Runtime modification map.  This is where we'll put settings we figure out
