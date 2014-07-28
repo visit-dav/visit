@@ -43,13 +43,14 @@
 #ifndef AVT_EXTRUDE_FILTER_H
 #define AVT_EXTRUDE_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <ExtrudeAttributes.h>
 
 class vtkDataSet;
 class vtkPoints;
 class vtkPointSet;
+
 
 // ****************************************************************************
 //  Class: avtExtrudeFilter
@@ -61,6 +62,8 @@ class vtkPointSet;
 //  Creation:   Wed Jun 22 13:48:57 PST 2011
 //
 //  Modifications:
+//    Eric Brugger, Thu Jul 24 13:31:45 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -80,20 +83,20 @@ class avtExtrudeFilter : public avtPluginDataTreeIterator
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    ExtrudeAttributes   atts;
+    ExtrudeAttributes    atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 
-    virtual void          UpdateDataObjectInfo(void);
+    virtual void         UpdateDataObjectInfo(void);
 
-    void                  CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds, 
-                                        int nSteps, const int *cellReplication = NULL) const;
-    vtkPoints            *CreateExtrudedPoints(vtkPoints *oldPoints, 
-                                               int nSteps) const;
-    void                  ExtrudeExtents(double *dbounds) const;
-    vtkDataSet           *ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const;
-    vtkDataSet           *ExtrudeToStructuredGrid(vtkDataSet *in_ds) const;
-    vtkDataSet           *ExtrudeToUnStructuredGrid(vtkPointSet *in_ds) const;
+    void                 CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds, 
+                                       int nSteps, const int *cellReplication = NULL) const;
+    vtkPoints           *CreateExtrudedPoints(vtkPoints *oldPoints, 
+                                              int nSteps) const;
+    void                 ExtrudeExtents(double *dbounds) const;
+    vtkDataSet          *ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const;
+    vtkDataSet          *ExtrudeToStructuredGrid(vtkDataSet *in_ds) const;
+    vtkDataSet          *ExtrudeToUnStructuredGrid(vtkPointSet *in_ds) const;
 };
 
 

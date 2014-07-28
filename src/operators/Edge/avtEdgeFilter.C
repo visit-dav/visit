@@ -134,20 +134,27 @@ avtEdgeFilter::Equivalent(const AttributeGroup *a)
 //      Sends the specified input and output through the Edge filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      inDR       The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   February 23, 2009
 //
+//  Modifications:
+//   Eric Brugger, Thu Jul 24 09:29:05 PDT 2014
+//   Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtEdgeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtEdgeFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     vtkGeometryFilter *geom = NULL;
     vtkExtractEdges *ee = vtkExtractEdges::New();
     if (inDS->GetDataObjectType() != VTK_POLY_DATA)
@@ -163,13 +170,15 @@ avtEdgeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     ee->Update();
 
     vtkPolyData *outDS = ee->GetOutput();
-    ManageMemory(outDS);
+
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
+        inDR->GetDomain(), inDR->GetLabel());
 
     ee->Delete();
     if (geom)
         geom->Delete();
 
-    return outDS;
+    return outDR;
 }
 
 

@@ -172,20 +172,27 @@ avtExtrudeFilter::Equivalent(const AttributeGroup *a)
 //      Sends the specified input and output through the Extrude filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Jun 22 13:48:57 PST 2011
 //
+//  Modifications:
+//    Eric Brugger, Thu Jul 24 13:32:08 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtExtrudeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtExtrudeFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     vtkDataSet *out_ds = NULL;
 
     if(in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
@@ -208,7 +215,13 @@ avtExtrudeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         out_ds->GetCellData()->RemoveArray("avtOriginalCellNumbers");
     }
 
-    return out_ds;
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    if (out_ds != NULL)
+        out_ds->Delete();
+
+    return out_dr;
 }
 
 // ****************************************************************************
