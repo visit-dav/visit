@@ -169,6 +169,12 @@ int VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
   VsLog::debugLog() << "VsFilter::visitGroup: node '" << name
     << "' is a group." << std::endl;
 
+  if (std::string(name) == "..")
+  {
+    VsLog::debugLog() << "VsFilter::visitGroup: skipping group '..'" << std::endl;
+    return 0;
+  }
+
   hid_t groupId = H5Gopen(locId, name, H5P_DEFAULT);
   
   //If unable to get a handle to the hdf5 object, we just drop the object
