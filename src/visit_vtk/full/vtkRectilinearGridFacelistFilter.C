@@ -57,14 +57,14 @@ using  std::vector;
 //------------------------------------------------------------------------------
 vtkRectilinearGridFacelistFilter* vtkRectilinearGridFacelistFilter::New()
 {
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance("vtkRectilinearGridFacelistFilter");
-  if(ret)
+    // First try to create the object from the vtkObjectFactory
+    vtkObject* ret = vtkObjectFactory::CreateInstance("vtkRectilinearGridFacelistFilter");
+    if(ret)
     {
-    return (vtkRectilinearGridFacelistFilter*)ret;
+        return (vtkRectilinearGridFacelistFilter*)ret;
     }
-  // If the factory was unable to create the object, then create it here.
-  return new vtkRectilinearGridFacelistFilter;
+    // If the factory was unable to create the object, then create it here.
+    return new vtkRectilinearGridFacelistFilter;
 }
 
 
@@ -261,9 +261,9 @@ vtkRectilinearGridFacelistFilter_ProcessFaces(int nX, int nY, int nZ,
   // Right face
   if (nX > 1)
   {
-    for (i = 1 ; i < nY-1 ; i++)
+    for (i = 1 ; i < nY-1 ; ++i)
     {
-      for (j = 1 ; j < nZ-1 ; j++)
+      for (j = 1 ; j < nZ-1 ; ++j)
       {
         p.SetComponent(0, x.GetComponent(nX-1));
         p.SetComponent(1, y.GetComponent(i));
@@ -491,9 +491,9 @@ vtkRectilinearGridFacelistFilter::RequestData(
   faceStart.push_back(cellId);
   columnSize.push_back(nZ-1);
   rowSize.push_back(nY-1);
-  for (j = 0 ; j < nZ-1 ; j++)
+  for (j = 0 ; j < nZ-1 ; ++j)
   {
-    for (i = 0 ; i < nY-1 ; i++)
+    for (i = 0 ; i < nY-1 ; ++i)
     {
       *nl++ = 4;
       *nl++ = indexer.GetLeftFacePoint(i, j);
@@ -502,7 +502,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
       *nl++ = indexer.GetLeftFacePoint(i+1, j);
       int cId = indexer.GetCellIndex(0, i, j);
       outCellData->CopyData(inCellData, cId, cellId);
-      cellId++;
+      ++cellId;
     }
   }
   
@@ -514,9 +514,9 @@ vtkRectilinearGridFacelistFilter::RequestData(
     faceStart.push_back(cellId);
     rowSize.push_back(nZ-1);
     columnSize.push_back(nY-1);
-    for (i = 0 ; i < nY-1 ; i++)
+    for (i = 0 ; i < nY-1 ; ++i)
     {
-      for (j = 0 ; j < nZ-1 ; j++) 
+      for (j = 0 ; j < nZ-1 ; ++j) 
       {
         *nl++ = 4;
         *nl++ = indexer.GetRightFacePoint(i, j);
@@ -525,7 +525,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
         *nl++ = indexer.GetRightFacePoint(i, j+1);
         int cId = indexer.GetCellIndex(nX-2, i, j);
         outCellData->CopyData(inCellData, cId, cellId);
-        cellId++;
+        ++cellId;
       }
     }
   }
@@ -536,9 +536,9 @@ vtkRectilinearGridFacelistFilter::RequestData(
   faceStart.push_back(cellId);
   rowSize.push_back(nZ-1);
   columnSize.push_back(nX-1);
-  for (i = 0 ; i < nX-1 ; i++)
+  for (i = 0 ; i < nX-1 ; ++i)
   {
-    for (j = 0 ; j < nZ-1 ; j++)
+    for (j = 0 ; j < nZ-1 ; ++j)
     {
       *nl++ = 4;
       *nl++ = indexer.GetBottomFacePoint(i, j);
@@ -547,7 +547,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
       *nl++ = indexer.GetBottomFacePoint(i, j+1);
       int cId = indexer.GetCellIndex(i, 0, j);
       outCellData->CopyData(inCellData, cId, cellId);
-      cellId++;
+      ++cellId;
     }
   }
   
@@ -559,9 +559,9 @@ vtkRectilinearGridFacelistFilter::RequestData(
     faceStart.push_back(cellId);
     rowSize.push_back(nX-1);
     columnSize.push_back(nZ-1);
-    for (j = 0 ; j < nZ-1 ; j++)
+    for (j = 0 ; j < nZ-1 ; ++j)
     {
-      for (i = 0 ; i < nX-1 ; i++)
+      for (i = 0 ; i < nX-1 ; ++i)
       {
         *nl++ = 4;
         *nl++ = indexer.GetTopFacePoint(i, j);
@@ -570,7 +570,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
         *nl++ = indexer.GetTopFacePoint(i+1, j);
         int cId = indexer.GetCellIndex(i, nY-2, j);
         outCellData->CopyData(inCellData, cId, cellId);
-        cellId++;
+        ++cellId;
       }
     }
   }
@@ -581,9 +581,9 @@ vtkRectilinearGridFacelistFilter::RequestData(
   faceStart.push_back(cellId);
   rowSize.push_back(nX-1);
   columnSize.push_back(nY-1);
-  for (j = 0 ; j < nY-1 ; j++)
+  for (j = 0 ; j < nY-1 ; ++j)
   {
-    for (i = 0 ; i < nX-1 ; i++)
+    for (i = 0 ; i < nX-1 ; ++i)
     {
       *nl++ = 4;
       *nl++ = indexer.GetFrontFacePoint(i, j);
@@ -592,7 +592,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
       *nl++ = indexer.GetFrontFacePoint(i+1, j);
       int cId = indexer.GetCellIndex(i, j, 0);
       outCellData->CopyData(inCellData, cId, cellId);
-      cellId++;
+      ++cellId;
     }
   }
   
@@ -604,9 +604,9 @@ vtkRectilinearGridFacelistFilter::RequestData(
     faceStart.push_back(cellId);
     rowSize.push_back(nY-1);
     columnSize.push_back(nX-1);
-    for (i = 0 ; i < nX-1 ; i++)
+    for (i = 0 ; i < nX-1 ; ++i)
     {
-      for (j = 0 ; j < nY-1 ; j++)
+      for (j = 0 ; j < nY-1 ; ++j)
       {
         *nl++ = 4;
         *nl++ = indexer.GetBackFacePoint(i, j);
@@ -615,7 +615,7 @@ vtkRectilinearGridFacelistFilter::RequestData(
         *nl++ = indexer.GetBackFacePoint(i, j+1);
         int cId = indexer.GetCellIndex(i, j, nZ-2);
         outCellData->CopyData(inCellData, cId, cellId);
-        cellId++;
+        ++cellId;
       }
     }
   }
@@ -727,14 +727,14 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
       if (gzv != NULL)
           gz_val = gzv->GetPointer(0);
       vtkIdType *nl = list->GetPointer(0);
-      for (int i = 0 ; i < nCells ; i++)
+      for (int i = 0 ; i < nCells ; ++i)
       {
           int npts = *nl++;
           bool oneOkay = false;
-          for (int j = 0 ; j < npts ; j++)
+          for (int j = 0 ; j < npts ; ++j)
           {
               oneOkay = oneOkay || (gna[*nl] == 0);
-              nl++;
+              ++nl;
           }
           gza[i] = (oneOkay ? 0 : 1);
           if (gz_val != NULL && gz_val[i] > 0)
@@ -760,14 +760,14 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   //
   int nOutputCells = 0;
   int nSides = (int)sideStart.size();
-  for (int i = 0 ; i < nSides ; i++)
+  for (int i = 0 ; i < nSides ; ++i)
   {
     int nEntries = rowSize[i]*columnSize[i];
     int startFace = sideStart[i];
     vector<bool> faceUsed(nEntries, false);
-    for (int k = 0 ; k < columnSize[i] ; k++)
+    for (int k = 0 ; k < columnSize[i] ; ++k)
     {
-      for (int j = 0 ; j < rowSize[i] ; j++)
+      for (int j = 0 ; j < rowSize[i] ; ++j)
       {
         int face = k*rowSize[i] + j;
         if (faceUsed[face])
@@ -780,7 +780,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
         //
         int lastRowMatch = j;
         int l, m;
-        for (l = j+1 ; l < rowSize[i] ; l++)
+        for (l = j+1 ; l < rowSize[i] ; ++l)
         {
            int face = k*rowSize[i] + l;
            if (faceUsed[face])
@@ -796,10 +796,10 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
         // value.  Now see how far we can down in columns.
         //
         int lastColumnMatch = k;
-        for (m = k+1 ; m < columnSize[i] ; m++)
+        for (m = k+1 ; m < columnSize[i] ; ++m)
         {
           bool all_matches = true;
-          for (l = j ; l <= lastRowMatch ; l++)
+          for (l = j ; l <= lastRowMatch ; ++l)
           {
             int face = m*rowSize[i] + l;
             if (faceUsed[face])
@@ -821,8 +821,8 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
             break;
         }
 
-        for (l = j ; l <= lastRowMatch ; l++)
-          for (m = k ; m <= lastColumnMatch ; m++)
+        for (l = j ; l <= lastRowMatch ; ++l)
+          for (m = k ; m <= lastColumnMatch ; ++m)
           {
             int face = m*rowSize[i] + l;
             faceUsed[face] = true;
@@ -848,7 +848,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
         // way.
         //
         vtkIdType   quad[4];
-        for (l = 0 ; l < 4 ; l++)
+        for (l = 0 ; l < 4 ; ++l)
         {
           quad[l] = pd->GetCell(quad_index[l])->GetPointId(l);
         }
@@ -874,7 +874,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
       vtkUnsignedCharArray *new_gz = vtkUnsignedCharArray::New();
       new_gz->SetName("avtGhostZones");
       new_gz->SetNumberOfTuples(ghost_zones.size());
-      for (size_t i = 0 ; i < ghost_zones.size() ; i++)
+      for (size_t i = 0 ; i < ghost_zones.size() ; ++i)
       {
           new_gz->SetValue(i, ghost_zones[i]);
       }
@@ -900,14 +900,21 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
 //    Handle cases where the grid is 2D but aligned with the X or Y axis, 
 //    not just the Z axis.
 //
+//    David Camp, Thu Jul 17 12:49:06 PDT 2014
+//    Removed the static variables quads2 and quads3. Made them static class
+//    members.
+//
 // ****************************************************************************
+
+const vtkIdType vtkRectilinearGridFacelistFilter::quads2[1][4] = { { 0, 1, 2, 3 } };
+const vtkIdType vtkRectilinearGridFacelistFilter::quads3[6][4] = { { 0, 1, 2, 3 }, { 0, 4, 5, 1 }, 
+                                                                   { 1, 5, 6, 2 }, { 2, 6, 7, 3 },
+                                                                   { 3, 7, 4, 0 }, { 4, 7, 6, 5 } };
 
 void
 vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(
   vtkRectilinearGrid *input, vtkPolyData *output)
 {
-  int  i;
-
   vtkCellData        *inCellData   = input->GetCellData();
   vtkPointData       *inPointData  = input->GetPointData();
   vtkCellData        *outCellData  = output->GetCellData();
@@ -915,92 +922,78 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(
 
   int numOutCells;
   int numOutPoints;
-  vtkIdType (*quads)[4];
-  int *ptIds;
+  const vtkIdType (*quads)[4];
+  int ptIds[8];
 
   int nX = input->GetXCoordinates()->GetNumberOfTuples();
   int nY = input->GetYCoordinates()->GetNumberOfTuples();
   int nZ = input->GetZCoordinates()->GetNumberOfTuples();
   if (nX == 1)
   {
-      static vtkIdType quads2[1][4] = { { 0, 1, 2, 3 } };
-      static int ptIds2[4];
-      ptIds2[0] = 0;
-      ptIds2[1] = nY-1;
-      ptIds2[2] = nY*nZ-1;
-      ptIds2[3] = (nZ-1)*nY;
+      ptIds[0] = 0;
+      ptIds[1] = nY-1;
+      ptIds[2] = nY*nZ-1;
+      ptIds[3] = (nZ-1)*nY;
 
       numOutCells  = 1;
       numOutPoints = 4;
       quads = quads2;
-      ptIds = ptIds2;
   }
   else if (nY == 1)
   {
-      static vtkIdType quads2[1][4] = { { 0, 1, 2, 3 } };
-      static int ptIds2[4];
-      ptIds2[0] = 0;
-      ptIds2[1] = nX-1;
-      ptIds2[2] = nX*nZ-1;
-      ptIds2[3] = (nZ-1)*nX;
+      ptIds[0] = 0;
+      ptIds[1] = nX-1;
+      ptIds[2] = nX*nZ-1;
+      ptIds[3] = (nZ-1)*nX;
 
       numOutCells  = 1;
       numOutPoints = 4;
       quads = quads2;
-      ptIds = ptIds2;
   }
   else if (nZ == 1)
   {
-      static vtkIdType quads2[1][4] = { { 0, 1, 2, 3 } };
-      static int ptIds2[4];
-      ptIds2[0] = 0;
-      ptIds2[1] = nX-1;
-      ptIds2[2] = nX*nY-1;
-      ptIds2[3] = (nY-1)*nX;
+      ptIds[0] = 0;
+      ptIds[1] = nX-1;
+      ptIds[2] = nX*nY-1;
+      ptIds[3] = (nY-1)*nX;
 
       numOutCells  = 1;
       numOutPoints = 4;
       quads = quads2;
-      ptIds = ptIds2;
   }
   else
   {
-      static vtkIdType quads3[6][4] = { { 0, 1, 2, 3 }, { 0, 4, 5, 1 }, 
-                                  { 1, 5, 6, 2 }, { 2, 6, 7, 3 },
-                                  { 3, 7, 4, 0 }, { 4, 7, 6, 5 } };
-      static int ptIds3[8];
-      ptIds3[0] = 0;
-      ptIds3[1] = nX-1;
-      ptIds3[2] = nX*nY-1;
-      ptIds3[3] = (nY-1)*nX;
-      ptIds3[4] = (nX*nY)*(nZ-1);
-      ptIds3[5] = nX-1 + (nX*nY)*(nZ-1);
-      ptIds3[6] = nX*nY-1 + (nX*nY)*(nZ-1);
-      ptIds3[7] = (nY-1)*nX + (nX*nY)*(nZ-1);
+      ptIds[0] = 0;
+      ptIds[1] = nX-1;
+      ptIds[2] = nX*nY-1;
+      ptIds[3] = (nY-1)*nX;
+      ptIds[4] = (nX*nY)*(nZ-1);
+      ptIds[5] = nX-1 + (nX*nY)*(nZ-1);
+      ptIds[6] = nX*nY-1 + (nX*nY)*(nZ-1);
+      ptIds[7] = (nY-1)*nX + (nX*nY)*(nZ-1);
 
       numOutCells = 6;
       numOutPoints = 8;
       quads = quads3;
-      ptIds = ptIds3;
   }
 
   vtkCellArray *polys = vtkCellArray::New();
   polys->Allocate(numOutCells*(4+1));
 
-  for (i = 0 ; i < numOutCells ; i++)
+  for (int i = 0 ; i < numOutCells ; ++i)
       polys->InsertNextCell(4, quads[i]);
   
   outCellData->CopyAllocate(inCellData, numOutCells);
-  for (i = 0 ; i < numOutCells ; i++)
+  for (int i = 0 ; i < numOutCells ; ++i)
       outCellData->CopyData(inCellData, 0, i);
 
   outPointData->CopyAllocate(inPointData, numOutPoints);
   vtkPoints *pts = vtkVisItUtility::NewPoints(input);
   pts->SetNumberOfPoints(numOutPoints);
-  for (i = 0 ; i < numOutPoints ; i++)
+  double pt[3];
+  for (int i = 0 ; i < numOutPoints ; ++i)
   {
       outPointData->CopyData(inPointData, ptIds[i], i);
-      double pt[3];
       input->GetPoint(ptIds[i], pt);
       pts->SetPoint(i, pt);
   }
@@ -1010,3 +1003,4 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(
   output->SetPoints(pts);
   pts->Delete();
 }
+

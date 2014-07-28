@@ -138,64 +138,68 @@ avtPerMaterialValueExpression::~avtPerMaterialValueExpression()
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    David Camp, Thu Jul 17 12:55:02 PDT 2014
+//    Tried to optimize the code.
+//    Fixed an issue with Threading, the function modified a class member 
+//    varable. I create a local variable.
+//    Fixed a memory leak if an exception happened.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
-    int    i;
-
-    int ncells = in_ds->GetNumberOfCells();
-    
     // if the cell is clean, we simply need the orig value
-    
     // if the cell is mixed, we need the correct value from the 
     // avtMixedVariable entry.
    
     // get input array
     vtkDataArray *val_array = in_ds->GetCellData()->GetArray(activeVariable);
-
-    if(val_array == NULL) // check for error on input
+    if (val_array == NULL) // check for error on input
     {
         ostringstream oss;
         oss << "could not find zonal variable named: " << activeVariable 
             << "." << endl
             << "The value_for_material expression requires a varaible with" 
-            << " zonal centering." <<endl;
+            << " zonal centering." << endl;
 
-        EXCEPTION2(ExpressionException, outputVariableName,oss.str().c_str());
-
+        EXCEPTION2(ExpressionException, outputVariableName, oss.str().c_str());
     }
 
     // only ask for post ghost Material info if the dataset actually
     // has ghost zones and VisIt created them. 
 
-    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-    bool created_ghosts = datts.GetContainsGhostZones() == AVT_CREATED_GHOSTS;
-    // check bitmask to make sure we actually have boundary ghost zones
-    // (in some cases we may only have nesting ghosts zones, and post ghost
-    // is not the proper path)
-    if(created_ghosts)
-        created_ghosts = datts.GetGhostZoneTypesPresent() & AVT_BOUNDARY_GHOST_ZONES;
-    doPostGhost = doPostGhost &&
-                  in_ds->GetCellData()->GetArray("avtGhostZones") &&
-                  created_ghosts;
+    bool localDoPostGhost = false;
+    if (doPostGhost)  // Did we ask for ghost data?
+    {
+        // check bitmask to make sure we actually have boundary ghost zones
+        // (in some cases we may only have nesting ghosts zones, and post ghost
+        // is not the proper path)
+        avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+        if (datts.GetContainsGhostZones() == AVT_CREATED_GHOSTS)
+        {
+            localDoPostGhost = (datts.GetGhostZoneTypesPresent() & AVT_BOUNDARY_GHOST_ZONES) &&
+                               in_ds->GetCellData()->GetArray("avtGhostZones");
+        }
+        // if localDoPostGhost is false then set doPostGhost so we don't try again.
+        if (! localDoPostGhost)
+            doPostGhost = localDoPostGhost;
 
-    debug5 << "avtMatvfExpression: GetGhostZoneTypesPresent() = "
-           << datts.GetGhostZoneTypesPresent() <<  endl;
+        if (DebugStream::Level5())
+        {
+            debug5 << "avtMatvfExpression: GetGhostZoneTypesPresent() = "
+                   << datts.GetGhostZoneTypesPresent() << endl;
 
-    debug5 << "avtPerMaterialValueExpression: Using post ghost material "
-              " and mixedvar objects ?  " << doPostGhost <<endl;
-
-    // prepare result array
-    vtkDataArray *res = val_array->NewInstance();
-    res->SetNumberOfTuples(ncells);
+            debug5 << "avtPerMaterialValueExpression: Using post ghost material "
+                      " and mixedvar objects ?  " << localDoPostGhost << endl;
+        }
+    }
 
     // Request ghost adjusted values if required. 
-    avtMaterial      *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
-                                                       currentTimeState,
-                                                       doPostGhost);
-    if(mat == NULL ) // error
+    avtMaterial  *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
+                                                   currentTimeState,
+                                                   localDoPostGhost);
+    if (mat == NULL) // error
     {
        EXCEPTION2(ExpressionException, outputVariableName,
                    "could not obtaing valid material object.");
@@ -208,71 +212,81 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds, int currentDoma
     avtMixedVariable *mvar = GetMetaData()->GetMixedVar(activeVariable,
                                                         currentDomainsIndex,
                                                         currentTimeState,
-                                                        doPostGhost); 
-    
+                                                        localDoPostGhost); 
+
     // get the material index from give material number or name
     int n_mats = mat->GetNMaterials();
     int mat_idx = -1;
     
-    if(matNumber == -1 && matName != "")
+    if (matNumber == -1 && matName != "")
     {
         // find material index from name
-        for (i = 0 ; i < n_mats  && mat_idx == -1; i++)
+        for (int i = 0 ; i < n_mats ; ++i)
         {
             std::string curr_mat = mat->GetMaterials()[i];
-            if(curr_mat == matName)
+            if (curr_mat == matName)
+            {
                 mat_idx = i;
+                break;
+            }
         }
     }
     else
     {
+        char tmp[50];
+        sprintf(tmp, "%d", matNumber);
+        std::string matname(tmp);
+
         // match mat # to proper index 
-        for (i = 0 ; i < n_mats  && mat_idx == -1; i++)
+        for (int i = 0 ; i < n_mats ; ++i)
         {
             std::string curr_mat = mat->GetMaterials()[i];
-            char tmp[256];
-            sprintf(tmp, "%d", matNumber);
-
-            std::string matname(tmp);
             if (curr_mat == matname ||
                 (curr_mat.length() > matname.length() &&
                  curr_mat.substr(0,matname.length() + 1) == (matname + " ")))
-                {
+            {
                     mat_idx = i;
-                }
+                    break;
+            }
         }
     }
     
     // make sure we actually found a valid material index
-    if(mat_idx < 0  || mat_idx > n_mats)
+    if (mat_idx < 0)
     {
         EXCEPTION2(ExpressionException, outputVariableName,                         
                    "an invalid material number or name was passed.");
     }
     
-    std::vector<float> mv_vals;
+    // prepare result array
+    int ncells = in_ds->GetNumberOfCells();
+    vtkDataArray *res = val_array->NewInstance();
+    res->SetNumberOfTuples(ncells);
+
     const int *mat_list = mat->GetMatlist();
     
     // get the proper value
-    for(i=0;i<ncells;i++)
+    for (int i=0; i < ncells ;++i)
     {
         float val = 0.0;
         // check for clean case
-        if( mat_list[i]  == mat_idx)
+        if (mat_list[i] == mat_idx)
         {
             // if clean use original value
             val = val_array->GetTuple1(i);
         }
-        else if(mvar != NULL) 
+        else if (mvar) 
         {
+            std::vector<float> mv_vals;
+
             // mixed case, use mix var to get the proper value
-            mvar->GetValuesForZone(i,mat,mv_vals);
+            mvar->GetValuesForZone(i, mat, mv_vals);
             val = mv_vals[mat_idx];
         }
         
         // set val
         // (will be zero if desired material does not exist in this zone)
-        res->SetTuple1(i,val);
+        res->SetTuple1(i, val);
     }
     
     return res;
@@ -393,5 +407,4 @@ avtPerMaterialValueExpression::ModifyContract(avtContract_p spec)
     }
     return spec;
 }
-
 
