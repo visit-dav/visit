@@ -205,6 +205,8 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     QvisCollapsiblePanel* dataFrame =
       propertyStack->addPanel( tr("Data"), dataTab);
 
+    dataFrame->expand();
+
     // // ----------------------------------------------------------------------
     // // Geometry tab
     // // ----------------------------------------------------------------------
