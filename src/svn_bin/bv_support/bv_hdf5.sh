@@ -170,12 +170,48 @@ EOF
     return 0;
 }
 
+function apply_hdf5_187_thread_patch
+{
+    info "Patching thread hdf5"
+    patch -p0 << \EOF
+diff -c src/H5private.h.orig src/H5private.h
+*** src/H5private.h.orig    2014-07-28 10:46:54.821807839 -0700
+--- src/H5private.h 2014-07-08 13:00:12.562002468 -0700
+***************
+*** 30,40 ****
+  
+  /* include the pthread header */
+  #ifdef H5_HAVE_THREADSAFE
+- #ifdef H5_HAVE_PTHREAD_H
+  #include <pthread.h>
+- #else /* H5_HAVE_PTHREAD_H */
+- #define H5_HAVE_WIN_THREADS
+- #endif /* H5_HAVE_PTHREAD_H */
+  #endif /* H5_HAVE_THREADSAFE */
+  
+  /*
+--- 30,36 ----
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "HDF5 thread patch failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 function apply_hdf5_patch
 {
     if [[ "${HDF5_VERSION}" == 1.8.7 ]] ; then
         apply_hdf5_187_188_patch
         if [[ $? != 0 ]]; then
             return 1
+        fi
+        if [[ "$DO_THREAD_BUILD" == "yes" ]]; then
+            apply_hdf5_187_thread_patch
+            if [[ $? != 0 ]]; then
+                return 1
+            fi
         fi
     else
         if [[ "${HDF5_VERSION}" == 1.8.8 ]] ; then
@@ -212,7 +248,6 @@ function build_hdf5
         warn "Patch failed, but continuing."
     fi
     info "Configuring HDF5 . . ."
-    cf_darwin=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
     else
@@ -236,6 +271,11 @@ function build_hdf5
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
     fi
 
+    cf_build_thread=""
+    if [[ "$DO_THREAD_BUILD" == "yes" ]]; then
+        cf_build_thread="--enable-threadsafe --with-pthread"
+    fi
+
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     info "Invoking command to configure HDF5"
@@ -243,12 +283,12 @@ function build_hdf5
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip} ${cf_darwin}"
+        ${cf_szip} ${cf_build_type} ${cf_build_thread}"
     sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip} ${cf_build_type}"
+        ${cf_szip} ${cf_build_type} ${cf_build_thread}"
     if [[ $? != 0 ]] ; then
        warn "HDF5 configure failed.  Giving up"
        return 1
