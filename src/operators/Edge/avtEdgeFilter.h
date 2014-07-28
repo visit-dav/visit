@@ -43,12 +43,9 @@
 #ifndef AVT_Edge_FILTER_H
 #define AVT_Edge_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <EdgeAttributes.h>
-
-
-class vtkDataSet;
 
 
 // ****************************************************************************
@@ -61,6 +58,10 @@ class vtkDataSet;
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   February 23, 2009
+//
+//  Modifications:
+//    Eric Brugger, Thu Jul 24 09:28:40 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -82,7 +83,7 @@ class avtEdgeFilter : public avtPluginDataTreeIterator
   protected:
     EdgeAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     void                  UpdateDataObjectInfo();
 };
 
