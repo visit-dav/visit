@@ -10,8 +10,8 @@
 import time, os.path, json
 
 # To reduce noise, only run this test on Sunday evenings
-if time.strftime("%A", time.localtime()) != "Sunday":
-    Exit(116)
+#if time.strftime("%A", time.localtime()) != "Sunday":
+#    Exit(116)
 
 def ShouldSkip(srcfile, msg):
     srcfile_tmp = "global skip list"

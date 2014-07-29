@@ -44,8 +44,6 @@
 "databases/ITAPS_MOAB/avtITAPS_MOABUtility.C": 267,
 "databases/ITAPS_MOAB/avtITAPS_MOABWriter.C": 123,
 "databases/M3DC1/avtM3DC1FileFormat.C": 21,
-"databases/MFEM/JSONRoot.C": 18,
-"databases/MFEM/avtMFEMFileFormat.C": 15,
 "databases/MFIX/vtkMFIXReader.C": 3,
 "databases/MFIX/vtkMFIXReader.h": 3,
 "databases/Mili/avtMiliFileFormat.C": 189,
