@@ -142,6 +142,11 @@ Boundary::SetExtents(int e[6])
 //    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
 //    Support anisotropic refinement.
 //
+//    Gunther H. Weber, Mon Jul 28 18:19:19 PDT 2014
+//    Do not expand boundary when adding recipient neighbors (fixes
+//    regression test failure when selecting new ghost zone generation
+//    method for crack-free isosurface extraction from AMR data).
+//
 // ****************************************************************************
 void
 Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
@@ -191,12 +196,12 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
         if (ei == oldnextents[0])
         {
             n.type |= IMIN;
-            expand[0] = 1;
+            if (nr != RECIPIENT_NEIGHBOR) expand[0] = 1;
         }
         if (ei == oldnextents[1])
         {
             n.type |= IMAX;
-            expand[1] = 1;
+            if (nr != RECIPIENT_NEIGHBOR) expand[1] = 1;
             n.zextents[0]--;
             n.zextents[1]--;
         }
@@ -208,12 +213,12 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
         if (ej == oldnextents[2])
         {
             n.type |= JMIN;
-            expand[2] = 1;
+            if (nr != RECIPIENT_NEIGHBOR) expand[2] = 1;
         }
         if (ej == oldnextents[3])
         {
             n.type |= JMAX;
-            expand[3] = 1;
+            if (nr != RECIPIENT_NEIGHBOR) expand[3] = 1;
             n.zextents[2]--;
             n.zextents[3]--;
         }
@@ -225,12 +230,12 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
         if (ek == oldnextents[4])
         {
             n.type |= KMIN;
-            expand[4] = 1;
+            if (nr != RECIPIENT_NEIGHBOR) expand[4] = 1;
         }
         if (ek == oldnextents[5])
         {
             n.type |= KMAX;
-            expand[5] = 1;
+            if (nr != RECIPIENT_NEIGHBOR) expand[5] = 1;
             n.zextents[4]--;
             n.zextents[5]--;
         }
@@ -266,6 +271,11 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
 //    Hank Childs, Fri May 16 09:32:44 PDT 2008
 //    Fix indexing bug introduced by int -> size_t changes for Windows.
 //
+//    Gunther H. Weber, Mon Jul 28 18:19:19 PDT 2014
+//    Do not shrink boundary when deleting recipient neighbors (fixes
+//    regression test failure when selecting new ghost zone generation
+//    method for crack-free isosurface extraction from AMR data).
+//
 // ****************************************************************************
 void
 Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
@@ -295,17 +305,17 @@ Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
         int n = delete_list[i];
         // Stop expansion of the boundary
         if (neighbors[n].type == IMIN)
-            expand[0] = 0;
+            if (neighbors[n].neighbor_rel != RECIPIENT_NEIGHBOR) expand[0] = 0;
         if (neighbors[n].type == IMAX)
-            expand[1] = 0;
+            if (neighbors[n].neighbor_rel != RECIPIENT_NEIGHBOR) expand[1] = 0;
         if (neighbors[n].type == JMIN)
-            expand[2] = 0;
+            if (neighbors[n].neighbor_rel != RECIPIENT_NEIGHBOR) expand[2] = 0;
         if (neighbors[n].type == JMAX)
-            expand[3] = 0;
+            if (neighbors[n].neighbor_rel != RECIPIENT_NEIGHBOR) expand[3] = 0;
         if (neighbors[n].type == KMIN)
-            expand[4] = 0;
+            if (neighbors[n].neighbor_rel != RECIPIENT_NEIGHBOR) expand[4] = 0;
         if (neighbors[n].type == KMAX)
-            expand[5] = 0;
+            if (neighbors[n].neighbor_rel != RECIPIENT_NEIGHBOR) expand[5] = 0;
     
         // Remove the neighbor from the list
         for (size_t j=n+1; j<neighbors.size(); j++)
@@ -335,6 +345,7 @@ Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
 void
 Boundary::Finish()
 {
+    std::cout << "Finishing domain " << domain << " expand is " << expand[0] << expand[1] << expand[2] << expand[3] << expand[4] << expand[5] << std::endl;
     newndims[0]    = oldndims[0] + expand[0] + expand[1];
     newndims[1]    = oldndims[1] + expand[2] + expand[3];
     newndims[2]    = oldndims[2] + expand[4] + expand[5];
