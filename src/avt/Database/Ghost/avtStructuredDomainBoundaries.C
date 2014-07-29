@@ -3330,21 +3330,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
         dims[1] = bi->oldnextents[3] - bi->oldnextents[2] + 1;
         dims[2] = bi->oldnextents[5] - bi->oldnextents[4] + 1;
 
-        std::cout << "===== DOMAIN " << dom << std::endl;
         for (std::vector<Neighbor>::const_iterator it = bi->neighbors.begin(); it != bi->neighbors.end(); ++it)
         {
-            std::cout << "Neighbor:";
-            std::cout << " refinement_rel = " << it->refinement_rel;
-            std::cout << " domain = " << it->domain;
-            std::cout << " type = " << (it->type == Boundary::IMIN) << (it->type == Boundary::IMAX) << (it->type == Boundary::JMIN) << (it->type == Boundary::JMAX) << (it->type == Boundary::KMIN) << (it->type == Boundary::KMAX);
-            std::cout << " match = " << it->match;
-            std::cout << " orient = { " << it->orient[0] << ", " << it->orient[1] << ", " << it->orient[2] << " }";
-            std::cout << " ndims = { " << it->ndims[0] << ", " << it->ndims[1] << ", " << it->ndims[2] << " }";
-            std::cout << " zdims = { " << it->zdims[0] << ", " << it->zdims[1] << ", " << it->zdims[2] << " }";
-            std::cout << " nextents = { " << it->nextents[0] << ", " << it->nextents[1] << ", " << it->nextents[2] << ", " << it->nextents[3] << ", " << it->nextents[4] << ", " << it->nextents[5] << " }";
-            std::cout << " zextents = { " << it->zextents[0] << ", " << it->zextents[1] << ", " << it->zextents[2] << ", " << it->zextents[3] << ", " << it->zextents[4] << ", " << it->zextents[5] << " }";
-            std::cout << std::endl;
-
             if (it->refinement_rel != SAME_REFINEMENT_LEVEL)
                 continue;
 
