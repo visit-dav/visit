@@ -3275,6 +3275,16 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    Brad Whitlock, Tue May 10 15:08:21 PST 2005
 //    Fixed for win32.
 //
+//    Gunther H. Weber, Mon Jul 28 17:39:51 PDT 2014
+//    Improve neighbor detection determining whether a face needs to be
+//    ghosted out: (i) Support partially ghosted out faces (for AMR
+//    data set where a patch may only share a partial face with a
+//    neighboring patch (fixes bug encountered by LBNL ANAG); (ii)
+//    Skip neighbors in coarser refinement levels since only faces shared
+//    by neighbors in the same level need to be ghosted out (fixes one
+//    regression test failure when selection the new ghost zone generation
+//    mechanism for crack free isosurfaces).
+//
 // ****************************************************************************
 
 void
@@ -3320,61 +3330,80 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
         dims[1] = bi->oldnextents[3] - bi->oldnextents[2] + 1;
         dims[2] = bi->oldnextents[5] - bi->oldnextents[4] + 1;
 
-        if (bi->newnextents[0] < bi->oldnextents[0])
+        std::cout << "===== DOMAIN " << dom << std::endl;
+        for (std::vector<Neighbor>::const_iterator it = bi->neighbors.begin(); it != bi->neighbors.end(); ++it)
         {
-            for (int k = 0 ; k < dims[2] ; k++)
-                for (int j = 0 ; j < dims[1] ; j++)
-                {
-                    int idx = 0 + j*dims[0] + k*dims[0]*dims[1];
-                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
-                }
-        }
-        if (bi->newnextents[1] > bi->oldnextents[1])
-        {
-            for (int k = 0 ; k < dims[2] ; k++)
-                for (int j = 0 ; j < dims[1] ; j++)
-                {
-                    int idx = dims[0]-1 + j*dims[0] + k*dims[0]*dims[1];
-                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
-                }
-        }
-        if (bi->newnextents[2] < bi->oldnextents[2])
-        {
-            for (int k = 0 ; k < dims[2] ; k++)
-                    for (int i = 0 ; i < dims[0] ; i++)
-                {
-                    int idx = i + 0*dims[0] + k*dims[0]*dims[1];
-                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
-                }
-        }
-        if (bi->newnextents[3] > bi->oldnextents[3])
-        {
-            for (int k = 0 ; k < dims[2] ; k++)
-                for (int i = 0 ; i < dims[0] ; i++)
-                {
-                    int idx = i + (dims[1]-1)*dims[0] + k*dims[0]*dims[1];
-                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
-                }
-        }
-        if (bi->newnextents[4] < bi->oldnextents[4])
-        {
-            for (int j = 0 ; j < dims[1] ; j++)
-                for (int i = 0 ; i < dims[0] ; i++)
-                {
+            std::cout << "Neighbor:";
+            std::cout << " refinement_rel = " << it->refinement_rel;
+            std::cout << " domain = " << it->domain;
+            std::cout << " type = " << (it->type == Boundary::IMIN) << (it->type == Boundary::IMAX) << (it->type == Boundary::JMIN) << (it->type == Boundary::JMAX) << (it->type == Boundary::KMIN) << (it->type == Boundary::KMAX);
+            std::cout << " match = " << it->match;
+            std::cout << " orient = { " << it->orient[0] << ", " << it->orient[1] << ", " << it->orient[2] << " }";
+            std::cout << " ndims = { " << it->ndims[0] << ", " << it->ndims[1] << ", " << it->ndims[2] << " }";
+            std::cout << " zdims = { " << it->zdims[0] << ", " << it->zdims[1] << ", " << it->zdims[2] << " }";
+            std::cout << " nextents = { " << it->nextents[0] << ", " << it->nextents[1] << ", " << it->nextents[2] << ", " << it->nextents[3] << ", " << it->nextents[4] << ", " << it->nextents[5] << " }";
+            std::cout << " zextents = { " << it->zextents[0] << ", " << it->zextents[1] << ", " << it->zextents[2] << ", " << it->zextents[3] << ", " << it->zextents[4] << ", " << it->zextents[5] << " }";
+            std::cout << std::endl;
+
+            if (it->refinement_rel != SAME_REFINEMENT_LEVEL)
+                continue;
+
+            if (it->type == Boundary::IMIN)
+            {
+                for (int k = it->nextents[4] - 1 ; k < it->nextents[5] ; k++)
+                    for (int j = it->nextents[2] - 1; j < it->nextents[3]; j++)
+                    {
+                        int idx = 0 + j*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::IMAX)
+            {
+                for (int k = it->nextents[4] - 1 ; k < it->nextents[5] ; k++)
+                    for (int j = it->nextents[2] - 1 ; j < it->nextents[3] ; j++)
+                    {
+                        int idx = dims[0]-1 + j*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::JMIN)
+            {
+                for (int k = it->nextents[4] - 1 ; k < it->nextents[5] ; k++)
+                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                    {
+                        int idx = i + 0*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::JMAX)
+            {
+                for (int k = it->nextents[4]-1 ; k < it->nextents[5] ; k++)
+                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                    {
+                        int idx = i + (dims[1]-1)*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::KMIN)
+            {
+                for (int j = it->nextents[2] - 1; j < it->nextents[3]; j++)
+                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                    {
                         int idx = i + j*dims[0] + 0*dims[0]*dims[1];
-                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
-                }
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::KMAX)
+            {
+                for (int j = it->nextents[2] - 1; j < it->nextents[3]; j++)
+                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                    {
+                        int idx = i + j*dims[0] + (dims[2]-1)*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
         }
-        if (bi->newnextents[5] > bi->oldnextents[5])
-        {
-                for (int j = 0 ; j < dims[1] ; j++)
-                for (int i = 0 ; i < dims[0] ; i++)
-                {
-                    int idx = i + j*dims[0] + (dims[2]-1)*dims[0]*dims[1];
-                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
-                }
-        }
-    
+
         ds->GetPointData()->AddArray(gn);
         gn->Delete();
 
@@ -3719,6 +3748,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                 if (iteration == 0)
                     for (size_t d = 0; d < std::min(ref_ratios[l].size(), size_t(3)); ++d)
                         refrat[d] = ref_ratios[l][d];
+
                 vector<int> doms;
                 size_t totalNDoms = levels.size();
                 for (i = 0 ; i < totalNDoms ; i++)
@@ -3887,7 +3917,6 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                                     int bnd1[6];
                                     int bnd2[6];
-                                    string dgbtxt = "";
                                     bool usedTJunc = false;
                                     for (int axis = 0; axis < 3; axis++)
                                     {
@@ -3897,7 +3926,6 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                                         int extD2Start = 6*d2;
                                         if (axisOffset[axis]==-1 && minFace[axis])
                                         {
-                                            dgbtxt += string("min") + string(1,'I'+axis);
                                             bnd1[extAxMin] = 1;
                                             bnd1[extAxMax] = 1;
 
@@ -3911,7 +3939,6 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                                         }
                                         else if (axisOffset[axis]==+1 && maxFace[axis])
                                         {
-                                            dgbtxt += string("max") + string(1,'I'+axis);
                                             bnd1[extAxMin] = extents[extD2Start+extAxMax] - extents[extD2Start+extAxMin]+1;
                                             bnd1[extAxMax] = bnd1[extAxMin];
 
