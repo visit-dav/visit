@@ -345,7 +345,6 @@ Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
 void
 Boundary::Finish()
 {
-    std::cout << "Finishing domain " << domain << " expand is " << expand[0] << expand[1] << expand[2] << expand[3] << expand[4] << expand[5] << std::endl;
     newndims[0]    = oldndims[0] + expand[0] + expand[1];
     newndims[1]    = oldndims[1] + expand[2] + expand[3];
     newndims[2]    = oldndims[2] + expand[4] + expand[5];
