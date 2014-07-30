@@ -348,7 +348,7 @@ avtAMRStitchCellFilter::PreExecute(void)
 //
 // ****************************************************************************
 
-avtDataTree_p 
+avtDataTree_p
 avtAMRStitchCellFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
     //
@@ -366,19 +366,6 @@ avtAMRStitchCellFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     const int level = domainNesting->GetDomainLevel(domain);
     debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Patch is in level ";
     debug5 << level << std::endl;
-
-    // Debugging via attributes: Support restricting stitch cell generation to one
-    // level or a set of patches/domains.
-    if ((atts.GetOnlyProcessLevel() && level != atts.GetLevel()) ||
-        (atts.GetOnlyProcessListedDomains() &&
-         std::find(atts.GetDomains().begin(), atts.GetDomains().end(), domain) ==
-             atts.GetDomains().end()))
-    {
-        // Return an empty data set for levels or patches that are disabled for
-        // debugging.
-        vtkDataSet *ods[2] = { 0, 0 };
-        return new avtDataTree(2, ods, domain, label);
-    }
 
     // Ensure that we are working on rectilinear grid
     vtkRectilinearGrid *rgrid = dynamic_cast<vtkRectilinearGrid*>(in_ds);
@@ -909,18 +896,6 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         21, 5, 13, 13, 16, 13, 19, 16, 21, 13, 16, 19, 21, 16, 21, 21, 22
     };
 
-    // This array stores the case number for each stitch cell. This array clobbers
-    // the scalar data when the debugging option "Add Case Number" is set in
-    // AMRStitchCellFilter attributes. Note that we add this information only for
-    // the 3D case.
-    vtkFloatArray *caseArray = 0;
-    if (atts.GetAddCaseNo())
-    {
-        caseArray = vtkFloatArray::New();
-        caseArray->SetName("CaseNo");
-    }
-
-
     vtkIdType *pointIds = new vtkIdType[dims[0]*dims[1]*dims[2]]; // FIXME: More memory efficient storage
     for (int i=0; i < dims[0]*dims[1]*dims[2]; ++i)
     {
@@ -1415,20 +1390,14 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                             if (numVtcs == 4)
                             {
                                 ugrid->InsertNextCell(VTK_TETRA, 4, &vPtId[0]);
-                                if (atts.GetAddCaseNo())
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
                             }
                             else if (numVtcs == 5)
                             {
                                 ugrid->InsertNextCell(VTK_PYRAMID, 5, &vPtId[0]);
-                                if (atts.GetAddCaseNo())
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
                             }
                             else if (numVtcs == 6)
                             {
                                 ugrid->InsertNextCell(VTK_WEDGE, 6, &vPtId[0]);
-                                if (atts.GetAddCaseNo())
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
                             }
                             else if (numVtcs == 7)
                             {
@@ -1469,25 +1438,10 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 ugrid->InsertNextCell(VTK_TETRA, 4, c4);
                                 ugrid->InsertNextCell(VTK_TETRA, 4, c5);
                                 ugrid->InsertNextCell(VTK_TETRA, 4, c6);
-
-                                if (atts.GetAddCaseNo())
-                                {
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                }
                             }
                             else if (numVtcs == 8)
                             {
                                 ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, &vPtId[0]);
-                                if (atts.GetAddCaseNo())
-                                {
-                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
-                                }
                             }
                             else
                                 EXCEPTION1(VisItException, "Invalid cell type (internal error).");
@@ -1498,47 +1452,38 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         }
     }
 
-    if ((topologicalDimension == 3) && atts.GetAddCaseNo())
-    {
-        // For debug purposes.
-        ugrid->GetCellData()->SetScalars(caseArray);
-        ugrid->GetCellData()->SetActiveScalars("CaseNo");
-        caseArray->Delete();
-    }
-    else
-    {
-        // Copy attributes
-        ugrid->GetPointData()->InterpolateAllocate(rgrid->GetCellData(), originalDataIds.size());
-        int idx = 0;
-        std::list<vtkIdList*>::const_iterator iVLIt = interpolatedDataIds.begin();
-        vtkIdList *oneIdList = vtkIdList::New();
-        oneIdList->SetNumberOfIds(1);
-        double oneWeight[1] = { 1.0 };
-        double sevenWeights[7] = { 1./7., 1./7., 1./7., 1./7., 1./7., 1./7., 1./7. };
 
-        // FIXME: Possibly use combination of Copy and Interpolate point to improve performance.
-        // However, VTK does not seem to support mixing these calls.
-        for (std::list<vtkIdType>::const_iterator it = originalDataIds.begin();
-                it != originalDataIds.end(); ++it)
+    // Copy attributes
+    ugrid->GetPointData()->InterpolateAllocate(rgrid->GetCellData(), originalDataIds.size());
+    int idx = 0;
+    std::list<vtkIdList*>::const_iterator iVLIt = interpolatedDataIds.begin();
+    vtkIdList *oneIdList = vtkIdList::New();
+    oneIdList->SetNumberOfIds(1);
+    double oneWeight[1] = { 1.0 };
+    double sevenWeights[7] = { 1./7., 1./7., 1./7., 1./7., 1./7., 1./7., 1./7. };
+
+    // FIXME: Possibly use combination of Copy and Interpolate point to improve performance.
+    // However, VTK does not seem to support mixing these calls.
+    for (std::list<vtkIdType>::const_iterator it = originalDataIds.begin();
+            it != originalDataIds.end(); ++it)
+    {
+        if (*it != -1)
         {
-            if (*it != -1)
-            {
-                //std::cout << idx << ": Copying point with ID: " << *it << std::endl;
-                oneIdList->SetId(0, *it);
-                ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, oneIdList, oneWeight);
-            }
-            else
-            {
-                ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, *iVLIt, sevenWeights);
-                (*iVLIt)->Delete();
-                ++iVLIt;
-            }
-            ++idx;
+            //std::cout << idx << ": Copying point with ID: " << *it << std::endl;
+            oneIdList->SetId(0, *it);
+            ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, oneIdList, oneWeight);
         }
-
-        // Clean-up
-        oneIdList->Delete(); // FIXME: Move to regular clean-up after debugging is done
+        else
+        {
+            ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, *iVLIt, sevenWeights);
+            (*iVLIt)->Delete();
+            ++iVLIt;
+        }
+        ++idx;
     }
+
+    // Clean-up
+    oneIdList->Delete(); // FIXME: Move to regular clean-up after debugging is done
 
     // Clean-up
     delete[] pointIds;

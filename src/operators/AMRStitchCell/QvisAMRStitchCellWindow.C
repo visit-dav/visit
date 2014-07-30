@@ -147,35 +147,6 @@ QvisAMRStitchCellWindow::CreateWindowContents()
             this, SLOT(CreateCellsOfTypeChanged(int)));
     mainLayout->addWidget(CreateCellsOfType, 0,1);
 
-    AddCaseNo = new QCheckBox(tr("Add case number"), central);
-    connect(AddCaseNo, SIGNAL(toggled(bool)),
-            this, SLOT(AddCaseNoChanged(bool)));
-    mainLayout->addWidget(AddCaseNo, 1,0);
-
-    OnlyProcessListedDomains = new QCheckBox(tr("Only process listed domains"), central);
-    connect(OnlyProcessListedDomains, SIGNAL(toggled(bool)),
-            this, SLOT(OnlyProcessListedDomainsChanged(bool)));
-    mainLayout->addWidget(OnlyProcessListedDomains, 2,0);
-
-    DomainsLabel = new QLabel(tr("Domains"), central);
-    mainLayout->addWidget(DomainsLabel,3,0);
-    Domains = new QLineEdit(central);
-    connect(Domains, SIGNAL(returnPressed()),
-            this, SLOT(DomainsProcessText()));
-    mainLayout->addWidget(Domains, 3,1);
-
-    OnlyProcessLevel = new QCheckBox(tr("Only process level"), central);
-    connect(OnlyProcessLevel, SIGNAL(toggled(bool)),
-            this, SLOT(OnlyProcessLevelChanged(bool)));
-    mainLayout->addWidget(OnlyProcessLevel, 4,0);
-
-    LevelLabel = new QLabel(tr("Level"), central);
-    mainLayout->addWidget(LevelLabel,5,0);
-    Level = new QLineEdit(central);
-    connect(Level, SIGNAL(returnPressed()),
-            this, SLOT(LevelProcessText()));
-    mainLayout->addWidget(Level, 5,1);
-
 }
 
 
@@ -216,27 +187,6 @@ QvisAMRStitchCellWindow::UpdateWindow(bool doAll)
                 CreateCellsOfTypeButtonGroup->button((int)atts->GetCreateCellsOfType())->setChecked(true);
             CreateCellsOfTypeButtonGroup->blockSignals(false);
             break;
-          case AMRStitchCellAttributes::ID_AddCaseNo:
-            AddCaseNo->blockSignals(true);
-            AddCaseNo->setChecked(atts->GetAddCaseNo());
-            AddCaseNo->blockSignals(false);
-            break;
-          case AMRStitchCellAttributes::ID_OnlyProcessListedDomains:
-            OnlyProcessListedDomains->blockSignals(true);
-            OnlyProcessListedDomains->setChecked(atts->GetOnlyProcessListedDomains());
-            OnlyProcessListedDomains->blockSignals(false);
-            break;
-          case AMRStitchCellAttributes::ID_Domains:
-            Domains->setText(IntsToQString(atts->GetDomains()));
-            break;
-          case AMRStitchCellAttributes::ID_OnlyProcessLevel:
-            OnlyProcessLevel->blockSignals(true);
-            OnlyProcessLevel->setChecked(atts->GetOnlyProcessLevel());
-            OnlyProcessLevel->blockSignals(false);
-            break;
-          case AMRStitchCellAttributes::ID_Level:
-            Level->setText(IntToQString(atts->GetLevel()));
-            break;
         }
     }
 }
@@ -260,36 +210,6 @@ QvisAMRStitchCellWindow::UpdateWindow(bool doAll)
 void
 QvisAMRStitchCellWindow::GetCurrentValues(int which_widget)
 {
-    bool doAll = (which_widget == -1);
-
-    // Do Domains
-    if(which_widget == AMRStitchCellAttributes::ID_Domains || doAll)
-    {
-        intVector val;
-        if(LineEditGetInts(Domains, val))
-            atts->SetDomains(val);
-        else
-        {
-            ResettingError(tr("Domains"),
-                IntsToQString(atts->GetDomains()));
-            atts->SetDomains(atts->GetDomains());
-        }
-    }
-
-    // Do Level
-    if(which_widget == AMRStitchCellAttributes::ID_Level || doAll)
-    {
-        int val;
-        if(LineEditGetInt(Level, val))
-            atts->SetLevel(val);
-        else
-        {
-            ResettingError(tr("Level"),
-                IntToQString(atts->GetLevel()));
-            atts->SetLevel(atts->GetLevel());
-        }
-    }
-
 }
 
 
@@ -307,49 +227,6 @@ QvisAMRStitchCellWindow::CreateCellsOfTypeChanged(int val)
         SetUpdate(false);
         Apply();
     }
-}
-
-
-void
-QvisAMRStitchCellWindow::AddCaseNoChanged(bool val)
-{
-    atts->SetAddCaseNo(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisAMRStitchCellWindow::OnlyProcessListedDomainsChanged(bool val)
-{
-    atts->SetOnlyProcessListedDomains(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisAMRStitchCellWindow::DomainsProcessText()
-{
-    GetCurrentValues(AMRStitchCellAttributes::ID_Domains);
-    Apply();
-}
-
-
-void
-QvisAMRStitchCellWindow::OnlyProcessLevelChanged(bool val)
-{
-    atts->SetOnlyProcessLevel(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisAMRStitchCellWindow::LevelProcessText()
-{
-    GetCurrentValues(AMRStitchCellAttributes::ID_Level);
-    Apply();
 }
 
 
