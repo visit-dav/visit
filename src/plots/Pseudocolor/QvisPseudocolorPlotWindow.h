@@ -57,7 +57,7 @@ class QSpinBox;
 class Subject;
 class PseudocolorAttributes;
 
-class QvisCollapsibleStack;
+class QvisCollapsibleLayout;
 
 // ****************************************************************************
 // Class: QvisPseudocolorPlotWindow
@@ -200,7 +200,7 @@ private:
     int                   plotType;
     PseudocolorAttributes *pcAtts;
 
-    QvisCollapsibleStack  *propertyStack;
+    QvisCollapsibleLayout *propertyLayout;
 
     QButtonGroup          *scalingButtons;
     QLineEdit             *skewLineEdit;
