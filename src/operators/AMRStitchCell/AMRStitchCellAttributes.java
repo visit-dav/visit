@@ -41,8 +41,6 @@ package llnl.visit.operators;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
-import java.lang.Integer;
-import java.util.Vector;
 
 // ****************************************************************************
 // Class: AMRStitchCellAttributes
@@ -61,7 +59,7 @@ import java.util.Vector;
 
 public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
 {
-    private static int AMRStitchCellAttributes_numAdditionalAtts = 6;
+    private static int AMRStitchCellAttributes_numAdditionalAtts = 1;
 
     // Enum values
     public final static int CREATETYPE_DUALGRIDANDSTITCHCELLS = 0;
@@ -74,11 +72,6 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
         super(AMRStitchCellAttributes_numAdditionalAtts);
 
         CreateCellsOfType = CREATETYPE_DUALGRIDANDSTITCHCELLS;
-        AddCaseNo = false;
-        OnlyProcessListedDomains = false;
-        Domains = new Vector();
-        OnlyProcessLevel = false;
-        Level = 0;
     }
 
     public AMRStitchCellAttributes(int nMoreFields)
@@ -86,30 +79,13 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
         super(AMRStitchCellAttributes_numAdditionalAtts + nMoreFields);
 
         CreateCellsOfType = CREATETYPE_DUALGRIDANDSTITCHCELLS;
-        AddCaseNo = false;
-        OnlyProcessListedDomains = false;
-        Domains = new Vector();
-        OnlyProcessLevel = false;
-        Level = 0;
     }
 
     public AMRStitchCellAttributes(AMRStitchCellAttributes obj)
     {
         super(AMRStitchCellAttributes_numAdditionalAtts);
 
-        int i;
-
         CreateCellsOfType = obj.CreateCellsOfType;
-        AddCaseNo = obj.AddCaseNo;
-        OnlyProcessListedDomains = obj.OnlyProcessListedDomains;
-        Domains = new Vector();
-        for(i = 0; i < obj.Domains.size(); ++i)
-        {
-            Integer iv = (Integer)obj.Domains.elementAt(i);
-            Domains.addElement(new Integer(iv.intValue()));
-        }
-        OnlyProcessLevel = obj.OnlyProcessLevel;
-        Level = obj.Level;
 
         SelectAll();
     }
@@ -126,24 +102,8 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
 
     public boolean equals(AMRStitchCellAttributes obj)
     {
-        int i;
-
-        // Compare the elements in the Domains vector.
-        boolean Domains_equal = (obj.Domains.size() == Domains.size());
-        for(i = 0; (i < Domains.size()) && Domains_equal; ++i)
-        {
-            // Make references to Integer from Object.
-            Integer Domains1 = (Integer)Domains.elementAt(i);
-            Integer Domains2 = (Integer)obj.Domains.elementAt(i);
-            Domains_equal = Domains1.equals(Domains2);
-        }
         // Create the return value
-        return ((CreateCellsOfType == obj.CreateCellsOfType) &&
-                (AddCaseNo == obj.AddCaseNo) &&
-                (OnlyProcessListedDomains == obj.OnlyProcessListedDomains) &&
-                Domains_equal &&
-                (OnlyProcessLevel == obj.OnlyProcessLevel) &&
-                (Level == obj.Level));
+        return ((CreateCellsOfType == obj.CreateCellsOfType));
     }
 
     public String GetName() { return "AMRStitchCell"; }
@@ -156,84 +116,19 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetAddCaseNo(boolean AddCaseNo_)
-    {
-        AddCaseNo = AddCaseNo_;
-        Select(1);
-    }
-
-    public void SetOnlyProcessListedDomains(boolean OnlyProcessListedDomains_)
-    {
-        OnlyProcessListedDomains = OnlyProcessListedDomains_;
-        Select(2);
-    }
-
-    public void SetDomains(Vector Domains_)
-    {
-        Domains = Domains_;
-        Select(3);
-    }
-
-    public void SetOnlyProcessLevel(boolean OnlyProcessLevel_)
-    {
-        OnlyProcessLevel = OnlyProcessLevel_;
-        Select(4);
-    }
-
-    public void SetLevel(int Level_)
-    {
-        Level = Level_;
-        Select(5);
-    }
-
     // Property getting methods
-    public int     GetCreateCellsOfType() { return CreateCellsOfType; }
-    public boolean GetAddCaseNo() { return AddCaseNo; }
-    public boolean GetOnlyProcessListedDomains() { return OnlyProcessListedDomains; }
-    public Vector  GetDomains() { return Domains; }
-    public boolean GetOnlyProcessLevel() { return OnlyProcessLevel; }
-    public int     GetLevel() { return Level; }
+    public int GetCreateCellsOfType() { return CreateCellsOfType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
             buf.WriteInt(CreateCellsOfType);
-        if(WriteSelect(1, buf))
-            buf.WriteBool(AddCaseNo);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(OnlyProcessListedDomains);
-        if(WriteSelect(3, buf))
-            buf.WriteIntVector(Domains);
-        if(WriteSelect(4, buf))
-            buf.WriteBool(OnlyProcessLevel);
-        if(WriteSelect(5, buf))
-            buf.WriteInt(Level);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        switch(index)
-        {
-        case 0:
-            SetCreateCellsOfType(buf.ReadInt());
-            break;
-        case 1:
-            SetAddCaseNo(buf.ReadBool());
-            break;
-        case 2:
-            SetOnlyProcessListedDomains(buf.ReadBool());
-            break;
-        case 3:
-            SetDomains(buf.ReadIntVector());
-            break;
-        case 4:
-            SetOnlyProcessLevel(buf.ReadBool());
-            break;
-        case 5:
-            SetLevel(buf.ReadInt());
-            break;
-        }
+        SetCreateCellsOfType(buf.ReadInt());
     }
 
     public String toString(String indent)
@@ -247,21 +142,11 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
         if(CreateCellsOfType == CREATETYPE_STITCHCELLS)
             str = str + "CREATETYPE_STITCHCELLS";
         str = str + "\n";
-        str = str + boolToString("AddCaseNo", AddCaseNo, indent) + "\n";
-        str = str + boolToString("OnlyProcessListedDomains", OnlyProcessListedDomains, indent) + "\n";
-        str = str + intVectorToString("Domains", Domains, indent) + "\n";
-        str = str + boolToString("OnlyProcessLevel", OnlyProcessLevel, indent) + "\n";
-        str = str + intToString("Level", Level, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int     CreateCellsOfType;
-    private boolean AddCaseNo;
-    private boolean OnlyProcessListedDomains;
-    private Vector  Domains; // vector of Integer objects
-    private boolean OnlyProcessLevel;
-    private int     Level;
+    private int CreateCellsOfType;
 }
 

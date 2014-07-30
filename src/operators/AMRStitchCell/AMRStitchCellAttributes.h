@@ -92,24 +92,12 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectDomains();
 
     // Property setting methods
     void SetCreateCellsOfType(CreateType CreateCellsOfType_);
-    void SetAddCaseNo(bool AddCaseNo_);
-    void SetOnlyProcessListedDomains(bool OnlyProcessListedDomains_);
-    void SetDomains(const intVector &Domains_);
-    void SetOnlyProcessLevel(bool OnlyProcessLevel_);
-    void SetLevel(int Level_);
 
     // Property getting methods
-    CreateType      GetCreateCellsOfType() const;
-    bool            GetAddCaseNo() const;
-    bool            GetOnlyProcessListedDomains() const;
-    const intVector &GetDomains() const;
-          intVector &GetDomains();
-    bool            GetOnlyProcessLevel() const;
-    int             GetLevel() const;
+    CreateType GetCreateCellsOfType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -132,26 +120,16 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_CreateCellsOfType = 0,
-        ID_AddCaseNo,
-        ID_OnlyProcessListedDomains,
-        ID_Domains,
-        ID_OnlyProcessLevel,
-        ID_Level,
         ID__LAST
     };
 
 private:
-    int       CreateCellsOfType;
-    bool      AddCaseNo;
-    bool      OnlyProcessListedDomains;
-    intVector Domains;
-    bool      OnlyProcessLevel;
-    int       Level;
+    int CreateCellsOfType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AMRSTITCHCELLATTRIBUTES_TMFS "ibbi*bi"
+#define AMRSTITCHCELLATTRIBUTES_TMFS "i"
 
 #endif
