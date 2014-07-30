@@ -502,17 +502,6 @@ avtAMRStitchCellFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
                 continue;
             }
 
-#if 0
-            std::cout << "Neighbor " << it->domain << " in same refinement level is of type ";
-            std::cout << (it->type & Boundary::IMIN ? "(IMIN)" : "");
-            std::cout << (it->type & Boundary::IMAX ? "(IMAX)" : "");
-            std::cout << (it->type & Boundary::JMIN ? "(JMIN)" : "");
-            std::cout <<( it->type & Boundary::JMAX ? "(JMAX)" : "");
-            le = domainNesting->GetDomainLogicalExtents(it->domain);
-            std::cout << " le = { " << le[0] << ", " << le[1] << ", " << le[2] << ", "
-                << le[3] << ", " << le[4] << ", " << le[5] << " } " << std::endl; 
-#endif
-
             switch(it->type)
             {
                 case Boundary::IMIN:
@@ -578,18 +567,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
                 debug5 << "Skipping neighbor " << it->domain << " with different refinement level." << std::endl;
                 continue;
             }
-#if 0
-            std::cout << "Neighbor " << it->domain << " in same refinement level is of type ";
-            std::cout << (it->type & Boundary::IMIN ? "(IMIN)" : "");
-            std::cout << (it->type & Boundary::IMAX ? "(IMAX)" : "");
-            std::cout << (it->type & Boundary::JMIN ? "(JMIN)" : "");
-            std::cout << (it->type & Boundary::JMAX ? "(JMAX)" : "");
-            std::cout << (it->type & Boundary::KMIN ? "(KMIN)" : "");
-            std::cout << (it->type & Boundary::KMAX ? "(KMAX)" : "");
-            le = domainNesting->GetDomainLogicalExtents(it->domain);
-            std::cout << " le = { " << le[0] << ", " << le[1] << ", " << le[2] << ", "
-                << le[3] << ", " << le[4] << ", " << le[5] << " } " << std::endl; 
-#endif
+
             switch(it->type)
             {
                 case Boundary::IMIN:
@@ -777,65 +755,6 @@ avtAMRStitchCellFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
             }
         }
 
-#if 0 
-        // Debug output:
-        std::cout << "IDs of neighboring domains on KMIN:" << std::endl;
-        for (int i=0; i<dims[0]; ++i)
-        {
-            for (int j=0; j<dims[1]; ++j)
-            {
-                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, j, 0)] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "IDs of neighboring domains on KMAX:" << std::endl;
-        for (int i=0; i<dims[0]; ++i)
-        {
-            for (int j=0; j<dims[1]; ++j)
-            {
-                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, j, dims[2]-1)] << " ";
-            }
-            std::cout << std::endl;
-        }
-
-        std::cout << "IDs of neighboring domains on JMIN:" << std::endl;
-        for (int i=0; i<dims[0]; ++i)
-        {
-            for (int k=0; k<dims[2]; ++k)
-            {
-                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, 0, k)] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "IDs of neighboring domains on JMAX:" << std::endl;
-        for (int i=0; i<dims[0]; ++i)
-        {
-            for (int k=0; k<dims[2]; ++k)
-            {
-                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, dims[1]-1, k)] << " ";
-            }
-            std::cout << std::endl;
-        }
-
-        std::cout << "IDs of neighboring domains on IMIN:" << std::endl;
-        for (int j=0; j<dims[1]; ++j)
-        {
-            for (int k=0; k<dims[2]; ++k)
-            {
-                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(0, j, k)] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "IDs of neighboring domains on IMAX:" << std::endl;
-        for (int j=0; j<dims[1]; ++j)
-        {
-            for (int k=0; k<dims[2]; ++k)
-            {
-                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(dims[0]-1, j, k)] << " ";
-            }
-            std::cout << std::endl;
-        }
-#endif
 #undef LOC
     }
 
@@ -1218,16 +1137,6 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                 }
             }
         }
-#if 0
-        // Debug output
-        std::cout << "IDs of computed vertices:" << std::endl;
-        for (int i=0; i<dims[0]*dims[1]; ++i)
-        {
-            std::cout << std::setw(4) <<  pointIds[i];
-            if (i%dims[0]==dims[0]-1) std::cout << std::endl; else std::cout << " ";;
-        }
-        std::cout << std::endl;
-#endif
     }
     else
     {
@@ -1503,10 +1412,6 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 vPtId[vtxNo] = pointIds[LOC(vI, vJ, vK)];
                             }
 
-#if 0
-                            for (int x=0; x<numVtcs; ++x) std::cout << vPtId[x] << " ";
-                            std::cout << std::endl;
-#endif
                             if (numVtcs == 4)
                             {
                                 ugrid->InsertNextCell(VTK_TETRA, 4, &vPtId[0]);
@@ -1624,14 +1529,6 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
             }
             else
             {
-#if 0
-                std::cout << idx << ": Interpolating between IDs: ";
-                for (int i=0; i<(*iVLIt)->GetNumberOfIds(); ++i)
-                {
-                    std::cout << (*iVLIt)->GetId(i) << " (w=" << sevenWeights[i] << ") ";
-                }
-                std::cout << std::endl;
-#endif
                 ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, *iVLIt, sevenWeights);
                 (*iVLIt)->Delete();
                 ++iVLIt;
@@ -1708,23 +1605,6 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
         zCoords->Delete();
     }
 
-#if 0
-    // This is the original dual mesh coordinate calculation code. It leads to
-    // numerical accuracy issues.
-    vtkDataArray *res_x_coords = ContractDual(rgrid->GetXCoordinates());
-    result->SetXCoordinates(res_x_coords);
-    res_x_coords->Delete();
-    vtkDataArray *res_y_coords = ContractDual(rgrid->GetYCoordinates());
-    result->SetYCoordinates(res_y_coords);
-    res_y_coords->Delete();
-    if (topologicalDimension == 3)
-    {
-        vtkDataArray *res_z_coords = ContractDual(rgrid->GetZCoordinates());
-        result->SetZCoordinates(res_z_coords);
-        res_z_coords->Delete();
-    }
-#endif
-
     // Shallow copy the field data
     result->GetFieldData()->ShallowCopy(rgrid->GetFieldData());
 
@@ -1749,22 +1629,6 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
 
     if (topologicalDimension == 2)
     {
-#if 0
-        std::cout << "VisIt ghost information:" << std::endl;
-        for (int i=0; i<dims[0]*dims[1]; ++i)
-        {
-            std::cout << std::setw(4) << int(inputGhostZones->GetValue(i));
-            if (i%dims[0]==dims[0]-1) std::cout << std::endl;
-        }
-#endif
-#if 0 
-        std::cout << "IDs of neighboring domains:" << std::endl;
-        for (int i=0; i<dims[0]*dims[1]; ++i)
-        {
-            std::cout << std::setw(3) << refinedInSameLevelDomain[i];
-            if (i%dims[0]==dims[0]-1) std::cout << std::endl; else std::cout << " ";;
-        }
-#endif
         outputGhostZones->SetNumberOfTuples((dims[0]-1)*(dims[1]-1));
 
         // 2D
@@ -1780,7 +1644,6 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
                 ghostInfo |= IGV(i,   j+1);
                 ghostInfo |= IGV(i+1, j+1);
 #undef IGV
-
 
 #ifdef IS_REMOVE_GHOST_SAMPLE
 #undef IS_REMOVE_GHOST_SAMPLE
@@ -1807,16 +1670,6 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
 
                 outputGhostZones->SetValue(j*(dims[0]-1)+i, ghostInfo);
             }
-#ifdef ENABLE_UNGHOST_CELL_OPTIMIZATION
-#if 0
-        std::cout << "Dual VisIt ghost information:" << std::endl;
-        for (int i=0; i<(dims[0]-1)*(dims[1]-1); ++i)
-        {
-            std::cout << std::setw(4) << int(outputGhostZones->GetValue(i));
-            if (i%(dims[0]-1)==(dims[0]-2)) std::cout << std::endl;
-        }
-#endif
-#endif
     }
     else
     {
@@ -1877,38 +1730,3 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
 
     return result;
 }
-
-#if 0
-
-// ****************************************************************************
-//  Method: avtAMRStitchCellFilter::ContractDual
-//
-//  Purpose:
-//      Calculate the new coordiantes in one dimension for nodal to zonal
-//      dual mesh conversion.
-//
-//  Arguments:
-//      coords    Input coordinate array.
-//
-//  Returns:      The new coordiante array.
-//
-//  Programmer: harrison37 -- generated by xml2avt
-//  Creation:   Wed May 7 15:59:34 PST 2008
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtAMRStitchCellFilter::ContractDual(vtkDataArray *coords)
-{
-    vtkDataArray *res_coords = coords->NewInstance();
-
-    int npoints = coords->GetNumberOfTuples();
-    for(int i=0;i< npoints - 1;i++)
-    {
-        double curr = (coords->GetTuple1(i+1) + coords->GetTuple1(i)) / 2.0;
-        res_coords->InsertNextTuple1(curr);
-    }
-    return res_coords;
-}
-
-#endif
