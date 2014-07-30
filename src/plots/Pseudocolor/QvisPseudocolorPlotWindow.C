@@ -58,7 +58,7 @@
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
-#include "QvisCollapsiblePanel.h"
+#include "QvisCollapsibleFrame.h"
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow
@@ -192,9 +192,9 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 void
 QvisPseudocolorPlotWindow::CreateWindowContents()
 { 
-    propertyStack = new QvisCollapsibleStack(central);
-    propertyStack->setParent( this );
-    topLayout->addWidget(propertyStack);
+    propertyLayout = new QvisCollapsibleLayout(central);
+    propertyLayout->setParent( this );
+    topLayout->addWidget(propertyLayout);
 
     // // ----------------------------------------------------------------------
     // // Data tab
@@ -202,10 +202,10 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     QWidget *dataTab = new QWidget(central);
     CreateDataTab(dataTab);
 
-    QvisCollapsiblePanel* dataFrame =
-      propertyStack->addPanel( tr("Data"), dataTab);
+    QvisCollapsibleFrame* dataFrame =
+      propertyLayout->addFrame( tr("Data"), dataTab);
 
-    dataFrame->expand();
+    dataFrame->setShow();
 
     // // ----------------------------------------------------------------------
     // // Geometry tab
@@ -213,10 +213,10 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     QWidget *geometryTab = new QWidget(central);
     CreateGeometryTab(geometryTab);
 
-    QvisCollapsiblePanel* geometryFrame =
-      propertyStack->addPanel( tr("Geometry"), geometryTab);
+    QvisCollapsibleFrame* geometryFrame =
+      propertyLayout->addFrame( tr("Geometry"), geometryTab);
 
-    geometryFrame->collapse();
+    geometryFrame->setHide();
 
     // QTabWidget *propertyTabs = new QTabWidget(central);
     // topLayout->addWidget(propertyTabs);
