@@ -878,24 +878,6 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
     std::list<vtkIdType> originalDataIds;
     std::list<vtkIdList*> interpolatedDataIds;
 
-    // The following array maps cases to their base case. It is only used for
-    // debugging, i.e., annotating stitch cells with the base case they were
-    // generated from.
-    int baseCaseForCase[256] = {
-        0, 1, 1, 2, 1, 3, 2, 4, 1, 2, 3, 4, 2, 4, 4, 5, 1, 2, 3, 4, 6, 7, 7, 8, 3, 4,
-        9, 10, 7, 11, 12, 13, 1, 3, 2, 4, 3, 9, 4, 10, 6, 7, 7, 11, 7, 12, 8, 13, 2,
-        4, 4, 5, 7, 12, 11, 13, 7, 8, 12, 13, 14, 15, 15, 16, 1, 6, 3, 7, 2, 7, 4,
-        11, 3, 7, 9, 12, 4, 8, 10, 13, 3, 7, 9, 12, 7, 14, 12, 15, 9, 12, 17, 18, 12,
-        15, 18, 19, 2, 7, 4, 8, 4, 12, 5, 13, 7, 14, 12, 15, 11, 15, 13, 16, 4, 11,
-        10, 13, 8, 15, 13, 16, 12, 15, 18, 19, 15, 20, 19, 21, 1, 3, 6, 7, 3, 9, 7,
-        12, 2, 4, 7, 8, 4, 10, 11, 13, 2, 4, 7, 11, 7, 12, 14, 15, 4, 5, 12, 13, 8,
-        13, 15, 16, 3, 9, 7, 12, 9, 17, 12, 18, 7, 12, 14, 15, 12, 18, 15, 19, 4, 10,
-        8, 13, 12, 18, 15, 19, 11, 13, 15, 16, 15, 19, 20, 21, 2, 7, 7, 14, 4, 12, 8,
-        15, 4, 11, 12, 15, 5, 13, 13, 16, 4, 8, 12, 15, 11, 15, 15, 20, 10, 13, 18,
-        19, 13, 16, 19, 21, 4, 12, 11, 15, 10, 18, 13, 19, 8, 15, 15, 20, 13, 19, 16,
-        21, 5, 13, 13, 16, 13, 19, 16, 21, 13, 16, 19, 21, 16, 21, 21, 22
-    };
-
     vtkIdType *pointIds = new vtkIdType[dims[0]*dims[1]*dims[2]]; // FIXME: More memory efficient storage
     for (int i=0; i < dims[0]*dims[1]*dims[2]; ++i)
     {
