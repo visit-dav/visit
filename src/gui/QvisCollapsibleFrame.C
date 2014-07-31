@@ -259,7 +259,7 @@ void QvisCollapsibleFrame::showOrHide(QvisTitleBar::LayoutState state)
 
     // Now that the widget is exposed or hidden send another signal to
     // update the layout to be the right size.
-    emit invalidateLayout();
+    emit updateLayout();
 }
 
 // ****************************************************************************
@@ -343,28 +343,27 @@ QvisCollapsibleFrame* QvisCollapsibleLayout::addFrame(const QString& title,
     layout->addWidget(frame);
     
     // The frame will send a signal that the layout needs to be resized.
-    connect(frame, SIGNAL(invalidateLayout()), this, SLOT(invalidateLayout()));
+    connect(frame, SIGNAL(updateLayout()), this, SLOT(updateLayout()));
     
     // Return the frame so the user can manually set the state.
     return frame;
 }
 
 // ****************************************************************************
-// Class: QvisCollapsibleLayout::invalidateLayout
+// Class: QvisCollapsibleLayout::updateLayout
 //
-// Purpose: QT slot that invalidates the layout then forces the
-//   parent window to resize the layout after a show/hide event.
+// Purpose: QT slot that emits a signal via the timer which is
+// enough of a delay for the window resizing to happen correctly.
+// I.e. there is a timing issue.
 //
 // Programmer: Allen Sanderson
 // Creation:   23 July 2014
 //
-void QvisCollapsibleLayout::invalidateLayout()
+void QvisCollapsibleLayout::updateLayout()
 {
     if (layout->count() == 0)
         return;
 
-    layout->invalidate();
-  
     // Use the timer to set up the adjustWindowSize as it can not be
     // called directly.
     QTimer::singleShot(0, this, SLOT(adjustWindowSize()));
@@ -375,14 +374,21 @@ void QvisCollapsibleLayout::invalidateLayout()
 // ****************************************************************************
 // Class: QvisCollapsibleLayout::adjustWindowSize
 //
-// Purpose: QT slot that forces the parent window to resize after
-//   a show/hide event.
+// Purpose: QT slot that invalidates the layout then forces the parent
+// window to resize after a show/hide event.
 //
 // Programmer: Allen Sanderson
 // Creation:   23 July 2014
 //
 void QvisCollapsibleLayout::adjustWindowSize()
 {
+    // NOTE: the layout invalidate and the adjust size calls must be
+    // done as a signal via the QTimer that causes a slight delay
+    // otherwise the resizing does not happen properly. I.e. there is
+    // a timing issue.
+
+    layout->invalidate();
+  
     QWidget *parent = layout->parentWidget();
  
     while (parent)
