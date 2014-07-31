@@ -103,7 +103,7 @@ class GUI_API QvisCollapsibleFrame : public QWidget
     void setHide();
     
   signals: // Used to communicate with the parent layout.
-    void invalidateLayout();
+    void updateLayout();
 
   private slots:  // Used to communicate with the associated titlebar.
     void showOrHide(QvisTitleBar::LayoutState state);
@@ -134,7 +134,7 @@ class GUI_API QvisCollapsibleLayout : public QWidget
     QvisCollapsibleFrame* addFrame(const QString& title, QWidget* widget);
 
   private slots:  // Used to communicate with the child frames.
-    void invalidateLayout();
+    void updateLayout();
     void adjustWindowSize();
 
   private:
