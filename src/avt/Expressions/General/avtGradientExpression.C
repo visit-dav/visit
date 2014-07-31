@@ -1056,7 +1056,6 @@ avtGradientExpression::LogicalGradient(vtkStructuredGrid *sg,
 
     int dims[3];
     sg->GetDimensions(dims);
-    //bool isNodal = true;
     vtkDataArray *s = sg->GetPointData()->GetScalars();
     if (s == NULL)
     {
@@ -1067,7 +1066,6 @@ avtGradientExpression::LogicalGradient(vtkStructuredGrid *sg,
                                              " be found.");
          }
 
-         //isNodal = false;
          dims[0] -= 1;
          dims[1] -= 1;
          dims[2] -= 1;
