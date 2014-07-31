@@ -67,14 +67,21 @@ bool avtMultiresControlFilter::Equivalent(const AttributeGroup *a)
     return (atts == *(MultiresControlAttributes*)a);
 }
 
-vtkDataSet* 
-avtMultiresControlFilter::ExecuteData(vtkDataSet *in_ds, int i, std::string s)
+// ****************************************************************************
+//   Modifications:
+//     Eric Brugger, Wed Jul 30 19:50:54 PDT 2014
+//     Modified the class to work with avtDataRepresentation.
+//
+// ****************************************************************************
+
+avtDataRepresentation * 
+avtMultiresControlFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
     size_t lods =
       GetTypedInput()->GetInfo().GetAttributes().GetLevelsOfDetail();
     debug3 << "Setting max resolution to " << lods << "\n";
     atts.SetMaxResolution((int)lods);
-    return in_ds;
+    return in_dr;
 }
 
 avtContract_p avtMultiresControlFilter::ModifyContract(avtContract_p contract)

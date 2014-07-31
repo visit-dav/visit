@@ -56,6 +56,10 @@ class vtkDataSet;
 //  plugin using a VisIt 'contract'.
 //
 //  @author Andrew Foulks
+//
+//  Modifications:
+//    Eric Brugger, Wed Jul 30 19:47:57 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 
 class avtMultiresControlFilter : public avtPluginDataTreeIterator
 {
@@ -72,7 +76,7 @@ class avtMultiresControlFilter : public avtPluginDataTreeIterator
 
   protected:
     MultiresControlAttributes   atts;
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 };
 
 

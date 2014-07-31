@@ -43,12 +43,12 @@
 #ifndef AVT_Isovolume_FILTER_H
 #define AVT_Isovolume_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <IsovolumeAttributes.h>
 
-
 class vtkDataSet;
+
 
 // ****************************************************************************
 //  Class: avtIsovolumeFilter
@@ -71,6 +71,9 @@ class vtkDataSet;
 //    Hank Childs, Wed Aug 11 09:23:17 PDT 2004
 //    Added ModifyContract.
 //
+//    Eric Brugger, Wed Jul 30 18:47:23 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtIsovolumeFilter : public avtPluginDataTreeIterator
@@ -91,7 +94,7 @@ class avtIsovolumeFilter : public avtPluginDataTreeIterator
   protected:
     IsovolumeAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void          UpdateDataObjectInfo(void);
 
     virtual avtContract_p

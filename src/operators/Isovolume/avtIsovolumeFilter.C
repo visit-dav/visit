@@ -174,6 +174,9 @@ avtIsovolumeFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Sat Sep 29 11:24:12 PDT 2007
 //    Pass in vtkDataArrays to the clipper, not "float *".
 //
+//    Eric Brugger, Wed Jul 30 18:49:46 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -226,7 +229,7 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
     clipper->SetInputData(in_ds);
     clipper->Update();
     vtkDataSet *out_ds = clipper->GetOutput();
-    ManageMemory(out_ds);
+    out_ds->Register(NULL);
     clipper->Delete();
 
     //
@@ -279,11 +282,9 @@ inline void IsovolumeMinMax(double &min, double &max, Accessor access)
 //      Sends the specified input and output through the Isovolume filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   January 30, 2004
@@ -320,11 +321,19 @@ inline void IsovolumeMinMax(double &min, double &max, Accessor access)
 //    Check whether data set is empty before performing max clip to prevent
 //    crash in border case.
 //
+//    Eric Brugger, Wed Jul 30 18:49:46 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     //
     // Start off by calculating the range of the dataset.
     //
@@ -335,7 +344,7 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         vals = in_ds->GetCellData()->GetScalars();
 
     if (vals == NULL)
-        return in_ds;
+        return in_dr;
 
     double min, max;
     if(vals->GetDataType() == VTK_FLOAT)
@@ -380,6 +389,7 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     if (out_ds->GetNumberOfCells() <= 0)
     {
+        out_ds->Delete();
         out_ds = NULL;
     }
 
@@ -389,7 +399,6 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // necessarily have a ugrid, since it might be that we didn't process the
     // dataset.
     //
-    bool shouldDelete = false;
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL &&
         out_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
@@ -407,15 +416,17 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             ugrid->GetCellPoints(i, npts, pts);
             out_pd->InsertNextCell(celltype, npts, pts);
         }
+        out_ds->Delete();
         out_ds = out_pd;
-        shouldDelete = true;
     }
 
-    ManageMemory(out_ds);
-    if (shouldDelete)
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    if (out_ds != NULL)
         out_ds->Delete();
 
-    return out_ds;
+    return out_dr;
 }
 
 
