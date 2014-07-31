@@ -333,8 +333,6 @@ avtFacelistFilter::FindFaces(avtDataRepresentation *in_dr,
     std::string label = in_dr->GetLabel();
 
     int tDim = info.GetAttributes().GetTopologicalDimension();
-    //int sDim = info.GetAttributes().GetSpatialDimension();
-    //int dis_elem = info.GetValidity().GetDisjointElements();
 
     vtkDataSet *orig_in_ds = in_ds;
     bool shouldDeleteInDs = false;

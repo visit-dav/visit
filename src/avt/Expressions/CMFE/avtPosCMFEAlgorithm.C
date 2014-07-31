@@ -1021,7 +1021,6 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     // Translate the buffers we just received into the points we should look
     // at.
     //
-    //int numPts = 0;
     pt_list_came_from.clear();
     vector<double *> new_pt_list;
     vector<int> new_pt_list_size;
@@ -2206,12 +2205,6 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
         }
 
         double min, max;
-
-//        int index = 0;
-//        if (axis == Y_AXIS)
-//            index = 2;
-//        else if (axis == Z_AXIS)
-//            index = 4;
 
         if (firstBigger <= 0)
         {

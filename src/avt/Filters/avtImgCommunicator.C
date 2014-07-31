@@ -99,9 +99,8 @@ bool sortImgByDepthIota(iotaMeta const& before, iotaMeta const& after){
 avtImgCommunicator::avtImgCommunicator(){
 
 #ifdef PARALLEL
-  /*int ierr;*/
-  /*ierr =*/ MPI_Comm_size(VISIT_MPI_COMM, &num_procs);
-  /*ierr =*/ MPI_Comm_rank(VISIT_MPI_COMM, &my_id);
+  MPI_Comm_size(VISIT_MPI_COMM, &num_procs);
+  MPI_Comm_rank(VISIT_MPI_COMM, &my_id);
 
   _img_mpi = createMetaDataType();
   MPI_Type_commit(&_img_mpi);
@@ -1048,7 +1047,6 @@ void avtImgCommunicator::gatherAndAssembleEncodedImages(int sizex, int sizey, in
       recvSizePerProc = new int[num_procs]; 
       offsetBuffer = new int[num_procs];  
 
-      //int divCount = 0;
       for (int i=0; i<num_procs; i++){
         int numBoundsPerBlock = boundsPerBlockVec[i].size()/2;
         totalDivisions += numBoundsPerBlock;

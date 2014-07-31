@@ -672,7 +672,7 @@ avtExpressionFilter::GetVariableDimension(void)
 //      ds      The mesh the variable lays on.
 //      arr     The variable to recenter.
 //      currCent The current centering of the variable
-//      targCent The desires centering of the variable
+//      targCent The desired centering of the variable
 //
 //  Returns:    The array recentered.  Note: the calling routine will then
 //              be responsible for deleting the returned object.

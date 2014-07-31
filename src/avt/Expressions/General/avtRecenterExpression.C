@@ -222,7 +222,7 @@ avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex
 
     vtkDataArray *rv = NULL;
 
-    avtCentering target = AVT_NO_VARIABLE; /// TODO: only var not used..
+    avtCentering target = AVT_UNKNOWN_CENT; 
     switch(recenterMode)
     {
     case Nodal:

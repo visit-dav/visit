@@ -133,7 +133,6 @@ avtTensorMaximumShearExpression::DoOperation(vtkDataArray *in, vtkDataArray *out
             invariant2 += dev2*vals[1]*vals[1];
 
             double princ0 = 0.;
-            //double princ1 = 0.;
             double princ2 = 0.;
             if (invariant1 >= 1e-100)
             {
@@ -147,8 +146,9 @@ avtTensorMaximumShearExpression::DoOperation(vtkDataArray *in, vtkDataArray *out
                 double angle = acos((double)alpha) / 3.;
                 double value = 2.0 * sqrt(invariant1 / 3.);
                 princ0 = value*cos(angle);
+                // Displace the angle for princ1 (which we don't calculate)
                 angle = angle - 2.0*vtkMath::Pi()/3.;
-                //princ1 = value*cos(angle);
+                // Now displace for princ2
                 angle = angle + 4.0*vtkMath::Pi()/3.;
                 princ2 = value*cos(angle);
             }

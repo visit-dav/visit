@@ -705,8 +705,6 @@ avtConnComponentsExpression::LabelBoundaryNeighbors(vtkDataSet *data_set)
                                   true, true, NULL);
     delete flf;
     clone_ds->Delete();
-    //vtkDataSet *ds = tree->GetSingleLeaf();
-    // we do not need to Delete ds because it is contained by tree
     // we do not need to delete tree, since it is a ref_ptr
 
     // init the boundary neighbors array
@@ -1282,11 +1280,6 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
     std::vector<vtkDataSet*>  sets;
     std::vector<vtkIntArray*> labels;
 
-    // get the id of the local processor
-    //int procid = PAR_Rank();
-    // get the number of local datasets
-    //int n_local_sets = local_sets.size();
-
     // To create the spatial partition, we first need to know the bounds of 
     // the entire dataset.
 
@@ -1374,7 +1367,6 @@ avtConnComponentsExpression::GlobalUnion(int num_comps,
 
     // get the number of processors and the current processor id
     int nprocs = PAR_Size();
-    //int procid = PAR_Rank();
 
     // create a union find data structure for resolving the labels
     // (in this case all union representatives are valid)
@@ -2369,7 +2361,6 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
 
     // get the current processor id and the # of processors
     int nprocs = PAR_Size();
-    //int procid = PAR_Rank();
 
     char *snd_msg = NULL;
     int *snd_count = new int[nprocs];
@@ -2980,12 +2971,6 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
         }
 
         float min, max;
-
-//        int index = 0;
-//        if (axis == Y_AXIS)
-//            index = 2;
-//        else if (axis == Z_AXIS)
-//            index = 4;
 
         if (firstBigger <= 0)
         {
