@@ -384,27 +384,34 @@ vtkRectilinearGrid* avtFFTFilter::ComputeFFT(std::vector<double>* data, long nDa
 //      Sends the specified input and output through the FFT filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: bala
 //  Creation:   Mon Aug 15 13:48:35 PST 2011
 //
+//  Modifications:
+//    Eric Brugger, Mon Jul 28 15:22:58 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtFFTFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtFFTFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
   debug5 <<"avtFFTFilter::ExecuteData() - Entering." <<std::endl;
+
+  //
+  // Get the VTK data set.
+  //
+  vtkDataSet *in_ds = in_dr->GetDataVTK();
 
   // Check if the input dataset is a rectilinear grid.
   if (in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID) {
     debug3 << "avtFFTFilter::ExecuteData() ERROR: Input dataset is not of type VTK_RECTILINEAR_GRID." <<std::endl;
     debug3 << "avtFFTFilter::ExecuteData() ERROR: Not executing FFT. Returning input dataset." << std::endl;
-    return in_ds;
+    return in_dr;
   }
 
   // Convert input dataset to a rectilinear grid for easier access
@@ -414,7 +421,7 @@ avtFFTFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
   if(rGrid == NULL) {
     debug3 << "avtFFTFilter::ExecuteData() ERROR: Input dataset when safely down cast to VTK_RECTILINEAR_GRID is NULL." <<std::endl;
     debug3 << "avtFFTFilter::ExecuteData() ERROR: Not executing FFT. Returning input dataset." << std::endl;
-    return in_ds;
+    return in_dr;
   }
 
   // Check if the input dataset dimension is X/1/1
@@ -422,7 +429,7 @@ avtFFTFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
   if ((dims[1] != 1) || (dims[2] != 1)) {
     debug3 << "avtFFTFilter::ExecuteData() ERROR: The dimension of the input dataset is not 1 (i.e., [x][1][1])." <<std::endl;
     debug3 << "avtFFTFilter::ExecuteData() ERROR: Not executing FFT. Returning input dataset." << std::endl;
-    return in_ds;
+    return in_dr;
   }
 
   // Get the scalars.
@@ -433,7 +440,7 @@ avtFFTFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
   if (nPts <= 1) {
     debug3 << "avtFFTFilter::ExecuteData() ERROR: Number of tuples in the input dataset is <= 1." <<std::endl;
     debug3 << "avtFFTFilter::ExecuteData() ERROR: Not executing FFT. Returning input dataset." << std::endl;
-    return in_ds;
+    return in_dr;
   }
 
   // Get the Y Axis values
@@ -473,10 +480,12 @@ avtFFTFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
   // Returning output dataset.
   debug5 <<"avtFFTFilter::ExecuteData() - Returning" <<std::endl;
 
-  ManageMemory(outGrid);
+  avtDataRepresentation *out_dr = new avtDataRepresentation(outGrid,
+      in_dr->GetDomain(), in_dr->GetLabel());
+
   outGrid->Delete();
 
-  return outGrid;
+  return out_dr;
 #endif
 }
 

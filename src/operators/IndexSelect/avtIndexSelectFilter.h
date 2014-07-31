@@ -43,10 +43,9 @@
 #ifndef AVT_IndexSelect_FILTER_H
 #define AVT_IndexSelect_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
-#include <IndexSelectAttributes.h>
 
+#include <IndexSelectAttributes.h>
 
 class vtkDataSet;
 class vtkMaskPoints;
@@ -54,6 +53,7 @@ class vtkVisItExtractGrid;
 class vtkVisItExtractRectilinearGrid;
 class vtkRectilinearGrid;
 class vtkDataArray;
+
 
 // ****************************************************************************
 //  Class: avtIndexSelectFilter
@@ -89,6 +89,9 @@ class vtkDataArray;
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    Added amrLevel, amrMesh, int* arg to PrepareFilters.
 //
+//    Eric Brugger, Mon Jul 28 15:33:34 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginDataTreeIterator
@@ -122,7 +125,7 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
 
     void                        PrepareFilters(int [3], int *);
 
-    virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void                PreExecute(void);
     virtual void                PostExecute(void);
     virtual void                UpdateDataObjectInfo(void);
