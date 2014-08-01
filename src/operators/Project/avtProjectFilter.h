@@ -43,8 +43,8 @@
 #ifndef AVT_Project_FILTER_H
 #define AVT_Project_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <ProjectAttributes.h>
 
 class vtkDataSet;
@@ -74,6 +74,9 @@ class vtkRectilinearGrid;
 //    Added double precision version of projection for increased
 //    accuracy.
 //
+//    Eric Brugger, Thu Jul 31 14:42:52 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtProjectFilter : public avtPluginDataTreeIterator
@@ -93,7 +96,7 @@ class avtProjectFilter : public avtPluginDataTreeIterator
   protected:
     ProjectAttributes   atts;
 
-    virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void                PostExecute(void);
     virtual void                UpdateDataObjectInfo(void);
     avtContract_p  ModifyContract(avtContract_p);
