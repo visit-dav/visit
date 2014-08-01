@@ -43,11 +43,10 @@
 #ifndef AVT_Reflect_FILTER_H
 #define AVT_Reflect_FILTER_H
 
-
 #include <avtSIMODataTreeIterator.h>
 #include <avtPluginFilter.h>
-#include <ReflectAttributes.h>
 
+#include <ReflectAttributes.h>
 
 class vtkDataArray;
 class vtkDataSet;
@@ -68,6 +67,9 @@ class vtkRectilinearGrid;
 //
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Add Boolean to zero out velocities on the boundary.
+//
+//    Eric Brugger, Thu Jul 31 19:15:11 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -96,7 +98,7 @@ class avtReflectFilter : public virtual avtSIMODataTreeIterator,
 
     virtual void          PreExecute(void);
     virtual void          PostExecute(void);
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p ExecuteDataTree(avtDataRepresentation *);
     virtual avtContract_p
                           ModifyContract(avtContract_p);
     virtual void          UpdateDataObjectInfo(void);

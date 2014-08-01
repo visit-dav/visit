@@ -43,12 +43,10 @@
 #ifndef AVT_ONION_PEEL_FILTER_H
 #define AVT_ONION_PEEL_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <OnionPeelAttributes.h>
 
-
-class vtkDataSet;
 class vtkOnionPeelFilter;
 class vtkPolyDataOnionPeelFilter;
 
@@ -92,6 +90,9 @@ class vtkPolyDataOnionPeelFilter;
 //    BadSeedCellCallback.  Added groupCategory, encounteredGhostSeed, and 
 //    successfullyExecuted. 
 //
+//    Eric Brugger, Thu Jul 31 11:42:38 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtOnionPeelFilter : public avtPluginDataTreeIterator
@@ -126,7 +127,7 @@ class avtOnionPeelFilter : public avtPluginDataTreeIterator
     bool                  groupCategory;
     bool                  successfullyExecuted;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void          PreExecute();
     virtual void          PostExecute();
 

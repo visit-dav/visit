@@ -207,10 +207,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //      Sends the specified input and output through the OnionPeel filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output unstructured grid.
+//  Returns:       The output data representation.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 09, 2000
@@ -287,14 +286,19 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    seed cell was specified as a global cell number and material interface
 //    reconstruction was applied.
 //
-//    Kathleen Biagas, Fri Jul 25 12:58:09 MST 2014
-//    Use new att 'honorOriginalMesh' in determining whether to reconstruct.
+//    Eric Brugger, Thu Jul 31 11:43:08 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
+avtDataRepresentation *
+avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     if (successfullyExecuted)
     {
         return NULL;
@@ -486,7 +490,11 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         removeGhostCells->Delete(); 
     }
     successfullyExecuted |= (!encounteredBadSeed && !encounteredGhostSeed);
-    return outds;
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(outds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    return out_dr;
 }
 
 // ****************************************************************************
