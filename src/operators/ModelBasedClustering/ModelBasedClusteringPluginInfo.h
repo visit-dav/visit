@@ -67,6 +67,7 @@ class ModelBasedClusteringGeneralPluginInfo : public virtual GeneralOperatorPlug
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class ModelBasedClusteringCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual ModelBasedClusteringGeneralPluginInfo
