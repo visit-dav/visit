@@ -183,6 +183,10 @@ function build_silo
     else
        WITHSZIPARG="--without-szlib"
     fi
+    WITHSHAREDARG="--enable-shared"
+    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+        WITHSHAREDARG="--disable-shared"
+    fi
     if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" || "$IS_QT5" == "yes" ]] ; then
        WITHSILOQTARG='--disable-silex'
     else
@@ -208,7 +212,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
         --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
@@ -217,7 +221,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
         --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     if [[ $? != 0 ]] ; then
@@ -239,64 +243,10 @@ function build_silo
     #
     info "Installing Silo"
 
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        mkdir "$VISITDIR/silo"
-        mkdir "$VISITDIR/silo/${SILO_VERSION}"
-        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
-        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
-        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        cp src/silo/*.h src/silo/*.inc \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_private.h
-        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_win32_compatibility.h
-        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_f.h
-        rm -f $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include/silo_drivers.h
-        cp src/pdb/lite_pdb.h src/score/lite_score.h \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        test -e tools/silex/silex && cp tools/silex/silex \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        test -e tools/browser/browser && cp tools/browser/browser \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        cp tools/browser/silodiff \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        cp tools/browser/silofile \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        test -e tools/silock/silock && cp tools/silock/silock \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        #
-        # Make dynamic executable
-        #
-        INSTALLNAMEPATH="$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
-
-        # Remove the tmp directory if it is already present
-        if [[ -d tmp ]] ; then
-            rm -rf tmp
-        fi
-        mkdir tmp
-        cd tmp
-        SILO_H5=""
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            SILO_H5="h5"
-        fi
-        ar x ../src/.libs/libsilo${SILO_H5}.a
-        $CXX_COMPILER -dynamiclib -o libsilo${SILO_H5}.${SO_EXT} *.o \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libsilo${SILO_H5}.${SO_EXT} \
-           -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
-           -Wl,-current_version,${SILO_VERSION} $SILO_LINK_OPT
-        if [[ $? != 0 ]] ; then
-           warn "Silo dynamic library build failed.  Giving up"
-           return 1
-        fi
-        cp libsilo${SILO_H5}.${SO_EXT}  \
-"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
-    else
-        $MAKE install
-        if [[ $? != 0 ]] ; then
-           warn "Silo install failed.  Giving up"
-           return 1
-        fi
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "Silo install failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
