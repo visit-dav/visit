@@ -164,7 +164,6 @@ def launch_visit_test(args):
     test_base = os.path.splitext(test_file)[0]
     rcmd  =  opts["executable"] + " "
     rcmd +=  opts["vargs"] + " "
-    rcmd += " -create-ghosts-for-t-intersections "
     # check for vargs embedded in the test file header
     rcmd +=  parse_test_specific_vargs(test) + " "
     rcmd +=  "-exec-timeout %d -idle-timeout %d " % (opts["limit"],opts["limit"])
