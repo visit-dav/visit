@@ -190,6 +190,9 @@
 //    Matthew Wheeler, Mon May 20 12:00:00 GMT 2013
 //    Added min_corner_area and min_sin_corner
 //
+//    Kevin Griffin, Tue Aug 5 15:01:27 PDT 2014
+//    Added q_criterion and lambda2
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -380,12 +383,14 @@ const char *expr_misc[] = {
     "ij_gradient",
     "ijk_gradient",
     "isnan",
+    "lambda2",
     "Laplacian",
     "map",
     "mean_curvature",
     "nodal_constant",
     "point_constant",
     "procid",
+    "q_criterion",
     "recenter",
     "resample",
     "resrad",
