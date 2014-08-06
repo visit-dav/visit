@@ -152,5 +152,5 @@ LagrangianGeneralPluginInfo::EnabledByDefault() const
 const char *
 LagrangianGeneralPluginInfo::GetCategoryName() const
 {
-    return "Analysis";
+    return "Integral Curves";
 }
