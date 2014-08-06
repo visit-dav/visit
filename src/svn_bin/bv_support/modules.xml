@@ -18,6 +18,7 @@
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="eavl"/>
+            <lib name="visus"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
@@ -68,6 +69,7 @@
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="visus"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
@@ -97,6 +99,7 @@
             <lib name="netcdf"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="visus"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
         </group>
@@ -117,6 +120,7 @@
             <lib name="netcdf"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="visus"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
             <lib name="no-mesa"/>
