@@ -79,12 +79,14 @@
 #include <avtHSVColorComposeExpression.h>
 #include <avtIsNaNExpression.h>
 #include <avtKeyAggregatorExpression.h>
+#include <avtLambda2Expression.h>
 #include <avtLaplacianExpression.h>
 #include <avtLocalizedCompactnessExpression.h>
 #include <avtMinMaxExpression.h>
 #include <avtPerformColorTableLookupExpression.h>
 #include <avtProcessorIdExpression.h>
 #include <avtThreadIdExpression.h>
+#include <avtQCriterionExpression.h>
 #include <avtRecenterExpression.h>
 #include <avtRectilinearLaplacianExpression.h>
 #include <avtRelativeDifferenceExpression.h>
@@ -495,6 +497,12 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Gunther H. Weber, Tue May 13 10:42:05 PDT 2014
 //    Added array_sum expression.
 //
+//    Kevin Griffin, Mon Jul 28 17:25:56 PDT 2014
+//    Added q_criterion expression.
+//
+//    Kevin Griffin, Tue Aug 5 15:01:27 PDT 2014
+//    Added lambda2 expression.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -644,6 +652,10 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtBinExpression();
     if (functionName =="isnan")
         return new avtIsNaNExpression();
+    if (functionName == "q_criterion" || functionName == "q_crit")
+        return new avtQCriterionExpression();
+    if (functionName == "lambda2")
+       return new avtLambda2Expression();
 
     return NULL;
 }

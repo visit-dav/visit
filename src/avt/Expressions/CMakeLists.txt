@@ -72,6 +72,9 @@
 #    Gunther H. Weber, Tue May 13 10:40:56 PDT 2014
 #    Added array_sum.
 #
+#    Kevin Griffin, Tue Jul 29 10:08:40 PDT 2014
+#    Added q_criterion.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -159,6 +162,7 @@ General/avtGradientExpression.C
 General/avtHSVColorComposeExpression.C
 General/avtIsNaNExpression.C
 General/avtKeyAggregatorExpression.C
+General/avtLambda2Expression.C
 General/avtLaplacianExpression.C
 General/avtMIRvfExpression.C
 General/avtMagnitudeExpression.C
@@ -173,6 +177,7 @@ General/avtPerMaterialValueExpression.C
 General/avtPerformColorTableLookupExpression.C
 General/avtProcessorIdExpression.C
 General/avtThreadIdExpression.C
+General/avtQCriterionExpression.C
 General/avtRandomExpression.C
 General/avtRecenterExpression.C
 General/avtRectilinearLaplacianExpression.C
