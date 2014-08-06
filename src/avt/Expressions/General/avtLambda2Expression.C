@@ -103,7 +103,7 @@ avtLambda2Expression::~avtLambda2Expression()
 //  Arguments:
 //      matrix    3x3 matrix, row-major order
 //
-//  Returns:      The eigenvalues
+//  Returns:      Pointer to an array of eigenvalues
 //
 //  Programmer:   Kevin Griffin
 //  Creation:     Mon Aug  4 15:15:38 PDT 2014
@@ -180,7 +180,7 @@ avtLambda2Expression::Lambda2(const double * du, const double * dv, const double
     
     // Clean-Up
     delete [] matrix;
-    delete lambda;
+    delete [] lambda;
     
     return l2;
 }
