@@ -152,5 +152,5 @@ PoincareGeneralPluginInfo::EnabledByDefault() const
 const char *
 PoincareGeneralPluginInfo::GetCategoryName() const
 {
-    return "Analysis";
+    return "Integral Curves";
 }

@@ -152,5 +152,5 @@ LCSGeneralPluginInfo::EnabledByDefault() const
 const char *
 LCSGeneralPluginInfo::GetCategoryName() const
 {
-    return "Analysis";
+    return "Integral Curves";
 }

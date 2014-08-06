@@ -152,5 +152,5 @@ IntegralCurveGeneralPluginInfo::EnabledByDefault() const
 const char *
 IntegralCurveGeneralPluginInfo::GetCategoryName() const
 {
-    return "Analysis";
+    return "Integral Curves";
 }
