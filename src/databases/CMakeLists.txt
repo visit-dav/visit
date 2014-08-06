@@ -376,6 +376,7 @@ lata
 volimage
 unv
 ${XDBPLUGIN}
+IDX
 )
 
 IF(TARGET vtkIOEnSight)
