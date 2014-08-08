@@ -79,6 +79,9 @@
 #include <sstream>
 #include <vector>
 
+#include <cstring>
+#include <cerrno>
+
 #ifdef _WIN32
 #define FSEEK _fseeki64
 #define strcasecmp stricmp
@@ -440,7 +443,11 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         z->SetTuple1(dz-1, z_stop);
     }
 
-    int dims[3] = { dx, dy, dz };
+    int dims[3] = {
+        static_cast<int>(dx),
+        static_cast<int>(dy),
+        static_cast<int>(dz)
+        };
     rv->SetDimensions(dims);
     rv->SetXCoordinates(x);
     rv->SetYCoordinates(y);
@@ -527,6 +534,11 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
          {
              // Read in a line of data in x.
              size_t nread = fread((void *)ptr, sizeof(T), nxelem, fp);
+             if (nread != nxelem)
+             {
+                 int eno = errno;
+                 debug1 << "read failed " << strerror(eno) << endl;
+             }
              ptr += nread;
 
              // Seek to the next line
