@@ -110,6 +110,11 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sactiveDiscrete = \"%s\"\n", prefix, atts->GetActiveDiscrete().c_str());
     str += tmpStr;
+    if(atts->GetGroupingFlag())
+        SNPRINTF(tmpStr, 1000, "%sgroupingFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sgroupingFlag = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -334,6 +339,30 @@ ColorTableAttributes_GetActiveDiscrete(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ColorTableAttributes_SetGroupingFlag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the groupingFlag in the object.
+    obj->data->SetGroupingFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetGroupingFlag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetGroupingFlag()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
@@ -349,6 +378,8 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"GetActiveContinuous", ColorTableAttributes_GetActiveContinuous, METH_VARARGS},
     {"SetActiveDiscrete", ColorTableAttributes_SetActiveDiscrete, METH_VARARGS},
     {"GetActiveDiscrete", ColorTableAttributes_GetActiveDiscrete, METH_VARARGS},
+    {"SetGroupingFlag", ColorTableAttributes_SetGroupingFlag, METH_VARARGS},
+    {"GetGroupingFlag", ColorTableAttributes_GetGroupingFlag, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -385,6 +416,8 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
         return ColorTableAttributes_GetActiveContinuous(self, NULL);
     if(strcmp(name, "activeDiscrete") == 0)
         return ColorTableAttributes_GetActiveDiscrete(self, NULL);
+    if(strcmp(name, "groupingFlag") == 0)
+        return ColorTableAttributes_GetGroupingFlag(self, NULL);
 
     return Py_FindMethod(PyColorTableAttributes_methods, self, name);
 }
@@ -405,6 +438,8 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorTableAttributes_SetActiveContinuous(self, tuple);
     else if(strcmp(name, "activeDiscrete") == 0)
         obj = ColorTableAttributes_SetActiveDiscrete(self, tuple);
+    else if(strcmp(name, "groupingFlag") == 0)
+        obj = ColorTableAttributes_SetGroupingFlag(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -36,63 +36,89 @@
 *
 *****************************************************************************/
 
-#ifndef COLORTABLE_MANAGER_H
-#define COLORTABLE_MANAGER_H
-#include <ConfigManager.h>
-#include <ColorControlPointList.h>
-#include <ColorTableAttributes.h>
-#include <string>
+#ifndef QVIS_NODEFAULT_COLORTABLE_BUTTON_H
+#define QVIS_NODEFAULT_COLORTABLE_BUTTON_H
+#include <winutil_exports.h>
+#include <QPushButton>
 
-class DataNode;
+// Forward declarations.
+class QAction;
+class QActionGroup;
+class QMenu;
+class ColorTableAttributes;
 
 // ****************************************************************************
-// Class: ColorTableManager
+// Class: QvisNoDefaultColorTableButton
 //
 // Purpose:
-//   Reads and writes ColorControlPointLists to/from files.
+//   This is a type of push button that is aware of the different color tables
+//   that can be used for plots.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Jul 3 17:49:53 PST 2003
+// Creation:   Wed Jun 20 12:37:24 PDT 2001
 //
 // Modifications:
-//   Brad Whitlock, Thu Nov 13 11:51:47 PDT 2003
-//   I changed how messages are passed out of Export.
+//   Brad Whitlock, Thu Feb 14 13:37:41 PST 2002
+//   Added a counter.
 //
-//   Brad Whitlock, Thu Feb 17 15:54:26 PST 2005
-//   Made WriteConfigFile return bool.
+//   Brad Whitlock, Tue Feb 20 11:47:37 PDT 2007
+//   Changed API.
 //
-//   Katahleen Biagas, Fri Aug 8 08:36:27 PDT 2014
-//   Add 'importingPersonal' flag to distinguish between a users's color tables
-//   and the 'extra' standard tables that VisIt imports from resources.
+//   Brad Whitlock, Fri May  9 11:20:10 PDT 2008
+//   Qt 4.
+//
+//   Brad Whitlock, Wed Apr 25 16:06:56 PDT 2012
+//   Add color table icons.
+//
+//   Kathleen Biagas, Mon Aug  4 15:51:11 PDT 2014
+//   Change colorTableNames to a QSringList, add mappedColorTableNames
+//   to aid in grouping.  Add category argument to addColorTable.
 //
 // ****************************************************************************
 
-class STATE_API ColorTableManager : public ConfigManager
+class WINUTIL_API QvisNoDefaultColorTableButton : public QPushButton
 {
+    Q_OBJECT
+
+    typedef std::vector<QvisNoDefaultColorTableButton *> ColorTableButtonVector;
 public:
-    ColorTableManager();
-    virtual ~ColorTableManager();
+    QvisNoDefaultColorTableButton(QWidget *parent);
+    virtual ~QvisNoDefaultColorTableButton();
+    virtual QSize sizeHint() const;
+    virtual QSizePolicy sizePolicy () const;
 
-    bool              Export(const std::string &ctName,
-                             const ColorControlPointList &ccpl,
-                             std::string &message);
-    bool              ImportColorTables(ColorTableAttributes *cta);
+    void setColorTable(const QString &ctName);
+    const QString &getColorTable() const;
 
-    virtual bool      WriteConfigFile(const char *filename);
-    virtual DataNode *ReadConfigFile(const char *filename);
-
-    virtual bool      WriteConfigFile(std::ostream& out);
-    virtual DataNode *ReadConfigFile(std::istream& in);
-protected:
-    void              ImportColorTable(const std::string &ctFileName);
-    static void       ImportHelper(void *, const std::string &,
-                                   bool, bool, long);
+    // Methods to set the list of internal color tables.
+    static void clearAllColorTables();
+    static void addColorTable(const QString &ctName, const QString &ctCategory);
+    static void updateColorTableButtons();
+    static void setColorTableAttributes(ColorTableAttributes *cAtts);
+signals:
+    void selectedColorTable(const QString &ctName);
+private slots:
+    void popupPressed();
+    void colorTableSelected(QAction *);
 private:
-    ColorTableAttributes *ctAtts;
-    ColorControlPointList ccpl;
-    bool importingPersonal;
+    static int  getColorTableIndex(const QString &ctName);
+    static void regeneratePopupMenu();
+    static QIcon getIcon(const QString &);
+    static QIcon makeIcon(const QString &);
+
+    QString                        colorTable;
+
+    static int                     numInstances;
+    static QMenu                  *colorTableMenu;
+    static QActionGroup           *colorTableMenuActionGroup;
+    static bool                    popupHasEntries;
+    static ColorTableButtonVector  buttons;
+
+    static QStringList             colorTableNames;
+    static QMap<QString, QStringList> mappedColorTableNames;
+    static ColorTableAttributes   *colorTableAtts;
 };
 
 #endif

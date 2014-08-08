@@ -528,6 +528,9 @@ reverse_alphas(unsigned char *a, int na)
 //   Brad Whitlock, Fri Apr 27 15:00:48 PDT 2012
 //   Change smoothing method.
 //
+//   Kathleen Biagas, Fri Aug 8 08:27:44 PDT 2014
+//   Add CategoryName.
+//
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
@@ -574,6 +577,7 @@ avtColorTables::avtColorTables()
         ccpl.SetSmoothing(ColorControlPointList::SmoothingMethod(predef_ct_smooth[i]));
         ccpl.SetEqualSpacingFlag(predef_ct_equal[i] == 1);
         ccpl.SetDiscreteFlag(predef_ct_discrete[i] == 1);
+        ccpl.SetCategoryName("Standard");
         ctAtts->AddColorTable(predef_ct_names[i], ccpl);
     }
 

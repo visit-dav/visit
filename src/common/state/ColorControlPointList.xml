@@ -16,8 +16,10 @@
     <Field name="discreteFlag" label="discreteFlag" type="bool">
       false
     </Field>
-    <Field name="externalFlag" label="externalFlag" type="bool">
+    <Field name="externalFlag" label="externalFlag" type="bool" internal="true" persistent="false">
       false
+    </Field>
+    <Field name="categoryName" label="categoryName" type="string">
     </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">
     </Function>
@@ -26,6 +28,8 @@
     <Function name="GetColors" user="true" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="CompactCreateNode" user="true" member="true">
     </Function>

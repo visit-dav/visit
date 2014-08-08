@@ -55,12 +55,14 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QListWidget;
+class QTreeWidget;
+class QTreeWidgetItem;
 class QSlider;
 class QSpinBox;
 class QvisSpectrumBar;
 class QvisColorSelectionWidget;
 class QvisColorGridWidget;
+class QvisNoDefaultColorTableButton;
 
 // ****************************************************************************
 // Class: QvisColorTableWindow
@@ -102,6 +104,9 @@ class QvisColorGridWidget;
 //
 //   Brad Whitlock, Fri Apr 27 15:03:10 PDT 2012
 //   Add smoothing method instead of a check box for it.
+//
+//   Kathleen Biagas, Fri Aug 8 08:50:31 PDT 2014
+//   Added support for grouping color tables according to a category name.
 //
 // ****************************************************************************
 
@@ -159,30 +164,34 @@ private slots:
     void addColorTable();
     void deleteColorTable();
     void exportColorTable();
-    void highlightColorTable(int index);
+    void highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*);
     void showIndexHintsToggled(bool val);
+    void groupingToggled(bool val);
+    void ApplyCategoryChange();
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
+    QString                  categoryName;
     int                      popupMode;
     bool                     sliding;
 
     // Widgets and layouts.
     QGroupBox                *activeGroup;
-    QComboBox                *activeContinuous;
+    QvisNoDefaultColorTableButton *activeContinuous;
     QLabel                   *activeContinuousLabel;
-    QComboBox                *activeDiscrete;
+    QvisNoDefaultColorTableButton *activeDiscrete;
     QLabel                   *activeDiscreteLabel;
+    QCheckBox                *groupToggle;
 
-    QPushButton              *applyButton;
-    QPushButton              *dismissButton;
     QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
     QLineEdit                *nameLineEdit;
-    QListWidget              *nameListBox;
+    QTreeWidget              *nameListBox;
+    QLabel                   *categoryLabel;
+    QLineEdit                *categoryLineEdit;
 
     QGroupBox                *colorWidgetGroup;
 
@@ -203,7 +212,6 @@ private:
 
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;
-    QString                  activeCT;
 };
 
 #endif

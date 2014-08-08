@@ -37,8 +37,10 @@
 *****************************************************************************/
 
 #include <ColorTableObserver.h>
+#include <ColorControlPointList.h>
 #include <ColorTableAttributes.h>
 #include <QvisColorTableButton.h>
+#include <QvisNoDefaultColorTableButton.h>
 
 // ****************************************************************************
 // Method: ColorTableObserver::ColorTableObserver
@@ -94,6 +96,10 @@ ColorTableObserver::~ColorTableObserver()
 //   Brad Whitlock, Mon Dec 17 11:06:50 PST 2007
 //   Made it use ids.
 //
+//   Kathleen Biagas, Mon Aug  4 15:48:31 PDT 2014
+//   Send category name when ading a color table, change in groupingFlag means
+//   the buttons need a change.
+//
 // ****************************************************************************
 
 void
@@ -110,20 +116,27 @@ ColorTableObserver::Update(Subject *)
     // If the names or the color table attributes are changing, then we
     // have to update the widget.
     if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
-       colorAtts->IsSelected(ColorTableAttributes::ID_colorTables))
+       colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
+       colorAtts->IsSelected(ColorTableAttributes::ID_groupingFlag))
     {
         // Clear all of the color tables.
         QvisColorTableButton::setColorTableAttributes(colorAtts);
         QvisColorTableButton::clearAllColorTables();
+        QvisNoDefaultColorTableButton::setColorTableAttributes(colorAtts);
+        QvisNoDefaultColorTableButton::clearAllColorTables();
 
-        int nNames = colorAtts->GetNames().size();
+        int nNames = colorAtts->GetNumColorTables();
         const stringVector &names = colorAtts->GetNames();
         for(int i = 0; i < nNames; ++i)
         {
-            QvisColorTableButton::addColorTable(names[i].c_str());
+            QvisColorTableButton::addColorTable(names[i].c_str(),
+              colorAtts->GetColorTables(i).GetCategoryName().c_str());
+            QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
+              colorAtts->GetColorTables(i).GetCategoryName().c_str());
         }
 
         // Update all of the QvisColorTableButton widgets.
         QvisColorTableButton::updateColorTableButtons();
+        QvisNoDefaultColorTableButton::updateColorTableButtons();
     }
 }

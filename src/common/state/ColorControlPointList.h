@@ -95,20 +95,24 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectControlPoints();
+    void SelectCategoryName();
 
     // Property setting methods
     void SetSmoothing(SmoothingMethod smoothing_);
     void SetEqualSpacingFlag(bool equalSpacingFlag_);
     void SetDiscreteFlag(bool discreteFlag_);
     void SetExternalFlag(bool externalFlag_);
+    void SetCategoryName(const std::string &categoryName_);
 
     // Property getting methods
     const AttributeGroupVector &GetControlPoints() const;
           AttributeGroupVector &GetControlPoints();
-    SmoothingMethod GetSmoothing() const;
-    bool GetEqualSpacingFlag() const;
-    bool GetDiscreteFlag() const;
-    bool GetExternalFlag() const;
+    SmoothingMethod   GetSmoothing() const;
+    bool              GetEqualSpacingFlag() const;
+    bool              GetDiscreteFlag() const;
+    bool              GetExternalFlag() const;
+    const std::string &GetCategoryName() const;
+          std::string &GetCategoryName();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -152,6 +156,7 @@ public:
         ID_equalSpacingFlag,
         ID_discreteFlag,
         ID_externalFlag,
+        ID_categoryName,
         ID__LAST
     };
 
@@ -163,11 +168,12 @@ private:
     bool                 equalSpacingFlag;
     bool                 discreteFlag;
     bool                 externalFlag;
+    std::string          categoryName;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORCONTROLPOINTLIST_TMFS "a*ibbb"
+#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs"
 
 #endif

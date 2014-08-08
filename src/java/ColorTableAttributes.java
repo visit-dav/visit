@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 4;
+    private static int ColorTableAttributes_numAdditionalAtts = 5;
 
     public ColorTableAttributes()
     {
@@ -67,6 +67,7 @@ public class ColorTableAttributes extends AttributeSubject
         colorTables = new Vector();
         activeContinuous = new String("hot");
         activeDiscrete = new String("levels");
+        groupingFlag = false;
     }
 
     public ColorTableAttributes(int nMoreFields)
@@ -77,6 +78,7 @@ public class ColorTableAttributes extends AttributeSubject
         colorTables = new Vector();
         activeContinuous = new String("hot");
         activeDiscrete = new String("levels");
+        groupingFlag = false;
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)
@@ -99,6 +101,7 @@ public class ColorTableAttributes extends AttributeSubject
 
         activeContinuous = new String(obj.activeContinuous);
         activeDiscrete = new String(obj.activeDiscrete);
+        groupingFlag = obj.groupingFlag;
 
         SelectAll();
     }
@@ -139,7 +142,8 @@ public class ColorTableAttributes extends AttributeSubject
         return (names_equal &&
                 colorTables_equal &&
                 (activeContinuous.equals(obj.activeContinuous)) &&
-                (activeDiscrete.equals(obj.activeDiscrete)));
+                (activeDiscrete.equals(obj.activeDiscrete)) &&
+                (groupingFlag == obj.groupingFlag));
     }
 
     // Property setting methods
@@ -161,11 +165,18 @@ public class ColorTableAttributes extends AttributeSubject
         Select(3);
     }
 
+    public void SetGroupingFlag(boolean groupingFlag_)
+    {
+        groupingFlag = groupingFlag_;
+        Select(4);
+    }
+
     // Property getting methods
-    public Vector GetNames() { return names; }
-    public Vector GetColorTables() { return colorTables; }
-    public String GetActiveContinuous() { return activeContinuous; }
-    public String GetActiveDiscrete() { return activeDiscrete; }
+    public Vector  GetNames() { return names; }
+    public Vector  GetColorTables() { return colorTables; }
+    public String  GetActiveContinuous() { return activeContinuous; }
+    public String  GetActiveDiscrete() { return activeDiscrete; }
+    public boolean GetGroupingFlag() { return groupingFlag; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -185,6 +196,8 @@ public class ColorTableAttributes extends AttributeSubject
             buf.WriteString(activeContinuous);
         if(WriteSelect(3, buf))
             buf.WriteString(activeDiscrete);
+        if(WriteSelect(4, buf))
+            buf.WriteBool(groupingFlag);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -213,6 +226,9 @@ public class ColorTableAttributes extends AttributeSubject
         case 3:
             SetActiveDiscrete(buf.ReadString());
             break;
+        case 4:
+            SetGroupingFlag(buf.ReadBool());
+            break;
         }
     }
 
@@ -232,6 +248,7 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + "}\n";
         str = str + stringToString("activeContinuous", activeContinuous, indent) + "\n";
         str = str + stringToString("activeDiscrete", activeDiscrete, indent) + "\n";
+        str = str + boolToString("groupingFlag", groupingFlag, indent) + "\n";
         return str;
     }
 
@@ -365,9 +382,10 @@ public class ColorTableAttributes extends AttributeSubject
     }
 
     // Attributes
-    private Vector names; // vector of String objects
-    private Vector colorTables; // vector of ColorControlPointList objects
-    private String activeContinuous;
-    private String activeDiscrete;
+    private Vector  names; // vector of String objects
+    private Vector  colorTables; // vector of ColorControlPointList objects
+    private String  activeContinuous;
+    private String  activeDiscrete;
+    private boolean groupingFlag;
 }
 

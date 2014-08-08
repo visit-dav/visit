@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include <QvisColorTableButton.h>
+#include <QvisNoDefaultColorTableButton.h>
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
@@ -44,6 +44,7 @@
 #include <QMenu>
 #include <QPainter>
 #include <QPixmap>
+#include <DebugStream.h>
 
 #include <ColorTableAttributes.h>
 #include <ColorControlPointList.h>
@@ -55,20 +56,20 @@
 // Static members.
 //
 
-int           QvisColorTableButton::numInstances = 0;
-QMenu        *QvisColorTableButton::colorTableMenu = 0;
-QActionGroup *QvisColorTableButton::colorTableMenuActionGroup = 0;
-QvisColorTableButton::ColorTableButtonVector QvisColorTableButton::buttons;
-QStringList  QvisColorTableButton::colorTableNames;
-QMap<QString,QStringList>  QvisColorTableButton::mappedColorTableNames;
-bool        QvisColorTableButton::popupHasEntries = false;
-ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
+int           QvisNoDefaultColorTableButton::numInstances = 0;
+QMenu        *QvisNoDefaultColorTableButton::colorTableMenu = 0;
+QActionGroup *QvisNoDefaultColorTableButton::colorTableMenuActionGroup = 0;
+QvisNoDefaultColorTableButton::ColorTableButtonVector QvisNoDefaultColorTableButton::buttons;
+QStringList  QvisNoDefaultColorTableButton::colorTableNames;
+QMap<QString,QStringList>  QvisNoDefaultColorTableButton::mappedColorTableNames;
+bool        QvisNoDefaultColorTableButton::popupHasEntries = false;
+ColorTableAttributes *QvisNoDefaultColorTableButton::colorTableAtts = NULL;
 
 // ****************************************************************************
-// Method: QvisColorTableButton::QvisColorTableButton
+// Method: QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton
 //
 // Purpose: 
-//   Constructor for the QvisColorTableButton class.
+//   Constructor for the QvisNoDefaultColorTableButton class.
 //
 // Arguments:
 //   parent : The parent widget.
@@ -86,8 +87,8 @@ ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
 //
 // ****************************************************************************
 
-QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
-    QPushButton(parent), colorTable("Default")
+QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent) :
+    QPushButton(parent), colorTable("")
 {
     // Increase the instance count.
     ++numInstances;
@@ -98,8 +99,6 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
         colorTableMenuActionGroup = new QActionGroup(0);
 
         colorTableMenu = new QMenu(0);
-        colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
-        colorTableMenu->addSeparator();
     }
     buttons.push_back(this);
 
@@ -111,10 +110,10 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::~QvisColorTableButton
+// Method: QvisNoDefaultColorTableButton::~QvisNoDefaultColorTableButton
 //
 // Purpose: 
-//   This is the destructor for the QvisColorTableButton class.
+//   This is the destructor for the QvisNoDefaultColorTableButton class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jun 16 20:06:57 PST 2001
@@ -125,7 +124,7 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
 //
 // ****************************************************************************
 
-QvisColorTableButton::~QvisColorTableButton()
+QvisNoDefaultColorTableButton::~QvisNoDefaultColorTableButton()
 {
     // Decrease the instance count.
     --numInstances;
@@ -174,7 +173,7 @@ QvisColorTableButton::~QvisColorTableButton()
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::sizeHint
+// Method: QvisNoDefaultColorTableButton::sizeHint
 //
 // Purpose: 
 //   Returns the widget's preferred size.
@@ -189,13 +188,13 @@ QvisColorTableButton::~QvisColorTableButton()
 // ****************************************************************************
 
 QSize
-QvisColorTableButton::sizeHint() const
+QvisNoDefaultColorTableButton::sizeHint() const
 {
      return QSize(125, 40).expandedTo(QApplication::globalStrut());
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::sizePolicy
+// Method: QvisNoDefaultColorTableButton::sizePolicy
 //
 // Purpose: 
 //   Returns the widget's size policy -- how allows itself to be resized.
@@ -210,37 +209,14 @@ QvisColorTableButton::sizeHint() const
 // ****************************************************************************
 
 QSizePolicy
-QvisColorTableButton::sizePolicy() const
+QvisNoDefaultColorTableButton::sizePolicy() const
 {
     return QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
-// ****************************************************************************
-// Method: QvisColorTableButton::useDefaultColorTable
-//
-// Purpose: 
-//   Tells the widget to use the default color table.
-//
-// Programmer: Brad Whitlock
-// Creation:   Sat Jun 16 20:08:42 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
-//   Added a tooltip so long color table names can be put in a tooltip.
-//   
-// ****************************************************************************
-
-void
-QvisColorTableButton::useDefaultColorTable()
-{
-    colorTable = QString("Default");
-    setText(colorTable);
-    setToolTip(colorTable);
-    setIcon(QIcon());
-}
 
 // ****************************************************************************
-// Method: QvisColorTableButton::setColorTable
+// Method: QvisNoDefaultColorTableButton::setColorTable
 //
 // Purpose: 
 //   Tells the widget to use a specified color table.
@@ -261,8 +237,10 @@ QvisColorTableButton::useDefaultColorTable()
 // ****************************************************************************
 
 void
-QvisColorTableButton::setColorTable(const QString &ctName)
+QvisNoDefaultColorTableButton::setColorTable(const QString &ctName)
 {
+debug1 << "QvisNoDefaultColorTableButton::setColorTable" << endl;
+debug1 <<"    ctName: " << ctName.toStdString() << endl;
     if(getColorTableIndex(ctName) != -1)
     {
         colorTable = ctName;
@@ -272,15 +250,16 @@ QvisColorTableButton::setColorTable(const QString &ctName)
     }
     else
     {
-        QString def("Default");
-        setText(def);
-        setToolTip(def);
-        setIcon(QIcon());
+        colorTable = colorTableNames[0];
+        setText(colorTable);
+        setToolTip(colorTable);
+        setIcon(getIcon(colorTable));
     }
+debug1 << "QvisNoDefaultColorTableButton::setColorTable ... done" << endl;
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::getColorTable
+// Method: QvisNoDefaultColorTableButton::getColorTable
 //
 // Purpose: 
 //   Returns the name of the widget's color table.
@@ -295,7 +274,7 @@ QvisColorTableButton::setColorTable(const QString &ctName)
 // ****************************************************************************
 
 const QString &
-QvisColorTableButton::getColorTable() const
+QvisNoDefaultColorTableButton::getColorTable() const
 {
     return colorTable;
 }
@@ -305,7 +284,7 @@ QvisColorTableButton::getColorTable() const
 //
 
 // ****************************************************************************
-// Method: QvisColorTableButton::popupPressed
+// Method: QvisNoDefaultColorTableButton::popupPressed
 //
 // Purpose: 
 //   This is a Qt slot function that pops up the color table popup menu when
@@ -319,7 +298,7 @@ QvisColorTableButton::getColorTable() const
 // ****************************************************************************
 
 void
-QvisColorTableButton::popupPressed()
+QvisNoDefaultColorTableButton::popupPressed()
 {
     if(isDown() && colorTableMenu)
     {
@@ -368,7 +347,7 @@ QvisColorTableButton::popupPressed()
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::colorTableSelected
+// Method: QvisNoDefaultColorTableButton::colorTableSelected
 //
 // Purpose: 
 //   This is a Qt slot function that is called when a color table has been
@@ -394,56 +373,45 @@ QvisColorTableButton::popupPressed()
 // ****************************************************************************
 
 void
-QvisColorTableButton::colorTableSelected(QAction *action)
+QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 {
     int index = colorTableMenuActionGroup->actions().indexOf(action);
 
-    if(index == 0)
+    QString ctName;
+    if (!colorTableAtts->GetGroupingFlag() || mappedColorTableNames.count() == 1)
     {
-        QString def("Default");
-        emit selectedColorTable(true, def);
-        setText(def);
-        setToolTip(def);
-        setIcon(QIcon());
+        ctName = colorTableNames.at(index);
     }
     else
     {
-        QString ctName;
-        if (!colorTableAtts->GetGroupingFlag() || mappedColorTableNames.count() == 1)
+        int count=0, N=0;
+        QMap<QString, QStringList>::const_iterator iter;
+        for(iter = mappedColorTableNames.constBegin(); 
+            iter != mappedColorTableNames.constEnd();
+            ++iter)
         {
-            ctName = colorTableNames.at(index-1);
-        }
-        else
-        {
-            int count=1, N=0;
-            QMap<QString, QStringList>::const_iterator iter;
-            for(iter = mappedColorTableNames.constBegin();
-                iter != mappedColorTableNames.constEnd();
-                ++iter)
+            N = iter.value().size();
+            if(index < (count+N))
             {
-                N = iter.value().size();
-                if(index < (count+N))
-                {
-                    ctName = iter.value().at(index-count);
-                    break;
-                }
-                count += N;
+                ctName = iter.value().at(index-count);
+                break;
             }
+            count += N;
         }
-
-        emit selectedColorTable(false, ctName);
-        setText(ctName);
-        setIcon(getIcon(ctName));
-        setToolTip(ctName);
     }
+
+    emit selectedColorTable(ctName);
+    setText(ctName);
+    setIcon(getIcon(ctName));
+    setToolTip(ctName);
 }
 
 //
-// Static methods
+// Static methods...
 //
 
 // ****************************************************************************
-// Method: QvisColorTableButton::clearAllColorTables
+// Method: QvisNoDefaultColorTableButton::clearAllColorTables
 //
 // Purpose: 
 //   This is a static method to clear all of the known color tables.
@@ -452,11 +420,11 @@ QvisColorTableButton::colorTableSelected(QAction *action)
 // Creation:   Sat Jun 16 20:12:33 PST 2001
 //
 // Modifications:
-//
+//   
 // ****************************************************************************
 
 void
-QvisColorTableButton::clearAllColorTables()
+QvisNoDefaultColorTableButton::clearAllColorTables()
 {
     colorTableNames.clear();
     mappedColorTableNames.clear();
@@ -466,7 +434,7 @@ QvisColorTableButton::clearAllColorTables()
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::addColorTable
+// Method: QvisNoDefaultColorTableButton::addColorTable
 //
 // Purpose: 
 //   This is a static method that tells the widget about a new color table.
@@ -485,7 +453,7 @@ QvisColorTableButton::clearAllColorTables()
 // ****************************************************************************
 
 void
-QvisColorTableButton::addColorTable(const QString &ctName,
+QvisNoDefaultColorTableButton::addColorTable(const QString &ctName, 
     const QString &ctCategory)
 {
     colorTableNames.append(ctName);
@@ -495,11 +463,11 @@ QvisColorTableButton::addColorTable(const QString &ctName,
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::updateColorTableButtons
+// Method: QvisNoDefaultColorTableButton::updateColorTableButtons
 //
 // Purpose: 
 //   This is a static method that iterates through all instances of
-//   QvisColorTableButton to make sure that the color table that they use is
+//   QvisNoDefaultColorTableButton to make sure that the color table that they use is
 //   a valid color table. This will also be used to update their color table
 //   pixmaps -- someday.
 //
@@ -511,16 +479,14 @@ QvisColorTableButton::addColorTable(const QString &ctName,
 // ****************************************************************************
 
 void
-QvisColorTableButton::updateColorTableButtons()
+QvisNoDefaultColorTableButton::updateColorTableButtons()
 {
     for(size_t i = 0; i < buttons.size(); ++i)
     {
-        // If the color table that was being used by the button is no
-        // longer in the list, make it use the default.
-        if(getColorTableIndex(buttons[i]->getColorTable()) == -1)
+        if (getColorTableIndex(buttons[i]->getColorTable()) == -1)
         {
-            buttons[i]->setText("Default");
-            buttons[i]->setColorTable("Default");
+            buttons[i]->setText(colorTableNames[0]);
+            buttons[i]->setColorTable(colorTableNames[0]);
         }
         else
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
@@ -528,7 +494,7 @@ QvisColorTableButton::updateColorTableButtons()
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::getColorTableIndex
+// Method: QvisNoDefaultColorTableButton::getColorTableIndex
 //
 // Purpose: 
 //   Returns the index of the specified color table in the internal color
@@ -545,17 +511,17 @@ QvisColorTableButton::updateColorTableButtons()
 // Modifications:
 //   Kathleen Biagas, Mon Aug  4 15:59:18 PDT 2014
 //   Use the indexOf method for QStringList.
-//
+//   
 // ****************************************************************************
 
 int
-QvisColorTableButton::getColorTableIndex(const QString &ctName)
+QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName)
 {
     return colorTableNames.indexOf(ctName);
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::regeneratePopupMenu
+// Method: QvisNoDefaultColorTableButton::regeneratePopupMenu
 //
 // Purpose: 
 //   This method is called when the popup menu needs to be regenerated. This
@@ -577,7 +543,7 @@ QvisColorTableButton::getColorTableIndex(const QString &ctName)
 // ****************************************************************************
 
 void
-QvisColorTableButton::regeneratePopupMenu()
+QvisNoDefaultColorTableButton::regeneratePopupMenu()
 {
     // Remove all items and add the default.
     QList<QAction*> actions = colorTableMenuActionGroup->actions();
@@ -585,8 +551,6 @@ QvisColorTableButton::regeneratePopupMenu()
         colorTableMenuActionGroup->removeAction(actions[i]);
     colorTableMenu->clear();
 
-    colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
-    colorTableMenu->addSeparator();
     if (!colorTableAtts->GetGroupingFlag() || mappedColorTableNames.count() == 1)
     {
         // Add an item for each color table.
@@ -619,7 +583,7 @@ QvisColorTableButton::regeneratePopupMenu()
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::getIcon
+// Method: QvisNoDefaultColorTableButton::getIcon
 //
 // Purpose: 
 //   This method gets the existing icon or makes one if necessary.
@@ -632,7 +596,7 @@ QvisColorTableButton::regeneratePopupMenu()
 // ****************************************************************************
 
 QIcon
-QvisColorTableButton::getIcon(const QString &ctName)
+QvisNoDefaultColorTableButton::getIcon(const QString &ctName)
 {
     QList<QAction*> a = colorTableMenuActionGroup->actions();
     for(int i = 0; i < a.size(); ++i)
@@ -643,7 +607,7 @@ QvisColorTableButton::getIcon(const QString &ctName)
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::makeIcon
+// Method: QvisNoDefaultColorTableButton::makeIcon
 //
 // Purpose: 
 //   This method makes an icon from the color table definition.
@@ -656,7 +620,7 @@ QvisColorTableButton::getIcon(const QString &ctName)
 // ****************************************************************************
 
 QIcon
-QvisColorTableButton::makeIcon(const QString &ctName)
+QvisNoDefaultColorTableButton::makeIcon(const QString &ctName)
 {
     QIcon icon;
     const ColorControlPointList *cTable = NULL;
@@ -681,7 +645,7 @@ QvisColorTableButton::makeIcon(const QString &ctName)
 }
 
 // ****************************************************************************
-// Method: QvisColorTableButton::setColorTableAttributes
+// Method: QvisNoDefaultColorTableButton::setColorTableAttributes
 //
 // Purpose: 
 //   This method sets the color table attributes.
@@ -694,7 +658,7 @@ QvisColorTableButton::makeIcon(const QString &ctName)
 // ****************************************************************************
 
 void
-QvisColorTableButton::setColorTableAttributes(ColorTableAttributes *cAtts)
+QvisNoDefaultColorTableButton::setColorTableAttributes(ColorTableAttributes *cAtts)
 {
     colorTableAtts = cAtts;
 }
