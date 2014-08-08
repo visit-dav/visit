@@ -47,7 +47,10 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QListWidget>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QTreeWidgetItemIterator>
+#include <QHeaderView>
 #include <QRadioButton>
 #include <QSlider>
 #include <QSpinBox>
@@ -56,6 +59,7 @@
 #include <QvisSpectrumBar.h>
 #include <QvisColorSelectionWidget.h>
 #include <QvisColorGridWidget.h>
+#include <QvisNoDefaultColorTableButton.h>
 #include <ColorControlPoint.h>
 #include <ColorControlPointList.h>
 #include <DataNode.h>
@@ -105,7 +109,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(colorAtts_, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton, false),
-    currentColorTable("none"), ctObserver(colorAtts_)
+    currentColorTable("none"), categoryName("none"), ctObserver(colorAtts_)
 {
     colorAtts = colorAtts_;
     colorCycle = 0;
@@ -176,6 +180,10 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Brad Whitlock, Fri Apr 27 15:07:13 PDT 2012
 //   I changed smoothing method to a combo box.
 //
+//   Kathleen Biagas, Mon Aug  4 15:45:44 PDT 2014
+//   Added a groupToggle. Change discrete/active buttons to color table
+//   buttons.
+//
 // ****************************************************************************
 
 void
@@ -192,20 +200,24 @@ QvisColorTableWindow::CreateWindowContents()
     innerActiveTopLayout->addLayout(innerActiveLayout);
     innerActiveLayout->setColumnMinimumWidth(1, 10);
 
-    activeContinuous = new QComboBox(activeGroup);
-    connect(activeContinuous, SIGNAL(activated(const QString &)),
+    activeContinuous = new QvisNoDefaultColorTableButton(activeGroup);
+    connect(activeContinuous, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setActiveContinuous(const QString &)));
     innerActiveLayout->addWidget(activeContinuous, 0, 1);
     activeContinuousLabel = new QLabel(tr("Continuous"),activeGroup);
     innerActiveLayout->addWidget(activeContinuousLabel, 0, 0);
 
-    activeDiscrete = new QComboBox(activeGroup);
-    connect(activeDiscrete, SIGNAL(activated(const QString &)),
+    activeDiscrete = new QvisNoDefaultColorTableButton(activeGroup);
+    connect(activeDiscrete, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setActiveDiscrete(const QString &)));
     innerActiveLayout->addWidget(activeDiscrete, 1, 1);
     activeDiscreteLabel = new QLabel(tr("Discrete"),activeGroup);
     innerActiveLayout->addWidget(activeDiscreteLabel, 1, 0);
 
+    groupToggle = new QCheckBox(tr("Group tables by Category"), activeGroup);
+    connect(groupToggle, SIGNAL(toggled(bool)),
+            this, SLOT(groupingToggled(bool)));
+    innerActiveLayout->addWidget(groupToggle, 2, 1);
 
     // Create the widget group that contains all of the color table
     // management stuff.
@@ -230,16 +242,24 @@ QvisColorTableWindow::CreateWindowContents()
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
     mgLayout->addWidget(exportButton, 2, 0);
 
-    nameListBox = new QListWidget(colorTableWidgetGroup);
+    nameListBox = new QTreeWidget(colorTableWidgetGroup);
     nameListBox->setMinimumHeight(100);
-    connect(nameListBox, SIGNAL(currentRowChanged(int)),
-            this, SLOT(highlightColorTable(int)));
+    nameListBox->setColumnCount(1);
+    // don't want the header
+    nameListBox->header()->close();
+    connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
+            this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
     mgLayout->addWidget(nameListBox, 0, 1, 3, 1);
 
     QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     mgLayout->addWidget(colorTableName, 3, 0, Qt::AlignRight);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(nameLineEdit, 3, 1);
+
+    categoryLabel = new QLabel(tr("Category"), colorTableWidgetGroup);
+    mgLayout->addWidget(categoryLabel, 4, 0, Qt::AlignRight);
+    categoryLineEdit = new QLineEdit(colorTableWidgetGroup);
+    mgLayout->addWidget(categoryLineEdit, 4, 1);
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
@@ -521,6 +541,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   Jeremy Meredith, Wed Dec 31 16:01:40 EST 2008
 //   Avoid use of temporaries that was referencing freed memory.
 //
+//   Kathleen Biagas, Mon Aug  4 15:45:44 PDT 2014
+//   Handle new groupingFlag, change in active/discrete button types.
+//
 // ****************************************************************************
 
 void
@@ -584,9 +607,21 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             updateColorPoints = true;
             break;
         case ColorTableAttributes::ID_activeContinuous:
-            updateNames = true;
+            activeContinuous->blockSignals(true);
+            activeContinuous->setColorTable(colorAtts->GetActiveContinuous().c_str());
+            activeContinuous->blockSignals(false);
             break;
         case ColorTableAttributes::ID_activeDiscrete:
+            activeDiscrete->blockSignals(true);
+            activeDiscrete->setColorTable(colorAtts->GetActiveDiscrete().c_str());
+            activeDiscrete->blockSignals(false);
+            break;
+        case ColorTableAttributes::ID_groupingFlag:
+            groupToggle->blockSignals(true);
+            groupToggle->setChecked(colorAtts->GetGroupingFlag());
+            categoryLabel->setVisible(colorAtts->GetGroupingFlag());
+            categoryLineEdit->setVisible(colorAtts->GetGroupingFlag());
+            groupToggle->blockSignals(false);
             updateNames = true;
             break;
         }
@@ -695,43 +730,93 @@ QvisColorTableWindow::UpdateEditor()
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Mon Aug  4 15:46:54 PDT 2014
+//   Handle grouping if requested.
+//
 // ****************************************************************************
 
 void
 QvisColorTableWindow::UpdateNames()
 {
     nameListBox->blockSignals(true);
-    activeContinuous->blockSignals(true);
     activeDiscrete->blockSignals(true);
+    activeContinuous->blockSignals(true);
 
     // Clear out the existing names.
     nameListBox->clear();
-    activeContinuous->clear();
-    activeDiscrete->clear();
 
-    // Put all of the color table names into the list box.
-    int i;
-    QString activeContinuousName(colorAtts->GetActiveContinuous().c_str());
-    QString activeDiscreteName(colorAtts->GetActiveDiscrete().c_str());
-    for(i = 0; i < colorAtts->GetNumColorTables(); ++i)
+    // Put all of the color table names into the tree.
+    bool doSimpleTree = !groupToggle->isChecked();
+    if(!doSimpleTree)
     {
-        QString item(colorAtts->GetNames()[i].c_str());
-        nameListBox->addItem(item);
-        activeContinuous->addItem(item);
-        activeDiscrete->addItem(item);
-        if(item == activeContinuousName)
-            activeContinuous->setCurrentIndex(i);
-        if(item == activeDiscreteName)
-            activeDiscrete->setCurrentIndex(i);
+        nameListBox->setRootIsDecorated(true);
+        QMap<QString, QStringList> mappedCT;
+        for (int i = 0; i < colorAtts->GetNumColorTables(); ++i)
+        {
+            QString ctCategory(colorAtts->GetColorTables(i).GetCategoryName().c_str());
+            QString item(colorAtts->GetNames()[i].c_str());
+            mappedCT[ctCategory].append(item);
+            mappedCT[ctCategory].sort();
+        }
+        if (mappedCT.count() > 1)
+        {
+            // use hierarchical tree if there is more than 1 category
+            QMap<QString, QStringList>::const_iterator iter = mappedCT.constBegin();
+            while (iter != mappedCT.constEnd())
+            {
+                QTreeWidgetItem *treeGroup = new QTreeWidgetItem(nameListBox);
+                treeGroup->setText(0, iter.key());
+                QStringList ctNames = iter.value();
+
+                // Add an item for each color table.
+                for(int i = 0; i < ctNames.size(); ++i)
+                {
+                    QTreeWidgetItem *treeItem = new QTreeWidgetItem();
+                    treeItem->setText(0, ctNames.at(i));
+                    treeGroup->addChild(treeItem);
+                }
+                nameListBox->addTopLevelItem(treeGroup);
+                ++iter;
+            }
+        }
+        else
+        {
+            // revert to undecorated tree if there is only 1 category.
+            doSimpleTree = true;
+        }
+        mappedCT.clear();
+    }
+
+    if(doSimpleTree)
+    {
+        nameListBox->setRootIsDecorated(false);
+        for(int i = 0; i < colorAtts->GetNumColorTables(); ++i)
+        {
+            QString item(colorAtts->GetNames()[i].c_str());
+            QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+            treeItem->setText(0, item);
+            nameListBox->addTopLevelItem(treeItem);
+        }
     }
 
     // Select the active color table.
     int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
     if(index >= 0)
     {
-        nameListBox->setCurrentRow(index);
+        QTreeWidgetItemIterator it(nameListBox);
+        while(*it)
+        {
+            if ((*it)->text(0) == currentColorTable)
+            {
+                nameListBox->setCurrentItem(*it);
+                (*it)->setSelected(true);
+                 break;
+            }
+            ++it;
+        }
         // Set the text of the active color table into the name line edit.
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
+        categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
     }
 
     nameListBox->blockSignals(false);
@@ -1237,13 +1322,14 @@ QvisColorTableWindow::GetNextColor()
 //   Brad Whitlock, Fri Apr 27 15:12:21 PDT 2012
 //   Added other smoothing types.
 //
+//   Kathleen Biagas, Fri Aug 8 08:43:49 PDT 2014
+//   Handle category.
+//
 // ****************************************************************************
 
 void
 QvisColorTableWindow::GetCurrentValues(int which_widget)
 {
-    int i;
-
     // Get the rgb colors from the spectrumbar and put them into the state
     // object's rgbaColors array.
     if(which_widget == 0 || which_widget == -1)
@@ -1266,7 +1352,7 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
         }
 
         cpts.SetEqualSpacingFlag(spectrumBar->equalSpacing());
-        for(i = 0; i < spectrumBar->numControlPoints(); ++i)
+        for(int i = 0; i < spectrumBar->numControlPoints(); ++i)
         {
             QColor c(spectrumBar->controlPointColor(i));
             float  pos = spectrumBar->controlPointPosition(i);
@@ -1280,6 +1366,12 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             pt.SetColors(ptColors);
             pt.SetPosition(pos);
             cpts.AddControlPoints(pt);
+        }
+        QString temp = categoryLineEdit->displayText().simplified();
+        if(!temp.isEmpty())
+        {
+            categoryName = temp;
+            cpts.SetCategoryName(categoryName.toStdString());
         }
 
         // Get a pointer to the active color table's control points.
@@ -1302,6 +1394,18 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             currentColorTable = temp;
         }
     }
+
+    // Get the category name.
+    //
+    if(which_widget == 2 || which_widget == -1)
+    {
+        QString temp = categoryLineEdit->displayText().simplified();
+        bool okay = !temp.isEmpty();
+        if(okay)
+        {
+            categoryName = temp;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -1314,7 +1418,9 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
 // Creation:   Mon Jun 11 14:00:18 PST 2001
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
+//    Handle category.
+//
 // ****************************************************************************
 
 void
@@ -1323,6 +1429,7 @@ QvisColorTableWindow::Apply(bool ignore)
     if(AutoUpdate() || ignore)
     {
         // Send the color table definitions to the viewer.
+        ApplyCategoryChange();
         GetCurrentValues(1);
         colorAtts->Notify();
 
@@ -1609,6 +1716,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 //   Brad Whitlock, Fri Apr 27 15:15:12 PDT 2012
 //   Add other smoothing types.
 //
+//    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
+//    Handle category.
+//
 // ****************************************************************************
 
 void
@@ -1622,11 +1732,14 @@ QvisColorTableWindow::addColorTable()
     GetCurrentValues(1);
     if(colorAtts->GetColorTableIndex(currentColorTable.toStdString()) < 0)
     {
+        // make sure we have the category name
+        GetCurrentValues(2);
         // Add the new colortable to colorAtts.
         if(ccpl)
         {
             // Copy the active color table into the new color table.
             ColorControlPointList cpts(*ccpl);
+            cpts.SetCategoryName(categoryName.toStdString());
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -1642,6 +1755,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetSmoothing(ColorControlPointList::Linear);
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
+            cpts.SetCategoryName(categoryName.toStdString());
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 
@@ -1672,6 +1786,9 @@ QvisColorTableWindow::addColorTable()
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
 //
+//    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
+//    nameListBox object is now a QTreeWidget.
+//
 // ****************************************************************************
 
 void
@@ -1679,12 +1796,9 @@ QvisColorTableWindow::deleteColorTable()
 {
     // Get the index of the currently selected color table and tell the viewer
     // to remove it from the list of color tables.
-    int index = nameListBox->currentRow();
-    if(index >= 0 && index < colorAtts->GetNumColorTables())
-    {
-        std::string ctName(colorAtts->GetNames()[index]);
-        GetViewerMethods()->DeleteColorTable(ctName.c_str());
-    }
+    std::string ctName = nameListBox->currentItem()->text(0).toStdString();
+
+    GetViewerMethods()->DeleteColorTable(ctName.c_str());
 }
 
 // ****************************************************************************
@@ -1710,16 +1824,25 @@ QvisColorTableWindow::deleteColorTable()
 //   Brad Whitlock, Thu Nov 21 14:25:25 PST 2002
 //   I rewrote the method.
 //
+//    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
+//    Rewritten to reflect changes in how the names are stored.
+//
 // ****************************************************************************
 
 void
-QvisColorTableWindow::highlightColorTable(int index)
+QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
+    QTreeWidgetItem *)
 {
-    // Set the active color table to the one that is currently highlighted.
-    if(index < colorAtts->GetNumColorTables())
+    // only react to selection of leaves in the tree
+    if (current->childCount() == 0)
     {
-        currentColorTable = QString(colorAtts->GetNames()[index].c_str());
+        currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
+        if (groupToggle->isChecked())
+        {
+            int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
+            categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
+        }
         UpdateEditor();
     }
 }
@@ -2170,3 +2293,58 @@ QvisColorTableWindow::exportColorTable()
 {
     GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
 }
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::groupingToggled
+//
+// Purpose: 
+//   This is a Qt slot function that tells modifies the grouping.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 8, 2013 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisColorTableWindow::groupingToggled(bool val)
+{
+    colorAtts->SetGroupingFlag(val);
+    Apply(true);
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::ApplyCategoryChange
+//
+// Purpose: 
+//   Ensures the color control points use the correct category.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 8, 2013 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisColorTableWindow::ApplyCategoryChange()
+{
+    GetCurrentValues(2);
+    if(!categoryName.isEmpty())
+    {
+        ColorControlPointList *ccpl = GetActiveColorControlPoints();
+        if(ccpl)
+        {
+            if (categoryName.toStdString() != ccpl->GetCategoryName())
+            {
+                SetUpdate(false);
+                ccpl->SetCategoryName(categoryName.toStdString());
+                colorAtts->Notify();
+            }
+        }
+    }
+}
+

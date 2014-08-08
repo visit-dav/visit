@@ -62,6 +62,7 @@
 #include <ClientMethod.h>
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
+#include <ColorControlPointList.h>
 #include <ColorTableAttributes.h>
 #include <ConstructDataBinningAttributes.h>
 #include <DatabaseCorrelation.h>
@@ -158,6 +159,7 @@
 #include <QApplication>
 #include <QSocketNotifier>
 #include <QvisColorTableButton.h>
+#include <QvisNoDefaultColorTableButton.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <WindowMetrics.h>
@@ -10335,6 +10337,10 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
+//
+//   Kathleen Biagas, Mon Aug  4 15:42:48 PDT 2014
+//   Send category name when adding color table.
+//
 // ****************************************************************************
 
 void
@@ -10356,16 +10362,22 @@ ViewerSubject::HandleColorTable()
         {
             // Clear all of the color tables.
             QvisColorTableButton::clearAllColorTables();
+            QvisNoDefaultColorTableButton::clearAllColorTables();
 
-            size_t nNames = colorAtts->GetNames().size();
+            int nNames = colorAtts->GetNumColorTables();
             const stringVector &names = colorAtts->GetNames();
-            for(size_t i = 0; i < nNames; ++i)
+            for(int i = 0; i < nNames; ++i)
             {
-                QvisColorTableButton::addColorTable(names[i].c_str());
+                QvisColorTableButton::addColorTable(names[i].c_str(), 
+                    colorAtts->GetColorTables(i).GetCategoryName().c_str());
+                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
+                    colorAtts->GetColorTables(i).GetCategoryName().c_str());
             }
 
             // Update all of the QvisColorTableButton widgets.
             QvisColorTableButton::updateColorTableButtons();
+            // Update all of the QvisNoDefaultColorTableButton widgets.
+            QvisNoDefaultColorTableButton::updateColorTableButtons();
         }
     }
     CATCHALL

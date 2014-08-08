@@ -72,6 +72,10 @@ class ColorTableAttributes;
 //   Brad Whitlock, Wed Apr 25 16:06:56 PDT 2012
 //   Add color table icons.
 //
+//   Kathleen Biagas, Mon Aug  4 15:51:11 PDT 2014
+//   Change colorTableNames to a QSringList, add mappedColorTableNames
+//   to aid in grouping.  Add category argument to addColorTable.
+//
 // ****************************************************************************
 
 class WINUTIL_API QvisColorTableButton : public QPushButton
@@ -91,7 +95,7 @@ public:
 
     // Methods to set the list of internal color tables.
     static void clearAllColorTables();
-    static void addColorTable(const QString &ctName);
+    static void addColorTable(const QString &ctName, const QString &ctCategory);
     static void updateColorTableButtons();
     static void setColorTableAttributes(ColorTableAttributes *cAtts);
 signals:
@@ -113,8 +117,8 @@ private:
     static bool                    popupHasEntries;
     static ColorTableButtonVector  buttons;
 
-    static int                     numColorTableNames;
-    static QString                *colorTableNames;
+    static QStringList             colorTableNames;
+    static QMap<QString, QStringList> mappedColorTableNames;
     static ColorTableAttributes   *colorTableAtts;
 };
 

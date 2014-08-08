@@ -186,7 +186,6 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 }
 
 
-
 Function:  RemoveColorTable1
 Declaration: void RemoveColorTable(const std::string &name);
 Definition:
@@ -338,6 +337,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     DataNode *node = new DataNode("ColorTableAttributes");
     node->AddNode(new DataNode("activeContinuous", activeContinuous));
     node->AddNode(new DataNode("activeDiscrete", activeDiscrete));
+    node->AddNode(new DataNode("groupingFlag", groupingFlag));
 
     // Add each color table specially.
     char tmp[100];
@@ -358,6 +358,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
                 ctNode->AddNode(new DataNode("smoothing", ccpl.GetSmoothing()));
             if(!ccpl.FieldsEqual(ColorControlPointList::ID_discreteFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_categoryName, &defaultObject))
+                ctNode->AddNode(new DataNode("category", ccpl.GetCategoryName()));
 
             // Add the control points to the vector that we'll save out.
             floatVector fvec;
@@ -462,6 +464,11 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
                     if((tmpNode = node->GetNode("discrete")) != 0)
                         ccpl.SetDiscreteFlag(tmpNode->AsBool());
 
+                    if((tmpNode = node->GetNode("category")) != 0)
+                        ccpl.SetCategoryName(tmpNode->AsString());
+                    else
+                        ccpl.SetCategoryName("Standard");
+
                     // Set the color control points.
                     floatVector fvec = pointNode->AsFloatVector();
                     int nvalsPerColor = 4;
@@ -496,6 +503,9 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("activeDiscrete")) != 0)
         SetActiveDiscrete(node->AsString());
+
+    if((node = searchNode->GetNode("groupingFlag")) != 0)
+        SetGroupingFlag(node->AsBool());
 
     // For older version compatibility...
     if((node = searchNode->GetNode("activeColorTable")) != 0)

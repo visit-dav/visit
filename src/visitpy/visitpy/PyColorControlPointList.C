@@ -119,10 +119,7 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     else
         SNPRINTF(tmpStr, 1000, "%sdiscreteFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetExternalFlag())
-        SNPRINTF(tmpStr, 1000, "%sexternalFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sexternalFlag = 0\n", prefix);
+    SNPRINTF(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
     return str;
 }
@@ -333,26 +330,26 @@ ColorControlPointList_GetDiscreteFlag(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorControlPointList_SetExternalFlag(PyObject *self, PyObject *args)
+ColorControlPointList_SetCategoryName(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the externalFlag in the object.
-    obj->data->SetExternalFlag(ival != 0);
+    // Set the categoryName in the object.
+    obj->data->SetCategoryName(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorControlPointList_GetExternalFlag(PyObject *self, PyObject *args)
+ColorControlPointList_GetCategoryName(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetExternalFlag()?1L:0L);
+    PyObject *retval = PyString_FromString(obj->data->GetCategoryName().c_str());
     return retval;
 }
 
@@ -371,8 +368,8 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"GetEqualSpacingFlag", ColorControlPointList_GetEqualSpacingFlag, METH_VARARGS},
     {"SetDiscreteFlag", ColorControlPointList_SetDiscreteFlag, METH_VARARGS},
     {"GetDiscreteFlag", ColorControlPointList_GetDiscreteFlag, METH_VARARGS},
-    {"SetExternalFlag", ColorControlPointList_SetExternalFlag, METH_VARARGS},
-    {"GetExternalFlag", ColorControlPointList_GetExternalFlag, METH_VARARGS},
+    {"SetCategoryName", ColorControlPointList_SetCategoryName, METH_VARARGS},
+    {"GetCategoryName", ColorControlPointList_GetCategoryName, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -416,8 +413,8 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
         return ColorControlPointList_GetEqualSpacingFlag(self, NULL);
     if(strcmp(name, "discreteFlag") == 0)
         return ColorControlPointList_GetDiscreteFlag(self, NULL);
-    if(strcmp(name, "externalFlag") == 0)
-        return ColorControlPointList_GetExternalFlag(self, NULL);
+    if(strcmp(name, "categoryName") == 0)
+        return ColorControlPointList_GetCategoryName(self, NULL);
 
     return Py_FindMethod(PyColorControlPointList_methods, self, name);
 }
@@ -438,8 +435,8 @@ PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorControlPointList_SetEqualSpacingFlag(self, tuple);
     else if(strcmp(name, "discreteFlag") == 0)
         obj = ColorControlPointList_SetDiscreteFlag(self, tuple);
-    else if(strcmp(name, "externalFlag") == 0)
-        obj = ColorControlPointList_SetExternalFlag(self, tuple);
+    else if(strcmp(name, "categoryName") == 0)
+        obj = ColorControlPointList_SetCategoryName(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

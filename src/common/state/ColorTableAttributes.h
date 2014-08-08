@@ -96,6 +96,7 @@ public:
     void SetNames(const stringVector &names_);
     void SetActiveContinuous(const std::string &activeContinuous_);
     void SetActiveDiscrete(const std::string &activeDiscrete_);
+    void SetGroupingFlag(bool groupingFlag_);
 
     // Property getting methods
     const stringVector &GetNames() const;
@@ -106,6 +107,7 @@ public:
           std::string  &GetActiveContinuous();
     const std::string  &GetActiveDiscrete() const;
           std::string  &GetActiveDiscrete();
+    bool               GetGroupingFlag() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -144,6 +146,7 @@ public:
         ID_colorTables,
         ID_activeContinuous,
         ID_activeDiscrete,
+        ID_groupingFlag,
         ID__LAST
     };
 
@@ -154,11 +157,12 @@ private:
     AttributeGroupVector colorTables;
     std::string          activeContinuous;
     std::string          activeDiscrete;
+    bool                 groupingFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*a*ss"
+#define COLORTABLEATTRIBUTES_TMFS "s*a*ssb"
 
 #endif

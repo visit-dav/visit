@@ -62,6 +62,7 @@ void ColorTableAttributes::Init()
 {
     activeContinuous = "hot";
     activeDiscrete = "levels";
+    groupingFlag = false;
 
     ColorTableAttributes::SelectAll();
 }
@@ -103,6 +104,7 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
 
     activeContinuous = obj.activeContinuous;
     activeDiscrete = obj.activeDiscrete;
+    groupingFlag = obj.groupingFlag;
 
     ColorTableAttributes::SelectAll();
 }
@@ -276,7 +278,8 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
     return ((names == obj.names) &&
             colorTables_equal &&
             (activeContinuous == obj.activeContinuous) &&
-            (activeDiscrete == obj.activeDiscrete));
+            (activeDiscrete == obj.activeDiscrete) &&
+            (groupingFlag == obj.groupingFlag));
 }
 
 // ****************************************************************************
@@ -424,6 +427,7 @@ ColorTableAttributes::SelectAll()
     Select(ID_colorTables,      (void *)&colorTables);
     Select(ID_activeContinuous, (void *)&activeContinuous);
     Select(ID_activeDiscrete,   (void *)&activeDiscrete);
+    Select(ID_groupingFlag,     (void *)&groupingFlag);
 }
 
 // ****************************************************************************
@@ -503,6 +507,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     DataNode *node = new DataNode("ColorTableAttributes");
     node->AddNode(new DataNode("activeContinuous", activeContinuous));
     node->AddNode(new DataNode("activeDiscrete", activeDiscrete));
+    node->AddNode(new DataNode("groupingFlag", groupingFlag));
 
     // Add each color table specially.
     char tmp[100];
@@ -523,6 +528,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
                 ctNode->AddNode(new DataNode("smoothing", ccpl.GetSmoothing()));
             if(!ccpl.FieldsEqual(ColorControlPointList::ID_discreteFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_categoryName, &defaultObject))
+                ctNode->AddNode(new DataNode("category", ccpl.GetCategoryName()));
 
             // Add the control points to the vector that we'll save out.
             floatVector fvec;
@@ -621,6 +628,11 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
                     if((tmpNode = node->GetNode("discrete")) != 0)
                         ccpl.SetDiscreteFlag(tmpNode->AsBool());
 
+                    if((tmpNode = node->GetNode("category")) != 0)
+                        ccpl.SetCategoryName(tmpNode->AsString());
+                    else
+                        ccpl.SetCategoryName("Standard");
+
                     // Set the color control points.
                     floatVector fvec = pointNode->AsFloatVector();
                     int nvalsPerColor = 4;
@@ -656,6 +668,9 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("activeDiscrete")) != 0)
         SetActiveDiscrete(node->AsString());
 
+    if((node = searchNode->GetNode("groupingFlag")) != 0)
+        SetGroupingFlag(node->AsBool());
+
     // For older version compatibility...
     if((node = searchNode->GetNode("activeColorTable")) != 0)
         SetActiveContinuous(node->AsString());
@@ -683,6 +698,13 @@ ColorTableAttributes::SetActiveDiscrete(const std::string &activeDiscrete_)
 {
     activeDiscrete = activeDiscrete_;
     Select(ID_activeDiscrete, (void *)&activeDiscrete);
+}
+
+void
+ColorTableAttributes::SetGroupingFlag(bool groupingFlag_)
+{
+    groupingFlag = groupingFlag_;
+    Select(ID_groupingFlag, (void *)&groupingFlag);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -735,6 +757,12 @@ std::string &
 ColorTableAttributes::GetActiveDiscrete()
 {
     return activeDiscrete;
+}
+
+bool
+ColorTableAttributes::GetGroupingFlag() const
+{
+    return groupingFlag;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -990,6 +1018,7 @@ ColorTableAttributes::GetFieldName(int index) const
     case ID_colorTables:      return "colorTables";
     case ID_activeContinuous: return "activeContinuous";
     case ID_activeDiscrete:   return "activeDiscrete";
+    case ID_groupingFlag:     return "groupingFlag";
     default:  return "invalid index";
     }
 }
@@ -1018,6 +1047,7 @@ ColorTableAttributes::GetFieldType(int index) const
     case ID_colorTables:      return FieldType_attVector;
     case ID_activeContinuous: return FieldType_string;
     case ID_activeDiscrete:   return FieldType_string;
+    case ID_groupingFlag:     return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1046,6 +1076,7 @@ ColorTableAttributes::GetFieldTypeName(int index) const
     case ID_colorTables:      return "attVector";
     case ID_activeContinuous: return "string";
     case ID_activeDiscrete:   return "string";
+    case ID_groupingFlag:     return "bool";
     default:  return "invalid index";
     }
 }
@@ -1099,6 +1130,11 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_activeDiscrete:
         {  // new scope
         retval = (activeDiscrete == obj.activeDiscrete);
+        }
+        break;
+    case ID_groupingFlag:
+        {  // new scope
+        retval = (groupingFlag == obj.groupingFlag);
         }
         break;
     default: retval = false;

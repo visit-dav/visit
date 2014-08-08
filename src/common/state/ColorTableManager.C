@@ -54,12 +54,15 @@
 // Creation:   Thu Jul 3 18:23:22 PST 2003
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Fri Aug 8 08:32:12 PDT 2014
+//    Initialize 'importingPersonal' flag.
+//
 // ****************************************************************************
 
 ColorTableManager::ColorTableManager() : ccpl()
 {
     ctAtts = 0;
+    importingPersonal = false;
 }
 
 // ****************************************************************************
@@ -147,6 +150,9 @@ ColorTableManager::Export(const std::string &ctName,
 //   Brad Whitlock, Fri Apr 27 17:36:00 PDT 2012
 //   Look in a system place too.
 //
+//   Kathleeen Biagas, Fri Aug 8 08:33:27 PDT 2014
+//   Set 'importingPersonal' when importing user defined tables.
+//
 // ****************************************************************************
 
 bool
@@ -156,9 +162,11 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
     // Read the user's home VisIt directory and import all of the color tables.
     //
     ctAtts = cta;
+    importingPersonal = false;
     std::string ctdir(GetVisItResourcesDirectory(VISIT_RESOURCES_COLORTABLES));
     bool r1 = ReadAndProcessDirectory(ctdir, ImportHelper,
                                       (void*)this, false);
+    importingPersonal = true;
     bool r2 = ReadAndProcessDirectory(GetUserVisItDirectory(), ImportHelper,
                                       (void*)this, false);
     return r1 || r2;
@@ -186,6 +194,9 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 //   Brad Whitlock, Thu Feb 17 15:55:29 PST 2005
 //   I removed the exception and made the function return a bool.
 //
+//   Kathleen Biagas, Fri Aug 8 08:34:29 PDT 2014
+//   Set default category name to 'UserDefined'.
+//
 // ****************************************************************************
 bool
 ColorTableManager::WriteConfigFile(std::ostream& out)
@@ -196,8 +207,24 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
     topLevel.AddNode(ctNode);
     ctNode->AddNode(new DataNode("Version", std::string(VISIT_VERSION)));
 
-    // Let the color table create add its information to tbe node.
+    // Let the color table create and add its information to the node.
     ccpl.CreateNode(ctNode, false, true);
+    // This is an export, set the categoryName to UserDefined, adding the node
+    // if necessary.
+    if (ctNode->GetNode("ColorControlPointList")->GetNode("category"))
+    {
+        // if the category is Standard 
+        std::string category = 
+            ctNode->GetNode("ColorControlPointList")->GetNode("category")->AsString();
+        if (category == std::string("Standard"))
+        {
+            ctNode->GetNode("ColorControlPointList")->GetNode("category")->SetString("UserDefined");
+        }
+    }
+    else
+    {
+        ctNode->GetNode("ColorControlPointList")->AddNode(new DataNode("category",std::string("UserDefined")));
+    }
 
     // Write the output file.
     out << "<?xml version=\"1.0\"?>\n";
@@ -319,6 +346,9 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 //   Brad Whitlock, Wed May 28 15:22:57 PDT 2008
 //   Fixed reading of color tables.
 //
+//   Kathleen Biagas, Fri Aug 8 08:35:43 PDT 2014
+//   Set default category name if needed.
+//
 // ****************************************************************************
 
 void
@@ -349,6 +379,13 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             ColorControlPointList ccpl2;
             ccpl2.SetFromNode(node2);
             ccpl2.SetExternalFlag(true);
+            if (ccpl2.GetCategoryName() == std::string(""))
+            {
+                if (importingPersonal)
+                    ccpl2.SetCategoryName("UserDefined");
+                else 
+                    ccpl2.SetCategoryName("Standard");
+            }
             
             // Check for errors that would break code down the line
             int ii;
