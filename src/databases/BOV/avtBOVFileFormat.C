@@ -534,7 +534,7 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
          {
              // Read in a line of data in x.
              size_t nread = fread((void *)ptr, sizeof(T), nxelem, fp);
-             if (nread != nxelem)
+             if (nread != static_cast<size_t>(nxelem))
              {
                  int eno = errno;
                  debug1 << "read failed " << strerror(eno) << endl;
