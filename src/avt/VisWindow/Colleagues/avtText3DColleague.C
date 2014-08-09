@@ -401,7 +401,6 @@ avtText3DColleague::SetOptions(const AnnotationObject &annot)
     //
     // Set the labels if the text vector is different
     //
-    //bool textChanged = false;
     if(currentOptions.GetText() != annot.GetText())
     {
         const stringVector &text = annot.GetText();
@@ -409,7 +408,6 @@ avtText3DColleague::SetOptions(const AnnotationObject &annot)
             SetText(text[0].c_str());
         else
             SetText("");
-        //textChanged = true;
     }
 
     //

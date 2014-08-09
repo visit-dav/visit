@@ -1364,7 +1364,7 @@ avtMassVoxelExtractor::FindSegmentIntersections(const double *origin,
 
 
 // ****************************************************************************
-//  Method: avtImgCommunicator::getIndexandDistFromCenter
+//  Method: avtMassVoxelExtractor::getIndexandDistFromCenter
 //
 //  Purpose:
 //
@@ -1499,7 +1499,6 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
     int  count = 0;
 
     avtRay *ray = volume->GetRay(w, h);
-    //int myInd[3];
     bool calc_cell_index = ((ncell_arrays > 0) || (ghosts != NULL));
 
     double dest_rgb[4] = {0.0,0.0,0.0, 0.0};     // to store the computed color
@@ -2078,16 +2077,11 @@ avtMassVoxelExtractor::computePixelColor(double source_rgb[4], double dest_rgb[4
     // Phong Shading
     if (lighting == true){
         float dir[3];           // The view "right" vector.
-        //double view_right[3];   // view_direction cross view_up
                                 
         dir[0] = -view_direction[0];
         dir[1] = -view_direction[1];
         dir[2] = -view_direction[2];
         
-//        double gradientDouble[3], transformedGradient[3];
-//        for (int i=0; i<3; i++)
-//            transformedGradient[i] = gradientDouble[i] = gradient[i];
-
         // cos(angle) = a.b;  angle between normal and light
         float normal_dot_light = dot(gradient,dir);   // angle between light and normal;
         normal_dot_light = std::max(0.0, std::min((double)fabs(normal_dot_light),1.0) );
@@ -2645,7 +2639,6 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                     FindRange(zarray, zind, zc, z_front, z_back);
                 }
 
-                //int var_index = 0;
                 for (l = 0 ; l < (int)cell_arrays.size() ; l++)
                 {
                     int index = zind*((nX-1)*(nY-1)) + yind*(nX-1) + xind;

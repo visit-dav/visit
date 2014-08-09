@@ -351,8 +351,6 @@ NavigateCurve::ZoomCamera(const int x, const int y)
 void
 NavigateCurve::ZoomCamera(double f)
 {
-    //vtkRenderWindowInteractor *rwi = Interactor;
-
     double zoomFactor = pow((double)1.1, f);
 
     //

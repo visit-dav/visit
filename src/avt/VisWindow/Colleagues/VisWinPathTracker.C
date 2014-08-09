@@ -453,7 +453,6 @@ std::string VisWinPathTracker::GetCommonPath(stringVector &paths)
 
     // loop indices
     int i = 0;
-    //int j = 0;
     // get # of paths
     int npaths = paths.size();
     

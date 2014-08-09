@@ -167,7 +167,6 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
     std::vector<vtkDataArray *> delete_vars;
 
     bool haveZonal = false;
-    bool haveNodal = false;
 
     size_t nvars = varnames.size();
     if (cmfeType == POS_CMFE)
@@ -177,17 +176,13 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
         std::string vname = GetInternalVarname(i);
         vtkDataArray *cell_data1 = ds->GetCellData()->GetArray(vname.c_str());
         vtkDataArray *point_data1 = ds->GetPointData()->GetArray(vname.c_str());
-        (void) haveNodal; (void) point_data1;
-        if (cell_data1 != NULL)
-            haveZonal = true;
-        else if (point_data1 != NULL)
-            haveNodal = true;
-        else
+        if (cell_data1 == NULL && point_data1 == NULL)
         {
             EXCEPTION2(ExpressionException, outputVariableName,
                        "An internal error occurred when calculating an expression."
                        "  Please contact a VisIt developer.");
         }
+        haveZonal = (cell_data1 != NULL);
     }
 
     bool doZonal = false;

@@ -159,7 +159,6 @@ void
 avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob, 
     const SelectionProperties &selProps, avtNamedSelectionExtension *ext)
 {
-    //const char *mName = "avtNamedSelectionManager::CreateNamedSelection: ";
     StackTimer t0("CreateNamedSelection");
 
     if (strcmp(dob->GetType(), "avtDataset") != 0)

@@ -262,7 +262,6 @@ VisWinAnnotations::UpdateLegends()
     // Manage legend layout.
     //
     std::vector<avtActor*>::iterator it;
-    //vtkRenderer *foreground = mediator.GetForeground();
     double yTop = 0.90;
     double xLeft = 0.05;
 
@@ -511,14 +510,11 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
 void
 VisWinAnnotations::HideActiveAnnotationObjects()
 {
-    //bool annotsHidden = false;
-
     for(size_t i = 0; i < annotations.size(); ++i)
     {
         if(annotations[i]->GetActive())
         {
             annotations[i]->Hide();
-            //annotsHidden = true;
         }
     }
 }
@@ -545,14 +541,12 @@ VisWinAnnotations::DeleteActiveAnnotationObjects()
     // If an annotation is active, then remove it from the renderer and
     // delete it. Otherwise, add the annotation onto a new list.
     //
-    //bool annotsDeleted = false;
     for(size_t i = 0; i < annotations.size(); ++i)
     {
         if(annotations[i]->GetActive())
         {
             annotations[i]->RemoveFromRenderer();
             delete annotations[i];
-            //annotsDeleted = true;
         }
         else
             newList.push_back(annotations[i]);
@@ -617,13 +611,10 @@ VisWinAnnotations::DeleteAnnotationObject(const std::string &name)
 void
 VisWinAnnotations::DeleteAllAnnotationObjects()
 {
-    //bool annotsDeleted = false;
-
     for(size_t i = 0; i < annotations.size(); ++i)
     {
         annotations[i]->RemoveFromRenderer();
         delete annotations[i];
-        //annotsDeleted = true;
     }
 
     annotations.clear();

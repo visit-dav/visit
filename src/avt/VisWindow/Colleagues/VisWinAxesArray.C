@@ -386,7 +386,6 @@ VisWinAxesArray::UpdateView(void)
     for (int i=0; i < axisCount; i++)
     {
         double dx = vx / rx;
-        //double dy = vy / ry;
 
         double amin = axes[i].range[0];
         double amax = axes[i].range[1];
@@ -522,9 +521,6 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
                 int axis = atts.GetUseForAxis(var);
                 if (axis == -1)
                     continue;
-
-                //avtExtents *ext = atts.GetThisProcsOriginalDataExtents(var);
-                // note: we already checked above that ext exists
 
                 atts.GetThisProcsOriginalDataExtents(var)->CopyTo(axes[axis].range);
                 axes[axis].xpos = axis;

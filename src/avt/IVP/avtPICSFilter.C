@@ -135,7 +135,6 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #endif
 
 using std::vector;
-inline void PrintTreeExtents( avtIntervalTree * intervalTree, int curTimeSlice, char *message );
 
 static const char restartFilename[] = "PICS_Restart";
 
@@ -471,31 +470,6 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
     return ds;
 }
 
-// ****************************************************************************
-// Method:  PrintTreeExtents
-//
-// Purpose: Useful debuging function to view the tree extents
-//
-// Programmer:  David Camp
-// Creation:    March 7, 2012
-//
-// Modifications:
-//
-// ****************************************************************************
-
-inline void PrintTreeExtents( avtIntervalTree * intervalTree, int curTimeSlice, char *message )
-{
-    if (DebugStream::Level5())
-    {
-        int nDomains = intervalTree->GetNLeaves();
-
-        for (int i = 0 ; i < nDomains ; i++)
-        {
-            double  e[6] = {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0 };
-            /*int    domain =*/ intervalTree->GetLeafExtents(i, e);
-        }
-    }
-}
 
 // ****************************************************************************
 // Method:  avtPICSFilter::RestoreICsFilename
@@ -2320,7 +2294,6 @@ bool
 avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
 {
     avtVector pt = ic->CurrentLocation();
-    //double t = ic->CurrentTime();
     
     vtkDataSet *ds = GetDomain(block, pt);
 
@@ -3402,7 +3375,6 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
     if (doPathlines)
     {
-        //bool needExpr = true;
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
         // Remove a previous expression, as it might have the wrong definition.

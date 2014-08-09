@@ -147,8 +147,6 @@ VisitAxisRestrictionTool::Enable()
 void
 VisitAxisRestrictionTool::Disable()
 {
-    //bool val = IsEnabled();
-
     VisitInteractiveTool::Disable();
 
     // Remove the actors from the canvas if the tool was enabled.
@@ -808,9 +806,6 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
                 int axis = atts.GetUseForAxis(var);
                 if (axis == -1)
                     continue;
-
-                //avtExtents *ext = atts.GetThisProcsOriginalDataExtents(var);
-                // note: we already checked above that ext exists
 
                 double extents[2];
                 atts.GetThisProcsOriginalDataExtents(var)->CopyTo(extents);

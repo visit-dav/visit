@@ -598,7 +598,6 @@ avtDatabaseWriter::GetVariables(const std::string &meshname,
                     const Expression *expr = md->GetExpression(i);
                     if (expr->GetAutoExpression())
                         continue;
-                    //bool shouldAdd = false;
                     bool canAdd = false;
                     std::string varname = expr->GetName();
                     //
@@ -1115,7 +1114,7 @@ avtDatabaseWriter::CreateNormals() const
 // Arguments:
 //   rootnode : The data tree that we're converting/combining.
 //
-// Returns: A single polydata object.
+// Returns: A single polydata object.  Caller must "Delete".
 //
 // Note:    Work partially supported by DOE Grant SC0007548.
 //
@@ -1129,8 +1128,6 @@ avtDatabaseWriter::CreateNormals() const
 vtkPolyData *
 avtDatabaseWriter::CreateSinglePolyData(avtDataTree_p root)
 {
-    //vtkPolyData *combinedPD = NULL;
-
     // Get all of the leaves.
     int nds = 0;
     vtkDataSet **ds = root->GetAllLeaves(nds);

@@ -123,7 +123,6 @@ avtMemoryUsageQuery::PerformQuery(QueryAttributes *atts)
     
     // convert to megabytes    
     double m_size_mb = ( (double)m_size / 1048576.0);
-    //double m_rss_mb  = ( (double)m_rss  / 1048576.0);
     
     int nprocs = PAR_Size();
     int rank   = PAR_Rank();

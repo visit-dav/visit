@@ -191,8 +191,6 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
     newDS->ShallowCopy(inDS);
     vtkDataSet *outDS = newDS;
 
-    //avtCentering centering
-    //                   = GetInput()->GetInfo().GetAttributes().GetCentering();
     if (centeringTarget == AVT_NODECENT)
     {
         size_t nArray = inDS->GetCellData()->GetNumberOfArrays();
@@ -218,9 +216,10 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
         {
             dsToShift = (vtkDataSet *) inDS->NewInstance();
             dsToShift->ShallowCopy(inDS);
-            for (size_t k = arraysToSwap.size() ; k-- > 0 ;) ///TODO: check on change of condition to remove autological comparision warning
+            for (size_t k = 0 ; k < arraysToSwap.size() ; k++) 
             {
-                vtkDataArray *arr = inDS->GetCellData()->GetArray(arraysToSwap[k].c_str());
+                int index = arraysToSwap.size()-k-1;
+                vtkDataArray *arr = inDS->GetCellData()->GetArray(arraysToSwap[index].c_str());
                 vtkDataArray *fa = arr->NewInstance();
                 int ntups  = arr->GetNumberOfTuples();
                 int ncomps = arr->GetNumberOfComponents();
@@ -331,8 +330,9 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
         {
             dsToShift = (vtkDataSet *) inDS->NewInstance();
             dsToShift->ShallowCopy(inDS);
-            for (size_t k = arraysToSwap.size(); k-- > 0 ;)
+            for (size_t k = 0 ; k < arraysToSwap.size() ; k++)
             {
+                int index = arraysToSwap.size()-k-1;
                 vtkDataArray *arr = inDS->GetPointData()->GetArray(arraysToSwap[k].c_str());
                 vtkDataArray *fa = arr->NewInstance();
                 size_t ntups  = arr->GetNumberOfTuples();

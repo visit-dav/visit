@@ -311,8 +311,6 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         else
         {
             avtOriginatingSource *src = GetInput()->GetOriginatingSource();
-            //int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-            //int dom         = domain  - blockOrigin;
             int ts          = queryAtts.GetTimeStep();
             string var      = queryAtts.GetVariables()[0];
             string domainName;
