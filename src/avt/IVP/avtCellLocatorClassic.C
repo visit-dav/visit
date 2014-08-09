@@ -277,8 +277,6 @@ vtkIdType avtCellLocatorClassic::FindCell( const double pos[3],
     if( leafids == NULL )
          return -1;
 
-//    unsigned int ntest = 0;
-
     for( int j=0; j < leafids->GetNumberOfIds(); j++ )
     {
         vtkIdType id = leafids->GetId( j );

@@ -238,8 +238,6 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
     double pt1[3];   //Endpoints of current segment
     double pt2[3];
 
-    //bool bHaveLineEq = false;
-
     double binSize = (maxLength - minLength) / (numBins - 1);
 
     UpdateProgress(extraMsg*currentNode, totalProg);

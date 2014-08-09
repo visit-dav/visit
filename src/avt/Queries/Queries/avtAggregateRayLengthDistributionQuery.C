@@ -422,7 +422,6 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         while (dir[dim] == 0.)
             dim++;
 
-        //int num_segs = pts.size() / 6;
         int entry = lineid % 1000;
         for (size_t j = 0 ; j < hashed_lineid_lookup[entry].size() ; j++)
         {

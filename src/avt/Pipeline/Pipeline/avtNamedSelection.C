@@ -1238,7 +1238,6 @@ avtLocationsNamedSelection::GetMatchingIds(vtkDataSet *ds, std::vector<vtkIdType
     //Use a map to ensure we don't get duplicate cells.
     for (int i = 0; i < nLocs; i++)
     {
-        //avtVector pt = locations[i];
         p[0] = locations[i].x;
         p[1] = locations[i].y;
         p[2] = locations[i].z;

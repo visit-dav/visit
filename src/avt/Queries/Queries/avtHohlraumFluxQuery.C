@@ -537,7 +537,6 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
             lastMilestone = currentMilestone;
         }
     }
-    //vtkCellArray *lines = output->GetLines();
 
     cpd->Delete();
     delete[] tmpBins;

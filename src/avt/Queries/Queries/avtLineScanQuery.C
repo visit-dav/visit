@@ -552,7 +552,6 @@ MergeSegmentPoints(vtkPolyData *input, const char *varname, double tolerance)
     for (i = 0 ; i < npts ; i++)
     {
         bool foundMatch = false;
-        //int  match = -1;
         double ptI[3];
         inPts->GetPoint(idPoints[i].ptId, ptI);
         for (j = i-1 ; j >= 0 ; j--)
@@ -585,7 +584,6 @@ MergeSegmentPoints(vtkPolyData *input, const char *varname, double tolerance)
             if (dist < tolSqrd)
             {
                 foundMatch = true;
-                //match = idPoints[j].ptId;
                 break;
             }
         }

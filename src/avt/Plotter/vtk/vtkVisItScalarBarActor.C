@@ -1415,8 +1415,6 @@ vtkVisItScalarBarActor::ShouldCollapseDiscrete(void)
   if (this->definedLabels.size() == 1)
     return false;
 
-
-  //double *lutRange = this->LookupTable->GetRange();
   unsigned char *rgba;
   unsigned char  rgba_base[4];
   LevelColorMap::iterator it;
@@ -1483,8 +1481,6 @@ vtkVisItScalarBarActor::ShouldCollapseDiscrete(void)
 
 void vtkVisItScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
 {
-  //int *viewSize = viewport->GetSize();
-
   //
   // Build bounding box object
   //

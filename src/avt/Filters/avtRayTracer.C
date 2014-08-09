@@ -721,8 +721,6 @@ avtRayTracer::Execute(void)
             if (patchesToCompositeLocally[index] == -1 || index == totalPatchesToCompositeLocally){
                 end = index-1;
 
-                //int dimsX, dimsY;
-
                 imgMetaData composedPatch = imgMetaDataMultiMap.find(patchesToCompositeLocally[start])->second;
                 imgMetaData lastPatch = imgMetaDataMultiMap.find(patchesToCompositeLocally[end])->second;
 
@@ -895,7 +893,6 @@ avtRayTracer::Execute(void)
                     
                 std::multimap<int,imgMetaData>::iterator it;
                 for (it = imgMetaDataMultiMap.begin(); it != imgMetaDataMultiMap.end(); ++it ){
-                    //imgMetaData tempImgMetaData = it->second;
 
                     const bool is_in = ((std::find(senderListSet.begin(), senderListSet.end(), it->second.destProcId)) != (senderListSet.end()));
                     if (is_in){
@@ -994,7 +991,6 @@ avtRayTracer::Execute(void)
                 
                 std::multimap<int,imgMetaData>::iterator it;
                 for (it = imgMetaDataMultiMap.begin(); it != imgMetaDataMultiMap.end(); ++it ){
-                    //imgMetaData tempImgMetaData = it->second;
 
                     const bool is_in = ((std::find(senderListSet.begin(), senderListSet.end(), it->second.destProcId)) != (senderListSet.end()));
                     if (is_in){

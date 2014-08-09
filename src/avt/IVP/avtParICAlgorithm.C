@@ -333,7 +333,10 @@ avtParICAlgorithm::CheckPendingSendRequests()
     int num = 0, *indices = new int[req.size()];
     MPI_Status *status = new MPI_Status[req.size()];
     int err = MPI_Testsome(req.size(), &req[0], &num, indices, status);
-    (void) err; ///ignore err..
+    if (err != MPI_SUCCESS)
+    {
+        debug1 << "Err with MPI_Testsome in PARIC algorithm" << endl;
+    }
     for (int i = 0; i < num; i++)
     {
         MPI_Request r = copy[indices[i]];
@@ -462,7 +465,10 @@ avtParICAlgorithm::SendData(int dst, int tag, MemStream *buff)
         MPI_Request req;
         int err = MPI_Isend(bufferList[i], header.packetSz, MPI_BYTE, dst,
                             tag, VISIT_MPI_COMM, &req);
-        (void) err;
+        if (err != MPI_SUCCESS)
+        {
+            debug1 << "Err with MPI_Isend in PARIC algorithm" << endl;
+        }
         BytesCnt.value += header.packetSz;
     
         //Add it to sendBuffers
@@ -1000,7 +1006,6 @@ avtParICAlgorithm::SendDS(int dst, vector<vtkDataSet *> &ds, vector<BlockIDType>
 
         dsBuff->write(doms[i]);
         dsBuff->write(ds[i]);
-        //int dsLen = dsBuff->len();
         int totalLen = dsBuff->len();
         
         MemStream *msgBuff = new MemStream(2*sizeof(int));

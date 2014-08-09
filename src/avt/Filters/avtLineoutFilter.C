@@ -624,7 +624,6 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     vtkCellIntersections *cellIntersections = NULL;
     vtkGenericCell *cell = NULL;
     double isect[3], p1[3], t;
-    //bool endPointInCell = false;
     if (!rgrid)
     {
         cellIntersections = vtkCellIntersections::New();
