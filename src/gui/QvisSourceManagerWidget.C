@@ -77,16 +77,6 @@
 #include <stdlib.h>
 #include <snprintf.h>
 
-//#include <icons/removelastoperator.xpm>
-//#include <icons/removealloperators.xpm>
-
-//#include <icons/plot_add.xpm>
-//#include <icons/plot_del.xpm>
-//#include <icons/plot_var.xpm>
-//#include <icons/plot_atts.xpm>
-//#include <icons/plot_hide.xpm>
-//#include <icons/plot_draw.xpm>
-//#include <icons/oper_add3.xpm>
 #include <icons/db_replace.xpm>
 #include <icons/db_overlay.xpm>
 #include <icons/db_open2.xpm>

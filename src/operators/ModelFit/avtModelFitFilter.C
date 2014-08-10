@@ -764,7 +764,8 @@ avtModelFitFilter::calculateVariableStats()
             }
         
             if(darray == NULL)                                                       
-            {                                                                        
+            {                   
+                // TODO: We need to throw an exception or something sensible here
                 printf("Variable errors (possibly centering) -- bailing\n");         
                 //exit(1);                                 
             }                                        

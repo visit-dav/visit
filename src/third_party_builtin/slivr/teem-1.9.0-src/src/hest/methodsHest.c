@@ -144,7 +144,7 @@ hestOptAdd(hestOpt **optP,
   if (*optP)
     free(*optP);
   *optP = ret;
-  (void) dummy;
+
   return;
 }
 

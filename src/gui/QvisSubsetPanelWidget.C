@@ -244,6 +244,7 @@ QvisSubsetPanelWidget::ViewSet(int id)
     if(s == CompletelyChecked)
         numChecked++;
 
+    QvisSubsetPanelItem *checkItem=NULL;
     // Add all of the collections that come out of the whole.
     for(size_t j = 0; j < mapsOut.size(); ++j)
     {
@@ -254,9 +255,9 @@ QvisSubsetPanelWidget::ViewSet(int id)
         avtSILCollection_p collection = restriction->GetSILCollection(cIndex);
         QString collectionName(collection->GetCategory().c_str());
     
-        /*QvisSubsetPanelItem *checkItem =*/ new QvisSubsetPanelItem(item,
-                                                                 collectionName,
-                                                                 cIndex);
+        checkItem = new QvisSubsetPanelItem(item,
+                                            collectionName,
+                                            cIndex);
     }
 
     item->setExpanded(true);
@@ -320,6 +321,7 @@ QvisSubsetPanelWidget::ViewCollection(int id)
             
             // Add all of the collections that come out of the set. Note that
             // they are added as uncheckable items.
+            QvisSubsetPanelItem *cItem = NULL;
             const std::vector<int> &mapsOut = set->GetMapsOut();
             for(size_t j = 0; j < mapsOut.size(); ++j)
             {
@@ -327,9 +329,9 @@ QvisSubsetPanelWidget::ViewCollection(int id)
 
                 avtSILCollection_p c = restriction->GetSILCollection(cIndex);
                 QString collectionName(c->GetCategory().c_str());
-                /*QvisSubsetPanelItem *cItem =*/ new QvisSubsetPanelItem(item,
-                                                                     collectionName,
-                                                                     cIndex);
+                cItem = new QvisSubsetPanelItem(item,
+                                                collectionName,
+                                                cIndex);
             }
         }
         blockSignals(false);

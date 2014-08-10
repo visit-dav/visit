@@ -1025,7 +1025,8 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
     const std::vector<CharStrRef> curSecondaryVars =
         outSpec->GetDataRequest()->GetSecondaryVariables();
     const stringVector curListedVars = atts.GetListedVarNames();
-    size_t listedVarNum, secVarNum;
+    size_t listedVarNum;
+    size_t secVarNum;
 
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
@@ -1051,7 +1052,9 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 
     bool atLeastOneTree = false;
     avtIntervalTree *it;
-    size_t varDomNum, curDomNum, curDomain;
+    size_t varDomNum;
+    size_t curDomNum;
+    size_t curDomain;
     intVector varDomains;
     intVector curDomains;
     intVector outDomains;

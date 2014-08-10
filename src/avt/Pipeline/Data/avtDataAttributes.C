@@ -691,8 +691,7 @@ avtDataAttributes::Print(ostream &out)
         thisProcsActualSpatial->Print(out);
     }
 
-    size_t i;
-    for (i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
     {
         out << "Variable = " << variables[i]->varname.c_str() << endl;
         out << "Variable type = ";
@@ -813,7 +812,7 @@ avtDataAttributes::Print(ostream &out)
     }
 
     out << "Selections Applied: ";
-    for (i = 0; i < selectionsApplied.size(); i++)
+    for (size_t i = 0; i < selectionsApplied.size(); i++)
         out << (selectionsApplied[i] ? "T " : "F ");
     out << endl;
 
@@ -876,7 +875,7 @@ avtDataAttributes::Print(ostream &out)
         out << "This mesh is primarily a point-based mesh." << endl;
     }
 
-    for (i=0; i<3; i++)
+    for (size_t i=0; i<3; i++)
     {
         out << "Unit cell vector #"<<i<<" is "
             << unitCellVectors[i*3+0] << " "
@@ -894,7 +893,7 @@ avtDataAttributes::Print(ostream &out)
     if (rectilinearGridHasTransform)
     {
         out << "The rectilinear grid transform is:" << endl;
-        for (i=0; i<4; i++)
+        for (size_t i=0; i<4; i++)
         {
             for (int j=0; j<4; j++)
             {
@@ -1331,7 +1330,6 @@ void
 avtDataAttributes::Merge(const avtDataAttributes &da,
    bool ignoreThis, bool ignoreThat)
 {
-    size_t   i;
 
     if (ignoreThat)
     {
@@ -1361,7 +1359,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
         EXCEPTION2(InvalidMergeException, (int) variables.size(), 
                    (int) da.variables.size());
     }
-    for (i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
     {
         if (variables[i]->varname != da.variables[i]->varname)
         {
@@ -1570,7 +1568,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     actualSpatial->Merge(*(da.actualSpatial));
     thisProcsActualSpatial->Merge(*(da.thisProcsActualSpatial));
 
-    for (i = 0 ; i < variables.size() ; i++)
+    for (size_t i = 0 ; i < variables.size() ; i++)
     {
         variables[i]->originalData->Merge(*(da.variables[i]->originalData));
         variables[i]->thisProcsOriginalData->Merge(

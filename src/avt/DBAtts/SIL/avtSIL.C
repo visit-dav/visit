@@ -123,8 +123,10 @@ avtSIL::avtSIL(const SILAttributes &atts)
     setTable.push_back(0);
     collTable.push_back(0);
 
-    size_t ii = 0;
-    int iCurrSet = 0, iCurrMat = 0, iCurrArray = 0, iCurrCol = 0;
+    int iCurrSet = 0;
+    int iCurrMat = 0; 
+    int iCurrArray = 0;
+    int iCurrCol = 0;
     const intVector      &attsOrder = atts.GetOrder();
 
     const vector<string> &setNames = atts.GetSetNames();
@@ -134,7 +136,7 @@ avtSIL::avtSIL(const SILAttributes &atts)
     const vector<int>    &role     = atts.GetRole();
     const vector<int>    &superset = atts.GetSuperset();
 
-    for (ii = 0; ii < attsOrder.size(); ii++)
+    for (size_t ii = 0; ii < attsOrder.size(); ii++)
     {
         if ((EntryType)attsOrder[ii] == WHOLE_SET)
         {
@@ -176,7 +178,7 @@ avtSIL::avtSIL(const SILAttributes &atts)
     if (order.size() != attsOrder.size())
         EXCEPTION0(ImproperUseException);
 
-    for (ii = 0; ii < order.size(); ii++)
+    for (size_t ii = 0; ii < order.size(); ii++)
     {
         if ((int)order[ii] != attsOrder[ii])
             EXCEPTION0(ImproperUseException);
@@ -232,7 +234,6 @@ avtSIL::operator=(const avtSIL &sil)
     if (this == &sil)
         return *this;
     
-    size_t  i;
     //
     // First, clear out what we have in this object.
     //
@@ -256,7 +257,7 @@ avtSIL::operator=(const avtSIL &sil)
 
     // I think we make a copy of the matrix so we can change the
     // copy of 'this' that it has.
-    for (i = 0 ; i < sil.matrices.size() ; i++)
+    for (size_t i = 0 ; i < sil.matrices.size() ; i++)
     {
         avtSILMatrix_p new_sm = new avtSILMatrix(*(sil.matrices[i]));
         new_sm->SetSIL(this);
@@ -897,8 +898,7 @@ void
 avtSIL::AddMapsToTemporarySet(avtSILSet_p pSet, int setIndex) const
 {
     //Add maps out for a SILSet created on demand, and contained by a matrix
-    size_t ii;
-    for (ii = 0; ii < matrices.size(); ii++)
+    for (size_t ii = 0; ii < matrices.size(); ii++)
     {
         int col = matrices[ii]->SetIsInCollection(setIndex);
         if (col >= 0)
@@ -909,7 +909,7 @@ avtSIL::AddMapsToTemporarySet(avtSILSet_p pSet, int setIndex) const
 
     //Add maps in for a SILSet created on demand, and contained 
     //in another collection
-    for (ii = 0; ii < collTable.size()-1; ii+=3)
+    for (size_t ii = 0; ii < collTable.size()-1; ii+=3)
     {
         if ((EntryType)collTable[ii+1] == COLLECTION)
         {
@@ -1337,7 +1337,6 @@ avtSIL::Print(ostream &out,
     std::vector< std::string > perCollInfo,
     std::vector< std::string > perMatInfo) const
 {
-    size_t  i;
     bool useInfo;
 
     useInfo = perSetInfo.size() == (size_t)GetNumSets();
@@ -1370,7 +1369,7 @@ avtSIL::Print(ostream &out,
 
     size_t nColls = collections.size();
     useInfo = perCollInfo.size() == nColls;
-    for (i = 0 ; i < nColls ; i++)
+    for (size_t i = 0 ; i < nColls ; i++)
     {
         out << "Collection " << i << " " << (useInfo ? perCollInfo[i].c_str() : "") << endl;
         avtSILCollection_p c = collections[i];
@@ -1492,19 +1491,18 @@ avtSIL::FindColl(int iColl, EntryType &outType,
 bool
 avtSIL::IsCompatible(const avtSIL *sil2) const
 {
-    size_t   i, j;
 
     if (wholesList.size() != sil2->wholesList.size())
         return false;
 
-    for (i = 0 ; i < wholesList.size() ; i++)
+    for (size_t i = 0 ; i < wholesList.size() ; i++)
         if (wholesList[i] != sil2->wholesList[i])
             return false;
 
     if (sets.size() != sil2->sets.size())
         return false;
 
-    for (i = 0 ; i < sets.size() ; i++)
+    for (size_t i = 0 ; i < sets.size() ; i++)
     {
         if ((sets[i]->GetName() != sil2->sets[i]->GetName()) ||
             (sets[i]->GetIdentifier() != sil2->sets[i]->GetIdentifier()))
@@ -1514,7 +1512,7 @@ avtSIL::IsCompatible(const avtSIL *sil2) const
     if (matrices.size() != sil2->matrices.size())
         return false;
 
-    for (i = 0 ; i < matrices.size() ; i++)
+    for (size_t i = 0 ; i < matrices.size() ; i++)
     {
         const vector<int> &role1_1 = matrices[i]->GetSet1();
         const vector<int> &role1_2 = matrices[i]->GetSet2();
@@ -1522,12 +1520,12 @@ avtSIL::IsCompatible(const avtSIL *sil2) const
         const vector<int> &role2_2 = sil2->matrices[i]->GetSet2();
         if (role1_1.size() != role2_1.size())
             return false;
-        for (j = 0 ; j < role1_1.size() ; j++)
+        for (size_t j = 0 ; j < role1_1.size() ; j++)
             if (role1_1[j] != role2_1[j])
                 return false;
         if (role1_2.size() != role2_2.size())
             return false;
-        for (j = 0 ; j < role1_2.size() ; j++)
+        for (size_t j = 0 ; j < role1_2.size() ; j++)
             if (role1_2[j] != role2_2[j])
                 return false;
     }
@@ -1535,7 +1533,7 @@ avtSIL::IsCompatible(const avtSIL *sil2) const
     if (arrays.size() != sil2->arrays.size())
         return false;
 
-    for (i = 0 ; i < arrays.size() ; i++)
+    for (size_t i = 0 ; i < arrays.size() ; i++)
     {
         if (! arrays[i]->IsCompatible(*(sil2->arrays[i])))
             return false;

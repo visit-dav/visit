@@ -4297,7 +4297,7 @@ QvisSaveMovieWizard::page7_templateDescriptionChanged()
 void
 QvisSaveMovieWizard::page7_templateFileChanged(const QString &s)
 {
-    /*bool ret =*/ templateSpec->SetTemplateFile(std::string(s.toStdString()));
+    templateSpec->SetTemplateFile(std::string(s.toStdString()));
 }
 
 void

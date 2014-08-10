@@ -61,8 +61,6 @@
 #include <blankwindow.xpm>
 #include <spinon.xpm>
 #include <spinoff.xpm>
-//#include <navigatebboxon.xpm>
-//#include <navigatebboxoff.xpm>
 #include <layout1x1.xpm>
 #include <layout1x2.xpm>
 #include <layout2x2.xpm>

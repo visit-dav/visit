@@ -482,8 +482,8 @@ avtSILRestriction::SetTopSet(int ts)
         EXCEPTION2(BadIndexException, ts, ns);
     }
 
-    size_t i, found = 0;
-    for (i = 0 ; i < wholesList.size() && !found; i++)
+    size_t found = 0;
+    for (size_t i = 0 ; i < wholesList.size() && !found; i++)
     {
         if (wholesList[i] == ts)
             found = 1;
@@ -505,7 +505,7 @@ avtSILRestriction::SetTopSet(int ts)
     // Turn off the other whole sets that were not selected as "top".
     //
     size_t listSize = wholesList.size();
-    for (i = 0 ; i < listSize ; i++)
+    for (size_t i = 0 ; i < listSize ; i++)
     {
         if (wholesList[i] != topSet)
         {
@@ -1607,8 +1607,6 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
 {
     int timingsHandle = visitTimer->StartTimer();
 
-    size_t   i, j;
-
     //
     // Improbable, but make sure we have valid input.
     //
@@ -1622,7 +1620,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
     // This may take some memory, but start off by setting every set as "off"
     //
     vector<bool> isOn(nSets);
-    for (i = 0 ; i < (size_t)nSets ; i++)
+    for (size_t i = 0 ; i < (size_t)nSets ; i++)
     {
         isOn[i] = false;
     }
@@ -1635,7 +1633,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
     avtSILSet_p set = GetSILSet(ind);
     const vector<int> &initialMaps = set->GetMapsOut();
     vector<int> maps;
-    for (i = 0 ; i < initialMaps.size() ; i++)
+    for (size_t i = 0 ; i < initialMaps.size() ; i++)
     {
         maps.push_back(initialMaps[i]);
     }
@@ -1650,7 +1648,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
     vector<bool> alreadyProcessedMap;
     size_t numCollections = GetNumCollections();
     alreadyProcessedMap.resize(numCollections);
-    for (i = 0 ; i < numCollections ; i++)
+    for (size_t i = 0 ; i < numCollections ; i++)
     {
         alreadyProcessedMap[i] = false;
     }
@@ -1672,7 +1670,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
         // Add all of the maps of each of the subsets.
         //
         size_t numElems = nms->GetNumberOfElements();
-        for (i = 0 ; i < numElems ; i++)
+        for (size_t i = 0 ; i < numElems ; i++)
         {
             int setId = nms->GetElement(i);
             isOn[setId] = true;
@@ -1684,7 +1682,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
                 continue;
             avtSILSet_p set = GetSILSet(setId);
             const vector<int> &subsetMap = set->GetMapsOut();
-            for (j = 0 ; j < subsetMap.size() ; j++)
+            for (size_t j = 0 ; j < subsetMap.size() ; j++)
             {
                 maps.push_back(subsetMap[j]);
             }
@@ -1698,7 +1696,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
     // sort out the interior nodes.
     //
     leaves.clear();
-    for (i = 0 ; i < (size_t)nSets ; i++)
+    for (size_t i = 0 ; i < (size_t)nSets ; i++)
     {
         if (isOn[i])
         {
@@ -1749,7 +1747,6 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 {
     int timingsHandle = visitTimer->StartTimer();
 
-    size_t   i, j;
 
     //
     // Improbable, but make sure we have valid input.
@@ -1764,7 +1761,7 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
     // This may take some memory, but start off by setting every set as "off"
     //
     vector<bool> isOn(nSets);
-    for (i = 0 ; i < (size_t)nSets ; i++)
+    for (size_t i = 0 ; i < (size_t)nSets ; i++)
     {
         isOn[i] = false;
     }
@@ -1782,7 +1779,7 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
     avtSILSet_p set = GetSILSet(ind);
     const vector<int> &initialMaps = set->GetMapsOut();
     vector<int> maps;
-    for (i = 0 ; i < initialMaps.size() ; i++)
+    for (size_t i = 0 ; i < initialMaps.size() ; i++)
     {
         maps.push_back(initialMaps[i]);
     }
@@ -1796,7 +1793,7 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
     vector<bool> alreadyProcessedMap;
     size_t numCollections = GetNumCollections();
     alreadyProcessedMap.resize(numCollections);
-    for (i = 0 ; i < numCollections ; i++)
+    for (size_t i = 0 ; i < numCollections ; i++)
     {
         alreadyProcessedMap[i] = false;
     }
@@ -1818,7 +1815,7 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
         // Add all of the maps of each of the subsets.
         //
         size_t numElems = nms->GetNumberOfElements();
-        for (i = 0 ; i < numElems ; i++)
+        for (size_t i = 0 ; i < numElems ; i++)
         {
             int setId = nms->GetElement(i);
             isOn[setId] = true;
@@ -1831,7 +1828,7 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 
             avtSILSet_p set = GetSILSet(setId);
             const vector<int> &subsetMap = set->GetMapsOut();
-            for (j = 0 ; j < subsetMap.size() ; j++)
+            for (size_t j = 0 ; j < subsetMap.size() ; j++)
             {
                 maps.push_back(subsetMap[j]);
             }
@@ -1845,7 +1842,7 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
     // sort out the interior nodes.
     //
     outsets.clear();
-    for (i = 0 ; i < (size_t)nSets ; i++)
+    for (size_t i = 0 ; i < (size_t)nSets ; i++)
         if (isOn[i])
             outsets.push_back(i);
 
@@ -1916,7 +1913,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 {
     int t1 = visitTimer->StartTimer();
     bool compatible = false;
-    size_t i;
+
     vector<int> leaves;
     vector<int> otherLeaves;
 
@@ -1948,7 +1945,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     {
         // copy over the useSet values
         SuspendCorrectnessChecking();
-        for(i = 0; i < leaves.size(); ++i)
+        for(size_t i = 0; i < leaves.size(); ++i)
         {
             useSet[leaves[i]] = silr->useSet[otherLeaves[i]];
         }
@@ -1963,7 +1960,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
         // first, set all the leaves useSet flag to something invalid
         // so we can confirm they've all be visited later
         //
-        for (i = 0; i < leaves.size(); i++)
+        for (size_t i = 0; i < leaves.size(); i++)
             useSet[leaves[i]] = 0xAA;
 
         // stacks used for DFS
@@ -2049,7 +2046,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
         // The latter is the least desireable choice.
         // We choose to turn them on.
         //
-        for (i = 0; i < leaves.size(); i++)
+        for (size_t i = 0; i < leaves.size(); i++)
         {
             if (useSet[leaves[i]] == 0xAA)
                 useSet[leaves[i]] = AllUsed;
@@ -2059,7 +2056,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 
         // special pass for materials
         avtSILCollection_p otherMatColl = NULL;
-        for (i = 0 ; i < (size_t)silr->GetNumCollections() ; i++)
+        for (size_t i = 0 ; i < (size_t)silr->GetNumCollections() ; i++)
         {
             if (silr->GetSILCollection(i)->GetRole() == SIL_MATERIAL)
             {
@@ -2071,7 +2068,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             }
         }
         avtSILCollection_p matColl = NULL;
-        for (i = 0 ; i < (size_t)GetNumCollections() ; i++)
+        for (size_t i = 0 ; i < (size_t)GetNumCollections() ; i++)
         {
             if (GetSILCollection(i)->GetRole() == SIL_MATERIAL)
             {
@@ -2089,7 +2086,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
                 // If a material is turned off in the original SIL restriction,
                 // then turn it off here.
                 size_t numSubsets = otherMatColl->GetNumberOfSubsets();
-                for (i = 0 ; i < numSubsets ; i++)
+                for (size_t i = 0 ; i < numSubsets ; i++)
                 {
                     int idx = otherMatColl->GetSubset(i);
                     if (silr->useSet[idx] == NoneUsed)
@@ -2100,7 +2097,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 
         // special pass for blocks (often refinement levels)
         avtSILCollection_p otherBlockColl = NULL;
-        for (i = 0 ; i < (size_t)silr->GetNumCollections() ; i++)
+        for (size_t i = 0 ; i < (size_t)silr->GetNumCollections() ; i++)
         {
             if (silr->GetSILCollection(i)->GetRole() == SIL_BLOCK)
             {
@@ -2112,7 +2109,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             }
         }
         avtSILCollection_p blockColl = NULL;
-        for (i = 0 ; i < (size_t)GetNumCollections() ; i++)
+        for (size_t i = 0 ; i < (size_t)GetNumCollections() ; i++)
         {
             if (GetSILCollection(i)->GetRole() == SIL_BLOCK)
             {
@@ -2136,7 +2133,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             int numSubsets = (numNewSubsets < numOrigSubsets ? numNewSubsets
                                                              : numOrigSubsets);
             bool lastIsOff = false;
-            for (i = 0 ; i < (size_t)numSubsets ; i++)
+            for (size_t i = 0 ; i < (size_t)numSubsets ; i++)
             {
                 lastIsOff = false;
                 int idx = otherBlockColl->GetSubset(i);
@@ -2148,7 +2145,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             }
             if (lastIsOff && (numNewSubsets > numOrigSubsets))
             {
-                for (i = (size_t)numSubsets ; i < (size_t)numNewSubsets ; i++)
+                for (size_t i = (size_t)numSubsets ; i < (size_t)numNewSubsets ; i++)
                     TurnOffSet(blockColl->GetSubset(i));   
             }
         }

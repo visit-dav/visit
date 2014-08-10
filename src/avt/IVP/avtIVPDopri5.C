@@ -434,7 +434,8 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
         // stepsize underflow?
         if( 0.1*std::abs(h) <= std::abs(t)*epsilon ) 
         {
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5())
+            {
                 debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                        << t << ", step size too small (h = " << h << ")\n";
             }
@@ -454,7 +455,8 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 
         n_steps++;
 
-        if (DebugStream::Level5()) {
+        if (DebugStream::Level5())
+        {
             debug5 << "\tavtIVPDopri5::Step(): t = " << t << ", y = " << yCur 
                    << ", h = " << h << ", t+h = " << t+h << '\n';
         }
@@ -549,7 +551,8 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                 
                     if( iasti == 15 ) 
                     {
-                        if (DebugStream::Level5()) {
+                        if (DebugStream::Level5()) 
+                        {
                             debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                                    << t << ", problem seems stiff (y = " << yCur
                                    << ")\n";
@@ -632,7 +635,8 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             // Update the step size to the new step size.
             h = h_new;
             
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5())
+            {
                 debug5 << "\tavtIVPDopri5::Step(): step rejected, retry with h = "
                        << h << '\n';
             }

@@ -225,7 +225,8 @@ protected:
                        << " [" << minmax[0] << ", " << minmax[1] << "]" << endl;
 
                 std::vector<VISIT_LONG_LONG> hist(256, 0);
-                if(!avtDatasetExaminer::CalculateHistogram(ds, it->first, minmax[0], minmax[1], hist)) {
+                if(!avtDatasetExaminer::CalculateHistogram(ds, it->first, minmax[0], minmax[1], hist))
+                {
                     debug1 << "CalculateHistogram failed" << endl;
                 }
                 
@@ -1518,7 +1519,6 @@ CumulativeQuery<CQCellIdentifier, CQSelection>::SelectAndHistogram(
     double *allVariables = new double[totalCells];
     int *index = new int[totalCells];
 
-    //int i = 0;
 
     // Create an index variable that we'll sort using another variable
     // while storing the variables and ids in a one dimensional array.
@@ -2702,7 +2702,6 @@ avtNamedSelection *
 CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
     const SelectionProperties &props, avtNamedSelectionCache &cache)
 {
-    //const char *mName = "CumulativeQueryNamedSelectionExtension::GetSelection: ";
     avtNamedSelection *ns = NULL;
 
     avtContract_p c0 = dob->GetContractFromPreviousExecution();

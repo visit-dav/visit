@@ -1582,7 +1582,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             // calculation: no communication needed
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
-                size_t i;
+                size_t i = 0;
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -1715,7 +1715,6 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
-                size_t i;
                 MPI_Datatype type = GetMPIDataType<T>();
                 int tRank = domain2proc[recvDom];
 
@@ -1730,6 +1729,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     continue;
                 }
 
+                size_t i=0;
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -1779,8 +1779,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 vector<int> cellPtsVector;
                 int *nPtsPerCellPtr = new int[nCells];
 
-                int j;
-                for (j = 0; j < nCells; ++j)
+                for (int j = 0; j < nCells; ++j)
                 {
                     cellPtr[j] = givingUg->GetCellType(givenCells[index][j]);
                     givingUg->GetCellPoints(givenCells[index][j], idList);
@@ -1788,8 +1787,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     nPts = idList->GetNumberOfIds();
                     nPtsPerCellPtr[j] = nPts;
 
-                    int k;
-                    for (k = 0; k < nPts; ++k)
+                    for (int k = 0; k < nPts; ++k)
                         cellPtsVector.push_back(idList->GetId(k));
                 }
                 
@@ -1896,7 +1894,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
-                size_t i;
+                size_t i = 0;
                 for (i = 0 ; i < domainNum.size() ; i++)
                     if (domainNum[i] == sendDom)
                         break;
@@ -1994,7 +1992,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
-                size_t i;
+                
                 int tRank = domain2proc[recvDom];
 
                 int index = GetGivenIndex(sendDom, recvDom); 
@@ -2007,7 +2005,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     MPI_Send(&amt, 1, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
                     continue;
                 }
-
+                size_t i = 0;
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -2181,7 +2179,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
-                size_t i;
+                size_t i = 0;
                 for (i = 0 ; i < domainNum.size() ; i++)
                     if (domainNum[i] == sendDom)
                         break;
@@ -2304,7 +2302,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
-                size_t i;
+
                 int tRank = domain2proc[recvDom];
 
                 int index = GetGivenIndex(sendDom, recvDom); 
@@ -2317,7 +2315,9 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     MPI_Send(amt, 2, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
                     continue;
                 }
-
+                
+                size_t i = 0;
+                
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -2507,7 +2507,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
             // calculation: no communication needed
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
-                size_t i;
+                size_t i = 0; 
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -2528,6 +2528,8 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 
                 T * origPtr = (T*)(data[i]->GetVoidPointer(0));
                 T * dataPtr = gainedData[sendDom][recvDom];
+
+
 
                 for (int i = 0; i < nTuples; ++i)
                 {

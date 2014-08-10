@@ -1570,11 +1570,27 @@ static int Conn[8][3] = {{1,2,4}, {0,3,5}, {3,0,6}, {2,1,7},
 // *************************************************************************
 void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
 {
-  double bounds[6], slope = 0.0, minSlope, num, den;
-  double pts[8][3], d2, d2Min, min, max;
+  double bounds[6];
+  double slope = 0.0;
+  double minSlope;
+  double num;
+  double den;
+  double pts[8][3];
+  double d2;
+  double d2Min;
+  double min;
+  double max;
   int i, idx = 0;
-  int xIdx, yIdx = 0, zIdx = 0, zIdx2;
-  int xAxes = 0, yAxes, zAxes, xloc = 0, yloc = 0, zloc = 0;
+  int xIdx; 
+  int yIdx = 0;
+  int zIdx = 0;
+  int zIdx2;
+  int xAxes = 0; 
+  int yAxes; 
+  int zAxes;
+  int xloc = 0; 
+  int yloc = 0; 
+  int zloc = 0;
  
   if (this->FlyMode == VTK_FLY_STATIC_EDGES) 
     {

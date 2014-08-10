@@ -925,7 +925,8 @@ vtkVisItScalarBarActor::BuildTics(double origin, double width,
   // generate lines for color bar tics
   //
   double x[3]; x[2] = 0.0;
-  double delta = 0, offset = 0;
+  double delta = 0;
+  double offset = 0;
   double min, max;
   if (this->UseLogScaling)
     {
@@ -1227,7 +1228,8 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   // Determine the number of colors in the color bar.
   //
-  int numColors = 0, numLabels = 0;
+  int numColors = 0;
+  int numLabels = 0;
   this->VerifySuppliedLabels();
   switch (this->Type)
     {

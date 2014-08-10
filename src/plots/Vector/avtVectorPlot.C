@@ -701,14 +701,14 @@ void
 avtVectorPlot::SetLegendRanges()
 {
     double min = 0., max = 1.;
-    bool validRange = false; (void) validRange;  ///TODO: this is not used but might have a side effect
+
     if (atts.GetLimitsMode() == VectorAttributes::OriginalData)
     {
-        validRange = glyphMapper->GetRange(min, max);
+        glyphMapper->GetRange(min, max);
     }
     else
     {
-        validRange = glyphMapper->GetCurrentRange(min, max);
+        glyphMapper->GetCurrentRange(min, max);
     }
     varLegend->SetRange(min, max);
 

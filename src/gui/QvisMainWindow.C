@@ -1562,15 +1562,15 @@ QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
 
     // Simplify the names in the list.
     NameSimplifier simple;
-    size_t i;
-    for(i = 0; i < sources.size(); ++i)
+
+    for(size_t i = 0; i < sources.size(); ++i)
         simple.AddName(sources[i]);
     simple.GetSimplifiedNames(simpleNames);
 
     // Clear out the old list and add the new list.
     m->clear();
     
-    for(i = 0; i < simpleNames.size(); ++i)
+    for(size_t i = 0; i < simpleNames.size(); ++i)
         m->addAction(simpleNames[i].c_str());
 
     //
@@ -1611,21 +1611,20 @@ QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
 void
 QvisMainWindow::UpdateWindowList(bool doList)
 {
-    size_t i;
     int index = globalAtts->GetActiveWindow();
     const intVector &indices = globalAtts->GetWindows();
 
     if(doList)
     {
         intVector oldIndices;
-        for(i = 0; i < (size_t)activeWindowComboBox->count(); ++i)
+        for(size_t i = 0; i < (size_t)activeWindowComboBox->count(); ++i)
             oldIndices.push_back(activeWindowComboBox->itemText(i).toInt());
 
         // Update the Active window combo box.
         if(oldIndices != indices)
         {
             activeWindowComboBox->clear();
-            for(i = 0; i < indices.size(); ++i)
+            for(size_t i = 0; i < indices.size(); ++i)
             {
                 QString temp; temp.sprintf("%d", indices[i]);
                 activeWindowComboBox->addItem(temp);
@@ -1633,7 +1632,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
 
             // Update the Active window menu
             activeWindowPopup->clear();
-            for(i = 0; i < indices.size(); ++i)
+            for(size_t i = 0; i < indices.size(); ++i)
             {
                 QString str; str.sprintf("%d", indices[i]);
                 QAction *act = activeWindowPopup->addAction(tr("Window ") + str);
@@ -1648,7 +1647,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
             activeWindowComboBox->setCurrentIndex(index);
 
         QListIterator<QAction*> itr(actions());
-        i =0;
+        size_t i =0;
         while(itr.hasNext())
         {
             itr.next()->setChecked((size_t)index == i);
@@ -2093,7 +2092,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
 {
     const char *mName = "QvisMainWindow::SetFromNode: ";
 
-    DataNode *winNode = 0/*, *node = 0*/;
+    DataNode *winNode = 0;
     int w = width();
     int h = height();
     QList<int> splitterSizes;
@@ -2101,7 +2100,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
     if((winNode = parentNode->GetNode("MainWin")) != 0)
     {
         DataNode *node = 0;
-        //bool xy_set = false, wh_set = false;
+
         int x = 0, y = 0;
 
         debug1 << mName << "Initializing the main window because it was "
@@ -2111,7 +2110,6 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
         if((node = winNode->GetNode("height")) != 0)
         {
             h = node->AsInt();
-            //wh_set = true;
         }
 
         // Override the settings in the file.
@@ -2122,8 +2120,6 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
             h = overrideGUISize[1];
             x = overrideGUILocation[0];
             y = overrideGUILocation[1];
-            //wh_set = true;
-            //xy_set = true;
         }
 
         // Make sure that the window will fit on the screen.
@@ -2137,14 +2133,14 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
             if(ss.size() >= 2)
             {
                 float sum = 0.;
-                size_t i;
-                for(i = 0; i < ss.size(); ++i)
+
+                for(size_t i = 0; i < ss.size(); ++i)
                     sum += ss[i];
 
                 if(sum >= 0.9 && sum <= 1.)
                 {
                     debug1 << mName << "Using saved splitter values {";
-                    for(i = 0; i < ss.size(); ++i)
+                    for(size_t i = 0; i < ss.size(); ++i)
                     {
                         splitterSizes.push_back(int(ss[i] * h));
                         debug1 << ", " << ss[i];

@@ -986,7 +986,6 @@ InitializeElementNameToAtomicNumberMap()
     elementname_to_atomicnumber["Mt"] = 109;
 }
 
-//static void PrintColorTablesFor_avtColorTables();
 
 static bool maps_initialized = false;
 void

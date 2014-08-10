@@ -109,7 +109,7 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
     double detF;                     // Determinant of element
                                      // deformation gradient.
     double strain[6];                // Calculated strain.
-    size_t i, j, k;
+
     std::vector<int> cellsToIgnore;
     double avgTensor[9];             // ghost zone value
     int nTensors = 0;                // number of tensors in average
@@ -136,9 +136,9 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
     vtkDataArray *out = coord_data->NewInstance();
     out->SetNumberOfComponents(9);
     out->SetNumberOfTuples(nCells);
-    for (j = 0; j < 9; j++) 
+    for (size_t j = 0; j < 9; j++) 
         avgTensor[j] = 0.0;
-    for (i = 0; i < (size_t)nCells; i++)
+    for (size_t i = 0; i < (size_t)nCells; i++)
     {   // Check Voxel format
         int cellType = in_usg->GetCellType(i);
         // ignore everything but hexes
@@ -148,7 +148,7 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
             bool anyGhost = false;
             if (ghost)
             {
-                for (j = 0; j < 8; j++)
+                for (size_t j = 0; j < 8; j++)
                 {
                     if (ghost[pointIds->GetId(j)] != 0)
                     {   // any ghost nodes in this hex
@@ -162,14 +162,14 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
                 cellsToIgnore.push_back(i);                   
                 continue;                                     
             }
-            for (j = 0; j < 8; j++)
+            for (size_t j = 0; j < 8; j++)
             {   // Package initial element geometry points into vtkDataArray
                 coord_data->GetTuple(pointIds->GetId(j), vals);
                 x[j] = vals[0];
                 y[j] = vals[1];
                 z[j] = vals[2];
             }
-            for (j = 0; j < 8; j++)
+            for (size_t j = 0; j < 8; j++)
             {   // Package current element geometry points into vtkDataArray
                 in_usg->GetPoint(pointIds->GetId(j), vals);
                 xx[j] = vals[0];
@@ -180,10 +180,10 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
             // This is where the strain algorithms start to differ
             avtStrainTensorExpression::HexPartialDerivative
                 (px, py, pz, x, y, z);
-            for (j = 0; j < 9; j++) 
+            for (size_t j = 0; j < 9; j++) 
                 F[j] = 0.0;
             // Copied from Griz
-            for ( k = 0; k < 8; k++ )
+            for (size_t  k = 0; k < 8; k++ )
             {          
                 F[0] = F[0] + px[k]*xx[k];
                 F[1] = F[1] + py[k]*xx[k];
@@ -219,7 +219,7 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
             out2[7] = strain[4];  // ZY
             out2[8] = strain[2];  // ZZ
             nTensors++;
-            for (j = 0; j < 9; j++)
+            for (size_t j = 0; j < 9; j++)
                 avgTensor[j] += out2[j];
         } 
         else 
@@ -230,10 +230,10 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
     }
     if (nTensors > 0)
     {   
-        for (j = 0; j < 9; j++)
+        for (size_t j = 0; j < 9; j++)
             avgTensor[j] = avgTensor[j]/nTensors;
     }
-    for (i = 0; i < cellsToIgnore.size(); i++)
+    for (size_t i = 0; i < cellsToIgnore.size(); i++)
     {   
         out->SetTuple(cellsToIgnore[i], avgTensor);
     }

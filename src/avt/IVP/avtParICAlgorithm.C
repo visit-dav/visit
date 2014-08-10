@@ -1153,7 +1153,8 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 void
 avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
 {
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5()) 
+    {
         debug5<<"RestoreIntegralCurveSequence: communicatedICs: "
               <<communicatedICs.size()
               <<" terminatedICs: "<<terminatedICs.size()<<endl;
@@ -1374,7 +1375,8 @@ avtParICAlgorithm::RestoreIntegralCurveToOriginatingProcessor()
 void
 avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
 {
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5()) 
+    {
         debug5<<"RestoreIntegralCurveSequenceAssembleUniformly: communicatedICs: "
           <<communicatedICs.size()
           <<" terminatedICs: "<<terminatedICs.size()<<endl;

@@ -490,8 +490,6 @@ QvisFileSelectionWindow::UpdateSelectedFileList()
     QualifiedFilenameVector::const_iterator pos;
     bool needsHost = false;
     bool needsPath = false;
-    size_t i;
-
     //
     // Search through the list of selected files and see if we'll need to
     // display host or path information.
@@ -500,7 +498,7 @@ QvisFileSelectionWindow::UpdateSelectedFileList()
     {
         std::string host = intermediateFileList[0].host;
         std::string path = intermediateFileList[0].path;
-        for(i = 1; i < intermediateFileList.size(); ++i)
+        for(size_t i = 1; i < intermediateFileList.size(); ++i)
         {
             bool differentHost = (intermediateFileList[i].host != host);
             bool differentPath = (intermediateFileList[i].path != path);
@@ -614,8 +612,6 @@ QvisFileSelectionWindow::setEnabled(bool val)
 void
 QvisFileSelectionWindow::okClicked()
 {
-    size_t i;
-
     // Hide the remove path window.
     recentPathsRemovalWindow->hide();
 
@@ -627,7 +623,7 @@ QvisFileSelectionWindow::okClicked()
 
     // build vector of assciated time states
     std::vector<int> timeStates;
-    for (i = 0; i < intermediateFileList.size(); ++i)
+    for (size_t i = 0; i < intermediateFileList.size(); ++i)
         timeStates.push_back(GetStateForSource(intermediateFileList[i]));
 
     // Store the intermediate file list into the file server's 

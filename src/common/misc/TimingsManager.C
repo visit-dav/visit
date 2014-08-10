@@ -301,6 +301,9 @@ TimingsManager::Finalize()
 //    Kathleen Bonnell, Tue Oct 31 16:38:28 PST 2006 
 //    Added different if-test for Windows platform. 
 //
+//    Cyrus Harrison, Fri Aug  8 13:25:54 PDT 2014
+//    Check return of getcwd().
+//
 // ****************************************************************************
 
 void
@@ -325,7 +328,12 @@ TimingsManager::SetFilename(const std::string &fname)
 #else
         char* res = getcwd(currentDir,1023);
 #endif
-        (void) res;
+        if(res == NULL)
+        {
+            debug1 << "failed to get current working directory via getcwd()"
+                   << std::endl;
+        }
+
         currentDir[1023]='\0';
         std::string filenameTmp(currentDir);
         if(filenameTmp[filenameTmp.size()-1] != VISIT_SLASH_CHAR)

@@ -380,8 +380,7 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
     cb->clear();
 
     // Populate the combo box.
-    size_t i;
-    for(i = 0; i < s.size(); ++i)
+    for(size_t i = 0; i < s.size(); ++i)
         cb->addItem(s[i].c_str());
 
     // Set the current item.
@@ -393,8 +392,8 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
     }
 
     cb->setCurrentIndex(index);
-//    cb->setEditText(activeItem);
-cb->setEditable(true);
+    //    cb->setEditText(activeItem);
+    cb->setEditable(true);
     // Note: in Qt4 combo boxes expand out to max possible size, we
     // don't need to set a min size as we did before.
     // (we may want to set a max size some time in the future, but

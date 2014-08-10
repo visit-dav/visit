@@ -901,8 +901,7 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
         //
         // Get all the zonal variables.
         //
-        size_t v;
-        for (v = 0 ; v < li.cellDataIndex.size() ; v++)
+        for (size_t v = 0 ; v < li.cellDataIndex.size() ; v++)
         {
             if (li.cellDataIndex[v] < 0)
                 continue;
@@ -915,7 +914,7 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
         // Turn all the nodal variables into zonal variables.
         //
         vtkIdList *ids = cell->GetPointIds();
-        for (v = 0 ; v < li.pointDataIndex.size() ; v++)
+        for (size_t v = 0 ; v < li.pointDataIndex.size() ; v++)
         {
             if (li.pointDataIndex[v] < 0)
                 continue;

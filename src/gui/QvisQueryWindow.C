@@ -744,8 +744,8 @@ QvisQueryWindow::UpdateQueryList()
     int selectedIndex = -1;
     int selectedFunction = displayMode->currentIndex() -1;
     queryList->clear();
-    size_t i;
-    for(i = 0; i < names.size(); ++i)
+    
+    for(size_t i = 0; i < names.size(); ++i)
     {
         if (!canBePublic[i])
             continue;
@@ -772,7 +772,7 @@ QvisQueryWindow::UpdateQueryList()
     {
         listEnabled = true;
         selectedIndex = 0;
-        for (i = 0; i < (size_t)queryList->count(); i++)
+        for (size_t i = 0; i < (size_t)queryList->count(); i++)
         {
             if (queryList->item(i)->text() == queryName)
             {
@@ -998,7 +998,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         bool showTime = queryMode[index] != QueryList::QueryOnly;
         bool timeOnly = queryMode[index] == QueryList::TimeOnly;
         bool showVars = requiresVars[index];
-        //bool showTimeCurvePlotType = false;
+
         varsLineEdit->setText("default");
         varsButton->setVarTypes(queryVarTypes);
 
@@ -1035,7 +1035,6 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             showWidgets[1] = true;
             useGlobal->setText("Use Global Zone");
             showGlobal = true;
-            //showTimeCurvePlotType = (queries->GetNumVars()[index] < 2);
         }
         else if (winT == QueryList::DomainNode)
         {
@@ -1059,7 +1058,6 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             showWidgets[1] = true;
             useGlobal->setText("Use Global Node");
             showGlobal = true;
-            //showTimeCurvePlotType = (queries->GetNumVars()[index] < 2);
         }
         else if (winT == QueryList::ActualData)
         {
@@ -1436,9 +1434,7 @@ QvisQueryWindow::ExecuteStandardQuery()
 
     if(index >= 0 && (size_t)index < types.size())
     {
-        //QueryList::QueryType t = (QueryList::QueryType)types[index];
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
-        //double p0[3] = {0., 0., 0.}, p1[3] = {0., 0., 0.};
         stringVector vars;
 
         bool noErrors = GetVars(vars);

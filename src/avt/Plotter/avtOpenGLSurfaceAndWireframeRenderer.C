@@ -127,12 +127,11 @@ avtOpenGLSurfaceAndWireframeRenderer::ReleaseGraphicsResources()
 {
     if (VTKRen == NULL)
         return;
-
-    size_t i;
+    ;
 
     VTKRen->GetRenderWindow()->MakeCurrent();
 
-    for (i = 0; i < surfaceListId.size(); i++)
+    for (size_t i = 0; i < surfaceListId.size(); i++)
     {
         if (surfaceListId[i])
         {
@@ -141,7 +140,7 @@ avtOpenGLSurfaceAndWireframeRenderer::ReleaseGraphicsResources()
             surfaceModified[i] = true;
         }
     }
-    for (i = 0; i < edgesListId.size(); i++)
+    for (size_t i = 0; i < edgesListId.size(); i++)
     {
         if (edgesListId[i])
         {
@@ -150,7 +149,7 @@ avtOpenGLSurfaceAndWireframeRenderer::ReleaseGraphicsResources()
             edgesModified[i] = true;
         }
     }
-    for (i = 0; i < setupListId.size(); i++)
+    for (size_t i = 0; i < setupListId.size(); i++)
     {
         if (setupListId[i])
         {

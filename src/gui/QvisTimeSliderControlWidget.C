@@ -364,7 +364,6 @@ QvisTimeSliderControlWidget::UpdateAnimationControls(bool doAll)
         //
         if(activeTS >= 0)
         {
-            size_t i;
             activeTimeSlider->blockSignals(true);
             activeTimeSlider->clear();
             const stringVector &tsNames = windowInfo->GetTimeSliders();
@@ -375,7 +374,7 @@ QvisTimeSliderControlWidget::UpdateAnimationControls(bool doAll)
             NameSimplifier simplifier;
             const stringVector &sources = GetViewerState()->
                 GetGlobalAttributes()->GetSources();
-            for(i = 0; i < sources.size(); ++i)
+            for(size_t i = 0; i < sources.size(); ++i)
                 simplifier.AddName(sources[i]);
             stringVector shortNames;
             simplifier.GetSimplifiedNames(shortNames);
@@ -384,7 +383,7 @@ QvisTimeSliderControlWidget::UpdateAnimationControls(bool doAll)
             // Fill in the combo box using the short name for sources and
             // time slider names for items that are not sources.
             //
-            for(i = 0; i < tsNames.size(); ++i)
+            for(size_t i = 0; i < tsNames.size(); ++i)
             {
                 int index = -1;
                 for(size_t j = 0; j < sources.size(); ++j)

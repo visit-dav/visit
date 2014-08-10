@@ -290,7 +290,6 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
     int amtPerMsg = npts / extraMsg + 1;
     UpdateProgress(extraMsg*currentNode+2*extraMsg/3, totalProg);
     int lastMilestone = 0;
-    size_t i, j, k;
 
     int hashSize = 10000;
     vector< vector<int> >    hashedLineidLookup(hashSize);
@@ -299,7 +298,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
 
     // After this loop completes, a set of line endpoints and ids will fill 
     // the hash tables.
-    for (i = 0 ; i < (size_t)npts ; i++)
+    for (size_t i = 0 ; i < (size_t)npts ; i++)
     {
         // glue segments into one long line
         if (usedPoint[i])
@@ -364,14 +363,14 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
 
     vector< double > projectedSegments;
 
-    for (i = 0 ; i < (size_t)hashSize ; i++)
+    for (size_t i = 0 ; i < (size_t)hashSize ; i++)
     {
         while (1)
         {
             // Look for a valid line id for this hash element.
             // If none are left, move to the next hash bin.
             int currLineID = -1;
-            for (j = 0 ; j < hashedLineidLookup[i].size() ; j++)
+            for (size_t j = 0 ; j < hashedLineidLookup[i].size() ; j++)
             {
                 if (hashedLineidLookup[i][j] != -1)
                 {
@@ -390,7 +389,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
     
             //Pull out all the segments with id == currLineID, 
             //and store their projected lengths.
-            for (j = 0 ; j < hashedLineidLookup[i].size() ; j++)
+            for (size_t j = 0 ; j < hashedLineidLookup[i].size() ; j++)
             {
                 if (hashedLineidLookup[i][j] == currLineID)
                 {
@@ -420,7 +419,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
         
             double min = projectedSegments[0];
             //printf("----line %f,%f  to  %f,%f  min=%f----\n", lines[currLineID*6], lines[currLineID*6+2], lines[currLineID*6+1], lines[currLineID*6+3], min);
-            for (j = 0; j < projectedSegments.size(); j++ )
+            for (size_t j = 0; j < projectedSegments.size(); j++ )
             {
                 projectedSegments[j] -= min;
             }
@@ -429,7 +428,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
             //    printf("%f %f\n", projectedSegments[j], projectedSegments[j+1]);
             //}
 
-            for ( k = 2 ; k <= projectedSegments.size() ; k++ )
+            for ( size_t k = 2 ; k <= projectedSegments.size() ; k++ )
             {
                 for ( i = 1 ; i <= k - 1 ; i++ )
                 {

@@ -637,13 +637,12 @@ VisWinAnnotations::DeleteAllAnnotationObjects()
 void
 VisWinAnnotations::RaiseActiveAnnotationObjects()
 {
-    size_t i;
     std::vector<avtAnnotationColleague *> newList;
 
     //
     // If an annotation is active, then add it to the list.
     //
-    for(i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         // Remove the object from the renderer.
         annotations[i]->RemoveFromRenderer();
@@ -656,7 +655,7 @@ VisWinAnnotations::RaiseActiveAnnotationObjects()
     // Now that all of the active annotations have been moved to the top
     // of the list, add the ones that were not active.
     //
-    for(i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         if(!annotations[i]->GetActive())
             newList.push_back(annotations[i]);
@@ -664,7 +663,7 @@ VisWinAnnotations::RaiseActiveAnnotationObjects()
 
     // Add the annotations to the renderer in the new order.
     annotations = newList;
-    for(i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->AddToRenderer();
 }
 
@@ -685,13 +684,13 @@ VisWinAnnotations::RaiseActiveAnnotationObjects()
 void
 VisWinAnnotations::LowerActiveAnnotationObjects()
 {
-    size_t i;
+
     std::vector<avtAnnotationColleague *> newList;
 
     //
     // If an annotation is active, then add it to the list.
     //
-    for(i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         // Remove the object from the renderer.
         annotations[i]->RemoveFromRenderer();
@@ -704,7 +703,7 @@ VisWinAnnotations::LowerActiveAnnotationObjects()
     // Now that all of the active annotations have been moved to the top
     // of the list, add the ones that were not active.
     //
-    for(i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
     {
         if(annotations[i]->GetActive())
             newList.push_back(annotations[i]);
@@ -712,7 +711,7 @@ VisWinAnnotations::LowerActiveAnnotationObjects()
 
     // Add the annotations to the renderer in the new order.
     annotations = newList;
-    for(i = 0; i < annotations.size(); ++i)
+    for(size_t i = 0; i < annotations.size(); ++i)
         annotations[i]->AddToRenderer();
 }
 

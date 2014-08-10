@@ -262,7 +262,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
     if (fieldRes != avtIVPField::OK)
     {
-        if( DebugStream::Level5() ) {
+        if( DebugStream::Level5() )
+        {
             debug5 << "avtIntegralCurve::Advance(): initial point is outside domain\n";
         }
         if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
@@ -315,7 +316,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
             if (fieldRes != avtIVPField::OK)
             {
-                if( DebugStream::Level5() ) {
+                if( DebugStream::Level5() )
+                {
                     debug5 << "avtIntegralCurve::Advance(): step ended in ghost data\n";
                 }
                 if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
@@ -349,7 +351,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
             if (fieldRes != avtIVPField::OK)
             {
-                if( DebugStream::Level5() ) {
+                if( DebugStream::Level5() )
+                {
                     debug5 << "avtIntegralCurve::Advance(): "
                            << "current point outside domain\n";
                 }
@@ -382,7 +385,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 if (h == 0.0)
                     h = 1.0;
 
-                if( DebugStream::Level5() ) {
+                if( DebugStream::Level5() )
+                {
                     debug5 << "avtIntegralCurve::Advance(): step outside, "
                            << "retry with initial guess " << h << '\n';
                 }
@@ -397,7 +401,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 avtVector v;
                 if ((*field)(t, y, v) != avtIVPField::OK)
                 {
-                    if( DebugStream::Level5() ) {
+                    if( DebugStream::Level5() )
+                    {
                         debug5 << "avtIntegralCurve::Advance(): bad step, "
                                << "Error with t: " << t << " y: " << y << endl;
                     }
@@ -439,7 +444,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 t += h;
                 y += h*v;
 
-                if( DebugStream::Level5() ) {
+                if( DebugStream::Level5() )
+                {
                     debug5 << "avtIntegralCurve::Advance(): step outside, minimal "
                            << "stepsize reached, pushing to " << y << '\n';
                 }
@@ -456,7 +462,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
         {
             // If we get here, the integration resulted in a (likely
             // numerical) error. Cannot continue the integration.
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5())
+            {
                 debug5 << "avtIntegralCurve::Advance(): "
                        << "error during step, finished\n";
             }
@@ -467,7 +474,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
     
     status.ClearInsideBlock();
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "avtIntegralCurve::Advance(): done, status: "<<status<<endl;
     }
 }
@@ -542,7 +550,8 @@ void
 avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff, 
                             avtIVPSolver *solver, SerializeFlags serializeFlags)
 {
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "  avtIntegralCurve::Serialize "
                << (mode==MemStream::READ?"READ":"WRITE")<<endl;
     }
@@ -596,7 +605,8 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     }
 #endif
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "avtIntegralCurve::Serialize() size is " 
                << buff.len() << endl;
     }

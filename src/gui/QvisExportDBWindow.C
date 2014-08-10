@@ -459,7 +459,6 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
           case ExportDBAttributes::ID_db_type:
             {
                 fileFormatComboBox->blockSignals(true);
-                //int count = fileFormatComboBox->count();
                 fileFormatComboBox->clear();
                 int nTypes = dbPluginInfoAtts->GetTypes().size();
                 int curItem = -1;

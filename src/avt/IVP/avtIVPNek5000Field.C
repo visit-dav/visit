@@ -87,7 +87,10 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
   }
 
   // Get the number of point per spectrial elements
-  unsigned int iDim = 0, iBlockSize[3], iNumBlocks = 0, npts = 1;
+  unsigned int iDim = 0;
+  unsigned int iBlockSize[3] = {0,0,0};
+  unsigned int iNumBlocks = 0;
+  unsigned int npts = 1;
 
   vtkIntArray *semVTK =
     (vtkIntArray *) fieldData->GetAbstractArray("Nek_SpectralElementData");  
@@ -103,7 +106,9 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
       iDim = 3;
     else
       iDim = 2;
-  } else {
+  }
+  else 
+  {
     EXCEPTION1( InvalidVariableException,
                 "Uninitialized option. (Please contact visit-developer mailing list to report)" );
   }

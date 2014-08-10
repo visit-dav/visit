@@ -152,7 +152,8 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
     int numStiff = 0;
     int numCritPts = 0;
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5())
+    {
         debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
     }
     //See how many pts, ics we have so we can preallocate everything.

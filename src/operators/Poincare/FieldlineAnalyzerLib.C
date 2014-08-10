@@ -308,7 +308,6 @@ void least_square_fit( std::vector< TYPE > p_windings,
   for (unsigned int i=start; i<stop; i++)
     p_square_sum += p_windings[i]*p_windings[i];
 
-  //double SS_yy = p_square_sum-cc*p_mean*p_mean;
   double SS_xy = 0;
 
   for (unsigned int i=start; i<stop; i++)
@@ -780,8 +779,6 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
     for( unsigned int i=0; i<entries; ++i )
       values[i] = stats[i].first;
     
-    //unsigned int resonance = (unsigned int)GCD( values, freq );
-
     return mult * baseResonance;
   }
   else
@@ -932,9 +929,6 @@ FieldlineLib::IntersectCheck( std::vector< Point >& points,
                               unsigned int nbins,
                               unsigned int offset )
 {
-  //Vector v0 = (Vector) points[ nbins] - (Vector) points[0];
-  //Vector v1 = (Vector) points[offset] - (Vector) points[0];
-
   // If the offset and point ordering have the same directions then
   // the next group is the offset. Otherwise if they are in the
   // opposite direction then nbins-offset is the next group.
@@ -1917,7 +1911,6 @@ islandChecks( std::vector< Point >& points,
   if( islands ) {
 
     unsigned int cc = 0;
-    //unsigned int index = 0;
     unsigned int new_nnodes = 0;
 
     for( unsigned int i=0; i<toroidalWinding; i++ )
@@ -1925,7 +1918,6 @@ islandChecks( std::vector< Point >& points,
       if( nodes[i] < nnodes - 1 || nnodes + 1 < nodes[i] )
       {
         cc++;
-        //index = i;
       }
       else
         new_nnodes += nodes[i];
@@ -1975,7 +1967,6 @@ FieldlineLib::getPunctures( std::vector< Point > &ptList,
   plane[2] = planeN.z;
   plane[3] = planePt.dot(planeN);
   
-  //int bin = 0;
   
   // So to get the winding groups consistant start examining
   // the fieldline in the same place for each plane.
@@ -2082,8 +2073,6 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
   bool zeroAngle = false;
   
   double maxZ = currPt.z;
-  //double maxZrotationalSum = 0;
-  //bool   maxZset = false;
 
 
   if( OLineToroidalWinding )
@@ -2179,7 +2168,6 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
     if( maxZ < currPt.z )
     {
       maxZ = currPt.z;
-      //maxZrotationalSum = rotationalSum;
     }
 
     // Save the distance between points to use for finding periodic
@@ -2868,7 +2856,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   unsigned int nPuncturesNeeded = 0;
 
   unsigned int drawableBaseWindingPairIndex = -1;
-  //unsigned int toroidalMatchIndex = -1, poloidalMatchIndex = -1;
 
   unsigned int toroidalWindingMax = 0, poloidalWindingMax = 0;
 
@@ -4087,7 +4074,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     nnodes /= (float) toroidalWinding;
 
     unsigned int cc = 0;
-    //unsigned int index = 0;
     unsigned int new_nnodes = 0;
       
     for( unsigned int i=0; i<toroidalWinding; i++ )
@@ -4095,7 +4081,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       if( nodes[i] < nnodes - 1 || nnodes + 1 < nodes[i] )
       {
         cc++;
-        //index = i;
       }
       else
         new_nnodes += nodes[i];
@@ -4151,16 +4136,12 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
           (i+offsetDir*windingGroupOffset + toroidalWinding) % toroidalWinding;
 
         Vector firstPoint = (Vector) poloidal_puncture_pts[j];
-        //Vector nextPoint  = (Vector) poloidal_puncture_pts[j+toroidalWinding];
           
         Vector  lastPoint =
           (Vector) poloidal_puncture_pts[i+(nnodes-1)*toroidalWinding];
         Vector  prevPoint =
           (Vector) poloidal_puncture_pts[i+(nnodes-2)*toroidalWinding];
           
-        //Vector v0 = nextPoint - firstPoint;
-        //Vector v1 = lastPoint - firstPoint;
-
         unsigned int needPts = ( (firstPoint-lastPoint).length() /
                                  (prevPoint-lastPoint).length() + 0.5 );
           
@@ -5508,7 +5489,6 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
           double angle = 0;
           double length = 99999;
           unsigned int angleIndex = 0;
-          //unsigned int lengthIndex = 0;
 
           for( unsigned int k=1; k<bins[i].size(); k++ ) {
 
@@ -5524,7 +5504,6 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
             if( length < v1.length() ) {
               length = v1.length();
-              //lengthIndex = k;
             }
 
             // Go on.
@@ -6352,7 +6331,6 @@ FieldlineLib::findSkeletonCenter( Skeleton::Skeleton &s,
 
       int nextIndex = startIndex;
 
-      //unsigned int nlines = 0;
 
       // Loop through all of the segments which are described
       // as set of paired points.

@@ -142,9 +142,6 @@ void QWsSocket::dataReceived()
     BA = tcpSocket->read(1);
     byte = BA[0];
     quint8 FIN = (byte >> 7);
-    //quint8 RSV1 = ((byte & 0x7F) >> 6);
-    //quint8 RSV2 = ((byte & 0x3F) >> 5);
-    //quint8 RSV3 = ((byte & 0x1F) >> 4);
     EOpcode Opcode = (EOpcode)(byte & 0x0F);
 
     // Mask, PayloadLength

@@ -1583,15 +1583,15 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds,
         int nTuples = origCells->GetNumberOfTuples();
         int nComp = origCells->GetNumberOfComponents();
         int comp = nComp -1;
-        size_t i, j;
+
         unsigned int *oc = origCells->GetPointer(0);
         size_t nFound = 0;
         bool *zoneFound = new bool[origZones.size()];
-        for (i = 0; i < origZones.size(); i++)
+        for (size_t i = 0; i < origZones.size(); i++)
             zoneFound[i] = false;
-        for (i = 0; i < (size_t)nTuples && nFound < origZones.size(); i++)
+        for (size_t i = 0; i < (size_t)nTuples && nFound < origZones.size(); i++)
         {
-            for (j = 0; j < currentZones.size(); j++)
+            for (size_t j = 0; j < currentZones.size(); j++)
             {
                 if (!zoneFound[j] && oc[i*nComp+comp] == (unsigned int)origZones[j])
                 {
@@ -1736,7 +1736,7 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     int foundEl= pickAtts.GetElementNumber();
     intVector incEls = pickAtts.GetIncidentElements();
 
-    size_t i, j;
+
     bool forCell = pickAtts.GetPickType() == PickAttributes::Zone || 
                    pickAtts.GetPickType() == PickAttributes::DomainZone;
     char fString[20], tmp[20];
@@ -1744,7 +1744,7 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     stringVector elStrings;
     foundEl = vtkVisItUtility::CalculateRealID(foundEl, forCell, ds);
     SNPRINTF(fString, 20, "(%d)", foundEl);
-    for (i = 0; i < incEls.size(); i++)
+    for (size_t i = 0; i < incEls.size(); i++)
     {
         incEls[i] = vtkVisItUtility::CalculateRealID(incEls[i], !forCell, ds);
         SNPRINTF(tmp, 20, "(%d)", incEls[i]);
@@ -1753,7 +1753,7 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
 
     // need to change the zone/node names stored in all PickVarInfo
     size_t numVars = pickAtts.GetNumVarInfos();
-    for (i = 0; i < numVars; i++)
+    for (size_t i = 0; i < numVars; i++)
     {
         if (pickAtts.GetVarInfo(i).GetVariableType() == "material")
             continue;
@@ -1763,7 +1763,7 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
             continue;
         if (names.size() == incEls.size())
         {
-            for (j = 0; j < names.size(); j++)
+            for (size_t j = 0; j < names.size(); j++)
             {
                 names[j] = elStrings[j]; 
             }

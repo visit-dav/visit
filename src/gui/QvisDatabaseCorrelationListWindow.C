@@ -256,8 +256,8 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         // of correlation names.
         //
         NameSimplifier simplifier;
-        size_t i, nC = correlationList->GetNumCorrelations();
-        for(i = 0; i < nC; ++i)
+        size_t nC = correlationList->GetNumCorrelations();
+        for(size_t i = 0; i < nC; ++i)
         {
             const DatabaseCorrelation &c = correlationList->GetCorrelations(i);
             simplifier.AddName(c.GetName());
@@ -265,7 +265,7 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         stringVector shortNames;
         simplifier.GetSimplifiedNames(shortNames);
         nameMap.clear();
-        for(i = 0; i < shortNames.size(); ++i)
+        for(size_t i = 0; i < shortNames.size(); ++i)
         {
             const DatabaseCorrelation &c = correlationList->GetCorrelations(i);
             nameMap[shortNames[i]] = c.GetName();

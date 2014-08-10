@@ -234,17 +234,19 @@ avtWholeImageCompositerNoZ::~avtWholeImageCompositerNoZ()
 void
 avtWholeImageCompositerNoZ::Execute(void)
 {
-    size_t i = 0;
-    int numRows = 0, numCols = 0;
-    unsigned char *iorgb = NULL, *riorgb = NULL;
-    vtkImageData *mergedLocalImage = NULL, *mergedGlobalImage = NULL;
+    int numRows = 0;
+    int numCols = 0;
+    unsigned char *iorgb = NULL;
+    unsigned char  *riorgb = NULL;
+    vtkImageData *mergedLocalImage = NULL;
+    vtkImageData *mergedGlobalImage = NULL;
 
     // sanity checks
     if (inputImages.empty())
     {
        EXCEPTION1(ImproperUseException, "No images to composite!");
     }
-    for (i = 0; i < inputImages.size(); i++)
+    for (size_t i = 0; i < inputImages.size(); i++)
     {
         inputImages[i]->GetImage().GetSize(&numRows, &numCols);
         if (numRows != outRows || numCols != outCols)
@@ -274,7 +276,7 @@ avtWholeImageCompositerNoZ::Execute(void)
        memcpy(iorgb, rgb0, nPixels * 3 * sizeof(unsigned char));
 
        // do the merges, accumulating results in ioz and iorgb
-       for (i = 1; i < inputImages.size(); i++)
+       for (size_t i = 1; i < inputImages.size(); i++)
        {
            const unsigned char *rgb = inputImages[i]->GetImage().GetRGBBuffer();
            MergeBuffers(nPixels, false, rgb, iorgb);

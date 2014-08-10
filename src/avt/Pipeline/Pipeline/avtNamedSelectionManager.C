@@ -245,10 +245,8 @@ void
 avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
                                                bool shouldExpectSel)
 {
-    size_t i;
-
     int numToRemove = -1;
-    for (i = 0 ; i < selList.size() ; i++)
+    for (size_t i = 0 ; i < selList.size() ; i++)
     {
         if (selList[i]->GetName() == name)
         {
@@ -268,9 +266,9 @@ avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
     delete selList[numToRemove];
 
     std::vector<avtNamedSelection *> newList(selList.size()-1);
-    for (i = 0 ; i < (size_t)numToRemove ; i++)
+    for (size_t i = 0 ; i < (size_t)numToRemove ; i++)
         newList[i] = selList[i];
-    for (i = numToRemove+1 ; i < selList.size() ; i++)
+    for (size_t i = numToRemove+1 ; i < selList.size() ; i++)
         newList[i-1] = selList[i];
 
     selList = newList;

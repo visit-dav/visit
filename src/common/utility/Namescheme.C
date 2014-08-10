@@ -301,7 +301,9 @@ int Namescheme::EvalExprTree(Namescheme *ns, Namescheme::DBexprnode *tree, int n
     }
     else if (tree->left != 0 && tree->right != 0)
     {
-        int vc = 0, vl = 0, vr = 0;
+        int vc = 0;
+        int vl = 0;
+        int vr = 0;
         if (tree->type == '?')
         {
             vc = EvalExprTree(ns, tree->left, n);

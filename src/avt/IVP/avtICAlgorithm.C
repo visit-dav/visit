@@ -309,7 +309,8 @@ avtICAlgorithm::Execute()
 void
 avtICAlgorithm::PostExecute()
 {
-    if (DebugStream::Level1()) {
+    if (DebugStream::Level1())
+    {
         debug1<<"avtICAlgorithm::PostExecute()\n";
     }
     vector<avtIntegralCurve *> v;

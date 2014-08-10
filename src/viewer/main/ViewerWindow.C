@@ -9415,10 +9415,9 @@ void
 ViewerWindow::UpdateLastExternalRenderRequestInfo(
     const ExternalRenderRequestInfo &newRequest)
 {
-    size_t i = 0;
 
     // delete any old copies of plot attributes
-    for (i = 0; i < lastExternalRenderRequest.plotIdsList.size(); i++)
+    for (size_t i = 0; i < lastExternalRenderRequest.plotIdsList.size(); i++)
     {
         if (lastExternalRenderRequest.attsList[i] != NULL)
             delete lastExternalRenderRequest.attsList[i];
@@ -9426,7 +9425,7 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 
     // make copies of the plot attributes 
     lastExternalRenderRequest.attsList.clear();
-    for (i = 0; i < newRequest.plotIdsList.size(); i++)
+    for (size_t i = 0; i < newRequest.plotIdsList.size(); i++)
     {
         AttributeSubject *tmp = newRequest.attsList[i]->NewInstance(true);
         lastExternalRenderRequest.attsList.push_back(tmp);
@@ -9441,9 +9440,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     lastExternalRenderRequest.annotObjs     = newRequest.annotObjs;
     lastExternalRenderRequest.extStr        = newRequest.extStr;
     lastExternalRenderRequest.visCues       = newRequest.visCues;
-    for (i = 0; i < 7; i++)
+    for (size_t i = 0; i < 7; i++)
         lastExternalRenderRequest.frameAndState[i] = newRequest.frameAndState[i];
-    for (i = 0; i < 6; i++)
+    for (size_t i = 0; i < 6; i++)
         lastExternalRenderRequest.viewExtents[i] = newRequest.viewExtents[i];
     lastExternalRenderRequest.lastChangedCtName = ""; 
     lastExternalRenderRequest.leftEye       = newRequest.leftEye;
@@ -9593,8 +9592,8 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         return false;
 
     bool sameFrameAndState = true;
-    size_t i;
-    for (i = 0; i < 7; i++)
+
+    for (size_t i = 0; i < 7; i++)
     {
         if (thisRequest.frameAndState[i] != lastRequest.frameAndState[i])
         {
@@ -9606,7 +9605,7 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         return false;
 
     bool sameViewExtents = true;
-    for (i = 0; i < 6; i++)
+    for (size_t i = 0; i < 6; i++)
     {
         if (thisRequest.viewExtents[i] != lastRequest.viewExtents[i])
         {
@@ -9621,7 +9620,7 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         (thisRequest.plotIdsList.size() != lastRequest.plotIdsList.size()))
         return false;
 
-    for (i = 0; i < thisRequest.plotIdsList.size(); i++)
+    for (size_t i = 0; i < thisRequest.plotIdsList.size(); i++)
     {
         // search for index of current plot in last list
         int indexOfPlotInLastList = -1;

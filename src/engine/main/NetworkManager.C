@@ -685,7 +685,12 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                 _getcwd(tmpcwd, 1023);
 #else
-                char* res = getcwd(tmpcwd, 1023); (void) res;
+                char* res = getcwd(tmpcwd, 1023); 
+                if(res == NULL)
+                {
+                    debug1 << "failed to get current working directory"
+                           << " via getcwd()" << std::endl;
+                }
 #endif
                 tmpcwd[1023] = '\0';
 
@@ -705,7 +710,12 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                     _chdir(path.c_str());
 #else
-                    int res = chdir(path.c_str()); (void) res;
+                    int res = chdir(path.c_str());
+                    if(res == -1)
+                    {
+                        debug1 << "failed to change the current working directory"
+                               << " via chdir()" << std::endl;
+                    }
 #endif
                 }
                 // look for files that match pattern
@@ -726,7 +736,12 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                     _chdir(oldPath.c_str());
 #else
-                    int res = chdir(oldPath.c_str()); (void) res;
+                    int res = chdir(oldPath.c_str()); 
+                    if(res == -1)
+                    {
+                        debug1 << "failed to change the current working directory"
+                               << " via chdir()" << std::endl;
+                    }
 #endif
                 }
             
@@ -2845,7 +2860,6 @@ NetworkManager::SaveWindow(const intVector &ids,
                 if(networkCache.size() > 0)
                 {
                     DataNetwork *net = networkCache[networkIds[0]];
-                    //int id = net->GetNetID();
 
                     // We need to update the view so we can see what we have. This is
                     // not quite the method I wanted to use to get the data attributes

@@ -207,13 +207,16 @@ avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex
     }
 
     debug5 << "avtRecenterExpression: recentering mode: ";
-    if (recenterMode == Toggle) {
+    if (recenterMode == Toggle)
+    {
         debug5 << "toggle" << endl;
     }
-    if (recenterMode == Nodal) {
+    if (recenterMode == Nodal)
+    {
         debug5 << "nodal" << endl;
     }
-    if (recenterMode == Zonal) {
+    if (recenterMode == Zonal)
+    {
         debug5 << "zonal" << endl;
     }
 

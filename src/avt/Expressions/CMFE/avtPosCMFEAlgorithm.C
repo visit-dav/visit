@@ -509,7 +509,7 @@ avtPosCMFEAlgorithm::DesiredPoints::AddDataset(vtkDataSet *ds)
 void
 avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
 {
-    int   i, j;
+
     int   index = 0;
 
     if (vals != NULL)
@@ -523,10 +523,10 @@ avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
     num_rgrids = rgrid_pts.size() / 3;
     int numNonRGrid = pt_list_size.size();
     num_datasets = numNonRGrid + num_rgrids;
-    for (i = 0 ; i < numNonRGrid ; i++)
+    for (int i = 0 ; i < numNonRGrid ; i++)
         total_nvals += pt_list_size[i];
     rgrid_start = total_nvals;
-    for (i = 0 ; i < num_rgrids ; i++)
+    for (int i = 0 ; i < num_rgrids ; i++)
     {
         int nvals = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
                   * rgrid_pts_size[3*i+2];
@@ -534,32 +534,32 @@ avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
     }
 
     int *ds_size = new int[num_datasets];
-    for (i = 0 ; i < numNonRGrid ; i++)
+    for (int i = 0 ; i < numNonRGrid ; i++)
         ds_size[i] = pt_list_size[i];
-    for (i = 0 ; i < num_rgrids ; i++)
+    for (int i = 0 ; i < num_rgrids ; i++)
         ds_size[i+numNonRGrid] = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
                                * rgrid_pts_size[3*i+2];
 
     ds_start = new int[num_datasets];
     if (num_datasets > 0)
         ds_start[0] = 0;
-    for (i = 1 ; i < num_datasets ; i++)
+    for (size_t i = 1 ; i < num_datasets ; i++)
         ds_start[i] = ds_start[i-1] + ds_size[i-1];
     delete [] ds_size;
 
     map_to_ds = new int[total_nvals];
     index = 0;
-    for (i = 0 ; i < numNonRGrid ; i++)
-        for (j = 0 ; j < pt_list_size[i] ; j++)
+    for (int i = 0 ; i < numNonRGrid ; i++)
+        for (int j = 0 ; j < pt_list_size[i] ; j++)
         {
             map_to_ds[index] = i;
             index++;
         }
-    for (i = 0 ; i < num_rgrids ; i++)
+    for (int i = 0 ; i < num_rgrids ; i++)
     {
         int nvals = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
                   * rgrid_pts_size[3*i+2];
-        for (j = 0 ; j < nvals ; j++)
+        for (int j = 0 ; j < nvals ; j++)
         {
             map_to_ds[index] = i+numNonRGrid;
             index++;
@@ -836,7 +836,6 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
                                                    SpatialPartition &spat_part)
 {
 #ifdef PARALLEL
-    size_t   i, j, k;
     int   nProcs = PAR_Size();
 
     int t0 = visitTimer->StartTimer();
@@ -845,11 +844,11 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     // Start off by assessing how much data needs to be sent, and to where.
     //
     vector<int> pt_cts(nProcs, 0);
-    for (i = 0 ; i < pt_list_size.size() ; i++)
+    for (int i = 0 ; i < pt_list_size.size() ; i++)
     {
         const int npts = pt_list_size[i];
         double   *pts  = pt_list[i];
-        for (j = 0 ; j < (size_t)npts ; j++)
+        for (int j = 0 ; j < (size_t)npts ; j++)
         {
             int proc = spat_part.GetProcessor(pts);
             pts += 3;
@@ -858,16 +857,16 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     }
     vector<int> grids(nProcs, 0);
     vector<int> total_size(nProcs, 0);
-    for (i = 0 ; i < (size_t)num_rgrids ; i++)
+    for (int i = 0 ; i < (size_t)num_rgrids ; i++)
     {
         vector<int>    procId;
         vector<double> procBoundary;
         GetProcessorsForGrid(i, procId, procBoundary, spat_part);
-        for (j = 0 ; j < procId.size() ; j++)
+        for (int j = 0 ; j < procId.size() ; j++)
         {
             int extents[6];
             double bounds[6];
-            for (k = 0 ; k < 6 ; k++)
+            for (int k = 0 ; k < 6 ; k++)
                 bounds[k] = procBoundary[6*j+k];
             bool overlaps = GetSubgridForBoundary(i, bounds, extents);
             if (!overlaps)
@@ -890,7 +889,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     //
     int *sendcount = new int[nProcs];
     int  total_msg_size = 0;
-    for (j = 0 ; j < (size_t)nProcs ; j++)
+    for (int j = 0 ; j < (size_t)nProcs ; j++)
     {
         sendcount[j] = sizeof(int); // npts for non-rgrids;
         sendcount[j] += 3*sizeof(double)*pt_cts[j];
@@ -908,14 +907,14 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     char *big_send_msg = new char[total_msg_size];
     char **sub_ptr = new char*[nProcs];
     sub_ptr[0] = big_send_msg;
-    for (i = 1 ; i < (size_t)nProcs ; i++)
+    for (int i = 1 ; i < (size_t)nProcs ; i++)
         sub_ptr[i] = sub_ptr[i-1] + sendcount[i-1];
 
     //
     // Now add the initial header info ... "how many points I have for your
     // processor".
     //
-    for (j = 0 ; j < (size_t)nProcs ; j++)
+    for (int j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numFromMeToProcJ = pt_cts[j];
         memcpy(sub_ptr[j], (void *) &numFromMeToProcJ, sizeof(int));
@@ -925,11 +924,11 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     //
     // Now add the actual points to the message.
     //
-    for (i = 0 ; i < pt_list_size.size() ; i++)
+    for (int i = 0 ; i < pt_list_size.size() ; i++)
     {
         const int npts = pt_list_size[i];
         double   *pts  = pt_list[i];
-        for (j = 0 ; j < (size_t)npts ; j++)
+        for (int j = 0 ; j < (size_t)npts ; j++)
         {
             double *pt = pts;
             pts += 3;
@@ -943,7 +942,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     // Now add the initial header info for "how many rgrids I have for your
     // processor".
     //
-    for (j = 0 ; j < (size_t)nProcs ; j++)
+    for (int j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numGridsFromMeToProcJ = grids[j];
         memcpy(sub_ptr[j], (void *) &numGridsFromMeToProcJ, sizeof(int));
@@ -953,16 +952,16 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     //
     // And add the actual information about the rgrid.
     //
-    for (i = 0 ; i < (size_t)num_rgrids ; i++)
+    for (int i = 0 ; i < (size_t)num_rgrids ; i++)
     {
         vector<int>    procId;
         vector<double> procBoundary;
         GetProcessorsForGrid(i, procId, procBoundary, spat_part);
-        for (j = 0 ; j < procId.size() ; j++)
+        for (int j = 0 ; j < procId.size() ; j++)
         {
             int extents[6];
             double bounds[6];
-            for (k = 0 ; k < 6 ; k++)
+            for (int k = 0 ; k < 6 ; k++)
                 bounds[k] = procBoundary[6*j+k];
             bool overlaps = GetSubgridForBoundary(i, bounds, extents);
             if (!overlaps)
@@ -997,7 +996,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     int *recvdisp  = new int[nProcs];
     senddisp[0] = 0;
     recvdisp[0] = 0;
-    for (j = 1 ; j < (size_t)nProcs ; j++)
+    for (int j = 1 ; j < (size_t)nProcs ; j++)
     {
         senddisp[j] = sendcount[j-1] + senddisp[j-1];
         recvdisp[j] = recvcount[j-1] + recvdisp[j-1];
@@ -1014,7 +1013,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     // Set up the buffers so we can read the information out.
     //
     sub_ptr[0] = big_recv_msg;
-    for (i = 1 ; i < (size_t)nProcs ; i++)
+    for (int i = 1 ; i < (size_t)nProcs ; i++)
         sub_ptr[i] = sub_ptr[i-1] + recvcount[i-1];
 
     //
@@ -1024,7 +1023,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     pt_list_came_from.clear();
     vector<double *> new_pt_list;
     vector<int> new_pt_list_size;
-    for (j = 0 ; j < (size_t)nProcs ; j++)
+    for (int j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numFromProcJ = 0;
         memcpy((void *) &numFromProcJ, sub_ptr[j], sizeof(int));
@@ -1045,12 +1044,12 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     vector<double *> new_rgrid_pts;
     vector<int>     new_rgrid_pts_size;
     rgrid_came_from.clear();
-    for (j = 0 ; j < (size_t)nProcs ; j++)
+    for (int j = 0 ; j < (size_t)nProcs ; j++)
     {
         int numGridsFromProcJToMe;
         memcpy((void *) &numGridsFromProcJToMe, sub_ptr[j], sizeof(int));
         sub_ptr[j] += sizeof(int);
-        for (k = 0 ; k < (size_t)numGridsFromProcJToMe ; k++)
+        for (int k = 0 ; k < (size_t)numGridsFromProcJToMe ; k++)
         {
             int nX, nY, nZ;
             memcpy((void *) &nX, sub_ptr[j], sizeof(int));
@@ -1136,7 +1135,6 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
                                                    SpatialPartition &spat_part)
 {
 #ifdef PARALLEL
-    size_t   i, j, k;
     size_t   nProcs = PAR_Size();
 
     //
@@ -1154,11 +1152,11 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     // processor they came from.
     //
     int *sendcount = new int[nProcs];
-    for (i = 0 ; i < nProcs ; i++)
+    for (int i = 0 ; i < nProcs ; i++)
         sendcount[i] = 0;
-    for (i = 0 ; i < pt_list_came_from.size() ; i++)
+    for (int i = 0 ; i < pt_list_came_from.size() ; i++)
         sendcount[pt_list_came_from[i]]+=pt_list_size[i]*sizeof(double)*nComps;
-    for (i = 0 ; i < rgrid_came_from.size() ; i++)
+    for (int i = 0 ; i < rgrid_came_from.size() ; i++)
     {
         int npts = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
                  * rgrid_pts_size[3*i+2];
@@ -1166,7 +1164,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     }
 
     int  totalSend = 0;
-    for (i = 0 ; i < nProcs ; i++)
+    for (int i = 0 ; i < nProcs ; i++)
         totalSend += sendcount[i];
 
     //
@@ -1175,11 +1173,11 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     char *big_send_msg = new char[totalSend];
     char **sub_ptr = new char*[nProcs];
     sub_ptr[0] = big_send_msg;
-    for (i = 1 ; i < nProcs ; i++)
+    for (int i = 1 ; i < nProcs ; i++)
         sub_ptr[i] = sub_ptr[i-1] + sendcount[i-1];
 
     double *vals_tmp = vals;
-    for (i = 0 ; i < pt_list_came_from.size() ; i++)
+    for (int i = 0 ; i < pt_list_came_from.size() ; i++)
     {
         int msgGoingTo = pt_list_came_from[i];
         memcpy(sub_ptr[msgGoingTo], vals_tmp, 
@@ -1187,7 +1185,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
         sub_ptr[msgGoingTo] += pt_list_size[i]*sizeof(double)*nComps;
         vals_tmp += pt_list_size[i]*nComps;
     }
-    for (i = 0 ; i < rgrid_came_from.size() ; i++)
+    for (int i = 0 ; i < rgrid_came_from.size() ; i++)
     {
         int msgGoingTo = rgrid_came_from[i];
         int npts = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
@@ -1207,7 +1205,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     int *recvdisp  = new int[nProcs];
     senddisp[0] = 0;
     recvdisp[0] = 0;
-    for (j = 1 ; j < nProcs ; j++)
+    for (int j = 1 ; j < nProcs ; j++)
     {
         senddisp[j] = sendcount[j-1] + senddisp[j-1];
         recvdisp[j] = recvcount[j-1] + recvdisp[j-1];
@@ -1239,11 +1237,11 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     // the other processors.  Encode them into a new "vals" array.
     //
     int idx = 0;
-    for (i = 0 ; i < pt_list_size.size() ; i++)
+    for (int i = 0 ; i < pt_list_size.size() ; i++)
     {
         const int npts = pt_list_size[i];
         double   *pts  = pt_list[i];
-        for (j = 0 ; j < (size_t)npts ; j++)
+        for (int j = 0 ; j < (size_t)npts ; j++)
         {
             double *pt = pts;
             pts += 3;
@@ -1254,7 +1252,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
             recvmessages[proc] += sizeof(double)*nComps;
         }
     }
-    for (i = 0 ; i < (size_t)num_rgrids ; i++)
+    for (int i = 0 ; i < (size_t)num_rgrids ; i++)
     {
         int realNX = rgrid_pts_size[3*i];
         int realNY = rgrid_pts_size[3*i+1];
@@ -1263,11 +1261,11 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
         vector<int> procId;
         vector<double> procBoundary;
         GetProcessorsForGrid(i, procId, procBoundary, spat_part);
-        for (j = 0 ; j < procId.size() ; j++)
+        for (int j = 0 ; j < procId.size() ; j++)
         {
             int extents[6];
             double bounds[6];
-            for (k = 0 ; k < 6 ; k++)
+            for (int k = 0 ; k < 6 ; k++)
                 bounds[k] = procBoundary[6*j+k];
             // Find out how much of the rectilinear grid overlapped with
             // the boundary for processor procId[j].  How much overlap there
@@ -1641,8 +1639,6 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
 #ifdef PARALLEL
     int  t0 = visitTimer->StartTimer();
 
-    size_t  i, j, k;
-
     size_t   nProcs = PAR_Size();
 
     vtkUnstructuredGrid **meshForProcP = new vtkUnstructuredGrid*[nProcs];
@@ -1652,7 +1648,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         appenders[i] = vtkAppendFilter::New();
 
     vector<int> list;
-    for (i = 0 ; i < meshes.size() ; i++)
+    for (size_t i = 0 ; i < meshes.size() ; i++)
     {
         //
         // Get the mesh from the input for this iteration.  During each 
@@ -1668,7 +1664,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         // Reset the data structures that contain the cells from mesh i that
         // need to be sent to processor P.
         //
-        for (j = 0 ; j < nProcs ; j++)
+        for (size_t j = 0 ; j < nProcs ; j++)
         {
             meshForProcP[j] = NULL;
             nCellsForP[j]   = 0;
@@ -1682,11 +1678,11 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         // message to each of the other processors containing the cells it
         // needs.
         //
-        for (j = 0 ; j < (size_t)nCells ; j++)
+        for (size_t j = 0 ; j < (size_t)nCells ; j++)
         {
             vtkCell *cell = mesh->GetCell(j);
             spat_part.GetProcessorList(cell, list);
-            for (k = 0 ; k < list.size() ; k++)
+            for (size_t k = 0 ; k < list.size() ; k++)
             {
                 if (meshForProcP[list[k]] == NULL)
                 {
@@ -1714,7 +1710,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         // Put them in a more permanent location so we can move on to the
         // next iteration.
         //
-        for (j = 0 ; j < nProcs ; j++)
+        for (size_t j = 0 ; j < nProcs ; j++)
             if (meshForProcP[j] != NULL)
             {
                 vtkUnstructuredGridRelevantPointsFilter *ugrpf = 
@@ -1739,7 +1735,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
     //
     int *sendcount = new int[nProcs];
     char **msg_tmp = new char *[nProcs];
-    for (j = 0 ; j < nProcs ; j++)
+    for (size_t j = 0 ; j < nProcs ; j++)
     {
         if (appenders[j]->GetTotalNumberOfInputConnections() == 0)
         {
@@ -1762,12 +1758,12 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
     delete [] appenders;
 
     int total_msg_size = 0;
-    for (j = 0 ; j < nProcs ; j++)
+    for (size_t j = 0 ; j < nProcs ; j++)
         total_msg_size += sendcount[j];
 
     char *big_send_msg = new char[total_msg_size];
     char *ptr = big_send_msg;
-    for (j = 0 ; j < nProcs ; j++)
+    for (size_t j = 0 ; j < nProcs ; j++)
     {
         if (msg_tmp[j] != NULL)
         {
@@ -1788,7 +1784,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
     int *recvdisp  = new int[nProcs];
     senddisp[0] = 0;
     recvdisp[0] = 0;
-    for (j = 1 ; j < nProcs ; j++)
+    for (size_t j = 1 ; j < nProcs ; j++)
     {
         senddisp[j] = sendcount[j-1] + senddisp[j-1];
         recvdisp[j] = recvcount[j-1] + recvdisp[j-1];
@@ -1802,7 +1798,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
     delete [] big_send_msg;
 
     ClearAllInputMeshes();
-    for (j = 0 ; j < nProcs ; j++)
+    for (size_t j = 0 ; j < nProcs ; j++)
     {
         if (recvcount[j] == 0)
             continue;

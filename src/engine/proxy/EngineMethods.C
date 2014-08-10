@@ -471,13 +471,15 @@ EngineMethods::Execute(bool respondWithNull, void (*waitCB)(void *), void *cbDat
     int readData = visitTimer->StartTimer();
     if(engineP != NULL)
     {
-        if (engineP->GetReadConnection(1)->DirectRead((unsigned char *)buf, size) < 0) {
+        if (engineP->GetReadConnection(1)->DirectRead((unsigned char *)buf, size) < 0) 
+        {
             debug1 << "Error reading VTK data!!!!\n";
         }
     }
     else if(component != NULL)
     {
-        if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0) {
+        if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0) 
+        {
             debug1 << "Error reading VTK data!!!!\n";
         }
     }
@@ -718,13 +720,15 @@ EngineMethods::Render(bool sendZBuffer, const intVector& networkIDs,
 
     if(engineP != NULL)
     {
-        if (engineP->GetReadConnection(1)->DirectRead((unsigned char *)buf, size) < 0) {
+        if (engineP->GetReadConnection(1)->DirectRead((unsigned char *)buf, size) < 0) 
+        {
             debug1 << "Error reading VTK data!!!!\n";
         }
     }
     else if(component != NULL)
     {
-        if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0) {
+        if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0) 
+        {
             debug1 << "Error reading VTK data!!!!\n";
         }
     }

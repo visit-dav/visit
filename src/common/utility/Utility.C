@@ -276,8 +276,7 @@ PrintCallStack(ostream &out, const char *file, int line)
 #if !defined(_WIN32) && !defined(__APPLE__) && !defined(_AIX)
     const int N = 100;
     void *stackAddrs[N];
- 
-    (void) backtrace(stackAddrs, N);
+
     int nfuncs = backtrace(stackAddrs, N);
     char **stackStrings = backtrace_symbols(stackAddrs, nfuncs);
     
