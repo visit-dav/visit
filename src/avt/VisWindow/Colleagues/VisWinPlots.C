@@ -2205,10 +2205,9 @@ VisWinPlots::GetMaxZShift()
 bool
 VisWinPlots::DoAllPlotsAxesHaveSameUnits()
 {
-    size_t i;
     bool first = true;
     std::string theUnits = "";
-    for (i = 0; i < plots.size(); i++)
+    for (size_t i = 0; i < plots.size(); i++)
     {
         if (plots[i]->IsVisible())
         {

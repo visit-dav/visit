@@ -1896,9 +1896,6 @@ avtConnComponentsExpression::BoundarySet::AddMesh(vtkDataSet *mesh)
 void
 avtConnComponentsExpression::BoundarySet::Finalize()
 {
-    // loop indices
-    size_t i, j;
-
     // set bounds defaults
     bounds[0] =  DBL_MAX;
     bounds[1] = -DBL_MAX;
@@ -1913,7 +1910,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
     // cleanup old itrees if they exist 
     if(itrees.size() > 0)
     {
-        for (i = 0; i < itrees.size(); i++)
+        for (size_t i = 0; i < itrees.size(); i++)
         {
             if(itrees[i] != NULL)
                 delete itrees[i];
@@ -1932,7 +1929,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
 
     itrees.resize(nsets);
 
-    for(i = 0; i < (size_t)nsets ; i++)
+    for(size_t i = 0; i < (size_t)nsets ; i++)
     {
         // for each data set
         double curr_bounds[6];
@@ -1962,7 +1959,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
         {
             avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,(is2D ? 2 : 3));
 
-            for(j = 0; j< (size_t)curr_ncells; j++)
+            for(size_t j = 0; j< (size_t)curr_ncells; j++)
             {
                 // add each cell's bounds to the interval tree
                 vtkCell *cell = curr_set->GetCell(j);

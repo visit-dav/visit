@@ -168,14 +168,13 @@ avtSILRestrictionTraverser::GetEnumerationCount()
 {
     int count = 0;
 
-    size_t  i;
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
  
     //
     // Identify the collection that has role of an enumeration
     //
-    for (i = 0 ; i < mapsOut.size() ; i++)
+    for (size_t i = 0 ; i < mapsOut.size() ; i++)
     {
         avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_ENUMERATION)
@@ -319,7 +318,6 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
 {
     int count = 0;
 
-    size_t  i, j;
     enumList.clear();
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
@@ -331,7 +329,7 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
     bool  foundOneOff = false;
     int enumGraphIndex = -1;
     avtSILCollection_p coll;
-    for (i = 0 ; (enumGraphIndex == -1) && (i < mapsOut.size()) ; i++)
+    for (size_t i = 0 ; (enumGraphIndex == -1) && (i < mapsOut.size()) ; i++)
     {
         coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_ENUMERATION)
@@ -345,7 +343,7 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
                 name = coll->GetCategory();
                 size_t numElems = coll->GetNumberOfSubsets();
                 enumList.resize(numElems);
-                for (j = 0 ; j < numElems ; j++)
+                for (size_t j = 0 ; j < numElems ; j++)
                 {
                     // do a tiny bit of work to see if this enum has a graph
                     avtSILSet_p tmpSet = silr->GetSILSet(coll->GetSubset(j));
@@ -407,7 +405,6 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
 bool
 avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
 {
-    size_t  i, j;
     specList.clear();
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
@@ -417,7 +414,7 @@ avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
     //
     const vector<unsigned char> &useSet = silr->useSet;
     bool  foundOneOff = false;
-    for (i = 0 ; i < mapsOut.size() ; i++)
+    for (size_t i = 0 ; i < mapsOut.size() ; i++)
     {
         avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_SPECIES)
@@ -428,7 +425,7 @@ avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
             //
             size_t numElems = coll->GetNumberOfSubsets();
             specList.resize(numElems);
-            for (j = 0 ; j < numElems ; j++)
+            for (size_t j = 0 ; j < numElems ; j++)
             {
                 bool val = (useSet[coll->GetSubset(j)] != NoneUsed ? true : false);
                 specList[j] = val;
@@ -519,8 +516,6 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
     int timingsHandle = visitTimer->StartTimer();
     list.clear();
  
-    size_t  i, j, k;
- 
     //
     // Throw in the identifiers of anything we are supposed to use.  Don't
     // worry about repeats for now.
@@ -543,13 +538,13 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
         size_t numSets = silr->GetNumSets();
         numSets -= 1; // for the top set.
         list.resize(numSets);
-        for (i = 0 ; i < numSets ; i++)
+        for (size_t i = 0 ; i < numSets ; i++)
             list[i] = i;
         visitTimer->StopTimer(timingsHandle, "GetDomainList with early return");
         return;
     }
 
-    for (i = 0 ; i < setList.size() ; i++)
+    for (size_t i = 0 ; i < setList.size() ; i++)
     {
         int setid = setList[i];
         if (silr->useSet[setid] == NoneUsed)
@@ -589,13 +584,13 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
             // If a collection is part of a matrix, all of the subsets must
             // have the same identifier, so we don't need to consider them.
             const vector<int> &outmaps = set->GetRealMapsOut();
-            for (j = 0 ; j < outmaps.size() ; j++)
+            for (size_t j = 0 ; j < outmaps.size() ; j++)
             {
                 avtSILCollection_p coll = silr->GetSILCollection(outmaps[j]);
                 const avtSILNamespace *ns = coll->GetSubsets();
                 size_t numElems = ns->GetNumberOfElements();
                 setList.reserve(setList.size() + numElems);
-                for (k = 0 ; k < numElems ; k++)
+                for (size_t k = 0 ; k < numElems ; k++)
                 {
                     setList.push_back(ns->GetElement(k));
                 }
@@ -608,7 +603,7 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
     //
     sort(list_with_repeats.begin(), list_with_repeats.end());
     int last = -1;  // -1 is guaranteed to be different than l_w_r[0].
-    for (i = 0 ; i < list_with_repeats.size() ; i++)
+    for (size_t i = 0 ; i < list_with_repeats.size() ; i++)
     {
         if (list_with_repeats[i] != last)
         {
@@ -772,15 +767,13 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
 {
     int timingsHandle = visitTimer->StartTimer();
  
-    size_t   i;
- 
     //
     // Find the domains map coming out of the top level set.
     //
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
     avtSILCollection_p domainCollection = NULL;
-    for (i = 0 ; i < mapsOut.size() ; i++)
+    for (size_t i = 0 ; i < mapsOut.size() ; i++)
     {
         avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_DOMAIN)
@@ -817,7 +810,7 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
     //
     const vector<unsigned char> &useSet = silr->useSet;
     bool retval = true;
-    for (i = 0 ; i < nTargetDomains ; i++)
+    for (size_t i = 0 ; i < nTargetDomains ; i++)
     {
         if (useSet[domainCollection->GetSubset(i)] == NoneUsed)
         {
@@ -1193,7 +1186,6 @@ avtSILRestrictionTraverser::UsesAllMaterials()
         return true;
     }
  
-    size_t  i, j;
     avtSILSet_p set = silr->GetSILSet(silr->topSet);
     const vector<int> &mapsOut = set->GetMapsOut();
  
@@ -1202,7 +1194,7 @@ avtSILRestrictionTraverser::UsesAllMaterials()
     //
     const vector<unsigned char> &useSet = silr->useSet;
     bool  allUsed = true;
-    for (i = 0 ; i < mapsOut.size() && allUsed; i++)
+    for (size_t i = 0 ; i < mapsOut.size() && allUsed; i++)
     {
         avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_MATERIAL)
@@ -1212,7 +1204,7 @@ avtSILRestrictionTraverser::UsesAllMaterials()
             // of the material subsets and determine if it is on or off.
             //
             size_t numElems = coll->GetNumberOfSubsets();
-            for (j = 0 ; j < numElems && allUsed; j++)
+            for (size_t j = 0 ; j < numElems && allUsed; j++)
             {
                 allUsed = (useSet[coll->GetSubset(j)] != NoneUsed); 
             }

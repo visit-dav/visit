@@ -805,8 +805,6 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
                                     std::vector<std::string> &varorder,
                                     std::vector<int> &varsize)
 {
-    size_t  i, j, k;
-
     rgrid->GetDimensions(dims);
     if (X != NULL)
         delete [] X;
@@ -818,13 +816,13 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     // dims is the size of each of the small 3D patches e.g. 52x16x16 (or grid)
     // X, Y & Z store the "real" coordinates each point in the grid (the above grid) e.g. 0.61075, 0.19536, 0.01936 for 0,0,0
     X = new double[dims[0]];
-    for (i = 0 ; i < (size_t)dims[0] ; i++)
+    for (size_t i = 0 ; i < (size_t)dims[0] ; i++)
         X[i] = rgrid->GetXCoordinates()->GetTuple1(i);
     Y = new double[dims[1]];
-    for (i = 0 ; i < (size_t)dims[1] ; i++)
+    for (size_t i = 0 ; i < (size_t)dims[1] ; i++)
         Y[i] = rgrid->GetYCoordinates()->GetTuple1(i);
     Z = new double[dims[2]];
-    for (i = 0 ; i < (size_t)dims[2] ; i++)
+    for (size_t i = 0 ; i < (size_t)dims[2] ; i++)
         Z[i] = rgrid->GetZCoordinates()->GetTuple1(i);
 
     vtkDataArray *arr = rgrid->GetCellData()->GetArray("avtGhostZones");
@@ -834,17 +832,17 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
         ghosts = NULL;
 
     ncell_arrays = 0;
-    for (i = 0 ; i < (size_t)rgrid->GetCellData()->GetNumberOfArrays() ; i++)
+    for (size_t i = 0 ; i < (size_t)rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
         const char *name = arr->GetName();
         int idx = -1;
-        for (j = 0 ; j < varorder.size() ; j++)
+        for (size_t j = 0 ; j < varorder.size() ; j++)
         {
             if (varorder[j] == name)
             {
                 idx = 0;
-                for (k = 0 ; k < j ; k++)
+                for (size_t k = 0 ; k < j ; k++)
                     idx += varsize[k];
                 break;
             }
@@ -858,17 +856,17 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     }
 
     npt_arrays = 0;
-    for (i = 0 ; i < (size_t)rgrid->GetPointData()->GetNumberOfArrays() ; i++)
+    for (size_t i = 0 ; i < (size_t)rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
         const char *name = arr->GetName();
         int idx = -1;
-        for (j = 0 ; j < varorder.size() ; j++)
+        for (size_t j = 0 ; j < varorder.size() ; j++)
         {
             if (varorder[j] == name)
             {
                 idx = 0;
-                for (k = 0 ; k < j ; k++)
+                for (size_t k = 0 ; k < j ; k++)
                     idx += varsize[k];
                 break;
             }
@@ -894,13 +892,13 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     // a 5% performance boost.
     //
     divisors_X = new double[dims[0]-1];
-    for (i = 0 ; i < (size_t)dims[0] - 1 ; i++)
+    for (size_t i = 0 ; i < (size_t)dims[0] - 1 ; i++)
         divisors_X[i] = (X[i+1] == X[i] ? 1. : 1./(X[i+1]-X[i]));
     divisors_Y = new double[dims[1]-1];
-    for (i = 0 ; i < (size_t)dims[1] - 1 ; i++)
+    for (size_t i = 0 ; i < (size_t)dims[1] - 1 ; i++)
         divisors_Y[i] = (Y[i+1] == Y[i] ? 1. : 1./(Y[i+1]-Y[i]));
     divisors_Z = new double[dims[2]-1];
-    for (i = 0 ; i < (size_t)dims[2] - 1 ; i++)
+    for (size_t i = 0 ; i < (size_t)dims[2] - 1 ; i++)
         divisors_Z[i] = (Z[i+1] == Z[i] ? 1. : 1./(Z[i+1]-Z[i]));
 }
 

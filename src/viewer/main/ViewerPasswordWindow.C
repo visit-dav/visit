@@ -194,7 +194,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password, c
             debug1 << "See warning message for possible causes" << endl;
             EXCEPTION0(CouldNotConnectException);
         }
-        size_t result = 0; (void) result;
+        size_t result = 0;
         // Write output to stderr
         result = write(STDERR_FILENO, pbuf, nread);
 

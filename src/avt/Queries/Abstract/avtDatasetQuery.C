@@ -366,8 +366,6 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
     }
     else 
     {
-        size_t ii;
-        
         avtContract_p orig_contract = dob->GetOriginatingSource()->
             GetGeneralContract();
         
@@ -381,7 +379,7 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
             newDS->SetTimestep(queryAtts.GetTimeStep());
         }
 
-        for (ii = 0 ; ii < secondaryVars.size() ; ii++)
+        for (size_t ii = 0 ; ii < secondaryVars.size() ; ii++)
         {
             newDS->AddSecondaryVariable( secondaryVars[ii].c_str() );
         }

@@ -462,21 +462,20 @@ avtLineScanFilter::PostExecute(void)
     vtkDataSet **leaves = output_tree->GetAllLeaves(nLeaves);
 
 #ifdef PARALLEL
-    int  i, j;
     int nprocs = PAR_Size();
     vector<int> ncells(nprocs, 0);
-    for (i = 0 ; i < nLeaves ; i++)
+    for (int i = 0 ; i < nLeaves ; i++)
     {
         vtkIntArray *lineId = (vtkIntArray *) 
                                leaves[i]->GetCellData()->GetArray("avtLineID");
         int numIds = lineId->GetNumberOfTuples();
-        for (j = 0 ; j < numIds ; j++)
+        for (int j = 0 ; j < numIds ; j++)
             ncells[AssignToProc(lineId->GetValue(j), nLines)]++;
     }
     vtkPolyData  **pd_msg = new vtkPolyData*[nprocs];
     vtkPoints    **pts    = new vtkPoints*[nprocs];
     vtkCellArray **lines  = new vtkCellArray*[nprocs];
-    for (i = 0 ; i < nprocs ; i++)
+    for (int i = 0 ; i < nprocs ; i++)
     {
         if (ncells[i] > 0)
         {
@@ -502,12 +501,12 @@ avtLineScanFilter::PostExecute(void)
     }
 
     vector<int> curCell(nprocs, 0);
-    for (i = 0 ; i < nLeaves ; i++)
+    for (int i = 0 ; i < nLeaves ; i++)
     {
         vtkIntArray *lineId = (vtkIntArray *) 
                                leaves[i]->GetCellData()->GetArray("avtLineID");
         int numIds = lineId->GetNumberOfTuples();
-        for (j = 0 ; j < numIds ; j++)
+        for (int j = 0 ; j < numIds ; j++)
         {
             int proc = AssignToProc(lineId->GetValue(j), nLines);
             int cc   = curCell[proc];
@@ -532,7 +531,7 @@ avtLineScanFilter::PostExecute(void)
     char **sendmessages = new char*[nprocs];
     int *sendcount = new int[nprocs];
     vector<int> msg_length(nprocs, 0);
-    for (i = 0 ; i < nprocs ; i++)
+    for (int i = 0 ; i < nprocs ; i++)
     {
         if (pd_msg[i] != NULL)
         {
@@ -553,11 +552,11 @@ avtLineScanFilter::PostExecute(void)
     }
 
     int total_send = 0;
-    for (i = 0 ; i < nprocs ; i++)
+    for (int i = 0 ; i < nprocs ; i++)
         total_send += sendcount[i];
     char *big_send_buff = new char[total_send];
     char *tmp = big_send_buff;
-    for (i = 0 ; i < nprocs ; i++)
+    for (int i = 0 ; i < nprocs ; i++)
     {
         memcpy(tmp, sendmessages[i], sendcount[i]*sizeof(char));
         delete [] sendmessages[i];
@@ -596,7 +595,7 @@ avtLineScanFilter::PostExecute(void)
     delete [] recvdisp;
 
     vtkAppendPolyData *appender = vtkAppendPolyData::New();
-    for (i = 0 ; i < nprocs ; i++)
+    for (int i = 0 ; i < nprocs ; i++)
     {
         if (recvcount[i] > 0)
         {
@@ -625,7 +624,7 @@ avtLineScanFilter::PostExecute(void)
     }
     appender->Delete();
 
-    for (i = 0 ; i < nprocs ; i++)
+    for (int i = 0 ; i < nprocs ; i++)
     {
         if (pd_msg[i] != NULL)
             pd_msg[i]->Delete();

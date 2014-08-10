@@ -1134,7 +1134,6 @@ QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 void
 QvisSimulationWindow::UpdateInformation()
 {
-    //const stringVector &s = engines->GetEngineName();
     debug5 << "Update Information was called" << endl;
 
     // Clear the sim information.
@@ -1166,7 +1165,7 @@ QvisSimulationWindow::UpdateInformation()
         // Use the metadata we looked up to populate the window.
         const avtDatabaseMetaData *md = pos.value();
         QString tmp1,tmp2;
-        QTreeWidgetItem *item;
+        QTreeWidgetItem *item = NULL;
 
         // Host
         item = new QTreeWidgetItem(simInfo,
@@ -1181,9 +1180,9 @@ QvisSimulationWindow::UpdateInformation()
         QString name = newsim.mid(firstDotPos+1,
                                   lastDotPos-firstDotPos-1);
         item = new QTreeWidgetItem(simInfo, 
-            QStringList(tr("Name")) + 
-            QStringList(name));
-        (void) item;
+                                   QStringList(tr("Name")) + 
+                                   QStringList(name));
+
         // Date
         QString timesecstr = newsim.left(firstDotPos);
         time_t timesec = timesecstr.toInt();

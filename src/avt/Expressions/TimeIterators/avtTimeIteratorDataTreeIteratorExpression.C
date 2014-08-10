@@ -161,8 +161,6 @@ void
 avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
                                                         vtkDataSet *ds, int ts)
 {
-    size_t  i;
-
     std::vector<vtkDataArray *> ds_vars;
     std::vector<vtkDataArray *> delete_vars;
 
@@ -171,7 +169,7 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
     size_t nvars = varnames.size();
     if (cmfeType == POS_CMFE)
         nvars--;
-    for (i = 0 ; i < nvars ; i++)
+    for (size_t i = 0 ; i < nvars ; i++)
     {
         std::string vname = GetInternalVarname(i);
         vtkDataArray *cell_data1 = ds->GetCellData()->GetArray(vname.c_str());
@@ -189,7 +187,7 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
     if (haveZonal)
         doZonal = true;  // mixed centering -> zonal
 
-    for (i = 0 ; i < nvars ; i++)
+    for (size_t i = 0 ; i < nvars ; i++)
     {
         std::string vname = GetInternalVarname(i);
         vtkDataArray *cell_data1 = ds->GetCellData()->GetArray(vname.c_str());
@@ -224,7 +222,7 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
     vtkDataArray *out_arr = vars[arrayIndex++];
     ExecuteDataset(ds_vars, out_arr, ts);
 
-    for (i = 0 ; i < delete_vars.size() ; i++)
+    for (size_t i = 0 ; i < delete_vars.size() ; i++)
         delete_vars[i]->Delete();
 }
 

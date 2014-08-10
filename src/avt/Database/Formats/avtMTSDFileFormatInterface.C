@@ -495,7 +495,6 @@ void
 avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState, bool forceReadAllCyclesTimes)
 {
-    size_t i, j;
 
     GenerateTimestepCounts();
 
@@ -522,7 +521,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     int tsGroup = GetTimestepGroupForTimestep(timeState);
     int localTS = GetTimestepWithinGroup(timeState);
     int offset = 0;
-    for (i = 0 ; i < (size_t)nTimestepGroups ; i++)
+    for (size_t i = 0 ; i < (size_t)nTimestepGroups ; i++)
     {
         chunks[i][0]->SetTimeSliceOffset(offset);
         offset += tsPerGroup[i];
@@ -532,7 +531,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     else
         chunks[tsGroup][0]->SetReadAllCyclesAndTimes(false);
     chunks[tsGroup][0]->SetDatabaseMetaData(md, localTS);
-    for (i = 0 ; i < (size_t)nTimestepGroups ; i++)
+    for (size_t i = 0 ; i < (size_t)nTimestepGroups ; i++)
         if (i != (size_t)tsGroup)
             chunks[i][0]->RegisterDatabaseMetaData(md);
 
@@ -544,7 +543,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     if (md->AreAllCyclesAccurateAndValid(nTotalTimesteps) != true)
     {
         vector<int> cycles;
-        for (i=0; i<(size_t)nTimestepGroups; i++)
+        for (size_t i=0; i<(size_t)nTimestepGroups; i++)
         {
             vector<int> tmp;
             chunks[i][0]->FormatGetCycles(tmp);
@@ -553,7 +552,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         bool cyclesLookGood = true;
         if (!isEnsemble)
         {
-            for (i = 0; i < cycles.size(); i++)
+            for (size_t i = 0; i < cycles.size(); i++)
             {
                 if ((i != 0) && (cycles[i] <= cycles[i-1]))
                 {
@@ -568,7 +567,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         {
             std::vector<int> cyclesFromMassCall = cycles;
             cycles.clear();
-            for (i = 0; i < (size_t)nTotalTimesteps; i++)
+            for (size_t i = 0; i < (size_t)nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
@@ -601,7 +600,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     {
         // Set the times in the metadata.
         vector<double> times;
-        for (i=0; i<(size_t)nTimestepGroups; i++)
+        for (size_t i=0; i<(size_t)nTimestepGroups; i++)
         {
             vector<double> tmp;
             chunks[i][0]->FormatGetTimes(tmp);
@@ -610,7 +609,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         bool timesLookGood = true;
         if (!isEnsemble)
         {
-            for (i = 0; i < times.size(); i++)
+            for (size_t i = 0; i < times.size(); i++)
             {
                 if ((i != 0) && (times[i] <= times[i-1]))
                 {
@@ -627,7 +626,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             vector<double> timesFromMassCall = times;
 
             times.clear();
-            for (i = 0; i < (size_t)nTotalTimesteps; i++)
+            for (size_t i = 0; i < (size_t)nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
@@ -664,9 +663,9 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     // that with the true number of domains.
     //
     size_t nm = md->GetNumMeshes();
-    for (j = 0 ; j < nm ; j++)
+    for (size_t i = 0 ; i < nm ; i++)
     {
-        md->SetBlocksForMesh(j, nBlocks);
+        md->SetBlocksForMesh(i, nBlocks);
     }
 
     if (nBlocks > 1)

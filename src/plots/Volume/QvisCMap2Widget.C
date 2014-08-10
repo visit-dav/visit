@@ -312,12 +312,12 @@ QvisCMap2Widget::selectWidget(WidgetID id)
 void
 QvisCMap2Widget::addNewTriangle()
 {
-    WidgetID w = cmap2->addTriangleWidget(newName(tr("tri")),
+    cmap2->addTriangleWidget(newName(tr("tri")),
         0.3, // X-coordinate of bottom point
         0.25, // Offset in X from top left point
         0.5, // Y-coordinate of top left point
         0.7, // Width of top of triangle.
-        0.5 ); (void) w;
+        0.5 );
 
     QTimer::singleShot(100, this, SLOT(selectLastItem()));
 }
@@ -325,13 +325,13 @@ QvisCMap2Widget::addNewTriangle()
 void
 QvisCMap2Widget::addNewRectangle()
 {
-    WidgetID w = cmap2->addRectangleWidget(newName(tr("rect")),
+    cmap2->addRectangleWidget(newName(tr("rect")),
         0.1, // left_x
         0.4, // left_y
         0.5, // w
         0.4, // h
         0.5 // offset
-        ); (void) w;
+        );
 
     QTimer::singleShot(100, this, SLOT(selectLastItem()));
 }
@@ -339,24 +339,24 @@ QvisCMap2Widget::addNewRectangle()
 void
 QvisCMap2Widget::addNewEllipsoid()
 {
-  WidgetID w = cmap2->addEllipsoidWidget(newName(tr("ellipse")),
-                                         .2,
-                                         .2,
-                                         .1,
-                                         .2,
-                                         0.2); (void) w;
-
+  cmap2->addEllipsoidWidget(newName(tr("ellipse")),
+                            .2,
+                            .2,
+                            .1,
+                            .2,
+                            0.2);
+  
   QTimer::singleShot(100, this, SLOT(selectLastItem()));
 }
 
 void
 QvisCMap2Widget::addNewParaboloid()
 {
-  WidgetID w = cmap2->addParaboloidWidget(newName(tr("paraboloid")),
-                                          .5, .6,
-                                          .5, .4,
-                                          .3, .5,
-                                          .7, .5); (void) w;
+  cmap2->addParaboloidWidget(newName(tr("paraboloid")),
+                             .5, .6,
+                             .5, .4,
+                             .3, .5,
+                             .7, .5);
 
   QTimer::singleShot(100, this, SLOT(selectLastItem()));
 }

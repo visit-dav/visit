@@ -1591,8 +1591,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 #endif
 
         // build list of per-engine plot ids
-        size_t i;
-        for (i = 0; i < plotIdsList.size(); i++)
+        for (size_t i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
             perEnginePlotIds[ek].push_back(plotIdsList[i]);
@@ -1626,7 +1625,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         }
 
         // send per-plot RPCs
-        for (i = 0; i < plotIdsList.size(); i++)
+        for (size_t i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
             engines[ek].proxy->GetEngineMethods()->UpdatePlotAttributes(pluginIDsList[i],

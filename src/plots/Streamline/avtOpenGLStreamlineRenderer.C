@@ -736,7 +736,6 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 void
 avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
 {
-    //vtkPoints *points = data->GetPoints();
     vtkCellArray *lines = data->GetLines();
     vtkIdType *segments = lines->GetPointer();
     float *t = NULL;
@@ -949,7 +948,8 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
     
     vtkIdType *segptr = segments;
     double endPt[3], endPtPrev[3];
-    float scalar, opacity=1.0; (void) opacity;
+    float scalar = 0.0;
+    float opacity=1.0; 
 
     for (int i=0; i<data->GetNumberOfLines(); i++)
     {
@@ -2173,7 +2173,6 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
     if (! atts.GetDisplayBeginFlag() && !atts.GetDisplayEndFlag())
         return false;
     
-    //vtkPoints *points = data->GetPoints();
     vtkDataArray *param = data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::paramArrayName.c_str());
     
     t0 = 0.0;

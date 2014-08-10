@@ -138,7 +138,8 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
         for (int i = 0; i < numDomains; i++)
         {
             BlockIDType d(i,0);
-            if (OwnDomain(d)) {
+            if (OwnDomain(d)) 
+            {
                 debug1<<i<<" ";
             }
         }

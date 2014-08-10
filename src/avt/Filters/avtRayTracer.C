@@ -966,7 +966,6 @@ avtRayTracer::Execute(void)
                     imgData tempImgData;
                     imgMetaData tempImgMetaData;
 
-                    //imgComm.recvPointToPoint(tempImgMetaData, tempImgData);
                     imgComm.recvPointToPointMetaData(tempImgMetaData, numProcessors);
 
                     tempImgData.procId = tempImgMetaData.procId;
@@ -1246,9 +1245,6 @@ avtRayTracer::Execute(void)
 
         visitTimer->StopTimer(timingIndex, "Ray Tracing");
         visitTimer->DumpTimings();
-
-        //if (imgTest != NULL)
-        //   delete []imgTest;
 
         extractor.delImgPatches();
 

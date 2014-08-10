@@ -491,7 +491,6 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 
     bool                       executing;
     bool                       inLaunch;
-    //int                        nEngines;
     EngineMap                  engines;
 
     std::map<EngineKey,stringVector>  restartArguments;

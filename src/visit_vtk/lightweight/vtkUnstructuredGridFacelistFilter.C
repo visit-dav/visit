@@ -1772,7 +1772,10 @@ vtkUnstructuredGridFacelistFilter::RequestData(
     // This does the work of looping over all the cells and storing them in
     // our hash table.
     //
-    int numVertexCells = 0, numLineCells = 0, numPolygonCells = 0, numStripCells = 0;
+    int numVertexCells = 0;
+    int numLineCells = 0;
+    int numPolygonCells = 0;
+    int numStripCells = 0;
     LoopOverAllCells(input, list, numVertexCells, numLineCells,
                      numPolygonCells, numStripCells);
 

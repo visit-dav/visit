@@ -308,7 +308,8 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         void *oldBuf = oldArr->GetVoidPointer(0);
 
         debug1 << "avtTransformManager: Converting vktDataArray, ";
-        if (oldArr->GetName() != NULL) {
+        if (oldArr->GetName() != NULL) 
+        {
                debug1 << "\"" << oldArr->GetName() << "\", ";
         }
         debug1 << "with " << numTuples << " tuples and "
@@ -369,7 +370,8 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         newArr->SetName(oldArr->GetName());
 
     vtkInformation* info = oldArr->GetInformation();
-    if (info && info->Has(avtVariableCache::OFFSET_3())) {
+    if (info && info->Has(avtVariableCache::OFFSET_3())) 
+    {
         double* vals = info->Get(avtVariableCache::OFFSET_3());
         vtkInformation* newInfo = newArr->GetInformation();
         newInfo->Set(avtVariableCache::OFFSET_3(), vals[0], vals[1], vals[2]);
@@ -413,7 +415,8 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
         void *oldBuf = oldArr->GetVoidPointer(0);
 
         debug1 << "avtTransformManager: Converting vktDataArray, ";
-        if (oldArr->GetName() != NULL) {
+        if (oldArr->GetName() != NULL) 
+        {
                debug1 << "\"" << oldArr->GetName() << "\", ";
         }
         debug1 << "with " << numTuples << " tuples and "
@@ -474,7 +477,8 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
         newArr->SetName(oldArr->GetName());
   
     vtkInformation* info = oldArr->GetInformation();
-    if (info && info->Has(avtVariableCache::OFFSET_3())) {
+    if (info && info->Has(avtVariableCache::OFFSET_3())) 
+    {
         double* vals = info->Get(avtVariableCache::OFFSET_3());
         vtkInformation* newInfo = newArr->GetInformation();
         newInfo->Set(avtVariableCache::OFFSET_3(), vals[0], vals[1], vals[2]);
@@ -792,7 +796,8 @@ ShouldIgnoreVariableForConversions(vtkDataArray *da,
             ignoreIt = true;
     }
 
-    if (ignoreIt) {
+    if (ignoreIt) 
+    {
         debug4 << "Ignoring variable/array \"" << da->GetName()
                << "\" for type conversions" << endl;
     }
@@ -1241,7 +1246,8 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             {
                 avtVarType vt = md->DetermineVarType(da->GetName());
                 ignore = (vt == AVT_MATERIAL || vt == AVT_MATSPECIES);
-                if (ignore) {
+                if (ignore) 
+                {
                     debug4 << "Conversion to double ignored for " << "da->GetName()" << endl;
                 }
             }

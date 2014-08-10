@@ -539,9 +539,15 @@ lubksb(avtMatrix *a, int *indx, double *b)
 static int
 ludcmp(avtMatrix *a, int *indx, double *d)
 {
-    double      vv[4];               /* implicit scale for each row */
-    double      big, dum, sum, tmp;
-    int         i, imax = 0, j, k;
+    double vv[4];               /* implicit scale for each row */
+    double big;
+    double dum;
+    double sum;
+    double tmp;
+    int i;
+    int imax = 0;
+    int j;
+    int k;
 
     *d = 1.0f;
     for (i=0; i<4; i++) {

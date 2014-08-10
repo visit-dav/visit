@@ -1040,8 +1040,8 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     {
         return false;
     }
-    size_t i;
-    for (i = 0 ; i < secondaryVariables.size() ; i++)
+
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
     {
         const char *my_str  = *(secondaryVariables[i]);
         const char *his_str = *(ds.secondaryVariables[i]);
@@ -1055,7 +1055,7 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     {
         return false;
     }
-    for (i = 0; i < selList.size(); i++)
+    for (size_t i = 0; i < selList.size(); i++)
     {
         if (*selList[i] != *(ds.selList[i]))
             return false;

@@ -1021,7 +1021,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 
 QvisGUIApplication::~QvisGUIApplication()
 {
-    size_t i;
 #if !defined(_WIN32) && !defined(__APPLE__)
     // Delete the windows.
     for(WindowBaseMap::iterator pos = otherWindows.begin();
@@ -1029,12 +1028,12 @@ QvisGUIApplication::~QvisGUIApplication()
     {
         delete pos->second;
     }
-    for(i = 0; i < plotWindows.size(); ++i)
+    for(size_t i = 0; i < plotWindows.size(); ++i)
     {
         if(plotWindows[i] != 0)
             delete plotWindows[i];
     }
-    for(i = 0; i < operatorWindows.size(); ++i)
+    for(size_t i = 0; i < operatorWindows.size(); ++i)
     {
         if(operatorWindows[i] != 0)
             delete operatorWindows[i];
@@ -1080,7 +1079,7 @@ QvisGUIApplication::~QvisGUIApplication()
         delete mainApp;
 
     // Delete the args for QT
-    for (i = 0 ; i < (size_t)qt_argc ; i++)
+    for (size_t i = 0 ; i < (size_t)qt_argc ; i++)
     {
         if (qt_argv[i])
             free(qt_argv[i]);
@@ -4428,11 +4427,10 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
 void
 QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 {
-    size_t i;
 
     // Iterate through each plot window and have it add its window information
     // to the config file data.
-    for(i = 0; i < plotWindows.size(); ++i)
+    for(size_t i = 0; i < plotWindows.size(); ++i)
     {
         if(plotWindows[i] != 0)
             plotWindows[i]->CreateNode(parentNode);
@@ -4440,7 +4438,7 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 
     // Iterate through each operator window and have it add its window
     // information to the config file data.
-    for(i = 0; i < operatorWindows.size(); ++i)
+    for(size_t i = 0; i < operatorWindows.size(); ++i)
     {
         if(operatorWindows[i] != 0)
             operatorWindows[i]->CreateNode(parentNode);
@@ -5923,8 +5921,8 @@ QvisGUIApplication::RefreshFileList()
     //
     std::map<QualifiedFilename, bool> paths;
     const QualifiedFilenameVector &appliedFiles = fileServer->GetAppliedFileList();
-    size_t i;
-    for(i = 0; i < appliedFiles.size(); ++i)
+
+    for(size_t i = 0; i < appliedFiles.size(); ++i)
     {
         QualifiedFilename temp(appliedFiles[i]);
         temp.filename = "a";
@@ -5948,7 +5946,7 @@ QvisGUIApplication::RefreshFileList()
 
             // Filter the new list of files add them to the refreshed list.
             QualifiedFilenameVector newFiles(fileServer->GetFilteredFileList());
-            for(i = 0; i < newFiles.size(); ++i)
+            for(size_t i = 0; i < newFiles.size(); ++i)
             {
                 // Only add the file if it's not already in the list.
                 if(std::find(refreshedFiles.begin(), refreshedFiles.end(),
@@ -5985,7 +5983,7 @@ QvisGUIApplication::RefreshFileList()
     // If the open file is in the list of new files and it is a virtual db,
     // then reopen it so we pick up new time states.
     //
-    for(i = 0; i < refreshedFiles.size(); ++i)
+    for(size_t i = 0; i < refreshedFiles.size(); ++i)
     {
         if(refreshedFiles[i].IsVirtual())
         {
@@ -7986,9 +7984,9 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     // iterate over the formats
     args.push_back("-format");
     const stringVector &fmt = movieAtts->GetFileFormats();
-    size_t i;
+
     std::string F;
-    for(i = 0; i < fmt.size(); ++i)
+    for(size_t i = 0; i < fmt.size(); ++i)
     {
         F += fmt[i];
         if(i < (fmt.size() - 1))
@@ -8002,7 +8000,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     const intVector &h = movieAtts->GetHeights();
     std::string G;
     char tmp[100];
-    for(i = 0; i < w.size(); ++i)
+    for(size_t i = 0; i < w.size(); ++i)
     {
         SNPRINTF(tmp, 100, "%dx%d", w[i], h[i]);
         G += tmp;
@@ -8015,7 +8013,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     const intVector &s = movieAtts->GetStereoFlags();
     bool anyStereos = false;
     std::string S;
-    for(i = 0; i < s.size(); ++i)
+    for(size_t i = 0; i < s.size(); ++i)
     {
         if(s[i] == 0)
             S += "off";

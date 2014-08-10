@@ -843,8 +843,7 @@ QvisFilePanel::UpdateWindowInfo(bool doAll)
         //
         // Try and find a correlation for the active time slider.
         //
-        //int activeTS = windowInfo->GetActiveTimeSlider();
-    
+
         // activeSource changed.  Update the file server.
         if(windowInfo->IsSelected(WindowInformation::ID_activeSource) || doAll)
         {

@@ -285,7 +285,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     {
         return;
     }
-    size_t i;
+
     vtkUnsignedCharArray *ghostZones = 
            (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("avtGhostZones");
     vtkUnsignedCharArray *ghostNodes = 
@@ -460,7 +460,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             if (!ghost && mat != NULL && elNum >= 0 && elNum < mat->GetNZones())
             {
                 matInfo = mat->ExtractCellMatInfo(elNum);
-                for (i = 0; i < matInfo.size(); ++i)
+                for (size_t i = 0; i < matInfo.size(); ++i)
                 {
                     matNames.push_back(matInfo[i].name);
                     if (matInfo[i].mix_index != -1)
@@ -484,7 +484,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                     minInfo1.SetValue(val);
                     minInfo1.SetDomain(domain);
                 }
-                for (i = 0; i < matValues.size(); i++)
+                for (size_t i = 0; i < matValues.size(); i++)
                 {
                     if (matValues[i] < minInfo2.GetValue())
                     {
@@ -505,7 +505,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                     maxInfo1.SetValue(val);
                     maxInfo1.SetDomain(domain);
                 }
-                for (i = 0; i < matValues.size(); i++)
+                for (size_t i = 0; i < matValues.size(); i++)
                 {
                     if (matValues[i] > maxInfo2.GetValue())
                     {

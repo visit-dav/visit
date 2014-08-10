@@ -175,7 +175,8 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
 
   if( array == 0 )
   {
-    if (DebugStream::Level1()) {
+    if (DebugStream::Level1())
+    {
         debug1 << "Variable " << varname
                << " does not exist"
                << endl;
@@ -188,7 +189,8 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
   if( ntuples != array->GetNumberOfTuples() ||
       ncomponents != array->GetNumberOfComponents() )
   {
-    if (DebugStream::Level1()) {
+    if (DebugStream::Level1())
+    {
         debug1 << "Variable " << varname
                << " size does not equal the number elements and/or components"
                << endl;
@@ -200,7 +202,8 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
 
   if( newptr == 0 )
   {
-    if (DebugStream::Level1()) {
+    if (DebugStream::Level1())
+    {
         debug1 << "Variable " << varname << " can not allocated" << endl;
     }
     return 0;
@@ -238,7 +241,8 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
   }
   else
   {
-    if (DebugStream::Level1()) {
+    if (DebugStream::Level1())
+    {
         debug1 << "avtIVPNIMRODField::SetDataPointer "
                << "Variable " << varname
                << " is not of type float - can not safely down cast"

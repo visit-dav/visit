@@ -2159,7 +2159,6 @@ QvisCMFEWizard::nonOverlapTxtChanged(const QString &s)
 void 
 QvisCMFEWizard::nonOverlapVarChanged(const QString &s) 
 {
-    //bool okay = false;
     decision_fillvar = s.toStdString();
 }
 

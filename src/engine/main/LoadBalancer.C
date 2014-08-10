@@ -644,8 +644,12 @@ LoadBalancer::Reduce(avtContract_p input)
     // we will unset the Boolean now and reset it in the case we actually do
     // data replication.
     //
+
+#ifdef PARALLEL
+    // only used in parallel
     bool dataReplicationRequested = input->ReplicateSingleDomainOnAllProcessors();
-    (void) dataReplicationRequested; /// variable used in parallel env..
+#endif
+
     input->SetReplicateSingleDomainOnAllProcessors(false);
 
     //

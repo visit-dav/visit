@@ -166,8 +166,7 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     topLayout->addLayout(srcLayout);
     srcLayout->setSpacing(5);
     const int S[] = {1, 5, 1, 1, 5};
-    size_t i;
-    for(i = 0; i < 5; ++i)
+    for(size_t i = 0; i < 5; ++i)
         srcLayout->setRowStretch(i, S[i]);
     srcLayout->addWidget(new QLabel(tr("Sources"), central), 0, 0);
     srcLayout->addWidget(new QLabel(tr("Correlated sources"), central), 0, 2);
@@ -177,12 +176,12 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     //
     NameSimplifier simplifier;
     const stringVector &sources = GetViewerState()->GetGlobalAttributes()->GetSources();
-    for(i = 0; i < sources.size(); ++i)
+    for(size_t i = 0; i < sources.size(); ++i)
         simplifier.AddName(sources[i]);
     stringVector shortSources;
     simplifier.GetSimplifiedNames(shortSources);
     std::map<std::string, std::string> shortToLong, longToShort;
-    for(i = 0; i < sources.size(); ++i)
+    for(size_t i = 0; i < sources.size(); ++i)
     {
         shortToLong[shortSources[i]] = sources[i];
         longToShort[sources[i]] = shortSources[i];
@@ -191,7 +190,7 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     // Create and populate the list of sources.
     sourcesListBox = new QListWidget(central);
     sourcesListBox->setSelectionMode(QAbstractItemView::MultiSelection);
-    for(i = 0; i < sources.size(); ++i)
+    for(size_t i = 0; i < sources.size(); ++i)
     {
         if(!correlation.UsesDatabase(sources[i]))
             sourcesListBox->addItem(shortSources[i].c_str());
@@ -206,7 +205,7 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     correlatedSourcesListBox = new QListWidget(central);
     correlatedSourcesListBox->setSelectionMode(QAbstractItemView::MultiSelection);
     const stringVector &dbs = correlation.GetDatabaseNames();
-    for(i = 0; i < (size_t)correlation.GetNumDatabases(); ++i)
+    for(size_t i = 0; i < (size_t)correlation.GetNumDatabases(); ++i)
         correlatedSourcesListBox->addItem(longToShort[dbs[i]].c_str());
     if(dbs.size() > 0)
         correlatedSourcesListBox->setCurrentRow(0);

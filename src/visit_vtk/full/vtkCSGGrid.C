@@ -1085,17 +1085,7 @@ static void PlanePPPToQuadric(const double *const plane, double *quadric)
     coeffs[5] = xprod[2];
     PlanePNToQuadric(coeffs, quadric);
 }
-#if 0
-static void BoxXYZXYZToQuadric(const double *const box, double *quadric)
-{
-    PlaneXToQuadric(&box[0], &quadric[0*NUM_QCOEFFS]);
-    PlaneYToQuadric(&box[1], &quadric[1*NUM_QCOEFFS]);
-    PlaneZToQuadric(&box[2], &quadric[2*NUM_QCOEFFS]);
-    PlaneXToQuadric(&box[3], &quadric[3*NUM_QCOEFFS]);
-    PlaneYToQuadric(&box[4], &quadric[4*NUM_QCOEFFS]);
-    PlaneZToQuadric(&box[5], &quadric[5*NUM_QCOEFFS]);
-}
-#endif
+
 static void CylinderPNLRToQuadric(const double *const cyl, double *quadric)
 {
     // normal

@@ -321,8 +321,8 @@ avtAggregateChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         for (size_t j = 0 ; j < hashed_lineid_lookup[i].size() ; j++)
         {
              bool alreadyDoneLineId = false;
-             size_t  k;
-             for (k = 0 ; k < already_considered.size() ; k++)
+
+             for (size_t k = 0 ; k < already_considered.size() ; k++)
                  if (hashed_lineid_lookup[i][j] == already_considered[k])
                      alreadyDoneLineId = true;
              if (alreadyDoneLineId)
@@ -331,7 +331,7 @@ avtAggregateChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
              int lineid = hashed_lineid_lookup[i][j];
              already_considered.push_back(lineid);
              double length = 0.;
-             for (k = j ; k < hashed_lineid_lookup[i].size() ; k++)
+             for (size_t k = j ; k < hashed_lineid_lookup[i].size() ; k++)
              {
                  if (hashed_lineid_lookup[i][k] == lineid)
                      length += hashed_segment_length[i][k];

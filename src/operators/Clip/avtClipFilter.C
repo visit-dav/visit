@@ -593,7 +593,6 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
     vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
     vtkDataSet *output = NULL;
  
-    //int nDataSets = 0;
     bool inverse = false; 
     bool funcSet = SetUpClipFunctions(ifuncs, inverse);
     if (!funcSet)

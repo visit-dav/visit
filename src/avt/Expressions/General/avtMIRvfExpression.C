@@ -229,7 +229,6 @@ avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 void
 avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomainsIndex)
 {
-    size_t    i, j;
 
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
@@ -256,10 +255,10 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
     useMat.resize(nmats, false);
     std::vector<bool>  matchedMatName(matNames.size(), false);
     std::vector<bool>  matchedMatIndex(matIndices.size(), false);
-    for (i = 0 ; i < nmats ; i++)
+    for (size_t i = 0 ; i < nmats ; i++)
     {
         std::string currentMat = mat->GetMaterials()[i];
-        for (j = 0 ; j < matNames.size() ; j++)
+        for (size_t j = 0 ; j < matNames.size() ; j++)
         {
             if (currentMat == matNames[j])
             {
@@ -267,7 +266,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
                 matchedMatName[j] = true;
             }
         }
-        for (j = 0 ; j < matIndices.size() ; j++)
+        for (size_t j = 0 ; j < matIndices.size() ; j++)
         {
             char tmp[256];
             sprintf(tmp, "%d", matIndices[j]);
@@ -287,14 +286,14 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
     // Make sure that we found every material requested.  If not, issue
     // a warning.
     //
-    for (i = 0 ; i < matNames.size() ; i++)
+    for (size_t i = 0 ; i < matNames.size() ; i++)
     {
         if (!matchedMatName[i])
         {
             const std::vector<std::string> &all_mats = 
                                                 mat->GetCompleteMaterialList();
             bool matched = false;
-            for (j = 0 ; j < all_mats.size() ; j++)
+            for (size_t j = 0 ; j < all_mats.size() ; j++)
             {
                 if (matNames[i] == all_mats[j])
                 {
@@ -312,7 +311,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
                               "\nList of valid materials is: ", 
                               matNames[i].c_str());
                     char *tmp = warningString + strlen(warningString);
-                    for (j = 0 ; j < all_mats.size() ; j++)
+                    for (size_t j = 0 ; j < all_mats.size() ; j++)
                     {
                         if (j < (all_mats.size()-1))
                             sprintf(tmp, "\"%s\", ", all_mats[j].c_str());
@@ -337,7 +336,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
             const std::vector<std::string> &all_mats = 
                                                 mat->GetCompleteMaterialList();
             bool matched = false;
-            for (j = 0 ; j < all_mats.size() ; j++)
+            for (size_t j = 0 ; j < all_mats.size() ; j++)
             {
                 if (matname == all_mats[j])
                 {
@@ -355,7 +354,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
                               "\nList of valid materials is: ", 
                               matname.c_str());
                     char *tmp = warningString + strlen(warningString);
-                    for (j = 0 ; j < all_mats.size() ; j++)
+                    for (size_t j = 0 ; j < all_mats.size() ; j++)
                     {
                         if (j < (all_mats.size()-1))
                             sprintf(tmp, "\"%s\", ", all_mats[j].c_str());

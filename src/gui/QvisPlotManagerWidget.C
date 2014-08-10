@@ -93,15 +93,9 @@
 #include <icons/plot_add.xpm>
 #include <icons/plot_del.xpm>
 #include <icons/plot_var.xpm>
-//#include <icons/plot_atts.xpm>
 #include <icons/plot_hide.xpm>
 #include <icons/plot_draw.xpm>
 #include <icons/oper_add4.xpm>
-//#include <icons/db_replace.xpm>
-//#include <icons/db_overlay.xpm>
-//#include <icons/db_open2.xpm>
-//#include <icons/db_close2.xpm>
-//#include <icons/db_reopen.xpm>
 
 #include <DebugStream.h>
 //#define DEBUG_PRINT
@@ -1911,13 +1905,12 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
         // Look through the menus for the available plots to see how many
         // are enabled. If any are enabled, then consider that we may want
         // to enable the plot menu.
-        size_t i;
         bool somePlotMenusEnabled = false;
-        for(i = 0; i < plotPlugins.size(); ++i)
+        for(size_t i = 0; i < plotPlugins.size(); ++i)
             somePlotMenusEnabled |= (plotPlugins[i].varMenu->count() > 0);
 
         bool someOperatorMenusEnabled = false;
-        for(i = 0; i < operatorPlugins.size(); ++i)
+        for(size_t i = 0; i < operatorPlugins.size(); ++i)
             someOperatorMenusEnabled |= operatorPlugins[i].action->isEnabled();
 
         bool haveAvailablePlots = plotAttsMenu->actions().count() > 0;
@@ -2380,7 +2373,7 @@ QvisPlotManagerWidget::setActivePlots()
     intVector existingPlotSelection,     newPlotSelection;
     intVector existingOperatorSelection, newOperatorSelection;
     intVector existingExpandedPlots,     newExpandedPlots;
-    //int firstSelectedFile = 0;
+
     bool found = false;
  
     //
@@ -2396,7 +2389,6 @@ QvisPlotManagerWidget::setActivePlots()
             if(!found)
             {
                 found = true;
-                //firstSelectedFile = i;
             }
         }
 
@@ -2921,7 +2913,7 @@ QvisPlotManagerWidget::setActivePlot()
 {
     int i;
     intVector existingPlotSelection,     newPlotSelection;
-    //int firstSelectedFile = 0;
+
     bool found = false;
 
     //
@@ -2937,7 +2929,6 @@ QvisPlotManagerWidget::setActivePlot()
             if(!found)
             {
                 found = true;
-                //firstSelectedFile = i;
             }
         }
 

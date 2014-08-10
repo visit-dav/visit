@@ -780,8 +780,6 @@ GUIBase::GetTimeSliderStateForDatabaseState(const std::string &activeTSName,
 
     if(activeTSName != "")
     {
-        //WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
-
         // Try and find a correlation for the active time slider so we
         // can get the number of states in the correlation.
         DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();

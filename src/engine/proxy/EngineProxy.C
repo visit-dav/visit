@@ -596,13 +596,15 @@ EngineProxy::SendKeepAlive()
     unsigned char buf[KEEPALIVE_SIZE];
     if(engineP != NULL)
     {
-        if (engineP->GetReadConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0) {
+        if (engineP->GetReadConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0) 
+        {
             debug1 << "Error reading keep alive data from engine!!!!\n";
         }
     }
     else
     {
-        if (component->GetWriteConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0) {
+        if (component->GetWriteConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0) 
+        {
             debug1 << "Error reading keep alive data from engine!!!!\n";
         }
     }

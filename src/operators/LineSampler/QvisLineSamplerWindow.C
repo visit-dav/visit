@@ -1842,7 +1842,8 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
     if(which_widget == LineSamplerAttributes::ID_wallList || doAll)
     {
         std::vector<double> walls;
-        double r, z;
+        double r = 0.0;
+        double z = 0.0;
         for (int i = 0; i < wallList->count(); i++)
         {
             QListWidgetItem *item = wallList->item(i);

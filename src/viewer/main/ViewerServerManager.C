@@ -341,14 +341,13 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
     //
     // Add arguments stored in ViewerServerManager.
     //
-    size_t i;
-    for (i = 0; i < arguments.size(); ++i)
+    for (size_t i = 0; i < arguments.size(); ++i)
          component->AddArgument(arguments[i].c_str());
 
     //
     // Add any other arguments given to us by the caller
     //
-    for (i = 0; i < args.size(); ++i)
+    for (size_t i = 0; i < args.size(); ++i)
          component->AddArgument(args[i].c_str());
 }
 

@@ -1919,8 +1919,9 @@ SpreadsheetViewer::moveSliceToCurrentPick()
     if (plotAtts->GetCurrentPickValid())
     {
         int sliceAxis = -1;
-        int rowAxis, columnAxis; 
-        (void) rowAxis; (void) columnAxis;
+        int rowAxis = -1;
+        int columnAxis = -1;
+
         switch (plotAtts->GetNormal())
         {
             case SpreadsheetAttributes::X:

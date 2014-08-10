@@ -293,7 +293,8 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     float *scalar =
       (float *) data->GetPointData()->GetScalars()->GetVoidPointer(0);
 
-    double pt[3] = {0,0,0}, p0[3] = {0,0,0};
+    double pt[3] = {0,0,0};
+    double p0[3] = {0,0,0};
 
     vtkIdType *vertPtr = verts;
 

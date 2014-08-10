@@ -848,7 +848,7 @@ BoundaryHelperFunctions<T>::CopyOldValues(int      d1,
 {
     Boundary *bi = &sdb->boundary[d1];
     int *biextents = (isPointData ? bi->oldnextents : bi->oldzextents);
-    //int *biextents = (isPointData ? bi->newnextents : bi->newzextents);
+
     for (int k = biextents[4]; k <= biextents[5]; k++)
     {
         for (int j = biextents[2]; j <= biextents[3]; j++)

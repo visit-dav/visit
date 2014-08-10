@@ -816,12 +816,14 @@ avtDatabaseWriter::Write(const std::string &plotName,
     {
         bool scalarsCausedChange = false, vectorsCausedChange = false;
         spec = ApplyVariablesToContract(spec, meshname, scalarList, scalarsCausedChange);
-        if(scalarsCausedChange) {
+        if(scalarsCausedChange)
+        {
             debug5 << mName << "SCALARS CAUSED CHANGE TO PIPELINE" << endl;
         }
 
         spec = ApplyVariablesToContract(spec, meshname, vectorList, vectorsCausedChange);
-        if(vectorsCausedChange) {
+        if(vectorsCausedChange)
+        {
             debug5 << mName << "VECTORS CAUSED CHANGE TO PIPELINE" << endl;
         }
 
@@ -837,7 +839,8 @@ avtDatabaseWriter::Write(const std::string &plotName,
         // Let materials contribute to the contract.
         bool materialsCausedChange = false;
         spec = ApplyMaterialsToContract(spec, meshname, materialList, materialsCausedChange);
-        if(materialsCausedChange) {
+        if(materialsCausedChange)
+        {
             debug5 << mName << "MATERIALS CAUSED CHANGE TO PIPELINE" << endl;
         }
 

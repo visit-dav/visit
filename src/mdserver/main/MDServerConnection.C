@@ -1018,7 +1018,8 @@ std::string
 MDServerConnection::FilteredPath(const std::string &path) const
 {
     // Remove multiple slashes in a row.
-    size_t i, state = 0;
+    size_t i = 0;
+    size_t state = 0;
     std::string filteredPath;
     for(i = 0; i < path.length(); ++i)
     {
@@ -1344,7 +1345,12 @@ MDServerConnection::ReadCWD()
 #if defined(_WIN32)
     _getcwd(tmpcwd,1023);
 #else
-    char* res = getcwd(tmpcwd,1023); (void) res;
+    char* res = getcwd(tmpcwd,1023);
+    if(res == NULL)
+    {
+        debug1 <<"failed to get current working directory via getcwd()" 
+              << std::endl;
+    }
 #endif
     tmpcwd[1023]='\0';
 
@@ -1783,7 +1789,9 @@ bool
 MDServerConnection::GetPattern(const std::string &file, std::string &p,
     int &digitLength) const
 {
-    size_t i, isave = 0, ipat = 0;
+    size_t i = 0;
+    size_t isave = 0;
+    size_t ipat = 0;
     char pattern[256];
     for(i = 0; i < 256; ++i) pattern[i] = '\0';
 
@@ -2266,7 +2274,8 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         // Create virtual databases using the information stored in the
         // newVirtualFiles map.
         //
-        size_t fileIndex, stage3 = visitTimer->StartTimer();
+        size_t fileIndex = 0;
+        size_t stage3 = visitTimer->StartTimer();
         GetFileListRPC::FileList virtualFilesToCheck;
         for(fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
         {
@@ -2898,10 +2907,10 @@ MDServerConnection::GetDatabase(std::string file, int timeState,
             const stringVector &fileNames = virtualFile->second.files;
             const std::string &path = virtualFile->second.path;
             char **names = new char *[fileNames.size()];
-            size_t i;
+
             debug3 << "New virtual database: " << file.c_str()
                    << ", path=" << path.c_str() << endl;
-            for(i = 0; i < fileNames.size(); ++i)
+            for(size_t i = 0; i < fileNames.size(); ++i)
             {
                 std::string name(ExpandPathHelper(fileNames[i], path));
                 char *charName = new char[name.size() + 1];
@@ -2965,7 +2974,7 @@ MDServerConnection::GetDatabase(std::string file, int timeState,
                 visitTimer->StopTimer(timeid, timerMessage);
 
                 // Free the memory that we used.
-                for(i = 0; i < fileNames.size(); ++i)
+                for(size_t i = 0; i < fileNames.size(); ++i)
                     delete [] names[i];
                 delete [] names;
 

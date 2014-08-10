@@ -1172,7 +1172,7 @@ avtStructuredMeshChunker::CreateUnstructuredGrid(vtkDataSet *in_ds,
     newPD->CopyAllocate(origPD, nNewPts);
 
     int *newPtIndex = new int[nOrigPts];
-    //int nextIndex = 0;
+
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(in_ds);

@@ -803,7 +803,6 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
         suppliedLabels->setCurrentCell(currentRow, currentCol);
 
         int nRows = suppliedLabels->rowCount();
-        //bool allEmpty = true;
         for (int rowNum = 0; rowNum < nRows; ++rowNum)
         {
             txt = suppliedLabels->item(rowNum, 1)->text();

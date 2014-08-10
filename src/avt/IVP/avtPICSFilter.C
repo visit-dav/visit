@@ -453,7 +453,8 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
                ds->GetCellData()->SetActiveAttribute(velocityName.c_str(), vtkDataSetAttributes::VECTORS);
             else
             {
-                if (DebugStream::Level1()) {
+                if (DebugStream::Level1()) 
+                {
                     debug1 << "Unable to locate velocity variable for pathlines.\n";
                 }
             }
@@ -686,7 +687,8 @@ avtPICSFilter::LoadNextTimeSlice()
     // std::cerr << "LoadNextTimeSlice() " << curTimeSlice << " tsMax= " << domainTimeIntervals.size() <<"  " << period << std::endl;
 
 
-    if (DebugStream::Level5()) {
+    if (DebugStream::Level5()) 
+    {
         debug5<<"LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<endl;
     }
     avtContract_p new_contract;
@@ -1134,7 +1136,8 @@ avtPICSFilter::CheckOnDemandViability(void)
     // If we don't want on demand, don't provide it.
     if (method == PICS_PARALLEL_OVER_DOMAINS)
     {
-        if (DebugStream::Level1()) {
+        if (DebugStream::Level1()) 
+        {
             debug1 << "avtPICSFilter::CheckOnDemandViability(): = 0\n";
         }
         return false;
@@ -1146,7 +1149,8 @@ avtPICSFilter::CheckOnDemandViability(void)
         avtIntervalTree *it = GetMetaData()->GetSpatialExtents(curTimeSlice);
         val = (it == NULL ? val : true);
     }
-    if (DebugStream::Level1()) {
+    if (DebugStream::Level1()) 
+    {
         debug1 << "avtPICSFilter::CheckOnDemandViability(): = " << val <<endl;
     }
     return val;
@@ -1214,7 +1218,8 @@ avtPICSFilter::Execute(void)
     if (emptyDataset)
     {
         avtCallback::IssueWarning("There was no data to advect over.");
-        if (DebugStream::Level1()) {
+        if (DebugStream::Level1()) 
+        {
             debug1 << "No data for PICS filter.  Bailing out early." << endl;
         }
         return;
@@ -1538,7 +1543,8 @@ avtPICSFilter::Initialize()
             for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
             SumIntArrayAcrossAllProcessors(&myDoms[0],&domainToRank[0],numDomains);
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5()) 
+            {
                 debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
             }
         }
@@ -1564,7 +1570,8 @@ avtPICSFilter::Initialize()
     
     if ( ! OperatingOnDemand() )
     {
-        if (DebugStream::Level1()) {
+        if (DebugStream::Level1()) 
+        {
             debug1 << "Not operating on demand, using parallel static domains instead." << endl;
         }
         actualMethod = PICS_PARALLEL_OVER_DOMAINS;
@@ -1573,7 +1580,8 @@ avtPICSFilter::Initialize()
     // Parallel and one domains, use the serial algorithm.
     if (numDomains == 1)
     {
-        if (DebugStream::Level1()) {
+        if (DebugStream::Level1()) 
+        {
             debug1 << "Forcing load-on-demand because there is only one domain." << endl;
         }
         actualMethod = PICS_SERIAL;
@@ -1640,7 +1648,8 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         int numTimes = md->GetTimes().size() - 1;
         if (numTimes == 0)
         {
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5()) 
+            {
                 debug5 << "Pathlines - Only one time slice in the data sett, two or more are needed\n";
             }
             EXCEPTION1(VisItException, "Pathlines - Only one time slice in the data sett, two or more are needed.");
@@ -1696,7 +1705,8 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
           }
         }
           
-        if (DebugStream::Level5()) {
+        if (DebugStream::Level5()) 
+        {
             debug5<<"Times: [";
         }
 
@@ -1717,7 +1727,8 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             intv[0] = md->GetTimes()[i];
             intv[1] = md->GetTimes()[i+1];
             
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5()) 
+            {
                 debug5<<" ("<<intv[0]<<", "<<intv[1]<<")";
             }
             if (intv[0] >= intv[1])
@@ -1732,7 +1743,8 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
             domainTimeIntervals.push_back(intv);
         }
-        if (DebugStream::Level5()) {
+        if (DebugStream::Level5()) 
+        {
             debug5<<"]"<<endl;
         }
         
@@ -1787,7 +1799,8 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
         if (seedTimeStep0 == -1)
         {
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5()) 
+            {
                 debug5 << "Did not find starting interval for seedTime0: " << seedTime0 << endl;
             }
             EXCEPTION1(VisItException, "Invalid pathline starting time value.");
@@ -2206,19 +2219,22 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
       else if( fieldType == PICS_FIELD_NIMROD )
          return new avtIVPNIMRODField(ds, *locator);
 
-      else if (isFace) {
+      else if (isFace) 
+      {
         debug5 <<"avtPICSFilter::GetFieldForDomain() - using 'face' field interpolator." <<std::endl;
         avtIVPVTKFaceField* field = new avtIVPVTKFaceField(ds, *locator);
         return field;
       }
 
-      else if (isEdge) {
+      else if (isEdge) 
+      {
         debug5 <<"avtPICSFilter::GetFieldForDomain() - using 'edge' field interpolator." <<std::endl;
         avtIVPVTKEdgeField* field = new avtIVPVTKEdgeField(ds, *locator);
         return field;
       }
 
-      else if (haveOffsets) {
+      else if (haveOffsets) 
+      {
         debug5 <<"avtPICSFilter::GetFieldForDomain() - using offset field interpolator." <<std::endl;
         avtIVPVTKOffsetField* field = new avtIVPVTKOffsetField(ds, *locator);
         debug5 <<"avtPICSFilter::GetFieldForDomain() - offsets[0] = " <<offsets[0].x <<", " <<offsets[0].y <<", " <<offsets[0].z <<std::endl;
@@ -2615,7 +2631,8 @@ avtPICSFilter::ComputeDomainToRankMapping()
             for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
             SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
-            if (DebugStream::Level5()) {
+            if (DebugStream::Level5()) 
+            {
                 debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
             }
         }
@@ -3622,10 +3639,12 @@ avtPICSFilter::CheckStagger( vtkDataSet *ds, bool &isEdge, bool &isFace )
         {
             const char* stagger = info->Get(avtVariableCache::STAGGER());
             debug5 << "avtPICSFilter::CheckStagger: field has stagger " << stagger << std::endl;
-            if (strcmp(stagger, "face") == 0) {
+            if (strcmp(stagger, "face") == 0) 
+            {
               isFace = true;
             }
-            else if (strcmp(stagger, "edge") == 0) {
+            else if (strcmp(stagger, "edge") == 0) 
+            {
               isEdge = true;
             }
         }
