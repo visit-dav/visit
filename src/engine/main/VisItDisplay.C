@@ -154,18 +154,19 @@ split(std::string str, size_t node, size_t display)
 VisItDisplay *
 VDisplay::Create(VisItDisplay::DisplayType vtype)
 {
+    VisItDisplay *dpy = NULL;
     switch(vtype)
     {
         case VisItDisplay::D_MESA:
             debug3 << "Creating Mesa (SW-based) display." << std::endl;
-            return new MesaDisplay();
+            dpy = new MesaDisplay();
             break;
-#if ! defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
         case VisItDisplay::D_X:
+#if ! defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
             debug3 << "Creating X (HW-based) display." << std::endl;
-            return new XDisplay();
-            break;
+            dpy = new XDisplay();
 #endif
+            break;
     }
-    return NULL;  // unreachable.
+    return dpy;
 }

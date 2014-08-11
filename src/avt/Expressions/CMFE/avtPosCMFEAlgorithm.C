@@ -543,7 +543,7 @@ avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
     ds_start = new int[num_datasets];
     if (num_datasets > 0)
         ds_start[0] = 0;
-    for (size_t i = 1 ; i < num_datasets ; i++)
+    for (int i = 1 ; i < num_datasets ; i++)
         ds_start[i] = ds_start[i-1] + ds_size[i-1];
     delete [] ds_size;
 
@@ -1142,9 +1142,9 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     // Do this first, because it will buy us a little memory in case we're
     // close to going over.
     //
-    for (i = 0 ; i < pt_list.size() ; i++)
+    for (size_t i = 0 ; i < pt_list.size() ; i++)
         delete [] pt_list[i];
-    for (i = 0 ; i < rgrid_pts.size() ; i++)
+    for (size_t i = 0 ; i < rgrid_pts.size() ; i++)
         delete [] rgrid_pts[i];
 
     //
@@ -1247,7 +1247,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
             pts += 3;
             int proc = spat_part.GetProcessor(pt);
             double *p = (double *) recvmessages[proc];
-            for (k = 0 ; k < (size_t)nComps ; k++)
+            for (int k = 0 ; k < nComps ; k++)
                 vals[idx++] = *p++;
             recvmessages[proc] += sizeof(double)*nComps;
         }
@@ -1283,7 +1283,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
                     {
                         int valIDX = yzoffset + x;
                         double *p = (double *) recvmessages[procId[j]];
-                        for (k = 0 ; k < (size_t)nComps ; k++)
+                        for (int k = 0 ; k < nComps ; k++)
                             vals[idx + nComps*valIDX + k] = *p++;
                         recvmessages[procId[j]] += sizeof(double)*nComps;
                     }
@@ -1644,7 +1644,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
     vtkUnstructuredGrid **meshForProcP = new vtkUnstructuredGrid*[nProcs];
     int                  *nCellsForP   = new int[nProcs];
     vtkAppendFilter     **appenders    = new vtkAppendFilter*[nProcs];
-    for (i = 0 ; i < nProcs ; i++)
+    for (int i = 0 ; i < nProcs ; i++)
         appenders[i] = vtkAppendFilter::New();
 
     vector<int> list;
