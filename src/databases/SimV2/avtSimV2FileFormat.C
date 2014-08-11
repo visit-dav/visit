@@ -2623,6 +2623,9 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
 //    Brad Whitlock, Thu Jun 19 11:20:12 PDT 2014
 //    Pass the mesh name.
 //
+//    Brad Whitlock, Mon Aug 11 14:46:49 PDT 2014
+//    Allow unset IO hints in the domain list.
+//
 // ****************************************************************************
 
 bool
@@ -2632,10 +2635,12 @@ avtSimV2FileFormat::PopulateIOInformation(const std::string &meshname,
 #ifndef MDSERVER
     const char *mName = "avtSimV2FileFormat::PopulateIOInformation: ";
 
-    // TODO: pass in a mesh name
     visit_handle h = simv2_invoke_GetDomainList(meshname.c_str());
     if (h == VISIT_INVALID_HANDLE)
+    {
+        debug1 << mName << "An invalid domain list was returned." << endl;
         return false;
+    }
 
     int rank = 0;
     int size = 1;
@@ -2645,7 +2650,7 @@ avtSimV2FileFormat::PopulateIOInformation(const std::string &meshname,
 #endif
 
     int alldoms = 0;
-    visit_handle mydoms;
+    visit_handle mydoms = VISIT_INVALID_HANDLE;
     if(simv2_DomainList_getData(h, alldoms, mydoms) == VISIT_ERROR)
     {
         debug1 << mName << "Could not get domain list data" << endl;
@@ -2653,36 +2658,43 @@ avtSimV2FileFormat::PopulateIOInformation(const std::string &meshname,
         return false;
     }
 
-    int owner, dataType, nComps, nTuples = 0;
-    void *data = 0;
-    if(mydoms != VISIT_INVALID_HANDLE &&
-       simv2_VariableData_getData(mydoms, owner, dataType, nComps, nTuples,
-                                  data) == VISIT_ERROR)
-    {
-        debug1 << mName << "Could not get domain list data" << endl;
-        simv2_FreeObject(h);
-        return false;
-    }
+    // Set the number of domains.
+    ioInfo.SetNDomains(alldoms);
 
+    // Set the IO hints if they are present.
     vector< vector<int> > hints;
     hints.resize(size);
-    hints[rank].resize(nTuples);
-    for (int i=0; i<nTuples; i++)
+    if(mydoms != VISIT_INVALID_HANDLE)
     {
-        int dom = ((int *)data)[i];
-        if(dom >= 0 && dom < alldoms)
-            hints[rank][i] = dom;
+        int owner, dataType, nComps, nTuples = 0;
+        void *data = 0;
+        if(simv2_VariableData_getData(mydoms, 
+            owner, dataType, nComps, nTuples, data) == VISIT_OKAY)
+        {
+            hints[rank].resize(nTuples);
+            for (int i=0; i<nTuples; i++)
+            {
+                int dom = ((int *)data)[i];
+                if(dom >= 0 && dom < alldoms)
+                    hints[rank][i] = dom;
+                else
+                {
+                    debug1 << mName << "An out of range domain number " << dom
+                           << " was given in the domain list. Valid numbers are in [0,"
+                           << alldoms << "]" << endl;
+                    simv2_FreeObject(h);
+                    return false;
+                }
+            }
+        }
         else
         {
-            debug1 << mName << "An out of range domain number " << dom
-                   << " was given in the domain list. Valid numbers are in [0,"
-                   << alldoms << "]" << endl;
+            debug1 << mName << "Could not get domain list data" << endl;
             simv2_FreeObject(h);
             return false;
         }
     }
     ioInfo.AddHints(hints);
-    ioInfo.SetNDomains(alldoms);
 
     simv2_FreeObject(h);
     return true;
