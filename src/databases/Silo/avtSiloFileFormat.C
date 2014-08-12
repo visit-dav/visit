@@ -2678,6 +2678,9 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Mon Aug 11 20:09:51 PDT 2014
+//    Decode and utilize multivar's tensor_rank member if its set. Populate
+//    metadata accordingly.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
@@ -2697,6 +2700,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             string meshname;
             string mb_varname;
             int meshnum = 0;
+            int tensor_rank = 0;
             bool valid_var = true;
             GetMultiVar(dirname, multivar_names[i], &mv_ent, &valid_var);
 
@@ -2788,6 +2792,8 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             double missing_value = DB_MISSING_VALUE_NOT_SET;
             if (mv->missing_value != DB_MISSING_VALUE_NOT_SET)
                 missing_value = mv->missing_value;
+            if (mv->tensor_rank != 0)
+                tensor_rank = mv->tensor_rank;
             if (valid_var && mv)
             {
                 DetermineFileAndDirectory(mb_varname.c_str(),"",
@@ -2895,7 +2901,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                 }
             }
 
-            if (nvals == 1)
+            if (nvals == 1 || tensor_rank == DB_VARTYPE_SCALAR)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                            meshname, centering);
@@ -2935,19 +2941,59 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             }
             else
             {
-                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                                 meshname, centering, nvals);
-                vmd->validVariable = valid_var;
-                vmd->hideFromGUI = mv ? mv->guihide: 0;
-                vmd->matRestricted = selectedMats;
-                if(varUnits != "")
+                if (tensor_rank == DB_VARTYPE_TENSOR)
                 {
-                    vmd->hasUnits = true;
-                    vmd->units = varUnits;
+                    avtTensorMetaData *tmd = new avtTensorMetaData(name_w_dir, meshname, centering, nvals);
+                    tmd->validVariable = valid_var;
+                    tmd->hideFromGUI = mv ? mv->guihide: 0;
+                    tmd->matRestricted = selectedMats;
+                    if(varUnits != "")
+                    {
+                        tmd->hasUnits = true;
+                        tmd->units = varUnits;
+                    }
+                    md->Add(tmd);
                 }
-                md->Add(vmd);
+                else if (tensor_rank == DB_VARTYPE_SYMTENSOR)
+                {
+                    avtSymmetricTensorMetaData *tmd = new avtSymmetricTensorMetaData(name_w_dir, meshname, centering, nvals);
+                    tmd->validVariable = valid_var;
+                    tmd->hideFromGUI = mv ? mv->guihide: 0;
+                    tmd->matRestricted = selectedMats;
+                    if(varUnits != "")
+                    {
+                        tmd->hasUnits = true;
+                        tmd->units = varUnits;
+                    }
+                    md->Add(tmd);
+                }
+                else if (tensor_rank == DB_VARTYPE_ARRAY)
+                {
+                    avtArrayMetaData *amd = new avtArrayMetaData(name_w_dir, meshname, centering, nvals);
+                    amd->validVariable = valid_var;
+                    amd->hideFromGUI = mv ? mv->guihide: 0;
+                    amd->matRestricted = selectedMats;
+                    if(varUnits != "")
+                    {
+                        amd->hasUnits = true;
+                        amd->units = varUnits;
+                    }
+                    md->Add(amd);
+                }
+                else
+                {
+                    avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir, meshname, centering, nvals);
+                    vmd->validVariable = valid_var;
+                    vmd->hideFromGUI = mv ? mv->guihide: 0;
+                    vmd->matRestricted = selectedMats;
+                    if(varUnits != "")
+                    {
+                        vmd->hasUnits = true;
+                        vmd->units = varUnits;
+                    }
+                    md->Add(vmd);
+                }
             }
-
         }
         CATCHALL
         {
