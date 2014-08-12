@@ -62,6 +62,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt was updated to Silo 4.10. The Silo plugin will no longer build against all previous releases of Silo. It now requires 4.10.</li>
   <li>Silo plugin supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
   <li>For more information regarding Silo 4.10, please see <a href="https://visitbugs.ornl.gov/news/5">these notes</a></li>
+  <li>Silo plugin now supports tensor multi-vars. Previously, data producers were required to write scalar multi-vars and then bundle these into a tensor multivar using a defvars object.</li>
 </ul>
 
 <a name="Plot_changes"></a>
