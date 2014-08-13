@@ -8,6 +8,7 @@
       ${VISUS_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
+      avtview
       ${VISUS_LIBRARIES}
     </LIBS>
     <FilePatterns>
