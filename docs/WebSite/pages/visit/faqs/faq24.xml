@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>24. Which compilers can be used to build VisIt? </h2>
+<p>The following compilers can be used to build VisIt on the listed platforms, though this is not an exhaustive list and newer versions of these compilers often work. In general, any g++ 4.x series compiler will build VisIt just fine. Earlier versions of g++ will also usually work. </p>
+<table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
+  <tbody>
+    <tr>
+      <th width="15%">Platform </th>
+      <th width="65%">Compiler</th>
+    </tr>
+    <tr>
+      <td>AIX 5.3</td>
+      <td>xlC </td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td>g++ 4.0 or later</td>
+    </tr>
+    <tr>
+      <td>Windows XP,Vista,7</td>
+      <td>Microsoft Visual Studio .Net 2003, or .Net 2005 (Visual Studio 2010 support coming)</td>
+    </tr>
+    <tr>
+      <td>MacOS X 10.4-10.6</td>
+      <td>g++ 4.0 or later</td>
+    </tr>
+  </tbody>
+</table>
+
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>
