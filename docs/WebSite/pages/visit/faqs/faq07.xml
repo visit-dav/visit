@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>7. Why is VisIt running slowly on my Linux system?</h2>
+<p> The standard Linux distributions do not come with vender-supplied graphics drivers, which are required to achieve full hardware acceleration. You should download and install the latest driver for your graphics card from your graphics card vendor's website. In the case of an NVidia graphics card, you can get the latest driver by going to <a href="http://www.nvidia.com">NVidia's website</a>, selecting the Download Drivers link, and then selecting the Linux Display Drivers link.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

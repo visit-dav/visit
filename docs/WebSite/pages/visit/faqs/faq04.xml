@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 20, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>4. How do I debug problems starting VisIt or opening files?</h2>
+<p> If you are having difficulty either starting VisIt and/or looking at some data files once VisIt is running, try some of the following...</p>
+<p> Add '-debug 5' to the command-line to launch VisIt. This will generate debug logs for each executable component VisIt is running
+in the directory that VisIt was launched from.</p>
+<p> Note that VisIt runs much slower with debugging turned on. So, it is best to use it only when you need to.</p>
+<p> On Windows systems, if you launch VisIt by double clicking the shortcut icon, you will need to modify the "Target" text field of the shortcut and include '-debug 5' *after* the close double quote (") at the end of the existing string. Also, don't forget to remove it after you have completed debugging because running with debugging turned on causes VisIt to run much slower. Alternatively, you can make a copy of the shortcut icon, naming it something like "visit_debug" and modify only the copy.</p>
+<p> VisIt supports 5 levels of debugging. So, each component will generate 5 different debug logs. The level 5 logs have the most information.</p>
+<p> If you are running VisIt in a client/server scenario, then only the gui and viewer components will be running locally on your desktop. The other componets will be running on whatever system you launched them on. In this case, debug logs for those components will be generated in your login directory on those systems.</p>
+<p> Once you have generated debug logs, searching for the string 'Exception' in them can often lead you to clues regarding the problem. But, be aware tha there are many cases where Exceptions are 'normal' in that they do NOT lead to a failure to startup or run correctly. So, don't be mislead by these.</p>
+<p> Problems with startup can usually be found in the viewer logs. Problems with opening a file are usually found the mdserver logs and problems with getting a particular plot to work are usually found in the engine logs.</p>
+<p> In some cases, the problems may be such that the failing components get relaunched. When this happens, the existing logs get overwritten by new ones. For this reason, they may not show the 'original' reason for the problem. The deal with this case, try also adding the command line argument '-pid' to the command to launch VisIt. This will cause the debug logs to be named with process ids so they don't get overwritten. Be aware that doing this can lead to hundreds of log files after many attempts to start/run VisIt. To find the log showing the original problem, you need to sort the logs according to time of modification.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

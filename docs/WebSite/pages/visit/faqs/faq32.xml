@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>32. Which libraries should I enable in <tt>build_visit</tt>?</h2>
+<p>In general: <i>as few as you can.</i></p>
+
+<p>An overwhelming majority of the libraries that one can enable via <tt>build_visit</tt> are used for a single purpose: supporting a file reader ("database") to allow reading data of that type. If you don't select a particular library in <tt>build_visit</tt>, the only drawback is that you won't be able to use VisIt to read data files which were written using that library.</p>
+
+<p>VisIt supports many file formats which are used across numerous scientific disciplines. As a user in one or two of those scientific disciplines, it's likely that you'll only use a few of those databases in your daily visualization needs, and unheard of that you would need all of them. To put things in perspective: VisIt supports upwards of a hundred different file formats. Many of those formats are only applicable to a specific group within a scientific domain.</p>
+
+<p>Finally, while we make every effort to streamline the <tt>build_visit</tt> process, there are simply too many platforms and too many third party libraries to do exhaustive testing. By only enabling what you need, you're less likely to encounter build failures in <tt>build_visit</tt>&#8212;it can't fail to build if you don't try to
+build it!</p>
+
+<p><b>A good rule of thumb is:</B> if you haven't heard of a library, you don't need to enable it.</>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

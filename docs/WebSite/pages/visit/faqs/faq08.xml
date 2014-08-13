@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>8. Why is VisIt running slowly when I am running VisIt on a machine that I logged into using SSH?</h2>
+<p> When you log into a remote system with ssh, all X Windows traffic is encrypted on the remote system and decrypted on your local system. This seriously degrades the interactivity of VisIt. There are two methods to solve this problem: (1) use xhost, or (2) use xauth. Xhost is the less secure of the two methods, so we recommend that you use the method based on xauth.</p>
+<h3> Using xauth</h3>
+<p> In a local window on your desktop, type: </p>
+<ul>
+  <li class="nobullet">
+  <p><strong>xauth extract mycookie your_display_name:0.0 <br />
+    scp mycookie remote_machine_name:mycookie</strong> </p>
+</li>
+</ul>
+<p>On the remote machine type, type: <strong>setenv DISPLAY your_display_name:0.0 xauth merge mycookie</strong> </p>
+<p> The your_display_name and remote_machine_name should be the completely qualified machine name (e.g., <strong>myhost.llnl.gov</strong> instead of just <strong>myhost</strong>.)</p>
+<p> The xauth merge command adds information to the .Xauthority file in your home directory on the remote machine. The .Xauthority file can get large if you keep merging into it. For performance efficiency, you should periodically remove the file. The xauth merge command will create a new file if .Xauthority doesn't already exist.</p>
+<h3> Using xhost</h3>
+<p> In a local window on your desktop, type: </p>
+<ul>
+  <li class="nobullet">
+  <p><strong> xhost remote_machine_name</strong></p>
+</li>
+</ul>
+<p> On the remote machine, type: </p>
+<ul>
+  <li class="nobullet"><strong> setenv DISPLAY your_display_name:0.0</strong></li>
+</ul>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

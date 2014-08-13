@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>11. How do I run VisIt in parallel?</h2>
+<p>VisIt is a distributed, component-based, visualization tool. The engine component, which performs file input and output as well as the data processing operations, can be run in serial or parallel. In order to run the engine in parallel, you must set up a host profile that specifies how the engine is launched in parallel. For more information, read the Host Profiles portion of the Remote Visualization section in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf"><em>VisIt Users Manual</em></a>.</p>
+<p>Also note that the VisIt binary distributions will most likely not work for running in parallel on your particular computer system. The most common reason is that the MPI version used to compile VisIt binaries is not compatible with your MPI and parallel launching mechanism. This is solved if you recompile VisIt from source on your computer. We have developed a script called <a href="source.html#build_visit" title="Build VisIt Script">build_visit</a> that automates much of this process for Linux and AIX platforms. </p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

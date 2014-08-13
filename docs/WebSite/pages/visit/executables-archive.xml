@@ -1,0 +1,2065 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[Archive of VisIt Executables]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 22, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<p><a href="simulation/computer-codes/visit/executables-archive">Executables</a>&#8212;This page contains versions  of VisIt that you can download for Unix and Windows systems.</p>
+
+<p><a href="simulation/computer-codes/visit/source">Source Code</a>&#8212;This page contains the VisIt source code that you can download if you would like to build a version of VisIt for another system or to modify the source code.</p>
+
+<p><a href="simulation/computer-codes/visit/manuals">Manuals</a>&#8212;This page contains the user's 
+manuals that are available, including a getting started manual and user's manual. </p>
+
+<p><a href="simulation/computer-codes/visit/datafiles">Data Files</a>&#8212;This page contains links to interesting datasets that you can plot with VisIt.</p>
+
+<h2>VisIt 2.7.1</h2>
+
+<ul>
+  <li> <a href="relnotes2.7.1.html">VisIt release notes</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit-install2_7_1">VisIt install script</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_filesizes">VisIt file sizes</a></li>
+</ul>
+<br /><br />
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th width="615">Platform</th>
+          <th width="138">Executable</th>
+        </tr>
+		<tr>
+          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2010</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2.7.1.exe">Download<</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />
+          Visual Studio 2010</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2.7.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />
+            Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/VisIt-2.7.1.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+            Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
+          Will work on many Linux x86_64 systems.</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2_7_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2_7_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/jvisit2.7.1.tar.gz">Download</a></td>
+        </tr>
+      </table>  
+
+<h2>VisIt 2.7.0</h2>
+
+<ul>
+  <li><a href="simulation/computer-codes/visit/releases/release-notes-2.7.0">VisIt release notes</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit-install2_7_0">VisIt install script</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_filesizes">VisIt file sizes</a> </li>
+</ul>
+<br /><br />
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+		<tr>
+          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2010</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2.7.0.exe">Download<</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />
+          Visual Studio 2010</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2.7.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />
+            Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/VisIt-2.7.0-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+            Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
+          Will work on many Linux x86_64 systems.</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2_7_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2_7_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/jvisit2.7.0.tar.gz">Download</a></td>
+        </tr>
+      </table> 
+	  
+<h2>VisIt 2.6.3</h2>
+<ul>
+  <li><a href="simulation/computer-codes/visit/releases/release-notes-2.6.3">VisIt release notes</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit-install2_6_3">VisIt install script</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_filesizes">VisIt file sizes</a></li>
+</ul>
+<br /><br />
+ 
+      <table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2.6.3.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2.6.3_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/VisIt-2.6.3-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov , 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2_6_3.linux-x86_64-rhel6.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2_6_3.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/jvisit2.6.3.tar.gz">Download</a></td>
+        </tr>
+      </table>
+	  
+
+<h2>VisIt 2.6.2</h2>
+<ul>
+  <li><a href="simulation/computer-codes/visit/releases/release-notes-2.6.2">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit-install2_6_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_filesizes">VisIt file sizes</a></li>
+</ul>
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+    	<th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+    </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2.6.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2.6.2_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/VisIt-2.6.2-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov , 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2_6_2.linux-x86_64-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2_6_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/jvisit2.6.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+	  
+<h2>VisIt 2.6.1</h2>
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/release-notes-2.6.1">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit-install2_6_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_filesizes">VisIt file sizes</a> </li>
+</ul>
+
+<table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+	</tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2.6.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2.6.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/VisIt-2.6.1-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov, 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2_6_1.linux-x86_64-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2_6_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/jvisit2.6.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.6.0</h2>
+<ul>
+  <li><a href="simulation/computer-codes/visit/releases/release-notes-2.6.0">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit-install2_6_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_filesizes">VisIt file sizes</a> </li>
+</ul>
+
+<table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
+        <tr> 
+         <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+      </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2.6.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2.6.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/VisIt-2.6.0-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov , 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2_6_0.linux-x86_64-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2_6_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/jvisit2.6.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.5.2</h2>
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/release-notes-2.5.2">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit-install2_5_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-308.1.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.4.1.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-x86_64-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 6, hoth.llnl.gov 2.6.32-220.13.1.el6.x86_64 #1 SMP, gcc 4.4.6</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-x86_64-rhel6.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2.5.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2.5.2_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/VisIt-2.5.2-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/VisIt-2.5.2-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/jvisit2.5.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.5.1</h2>
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.5.1">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit-install2_5_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-308.1.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.4.1.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-x86_64-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 6, hoth.llnl.gov 2.6.32-220.13.1.el6.x86_64 #1 SMP, gcc 4.4.6</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2.5.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2.5.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/VisIt-2.5.1-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/VisIt-2.5.1-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/jvisit2.5.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.5.0</h2>
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.5.0">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit-install2_5_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-308.1.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.4.1.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-x86_64-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 6, hoth.llnl.gov 2.6.32-220.13.1.el6.x86_64 #1 SMP, gcc 4.4.6</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2.5.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />Visual Studio 2010</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2.5.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/VisIt-2.5.0-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/VisIt-2.5.0-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/jvisit2.5.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.4.2</h2>
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.4.2">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit-install2_4_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2.4.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2.4.2_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/VisIt-2.4.2-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/VisIt-2.4.2-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/jvisit2.4.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.4.1</h2>
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.4.1">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit-install2_4_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2.4.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2.4.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/VisIt-2.4.1-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/VisIt-2.4.1-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/jvisit2.4.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.4.0</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.4.0">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit-install2_4_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2.4.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2.4.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/VisIt-2.4.0-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/VisIt-2.4.0-x86_64-installer.dmg">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.3.2</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.3.2">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit-install2_3_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2.3.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2.3.2_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/VisIt-2.3.2-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/VisIt-2.3.2-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/jvisit2.3.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.3.1</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.3.1">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit-install2_3_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-rhel5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2.3.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2.3.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/VisIt-2.3.1-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/VisIt-2.3.1-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/jvisit2.3.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.3</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.3.0">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit-install2_3_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td>linux-intel</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td>linux-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2.3.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2.3.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td>darwin-i386</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/VisIt-2.3.0-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td>darwin-x86_64</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/VisIt-2.3.0-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td>&nbsp;</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/jvisit2.3.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.2.2</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.2.2">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit-install2_2_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-89.0.16.ELsmp, gcc 3.4.6<br />Will work on most Linux x86 systems.</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2.2.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2.2.2_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/VisIt-2.2.2-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/VisIt-2.2.2-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/jvisit2.2.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.2.1</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.2.1">VisIt release notes</a> </li>
+  <li><a href="2.2.1/visit-install2_2_1">VisIt install script</a> </li>
+  <li><a href="2.2.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.2.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.2.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.2.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="2.2.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.2.1/visit2_2_1.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-89.0.16.ELsmp, gcc 3.4.6<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.2.1/visit2_2_1.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="2.2.1/visit2_2_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.2.1/visit2_2_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.2.1/visit2_2_1.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="2.2.1/visit2_2_1.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="2.2.1/visit2.2.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="2.2.1/visit2.2.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.2.1/VisIt-2.2.1-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.2.1/VisIt-2.2.1-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.2.1/jvisit2.2.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.2.0</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.2.0">VisIt release notes</a> </li>
+  <li><a href="2.2.0/visit-install2_2_0">VisIt install script</a> </li>
+  <li><a href="2.2.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.2.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.2.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.2.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.2.0/visit2_2_0.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-89.0.16.ELsmp, gcc 3.4.6<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.2.0/visit2_2_0.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="2.2.0/visit2_2_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.2.0/visit2_2_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.2.0/visit2_2_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="2.2.0/visit2_2_0.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="2.2.0/visit2.2.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="2.2.0/visit2.2.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.2.0/VisIt-2.2.0-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.2.0/VisIt-2.2.0-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.2.0/jvisit2.2.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.1.2</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.1.2">VisIt release notes</a> </li>
+  <li><a href="2.1.2/visit-install2_1_2">VisIt install script</a> </li>
+  <li><a href="2.1.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.1.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.1.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.1.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.1.2/visit2_1_2.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-89.0.16.ELsmp, gcc 3.4.6<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.1.2/visit2_1_2.linux-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="2.1.2/visit2_1_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.1.2/visit2_1_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.1.2/visit2_1_2.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="2.1.2/visit2_1_2.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="2.1.2/visit2.1.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
+          <td><a href="2.1.2/visit2.1.2_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.1.2/VisIt-2.1.2-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.1.2/VisIt-2.1.2-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4</td>
+          <td><a href="2.1.2/visit2_1_2.darwin-i386-10.4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.1.2/jvisit2.1.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.1.1</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.1.1">VisIt release notes</a> </li>
+  <li><a href="2.1.1/visit-install2_1_1">VisIt install script</a> </li>
+  <li><a href="2.1.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.1.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.1.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.1.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.1.1/visit2_1_1.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="2.1.1/visit2_1_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.1.1/visit2_1_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.1.1/visit2_1_1.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="2.1.1/visit2_1_1.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008<br />Note: This version has a bug that affects running in client/server mode to another machine. If you need to run in client/server mode, you should use version 2.1. Version 2.1.2, which corrects this problem, will be released December 15, 2010.</td>
+          <td><a href="2.1.1/visit2.1.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008<br />Note: This version has a bug that affects running in client/server mode to another machine. If you need to run in client/server mode, you should use version 2.1. Version 2.1.2, which corrects this problem, will be released December 15, 2010.</td>
+          <td><a href="2.1.1/visit2.1.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.1.1/VisIt-2.1.1-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.1.1/VisIt-2.1.1-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4</td>
+          <td><a href="2.1.1/visit2_1_1.darwin-i386-10.4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.1.1/jvisit2.1.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.1.0</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.1.0">VisIt release notes</a> </li>
+  <li><a href="2.1.0/visit-install2_1_0">VisIt install script</a> </li>
+  <li><a href="2.1.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.1.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.1.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.1.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.1.0/visit2_1_0.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="2.1.0/visit2_1_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.1.0/visit2_1_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-76chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.1.0/visit2_1_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="2.1.0/visit2_1_0.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="2.1.0/visit2.1.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.1.0/VisIt-2.1.0-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.1.0/VisIt-2.1.0-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4</td>
+          <td><a href="2.1.0/visit2_1_0.darwin-i386-10.4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.1.0/visit2_1_0.ibm-aix-pwr.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.1.0/visit2_1_0.ibm-aix-pwr64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.1.0/jvisit2.1.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.0.2</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.0.2">VisIt release notes</a> </li>
+  <li><a href="2.0.2/visit-install2_0_2">VisIt install script</a> </li>
+  <li><a href="2.0.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.0.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.0.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.0.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.0.2/visit2_0_2.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="2.0.2/visit2_0_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.0.2/visit2_0_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-76chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.0.2/visit2_0_2.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="2.0.2/visit2_0_2.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="2.0.2/visit2.0.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.0.2/VisIt-2.0.2-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.0.2/VisIt-2.0.2-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4</td>
+          <td><a href="2.0.2/visit2_0_2.darwin-i386-10.4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.0.2/visit2_0_2.ibm-aix-pwr.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.0.2/visit2_0_2.ibm-aix-pwr64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.0.2/jvisit2.0.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.0.1</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.0.1">VisIt release notes</a> </li>
+  <li><a href="2.0.1/visit-install2_0_1">VisIt install script</a> </li>
+  <li><a href="2.0.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.0.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.0.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.0.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.0.1/visit2_0_1.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="2.0.1/visit2_0_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.0.1/visit2_0_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-76chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.0.1/visit2_0_1.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
+          <td><a href="2.0.1/visit2_0_1.linux-euclid.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="2.0.1/visit2.0.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.0.1/VisIt-2.0.1-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.0.1/VisIt-2.0.1-x86_64-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4</td>
+          <td><a href="2.0.1/visit2_0_1.darwin-i386-10.4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.0.1/visit2_0_1.ibm-aix-pwr.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.0.1/visit2_0_1.ibm-aix-pwr64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.0.1/jvisit2.0.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 2.0.0</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-2.0.0">VisIt release notes</a> </li>
+  <li><a href="2.0.0/visit-install">VisIt install script</a> </li>
+  <li><a href="2.0.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="2.0.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="2.0.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="2.0.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="2.0.0/visit2_0_0.linux-rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4, OpenMPI 1.2.5<br />Your system must use a matching MPI to run in parallel.</td>
+          <td><a href="2.0.0/visit2_0_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.0.0/visit2_0_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-76chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="2.0.0/visit2_0_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.16.60-0.42.7-default, gcc 4.1.2</td>
+          <td><a href="2.0.0/visit2_0_0.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="2.0.0/visit2.0.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+          <td><a href="2.0.0/VisIt-2.0.0-i386-installer.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
+          <td><a href="2.0.0/visit2_0_0.darwin-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.0.0/visit2_0_0.ibm-aix-pwr.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="2.0.0/visit2_0_0.ibm-aix-pwr64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="2.0.0/jvisit2.0.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 1.12.2</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-1.12.2">VisIt release notes</a> </li>
+  <li><a href="1.12.2/visit-install">VisIt install script</a> </li>
+  <li><a href="1.12.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="1.12.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="1.12.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="1.12.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="1.12.2/visit1_12_2.linux_rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="1.12.2/visit1_12_2.linux-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-78.0.1.ELsmp, icc 9.1 & gcc 3.4.6<br />Requires the Intel 9.1 compiler installed on your system.</td>
+          <td><a href="1.12.2/visit1_12_2.linux-ellipse.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4, OpenMPI 1.2.5<br />Your system must use a matching MPI to run in parallel.</td>
+          <td><a href="1.12.2/visit1_12_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-63chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="1.12.2/visit1_12_2.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64  bit<br />Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2<br />Will work on older Linux x86_64 systems.</td>
+          <td><a href="1.12.2/visit1_12_2.linux-x86_64-fedora4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.16.60-0.21-default, gcc 4.1.2</td>
+          <td><a href="1.12.2/visit1_12_2.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows SE/ME/2000/Xp/Vista<br />MSVC7, Visual Studio 2003</td>
+          <td><a href="1.12.2/visit1.12.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel - Parallel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1</td>
+          <td><a href="1.12.2/visit1_12_2.darwin-i386-parallel.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4.11, Darwin Kernel Version 8.11.1, gcc 4.0.1</td>
+          <td><a href="1.12.2/visit1_12_2.darwin-i386.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - PowerPC<br />Darwin 10.5, Darwin Kernel Version 9.6.0, gcc 4.0.1</td>
+          <td><a href="1.12.2/visit1_12_2.darwin-ppc.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.12.2/visit1_12_2.aix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.12.2/visit1_12_2.aix64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="1.12.2/jvisit1.12.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 1.12.1</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-1.12.1">VisIt release notes</a> </li>
+  <li><a href="1.12.1/visit-install">VisIt install script</a> </li>
+  <li><a href="1.12.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="1.12.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="1.12.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="1.12.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="1.12.1/visit1_12_1.linux_rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+          <td><a href="1.12.1/visit1_12_1.linux-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-78.0.1.ELsmp, icc 9.1 & gcc 3.4.6<br />Requires the Intel 9.1 compiler installed on your system.</td>
+          <td><a href="1.12.1/visit1_12_1.linux-ellipse.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4, OpenMPI 1.2.5<br />Your system must use a matching MPI to run in parallel.</td>
+          <td><a href="1.12.1/visit1_12_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-63chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="1.12.1/visit1_12_1.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64  bit<br />Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2<br />Will work on older Linux x86_64 systems.</td>
+          <td><a href="1.12.1/visit1_12_1.linux-x86_64-fedora4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.16.60-0.21-default, gcc 4.1.2</td>
+          <td><a href="1.12.1/visit1_12_1.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows SE/ME/2000/Xp/Vista<br />MSVC7, Visual Studio 2003</td>
+          <td><a href="1.12.1/visit1.12.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel - Parallel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1</td>
+          <td><a href="1.12.1/visit1_12_1.darwin-i386-parallel.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4.11, Darwin Kernel Version 8.11.1, gcc 4.0.1</td>
+          <td><a href="1.12.1/visit1_12_1.darwin-i386.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - PowerPC<br />Darwin 10.5, Darwin Kernel Version 9.6.0, gcc 4.0.1</td>
+          <td><a href="1.12.1/visit1_12_1.darwin-ppc.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.12.1/visit1_12_1.aix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.12.1/visit1_12_1.aix64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="1.12.1/jvisit1.12.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 1.12.0</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-1.12.0">VisIt release notes</a> </li>
+  <li><a href="1.12.0/visit-install">VisIt install script</a> </li>
+  <li><a href="1.12.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="1.12.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="1.12.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="1.12.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
+          <td><a href="1.12.0/visit1_12_0.linux_rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-78.0.1.ELsmp, icc 9.1 & gcc 3.4.6<br />Requires the Intel 9.1 compiler installed on your system.</td>
+          <td><a href="1.12.0/visit1_12_0.linux-ellipse.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4, OpenMPI 1.2.5<br />Your system must use a matching MPI to run in parallel.</td>
+          <td><a href="1.12.0/visit1_12_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-63chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
+          <td><a href="1.12.0/visit1_12_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64  bit<br />Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2<br />Will work on older Linux x86_64 systems.</td>
+          <td><a href="1.12.0/visit1_12_0.linux-x86_64-fedora4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.16.60-0.21-default, gcc 4.1.2</td>
+          <td><a href="1.12.0/visit1_12_0.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows SE/ME/2000/Xp/Vista<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="1.12.0/visit1.12.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel - Parallel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1</td>
+          <td><a href="1.12.0/visit1_12_0.darwin-i386-parallel.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4.11, Darwin Kernel Version 8.11.1, gcc 4.0.1</td>
+          <td><a href="1.12.0/visit1_12_0.darwin-i386.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - PowerPC<br />Darwin 10.4, Darwin Kernel Version 9.6.0, gcc 4.0.1</td>
+          <td><a href="1.12.0/visit1_12_0.darwin-ppc.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.12.0/visit1_12_0.aix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.12.0/visit1_12_0.aix64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="1.12.0/jvisit1.12.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 1.11.2</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-1.11.2">VisIt release notes</a> </li>
+  <li><a href="1.11.2/visit-install">VisIt install script</a> </li>
+  <li><a href="1.11.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="1.11.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="1.11.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="1.11.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3</td>
+          <td><a href="1.11.2/visit1_11_2.linux_rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-78.0.1.ELsmp, icc 9.1 & gcc 3.4.6</td>
+          <td><a href="1.11.2/visit1_11_2.linux-ellipse.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-63chaos, gcc 4.1.2</td>
+          <td><a href="1.11.2/visit1_11_2.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64  bit<br />Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2</td>
+          <td><a href="1.11.2/visit1_11_2.linux-x86_64-fedora4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.16.60-0.21-default, gcc 4.1.2</td>
+          <td><a href="1.11.2/visit1_11_2.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows SE/ME/2000/Xp<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="1.11.2/visit1.11.2.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4.11, Darwin Kernel Version 8.11.1, gcc 4.0.1</td>
+          <td><a href="1.11.2/visit1_11_2.darwin-i386.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - PowerPC<br />Darwin 10.4, Darwin Kernel Version 9.6.0, gcc 4.0.1</td>
+          <td><a href="1.11.2/visit1_11_2.darwin-ppc.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.11.2/visit1_11_2.aix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.11.2/visit1_11_2.aix64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="1.11.2/jvisit1.11.2.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 1.11.1</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-1.11.1">VisIt release notes</a> </li>
+  <li><a href="1.11.1/visit-install">VisIt install script</a> </li>
+  <li><a href="1.11.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="1.11.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="1.11.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="1.11.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3</td>
+          <td><a href="1.11.1/visit1_11_1.linux_rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-78.0.1.ELsmp, icc 9.1 & gcc 3.4.6</td>
+          <td><a href="1.11.1/visit1_11_1.linux-ellipse.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-39.5chaos, gcc 4.1.2</td>
+          <td><a href="1.11.1/visit1_11_1.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64  bit<br />Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2</td>
+          <td><a href="1.11.1/visit1_11_1.linux-x86_64-fedora4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Itanium 64 bit<br />Redhat Enterprise Linux 4, thunder.llnl.gov 2.6.9-74chaos, gcc 3.2.3</td>
+          <td><a href="1.11.1/visit1_11_1.linux-ia64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.16.60-0.21-default, gcc 4.1.2</td>
+          <td><a href="1.11.1/visit1_11_1.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows SE/ME/2000/Xp<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="1.11.1/visit1.11.1.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4.11, Darwin Kernel Version 8.11.1, gcc 4.0.1</td>
+          <td><a href="1.11.1/visit1_11_1.darwin-i386.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - PowerPC<br />Darwin 10.4, Darwin Kernel Version 8.10.0, gcc 4.0.1</td>
+          <td><a href="1.11.1/visit1_11_1.darwin-ppc.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Solaris<br />SunOS 5.7, sunspot.llnl.gov Generic_106541-23, gcc 3.2</td>
+          <td><a href="1.11.1/visit1_11_1.sunos5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.11.1/visit1_11_1.aix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.11.1/visit1_11_1.aix64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="1.11.1/jvisit1.11.1.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 1.11.0</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-1.11.0">VisIt release notes</a> </li>
+  <li><a href="1.11.0/visit-install">VisIt install script</a> </li>
+  <li><a href="1.11.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="1.11.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="1.11.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="1.11.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3</td>
+          <td><a href="1.11.0/visit1_11_0.linux_rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-78.0.1.ELsmp, icc 9.1 & gcc 3.4.6</td>
+          <td><a href="1.11.0/visit1_11_0.linux-ellipse.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-39.5chaos, gcc 4.1.2</td>
+          <td><a href="1.11.0/visit1_11_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64  bit<br />Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2</td>
+          <td><a href="1.11.0/visit1_11_0.linux-x86_64-fedora4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Itanium 64 bit<br />Redhat Enterprise Linux 4, thunder.llnl.gov 2.6.9-74chaos, gcc 3.2.3</td>
+          <td><a href="1.11.0/visit1_11_0.linux-ia64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.16.60-0.21-default, gcc 4.1.2</td>
+          <td><a href="1.11.0/visit1_11_0.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows SE/ME/2000/Xp<br />MSVC8, Visual Studio 2005</td>
+          <td><a href="1.11.0/visit1.11.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4.11, Darwin Kernel Version 8.11.1, gcc 4.0.1</td>
+          <td><a href="1.11.0/visit1_11_0.darwin-i386.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - PowerPC<br />Darwin 10.4, Darwin Kernel Version 8.10.0, gcc 4.0.1</td>
+          <td><a href="1.11.0/visit1_11_0.darwin-ppc.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Solaris<br />SunOS 5.7, sunspot.llnl.gov Generic_106541-23, gcc 3.2</td>
+          <td><a href="1.11.0/visit1_11_0.sunos5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.11.0/visit1_11_0.aix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.11.0/visit1_11_0.aix64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="1.11.0/jvisit1.11.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+<h2>VisIt 1.10.0</h2>
+
+<ul>
+  <li> <a href="simulation/computer-codes/visit/releases/relnotes/release-notes-1.10.0">VisIt release notes</a> </li>
+  <li><a href="1.10.0/visit-install">VisIt install script</a> </li>
+  <li><a href="1.10.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="1.10.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="1.10.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="1.10.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+</ul>
+
+<table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th>Platform</th>
+          <th>Executable</th>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3</td>
+          <td><a href="1.10.0/visit1_10_0.linux_rhel3.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-42.0.10.ELsmp, icc 9.1 & gcc 3.4.6</td>
+          <td><a href="1.10.0/visit1_10_0.linux-ellipse.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, yana.llnl.gov 2.6.18-38chaos, gcc 4.1.2</td>
+          <td><a href="1.10.0/visit1_10_0.linux-x86_64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64  bit<br />Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2</td>
+          <td><a href="1.10.0/visit1_10_0.linux-x86_64-fedora4.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Itanium 64 bit<br />Redhat Enterprise Linux 4, thunder.llnl.gov 2.6.9-74chaos, gcc 3.2.3</td>
+          <td><a href="1.10.0/visit1_10_0.linux-ia64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - Altix 64 bit<br />SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.5-7.283-sn2, gcc 3.3.3</td>
+          <td><a href="1.10.0/visit1_10_0.linux-altix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Windows SE/ME/2000/Xp<br />MSVC7, Visual Studio 2003</td>
+          <td><a href="1.10.0/visit1.10.0.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - Intel<br />Darwin 10.4.11, Darwin Kernel Version 8.11.1, gcc 4.0.1</td>
+          <td><a href="1.10.0/visit1_10_0.darwin-i386.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X - PowerPC<br />Darwin 10.4, Darwin Kernel Version 8.10.0, gcc 4.0.1</td>
+          <td><a href="1.10.0/visit1_10_0.darwin-ppc.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Solaris<br />SunOS 5.7, sunspot.llnl.gov Generic_106541-23, gcc 3.2</td>
+          <td><a href="1.10.0/visit1_10_0.sunos5.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 32 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.10.0/visit1_10_0.aix.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>AIX - 64 bit<br />AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
+          <td><a href="1.10.0/visit1_10_0.aix64.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Irix<br />IRIX 64 6.5, quad.llnl.gov 07010238, MIPSpro 7.41</td>
+          <td><a href="1.10.0/visit1_10_0.irix6.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Java client library (jar file, compiled classes, source code, examples) </td>
+          <td><a href="1.10.0/jvisit1.10.0.tar.gz">Download</a></td>
+        </tr>
+</table>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

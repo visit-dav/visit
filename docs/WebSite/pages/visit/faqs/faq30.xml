@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>30. When I run VisIt on my Linux machine, I get a black screen. When I try displaying to it from a remote machine, though, everything works fine. Other OpenGL applications also seem to work, even when run locally. What is wrong?</h2>
+<p> Under Linux, hardware-accelerated rendering can become a complicated problem because many hardware vendors have their own drivers which can conflict with the direct rendering infrastructure in XFree86.  We have had some success simply removing references to DRI in the XF86Config file.  For example, remove the line in the "Module" section of the file that reads:</p>
+<p> Load "dri"</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

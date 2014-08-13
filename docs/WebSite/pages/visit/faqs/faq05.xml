@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 20, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>5. Does VisIt support stereo rendering?</h2>
+<p> Yes, VisIt supports stereo rendering on Linux and Windows systems. You will need a video card that supports stereographic display and a pair of stereographic glasses. When you want to use stereo rendering on a Windows system you should use the VisIt 2.X.X in stereo shortcut. When you want to use stereo rendering on a Linux system you should provide the <em>-stereo</em> command line option when you start VisIt at the command prompt.</p>
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>
