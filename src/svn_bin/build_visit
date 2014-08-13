@@ -57,14 +57,14 @@ export VISIT_VERSION=${VISIT_VERSION:-"2.8.0"}
 ####
 # Trunk:
 ####
-#export SVN_SOURCE_PATH=${SVN_SOURCE_PATH-"trunk/src"}
-#export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
+export SVN_SOURCE_PATH=${SVN_SOURCE_PATH-"trunk/src"}
+export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
 
 ###
 # Release:
 ###
-export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
-export SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/src/third_party"
+#export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
+#export SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/src/third_party"
 
 export INITIAL_PWD=$PWD
 
