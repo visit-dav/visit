@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>26. Why is VisIt running slowly on my Linux system with an ATI graphics card?</h2>
+<p> The default rendering performance of VisIt running on some ATI cards on Linux systems has been found to approximate that of software rendering. One solution we have found to this problem is to switch the rendering mode to always use display lists, which restores the rendering performance to what you would expect from hardware accelerated rendering. To change the rendering mode to use display lists, change the <strong>Use display lists</strong> mode to <strong>Always</strong> on the <strong>Rendering options window</strong> and press the <strong>Apply</strong> button. The <strong>Rendering options window</strong> can be brought up by selecting <strong>Rendering...</strong> from the <strong>Options</strong> pull down menu at the top of the main control panel. To make the change permanent, press the <strong>Dismiss</strong> button and save the settings by selecting <strong>Save Settings</strong> from the <strong>Options</strong> pull down menu. </p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

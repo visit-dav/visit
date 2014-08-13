@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[VisIt FAQs]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>10. How do I access data on a remote machine?</h2>
+<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <strong>Host</strong> field in the <strong>File Selection</strong>  window in the VisIt graphical user interface and include <strong>visit</strong> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a>.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

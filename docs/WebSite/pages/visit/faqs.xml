@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[Frequently Asked Questions about VisIt]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[July 2, 2014]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li class="active"><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<div class="row">	
+<div class="span4">
+
+<ol>
+	<li><a href="simulation/computer-codes/visit/faqs/faq01">Contact information</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq02">Supported platforms</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq03">Optimal hardware/software</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq04">Debugging problems starting VisIt or opening files</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq05">Stereo rendering</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq06">VisIt won't run on Linux</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq07">Slow performance on Linux</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq08">Slow performance using SSH</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq09">No output in visualization window</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq10">Accessing data on remote machine</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq11">Running VisIt in parallel</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq12">Supported data file formats</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq13">Getting your data into VisIt</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq14">Making a movie of your data</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq15">Setting your user name to connect to a remote machine</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq16">Cannot connect to a remote computer</a></li>
+</ol>
+</div>
+
+<div class="span5">
+<ol start="17">
+	<li><a href="simulation/computer-codes/visit/faqs/faq17">Building VisIt on a Windows computer</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq18">Installing VisIt on a MacOS X computer</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq19">Hanging at 12% on Windows computers</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq20">Getting the Plugin Developer's Guide</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq21">Writing a plugin for VisIt</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq22">When new versions of VisIt are released</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq23">What is new in the latest version of VisIt</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq24">Compilers that can be used to build VisIt</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq25">VisIt's licensing agreement</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq26">Slow performance with ATI cards on Linux</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq27">Custom plugins with a downloaded VisIt binary</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq28">Getting HDF5 data into VisIt</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq29">Getting NETCDF data into VisIt</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq30">When I run VisIt on my Linux machine, I get a black screen</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq31">I get the message 'Publisher cannot be verified' when installing VisIt on Windows</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq32">Which libraries should I enable in build_visit?</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs/faq33">How do I acknowledge VisIt when I use it to generate images and/or movies?</a></li>
+</ol>
+<br />
+<br />
+
+</div>
+</div>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

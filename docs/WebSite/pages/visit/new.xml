@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[What's New in VisIt]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <lastchanged><![CDATA[July 2, 2014]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li class="active"><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+<h2>June, 2014 - VisIt 2.7.3 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.7.3, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a> is primarily a bug-fix release that resolves about three dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.7.3">VisIt 2.7.3 Release Notes</a>.</p>
+
+[Go to <a href="simulation/computer-codes/visit/releases">Archive of Releases</a>]
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>
