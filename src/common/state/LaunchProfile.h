@@ -135,6 +135,7 @@ public:
     void SetXArguments(const std::string &XArguments_);
     void SetLaunchXServers(bool launchXServers_);
     void SetXDisplay(const std::string &XDisplay_);
+    void SetNumThreads(int numThreads_);
 
     // Property getting methods
     const std::string  &GetProfileName() const;
@@ -184,6 +185,7 @@ public:
     bool               GetLaunchXServers() const;
     const std::string  &GetXDisplay() const;
           std::string  &GetXDisplay();
+    int                GetNumThreads() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -235,6 +237,7 @@ public:
         ID_XArguments,
         ID_launchXServers,
         ID_XDisplay,
+        ID_numThreads,
         ID__LAST
     };
 
@@ -273,11 +276,12 @@ private:
     std::string  XArguments;
     bool         launchXServers;
     std::string  XDisplay;
+    int          numThreads;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbbisbs"
+#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbbisbsi"
 
 #endif
