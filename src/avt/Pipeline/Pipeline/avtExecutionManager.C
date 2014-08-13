@@ -58,7 +58,7 @@ void avtExecutionManager::SetNumberOfThreads( int nt )
         numThreads = nt;
     }
 
-    tPool = ThreadPool::Create( numThreads, (numThreads * 4), false );
+    tPool = ThreadPool::Create( numThreads, (numThreads * 100), false );
     if( tPool == NULL )
     {
         // Failed to create threads, we need to exit.
