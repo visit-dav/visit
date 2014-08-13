@@ -12,6 +12,7 @@ function bv_visus_alt_visus_dir
     bv_visus_enable
     USE_SYSTEM_VISUS="yes"
     VISUS_INSTALL_DIR="$1"
+    VISUS_INSTALL_DIR_cmake="$1"
 }
 
 function bv_visus_enable
@@ -36,7 +37,8 @@ function bv_visus_depends_on
 function bv_visus_initialize_vars
 {
     if [[ "$USE_SYSTEM_VISUS" == "no" ]]; then
-        VISUS_INSTALL_DIR="\${VISITHOME}/visus/$VISUS_VERSION/\${VISITARCH}"
+        VISUS_INSTALL_DIR="${VISITDIR}/visus/$VISUS_VERSION/${VISITARCH}"
+        VISUS_INSTALL_DIR_cmake="\${VISITDIR}/visus/$VISUS_VERSION/\${VISITARCH}"
     fi
 }
 
@@ -46,7 +48,7 @@ function bv_visus_info
     export VISUS_OS=`uname`
     export VISUS_VERSION=${VISUS_VERSION:-"27d3d79"}
     export VISUS_FILE=${VISUS_FILE:-"ViSUS-${VISUS_VERSION}-${VISUS_OS}.tgz"}
-    export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"VISUS-${VISUS_VERSION}"}
+    export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"ViSUS"}
     export VISUS_URL=${VISUS_URL:-"http://atlantis.sci.utah.edu/builds/visit-plugin"}
 }
 
@@ -77,7 +79,7 @@ function bv_visus_host_profile
         echo "## VISUS " >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISUS_INSTALL_DIR})" \
+            "VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISUS_INSTALL_DIR_cmake})" \
             >> $HOSTCONF
     fi
 }
@@ -118,7 +120,8 @@ function install_visus
     #
     info "Installing ViSUS . . . (a few seconds)"
     mkdir -p $VISUS_INSTALL_DIR
-    cp -r $VISUS_BUILD_DIR/ViSUS/* $VISUS_INSTALL_DIR
+    mv $VISUS_BUILD_DIR/* $VISUS_INSTALL_DIR
+    rmdir $VISUS_BUILD_DIR
     copied_visus=$?
     if [[ $copied_visus == -1 ]] ; then
         warn "Unable to install ViSUS. Giving Up!"
