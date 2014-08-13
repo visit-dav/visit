@@ -52,6 +52,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's Export window can use spaces or commas as delimiters for the variable list. This permits export of variables that contain spaces in their names via the GUI.</li>
   <li>VisIt's Export window can now display license strings from database plugins that provide license information. The license is displayed just before exporting the active plots to the database format.</li>
   <li>The color table window now has a toggle that allows grouping of color tables by a category name.  This will affect how the table names appear in this window as well as ColorTable buttons for Plot Attribute windows (like Pseudocolor).  By default, VisIt's tables will be under the <i>'Standard'</i> category, while personal tables will be <i>'UserDefined'</i>.  Category names may be changed, and a text edit is provided in the ColorTable window when grouping is enabled. If VisIt only loads its standard tables, and the category names have not been changed, then the grouping toggle will have no effect other than to make the category name text-edit available.  If you change the category name for <i>Standard</i> tables, saving your settings will preserve the new naming across VisIt sessions.  For <i>UserDefined</i> tables, color tables must be re-exported to pick up changes in category.</li>
+  <li>Pick options in the Query window, when selecting a Time pick, the "Time Curve Option" is now defaulted to match the type of pick chosen:
+  <ul>
+      <li>"Pick using domain and element Id" => "Preserve Picked Element Id"</li>
+      <li>"Pick using coordinate" => "Preserve Picked Coordinate"</li>
+  </ul>
+  </li>
 </ul>
 
 <a name="File_format"></a>
@@ -63,6 +69,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Silo plugin supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
   <li>For more information regarding Silo 4.10, please see <a href="https://visitbugs.ornl.gov/news/5">these notes</a></li>
   <li>Silo plugin now supports tensor multi-vars. Previously, data producers were required to write scalar multi-vars and then bundle these into a tensor multivar using a defvars object.</li>
+  <li>Curv2d reader can now read double-precision sized data.  Scaling may be required to correctly render very-large sized values.</li>
+  <li>The CGNS plugin was updated to use cngslib version 3.2.1</li> 
 </ul>
 
 <a name="Plot_changes"></a>
@@ -117,6 +125,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed crash with Silo data and material subsetted variables.</li>
   <li>Fixed a bug where export attributes were not saved to VisIt's config file.</li>
   <li>Fixed a bug where the OnionPeel operator wasn't working correctly for arbitrary polyhedral data.</li>
+  <li>Fixed a problem in libsim where curve simulation yielded wrong curve.</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -143,6 +152,17 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Filters have been improved so they add some filter metadata that at least contains the name of the operator that was applied. Text representations of the operator attributes can also be added to the filter metadata. Filter metadata can be used during database export to make meaningful names for the visualizations being exported.</li>
   <li>The database plugin API has been extended so that plugins can return license strings.</li>
   <li>One can now specify which plugins VisIt should build via CMake variables VISIT_SELECTED_type_PLUGINS, where 'type' is one of: DATABASE, PLOT, OPERATOR.  Setting the var can be accomplished in the config-site file via a SET command: <pre>SET(VISIT_SELECTED_DATABASE_PLUGINS Silo VTK H5Part)</pre> or via the cmake command line with a ';' separated list: <pre>-DVISIT_SELECTED_DATABASE_PLUGINS:STRING="Silo;VTK;H5Part"</pre>If this is var is not set for a particular plugin type, then plugins are built according to normal rules.  <i>Spelling of the plugin must match its directory name.</i></li>
+  <li>The windowsbuild directory has been reorganized to reduce amount of files a Windows developer needs to download.  Third-party pre-built dll's are now stored in a separate subdirectory for each Visual Studio version (eg <i>MSVC2012 for 32 bit or MSVC2012-x64 for 64 bit.</i>), and are all top-level within windowsbuild.</li>
+  <li>Pre-built third-party dll support has been dropped for Visual Studio 2008 (MSVC 9).</li>
+  <li>For windows builds, VISIT_WINDOWS_DIR can now be specified via CMake option, allowing a different location than the standard peer-to-src windowsbuild directory.</li> 
+  <li>VisIt is now using newer versions of the following third party support libaries:
+  <ul>
+  <li>cgns 3.2.1</li>
+  <li>Python 2.7.6</li>
+  <li>Silo 4.1.0</li>
+  <li>VTK 6.1.0</li>
+  </ul>
+  </li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
