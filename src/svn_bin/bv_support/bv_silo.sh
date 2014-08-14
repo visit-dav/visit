@@ -213,7 +213,8 @@ function build_silo
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
-        --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
+        --enable-install-lite-headers --without-readline --enable-json \
+        $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
@@ -222,7 +223,8 @@ function build_silo
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
-        --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
+        --enable-install-lite-headers --without-readline --enable-json \
+        $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     if [[ $? != 0 ]] ; then
        warn "Silo configure failed.  Giving up"
