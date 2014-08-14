@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include "ThreadPool.h"
+#include <DebugStream.h>
 
 void *ThreadPoolThread( void * );
 
@@ -30,7 +31,7 @@ ThreadPool * ThreadPool::Create( int numWorkerThreads, int maxQueueSize, int doN
     // Allocate a pool data structure.
     if( (tpool = new ThreadPool) == NULL )
     {
-        fprintf( stderr, "ThreadPool new failed" );
+        debug1 << "ThreadPool new failed" << endl;
         return( NULL );
     }
 
@@ -40,7 +41,7 @@ ThreadPool * ThreadPool::Create( int numWorkerThreads, int maxQueueSize, int doN
     tpool->doNotBlockWhenFull = doNotBlockWhenFull;
     if( (tpool->threads = (pthread_t *)malloc(sizeof(pthread_t) * numWorkerThreads)) == NULL )
     {
-        fprintf( stderr, "ThreadPool malloc failed" );
+        debug1 << "ThreadPool malloc failed" << endl;
         delete( tpool );
         return( NULL );
     }
@@ -51,25 +52,25 @@ ThreadPool * ThreadPool::Create( int numWorkerThreads, int maxQueueSize, int doN
     tpool->shutdown         = 0;
     if( (rtn = pthread_mutex_init(&(tpool->queueLock), NULL)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_init %s", strerror(rtn) );
+        debug1 << "pthread_mutex_init " << strerror(rtn) << endl;
         delete( tpool );
         return( NULL );
     }
     if( (rtn = pthread_cond_init(&(tpool->queueNotEmpty), NULL)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_init %s", strerror(rtn) );
+        debug1 << "pthread_cond_init queueNotEmpty: " << strerror(rtn) << endl;
         delete( tpool );
         return( NULL );
     }
     if( (rtn = pthread_cond_init(&(tpool->queueNotFull), NULL)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_init %s", strerror(rtn) );
+        debug1 << "pthread_cond_init queueNotFull: " << strerror(rtn) << endl;
         delete( tpool );
         return( NULL );
     }
     if( (rtn = pthread_cond_init(&(tpool->queueEmpty), NULL)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_init %s", strerror(rtn) );
+        debug1 << "pthread_cond_init queueEmpty: " << strerror(rtn) << endl;
         delete( tpool );
         return( NULL );
     }
@@ -82,7 +83,7 @@ ThreadPool * ThreadPool::Create( int numWorkerThreads, int maxQueueSize, int doN
         tI->tpool = tpool;
         if( (rtn = pthread_create( &(tpool->threads[i]), NULL, ThreadPoolThread, (void *)tI)) != 0 )
         {
-            fprintf( stderr, "pthread_create %s", strerror(rtn) );
+            debug1 << "pthread_create: " << strerror(rtn) << endl;
             delete( tpool );
             return( NULL );
         }
@@ -97,16 +98,24 @@ return:
 -1 Max queue and did not wait to add to queue
 # will be the error code.
 */
-//int ThreadPool::AddWork( ThreadPoolWorker *worker, void *arg )
-//int ThreadPool::AddWork( ThreadPoolWorker *worker, Data *data )
 int ThreadPool::AddWork( void (*workerThreadFunction)(void *), void *arg )
 {
     int             rtn;
     ThreadPoolWork *workp;
 
+    // Allocate work structure.
+    if( (workp = (ThreadPoolWork *)malloc(sizeof(ThreadPoolWork))) == NULL )
+    {
+        debug1 << "AddWork malloc work pool. " << endl;
+        return( 5 );
+    }
+    workp->routine = workerThreadFunction;
+    workp->arg     = arg;
+    workp->next    = NULL;
+
     if( (rtn = pthread_mutex_lock(&queueLock)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_lock %s", strerror(rtn) );
+        debug1 << "AddWork pthread_mutex_lock: " << strerror(rtn) << endl;
         return( 1 );
     }
 
@@ -115,9 +124,10 @@ int ThreadPool::AddWork( void (*workerThreadFunction)(void *), void *arg )
     {
         if( doNotBlockWhenFull )
         {
+            free( workp );
             if( (rtn = pthread_mutex_unlock(&queueLock)) != 0 )
             {
-                fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+                debug1 << "AddWork pthread_mutex_unlock: " << strerror(rtn) << endl;
                 return( 2 );
             }
 
@@ -130,7 +140,7 @@ int ThreadPool::AddWork( void (*workerThreadFunction)(void *), void *arg )
             {
                 if( (rtn = pthread_cond_wait(&queueNotFull, &queueLock)) != 0 )
                 {
-                    fprintf( stderr, "pthread_cond_wait %s", strerror(rtn) );
+                    debug1 << "AddWork pthread_cond_wait: " << strerror(rtn) << endl;
                     return( 3 );
                 }
             }
@@ -140,24 +150,15 @@ int ThreadPool::AddWork( void (*workerThreadFunction)(void *), void *arg )
     // the pool is in the process of being destroyed.
     if( shutdown || queueClosed )
     {
+        free( workp );
         if( (rtn = pthread_mutex_unlock(&queueLock)) != 0 )
         {
-            fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+            debug1 << "AddWork pthread_mutex_unlock: " << strerror(rtn) << endl;
             return( 4 );
         }
 
         return( -1 );
     }
-
-    // Allocate work structure.
-    if( (workp = (ThreadPoolWork *)malloc(sizeof(ThreadPoolWork))) == NULL )
-    {
-        fprintf( stderr, "ThreadPoolWork Malloc failed" );
-        return( 5 );
-    }
-    workp->routine = workerThreadFunction;
-    workp->arg     = arg;
-    workp->next    = NULL;
 
     if( currentQueueSize == 0 )
     {
@@ -173,12 +174,12 @@ int ThreadPool::AddWork( void (*workerThreadFunction)(void *), void *arg )
 
     if( (rtn = pthread_cond_broadcast(&queueNotEmpty)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_signal %s", strerror(rtn) );
+        debug1 << "AddWork pthread_cond_broadcast: " << strerror(rtn) << endl;
         return( 6 );
     }
     if( (rtn = pthread_mutex_unlock(&queueLock)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+        debug1 << "AddWork pthread_mutex_unlock: " << strerror(rtn) << endl;
         return( 7 );
     }
 
@@ -197,7 +198,7 @@ int ThreadPool::Destroy( int finish )
 
     if( (rtn = pthread_mutex_lock(&queueLock)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_lock %s", strerror(rtn) );
+        debug1 << "Destroy pthread_mutex_lock: " << strerror(rtn) << endl;
         return( 1 );
     }
 
@@ -206,7 +207,7 @@ int ThreadPool::Destroy( int finish )
     {
         if( (rtn = pthread_mutex_unlock(&queueLock)) != 0 )
         {
-            fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+            debug1 << "Destroy pthread_mutex_unlock: " << strerror(rtn) << endl;
             return( 1 );
         }
         return( 0 );
@@ -221,7 +222,7 @@ int ThreadPool::Destroy( int finish )
         {
             if( (rtn = pthread_cond_wait(&queueEmpty, &queueLock)) != 0 )
             {
-                fprintf( stderr, "pthread_cond_wait %s", strerror(rtn) );
+                debug1 << "Destroy pthread_cond_wait: " << strerror(rtn) << endl;
                 return( 1 );
             }
         }
@@ -231,19 +232,19 @@ int ThreadPool::Destroy( int finish )
 
     if( (rtn = pthread_mutex_unlock(&queueLock)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+        debug1 << "Destroy pthread_mutex_unlock: " << strerror(rtn) << endl;
         return( 1 );
     }
 
     // Wake up any workers so they recheck shutdown flag.
     if( (rtn = pthread_cond_broadcast(&queueNotEmpty)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_broadcast %s", strerror(rtn) );
+        debug1 << "Destroy pthread_cond_broadcast: " << strerror(rtn) << endl;
         return( 1 );
     }
     if( (rtn = pthread_cond_broadcast(&queueNotFull)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_broadcast %s", strerror(rtn) );
+        debug1 << "Destroy pthread_cond_broadcast queueNotFull: " << strerror(rtn) << endl;
         return( 1 );
     }
 
@@ -252,7 +253,7 @@ int ThreadPool::Destroy( int finish )
     {
         if( (rtn = pthread_join(threads[i], NULL)) != 0 )
         {
-            fprintf( stderr, "pthread_join %s", strerror(rtn) );
+            debug1 << "Destroy pthread_join: " << strerror(rtn) << endl;
             return( 1 );
         }
     }
@@ -268,28 +269,20 @@ int ThreadPool::Destroy( int finish )
 
     if( (rtn = pthread_mutex_destroy(&queueLock)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_destroy %s", strerror(rtn) );
+        debug1 << "Destroy pthread_mutex_destroy: " << strerror(rtn) << endl;
     }
-    /*
-    if( (rtn = pthread_mutex_destroy(&totalTimeLock)) != 0 )
-    {
-        fprintf( stderr, "pthread_mutex_destroy %s", strerror(rtn) );
-    }
-    */
     if( (rtn = pthread_cond_destroy(&queueNotEmpty)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_destroy %s", strerror(rtn) );
+        debug1 << "Destroy pthread_cond_destroy: " << strerror(rtn) << endl;
     }
     if( (rtn = pthread_cond_destroy(&queueNotFull)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_destroy %s", strerror(rtn) );
+        debug1 << "Destroy pthread_cond_destroy: " << strerror(rtn) << endl;
     }
     if( (rtn = pthread_cond_destroy(&queueEmpty)) != 0 )
     {
-        fprintf( stderr, "pthread_cond_destroy %s", strerror(rtn) );
+        debug1 << "Destroy pthread_cond_destroy: " << strerror(rtn) << endl;
     }
-
-//fprintf( stderr, "Thread wait time: %e\n", GetTime() );
 
     delete this;
 
@@ -308,7 +301,7 @@ int ThreadPool::Join()
     {
         if( (rtn = pthread_join(threads[i], NULL)) != 0 )
         {
-            fprintf( stderr, "pthread_join %s", strerror(rtn) );
+            debug1 << "Join pthread_join: " << strerror(rtn) << endl;
             return( 1 );
         }
     }
@@ -322,7 +315,7 @@ int ThreadPool::JoinNoExit()
 
     if( (rtn = pthread_mutex_lock(&queueLock)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_lock %s", strerror(rtn) );
+        debug1 << "JoinNoExit pthread_mutex_lock: " << strerror(rtn) << endl;
         return( 1 );
     }
 
@@ -330,14 +323,14 @@ int ThreadPool::JoinNoExit()
     {
         if( (rtn = pthread_cond_wait(&queueEmpty, &queueLock)) != 0 )
         {
-            fprintf( stderr, "pthread_cond_wait %s", strerror(rtn) );
+            debug1 << "JoinNoExit pthread_cond_wait: " << strerror(rtn) << endl;
             return( 1 );
         }
     }
 
     if( (rtn = pthread_mutex_unlock(&queueLock)) != 0 )
     {
-        fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+        debug1 << "JoinNoExit pthread_mutex_unlock: " << strerror(rtn) << endl;
         return( 1 );
     }
     return( 0 );
@@ -366,7 +359,7 @@ void *ThreadPoolThread( void *arg )
     CPU_SET( (tI->id - 1), &cpuset );
     if( (rtn = pthread_setaffinity_np( pthread_self(), sizeof(cpu_set_t), &cpuset )) != 0 )
     {
-        fprintf( stderr, "pthread_setaffinity_np %s", strerror(rtn) );
+        debug1 << "ThreadPoolThread pthread_setaffinity_np: " << strerror(rtn) << endl;
     }
 #endif
 
@@ -375,41 +368,37 @@ void *ThreadPoolThread( void *arg )
         // Check queue for work.
         if( (rtn = pthread_mutex_lock(&(tpool->queueLock))) != 0 )
         {
-            fprintf( stderr, "pthread_mutex_lock %s", strerror(rtn) );
+            debug1 << "ThreadPoolThread pthread_mutex_lock: " << strerror(rtn) << endl;
             return( NULL );
         }
 
         // If no work, wait for new work.
         while( (tpool->currentQueueSize == 0) && (! tpool->shutdown) )
         {
-            //printf( "worker %d: I'm sleeping again\n", pthread_self() );
-
             // Check if we should send the empty queue message.
             tpool->threadWorking[tI->id] = 0;
             if( tpool->threadWorking.to_ulong() == 0 )
             {
                 if( (rtn = pthread_cond_signal(&(tpool->queueEmpty))) != 0 )
                 {
-                    fprintf( stderr, "pthread_cond_signal %s", strerror(rtn) );
+                    debug1 << "ThreadPoolThread pthread_cond_signal: " << strerror(rtn) << endl;
                     return( NULL );
                 }
             }
 
             if( (rtn = pthread_cond_wait(&(tpool->queueNotEmpty), &(tpool->queueLock))) != 0 )
             {
-                fprintf( stderr, "pthread_cond_wait %s", strerror(rtn) );
+                debug1 << "ThreadPoolThread pthread_cond_wait: " << strerror(rtn) << endl;
                 return( NULL );
             }
         }
-
-        //fprintf( stderr, "worker %d: I'm awake\n", pthread_self() );
 
         // Has a shutdown started while I was sleeping?
         if( tpool->shutdown )
         {
             if( (rtn = pthread_mutex_unlock(&(tpool->queueLock))) != 0 )
             {
-                fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+                debug1 << "ThreadPoolThread pthread_mutex_unlock: " << strerror(rtn) << endl;
                 return( NULL );
             }
 
@@ -428,21 +417,19 @@ void *ThreadPoolThread( void *arg )
         // Set that this thread is working.
         tpool->threadWorking[tI->id] = 1;
 
-        //fprintf( stderr, "worker %d: dequeing item %d\n", pthread_self(), my_workp->next );
-
         // Handle waiting add_work threads.
         if( (!tpool->doNotBlockWhenFull) && (tpool->currentQueueSize == (tpool->maxQueueSize - 1)) )
         {
             if ((rtn = pthread_cond_broadcast(&(tpool->queueNotFull))) != 0)
             {
-                fprintf( stderr, "pthread_cond_broadcast %s", strerror(rtn) );
+                debug1 << "ThreadPoolThread pthread_cond_broadcast: " << strerror(rtn) << endl;
                 return( NULL );
             }
         }
 
         if( (rtn = pthread_mutex_unlock(&(tpool->queueLock))) != 0 )
         {
-            fprintf( stderr, "pthread_mutex_unlock %s", strerror(rtn) );
+            debug1 << "ThreadPoolThread pthread_mutex_unlock: " << strerror(rtn) << endl;
             return( NULL );
         }
 

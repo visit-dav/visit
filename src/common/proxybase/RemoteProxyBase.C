@@ -389,6 +389,9 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Make sure -display gets added whenever we do HW acceleration (not just
 //    when we launch x-servers).
 //
+//    David Camp, Mon Aug  4 10:46:09 PDT 2014
+//    Added the thread option to the command line, if not 0.
+//
 // ****************************************************************************
 
 void
@@ -399,26 +402,28 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
     // so that we can use the directory from the machine profile instead.
     if (machine.GetDirectory() != "")
     {
-        //Remove all existing instances of -dir, because they're for the LOCAL machine
-        for (int i = 0; i < (int) argv.size(); i++) {
-            if (argv[i] == "-dir") {
-              // First delete the "-dir"
-              stringVector::iterator it = argv.erase(argv.begin() + i);
-              if (it != argv.end()) {
-                  // If we're not at the end of the list, delete the next argument too
-              argv.erase(it);
-            }
+        // Remove all existing instances of -dir, because they're for the LOCAL machine
+        for (int i = 0; i < (int) argv.size(); i++)
+        {
+            if (argv[i] == "-dir")
+            {
+                // First delete the "-dir"
+                stringVector::iterator it = argv.erase(argv.begin() + i);
+                if (it != argv.end())
+                {
+                    // If we're not at the end of the list, delete the next argument too
+                    argv.erase(it);
+                }
 
-            //Restart at i = 0
-            i = -1;
-          }
+                i = -1;
+            }
         }
 
         AddArgument("-dir");
         AddArgument(machine.GetDirectory());
         debug5 <<"MachineProfile directory is NOT empty, so using -dir argument: " <<machine.GetDirectory() <<std::endl;
     } else {
-      debug5 <<"MachineProfile directory was EMPTY, so keeping -dir arguments." <<std::endl;
+        debug5 <<"MachineProfile directory was EMPTY, so keeping -dir arguments." <<std::endl;
     }
 
     const LaunchProfile *launch = machine.GetActiveLaunchProfile();
@@ -527,7 +532,6 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
             {
                 AddArgument("-setupenv");
             }
-        //}
 #if 0 // disabling dynamic load balancing for now
         if (launch->GetForceStatic())
         {
@@ -586,6 +590,13 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
     SNPRINTF(temp, 10, "%d", launch->GetTimeout());
     AddArgument("-idle-timeout");
     AddArgument(temp);
+
+    if (launch->GetNumThreads())
+    {
+        SNPRINTF(temp, 10, "%d", launch->GetNumThreads());
+        AddArgument("-threads");
+        AddArgument(temp);
+    }
 
     //
     // Add any additional arguments specified in the profile

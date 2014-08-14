@@ -234,6 +234,12 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("XDisplay", XDisplay));
     }
 
+    if(completeSave || IsSelected(ID_numThreads))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numThreads", numThreads));
+    }
+
     if (addToParent)
     {
         node->AddNode(new DataNode("profileName", profileName));
@@ -342,4 +348,7 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_launchXServers,        (void *)&launchXServers);
     if(XDisplay != other.GetXDisplay())
         Select(ID_XDisplay,        (void *)&XDisplay);
+    if(numThreads != other.GetNumThreads())
+        Select(ID_numThreads,      (void *)&numThreads);
 }
+

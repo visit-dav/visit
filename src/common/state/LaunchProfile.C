@@ -79,6 +79,7 @@ void LaunchProfile::Init()
     GPUsPerNode = 1;
     launchXServers = false;
     XDisplay = ":%l";
+    numThreads = 0;
 
     LaunchProfile::SelectAll();
 }
@@ -134,6 +135,7 @@ void LaunchProfile::Copy(const LaunchProfile &obj)
     XArguments = obj.XArguments;
     launchXServers = obj.launchXServers;
     XDisplay = obj.XDisplay;
+    numThreads = obj.numThreads;
 
     LaunchProfile::SelectAll();
 }
@@ -324,7 +326,8 @@ LaunchProfile::operator == (const LaunchProfile &obj) const
             (GPUsPerNode == obj.GPUsPerNode) &&
             (XArguments == obj.XArguments) &&
             (launchXServers == obj.launchXServers) &&
-            (XDisplay == obj.XDisplay));
+            (XDisplay == obj.XDisplay) &&
+            (numThreads == obj.numThreads));
 }
 
 // ****************************************************************************
@@ -502,6 +505,7 @@ LaunchProfile::SelectAll()
     Select(ID_XArguments,          (void *)&XArguments);
     Select(ID_launchXServers,      (void *)&launchXServers);
     Select(ID_XDisplay,            (void *)&XDisplay);
+    Select(ID_numThreads,          (void *)&numThreads);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -741,6 +745,12 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("XDisplay", XDisplay));
     }
 
+    if(completeSave || IsSelected(ID_numThreads))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numThreads", numThreads));
+    }
+
     if (addToParent)
     {
         node->AddNode(new DataNode("profileName", profileName));
@@ -848,6 +858,8 @@ LaunchProfile::SetFromNode(DataNode *parentNode)
         SetLaunchXServers(node->AsBool());
     if((node = searchNode->GetNode("XDisplay")) != 0)
         SetXDisplay(node->AsString());
+    if((node = searchNode->GetNode("numThreads")) != 0)
+        SetNumThreads(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1090,6 +1102,13 @@ LaunchProfile::SetXDisplay(const std::string &XDisplay_)
 {
     XDisplay = XDisplay_;
     Select(ID_XDisplay, (void *)&XDisplay);
+}
+
+void
+LaunchProfile::SetNumThreads(int numThreads_)
+{
+    numThreads = numThreads_;
+    Select(ID_numThreads, (void *)&numThreads);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1378,6 +1397,12 @@ LaunchProfile::GetXDisplay()
     return XDisplay;
 }
 
+int
+LaunchProfile::GetNumThreads() const
+{
+    return numThreads;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1518,6 +1543,7 @@ LaunchProfile::GetFieldName(int index) const
     case ID_XArguments:          return "XArguments";
     case ID_launchXServers:      return "launchXServers";
     case ID_XDisplay:            return "XDisplay";
+    case ID_numThreads:          return "numThreads";
     default:  return "invalid index";
     }
 }
@@ -1576,6 +1602,7 @@ LaunchProfile::GetFieldType(int index) const
     case ID_XArguments:          return FieldType_string;
     case ID_launchXServers:      return FieldType_bool;
     case ID_XDisplay:            return FieldType_string;
+    case ID_numThreads:          return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -1634,6 +1661,7 @@ LaunchProfile::GetFieldTypeName(int index) const
     case ID_XArguments:          return "string";
     case ID_launchXServers:      return "bool";
     case ID_XDisplay:            return "string";
+    case ID_numThreads:          return "int";
     default:  return "invalid index";
     }
 }
@@ -1830,6 +1858,11 @@ LaunchProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (XDisplay == obj.XDisplay);
         }
         break;
+    case ID_numThreads:
+        {  // new scope
+        retval = (numThreads == obj.numThreads);
+        }
+        break;
     default: retval = false;
     }
 
@@ -1931,5 +1964,7 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_launchXServers,        (void *)&launchXServers);
     if(XDisplay != other.GetXDisplay())
         Select(ID_XDisplay,        (void *)&XDisplay);
+    if(numThreads != other.GetNumThreads())
+        Select(ID_numThreads,      (void *)&numThreads);
 }
 

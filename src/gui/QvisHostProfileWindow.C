@@ -911,6 +911,10 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
 //   Rename New/Copy/Delete to New Profile/Copy Profile/Delete Profile.
 //   This removes ambiguity with host controls.
 //
+//   David Camp, Mon Aug  4 10:46:09 PDT 2014
+//   Set the minimum height of the tab to keep all 3 tabs the same.
+//   The GPU tab would drop the tab height down.
+//
 // ****************************************************************************
 
 QWidget *
@@ -944,6 +948,7 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
     row += 2;
 
     profileTabs = new QTabWidget(central);
+    profileTabs->setMinimumHeight( 308 );
     layout->addWidget(profileTabs, row,0, 1,4);
     row++;
 
@@ -974,6 +979,9 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
 // Modifications:
 //   Brad Whitlock, Thu Oct  6 11:49:38 PDT 2011
 //   I moved the parallel check box to the parallel tab.
+//
+//   David Camp, Mon Aug  4 10:46:09 PDT 2014
+//   Added the threads option.
 //
 // ****************************************************************************
 
@@ -1007,6 +1015,16 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
     timeoutLabel = new QLabel(tr("Timeout (minutes)"), currentGroup);
     layout->addWidget(timeoutLabel, row, 0, 1,1);
     layout->addWidget(timeout, row, 1, 1,3);
+    row++;
+
+    threads = new QSpinBox(currentGroup);
+    threads->setRange(0, 256);
+    threads->setSingleStep(1);
+    connect(threads, SIGNAL(valueChanged(int)),
+            this, SLOT(threadsChanged(int)));
+    threadsLabel = new QLabel(tr("Number of threads per task"), currentGroup);
+    layout->addWidget(threadsLabel, row, 0, 1,1);
+    layout->addWidget(threads, row, 1, 1,3);
     row++;
 
     engineArguments = new QLineEdit(currentGroup);
@@ -1684,6 +1702,9 @@ QvisHostProfileWindow::UpdateMachineProfile()
 //   Tom Fogal, Fri May  6 18:21:48 MDT 2011
 //   Update for new parallel GPU GUI elements.
 //
+//   David Camp, Mon Aug  4 10:46:09 PDT 2014
+//   Added the threads option. Removed duplicate set value calls on timeout.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateLaunchProfile()
@@ -1715,6 +1736,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     loadBalancing->blockSignals(true);
     hardwareGroup->blockSignals(true);
     timeout->blockSignals(true);
+    threads->blockSignals(true);
     engineArguments->blockSignals(true);
     cbLaunchX->blockSignals(true);
     sbNGPUs->blockSignals(true);
@@ -1726,7 +1748,6 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     {
         profileName->setText("");
         numProcessors->setValue(1);
-        timeout->setValue(60*4);   // 4 hour default
         
         parallelCheckBox->setChecked(false);
         launchCheckBox->setChecked(false);
@@ -1752,6 +1773,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         loadBalancing->setCurrentIndex(0);
         useVisItScriptForEnvCheckBox->setChecked(false);
         timeout->setValue(60*4);   // 4 hour default
+        threads->setValue(4);      // 4 thread default
         engineArguments->setText("");
         cbLaunchX->setChecked(false);
         sbNGPUs->setValue(0);
@@ -1765,7 +1787,6 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         // Replace the "localhost" machine name.
         // If there is no user name then give it a valid user name.
 
-        timeout->setValue(currentLaunch->GetTimeout());
         parallelCheckBox->setChecked(currentLaunch->GetParallel());
         bool parEnabled = currentLaunch->GetParallel();
         if (parEnabled)
@@ -1848,6 +1869,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         loadBalancing->setCurrentIndex(lb);
         hardwareGroup->setChecked(currentLaunch->GetCanDoHWAccel());
         timeout->setValue(currentLaunch->GetTimeout());
+        threads->setValue(currentLaunch->GetNumThreads());
 
         QString temp;
         stringVector::const_iterator pos;
@@ -1893,6 +1915,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     loadBalancing->blockSignals(false);
     hardwareGroup->blockSignals(false);
     timeout->blockSignals(false);
+    threads->blockSignals(false);
     engineArguments->blockSignals(false);
     cbLaunchX->blockSignals(false);
     sbNGPUs->blockSignals(false);
@@ -2012,6 +2035,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Brad Whitlock, Wed Aug 15 14:11:06 PDT 2012
 //    Added sshCommand.
 //
+//    David Camp, Mon Aug  4 10:46:09 PDT 2014
+//    Added the threads option.
+//
 // ****************************************************************************
 
 void
@@ -2076,6 +2102,8 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     profileName->setEnabled(launchEnabled);
     timeout->setEnabled(launchEnabled);
     timeoutLabel->setEnabled(launchEnabled);
+    threads->setEnabled(launchEnabled);
+    threadsLabel->setEnabled(launchEnabled);
     parallelCheckBox->setEnabled(launchEnabled);
     engineArgumentsLabel->setEnabled(launchEnabled);
     engineArguments->setEnabled(launchEnabled);
@@ -2220,6 +2248,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //
 //   Brad Whitlock, Wed Aug 15 14:11:34 PDT 2012
 //   Add ssh command.
+//
+//   David Camp, Mon Aug  4 10:46:09 PDT 2014
+//   Added the threads option.
 //
 // ****************************************************************************
 
@@ -2444,6 +2475,32 @@ QvisHostProfileWindow::GetCurrentValues()
             needNotify = true;
             msg = tr("An invalid timeout was specified, reverting to %1 minutes.").
                   arg(currentLaunch->GetTimeout());
+            Message(msg);
+        }
+    }
+
+    // Do the threads
+    if (currentLaunch)
+    {
+        bool okay = false;
+        temp = threads->text();
+        temp = temp.trimmed();
+        if (!temp.isEmpty())
+        {
+            int tOut = temp.toInt(&okay);
+            if (okay)
+            {
+                if (tOut != currentLaunch->GetNumThreads())
+                    needNotify = true;
+                currentLaunch->SetNumThreads(tOut);
+            }
+        }
+
+        if (!okay)
+        {
+            needNotify = true;
+            msg = tr("An invalid threads value was specified, reverting to %1 minutes.").
+                  arg(currentLaunch->GetNumThreads());
             Message(msg);
         }
     }
@@ -2824,6 +2881,30 @@ QvisHostProfileWindow::timeoutChanged(int value)
         return;
 
     currentLaunch->SetTimeout(value);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::threadsChanged
+//
+// Purpose: 
+//   This is a Qt slot function that sets the threads for the active host
+//   profile.
+//
+// Programmer: David Camp
+// Creation:   Thu Jul 31 08:50:40 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::threadsChanged(int value)
+{
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetNumThreads(value);
     SetUpdate(false);
     Apply();
 }
