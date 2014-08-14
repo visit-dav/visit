@@ -398,7 +398,6 @@ QvisCollapsibleLayout::adjustWindowSize()
     layout->invalidate();
   
     QWidget *parent = layout->parentWidget();
- 
     while (parent)
     {
         parent->adjustSize();

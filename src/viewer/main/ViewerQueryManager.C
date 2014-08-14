@@ -2154,7 +2154,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         //
         pickAtts->SetMatSelected(!usesAllMaterials ||
                                  plot->GetRealVarType() == AVT_MATERIAL);
-        if (!pickAtts->GetReusePickLetter()) pickAtts->SetPickLetter(designator);
+        if (!pickAtts->GetReusePickLetter())
+            pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(plot->GetState());
         pickAtts->SetDatabaseName(db);
         if (win->GetWindowMode() == WINMODE_CURVE)
@@ -3621,7 +3622,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         }
         PICK_POINT_INFO ppi;
         ppi.callbackData = win;
-        ppi.rayPt1[0] = ppi.rayPt2[0] = 0.;
+        ppi.rayPt1[0] = ppi.rayPt2[0] = FLT_MAX;;
         ppi.rayPt1[1] = ppi.rayPt2[1] = 0.;
         ppi.rayPt1[2] = ppi.rayPt2[2] = 0.;
         ppi.validPick = true;
