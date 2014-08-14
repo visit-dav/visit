@@ -592,7 +592,7 @@ avtDatabaseWriter::GetVariables(const std::string &meshname,
     
             if (allowExpressions)
             {
-                int index = 0;
+                std::string::size_type index = 0;
                 for (int i = 0 ; i < md->GetNumberOfExpressions() ; i++)
                 {
                     const Expression *expr = md->GetExpression(i);

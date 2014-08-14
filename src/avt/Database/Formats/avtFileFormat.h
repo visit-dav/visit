@@ -150,8 +150,6 @@ class DATABASE_API avtFileFormat
 
     virtual void          FreeUpResources(void);
     void                  RegisterDatabaseMetaData(avtDatabaseMetaData *);
-    virtual bool          PopulateIOInformation(const std::string &meshname,
-                                                avtIOInformation &);
     void                  SetCache(avtVariableCache *);
 
     void                  SetStrictMode(bool v) { strictMode = v;    }

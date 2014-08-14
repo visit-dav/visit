@@ -137,10 +137,7 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
     virtual void           ActivateTimestep(int ts)
                                { avtFileFormat::ActivateTimestep(); };
     virtual bool           PopulateIOInformation(int ts, const std::string &meshname,
-                                                 avtIOInformation& ioInfo)
-                           {
-                               return avtFileFormat::PopulateIOInformation(meshname, ioInfo);
-                           };
+                                                 avtIOInformation& ioInfo) { return false; }
     virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md, int ts = 0);
 
     void                   SetReadAllCyclesAndTimes(bool b) 
