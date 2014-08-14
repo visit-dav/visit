@@ -328,6 +328,9 @@ class SelectionProperties;
 //    Brad Whitlock, Thu Jul 24 21:52:34 EDT 2014
 //    Pass in the export attributes to ExportDatabases.
 //
+//    Cameron Christensen, Wednesday, June 11, 2014
+//    Added UpdateBackendType.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -414,6 +417,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 
     void UpdateDefaultFileOpenOptions(FileOpenOptions*);
     void UpdatePrecisionType(const int);
+    void UpdateBackendType(const int);
 
     //
     // Engine RPCs

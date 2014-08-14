@@ -48,6 +48,9 @@
 #   Kathleen Biagas, Wed Aug  7 15:56:48 PDT 2013
 #   Added SetPrecisionTypeRPC.
 #
+#   Cameron Christensen, Tuesday, June 10, 2014
+#   Added SetBackendTypeRPC.
+#
 #****************************************************************************/
 
 SET(ENGINERPC_SOURCES
@@ -72,6 +75,7 @@ ReleaseDataRPC.C
 RenderRPC.C
 SetEFileOpenOptionsRPC.C
 SetPrecisionTypeRPC.C
+SetBackendTypeRPC.C
 SetWinAnnotAttsRPC.C
 SimulationCommandRPC.C
 StartPickRPC.C

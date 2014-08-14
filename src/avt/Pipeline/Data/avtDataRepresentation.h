@@ -118,6 +118,9 @@ typedef enum
 //    Cyrus Harrison, Wed Feb 13 10:25:48 PST 2008
 //    Removed DatasetDump option b/c it was migrated to avtDebugDumpOptions.
 //
+//    Cameron Christensen, Thursday, May 22, 2014
+//    Added support for EAVL.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -126,6 +129,8 @@ class PIPELINE_API avtDataRepresentation
                         avtDataRepresentation();
                         avtDataRepresentation(vtkDataSet *, int, std::string,
                                               bool dontCopyData = false);
+                        avtDataRepresentation(eavlDataSet *d, /*int dom, std::string s,*/
+                                              bool dontCopyData = false);
                         avtDataRepresentation(char *, int, int, std::string,
                                               CharStrRef &, DataSetType);
                         avtDataRepresentation(const avtDataRepresentation &);
@@ -133,6 +138,7 @@ class PIPELINE_API avtDataRepresentation
 
     avtDataRepresentation    &operator=(const avtDataRepresentation &);
 
+    DataRepType         GetDataRepType() const { return dataRepType; }
     eavlDataSet        *GetDataEAVL(void);
     vtkDataSet         *GetDataVTK(void);
     unsigned char      *GetDataString(int &, DataSetType &);
@@ -166,13 +172,20 @@ class PIPELINE_API avtDataRepresentation
     int                 domain;
     std::string         label;
 
-    static bool         initializedNullDataset;
-    static vtkDataSet  *nullDataset;
+    static bool         initializedNullDatasets;
+    static vtkDataSet  *nullVTKDataset;
+    static eavlDataSet *nullEAVLDataset;
 
     unsigned char      *GetDataString(int &, DataSetType &, bool);
-    static void         InitializeNullDataset(void);
-    static void         DeleteNullDataset(void);
+    unsigned char      *vtkToString(bool compress);
+    static void         InitializeNullDatasets(void);
+    static void         DeleteNullDatasets(void);
     static DataSetType  DatasetTypeForVTK(vtkDataSet *);
+
+ private:
+    vtkDataSet*         EAVLToVTK(eavlDataSet *data);
+    eavlDataSet*        VTKToEAVL(vtkDataSet *data);
+
 };
 
 

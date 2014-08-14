@@ -1070,6 +1070,9 @@ Engine::InitializeCompute()
 //    Kathleen Biagas, Wed Aug  7 15:50:49 PDT 2013
 //    Added SetPrecisionTypeRPC.
 //
+//    Cameron Christensen, Tuesday, June 10, 2014
+//    Added SetBackendTypeRPC.
+//
 // ****************************************************************************
 
 void
@@ -1148,6 +1151,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<NamedSelectionRPC>(&enginestate->GetNamedSelectionRPC()));
     rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(&enginestate->GetSetEFileOpenOptionsRPC()));
     rpcExecutors.push_back(new RPCExecutor<SetPrecisionTypeRPC>(&enginestate->GetSetPrecisionTypeRPC()));
+    rpcExecutors.push_back(new RPCExecutor<SetBackendTypeRPC>(&enginestate->GetSetBackendTypeRPC()));
     rpcExecutors.push_back(new RPCExecutor<EnginePropertiesRPC>(&enginestate->GetEnginePropertiesRPC()));
     rpcExecutors.push_back(new RPCExecutor<LaunchRPC>(&enginestate->GetLaunchRPC()));
   

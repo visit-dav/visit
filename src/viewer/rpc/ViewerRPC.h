@@ -239,6 +239,7 @@ public:
         SetCreateTimeDerivativeExpressionsRPC,
         SetCreateVectorMagnitudeExpressionsRPC,
         SetPrecisionTypeRPC,
+        SetBackendTypeRPC,
         CopyActivePlotsRPC,
         SetPlotFollowsTimeRPC,
         TurnOffAllLocksRPC,

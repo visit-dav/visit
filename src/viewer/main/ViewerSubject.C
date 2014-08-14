@@ -8566,6 +8566,9 @@ ViewerSubject::HandleViewerRPC()
 //    Kathleen Biagas, Wed Aug  7 13:00:17 PDT 2013
 //    Added SetPrecisionTypeRPC.
 //
+//    Cameron Christensen, Tuesday, June 10, 2014
+//    Added SetBackendTypeRPC.
+//
 // ****************************************************************************
 
 void
@@ -8933,6 +8936,9 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::SetPrecisionTypeRPC:
         SetPrecisionType();
+        break;
+    case ViewerRPC::SetBackendTypeRPC:
+        SetBackendType();
         break;
     case ViewerRPC::SetDefaultFileOpenOptionsRPC:
         SetDefaultFileOpenOptions();
@@ -10884,6 +10890,25 @@ ViewerSubject::SetPrecisionType()
 {
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     wM->SetPrecisionType(
+        GetViewerState()->GetViewerRPC()->GetIntArg1());
+}
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetBackendType
+//
+//  Purpose: Handle a SetBackendType RPC
+//
+//  Programmer:  Cameron Christensen
+//  Creation:    June 10, 2014
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+ViewerSubject::SetBackendType()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetBackendType(
         GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
 

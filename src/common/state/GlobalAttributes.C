@@ -77,6 +77,44 @@ GlobalAttributes::PrecisionType_FromString(const std::string &s, GlobalAttribute
     return false;
 }
 
+//
+// Enum conversion methods for GlobalAttributes::BackendType
+//
+
+static const char *BackendType_strings[] = {
+"VTK", "DAX", "EAVL", 
+"PISTON"};
+
+std::string
+GlobalAttributes::BackendType_ToString(GlobalAttributes::BackendType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return BackendType_strings[index];
+}
+
+std::string
+GlobalAttributes::BackendType_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return BackendType_strings[index];
+}
+
+bool
+GlobalAttributes::BackendType_FromString(const std::string &s, GlobalAttributes::BackendType &val)
+{
+    val = GlobalAttributes::VTK;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == BackendType_strings[i])
+        {
+            val = (BackendType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: GlobalAttributes::GlobalAttributes
 //
@@ -122,6 +160,7 @@ void GlobalAttributes::Init()
     expandNewPlots = false;
     userRestoreSessionFile = false;
     precisionType = Native;
+    backendType = VTK;
 
     GlobalAttributes::SelectAll();
 }
@@ -169,6 +208,7 @@ void GlobalAttributes::Copy(const GlobalAttributes &obj)
     expandNewPlots = obj.expandNewPlots;
     userRestoreSessionFile = obj.userRestoreSessionFile;
     precisionType = obj.precisionType;
+    backendType = obj.backendType;
 
     GlobalAttributes::SelectAll();
 }
@@ -351,7 +391,8 @@ GlobalAttributes::operator == (const GlobalAttributes &obj) const
             (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
             (expandNewPlots == obj.expandNewPlots) &&
             (userRestoreSessionFile == obj.userRestoreSessionFile) &&
-            (precisionType == obj.precisionType));
+            (precisionType == obj.precisionType) &&
+            (backendType == obj.backendType));
 }
 
 // ****************************************************************************
@@ -521,6 +562,7 @@ GlobalAttributes::SelectAll()
     Select(ID_expandNewPlots,                   (void *)&expandNewPlots);
     Select(ID_userRestoreSessionFile,           (void *)&userRestoreSessionFile);
     Select(ID_precisionType,                    (void *)&precisionType);
+    Select(ID_backendType,                      (void *)&backendType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -612,6 +654,9 @@ GlobalAttributes::SelectAll()
 //
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
 //   Added the restore from last session feature. 
+//
+//   Cameron Christensen, Tuesday, June 10, 2014 
+//   Add backend.
 //
 // ****************************************************************************
 
@@ -754,6 +799,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       precisionType));
     }
 
+    if(completeSave || !FieldsEqual(ID_backendType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("backendType",
+                      backendType));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -834,6 +886,9 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
 //   Added the restore from last session feature. 
 //
+//   Cameron Christensen, Tuesday, June 10, 2014 
+//   Add backend.
+//
 // ****************************************************************************
 
 void
@@ -896,6 +951,21 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
             PrecisionType value;
             if (PrecisionType_FromString(node->AsString(), value))
                 SetPrecisionType(value);
+        }
+    }
+    if((node = searchNode->GetNode("backendType")) != 0)
+    {
+        if (node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if (ival >= 0 && ival < 4)
+                SetBackendType(BackendType(ival));
+        }
+        else if (node->GetNodeType() == STRING_NODE)
+        {
+            BackendType value;
+            if (BackendType_FromString(node->AsString(), value))
+                SetBackendType(value);
         }
     }
 }
@@ -1085,6 +1155,13 @@ GlobalAttributes::SetPrecisionType(GlobalAttributes::PrecisionType precisionType
     Select(ID_precisionType, (void *)&precisionType);
 }
 
+void
+GlobalAttributes::SetBackendType(GlobalAttributes::BackendType backendType_)
+{
+    backendType = backendType_;
+    Select(ID_backendType, (void *)&backendType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1257,6 +1334,12 @@ GlobalAttributes::GetPrecisionType() const
     return PrecisionType(precisionType);
 }
 
+GlobalAttributes::BackendType
+GlobalAttributes::GetBackendType() const
+{
+    return BackendType(backendType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1323,6 +1406,7 @@ GlobalAttributes::GetFieldName(int index) const
     case ID_expandNewPlots:                   return "expandNewPlots";
     case ID_userRestoreSessionFile:           return "userRestoreSessionFile";
     case ID_precisionType:                    return "precisionType";
+    case ID_backendType:                      return "backendType";
     default:  return "invalid index";
     }
 }
@@ -1373,6 +1457,7 @@ GlobalAttributes::GetFieldType(int index) const
     case ID_expandNewPlots:                   return FieldType_bool;
     case ID_userRestoreSessionFile:           return FieldType_bool;
     case ID_precisionType:                    return FieldType_enum;
+    case ID_backendType:                      return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1423,6 +1508,7 @@ GlobalAttributes::GetFieldTypeName(int index) const
     case ID_expandNewPlots:                   return "bool";
     case ID_userRestoreSessionFile:           return "bool";
     case ID_precisionType:                    return "enum";
+    case ID_backendType:                      return "enum";
     default:  return "invalid index";
     }
 }
@@ -1577,6 +1663,11 @@ GlobalAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_precisionType:
         {  // new scope
         retval = (precisionType == obj.precisionType);
+        }
+        break;
+    case ID_backendType:
+        {  // new scope
+        retval = (backendType == obj.backendType);
         }
         break;
     default: retval = false;
