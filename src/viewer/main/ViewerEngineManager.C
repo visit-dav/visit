@@ -495,6 +495,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Kathleen Biagas, Wed Aug  7 13:02:34 PDT 2013
 //    Send precision type to newly created engine.
 //
+//    Cameron Christensen, Tuesday, June 10, 2014
+//    Send backend type to newly created engine.
+//
 // ****************************************************************************
 
 bool
@@ -700,6 +703,11 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
         newEngine.proxy->GetEngineMethods()->SetPrecisionType(
             ViewerWindowManager::Instance()->GetClientAtts()->
                     GetPrecisionType());
+
+        // Tell the new engine the requested backend type
+        newEngine.proxy->GetEngineMethods()->SetBackendType(
+            ViewerWindowManager::Instance()->GetClientAtts()->
+                    GetBackendType());
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -3352,6 +3360,26 @@ ViewerEngineManager::UpdatePrecisionType(const int pType)
     for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
     {
         it->second.proxy->GetEngineMethods()->SetPrecisionType(pType);
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::UpdateBackendType
+//
+//  Purpose:
+//      Sets the backend type.
+//
+//  Programmer: Cameron Christensen
+//  Creation:   June 10, 2014
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::UpdateBackendType(const int bType)
+{
+    for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
+    {
+        it->second.proxy->GetEngineMethods()->SetBackendType(bType);
     }
 }
 

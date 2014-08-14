@@ -381,6 +381,7 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
 //    bnddata        the temporary boundary data
 //    bndmixmat      the temporary boundary material numbers
 //    bndmixzone     the temporary boundary zone numbers
+//    bndmixnext     the temporary boundary zone next index
 //    bndmixlen      the temporary boundary mixlen
 //
 //  Programmer:  Jeremy Meredith
@@ -396,6 +397,15 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Added ability to fill values from the 'mixnext' array for mixed
+//    boundary data.  We can't reliably use any other information (like a
+//    change in zone ID) to determine when a segment of mix data has ended.
+//
+//    Jeremy Meredith, Thu Aug 14 10:26:56 EDT 2014
+//    Skip generating neighbor data for a donor relationship.  It won't
+//    get used anyway.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -405,6 +415,7 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
                                                      T         ***bnddata,
                                                      int       ***bndmixmat,
                                                      int       ***bndmixzone,
+                                                     int       ***bndmixnext,
                                                      vector<int> &bndmixlen)
 {
     Boundary *bi = &sdb->boundary[d1];
@@ -414,6 +425,11 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
+        if (n1->neighbor_rel == DONOR_NEIGHBOR)
+        {
+            // d2 is a donor to d1.  Don't send it our data.
+            continue;
+        }
         int mi = n1->match;
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
         int *n2extents = n2->zextents;
@@ -445,6 +461,8 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
             bndmixmat[d1][n]  = new int[bndmixlen[n]];
         if (bndmixzone)
             bndmixzone[d1][n] = new int[bndmixlen[n]];
+        if (bndmixnext)
+            bndmixnext[d1][n] = new int[bndmixlen[n]];
 
         int bndindex = 0;
         for (k=n2extents[4]; k<=n2extents[5]; k++)
@@ -467,6 +485,8 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
                                 bndmixmat[d1][n][bndindex]  = oldmat->GetMixMat()[oldmixindex];
                             if (bndmixzone)
                                 bndmixzone[d1][n][bndindex] = oldmat->GetMixZone()[oldmixindex];
+                            if (bndmixnext)
+                                bndmixnext[d1][n][bndindex] = oldmat->GetMixNext()[oldmixindex];
                             oldmixindex = oldmat->GetMixNext()[oldmixindex] - 1;
                             bndindex++;
                         }
@@ -690,6 +710,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 //    bnddata        the temporary boundary data
 //    bndmixmat      the temporary boundary material numbers
 //    bndmixzone     the temporary boundary zone numbers
+//    bndmixnext     the temporary boundary next index
 //    bndmixlen      the temporary boundary mixlen
 //
 //  Programmer:  Jeremy Meredith
@@ -713,6 +734,12 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Added ability to communicate values from the 'mixnext' array for mixed
+//    boundary data.  We can't reliably use any other information (like a
+//    change in zone ID) to determine when a segment of mix data has ended.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -720,6 +747,7 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
                                                             T     ***bnddata,
                                                             int   ***bndmixmat,
                                                             int   ***bndmixzone,
+                                                            int   ***bndmixnext,
                                                             vector< vector<int> > &bndmixlen)
 {
 #ifdef PARALLEL
@@ -761,6 +789,7 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
     int mpiBndDataTag    = GetUniqueMessageTag();
     int mpiBndMixMatTag  = GetUniqueMessageTag();
     int mpiBndMixZoneTag = GetUniqueMessageTag();
+    int mpiBndMixNextTag = GetUniqueMessageTag();
 
     for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
@@ -787,6 +816,9 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
                     if (bndmixzone)
                         MPI_Send(bndmixzone[d1][n], size, MPI_INT,
                                  domain2proc[d2], mpiBndMixZoneTag, VISIT_MPI_COMM);
+                    if (bndmixnext)
+                        MPI_Send(bndmixnext[d1][n], size, MPI_INT,
+                                 domain2proc[d2], mpiBndMixNextTag, VISIT_MPI_COMM);
                 }
                 else if (domain2proc[d2] == rank)
                 {
@@ -807,6 +839,12 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
                         bndmixzone[d1][n] = new int[size];
                         MPI_Recv(bndmixzone[d1][n], size, MPI_INT,
                                  domain2proc[d1], mpiBndMixZoneTag, VISIT_MPI_COMM, &stat);
+                    }
+                    if (bndmixnext)
+                    {
+                        bndmixnext[d1][n] = new int[size];
+                        MPI_Recv(bndmixnext[d1][n], size, MPI_INT,
+                                 domain2proc[d1], mpiBndMixNextTag, VISIT_MPI_COMM, &stat);
                     }
                 }
             }
@@ -1211,6 +1249,7 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
 //    bnddata        the temporary boundary data
 //    bndmixmat      the temporary boundary material numbers
 //    bndmixzone     the temporary boundary zone numbers
+//    bndmixnext     the temporary boundary next index
 //    newmatlist     the new mesh-sized array which holds the matlist
 //    newdata        the new mixed array which holds the data
 //    newmixmat      the new mixed array which holds the material numbers
@@ -1241,6 +1280,14 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
 //    Like other SetNew functions, don't worry about setting new data if
 //    the neighbor relationship is recipient.
 //
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Use a "mixnext" array to determine when the segment of mixed data
+//    has terminated.  The old way used clues like a zone number changing,
+//    but this fails if we have one zone donating mixed data to multiple
+//    to recipient zones (e.g. in the case of ghosts being communicated
+//    from a coarse to fine refinement level).  By using the mixnext array,
+//    we know directly if the segment of mixed data has ended.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1251,6 +1298,7 @@ BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
                                                        T      ***bnddata,
                                                        int    ***bndmixmat,
                                                        int    ***bndmixzone,
+                                                       int    ***bndmixnext,
                                                        int      *newmatlist,
                                                        T        *newdata,
                                                        int      *newmixmat,
@@ -1291,10 +1339,10 @@ BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
                     {
                         newmatlist[newindex] = -newmixindex - 1;
 
-                        int oldzone = bndmixzone[d2][mi][bndmixindex];
-                        while (bndmixindex < bndmixlen[d2][mi] &&
-                               bndmixzone[d2][mi][bndmixindex] == oldzone)
+                        bool finalMixedEntry = false;
+                        while (!finalMixedEntry)
                         {
+                            finalMixedEntry = (bndmixnext[d2][mi][bndmixindex] == 0);
                             if (newdata)
                                 newdata[newmixindex]    = bnddata[d2][mi][bndmixindex];
                             if (newmixmat)
@@ -1302,12 +1350,11 @@ BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
                             if (newmixzone)
                                 newmixzone[newmixindex] = newindex; // +1 ???
                             if (newmixnext)
-                                newmixnext[newmixindex] = (newmixindex+1)+1;
+                                newmixnext[newmixindex] = (finalMixedEntry ? 0 : (newmixindex+1)+1);
+
                             bndmixindex++;
                             newmixindex++;
                         }
-                        if (newmixnext)
-                            newmixnext[newmixindex-1] = 0;
                     }
                     bndindex++;
                 }
@@ -2341,6 +2388,11 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Communicate values from the 'mixnext' array for mixed boundary
+//    data.  We can't reliably use any other information (like a change
+//    in zone ID) to determine when a segment of mix data has ended.
+//
 // ****************************************************************************
 vector<avtMaterial*>
 avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
@@ -2363,6 +2415,7 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
     int   ***matlist = bhf_int->InitializeBoundaryData();
     int   ***mixmat  = bhf_int->InitializeBoundaryData();
     int   ***mixzone = bhf_int->InitializeBoundaryData();
+    int   ***mixnext = bhf_int->InitializeBoundaryData();
     float ***mixvf   = bhf_float->InitializeBoundaryData();
     vector<vector<int> > mixlen(boundary.size());
     for (size_t b = 0; b < boundary.size(); b++)
@@ -2377,12 +2430,12 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
     for (size_t d = 0; d < mats.size(); d++)
     {
         bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], mats[d]->GetMixVF(),
-                              mixvf, mixmat, mixzone, mixlen[domainNum[d]]);
+                              mixvf, mixmat, mixzone, mixnext, mixlen[domainNum[d]]);
     }
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mat version)");
 
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
-    bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvf, mixmat, mixzone, mixlen);
+    bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvf, mixmat, mixzone, mixnext, mixlen);
 
     int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < mats.size(); d++)
@@ -2428,7 +2481,7 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
         if (newmixlen > 0)
         {
             bhf_float->SetNewMixedBoundaryData(domainNum[d], oldmat, mixlen,
-                                   matlist, mixvf, mixmat, mixzone, newmatlist,
+                                   matlist, mixvf, mixmat, mixzone, mixnext, newmatlist,
                                    newmixvf, newmixmat, newmixzone, newmixnext,
                                    newmixlen);
         }
@@ -2458,6 +2511,7 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
     bhf_float->FreeBoundaryData(mixvf);
     bhf_int->FreeBoundaryData(mixmat);
     bhf_int->FreeBoundaryData(mixzone);
+    bhf_int->FreeBoundaryData(mixnext);
 
     return out;
 }
@@ -2504,6 +2558,11 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 //
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
+//
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Communicate values from the 'mixnext' array for mixed boundary
+//    data.  We can't reliably use any other information (like a change
+//    in zone ID) to determine when a segment of mix data has ended.
 //
 // ****************************************************************************
 vector<avtMixedVariable*>
@@ -2566,6 +2625,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     //
     int   ***matlist = bhf_int->InitializeBoundaryData();
     int   ***mixzone = bhf_int->InitializeBoundaryData();
+    int   ***mixnext = bhf_int->InitializeBoundaryData();
     float ***mixvals = bhf_float->InitializeBoundaryData();
     vector<vector<int> > mixlen(boundary.size());
     for (size_t  b = 0; b < boundary.size(); b++)
@@ -2581,12 +2641,12 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     {
         const float *oldmixvals = (mixvars[d] ? mixvars[d]->GetBuffer() : NULL);
         bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], oldmixvals,
-                              mixvals, NULL, mixzone, mixlen[domainNum[d]]);
+                              mixvals, NULL, mixzone, mixnext, mixlen[domainNum[d]]);
     }
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mixvar version)");
 
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
-    bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvals, NULL, mixzone, mixlen);
+    bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvals, NULL, mixzone, mixnext, mixlen);
 
     int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < mats.size(); d++)
@@ -2620,7 +2680,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
         bhf_int->SetNewBoundaryData(domainNum[d], matlist, newmatlist, false);
         if (newmixlen != 0)
             bhf_float->SetNewMixedBoundaryData(domainNum[d], oldmat, mixlen,
-                                    matlist, mixvals, NULL, mixzone,
+                                    matlist, mixvals, NULL, mixzone, mixnext,
                                     newmatlist, newmixvals, NULL, NULL, NULL,
                                     newmixlen);
 
@@ -2637,6 +2697,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     bhf_int->FreeBoundaryData(matlist);
     bhf_float->FreeBoundaryData(mixvals);
     bhf_int->FreeBoundaryData(mixzone);
+    bhf_int->FreeBoundaryData(mixnext);
 
     if (mvname != NULL)
     {

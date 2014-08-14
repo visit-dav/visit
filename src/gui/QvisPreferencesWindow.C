@@ -197,6 +197,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
 //   Added the restore from last session feature. 
 //
+//   Cameron Christensen, Tuesday, June 10, 2014
+//   Added a preference for setting the backend type.
+//
 // ****************************************************************************
 
 void
@@ -268,6 +271,26 @@ QvisPreferencesWindow::CreateWindowContents()
     QRadioButton *inc = new QRadioButton(tr("Double"), precisionGroup);
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
+
+#if 0
+    //
+    // Create radio button controls to change the backend.
+    //
+    QGroupBox *backendGroup = new QGroupBox(central);
+    backendGroup->setTitle(tr("Parallel Computation Library:"));
+    topLayout->addWidget(backendGroup);
+    backendType = new QButtonGroup(central);
+    connect(backendType, SIGNAL(buttonClicked(int)),
+            this, SLOT(backendTypeChanged(int)));
+
+    QHBoxLayout *backendLayout = new QHBoxLayout(backendGroup);
+    QRadioButton *b0 = new QRadioButton(tr("VTK"), backendGroup);
+    backendType->addButton(b0,0);
+    backendLayout->addWidget(b0);
+    QRadioButton *b2 = new QRadioButton(tr("EAVL"), backendGroup);
+    backendType->addButton(b2,2);
+    backendLayout->addWidget(b2);
+#endif
 
     //
     //
@@ -518,6 +541,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
 //   Added the restore from last session feature. 
 //
+//   Cameron Christensen, Tuesday, June 10, 2014
+//   Added a preference for setting the backend type.
+//
 // ****************************************************************************
 
 void
@@ -667,6 +693,13 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         precisionType->blockSignals(true);
         precisionType->button((int)atts->GetPrecisionType())->setChecked(true);
         precisionType->blockSignals(false);
+    }
+
+    if(doAll || atts->IsSelected(GlobalAttributes::ID_backendType))
+    {
+        backendType->blockSignals(true);
+        backendType->button((int)atts->GetBackendType())->setChecked(true);
+        backendType->blockSignals(false);
     }
 
     if(doAll)
@@ -1353,6 +1386,31 @@ QvisPreferencesWindow::precisionTypeChanged(int val)
 {
     atts->SetPrecisionType(GlobalAttributes::PrecisionType(val));
     GetViewerProxy()->GetViewerMethods()->SetPrecisionType(val);
+    atts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::backendTypeChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when the backend
+//   is changed.
+//
+// Arguments:
+//   val : The new backend value.
+//
+// Programmer: Cameron Christensen
+// Creation:   June 10, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::backendTypeChanged(int val)
+{
+    atts->SetBackendType(GlobalAttributes::BackendType(val));
+    GetViewerProxy()->GetViewerMethods()->SetBackendType(val);
     atts->Notify();
 }
 

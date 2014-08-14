@@ -504,6 +504,9 @@ class SharedDaemon;
 //    Kathleen Biagas, Wed Aug  7 12:59:21 PDT 2013
 //    Add SetPrecisionType.
 //
+//    Cameron Christensen, Tuesday, June 10, 2014
+//    Added SetBackendTypeRPC.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -710,6 +713,7 @@ private:
     void SetCreateTimeDerivativeExpressions();
     void SetCreateVectorMagnitudeExpressions();
     void SetPrecisionType();
+    void SetBackendType();
 
     void MoveWindow();
     void MoveAndResizeWindow();

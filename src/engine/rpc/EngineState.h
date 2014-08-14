@@ -71,6 +71,7 @@
 #include <FileOpenOptions.h>
 #include <SetEFileOpenOptionsRPC.h>
 #include <SetPrecisionTypeRPC.h>
+#include <SetBackendTypeRPC.h>
 #include <SelectionProperties.h>
 #include <StatusAttributes.h>
 
@@ -109,6 +110,7 @@ public:
     NamedSelectionRPC&          GetNamedSelectionRPC() { return namedSelectionRPC; }
     SetEFileOpenOptionsRPC&     GetSetEFileOpenOptionsRPC() { return setEFileOpenOptionsRPC; }
     SetPrecisionTypeRPC&        GetSetPrecisionTypeRPC() { return setPrecisionTypeRPC; }
+    SetBackendTypeRPC&          GetSetBackendTypeRPC() { return setBackendTypeRPC; }
     EnginePropertiesRPC&        GetEnginePropertiesRPC() { return enginePropertiesRPC; }
     LaunchRPC&                  GetLaunchRPC() { return launchRPC; }
 private:
@@ -138,6 +140,7 @@ private:
     NamedSelectionRPC        namedSelectionRPC;
     SetEFileOpenOptionsRPC   setEFileOpenOptionsRPC;
     SetPrecisionTypeRPC      setPrecisionTypeRPC;
+    SetBackendTypeRPC        setBackendTypeRPC;
     EnginePropertiesRPC      enginePropertiesRPC;
     LaunchRPC                launchRPC;
     StatusAttributes        *statusAtts;

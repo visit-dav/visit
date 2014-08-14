@@ -67,6 +67,13 @@ public:
         Native,
         Double
     };
+    enum BackendType
+    {
+        VTK,
+        DAX,
+        EAVL,
+        PISTON
+    };
 
     // These constructors are for objects of this class
     GlobalAttributes();
@@ -123,6 +130,7 @@ public:
     void SetExpandNewPlots(bool expandNewPlots_);
     void SetUserRestoreSessionFile(bool userRestoreSessionFile_);
     void SetPrecisionType(PrecisionType precisionType_);
+    void SetBackendType(BackendType backendType_);
 
     // Property getting methods
     const stringVector &GetSources() const;
@@ -153,6 +161,7 @@ public:
     bool               GetExpandNewPlots() const;
     bool               GetUserRestoreSessionFile() const;
     PrecisionType      GetPrecisionType() const;
+    BackendType        GetBackendType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -163,6 +172,11 @@ public:
     static bool PrecisionType_FromString(const std::string &, PrecisionType &);
 protected:
     static std::string PrecisionType_ToString(int);
+public:
+    static std::string BackendType_ToString(BackendType);
+    static bool BackendType_FromString(const std::string &, BackendType &);
+protected:
+    static std::string BackendType_ToString(int);
 public:
 
     // Keyframing methods
@@ -200,6 +214,7 @@ public:
         ID_expandNewPlots,
         ID_userRestoreSessionFile,
         ID_precisionType,
+        ID_backendType,
         ID__LAST
     };
 
@@ -230,11 +245,12 @@ private:
     bool         expandNewPlots;
     bool         userRestoreSessionFile;
     int          precisionType;
+    int          backendType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbbbibbbbbbbbbbbbbbi"
+#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbbbibbbbbbbbbbbbbbii"
 
 #endif

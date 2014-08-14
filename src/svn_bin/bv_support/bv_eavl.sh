@@ -3,6 +3,8 @@ function bv_eavl_initialize
 {
 export DO_EAVL="no"
 export ON_EAVL="off"
+export USE_SYSTEM_EAVL="no"
+add_extra_commandline_args "eavl" "alt-eavl-dir" 1 "Use alternative directory for EAVL"
 }
 
 function bv_eavl_enable
@@ -17,18 +19,38 @@ DOEAVL_="no"
 ON_EAVL="off"
 }
 
+function bv_eavl_alt_eavl_dir
+{
+    bv_eavl_enable
+    USE_SYSTEM_EAVL="yes"
+    EAVL_INSTALL_DIR="$1"
+}
+
 function bv_eavl_depends_on
 {
-    local depends_on=""
+    if [[ "$USE_SYSTEM_EAVL" == "yes" ]]; then
+        echo ""
+    else
+        local depends_on=""
 
-    echo $depends_on
+        echo $depends_on
+    fi
+}
+
+function bv_eavl_initialize_vars
+{
+    if [[ "$USE_SYSTEM_EAVL" == "no" ]]; then
+        EAVL_INSTALL_DIR="\${VISITHOME}/eavl/$EAVL_VERSION/\${VISITARCH}"
+    fi
 }
 
 function bv_eavl_info
 {
-export EAVL_VERSION=${EAVL_VERSION:-"ac39232"}
+export EAVL_VERSION=${EAVL_VERSION:-"9e7ffd1a93"}
 export EAVL_FILE=${EAVL_FILE:-"EAVL-${EAVL_VERSION}.tar.gz"}
 export EAVL_BUILD_DIR=${EAVL_BUILD_DIR:-"EAVL-${EAVL_VERSION}"}
+export EAVL_MD5_CHECKSUM="d61a6f9eb67071a66ac843174fa3690a"
+export EAVL_SHA256_CHECKSUM="95b16dba8e84ba2aa7cfbd9667429b7342103606629301de364f8023f0fa75a5"
 }
 
 function bv_eavl_print
@@ -57,14 +79,14 @@ function bv_eavl_host_profile
         echo "## EAVL " >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_EAVL_DIR \${VISITHOME}/eavl/$EAVL_VERSION/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_EAVL_DIR ${EAVL_INSTALL_DIR})" \
         >> $HOSTCONF
     fi
 }
 
 function bv_eavl_ensure
 {
-    if [[ "$DO_EAVL" == "yes" ]] ; then
+    if [[ "$DO_EAVL" == "yes" && "$USE_SYSTEM_EAVL" == "no" ]] ; then
         ensure_built_or_ready "eavl" $EAVL_VERSION $EAVL_BUILD_DIR $EAVL_FILE $EAVL_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -87,6 +109,74 @@ function bv_eavl_dry_run
 #
 # *************************************************************************** #
 
+function apply_EAVL_9e7ffd1a93_patch
+{
+   patch -p0 <<\EOF
+diff -c a/configure EAVL-9e7ffd1a93/configure
+*** a/configure	Tue Aug 12 16:25:47 2014
+--- EAVL-9e7ffd1a93/configure	Tue Aug 12 16:26:02 2014
+***************
+*** 4403,4412 ****
+  
+  # don't use everything -- we only need enough to do data set conversion.
+  VTK_ALL_LIBS="
+!     vtkIOLegacy-6.0
+!     vtkIOCore-6.0
+!     vtkCommonDataModel-6.0
+!     vtkCommonCore-6.0
+      "
+  
+  VTK_CPPFLAGS=""
+--- 4403,4412 ----
+  
+  # don't use everything -- we only need enough to do data set conversion.
+  VTK_ALL_LIBS="
+!     vtkIOLegacy-6.1
+!     vtkIOCore-6.1
+!     vtkCommonDataModel-6.1
+!     vtkCommonCore-6.1
+      "
+  
+  VTK_CPPFLAGS=""
+***************
+*** 4422,4428 ****
+  
+  if test "$VTK" != "yes" -a "$VTK" != "no"; then
+     # specified path
+!    VTK_CPPFLAGS="-I""$VTK""/include/vtk-6.0 -I""$VTK""/include"
+     VTK_LDFLAGS="-L""$VTK""/lib"
+     if test "$UNAME" = "Darwin"; then
+               VTK_LDFLAGS="$VTK_LDFLAGS"
+--- 4422,4428 ----
+  
+  if test "$VTK" != "yes" -a "$VTK" != "no"; then
+     # specified path
+!    VTK_CPPFLAGS="-I""$VTK""/include/vtk-6.1 -I""$VTK""/include"
+     VTK_LDFLAGS="-L""$VTK""/lib"
+     if test "$UNAME" = "Darwin"; then
+               VTK_LDFLAGS="$VTK_LDFLAGS"
+EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch to EAVL 9e7ffd1a93"
+        return 1
+   else
+        return 0
+   fi
+}
+
+function apply_EAVL_patch
+{
+   info "Patching EAVL . . ."
+   if [[ ${EAVL_VERSION} == "9e7ffd1a93" ]] ; then
+      apply_EAVL_9e7ffd1a93_patch
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+   fi
+
+   return 0
+}
+
 function build_EAVL
 {
     #
@@ -99,6 +189,8 @@ function build_EAVL
        return 1
     fi
     
+    apply_EAVL_patch
+
     #
     # Call configure
     #
@@ -108,21 +200,23 @@ function build_EAVL
     #
     # expedient hack: use VISIT_CUDA_TOOLKIT env var to select cuda
     #
-    if test "x${VISIT_CUDA_TOOLKIT}" = "x"; then
+    if [[ "${VISIT_CUDA_TOOLKIT}" == "" ]] ; then
         export EAVL_EXTRA_ARGS=""
     else
         export EAVL_CUDA_TOOLKIT_ARGS=" --with-cuda=$VISIT_CUDA_TOOLKIT"
     fi
 
-    if test "x${SYSTEM_VTK_DIR}" = "x"; then
-        export EAVL_VTK_ARGS=""
+    if [[ "${SYSTEM_VTK_DIR}" == "" ]] ; then
+        if [[ "${VTK_INSTALL_DIR}" == "" ]] ; then
+            export EAVL_VTK_ARGS=""
+        else
+            export EAVL_VTK_ARGS=" --with-vtk=$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH"
+        fi
     else
         export EAVL_VTK_ARGS=" --with-vtk=$SYSTEM_VTK_DIR"
     fi
         
-VISIT_VTK_DIR
-    
-#info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    #info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     #                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
     #                 CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
     #                 $EAVL_CUDA_TOOLKIT_ARGS \
@@ -197,6 +291,10 @@ function bv_eavl_is_enabled
 
 function bv_eavl_is_installed
 {
+    if [[ "$USE_SYSTEM_EAVL" == "yes" ]]; then
+        return 1
+    fi
+
     check_if_installed "eavl" $EAVL_VERSION
     if [[ $? == 0 ]] ; then
         return 1
@@ -207,7 +305,7 @@ function bv_eavl_is_installed
 function bv_eavl_build
 {
 cd "$START_DIR"
-if [[ "$DO_EAVL" == "yes" ]] ; then
+if [[ "$DO_EAVL" == "yes" && "$USE_SYSTEM_EAVL" == "no" ]] ; then
     check_if_installed "eavl" $EAVL_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping eavl build.  eavl is already installed."
