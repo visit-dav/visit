@@ -58,12 +58,17 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
-    private static int GlobalAttributes_numAdditionalAtts = 26;
+    private static int GlobalAttributes_numAdditionalAtts = 27;
 
     // Enum values
     public final static int PRECISIONTYPE_FLOAT = 0;
     public final static int PRECISIONTYPE_NATIVE = 1;
     public final static int PRECISIONTYPE_DOUBLE = 2;
+
+    public final static int BACKENDTYPE_VTK = 0;
+    public final static int BACKENDTYPE_DAX = 1;
+    public final static int BACKENDTYPE_EAVL = 2;
+    public final static int BACKENDTYPE_PISTON = 3;
 
 
     public GlobalAttributes()
@@ -96,6 +101,7 @@ public class GlobalAttributes extends AttributeSubject
         expandNewPlots = false;
         userRestoreSessionFile = false;
         precisionType = PRECISIONTYPE_NATIVE;
+        backendType = BACKENDTYPE_VTK;
     }
 
     public GlobalAttributes(int nMoreFields)
@@ -128,6 +134,7 @@ public class GlobalAttributes extends AttributeSubject
         expandNewPlots = false;
         userRestoreSessionFile = false;
         precisionType = PRECISIONTYPE_NATIVE;
+        backendType = BACKENDTYPE_VTK;
     }
 
     public GlobalAttributes(GlobalAttributes obj)
@@ -170,6 +177,7 @@ public class GlobalAttributes extends AttributeSubject
         expandNewPlots = obj.expandNewPlots;
         userRestoreSessionFile = obj.userRestoreSessionFile;
         precisionType = obj.precisionType;
+        backendType = obj.backendType;
 
         SelectAll();
     }
@@ -232,7 +240,8 @@ public class GlobalAttributes extends AttributeSubject
                 (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
                 (expandNewPlots == obj.expandNewPlots) &&
                 (userRestoreSessionFile == obj.userRestoreSessionFile) &&
-                (precisionType == obj.precisionType));
+                (precisionType == obj.precisionType) &&
+                (backendType == obj.backendType));
     }
 
     // Property setting methods
@@ -392,6 +401,12 @@ public class GlobalAttributes extends AttributeSubject
         Select(25);
     }
 
+    public void SetBackendType(int backendType_)
+    {
+        backendType = backendType_;
+        Select(26);
+    }
+
     // Property getting methods
     public Vector  GetSources() { return sources; }
     public Vector  GetWindows() { return windows; }
@@ -419,6 +434,7 @@ public class GlobalAttributes extends AttributeSubject
     public boolean GetExpandNewPlots() { return expandNewPlots; }
     public boolean GetUserRestoreSessionFile() { return userRestoreSessionFile; }
     public int     GetPrecisionType() { return precisionType; }
+    public int     GetBackendType() { return backendType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -475,6 +491,8 @@ public class GlobalAttributes extends AttributeSubject
             buf.WriteBool(userRestoreSessionFile);
         if(WriteSelect(25, buf))
             buf.WriteInt(precisionType);
+        if(WriteSelect(26, buf))
+            buf.WriteInt(backendType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -559,6 +577,9 @@ public class GlobalAttributes extends AttributeSubject
         case 25:
             SetPrecisionType(buf.ReadInt());
             break;
+        case 26:
+            SetBackendType(buf.ReadInt());
+            break;
         }
     }
 
@@ -598,6 +619,16 @@ public class GlobalAttributes extends AttributeSubject
         if(precisionType == PRECISIONTYPE_DOUBLE)
             str = str + "PRECISIONTYPE_DOUBLE";
         str = str + "\n";
+        str = str + indent + "backendType = ";
+        if(backendType == BACKENDTYPE_VTK)
+            str = str + "BACKENDTYPE_VTK";
+        if(backendType == BACKENDTYPE_DAX)
+            str = str + "BACKENDTYPE_DAX";
+        if(backendType == BACKENDTYPE_EAVL)
+            str = str + "BACKENDTYPE_EAVL";
+        if(backendType == BACKENDTYPE_PISTON)
+            str = str + "BACKENDTYPE_PISTON";
+        str = str + "\n";
         return str;
     }
 
@@ -629,5 +660,6 @@ public class GlobalAttributes extends AttributeSubject
     private boolean expandNewPlots;
     private boolean userRestoreSessionFile;
     private int     precisionType;
+    private int     backendType;
 }
 
