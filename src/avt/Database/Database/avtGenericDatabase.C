@@ -3330,7 +3330,13 @@ bool
 avtGenericDatabase::PopulateIOInformation(int ts, const std::string &meshname,
     avtIOInformation &ioInfo)
 {
-    return Interface->PopulateIOInformation(ts, meshname, ioInfo);
+    bool retval = Interface->PopulateIOInformation(ts, meshname, ioInfo);
+    if(!retval)
+    {
+        debug5 << Interface->GetType() << ": No I/O info provided for mesh "
+               << meshname << endl;
+    }
+    return retval;
 }
 
 // ****************************************************************************
