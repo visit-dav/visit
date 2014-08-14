@@ -952,6 +952,10 @@ function check_parallel
         parallel="yes"
     fi
 
+    # if we are using PAR_LIBS, call helper to split this into:
+    # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
+    process_parallel_ldflags "$PAR_LIBS"
+
     #
     # Parallelization
     #
@@ -1092,10 +1096,6 @@ function check_parallel
 
             PAR_LIBS=$PAR_LDFLAGS
         fi
-
-        # if we are using PAR_LIBS, call helper to split this into:
-        # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
-        process_parallel_ldflags "$PAR_LIBS"
 
         # The script pretty much assumes that you *must* have some flags 
         # and libs to do a parallel build.  If that is *not* true, 
