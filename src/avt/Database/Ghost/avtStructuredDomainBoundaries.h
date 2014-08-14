@@ -174,6 +174,12 @@ struct Boundary
 //    Hank Childs, Mon Nov 10 15:26:00 PST 2003
 //    Added routines for exchanging rectilinear components.
 //
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Added ability to fill/communicate/receive values from the 'mixnext'
+//    array for mixed boundary data.  We can't reliably use any other
+//    information (like a change in zone ID) to determine when a segment
+//    of mix data has ended.
+//
 // ****************************************************************************
 template<class T>
 class BoundaryHelperFunctions
@@ -187,15 +193,15 @@ class BoundaryHelperFunctions
 
     T   ***InitializeBoundaryData();
     void   FillBoundaryData(int, const T*, T***, bool, int=1);
-    void   FillMixedBoundaryData(int,avtMaterial*,const T*,T***,int***,int***,std::vector<int>&);
+    void   FillMixedBoundaryData(int,avtMaterial*,const T*,T***,int***,int***,int***,std::vector<int>&);
     void   FillRectilinearBoundaryData(int, const T*, const T*, const T*, T***);
     void   CommunicateBoundaryData(const std::vector<int>&, T***, bool, int=1);
-    void   CommunicateMixedBoundaryData(const std::vector<int>&,T***,int***,int***,std::vector< std::vector<int> > &);
+    void   CommunicateMixedBoundaryData(const std::vector<int>&,T***,int***,int***,int***,std::vector< std::vector<int> > &);
     void   CopyOldValues(int, const T*, T*, bool, int=1);
     void   CopyOldMixedValues(avtMaterial*,const T*, T*);
     void   CopyOldRectilinearValues(int, const T*, T*, int);
     void   SetNewBoundaryData(int, T***, T*, bool, int=1);
-    void   SetNewMixedBoundaryData(int,avtMaterial*,const std::vector< std::vector<int> >&,int***,T***,int***,int***,int*,T*,int*,int*,int*,int&);
+    void   SetNewMixedBoundaryData(int,avtMaterial*,const std::vector< std::vector<int> >&,int***,T***,int***,int***,int***,int*,T*,int*,int*,int*,int&);
     void   SetNewRectilinearBoundaryData(int, T***, T*, T*, T*);
     void   FakeNonexistentBoundaryData(int, T*, bool, int=1);
     void   FreeBoundaryData(T***);
