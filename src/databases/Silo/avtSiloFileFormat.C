@@ -7389,7 +7389,7 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 }
 
 // ****************************************************************************
-// Method: CopyUcdVar
+// Method: CopyAndPadUcdVar
 //
 // Purpose: 
 //   Copies data from a ucdvar into a new vtkDataArray.
@@ -7417,21 +7417,34 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 //    components, it gets 'promoted' to 3 by inserting zeros for 3rd component.
 //    Otherwise, output vtkDataArray will have same number of components
 //    as input ucdvar.
+//
+//    Mark C. Miller, Wed Aug 13 21:37:44 PDT 2014
+//    Add support for re-mapping and zero padding of symmetric tensor
+//    variables too.
 // ****************************************************************************
 
 template <typename T, typename Tarr>
 static vtkDataArray *
-CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
+CopyAndPadUcdVar(const DBucdvar *uv, const vector<int> &remap, avtVarType vtype = AVT_UNKNOWN_TYPE)
 {
-    Tarr *vtkvar = Tarr::New();
-    T *ptr = 0;
+    int const X = -1; // Place holder for zero'd components 
+    int const j_remap_2d[9] = {0,2,X,2,1,X,X,X,X}; // map 2d symm. tensor comp Voigt order to VTK
+    int const j_remap_3d[9] = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
     size_t i;
     int j, k, n, cnt;
+    T *ptr = 0;
+    Tarr *vtkvar = Tarr::New();
 
     //
     // Handle remapping data to due zones that have been decomposed. 
     //
-    int nvtkcomps = uv->nvals==2?3:uv->nvals;
+    int nvtkcomps = uv->nvals;
+    if (vtype == AVT_UNKNOWN_TYPE && uv->nvals == 2)
+        nvtkcomps = 3;
+    else if (vtype == AVT_VECTOR_VAR)
+        nvtkcomps = 3; // zero pad extra components
+    else if (vtype == AVT_SYMMETRIC_TENSOR_VAR && (uv->nvals == 3 || uv->nvals == 6))
+        nvtkcomps = 9; // fill and/or zero pad extra components
     vtkvar->SetNumberOfComponents(nvtkcomps);
     if (remap.size() > 0)
     {
@@ -7439,14 +7452,31 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
         {
             vtkvar->SetNumberOfTuples(remap.size());
             ptr = (T *) vtkvar->GetVoidPointer(0);
-            for (i = 0; i < remap.size(); i++)
+            if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
             {
-                for (j = 0; j < nvtkcomps; j++)
+                int const *j_remap = uv->nvals==3?j_remap_2d:j_remap_3d;
+                for (i = 0; i < remap.size(); i++)
                 {
-                    if (j < uv->nvals)
-                        ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j][remap[i]];
-                    else
-                        ptr[i*nvtkcomps+j] = ((T)0);
+                    for (j = 0; j < nvtkcomps; j++)
+                    {
+                        if (j_remap[j] < 0)
+                            ptr[i*nvtkcomps+j] = ((T)0);
+                        else
+                            ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j_remap[j]][remap[i]];
+                    }
+                }
+            }
+            else
+            {
+                for (i = 0; i < remap.size(); i++)
+                {
+                    for (j = 0; j < nvtkcomps; j++)
+                    {
+                        if (j < uv->nvals)
+                            ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j][remap[i]];
+                        else
+                            ptr[i*nvtkcomps+j] = ((T)0);
+                    }
                 }
             }
         }
@@ -7515,26 +7545,27 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
     }
     else
     {
-#if 0
-        // This is an appropriate optimization as it saves a data copy.
-        // However, all the context in which CopyUcdVar is used are not
-        // necessarily designed in anticipation that the ucdvar object's
-        // data could be inherited by the data array.
-        if (uv->nvals == 1)
+        //
+        // Populate the variable as we normally would.
+        //
+        vtkvar->SetNumberOfTuples(uv->nels);
+        ptr = (T *) vtkvar->GetVoidPointer(0);
+        if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
         {
-            vtkvar->Delete();
-            vtkDataArray *retval = CreateDataArray(uv->datatype, (void*) uv->vals[0], uv->nels);
-            uv->vals[0] = 0; // the vtkDataArray now owns the data.
-            return retval;
+            int const *j_remap = uv->nvals==3?j_remap_2d:j_remap_3d;
+            for (i = 0; i < (size_t)uv->nels; i++)
+            {
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j_remap[j] < 0)
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                    else
+                        ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j_remap[j]][i];
+                }
+            }
         }
         else
-#endif
         {
-            //
-            // Populate the variable as we normally would.
-            //
-            vtkvar->SetNumberOfTuples(uv->nels);
-            ptr = (T *) vtkvar->GetVoidPointer(0);
             for (i = 0; i < (size_t)uv->nels; i++)
             {
                 for (j = 0; j < nvtkcomps; j++)
@@ -7584,7 +7615,7 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
 //    Mark C. Miller, Wed Oct 28 20:42:14 PDT 2009
 //    Replaced arb. polyhederal zone skipping logic with real remapping
 //    as now Silo plugin will read and decompose arb. polyhedral mesh.
-//    Replaced CopyUcdVectorVar a vector-enhanced version of CopyUcdVar.
+//    Replaced CopyUcdVectorVar a vector-enhanced version of CopyAndPadUcdVar.
 //
 //    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
 //    Added extra level of indirection to arbMeshXXXRemap objects to handle
@@ -7625,6 +7656,8 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
         ExpandUcdvar(uv, vname, tvn, domain);
 
     string meshName = metadata->MeshForVar(tvn);
+    const bool DoExpressions = true;
+    avtVarType vtype = metadata->DetermineVarType(tvn, !DoExpressions);
     vector<int> noremap;
     vector<int>* remap = &noremap;
     map<string, map<int, vector<int>* > >::iterator domit;
@@ -7643,19 +7676,19 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 
     vtkDataArray *vectors = 0;
     if(uv->datatype == DB_DOUBLE)
-        vectors = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
+        vectors = CopyAndPadUcdVar<double,vtkDoubleArray>(uv, *remap, vtype);
     else if(uv->datatype == DB_FLOAT)
-        vectors = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
+        vectors = CopyAndPadUcdVar<float,vtkFloatArray>(uv, *remap, vtype);
     else if(uv->datatype == DB_LONG_LONG)
-        vectors = CopyUcdVar<long long,vtkLongLongArray>(uv, *remap);
+        vectors = CopyAndPadUcdVar<long long,vtkLongLongArray>(uv, *remap, vtype);
     else if(uv->datatype == DB_LONG)
-        vectors = CopyUcdVar<long,vtkLongArray>(uv, *remap);
+        vectors = CopyAndPadUcdVar<long,vtkLongArray>(uv, *remap, vtype);
     else if(uv->datatype == DB_INT)
-        vectors = CopyUcdVar<int,vtkIntArray>(uv, *remap);
+        vectors = CopyAndPadUcdVar<int,vtkIntArray>(uv, *remap, vtype);
     else if(uv->datatype == DB_SHORT)
-        vectors = CopyUcdVar<short,vtkShortArray>(uv, *remap);
+        vectors = CopyAndPadUcdVar<short,vtkShortArray>(uv, *remap, vtype);
     else if(uv->datatype == DB_CHAR)
-        vectors = CopyUcdVar<char,vtkCharArray>(uv, *remap);
+        vectors = CopyAndPadUcdVar<char,vtkCharArray>(uv, *remap, vtype);
 
     DBFreeUcdvar(uv);
 
@@ -7663,63 +7696,80 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 }
 
 // ****************************************************************************
-// Method: CopyQuadVectorVar
+// Method: CopyAndPadPointOrQuadVectorVar
 //
 // Purpose: 
-//   Copy quadvar vectors into a vtkDataArray.
+//   Copy Silo point data into a vtkDataArray.
 //
 // Arguments:
-//   qv : The vector to copy.
+//   mv : The DBmeshvar object that contains the data.
 //
-// Returns:    A vtkDataArray.
+// Returns:    A vtkDataArray of the appropriate type.
 //
-// Note:       I took this code from GetQuadVectorVar and templated it.
+// Note:       I took this code body from GetPointVectorVar and templated it.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Aug  6 15:37:55 PDT 2009
+// Creation:   Thu Aug  6 15:12:29 PDT 2009
 //
 // Modifications:
-//    Mark C. Miller, Tue Oct 20 16:50:55 PDT 2009
+//
+//    Mark C. Miller, Tue Oct 20 16:50:41 PDT 2009
 //    Made it static.
+//   
+//    Kathleen Bonnell, Thu May  6 15:36:11 PDT 2010
+//    Fix error in vector dimensionality test.
+//
+//    Mark C. Miller, Wed Aug 13 22:20:07 PDT 2014
+//    Add support for tensor variables. Re-factor code for quad and point
+//    vars to this one template method.
 // ****************************************************************************
 
-template <typename T, typename Tarr>
+template <typename T, typename Tarr, typename DBvar>
 static vtkDataArray *
-CopyQuadVectorVar(const DBquadvar *qv)
+CopyAndPadPointOrQuadVectorVar(const DBvar *mv, avtVarType vtype)
 {
+    int const X = -1; // Place holder for zero'd components 
+    int const j_remap_2d[9] = {0,2,X,2,1,X,X,X,X}; // map 2d symm. tensor comp Voigt order to VTK
+    int const j_remap_3d[9] = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
+    size_t i;
+    int j, nvtkcomps = mv->nvals;
     Tarr *vectors = Tarr::New();
-    vectors->SetNumberOfComponents(qv->nvals<=3?3:qv->nvals);
-    vectors->SetNumberOfTuples(qv->nels);
+
+    if (vtype == AVT_UNKNOWN_TYPE && mv->nvals == 2)
+        nvtkcomps = 3;
+    else if (vtype == AVT_VECTOR_VAR)
+        nvtkcomps = 3; // zero pad extra components
+    else if (vtype == AVT_SYMMETRIC_TENSOR_VAR && (mv->nvals == 3 || mv->nvals == 6))
+        nvtkcomps = 9; // fill and/or zero pad extra components
+    vectors->SetNumberOfComponents(nvtkcomps);
+    vectors->SetNumberOfTuples(mv->nels);
     T *ptr = vectors->GetPointer(0);
 
-    const T *v1 = (const T *)qv->vals[0];
-    const T *v2 = (const T *)qv->vals[1];
-    if (qv->nvals > 3)
+    if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
     {
-        for (int j = 0; j < qv->nvals; j++)
+        int const *j_remap = mv->nvals==3?j_remap_2d:j_remap_3d;
+        for (i = 0; i < (size_t)mv->nels; i++)
         {
-            const T *v = (const T *)qv->vals[j];
-            for (int i = 0 ; i < qv->nels ; i++)
-                vectors->SetComponent(i,j,v[i]);
-        }
-    }
-    else if(qv->nvals == 3)
-    {
-        const T *v3 = (const T*)qv->vals[2];
-        for (int i = 0 ; i < qv->nels ; i++)
-        {
-            *ptr++ = v1[i];
-            *ptr++ = v2[i];
-            *ptr++ = v3[i];
+            for (j = 0; j < nvtkcomps; j++)
+            {
+                if (j_remap[j] < 0)
+                    ptr[i*nvtkcomps+j] = ((T)0);
+                else
+                    ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j_remap[j]][i];
+            }
         }
     }
     else
     {
-        for (int i = 0 ; i < qv->nels ; i++)
+        for (i = 0; i < (size_t)mv->nels; i++)
         {
-            *ptr++ = v1[i];
-            *ptr++ = v2[i];
-            *ptr++ = 0;
+            for (j = 0; j < nvtkcomps; j++)
+            {
+                if (j < mv->nvals)
+                    ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j][i];
+                else
+                    ptr[i*nvtkcomps+j] = ((T)0);
+            }
         }
     }
 
@@ -7778,85 +7828,29 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
+    const bool DoExpressions = true;
+    avtVarType vtype = metadata->DetermineVarType(tvn, !DoExpressions);
+
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
     vtkDataArray *vectors = 0;
     if(qv->datatype == DB_DOUBLE)
-        vectors = CopyQuadVectorVar<double,vtkDoubleArray>(qv);
+        vectors = CopyAndPadPointOrQuadVectorVar<double,vtkDoubleArray,DBquadvar>(qv, vtype);
     else if(qv->datatype == DB_FLOAT)
-        vectors = CopyQuadVectorVar<float,vtkFloatArray>(qv);
+        vectors = CopyAndPadPointOrQuadVectorVar<float,vtkFloatArray,DBquadvar>(qv, vtype);
     else if(qv->datatype == DB_LONG_LONG)
-        vectors = CopyQuadVectorVar<long long,vtkLongLongArray>(qv);
+        vectors = CopyAndPadPointOrQuadVectorVar<long long,vtkLongLongArray,DBquadvar>(qv, vtype);
     else if(qv->datatype == DB_LONG)
-        vectors = CopyQuadVectorVar<long,vtkLongArray>(qv);
+        vectors = CopyAndPadPointOrQuadVectorVar<long,vtkLongArray,DBquadvar>(qv, vtype);
     else if(qv->datatype == DB_INT)
-        vectors = CopyQuadVectorVar<int,vtkIntArray>(qv);
+        vectors = CopyAndPadPointOrQuadVectorVar<int,vtkIntArray,DBquadvar>(qv, vtype);
     else if(qv->datatype == DB_SHORT)
-        vectors = CopyQuadVectorVar<short,vtkShortArray>(qv);
+        vectors = CopyAndPadPointOrQuadVectorVar<short,vtkShortArray,DBquadvar>(qv, vtype);
     else if(qv->datatype == DB_CHAR)
-        vectors = CopyQuadVectorVar<char,vtkCharArray>(qv);
+        vectors = CopyAndPadPointOrQuadVectorVar<char,vtkCharArray,DBquadvar>(qv, vtype);
 
     DBFreeQuadvar(qv);
-
-    return vectors;
-}
-
-// ****************************************************************************
-// Method: CopyPointVectorVar
-//
-// Purpose: 
-//   Copy Silo point data into a vtkDataArray.
-//
-// Arguments:
-//   mv : The DBmeshvar object that contains the data.
-//
-// Returns:    A vtkDataArray of the appropriate type.
-//
-// Note:       I took this code body from GetPointVectorVar and templated it.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Aug  6 15:12:29 PDT 2009
-//
-// Modifications:
-//
-//    Mark C. Miller, Tue Oct 20 16:50:41 PDT 2009
-//    Made it static.
-//   
-//    Kathleen Bonnell, Thu May  6 15:36:11 PDT 2010
-//    Fix error in vector dimensionality test.
-//
-// ****************************************************************************
-
-template <typename T, typename Tarr>
-static vtkDataArray *
-CopyPointVectorVar(const DBmeshvar *mv)
-{
-    Tarr *vectors = Tarr::New();
-    vectors->SetNumberOfComponents(mv->nvals<3?3:mv->nvals);
-    vectors->SetNumberOfTuples(mv->nels);
-    const T *v1 = ((const T**)mv->vals)[0];
-    const T *v2 = ((const T**)mv->vals)[1];
-    if (mv->nvals > 3)
-    {
-        for (int j = 0; j < mv->nvals; j++)
-        {
-            const T *v = (const T *)mv->vals[j];
-            for (int i = 0 ; i < mv->nels ; i++)
-                vectors->SetComponent(i,j,v[i]);
-        }
-    }
-    else if(mv->nvals == 3)
-    {
-        const T *v3 = ((const T**)mv->vals)[2];
-        for (int i = 0 ; i < mv->nels ; i++)
-            vectors->SetTuple3(i, v1[i], v2[i], v3[i]);
-    }
-    else
-    {
-        for (int i = 0 ; i < mv->nels ; i++)
-            vectors->SetTuple3(i, v1[i], v2[i], 0.);
-    }
 
     return vectors;
 }
@@ -7909,22 +7903,24 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+    const bool DoExpressions = true;
+    avtVarType vtype = metadata->DetermineVarType(vname, !DoExpressions);
 
     vtkDataArray *vectors = 0;
     if(mv->datatype == DB_DOUBLE)
-        vectors = CopyPointVectorVar<double,vtkDoubleArray>(mv);
+        vectors = CopyAndPadPointOrQuadVectorVar<double,vtkDoubleArray,DBmeshvar>(mv, vtype);
     else if(mv->datatype == DB_FLOAT)
-        vectors = CopyPointVectorVar<float,vtkFloatArray>(mv);
+        vectors = CopyAndPadPointOrQuadVectorVar<float,vtkFloatArray,DBmeshvar>(mv, vtype);
     else if(mv->datatype == DB_LONG_LONG)
-        vectors = CopyPointVectorVar<long long,vtkLongLongArray>(mv);
+        vectors = CopyAndPadPointOrQuadVectorVar<long long,vtkLongLongArray,DBmeshvar>(mv, vtype);
     else if(mv->datatype == DB_LONG)
-        vectors = CopyPointVectorVar<long,vtkLongArray>(mv);
+        vectors = CopyAndPadPointOrQuadVectorVar<long,vtkLongArray,DBmeshvar>(mv, vtype);
     else if(mv->datatype == DB_INT)
-        vectors = CopyPointVectorVar<int,vtkIntArray>(mv);
+        vectors = CopyAndPadPointOrQuadVectorVar<int,vtkIntArray,DBmeshvar>(mv, vtype);
     else if(mv->datatype == DB_SHORT)
-        vectors = CopyPointVectorVar<short,vtkShortArray>(mv);
+        vectors = CopyAndPadPointOrQuadVectorVar<short,vtkShortArray,DBmeshvar>(mv, vtype);
     else if(mv->datatype == DB_CHAR)
-        vectors = CopyPointVectorVar<char,vtkCharArray>(mv);
+        vectors = CopyAndPadPointOrQuadVectorVar<char,vtkCharArray,DBmeshvar>(mv, vtype);
 
     DBFreeMeshvar(mv);
 
@@ -8771,19 +8767,19 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 
     vtkDataArray *scalars = 0;
     if(uv->datatype == DB_DOUBLE)
-        scalars = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
+        scalars = CopyAndPadUcdVar<double,vtkDoubleArray>(uv, *remap);
     else if(uv->datatype == DB_FLOAT)
-        scalars = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
+        scalars = CopyAndPadUcdVar<float,vtkFloatArray>(uv, *remap);
     else if(uv->datatype == DB_LONG_LONG)
-        scalars = CopyUcdVar<long long,vtkLongLongArray>(uv, *remap);
+        scalars = CopyAndPadUcdVar<long long,vtkLongLongArray>(uv, *remap);
     else if(uv->datatype == DB_LONG)
-        scalars = CopyUcdVar<long,vtkLongArray>(uv, *remap);
+        scalars = CopyAndPadUcdVar<long,vtkLongArray>(uv, *remap);
     else if(uv->datatype == DB_INT)
-        scalars = CopyUcdVar<int,vtkIntArray>(uv, *remap);
+        scalars = CopyAndPadUcdVar<int,vtkIntArray>(uv, *remap);
     else if(uv->datatype == DB_SHORT)
-        scalars = CopyUcdVar<short,vtkShortArray>(uv, *remap);
+        scalars = CopyAndPadUcdVar<short,vtkShortArray>(uv, *remap);
     else if(uv->datatype == DB_CHAR)
-        scalars = CopyUcdVar<char,vtkCharArray>(uv, *remap);
+        scalars = CopyAndPadUcdVar<char,vtkCharArray>(uv, *remap);
 
     if (uv->mixvals != NULL && uv->mixvals[0] != NULL)
     {
@@ -9179,7 +9175,7 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
 
     //
     // Create a vtkInt array whose contents are the actual gzoneno data
-    // Create a temp. DBucdvar object so we can use CopyUcdVar
+    // Create a temp. DBucdvar object so we can use CopyAndPadUcdVar
     //
     DBucdvar tmp;
     tmp.centering = DB_ZONECENT;
@@ -9190,15 +9186,15 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     tmp.vals = (void**) malloc(sizeof(void*)); /* use malloc because this is a Silo object */
     tmp.vals[0] = (void*) gzoneno; 
 
-    vtkDataArray *arr = NULL; //TODO: check for fix of uninit variable
+    vtkDataArray *arr = NULL;
     if (tmp.datatype == DB_SHORT)
-        arr = CopyUcdVar<short,vtkShortArray>(&tmp, *remap);
+        arr = CopyAndPadUcdVar<short,vtkShortArray>(&tmp, *remap);
     else if (tmp.datatype == DB_INT)
-        arr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
+        arr = CopyAndPadUcdVar<int,vtkIntArray>(&tmp, *remap);
     else if (tmp.datatype == DB_LONG)
-        arr = CopyUcdVar<long,vtkLongArray>(&tmp, *remap);
+        arr = CopyAndPadUcdVar<long,vtkLongArray>(&tmp, *remap);
     else if (tmp.datatype == DB_LONG_LONG)
-        arr = CopyUcdVar<long long,vtkLongLongArray>(&tmp, *remap);
+        arr = CopyAndPadUcdVar<long long,vtkLongLongArray>(&tmp, *remap);
     free(tmp.vals);
 
     //
@@ -10236,7 +10232,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             gvals[i] = val;
 
         //
-        // Create a temp. DBucdvar object to call CopyUcdVar. That will handle
+        // Create a temp. DBucdvar object to call CopyAndPadUcdVar. That will handle
         // both creation of the vtkUnsignedCharArray object as well as re-mapping
         // of array as per existence of any arb. polyhedral zones.
         //
@@ -10248,7 +10244,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         tmp.vals = (void**) malloc(sizeof(void*)); /* use malloc because this is a Silo object */
         tmp.vals[0] = (void*) gvals;
         vector<int> noremap;
-        vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp,
+        vtkDataArray *ghostZones = CopyAndPadUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp,
             cellReMap?*cellReMap:noremap);
         free(tmp.vals);
         delete [] gvals;
@@ -11370,7 +11366,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
         tmp.nvals = 1;
         tmp.vals = (void**) malloc(sizeof(void*));
         tmp.vals[0] = (void*) gvals;
-        vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp, *remap);
+        vtkDataArray *ghostZones = CopyAndPadUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp, *remap);
         free(tmp.vals);
         delete [] gvals;
 
@@ -14206,7 +14202,7 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
             nzones *= silomat->dims[i];
 
         //
-        // Create a temp. ucdvar so we can use CopyUcdVar to remap matlist
+        // Create a temp. ucdvar so we can use CopyAndPadUcdVar to remap matlist
         //
         DBucdvar tmp;
         tmp.centering = DB_ZONECENT;
@@ -14215,7 +14211,7 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
         tmp.nvals = 1;
         tmp.vals = (void**) malloc(sizeof(void*)); /* use malloc because this is a Silo object */
         tmp.vals[0] = (void*) silomat->matlist;
-        matListArr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
+        matListArr = CopyAndPadUcdVar<int,vtkIntArray>(&tmp, *remap);
 
         //
         // Adjust the Silo DBmaterial object a bit for call to newMaterial
