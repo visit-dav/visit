@@ -209,7 +209,7 @@ function build_uintah
     if [[ "$FC_COMPILER" == "no" ]] ; then
 
         warn "Uintah may require fortran to be enabled. It does not appear that the --fortran "
-        warn "agrument was set. If Uintah fails to build try adding the --fortranargument"
+        warn "agrument was set. If Uintah fails to build try adding the --fortran argument"
         FORTRANARGS="--without-fortran"
         #return 1
 
@@ -244,6 +244,7 @@ function build_uintah
     info "Invoking command to configure UINTAH"
     info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
@@ -253,6 +254,7 @@ function build_uintah
         --with-mpi="${PAR_INCLUDE_DIR}/.." "
     sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
