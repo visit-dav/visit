@@ -380,7 +380,15 @@ void QvisCollapsibleLayout::updateLayout()
 // Programmer: Allen Sanderson
 // Creation:   23 July 2014
 //
-void QvisCollapsibleLayout::adjustWindowSize()
+// Modifications:
+//   Kathleen Biagas, Wed Aug 13 17:05:23 MST 2014
+//   Hack to prevent windows above the plot (or operator) atts windows from
+//   being resized.  Prevents main gui resize on Windows.
+//
+// ****************************************************************************
+
+void
+QvisCollapsibleLayout::adjustWindowSize()
 {
     // NOTE: the layout invalidate and the adjust size calls must be
     // done as a signal via the QTimer that causes a slight delay
@@ -390,10 +398,12 @@ void QvisCollapsibleLayout::adjustWindowSize()
     layout->invalidate();
   
     QWidget *parent = layout->parentWidget();
- 
     while (parent)
     {
         parent->adjustSize();
-        parent = parent->parentWidget();
+        if (parent->windowTitle().toStdString().find("attributes") == std::string::npos)
+            parent = parent->parentWidget();
+        else
+            break;
     }
 }
