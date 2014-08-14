@@ -29,6 +29,7 @@ EngineState::EngineState()
     objVector.push_back(&namedSelectionRPC);
     objVector.push_back(&setEFileOpenOptionsRPC);
     objVector.push_back(&setPrecisionTypeRPC);
+    objVector.push_back(&setBackendTypeRPC);
     objVector.push_back(&enginePropertiesRPC);
     objVector.push_back(&launchRPC);
     statusAtts  = new StatusAttributes;

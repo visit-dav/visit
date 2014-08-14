@@ -68,6 +68,8 @@ bool                          avtCallback::swRendering = false;
 bool                          avtCallback::useManta = false;
 bool                          avtCallback::safeMode = false;
 
+GlobalAttributes::BackendType avtCallback::backendType = GlobalAttributes::VTK;
+
 UpdatePlotAttributesCallback  avtCallback::updatePlotAttributesCallback = NULL;
 void                         *avtCallback::updatePlotAttributesCallbackArgs 
                                                                         = NULL;
@@ -240,6 +242,40 @@ avtCallback::GetImage(int index, avtDataObject_p &dob)
                << "was registered." << endl;
         dob = NULL;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::SetBackendType
+//
+//  Purpose:
+//
+//  Programmer: Cameron Christensen
+//  Creation:   July 03, 2014
+//
+// ****************************************************************************
+
+void
+avtCallback::SetBackendType(GlobalAttributes::BackendType type)
+{
+    backendType = type; 
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::SetBackendType
+//
+//  Purpose:
+//
+//  Programmer: Cameron Christensen
+//  Creation:   July 03, 2014
+//
+// ****************************************************************************
+
+GlobalAttributes::BackendType
+avtCallback::GetBackendType() 
+{
+    return backendType;
 }
 
 

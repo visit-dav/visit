@@ -173,6 +173,9 @@ class ViewerState;
 //   Kathleen Biagas, Wed Aug  7 13:05:32 PDT 2013
 //   Added SetPrecisionType.
 //
+//   Cameron Christensen, Tuesday, June 10, 2014
+//   Added SetBackendType.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -398,6 +401,7 @@ public:
     void SetCreateTimeDerivativeExpressions(int flag);
     void SetCreateVectorMagnitudeExpressions(int flag);
     void SetPrecisionType(int flag);
+    void SetBackendType(int flag);
     
     void SetSuppressMessages(int flag);
 

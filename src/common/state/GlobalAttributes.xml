@@ -5,6 +5,12 @@
       Native
       Double
     </Enum>
+    <Enum name="BackendType">
+      VTK
+      DAX
+      EAVL
+      PISTON
+    </Enum>
     <Field name="sources" label="Sources" type="stringVector">
     </Field>
     <Field name="windows" label="windows" type="intVector">
@@ -80,6 +86,9 @@
     </Field>
     <Field name="precisionType" label="precision" type="enum" subtype="PrecisionType">
       Native
+    </Field>
+    <Field name="backendType" label="backend" type="enum" subtype="BackendType">
+      VTK
     </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>

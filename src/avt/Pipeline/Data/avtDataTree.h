@@ -123,6 +123,9 @@ typedef void (*TraverseFunc)(avtDataRepresentation &, void *, bool &);
 //    Kathleen Bonnell, Thu Feb 17 09:16:46 PST 2011
 //    Added a PruneTree method that accepts a single string.
 //
+//    Cameron Christensen, Thursday, May 29, 2014
+//    Added a couple of more constructors that take avtDataRepresentation.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataTree
@@ -132,6 +135,7 @@ class PIPELINE_API avtDataTree
                              avtDataTree(vtkDataSet *, int);
                              avtDataTree(vtkDataSet *, int, std::string s);
                              avtDataTree(avtDataRepresentation &);
+                             avtDataTree(avtDataRepresentation *);
                              avtDataTree(int, vtkDataSet **, int *);
                              avtDataTree(int, vtkDataSet **,std::vector<int>&);
                              avtDataTree(int, vtkDataSet **, int);
@@ -139,6 +143,7 @@ class PIPELINE_API avtDataTree
                                          std::vector<std::string>&);
                              avtDataTree(int, vtkDataSet **,int,std::string &);
                              avtDataTree(int, avtDataRepresentation *);
+                             avtDataTree(int, avtDataRepresentation **);
                              avtDataTree(avtDataTree_p, bool dontCopyData = false );
                              avtDataTree(int, avtDataTree_p *);
    

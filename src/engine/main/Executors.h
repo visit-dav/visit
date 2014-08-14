@@ -86,6 +86,7 @@
 #include <RenderRPC.h>
 #include <SetEFileOpenOptionsRPC.h>
 #include <SetPrecisionTypeRPC.h>
+#include <SetBackendTypeRPC.h>
 #include <SetWinAnnotAttsRPC.h>
 #include <SimulationCommandRPC.h>
 #include <StartPickRPC.h>
@@ -1838,7 +1839,6 @@ RPCExecutor<SetEFileOpenOptionsRPC>::Execute(SetEFileOpenOptionsRPC *rpc)
 //  Purpose:
 //    Set the new precision type in the database factory.
 //
-//
 //  Programmer:  Kathleen Biagas
 //  Creation:    August 1, 2013
 //
@@ -1848,6 +1848,25 @@ void
 RPCExecutor<SetPrecisionTypeRPC>::Execute(SetPrecisionTypeRPC *rpc)
 {
     avtDatabaseFactory::SetPrecisionType(rpc->GetPrecisionType());
+    rpc->SendReply();
+}
+
+// ****************************************************************************
+//  Method:  RPCExecutor<SetBackendTypeRPC>::Execute
+//
+//  Purpose:
+//    Set the new backend type.
+//
+//  Programmer:  Cameron Christensen
+//  Creation:    June 10, 2014
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<SetBackendTypeRPC>::Execute(SetBackendTypeRPC *rpc)
+{
+    avtDatabaseFactory::SetBackendType(rpc->GetBackendType());
+    avtCallback::SetBackendType((GlobalAttributes::BackendType)rpc->GetBackendType());
     rpc->SendReply();
 }
 

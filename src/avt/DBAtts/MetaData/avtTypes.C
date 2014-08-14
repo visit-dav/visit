@@ -195,6 +195,36 @@ avtPrecisionTypeToString(avtPrecisionType v)
     return "unknown";
 }
 
+// ****************************************************************************
+//  Function: avtBackendTypeToString
+//
+//  Purpose:
+//      Creates a string from an avtBackendType.
+//
+//  Programmer: Cameron Christensen
+//  Creation:   June 10, 2014
+//
+// ****************************************************************************
+
+std::string
+avtBackendTypeToString(avtBackendType v)
+{
+    switch (v)
+    {
+      case AVT_BACKEND_VTK:
+        return "VTK";
+      case AVT_BACKEND_DAX:
+        return "DAX";
+      case AVT_BACKEND_EAVL:
+        return "EAVL";
+      case AVT_BACKEND_PISTON:
+        return "PISTON";
+      default:
+        break;
+    }
+    return "unknown";
+}
+
 
 // ****************************************************************************
 // Function: GuessVarTypeFromNumDimsAndComps

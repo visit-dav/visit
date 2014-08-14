@@ -103,7 +103,7 @@ static const char *ViewerRPCType_strings[] = {
 "ResizeWindowRPC", "MoveWindowRPC", "MoveAndResizeWindowRPC", 
 "SetStateLoggingRPC", "ConstructDataBinningRPC", "RequestMetaDataRPC", 
 "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", "SetCreateTimeDerivativeExpressionsRPC", 
-"SetCreateVectorMagnitudeExpressionsRPC", "SetPrecisionTypeRPC", "CopyActivePlotsRPC", 
+"SetCreateVectorMagnitudeExpressionsRPC", "SetPrecisionTypeRPC", "SetBackendTypeRPC", "CopyActivePlotsRPC", 
 "SetPlotFollowsTimeRPC", "TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", 
 "SetSuppressMessagesRPC", "ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", 
 "DeleteNamedSelectionRPC", "LoadNamedSelectionRPC", "SaveNamedSelectionRPC", 

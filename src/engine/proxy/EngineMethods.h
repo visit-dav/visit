@@ -152,6 +152,7 @@ public:
 
     void                     SetDefaultFileOpenOptions(const FileOpenOptions&);
     void                     SetPrecisionType(const int);
+    void                     SetBackendType(const int);
 
     avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
                                  void (*waitCB)(void *), void *cbData);

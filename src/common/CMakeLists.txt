@@ -62,6 +62,9 @@
 #   Brad Whitlock, Mon Nov 28 16:20:55 PST 2011
 #   I moved LaunchRPC to this directory from the launcher/rpc directory.
 #
+#   Cameron Christensen, Thursday, May 22, 2014
+#   I added InvalidConversionException.
+#
 #****************************************************************************/
 
 SET(COMM_SOURCES
@@ -117,6 +120,7 @@ Exceptions/Pipeline/InvalidDimensionsException.C
 Exceptions/Pipeline/InvalidLimitsException.C
 Exceptions/Pipeline/InvalidMergeException.C
 Exceptions/Pipeline/InvalidSetException.C
+Exceptions/Pipeline/InvalidConversionException.C
 Exceptions/Pipeline/LogicalIndexException.C
 Exceptions/Pipeline/NoCurveException.C
 Exceptions/Pipeline/NoDefaultVariableException.C

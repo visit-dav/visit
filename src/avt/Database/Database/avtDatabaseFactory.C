@@ -93,6 +93,7 @@ bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
 FileOpenOptions avtDatabaseFactory::defaultFileOpenOptions;
 avtPrecisionType avtDatabaseFactory::precisionType = AVT_PRECISION_NATIVE;
+avtBackendType avtDatabaseFactory::backendType = AVT_BACKEND_VTK;
 
 //
 // Function Prototypes
@@ -141,6 +142,27 @@ avtDatabaseFactory::SetPrecisionType(const int pType)
 {
     if (pType >= 0 && pType < 3)
         precisionType = avtPrecisionType(pType);
+}
+
+// ****************************************************************************
+//  Method:  avtDatabaseFactory::SetBackendType
+//
+//  Purpose:
+//    Store off the backendType.
+//
+//  Arguments:
+//    bType      the new backend type.
+//
+//  Programmer:  Cameron Christensen
+//  Creation:    June 11, 2014
+//
+// ****************************************************************************
+
+void
+avtDatabaseFactory::SetBackendType(const int bType)
+{
+    if (bType >= 0 && bType < 4)
+        backendType = avtBackendType(bType);
 }
 
 // ****************************************************************************

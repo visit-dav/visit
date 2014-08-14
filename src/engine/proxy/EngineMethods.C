@@ -1519,6 +1519,26 @@ EngineMethods::SetPrecisionType(const int pType)
 }
 
 // ****************************************************************************
+//  Method:  EngineMethods::SetBackendType
+//
+//  Purpose:
+//    Tells the engine about the latest user-requested backend.
+//
+//  Arguments:
+//    bType      The new backend.
+//
+//  Programmer:  Cameron Christensen
+//  Creation:    June 10, 2014
+//
+// ****************************************************************************
+
+void
+EngineMethods::SetBackendType(const int bType)
+{
+    state->setBackendTypeRPC(bType);
+}
+
+// ****************************************************************************
 // Method: EngineMethods::GetEngineProperties
 //
 // Purpose:

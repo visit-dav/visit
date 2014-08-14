@@ -69,6 +69,7 @@ class ProcInfoRPC;
 class SimulationCommandRPC;
 class SetEFileOpenOptionsRPC;
 class SetPrecisionTypeRPC;
+class SetBackendTypeRPC;
 class LaunchRPC;
 class EngineState;
 

@@ -5435,6 +5435,25 @@ ViewerMethods::SetPrecisionType(int flag)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::SetBackendType
+//
+//  Purpose: Tells viewer to set the backend type used in the pipeline.
+//
+//  Programmer: Cameron Christensen
+//  Creation:   June 10, 2014
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetBackendType(int flag)
+{
+    state->GetViewerRPC()->SetRPCType(
+        ViewerRPC::SetBackendTypeRPC);
+    state->GetViewerRPC()->SetIntArg1(flag);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::SetSuppressMessages
 //
 //  Purpose: Tells viewer to turn on/off message suppression.

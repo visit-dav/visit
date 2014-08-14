@@ -10580,3 +10580,21 @@ void ViewerWindowManager::SetPrecisionType(int newVal)
     }
 }
 
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetBackendType
+//
+//  Programmer: Cameron Christensen
+//  Creation:   June 10, 2014
+//
+// ****************************************************************************
+
+void ViewerWindowManager::SetBackendType(int newVal)
+{
+    if (clientAtts->GetBackendType() != newVal)
+    {
+        clientAtts->SetBackendType(GlobalAttributes::BackendType(newVal));
+        ViewerEngineManager::Instance()->UpdateBackendType(newVal);
+        clientAtts->Notify();
+    }
+}
+

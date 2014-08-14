@@ -116,6 +116,9 @@ class QSpinBox;
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
 //   Added the restore from last session feature. 
 //
+//   Cameron Christensen, Tuesday, June 10, 2014
+//   Added a preference for setting the backend type.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -166,6 +169,7 @@ private slots:
     void enableWarningPopupsToggled(bool);
     void userRestoreSessionFileToggled(bool);
     void precisionTypeChanged(int);
+    void backendTypeChanged(int);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -189,6 +193,7 @@ private:
     QCheckBox        *enableWarningPopupsToggle;
     QCheckBox        *userRestoreSessionFileToggle;
     QButtonGroup     *precisionType;
+    QButtonGroup     *backendType;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;

@@ -96,6 +96,9 @@
 //    Eric Brugger, Mon Jul 21 10:13:44 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Cameron Christensen, Tuesday, June 10, 2014
+//    Modified the class to work with EAVL.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
@@ -137,6 +140,11 @@ class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
     void                       CreateNIsoValues(double, double);
     void                       SetIsoValues(double, double);
     void                       CreateLabels(void);
+
+ private:
+    avtDataTree_p      ExecuteDataTree_EAVL(avtDataRepresentation *);
+    avtDataTree_p      ExecuteDataTree_VTK(avtDataRepresentation *);
+
 };
 
 
