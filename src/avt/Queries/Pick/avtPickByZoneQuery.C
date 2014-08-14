@@ -49,7 +49,6 @@
 #include <vtkIntArray.h>
 #include <vtkVisItUtility.h>
 #include <PickVarInfo.h>
-#include <float.h>
 
 #include <avtMatrix.h>
 #include <avtOriginatingSource.h>
@@ -251,19 +250,8 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     // Use the cell center as the place to position the pick letter.
     //
     double center[3];
-    double *p = pickAtts.GetPickPoint();
-    if (p[0] == FLT_MAX)
-    {
-        vtkVisItUtility::GetCellCenter(ds->GetCell(zoneid), center);
-        pickAtts.SetCellPoint(center); 
-    }
-    else
-    {
-        center[0] = p[0];
-        center[1] = p[1];
-        center[2] = p[2];
-        pickAtts.SetCellPoint(center);
-    }
+    vtkVisItUtility::GetCellCenter(ds->GetCell(zoneid), center);
+    pickAtts.SetCellPoint(center); 
     //
     // If the points of this dataset have been transformed, and we know the
     // transform matrix, transform the center point that will be used to place 
