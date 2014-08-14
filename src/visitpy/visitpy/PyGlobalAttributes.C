@@ -236,6 +236,29 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
           break;
     }
 
+    const char *backendType_names = "VTK, DAX, EAVL, PISTON";
+    switch (atts->GetBackendType())
+    {
+      case GlobalAttributes::VTK:
+          SNPRINTF(tmpStr, 1000, "%sbackendType = %sVTK  # %s\n", prefix, prefix, backendType_names);
+          str += tmpStr;
+          break;
+      case GlobalAttributes::DAX:
+          SNPRINTF(tmpStr, 1000, "%sbackendType = %sDAX  # %s\n", prefix, prefix, backendType_names);
+          str += tmpStr;
+          break;
+      case GlobalAttributes::EAVL:
+          SNPRINTF(tmpStr, 1000, "%sbackendType = %sEAVL  # %s\n", prefix, prefix, backendType_names);
+          str += tmpStr;
+          break;
+      case GlobalAttributes::PISTON:
+          SNPRINTF(tmpStr, 1000, "%sbackendType = %sPISTON  # %s\n", prefix, prefix, backendType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -945,6 +968,39 @@ GlobalAttributes_GetPrecisionType(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the backendType in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetBackendType(GlobalAttributes::BackendType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid backendType value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "VTK, DAX, EAVL, PISTON.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_GetBackendType(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetBackendType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
@@ -1001,6 +1057,8 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetUserRestoreSessionFile", GlobalAttributes_GetUserRestoreSessionFile, METH_VARARGS},
     {"SetPrecisionType", GlobalAttributes_SetPrecisionType, METH_VARARGS},
     {"GetPrecisionType", GlobalAttributes_GetPrecisionType, METH_VARARGS},
+    {"SetBackendType", GlobalAttributes_SetBackendType, METH_VARARGS},
+    {"GetBackendType", GlobalAttributes_GetBackendType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1088,6 +1146,17 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Double") == 0)
         return PyInt_FromLong(long(GlobalAttributes::Double));
 
+    if(strcmp(name, "backendType") == 0)
+        return GlobalAttributes_GetBackendType(self, NULL);
+    if(strcmp(name, "VTK") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::VTK));
+    if(strcmp(name, "DAX") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::DAX));
+    if(strcmp(name, "EAVL") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::EAVL));
+    if(strcmp(name, "PISTON") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::PISTON));
+
 
     return Py_FindMethod(PyGlobalAttributes_methods, self, name);
 }
@@ -1154,6 +1223,8 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetUserRestoreSessionFile(self, tuple);
     else if(strcmp(name, "precisionType") == 0)
         obj = GlobalAttributes_SetPrecisionType(self, tuple);
+    else if(strcmp(name, "backendType") == 0)
+        obj = GlobalAttributes_SetBackendType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
