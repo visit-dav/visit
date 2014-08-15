@@ -663,6 +663,10 @@ class JobSubmitter_yod(JobSubmitter):
 #   David Camp, Tue Mar 11 10:17:48 PDT 2014
 #   Added the -ppn (process per node) option to the mpirun and mpiexec.
 #
+#   Eric Brugger, Fri Aug 15 11:06:59 PDT 2014
+#   I modified AddEnvironment to pass the HOST environment variable to the
+#   parallel runtime environment.
+#
 ###############################################################################
 
 class JobSubmitter_qsub(JobSubmitter):
@@ -783,7 +787,8 @@ output streams.
 
     def AddEnvironment(self):
         env = ""
-        env = env + "LIBPATH=" + GETENV("LIBPATH")
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ",LIBPATH=" + GETENV("LIBPATH")
         env = env + ",LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
         env = env + ",VISITHOME=" + GETENV("VISITHOME")
         env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
