@@ -29,6 +29,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Eric Brugger, Fri Aug 15 10:19:33 PDT 2014
+#    Modified the script to use srun to launch the parallel engine on edge.
+#
 # ----------------------------------------------------------------------------
 
 # sleep is needed to allow viewer to complete update of window information
@@ -47,7 +51,11 @@ SetRenderingAttributes(ra)
 CloseComputeEngine()
 # explicitly open a parallel engine, if possible
 # if it fails, the OpenDatabase will start a serial engine
-haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
+import socket
+if "edge" in socket.gethostname():
+    haveParallelEngine = OpenComputeEngine("localhost", ("-l", "srun", "-np", "2"))
+else:
+    haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
 
 OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
