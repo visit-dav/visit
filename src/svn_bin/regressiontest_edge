@@ -44,6 +44,10 @@
 #   I changed "make test" to "make testdata" in the data directory since the
 #   name of the target changed.
 #
+#   Eric Brugger, Fri Aug 15 11:02:18 PDT 2014
+#   I added "--parallel-launch srun" to the runtest command to specify srun
+#   as the parallel launch method.
+#
 
 
 #
@@ -288,7 +292,7 @@ for m in \$modes; do
 
 
     # Run the test
-    ./runtest -o \$resDir -m "\$m" -n 1 >> buildlog 2>&1
+    ./runtest --parallel-launch "srun" -o \$resDir -m "\$m" -n 1 >> buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
