@@ -149,6 +149,10 @@ def parse_test_specific_vargs(test_file):
 #
 #    Burlen Loring, Mon May 26 15:36:26 PDT 2014
 #    Addedd command line option to use threshold based image diff
+#
+#    Eric Brugger, Fri Aug 15 10:04:27 PDT 2014
+#    I added the ability to specify the parallel launch method.
+#
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -231,6 +235,7 @@ def launch_visit_test(args):
     tparams["width"]          = opts["width"]
     tparams["height"]         = opts["height"]
     tparams["ctest"]          = opts["ctest"]
+    tparams["parallel_launch"]= opts["parallel_launch"]
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
     tparams["sim_dir"] = os.path.abspath(os.path.join(exe_dir, ".."))
@@ -373,6 +378,11 @@ def log_test_result(result_dir,result):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 8 2013
+#
+#  Modifications:
+#    Eric Brugger, Fri Aug 15 10:04:27 PDT 2014
+#    I added the ability to specify the parallel launch method.
+#
 # ----------------------------------------------------------------------------
 def default_suite_options():
     data_dir_def    = abs_path(visit_root(),"data")
@@ -415,7 +425,8 @@ def default_suite_options():
                       "index":None,
                       "timeout":3600,
                       "nprocs":nprocs_def,
-                      "ctest":False}
+                      "ctest":False,
+                      "parallel_launch":"mpirun"}
     return opts_full_defs
 
 def finalize_options(opts):
@@ -439,6 +450,11 @@ def finalize_options(opts):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Eric Brugger, Fri Aug 15 10:04:27 PDT 2014
+#    I added the ability to specify the parallel launch method.
+#
 # ----------------------------------------------------------------------------
 def parse_args():
     """
@@ -616,6 +632,10 @@ def parse_args():
                       action='callback',
                       callback=ParseThresholdOverride,
                       help="Per case overide of the max allowable error for threshold based image diff")
+    parser.add_option("--parallel-launch",
+                      default=defs["parallel_launch"],
+                      help="specify the parallel launch method. "
+                           "Options are mpirun and srun.")
 
     # parse args
     opts, tests = parser.parse_args()

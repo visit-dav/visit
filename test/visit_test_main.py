@@ -2246,6 +2246,11 @@ def AddSkipCase(case_name):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Eric Brugger, Fri Aug 15 10:16:22 PDT 2014
+#    I added the ability to specify the parallel launch method.
+#
 # ----------------------------------------------------------------------------
 def InitTestEnv():
     """
@@ -2276,7 +2281,12 @@ def InitTestEnv():
     # start parallel engine if parallel
     haveParallelEngine = True
     if TestEnv.params["parallel"]:
-        haveParallelEngine = (OpenComputeEngine("localhost", ("-np", "2")) == 1)
+        if TestEnv.params["parallel_launch"] == "mpirun":
+            haveParallelEngine = (OpenComputeEngine("localhost", ("-np", "2")) == 1)
+        elif TestEnv.params["parallel_launch"] == "srun":
+            haveParallelEngine = (OpenComputeEngine("localhost", ("-l", "srun", "-np", "2")) == 1)
+        else:
+            haveParallelEngine = (OpenComputeEngine("localhost", ("-np", "2")) == 1)
     if haveParallelEngine == False:
         Exit()
     else:
