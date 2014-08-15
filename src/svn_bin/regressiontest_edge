@@ -48,6 +48,9 @@
 #   I added "--parallel-launch srun" to the runtest command to specify srun
 #   as the parallel launch method.
 #
+#   Eric Brugger, Fri Aug 15 12:54:39 PDT 2014
+#   I modified the script to use cmake 2.8.12.2 to configure visit.
+#
 
 
 #
@@ -236,7 +239,7 @@ export PATH=\$PATH:/usr/bin/X11
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/edge83.cmake
 fi
-/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake \
+/usr/gapps/visit/thirdparty_shared/2.8.0/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake \
     -DVISIT_CONFIG_SITE=config-site/edge83.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DVISIT_BUILD_ALL_PLUGINS=1 \
