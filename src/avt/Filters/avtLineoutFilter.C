@@ -951,7 +951,8 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
 
         origCell = (int)origCells->GetComponent(currentCell, 1); 
         origDomain = (int)origCells->GetComponent(currentCell, 0);
-        for (size_t j = 0, dup = false; j < cellInfoList.size() && !dup; j++)
+        dup = false;
+        for (size_t j = 0; j < cellInfoList.size() && !dup; j++)
         {
             if ((origCell == cellInfoList[j].origCell) &&
                 (origDomain == cellInfoList[j].origDomain))
