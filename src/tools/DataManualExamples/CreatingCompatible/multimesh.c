@@ -56,9 +56,11 @@ write_domains(void)
     {
         DBfile *dbfile = NULL;
         float xc[4], yc[5];
-        float *coords[] = {xc, yc};
+        float *coords[2];
         char filename[100];
 
+        coords[0] = xc;
+        coords[1] = yc;
         for(i = 0; i < 4; ++i)
             xc[i] = x[i] + tx[dom];
         for(i = 0; i < 5; ++i)
@@ -103,7 +105,7 @@ write_master(void)
     "Master file", DB_HDF5);    
 
     /* Write the multimesh. */
-    DBPutMultimesh(dbfile, "quadmesh", nmesh, meshnames, meshtypes, NULL);
+    DBPutMultimesh(dbfile, "quadmesh", nmesh, (DBCAS_t) meshnames, meshtypes, NULL);
 
     /* Close the Silo file. */
     DBClose(dbfile);

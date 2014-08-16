@@ -49,7 +49,6 @@ main(int argc, char *argv[])
     float y[] = {0., 2., 2.25, 2.55,  5.};
     float z[] = {0., 1., 3.};
     int dims[] = {NX, NY, NZ};
-    int ndims = 3;
     /* Zonal and Nodal variable data. */
     float zonal[NZ-1][NY-1][NX-1], nodal[NZ][NY][NX];
     float zonalvec[NZ-1][NY-1][NX-1][3], nodalvec[NZ][NY][NX][3];
@@ -58,10 +57,14 @@ main(int argc, char *argv[])
     int vardims[] = {1, 1, 3, 3};
     int centering[] = {0, 1, 0, 1};
     const char *varnames[] = {"zonal", "nodal", "zonalvec", "nodalvec"};
-    float *vars[] = {(float*)zonal, (float*)nodal, (float*)zonalvec, (float*)nodalvec};
+    float *vars[4];
+    int i,j,k,index = 0;
 
     /* Create 2 zonal variables; 1 scalar, 1 vector. */
-    int i,j,k,index = 0;
+    vars[0] = (float*)zonal;
+    vars[1] = (float*)nodal;
+    vars[2] = (float*)zonalvec;
+    vars[3] = (float*)nodalvec;
     for(k = 0; k < NZ-1; ++k)
         for(j = 0; j < NY-1; ++j)
             for(i = 0; i < NX-1; ++i, ++index)

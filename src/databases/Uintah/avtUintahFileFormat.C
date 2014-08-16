@@ -812,7 +812,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
   cycles.resize( cycleTimes.size() );
 
-  for(int i=0; i<cycleTimes.size(); ++i )
+  for(int i=0; i<(int)cycleTimes.size(); ++i )
     cycles[i] = i;
 
   md->SetCycles( cycles );

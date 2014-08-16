@@ -51,6 +51,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -1007,7 +1008,7 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
                             e->SetName(baseName + "/mach");
                         else
                             e->SetName("mach");
-                        SNPRINTF(edef, 100, "point_constant(%s, %lg)", meshName.c_str(), dval);
+                        SNPRINTF(edef, 100, "point_constant(%s, %g)", meshName.c_str(), dval);
                         e->SetDefinition(edef);
                         e->SetType(Expression::ScalarMeshVar);
                         md->AddExpression(e);
@@ -1019,7 +1020,7 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
                             e->SetName(baseName + "/gamma");
                         else
                             e->SetName("gamma");
-                        SNPRINTF(edef, 100, "point_constant(%s, %lg)", meshName.c_str(), dval);
+                        SNPRINTF(edef, 100, "point_constant(%s, %g)", meshName.c_str(), dval);
                         e->SetDefinition(edef);
                         e->SetType(Expression::ScalarMeshVar);
                         md->AddExpression(e);
@@ -2064,8 +2065,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const 
                         higherOrderWarning = true;
                         elem += 27;
                         break;
-                    case ElementTypeUserDefined:
-                    case NGON_n:
+                    default:
                         delete [] coords[0];
                         delete [] coords[1];
                         delete [] coords[2];
@@ -2073,12 +2073,6 @@ avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const 
                         elements = 0;
                         ugrid->Delete();
                         EXCEPTION1(InvalidVariableException, meshname);
-                        break;
-                    case ElementTypeNull:
-                    case MIXED:
-                    case PYRA_13:
-                    case NFACE_n:
-                        // What to do here?
                         break;
                     }
                 }
@@ -2333,6 +2327,9 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
                             break;
                         case Integer:
                             arr = vtkIntArray::New();
+                            break;
+                        case LongInteger:
+                            arr = vtkLongArray::New();
                             break;
                         case RealSingle:
                             arr = vtkFloatArray::New();

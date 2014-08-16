@@ -13,8 +13,8 @@ write_rect2d(DBfile *dbfile)
     /* Create an option list for saving cycle and time values. */
     int cycle = 100;
     double dtime = 1.23456789;
-    coords[0] = x; coords[1] = y;
     DBoptlist *optlist = DBMakeOptlist(2);
+    coords[0] = x; coords[1] = y;
     DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
     DBAddOption(optlist, DBOPT_DTIME, (void *)&dtime);
     /* Write a quadmesh with an option list. */

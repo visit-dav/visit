@@ -488,7 +488,6 @@ WriteMesh(vtkDataSet *_ds, int nblocks, int chunk,
     if (simplexify)
         ds->Delete();
 
-funcEnd: ;
 }
 
 // ****************************************************************************
@@ -840,7 +839,6 @@ WriteVariables(vtkDataSet *ds, int chunk,
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
     }
-funcEnd: ;
 }
 
 
@@ -940,7 +938,6 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
     }
-funcEnd: ;
 }
 
 
