@@ -117,7 +117,6 @@
         char msg[1024];                                                                         \
         char desc[256];                                                                         \
         for (int i = 0; i < sizeof(desc); i++) desc[i] = '\0';                                  \
-        int dummyError = ERR;                                                                   \
         iMesh_getDescription(IMI, desc, sizeof(desc));                             \
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) after call to \"%s\""          \
             " at line %d in file \"%s\"\nThe description is...\n"                               \

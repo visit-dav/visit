@@ -75,6 +75,9 @@ PrintDataType(DataType_t dt)
     case Character:
         debug4 << "Character";
         break;
+    case LongInteger:
+        debug4 << "LongInteger";
+        break;
     }
 }
 

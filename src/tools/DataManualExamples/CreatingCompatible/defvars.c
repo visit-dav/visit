@@ -58,7 +58,10 @@ write_curv3d(DBfile *dbfile)
     };
     int dims[] = {4, 3, 2};
     int ndims = 3;
-    float *coords[] = {(float*)x, (float*)y, (float*)z};
+    float *coords[3];
+    coords[0] = (float*)x;
+    coords[1] = (float*)x;
+    coords[2] = (float*)x;
     DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
                   DB_FLOAT, DB_NONCOLLINEAR, NULL);
 
@@ -109,7 +112,7 @@ write_defvars(DBfile *dbfile)
     const char *names[] = {"velocity", "speed"};
     const char *defs[] = {"{xc,yc,zc}", "magnitude(velocity)"};
     int types[] = {DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR};
-    DBPutDefvars(dbfile, "defvars", 2, (char**)names, types, (char**)defs, NULL);
+    DBPutDefvars(dbfile, "defvars", 2, (DBCAS_t)names, types, (DBCAS_t)defs, NULL);
 }
 
 int

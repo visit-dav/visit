@@ -57,9 +57,11 @@ write_domains(void)
     {
         DBfile *dbfile = NULL;
         float xc[4], yc[5];
-        float *coords[] = {xc, yc};
+        float *coords[2];
         char filename[100];
 
+        coords[0] = xc;
+        coords[1] = yc;
         for(i = 0; i < 4; ++i)
             xc[i] = x[i] + tx[dom];
         for(i = 0; i < 5; ++i)
@@ -105,7 +107,7 @@ write_multimesh(DBfile *dbfile)
         meshtypes[dom] = DB_QUAD_RECT;
 
     /* Write the multimesh. */
-    DBPutMultimesh(dbfile, "quadmesh", nmesh, meshnames, meshtypes, NULL);
+    DBPutMultimesh(dbfile, "quadmesh", nmesh, (DBCAS_t)meshnames, meshtypes, NULL);
 
     /* Free the memory*/
     for(dom = 0; dom < nmesh; ++dom)
@@ -134,7 +136,7 @@ write_multivar(DBfile *dbfile)
         vartypes[dom] = DB_QUADVAR;
 
     /* Write the multivar. */
-    DBPutMultivar(dbfile, "var", nvar, varnames, vartypes, NULL);
+    DBPutMultivar(dbfile, "var", nvar, (DBCAS_t)varnames, vartypes, NULL);
 
     /* Free the memory*/
     for(dom = 0; dom < nvar; ++dom)
@@ -147,9 +149,6 @@ void
 write_master(void)
 {
     DBfile *dbfile = NULL;
-    char **meshnames = NULL, **varnames = NULL;
-    int dom, nmesh = 4, nvar = 4;
-    int *meshtypes = NULL, *vartypes = NULL;
 
     /* Open the Silo file */
     dbfile = DBCreate("multivar.root", DB_CLOBBER, DB_LOCAL,

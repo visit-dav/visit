@@ -984,7 +984,7 @@ class InfoGeneratorPlugin : public Plugin
         {
             c << "        {" << endl;
             c << "            Expression e2;" << endl;
-            c << "            sprintf(name, \"operators/" << opName << "/\%s\", mmd->name.c_str());" << endl;
+            c << "            sprintf(name, \"operators/" << opName << "/%s\", mmd->name.c_str());" << endl;
             c << "            e2.SetName(name);" << endl;
             c << "            e2.SetType(Expression::" << outtypes[j] << ");" << endl;
             c << "            e2.SetFromOperator(true);" << endl;
@@ -1006,7 +1006,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "                if (e.GetFromOperator())" << endl;
             c << "                    continue; // weird ordering behavior otherwise" << endl;
             c << "                Expression e2;" << endl;
-            c << "                sprintf(name, \"operators/" << opName << "/\%s\", e.GetName().c_str());" << endl;
+            c << "                sprintf(name, \"operators/" << opName << "/%s\", e.GetName().c_str());" << endl;
             c << "                e2.SetName(name);" << endl;
             c << "                e2.SetType(Expression::" << outtypes[j] << ");" << endl;
             c << "                e2.SetFromOperator(true);" << endl;

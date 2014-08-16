@@ -237,7 +237,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
             ifile.getline(line, 1024);
             value = line;
 
-            int index = vectorVarNames.size();
+            int index = (int)vectorVarNames.size();
             vectorVarNames.push_back(value);
             
             
@@ -404,10 +404,10 @@ vtkDataArray *
 avtCosmosFileFormat::GetVar(int ts, int dom, const char *name)
 {
     int varfId;
-    for (varfId = 0; varfId < scalarVarNames.size(); ++varfId)
+    for (varfId = 0; varfId < (int)scalarVarNames.size(); ++varfId)
         if (scalarVarNames[varfId] == name)
             break;
-    if (varfId >= scalarVarNames.size())
+    if (varfId >= (int)scalarVarNames.size())
         EXCEPTION1(InvalidVariableException, name);
 
     debug5 << "Reading in var " << name << " for domain/ts : " << dom << ','
@@ -585,10 +585,10 @@ vtkDataArray *
 avtCosmosFileFormat::GetVectorVar(int ts, int dom, const char *name)
 {
     int varfId;
-    for (varfId = 0; varfId < scalarVarNames.size(); ++varfId)
+    for (varfId = 0; varfId < (int)scalarVarNames.size(); ++varfId)
         if(vectorVarNames[varfId] == name)
             break;
-    if (varfId >= vectorVarNames.size())
+    if (varfId >= (int)vectorVarNames.size())
         EXCEPTION1(InvalidVariableException, name);
 
     debug5 << "Reading in vector var " << name << " for domain/ts : "

@@ -299,7 +299,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // This first call is purely to provide opportunity to output stuff
         // to debug logs.
         const bool debugOff = true;
-        iBase_EntityHandle junk;
+        iBase_EntityHandle junk = (iBase_EntityHandle)0;
         if (DebugStream::Level4())
             TraverseSetHierarchy(itapsMesh, 0, 0, true, junk, rootSet, !debugOff, 0, 0);
 
@@ -401,7 +401,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             smd->SetEnumAlwaysExcludeValue(-1.0);
             smd->SetEnumPartialCellMode(avtScalarMetaData::Dissect);
 
-            for (int k = 0; k < tlsit->second.size(); k++)
+            for (int k = 0; k < (int) tlsit->second.size(); k++)
             {
                 char tmpName[64];
                 SNPRINTF(tmpName, sizeof(tmpName), "%s_%03d", tlsit->first.c_str(), k);
@@ -543,14 +543,12 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char desc[256];
         desc[0] = '\0';
         int origError = (int) errType;
-        int tmpError = (int) errType;
         iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
     }
-funcEnd: ;
 
 #ifdef MDSERVER
     // We don't need to keep this thing around on the mdserver, so free it up
@@ -920,7 +918,6 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
         char desc[256];
         desc[0] = '\0';
         int origError = (int) errType;
-        int tmpError = (int) errType;
         iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
@@ -928,7 +925,6 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
             cerr << msg << endl;
         return 0;
     }
-funcEnd: ;
 }
 
 class coord_t {
@@ -1043,7 +1039,7 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
             p[i] = -1;
         }
 
-        for (j = 0; j < theSets.size(); j++)
+        for (j = 0; j < (int) theSets.size(); j++)
         {
             //
             // Examine this set and any of its subsets, looking for primitive,
@@ -1053,7 +1049,7 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
             //
             int ent_type = -1;
             int max_num_ents = 0;
-            iBase_EntitySetHandle qSet;
+            iBase_EntitySetHandle qSet = theSets[0];
             vector<iBase_EntitySetHandle> setStack;
             setStack.push_back(theSets[j]);
             while (setStack.size())
@@ -1151,7 +1147,6 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
         char desc[256];
         desc[0] = '\0';
         int origError = (int) errType;
-        int tmpError = (int) errType;
         iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
@@ -1160,7 +1155,6 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
         return 0;
     }
 
-funcEnd:
     return result;
 }
 
@@ -1337,7 +1331,6 @@ tagFound:
         char desc[256];
         desc[0] = '\0';
         int origError = (int) errType;
-        int tmpError = (int) errType;
         iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
@@ -1346,7 +1339,6 @@ tagFound:
         return 0;
     }
 
-funcEnd:
     return result;
 }
 

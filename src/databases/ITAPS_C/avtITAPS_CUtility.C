@@ -553,7 +553,6 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
     if (tags_allocated)
         free(tags);
 
-funcEnd: ;
 }
 
 // Reset our overrided definition for debug5
@@ -723,7 +722,6 @@ avtITAPS_CUtility::GetTagsForEntity(iMesh_Instance aMesh, bool isEntitySet,
     if (tags_allocated)
         free(tags);
 
-funcEnd: ;
 }
 
 

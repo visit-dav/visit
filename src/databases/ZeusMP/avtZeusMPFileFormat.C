@@ -489,7 +489,7 @@ avtZeusMPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for(std::map<std::string, stringVector>::const_iterator vpos = vectorCandidates.begin();
         vpos != vectorCandidates.end(); ++vpos)
     {
-        if(vpos->second.size() >= ndims)
+        if((int) vpos->second.size() >= ndims)
         {
             // Create the expression definition.
             char def[1024];
@@ -624,7 +624,6 @@ avtZeusMPFileFormat::GetMesh(const char *meshname)
         int nx = newcoords[0]->GetNumberOfTuples();
         int ny = newcoords[1]->GetNumberOfTuples();
         int nz = newcoords[2]->GetNumberOfTuples();
-        int nyz = ny * nz;
         const float *coord0 = (const float *)newcoords[0]->GetVoidPointer(0);
         const float *coord1 = (const float *)newcoords[1]->GetVoidPointer(0);
         const float *coord2 = (const float *)newcoords[2]->GetVoidPointer(0);

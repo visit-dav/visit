@@ -549,7 +549,7 @@ JSONRoot::ToJson(ostringstream &oss)
     vector<string>dset_names;
     DataSets(dset_names);
     // loop over data sets
-    for(int i=0;i<dset_names.size();i++)
+    for(int i=0;i<(int)dset_names.size();i++)
     {
         // domain and mesh data
         oss << "   \"" << dset_names[i] << "\":{\n";
@@ -560,17 +560,17 @@ JSONRoot::ToJson(ostringstream &oss)
         // loop over fields
         vector<string>field_names;
         dset.Fields(field_names);
-        for(int j=0;j<field_names.size();j++)
+        for(int j=0;j<(int)field_names.size();j++)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
                 oss << "        \"" << field_names[j] << " \": {";
                 oss << "\"path\": \"" << field.Path().Expand() << "\", \"tags\":{";
             vector<string>tag_names;
             field.Tags(tag_names);
-            for(int k=0;k<tag_names.size();k++)
+            for(int k=0;k<(int)tag_names.size();k++)
             {
                 oss << "\"" << tag_names[k] << "\": \"" << field.Tag(tag_names[k]) << "\"";
-                if(k < tag_names.size()-1)
+                if(k < (int)tag_names.size()-1)
                     oss <<", ";
             }
             oss << "}\n";
