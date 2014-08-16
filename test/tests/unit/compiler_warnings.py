@@ -7,11 +7,7 @@
 #
 #  Mark C. Miller, Sun Jul 13 21:45:49 PDT 2014
 # ----------------------------------------------------------------------------
-import time, os.path, json
-
-# To reduce noise, only run this test on Sunday evenings
-if time.strftime("%A", time.localtime()) != "Sunday":
-    Exit(116)
+import time, os.path, json, subprocess
 
 def ShouldSkip(srcfile, msg):
     srcfile_tmp = "global skip list"
@@ -32,8 +28,23 @@ qtssh_dir = test_root_path("..","src","tools","qtssh")
 if not os.path.exists(test_root_path("..","make.err")):
     Exit(116)
 
+# To reduce noise, only run this test on Sunday evenings
+# regressiontest script stuffs a line of the form "DAY_OF_WEEK=Sunday"
+# into first line of make.err
+mfile = open(test_root_path("..","make.err"))
+shouldSkip = 1
+for line in mfile:
+    if "DAY_OF_WEEK=Sunday" in line:
+        shouldSkip = 0
+        break
+mfile.close()
+if shouldSkip:
+    Exit(116)
+
 #
 # Read per-file skip list and zero any line numbers
+# We allow line numbers there so that easy cut-n-paste
+# can be used to populate skip list
 #
 skip_list = {}
 try:
@@ -115,15 +126,57 @@ for line in mfile:
 mfile.close()
 
 #
+# Load in current warning counts baseline data
+#
+baseline_counts = {}
+try:
+    baseline_counts = json.load(open(test_baseline_path("unit","compiler_warnings","warning_counts_by_file.txt")))
+except:
+    pass
+
+improved_counts = {}
+worsened_counts = {}
+for f in warning_counts:
+    if f in baseline_counts:
+        if warning_counts[f] > baseline_counts[f]:
+            worsened_counts[f] = warning_counts[f]
+        elif warning_counts[f] < baseline_counts[f]: 
+            improved_counts[f] = warning_counts[f]
+            baseline_counts[f] = warning_counts[f]
+    else:
+        worsened_counts[f] = warning_counts[f]
+for f in baseline_counts:
+    if f not in warning_counts:
+        improved_counts[f] = 0
+for f in improved_counts:
+    if improved_counts[f] == 0 and f in baseline_counts:
+        del baseline_counts[f]
+
+#
+# If there were improvements, re-baseline counts file
+#
+if len(improved_counts):
+    bfilename = test_baseline_path("unit","compiler_warnings","warning_counts_by_file.txt")
+    bfile = open(bfilename,"w+")
+    json.dump(baseline_counts,bfile,indent=4,sort_keys=True)
+    bfile.write("\n")
+    bfile.close()
+    #pcommit = subprocess.Popen("/usr/bin/svn commit -m 'Updating warning counts' %s"%bfilename)
+    #(output, error) = pcommit.communicate()
+    #pcommit.wait()
+    retval = subprocess.call(["/usr/bin/svn","commit","-m","'Updating warning counts'","%s"%bfilename])
+    print "got retval=%d\n"%retval
+
+#
 # Generate the (sorted) warning counts data
 #
 counts_txt = "{\n"
-keys = warning_counts.keys()
+keys = worsened_counts.keys()
 keys.sort()
 for k in keys:
-    counts_txt += "\"%s\": %d,\n"%(k,warning_counts[k])
+    counts_txt += "\"%s\": %d,\n"%(k,worsened_counts[k])
 counts_txt += "\"last line\": 0\n}\n"
-TestText("warning_counts_by_file", counts_txt)
+TestText("worsened_counts_by_file", counts_txt)
 
 #
 # Ok, tricky here. Append all the warning details to the html file
@@ -144,7 +197,7 @@ for srcfile in warning_messages:
             tot_cnt += len(warning_messages[srcfile][lineno])
 
 
-f = open(out_path("html","warning_counts_by_file.html"),"a")
+f = open(out_path("html","worsened_counts_by_file.html"),"a")
 f.write("<pre>\n")
 f.write("\n\n\nTotal warnings %d\n"%tot_cnt)
 f.write("Total files with warnings %d\n"%tot_files)
@@ -153,10 +206,10 @@ f.write("Unique warning messages by count...\n")
 sorted_uniq_msgs = sorted(uniq_msgs, key=uniq_msgs.get, reverse=True)
 for msg in sorted_uniq_msgs:
     f.write("%d: \"%s\"\n"%(uniq_msgs[msg],msg))
-f.write("\n\n\nWarning message strings currently being skipped if matched...\n")
-f.write(json.dumps(skip_list,indent=4))
 f.write("\n\n\nWarning message details by file and line number...\n");
 f.write(json.dumps(warning_messages,indent=4))
+f.write("\n\n\nWarning message strings currently being skipped if matched...\n")
+f.write(json.dumps(skip_list,indent=4))
 f.write("</pre>\n")
 f.close()
 
