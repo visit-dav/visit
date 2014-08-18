@@ -69,7 +69,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>An enhanced version of the AMR reader was added.</li>
   <li>A reader for parallel Velodyne files was added.</li>
-  </li>
   <li>A reader for ViSUS IDX files was added, incorporating view-dependent data loading.</li>
   <li>VisIt was updated to Silo 4.10. The Silo plugin will no longer build against all previous releases of Silo. It now requires 4.10.</li>
   <li>Silo plugin supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
@@ -80,6 +79,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A reader for the MFEM finite element library was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file.
       MFEM is a toolkit that supports meshes with higher order finite elements, this plugin provides level-of-detail support that refines MFEM meshes to standard 
       VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
+  </li>
 </ul>
 
 <a name="Plot_changes"></a>
