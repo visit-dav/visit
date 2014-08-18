@@ -36,6 +36,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's Export mechanism has been enhanced so that all active plots in the plot list are considered for export. The current implementation will create numbered files with one file per plot, though this leaves some room for future improvement.</li>
   <li>VisIt now features a database plugin that enables VisIt to export <i>FieldView XDB</i> extract files for subsequent analysis in Intelligent Light's commercial post-processing software, FieldView.</li>
   <li>VisIt's Export mechanism has been enhanced so that all time states in a dataset can be exported. Click the <i>"Export all time states"</i> check box in the Export window to enable exporting all time states.</li>
+  <li>VisIt's CLI now handles <i>sys.argv</i> like a traditional python interpreter. This shift simplifies argument parsing by standard python modules. The <i>Argv()</i> function is preserved for existing VisIt scripts.
+  </li>
+  <li>VisIt's CLI has two new command line options that select a non interactive mode: <i>-ni</i> or <i>-non-interactive</i>. With these options the CLI exits after executing the script passed with <i>-s</i>, bringing <i>visit -nowin -cli -ni -s script.py</i> closer to the execution behavior of <i>python script.py</i>.  These options eliminate the need to add explicit <i>sys.exit</i> calls to existing scripts, making VisIt's CLI compatible with a wider set of python scripts, particularly setup.py scripts for python modules.
+  </li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -65,6 +69,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>An enhanced version of the AMR reader was added.</li>
   <li>A reader for parallel Velodyne files was added.</li>
+  </li>
   <li>A reader for ViSUS IDX files was added, incorporating view-dependent data loading.</li>
   <li>VisIt was updated to Silo 4.10. The Silo plugin will no longer build against all previous releases of Silo. It now requires 4.10.</li>
   <li>Silo plugin supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
@@ -72,6 +77,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Silo plugin now supports tensor multi-vars. Previously, data producers were required to write scalar multi-vars and then bundle these into a tensor multivar using a defvars object.</li>
   <li>Curv2d reader can now read double-precision sized data.  Scaling may be required to correctly render very-large sized values.</li>
   <li>The CGNS plugin was updated to use cngslib version 3.2.1</li> 
+  <li>A reader for the MFEM finite element library was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file.
+      MFEM is a toolkit that supports meshes with higher order finite elements, this plugin provides level-of-detail support that refines MFEM meshes to standard 
+      VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
 </ul>
 
 <a name="Plot_changes"></a>
@@ -109,7 +117,9 @@ enhancements and bug-fixes that were added to this release.</p>
   </ul>
     The options are chosen via new methods: <i>SetQueryOutputToString()</i>, <i>SetQueryOutputToValue()</i>, or <i>SetQueryOutputToObject()</i>.  The option remains valid for all queries during the current VisIt session, unless another call to <i>SetQueryOutputToXXX</i> is made. Calls to <i>GetQueryOutputXXX</i> can still be made, regardless of the query return type chosen.  <b>NOTE:</b> The old query output messages are hereby suppressed when making a Query via the CLI. 
   </li>
-  <li></li>
+  <li>The Spherical and Elliptical Compactness Factor queries have a new option to select the centroid used in factor calculations.
+      If an explicit centroid is not set, the center of mass automatically used.
+  </li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -165,6 +175,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VTK 6.1.0</li>
   </ul>
   </li>
+  <li>VisIt's launcher now has very basic support for launching and debugging components using <i>lldb</i>, the LLVM debugger.</li>
+  <li>Helper functions where added to support sourcing shell scripts and loading modules in customlaunchers. For more details see the <a href="http://visitusers.org/index.php?title=Custom_launcher_Examples#Setting_Environment_Values_Using_Custom_Launcher_Environment_Helpers"> examples</a> on visitusers.org. </li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
