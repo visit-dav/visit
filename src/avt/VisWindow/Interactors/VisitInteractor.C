@@ -823,11 +823,20 @@ VisitInteractor::EndMiddleButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
 //    Removed arguments to comply with vtk's new interactor interface.
 //
+//    Brad Whitlock, Mon Aug 18 11:23:49 PDT 2014
+//    Clear flag that caused popup menu to keep activating.
+//
 // ****************************************************************************
 
 void
 VisitInteractor::StartRightButtonAction()
 {
+    // The right button is generally for popup menus in VisIt. We don't seem to
+    // get the OnRightButtonUp event firing to clear this flag. This results in
+    // the popup menu showing itself all over the place during animation, etc.
+    // Let's clear the flag here.
+    rightButtonDown = false;
+
     VisWindow *vw = proxy;
     vw->ShowMenu();
 }
