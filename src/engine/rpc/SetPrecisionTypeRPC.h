@@ -74,7 +74,7 @@ public:
     void SetPrecisionType(const int);
 
     // Property getting methods
-    const int GetPrecisionType() const;
+    int GetPrecisionType() const;
 
     // Return name of object.
     virtual const std::string TypeName() const;

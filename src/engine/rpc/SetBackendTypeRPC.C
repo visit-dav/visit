@@ -164,7 +164,7 @@ SetBackendTypeRPC::SetBackendType(const int bType)
 //
 // *******************************************************************
 
-const int
+int
 SetBackendTypeRPC::GetBackendType() const
 {
     return backendType;

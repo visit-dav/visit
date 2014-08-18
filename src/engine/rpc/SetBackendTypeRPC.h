@@ -74,7 +74,7 @@ public:
     void SetBackendType(const int);
 
     // Property getting methods
-    const int GetBackendType() const;
+    int GetBackendType() const;
 
     // Return name of object.
     virtual const std::string TypeName() const;

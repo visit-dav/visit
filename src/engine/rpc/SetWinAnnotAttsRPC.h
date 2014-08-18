@@ -124,7 +124,7 @@ public:
     const int* GetFrameAndState() const;
     const double *GetViewExtents() const;
     const std::string &GetChangedCtName() const;
-    const int GetWindowID() const;
+    int GetWindowID() const;
 
 private:
     WindowAttributes win;
