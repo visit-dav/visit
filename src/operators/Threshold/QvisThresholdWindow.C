@@ -224,6 +224,84 @@ QvisThresholdWindow::CreateWindowContents()
     forAllVarsLayout->addWidget(outputMeshWidget, 1, 2, 1, 3);
 }
 
+// ****************************************************************************
+// Method: TrimTrailing
+//
+// Purpose:
+//   Trims trailing zero decimals from the string.
+//
+// Arguments:
+//   s : The input string.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 18 12:34:16 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static QString
+TrimTrailing(const QString &s0)
+{
+    QString s(s0), ext("0000000000");
+    while(ext.count() >= 1)
+    {
+        if(s.endsWith(ext))
+        {
+            s = s.left(s.count() - ext.count());
+            break;
+        }
+        ext = ext.left(ext.count()-1);
+    }
+    if(s.endsWith("."))
+        s = s.left(s.count() - 1);
+    return s;
+}
+
+// ****************************************************************************
+// Method: QvisThresholdWindow::SetLowerUpper
+//
+// Purpose:
+//   Set lower/upper values at the same time so we can check for sameness and
+//   use more precision if needed.
+//
+// Arguments:
+//   idx : The index of the lower/upper pair.
+//   lower : The lower value.
+//   upper : The upper value.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 18 12:33:04 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisThresholdWindow::SetLowerUpper(int idx, double lower, double upper)
+{
+    QString lStr, uStr;
+    if (lower < -9e+36)
+        lStr = "min";
+    else
+        lStr = TrimTrailing(QString().setNum(lower, 'f'));
+
+    if (upper > 9e+36)
+        uStr = "max";
+    else
+        uStr = TrimTrailing(QString().setNum(upper, 'f'));
+
+    threshVars->item(idx, 1)->setText(lStr);
+    threshVars->item(idx, 2)->setText(uStr);
+}
 
 // ****************************************************************************
 // Method: QvisThresholdWindow::UpdateWindow
@@ -284,15 +362,15 @@ QvisThresholdWindow::CreateWindowContents()
 //   Brad Whitlock, Mon May 14 16:32:55 PDT 2012
 //   Select the first row if no row is selected.
 //
+//   Brad Whitlock, Mon Aug 18 12:32:35 PDT 2014
+//   Change code to set upper / lower bounds.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::UpdateWindow(bool doAll)
 {
     intVector curZonePortions;
-    doubleVector curBounds;
-    size_t  varNum;
-    QString fieldString;
 
     atts->ForceAttributeConsistency();
     
@@ -313,7 +391,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
             case ThresholdAttributes::ID_zonePortions: 
                 curZonePortions = atts->GetZonePortions();
                 QComboBox *cbox;
-                for (varNum = 0; varNum < curZonePortions.size(); varNum++ )
+                for (size_t varNum = 0; varNum < curZonePortions.size(); varNum++ )
                 {
                     cbox=(QComboBox*)threshVars->cellWidget((int)varNum,3);
                     cbox->setCurrentIndex(curZonePortions[varNum]);
@@ -324,31 +402,15 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 break;
 
             case ThresholdAttributes::ID_lowerBounds:
-                curBounds = atts->GetLowerBounds();
-                
-                for (varNum = 0; varNum < curBounds.size(); varNum++ )
-                {
-                    if (curBounds[varNum] < -9e+36)
-                        fieldString = "min";
-                    else
-                        fieldString.setNum(curBounds[varNum]);
-
-                    threshVars->item((int)varNum, 1)->setText(fieldString);
-                }
-
-                break;
-
             case ThresholdAttributes::ID_upperBounds:
-                curBounds = atts->GetUpperBounds();
-                
-                for (varNum = 0; varNum < curBounds.size(); varNum++ )
+                if(atts->GetLowerBounds().size() == atts->GetUpperBounds().size())
                 {
-                    if (curBounds[varNum] > +9e+36)
-                        fieldString = "max";
-                    else
-                        fieldString.setNum(curBounds[varNum]);
-
-                    threshVars->item((int)varNum, 2)->setText(fieldString);
+                    for (size_t varNum = 0; varNum < atts->GetLowerBounds().size(); varNum++ )
+                    {
+                        double lower = atts->GetLowerBounds()[varNum];
+                        double upper = atts->GetUpperBounds()[varNum];
+                        SetLowerUpper((int)varNum, lower, upper);
+                    }
                 }
 
                 break;
