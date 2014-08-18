@@ -125,7 +125,8 @@ private:
                                                 int maxDisplayChars);
     void                SetZoneIncludeSelectEnabled(bool val);
     void                SetTableWidth();
-    
+    void                SetLowerUpper(int idx, double lower, double upper);
+
     ThresholdAttributes *atts;
 
     QTableWidget        *threshVars;
