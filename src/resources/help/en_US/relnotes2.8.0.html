@@ -21,12 +21,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Advanced_Features">Features for advanced users</a></li>
   <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
-  <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
-  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
@@ -36,18 +34,16 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's Export mechanism has been enhanced so that all active plots in the plot list are considered for export. The current implementation will create numbered files with one file per plot, though this leaves some room for future improvement.</li>
   <li>VisIt now features a database plugin that enables VisIt to export <i>FieldView XDB</i> extract files for subsequent analysis in Intelligent Light's commercial post-processing software, FieldView.</li>
   <li>VisIt's Export mechanism has been enhanced so that all time states in a dataset can be exported. Click the <i>"Export all time states"</i> check box in the Export window to enable exporting all time states.</li>
-  <li>VisIt's CLI now handles <i>sys.argv</i> like a traditional python interpreter. This shift simplifies argument parsing by standard python modules. The <i>Argv()</i> function is preserved for existing VisIt scripts.
-  </li>
-  <li>VisIt's CLI has two new command line options that select a non interactive mode: <i>-ni</i> or <i>-non-interactive</i>. With these options the CLI exits after executing the script passed with <i>-s</i>, bringing <i>visit -nowin -cli -ni -s script.py</i> closer to the execution behavior of <i>python script.py</i>.  These options eliminate the need to add explicit <i>sys.exit</i> calls to existing scripts, making VisIt's CLI compatible with a wider set of python scripts, particularly setup.py scripts for python modules.
-  </li>
+  <li>VisIt's CLI now handles <i>sys.argv</i> like a traditional python interpreter. This shift simplifies argument parsing by standard python modules. The <i>Argv()</i> function is preserved for existing VisIt scripts.</li>
+  <li>VisIt's CLI has two new command line options that select a non interactive mode: <i>-ni</i> or <i>-non-interactive</i>. With these options the CLI exits after executing the script passed with <i>-s</i>, bringing <i>visit -nowin -cli -ni -s script.py</i> closer to the execution behavior of <i>python script.py</i>. These options eliminate the need to add explicit <i>sys.exit</i> calls to existing scripts, making VisIt's CLI compatible with a wider set of python scripts, particularly setup.py scripts for python modules.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.8</font></b></p>
 <ul>
-  <li>Libsim was enhanced so simulations can expose global node and cell ids for unstructured meshes.</li>
-  <li>VisIt's database plugin API and load balancer were enhanced so database plugins can return different domain decompositions for multidomain meshes. This feature enables libsim-instrumented simulations to more easily return their domain to processor mapping in the event that there are multiple multi-domain meshes that each have different domain decompositions.</li>
-  <li>VisIt's CLI now provides a <i>GetEngineProperties()</i> function that returns engine properties. This makes it easier to query engines and simulations to determine their number of processors.</li>
+  <li>Libsim was enhanced so that simulations can expose global node and cell ids for unstructured meshes.</li>
+  <li>VisIt's database plugin API and load balancer were enhanced so that database plugins can return different domain decompositions for multidomain meshes. This feature enables libsim-instrumented simulations to more easily return their domain to processor mapping in the event that there are multiple multi-domain meshes that each have different domain decompositions.</li>
+  <li>VisIt's CLI now provides a <i>GetEngineProperties()</i> function that returns engine properties. This makes it easier to query engines and simulations to determine the number of processors that they are using.</li>
 </ul>
 
 <a name="GUI_Changes"></a>
@@ -55,13 +51,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>VisIt's Export window can use spaces or commas as delimiters for the variable list. This permits export of variables that contain spaces in their names via the GUI.</li>
   <li>VisIt's Export window can now display license strings from database plugins that provide license information. The license is displayed just before exporting the active plots to the database format.</li>
-  <li>The color table window now has a toggle that allows grouping of color tables by a category name.  This will affect how the table names appear in this window as well as ColorTable buttons for Plot Attribute windows (like Pseudocolor).  By default, VisIt's tables will be under the <i>'Standard'</i> category, while personal tables will be <i>'UserDefined'</i>.  Category names may be changed, and a text edit is provided in the ColorTable window when grouping is enabled. If VisIt only loads its standard tables, and the category names have not been changed, then the grouping toggle will have no effect other than to make the category name text-edit available.  If you change the category name for <i>Standard</i> tables, saving your settings will preserve the new naming across VisIt sessions.  For <i>UserDefined</i> tables, color tables must be re-exported to pick up changes in category.</li>
-  <li>Pick options in the Query window, when selecting a Time pick, the "Time Curve Option" is now defaulted to match the type of pick chosen:
+  <li>The color table window now has a toggle that allows grouping of color tables by a category name.  This will affect how the table names appear in this window as well as ColorTable buttons for plot attribute windows (like Pseudocolor).  By default, VisIt's tables will be under the <i>'Standard'</i> category, while personal tables will be <i>'UserDefined'</i>.  Category names may be changed, and a text edit is provided in the ColorTable window when grouping is enabled. If VisIt only loads its standard tables, and the category names have not been changed, then the grouping toggle will have no effect other than to make the category name text-edit available.  If you change the category name for <i>Standard</i> tables, saving your settings will preserve the new naming across VisIt sessions.  For <i>UserDefined</i> tables, color tables must be re-exported to pick up changes in category.</li>
+  <li>The "Time Curve Option" in the Pick attributes of the Query window is now defaulted to match the type of pick chosen when selecting a Time pick:
   <ul>
       <li>"Pick using domain and element Id" => "Preserve Picked Element Id"</li>
       <li>"Pick using coordinate" => "Preserve Picked Coordinate"</li>
   </ul>
   </li>
+  <li>The tabs in the Pseudocolor plot attributes window have been replaced with collapsible panels. This is an experimental change and we would like to hear user feedback on the usefulness of the feature before adding it to other windows.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -70,30 +67,21 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>An enhanced version of the AMR reader was added.</li>
   <li>A reader for parallel Velodyne files was added.</li>
   <li>A reader for ViSUS IDX files was added, incorporating view-dependent data loading.</li>
-  <li>VisIt was updated to Silo 4.10. The Silo plugin will no longer build against all previous releases of Silo. It now requires 4.10.</li>
-  <li>Silo plugin supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
+  <li>The Silo reader was updated to use Silo 4.10.</li>
+  <li>The Silo plugin now supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
   <li>For more information regarding Silo 4.10, please see <a href="https://visitbugs.ornl.gov/news/5">these notes</a></li>
-  <li>Silo plugin now supports tensor multi-vars. Previously, data producers were required to write scalar multi-vars and then bundle these into a tensor multivar using a defvars object.</li>
-  <li>Curv2d reader can now read double-precision sized data.  Scaling may be required to correctly render very-large sized values.</li>
-  <li>The CGNS plugin was updated to use cngslib version 3.2.1</li> 
-  <li>A reader for the MFEM finite element library was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file.
-      MFEM is a toolkit that supports meshes with higher order finite elements, this plugin provides level-of-detail support that refines MFEM meshes to standard 
-      VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
+  <li>The Silo plugin now supports tensor multi-vars. Previously, data producers were required to write scalar multi-vars and then bundle these into a tensor multivar using a defvars object.</li>
+  <li>The Curv2d reader can now read double-precision sized data.  Scaling may be required to correctly render very-large sized values.</li>
+  <li>The CGNS reader was updated to use cngslib version 3.2.1.</li> 
+  <li>A reader for the MFEM finite element library was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file. MFEM is a toolkit that supports meshes with higher order finite elements. This reader provides level-of-detail support that refines MFEM meshes to standard VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
   </li>
-</ul>
-
-<a name="Plot_changes"></a>
-<p><b><font size="4">Changes to VisIt's plots in version 2.8</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators version in 2.8</font></b></p>
 <ul>
-  <li>A new option was added to the OnionPeel operator that can make the operator deliver results related to the currently plotted mesh instead of the original mesh. This may be helpful in the case of arbitrary polhyedral data, where zones have been split and one would like to examine how the splits occurred.  The default behavior for OnionPeel has been (and continues to be) to honor the original mesh as far as possible.  To modify it to use the actual mesh: from the gui, change 'Honor original mesh' to 'Honor actual mesh';  from the cli, change 'honorOriginalMesh' from 1 to 0. </li>
-  <li>A new operator, Radial Resampling, has been added to this release. The new operator allows the operator to resample a grid onto an unstructured circular grid (2D) or an unstructured spherical grid (3D). There is also a "fast mode" option that uses structured grids for both 2D and 3D, however, accuracy is sacrificed in fast mode since structured grids can only have quadrilateral (2D) or hexahedron cells (3D) resulting in a very small hole in the center of the grid.</li>
+  <li>A new option was added to the OnionPeel operator that can make the operator deliver results related to the currently plotted mesh instead of the original mesh. This may be helpful in the case of arbitrary polyhedral data, where zones are split and one would like to examine how the splits occurred.  The default behavior for OnionPeel has been (and continues to be) to honor the original mesh as much as possible. To modify it to use the actual mesh change 'Honor original mesh' to 'Honor actual mesh' in the GUI or change 'honorOriginalMesh' from 1 to 0 in the CLI.</li>
+  <li>The Radial Resampling operator has been added to this release. The new operator resamples a mesh onto an unstructured circular mesh (2D) or an unstructured spherical mesh (3D). There is also a "fast mode" option that uses structured mesh for both 2D and 3D, however, accuracy is sacrificed in fast mode since structured meshes can only have quadrilateral (2D) or hexahedron cells (3D) resulting in a very small hole in the center of the mesh.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -111,42 +99,32 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>All queries now provide Xml results.</li>
   <li>Queries called from the CLI have been modified to always return a value. The type of returned object is user-settable, and consists of 3 options:
   <ul>
-      <li>String (default): <i>Same as calling GetQueryOutputString()</i> </li>
-      <li>Value: <i>Same as calling GetQueryOutputValue()</i></li>
-      <li>Object: <i>Same as calling GetQueryOutputObject()</i></li>
+      <li>String (default): <i>The same as calling GetQueryOutputString()</i> </li>
+      <li>Value: <i>The same as calling GetQueryOutputValue()</i></li>
+      <li>Object: <i>The same as calling GetQueryOutputObject()</i></li>
   </ul>
-    The options are chosen via new methods: <i>SetQueryOutputToString()</i>, <i>SetQueryOutputToValue()</i>, or <i>SetQueryOutputToObject()</i>.  The option remains valid for all queries during the current VisIt session, unless another call to <i>SetQueryOutputToXXX</i> is made. Calls to <i>GetQueryOutputXXX</i> can still be made, regardless of the query return type chosen.  <b>NOTE:</b> The old query output messages are hereby suppressed when making a Query via the CLI. 
-  </li>
-  <li>The Spherical and Elliptical Compactness Factor queries have a new option to select the centroid used in factor calculations.
-      If an explicit centroid is not set, the center of mass automatically used.
-  </li>
+    The options are chosen via new methods: <i>SetQueryOutputToString()</i>, <i>SetQueryOutputToValue()</i>, or <i>SetQueryOutputToObject()</i>.  The option remains valid for all queries during the current VisIt session, unless another call to <i>SetQueryOutputToXXX</i> is made. Calls to <i>GetQueryOutputXXX</i> can still be made, regardless of the query return type chosen.  <b>NOTE:</b> The old query output messages are hereby suppressed when making a Query via the CLI.</li>
+  <li>The Spherical and Elliptical Compactness Factor queries have a new option to select the centroid used in factor calculations. If an explicit centroid is not set, the center of mass is automatically used.  </li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.8</font></b></p>
 <ul>
-  <li>The Export Database window will no longer allow file-system browsing when exporting to remote host.</li>
-  <li>Fixed bad behavior with updating Curve Plot options when 'Auto apply' selected and multiple Curve plots are drawn.</li>
-  <li>Fixed command recording for QueryOverTimeAttributes.</li>
-  <li>Fixed tesselation bug that was preventing the polyhedral simulation example from rendering correctly.</li>
-  <li>Fixed a memory leak in unstructured grid ghost cell generation based on global node ids.</li>
-  <li>Fixed a problem preventing ghost cells from being generated for 2D unstructured cell types. This fixes a bug where wireframe FilledBoundary plots were showing wireframes along domain boundaries.</li>
-  <li>Fixed a problem-sized memory leak in the Clip operator after processing domains that resulted in zero clipped geometry.</li>
-  <li>Fixed a pick bug where global ids would sometimes not be reported correctly.</li>
-  <li>Fixed crash with Silo data and material subsetted variables.</li>
-  <li>Fixed a bug where export attributes were not saved to VisIt's config file.</li>
-  <li>Fixed a bug where the OnionPeel operator wasn't working correctly for arbitrary polyhedral data.</li>
-  <li>Fixed a problem in libsim where curve simulation yielded wrong curve.</li>
-  <li>Fixed a bug in PickByZone where the point returned did not match the picked zone's center.</li>
-  <li>The viewer's popup menu would reappear after doing most operations that required the plots to change or update if the popup menu had ever been activated.</li>
-  <li>The Threshold operator attributes window would not use enough precision to display large values.</li>
-</ul>
-
-<a name="Config_changes"></a>
-<p><b><font size="4">Changes to configuration files in version 2.8</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
+  <li>The Export Database window will no longer allow file-system browsing when exporting to a remote host.</li>
+  <li>Corrected poor behavior with updating Curve plot attributes when 'Auto apply' was selected and multiple Curve plots were drawn.</li>
+  <li>Corrected command recording for QueryOverTimeAttributes.</li>
+  <li>Corrected a tesselation bug that was preventing the polyhedral simulation example from rendering correctly.</li>
+  <li>Corrected a memory leak in the unstructured mesh ghost cell generation that was based on global node ids.</li>
+  <li>Corrected a problem preventing ghost cells from being generated for 2D unstructured cell types. This fixes a bug where wireframe FilledBoundary plots were showing wireframes along domain boundaries.</li>
+  <li>Eliminated a problem-sized memory leak in the Clip operator after processing domains that resulted in zero clipped geometry.</li>
+  <li>Corrected a pick bug where global ids would sometimes not be reported correctly.</li>
+  <li>Corrected a crash with Silo data and material subsetted variables.</li>
+  <li>Corrected a bug where export attributes were not saved to VisIt's config file.</li>
+  <li>Corrected a bug where the OnionPeel operator wasn't working correctly for arbitrary polyhedral data.</li>
+  <li>Corrected a problem in libsim where the curve simulation yielded the wrong curve.</li>
+  <li>Corrected a bug in PickByZone where the point returned did not match the picked zone's center.</li>
+  <li>Corrected a bug where the viewer's popup menu would incorrectly reappear after doing operations that required the plots to change or update. This would happen once the popup menu had been activated.</li>
+  <li>Corrected a bug where the Threshold operator attributes window would not use enough precision to display large values.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -158,17 +136,18 @@ enhancements and bug-fixes that were added to this release.</p>
     <ul>
        <li>The expansion of the <i>default</i> variable is now plugin controlled.</li>
        <li>Exporting is more careful about not re-executing the pipeline unless it needs to re-execute to fetch new data.</li>
-       <li>Geometry can be consolidated on rank 0,combined by labels, or left alone. This simplifies the creation of readers that require geometry to be written on rank 0.</li>
-       <li>Plots can alter the contract as part of export.</li>
+       <li>Geometry can now be consolidated on rank 0, combined by labels, or left alone. This simplifies the creation of readers that require geometry to be written on rank 0.</li>
+       <li>Plots can now alter the contract as part of export.</li>
        <li>The database writer now knows the names of the plot being exported so it can change its behavior, if desired.</li>
     </ul>
   </li>
   <li>Filters have been improved so they add some filter metadata that at least contains the name of the operator that was applied. Text representations of the operator attributes can also be added to the filter metadata. Filter metadata can be used during database export to make meaningful names for the visualizations being exported.</li>
   <li>The database plugin API has been extended so that plugins can return license strings.</li>
-  <li>One can now specify which plugins VisIt should build via CMake variables VISIT_SELECTED_type_PLUGINS, where 'type' is one of: DATABASE, PLOT, OPERATOR.  Setting the var can be accomplished in the config-site file via a SET command: <pre>SET(VISIT_SELECTED_DATABASE_PLUGINS Silo VTK H5Part)</pre> or via the cmake command line with a ';' separated list: <pre>-DVISIT_SELECTED_DATABASE_PLUGINS:STRING="Silo;VTK;H5Part"</pre>If this is var is not set for a particular plugin type, then plugins are built according to normal rules.  <i>Spelling of the plugin must match its directory name.</i></li>
-  <li>The windowsbuild directory has been reorganized to reduce amount of files a Windows developer needs to download.  Third-party pre-built dll's are now stored in a separate subdirectory for each Visual Studio version (eg <i>MSVC2012 for 32 bit or MSVC2012-x64 for 64 bit.</i>), and are all top-level within windowsbuild.</li>
+  <li>It is now possible to specify which plugins VisIt should build via CMake variables VISIT_SELECTED_type_PLUGINS, where 'type' is one of: DATABASE, PLOT, OPERATOR. Setting the variable can be accomplished in the config-site file via a SET command: <pre>SET(VISIT_SELECTED_DATABASE_PLUGINS Silo VTK H5Part)</pre> or via the cmake command line with a ';' separated list: <pre>-DVISIT_SELECTED_DATABASE_PLUGINS:STRING="Silo;VTK;H5Part"</pre>If this is variable is not set for a particular plugin type, then plugins are built according to normal rules. <i>The spelling of the plugin must match its directory name.</i></li>
+  <li>The windowsbuild directory has been reorganized to reduce the number of files a Windows developer needs to download. Third-party pre-built dll's are now stored in a separate subdirectory for each Visual Studio version (eg <i>MSVC2012 for 32 bit or MSVC2012-x64 for 64 bit.</i>), and are all top-level within windowsbuild.</li>
   <li>Pre-built third-party dll support has been dropped for Visual Studio 2008 (MSVC 9).</li>
   <li>For windows builds, VISIT_WINDOWS_DIR can now be specified via CMake option, allowing a different location than the standard peer-to-src windowsbuild directory.</li> 
+  <li>The Silo plugin will no longer build against releases of Silo and now requires version 4.10.</li>
   <li>VisIt is now using newer versions of the following third party support libaries:
   <ul>
   <li>cgns 3.2.1</li>
@@ -182,6 +161,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href="relnotes2.7.2.html">VisIt 2.7.2 Release Notes</a>.</p>
+of VisIt: <a href="relnotes2.7.3.html">VisIt 2.7.3 Release Notes</a>.</p>
 </body>
 </html>
