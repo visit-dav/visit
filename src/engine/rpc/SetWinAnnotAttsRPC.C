@@ -518,7 +518,7 @@ SetWinAnnotAttsRPC::GetChangedCtName() const
 //
 // ****************************************************************************
 
-const int 
+int 
 SetWinAnnotAttsRPC::GetWindowID() const
 {
     return windowID;

@@ -386,6 +386,7 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
     cerr << "DRAW_POLYGON macro for Qt." << endl;
 
 #define RESIZE_POINT_ARRAY(points, npts, currSize) \
+    currSize = currSize; \
     cerr << "RESIZE_POINT_ARRAY macro for Qt." << endl;
 
 #define DRAW_XOR_LINE(x1, y1, x2, y2) \

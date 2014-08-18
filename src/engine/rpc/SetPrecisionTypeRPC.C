@@ -176,7 +176,7 @@ SetPrecisionTypeRPC::SetPrecisionType(const int pType)
 //
 // *******************************************************************
 
-const int
+int
 SetPrecisionTypeRPC::GetPrecisionType() const
 {
     return precisionType;

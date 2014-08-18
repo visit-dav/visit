@@ -628,7 +628,7 @@ MemStream::LoadFile( const char *filename )
 
         CheckSize( _len );
         res = fread( _data, sizeof(_data[0]), _len, fp );
-        if (res != sizeof(_data[0])*_len)
+        if ((size_t)res != sizeof(_data[0])*_len)
         {
             debug1 << "Bad read of MemStream from " << filename << endl;
         }
