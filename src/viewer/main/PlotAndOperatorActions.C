@@ -860,12 +860,15 @@ SetOperatorOptionsAction::Execute()
 // Creation:   June 19, 2011
 //
 // Modifications:
+//   Brad Whitlock, Mon Aug 18 11:20:32 PDT 2014
+//   Do not make a menu for this action.
 //
 // ****************************************************************************
 
 AddEmbeddedPlotAction::AddEmbeddedPlotAction(ViewerWindow *win) : ViewerAction(win)
 {
-  SetAllText(tr("Add Plot With Id"));
+    SetAllText(tr("Add Plot With Id"));
+    DisableVisual();
 }
 
 // ****************************************************************************
