@@ -67,10 +67,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>An enhanced version of the AMR reader was added.</li>
   <li>A reader for parallel Velodyne files was added.</li>
   <li>A reader for ViSUS IDX files was added, incorporating view-dependent data loading.</li>
-  <li>The Silo reader was updated to use Silo 4.10.</li>
+  <li>The Silo reader was updated to <b>require</b> Silo 4.10. The Silo reader will no longer compile with any version of Silo earlier than 4.10. Maintining the necessary conditional compilation logic to support multiple older versions of the Silo library was becomming too much of a maintenance burden.</li>
   <li>The Silo plugin now supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
-  <li>For more information regarding Silo 4.10, please see <a href="https://visitbugs.ornl.gov/news/5">these notes</a></li>
   <li>The Silo plugin now supports tensor multi-vars. Previously, data producers were required to write scalar multi-vars and then bundle these into a tensor multivar using a defvars object.</li>
+  <li>The Silo plugin now supports curves stored in the Silo file via polar coordinates.</li>
+  <li>The Silo plugin now supports variables with missing data.</li>
+  <li>For more information regarding new features of Silo 4.10, please see <a href="https://wci.llnl.gov/simulation/computer-codes/silo/releases">these notes</a>. But be aware that some features available in Silo 4.10 library are yet to be supported by VisIt's Silo reader.</li>
   <li>The Curv2d reader can now read double-precision sized data.  Scaling may be required to correctly render very-large sized values.</li>
   <li>The CGNS reader was updated to use cngslib version 3.2.1.</li> 
   <li>A reader for the MFEM finite element library was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file. MFEM is a toolkit that supports meshes with higher order finite elements. This reader provides level-of-detail support that refines MFEM meshes to standard VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
