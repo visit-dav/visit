@@ -35,15 +35,13 @@
 # DAMAGE.
 #
 # Modifications:
+#  Kathleen Biagas, Tue Aug 19 16:35:33 PDT 2014
+#  Removed V1.
 #
 #****************************************************************************/
 
 LINK_DIRECTORIES(
 ${EAVL_LIBRARY_DIR}
 )
-
-IF(UNIX)
-    ADD_SUBDIRECTORY(V1)
-ENDIF(UNIX)
 
 ADD_SUBDIRECTORY(V2)
