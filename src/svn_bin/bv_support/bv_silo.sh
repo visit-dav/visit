@@ -87,21 +87,21 @@ function bv_silo_host_profile
         >> $HOSTCONF
         if [[ "$DO_HDF5" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH}/json/lib json TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
             >> $HOSTCONF
         else
             if [[ "$DO_ZLIB" == "yes" ]] ; then
                echo \
-               "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP ZLIB_LIBRARY_DIR z \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH}/json/lib json TYPE STRING)" \
+               "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP ZLIB_LIBRARY_DIR z TYPE STRING)" \
                >> $HOSTCONF
             else
                if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
                     echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib/x86_64-linux-gnu z \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH}/json/lib json TYPE STRING)" \
+                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib/x86_64-linux-gnu z TYPE STRING)" \
                     >> $HOSTCONF
                else
                     echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH}/json/lib json TYPE STRING)" \
+                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
                     >> $HOSTCONF
                fi
             fi
@@ -213,7 +213,7 @@ function build_silo
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
-        --enable-install-lite-headers --without-readline --enable-json \
+        --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
@@ -223,7 +223,7 @@ function build_silo
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
-        --enable-install-lite-headers --without-readline --enable-json \
+        --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     if [[ $? != 0 ]] ; then
