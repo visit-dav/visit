@@ -170,6 +170,9 @@
 #    subdir before adding it.  Call VISIT_SELECTED_PLUGIN_ERROR macro if
 #    necessary.
 #
+#    Kathleen Biagas, Tue Aug 19 16:36:56 PDT 2014
+#    Remove SimV1 and SimV2Writer.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -410,7 +413,7 @@ IF (NOT WIN32)
         ZipWrapper
     )
     IF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
-        LIST(APPEND REQUIRED_DATABASE_PLUGINS VCellMTMD SimV1 SimV1Writer)
+        LIST(APPEND REQUIRED_DATABASE_PLUGINS VCellMTMD)
     ENDIF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
     SET(OPTIONAL_DATABASE_PLUGINS
         Hex
@@ -420,7 +423,7 @@ IF (NOT WIN32)
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI;SimV1;SimV1Writer" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 
