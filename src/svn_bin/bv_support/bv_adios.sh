@@ -298,7 +298,7 @@ function build_ADIOS
                   --disable-fortran \
 	              --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
                   --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
-                  --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
+                  --prefix="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
         
         sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
@@ -306,7 +306,7 @@ function build_ADIOS
                 --disable-fortran \
 	            --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
                 --with-mxml=\"$VISITDIR/mxml/$MXML_VERSION/$VISITARCH\" \
-                --prefix=\"$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH\""
+                --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""
            
         
     if [[ $? != 0 ]] ; then
@@ -355,7 +355,7 @@ function bv_adios_is_installed
         return 1
     fi
 
-    check_if_installed "ADIOS" $ADIOS_VERSION
+    check_if_installed "adios" $ADIOS_VERSION
     if [[ $? == 0 ]] ; then
         return 1
     fi
@@ -367,7 +367,7 @@ function bv_adios_build
 cd "$START_DIR"
 
 if [[ "$DO_ADIOS" == "yes" && "$USE_SYSTEM_ADIOS" == "no" ]] ; then
-    check_if_installed "ADIOS" $ADIOS_VERSION
+    check_if_installed "adios" $ADIOS_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping ADIOS build.  ADIOS is already installed."
     else
