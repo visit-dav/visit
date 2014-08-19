@@ -55,10 +55,11 @@ IF (VISUS_INCLUDE_DIR)
    )
 
    FIND_LIBRARY(VISUS_KERNEL_LIB    visuskernel            ${VISUS_DIR}/lib)
-   FIND_LIBRARY(VISUS_DB_LIB        visusdb                ${VISUS_DIR}/lib)
    FIND_LIBRARY(VISUS_IDX_LIB       visusidx               ${VISUS_DIR}/lib)
+   FIND_LIBRARY(VISUS_DB_LIB        visusdb                ${VISUS_DIR}/lib)
    FIND_LIBRARY(VISUS_DATAFLOW_LIB  visusdataflow          ${VISUS_DIR}/lib)
-   FIND_LIBRARY(VISUS_APPKIT_LIB    visusappkit            ${VISUS_DIR}/lib)
+   #FIND_LIBRARY(VISUS_APPKIT_LIB    visusappkit            ${VISUS_DIR}/lib)
+   FIND_LIBRARY(VISUS_SCENEGRAPH_LIB    visusscenegraph            ${VISUS_DIR}/lib)
    FIND_LIBRARY(VISUS_GUI_LIB       visusgui               ${VISUS_DIR}/lib)
    IF (VISUS_JUCE)
     FIND_LIBRARY(VISUS_GUI_IMPL_LIB Juce                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
@@ -72,7 +73,8 @@ IF (VISUS_INCLUDE_DIR)
    FIND_LIBRARY(VISUS_CRYPTO_LIB    crypto                 ${VISUS_DIR}/lib NO_DEFAULT_PATH)
 
    SET(VISUS_CORE_LIBRARIES 
-       ${VISUS_APPKIT_LIB}
+   #       ${VISUS_APPKIT_LIB}
+       ${VISUS_SCENEGRAPH_LIB}
        ${VISUS_IDX_LIB}
        ${VISUS_GUI_LIB}
        ${VISUS_DATAFLOW_LIB}
