@@ -5089,7 +5089,18 @@ visit_GetEngineProperties(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "ss", &engine, &sim))
     {
         if(!PyArg_ParseTuple(args, "s", &engine))
-            PyErr_Clear();
+        {
+            PyObject *t = NULL;
+            if(PyArg_ParseTuple(args, "O", &t))
+            {
+                if(!PyArg_ParseTuple(t, "ss", &engine, &sim))
+                    return NULL;
+            }
+            else
+                return NULL;
+        }
+
+        PyErr_Clear();
     }
 
     PyObject *retval = PyEngineProperties_New();
