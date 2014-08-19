@@ -1923,8 +1923,15 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
                                     //
                                     // z-h
 
-                                    gradInd[2] = ind[2]-1;
-    
+                                    if (z_back - gradientOffset < 0.0){
+                                        zBack = (z_back - gradientOffset)+1.0;
+                                        gradInd[2] = ind[2]-1;
+                                    }
+                                    else
+                                    {
+                                        zBack = z_back - gradientOffset;
+                                        gradInd[2] = ind[2];
+                                    }
                                     
                                     getIndexandDistFromCenter(zBack, gradInd[2],  indexFront, indexBack,  distFromFront, distFromBack);
                                     gradIndices[4] = indexFront;    gradIndices[5] = indexBack;
