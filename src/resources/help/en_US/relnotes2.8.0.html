@@ -129,6 +129,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug in PickByZone where the point returned did not match the picked zone's center.</li>
   <li>Corrected a bug where the viewer's popup menu would incorrectly reappear after doing operations that required the plots to change or update. This would happen once the popup menu had been activated.</li>
   <li>Corrected a bug where the Threshold operator attributes window would not use enough precision to display large values.</li>
+  <li>Corrected a bug with the multi-pass CSG discretization. It would crash if the number of processors was large and the smallest zone size was set so that it generated a coarse mesh. For example, using 128 processors and a smallest zone size greater than 0.05.</li>
 </ul>
 
 <a name="Dev_changes"></a>

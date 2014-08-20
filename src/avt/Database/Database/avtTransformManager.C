@@ -1589,6 +1589,11 @@ double ComputeCellSize(double tol,
 //    each domain independently if the number total number of boundary
 //    surfaces is above the internal limit.
 //
+//    Eric Brugger, Wed Aug 20 14:17:49 PDT 2014
+//    I corrected a bug in the calculation of the subregion index extents
+//    where it would calculate degenerate regions when the number of elements
+//    per block was small.
+//
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
@@ -1701,23 +1706,29 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         nZBlocks = 1;
 #endif
 
-        int deltaX = (nX + nXBlocks - 1) / nXBlocks;
-        int deltaY = (nY + nYBlocks - 1) / nYBlocks;
-        int deltaZ = (nZ + nZBlocks - 1) / nZBlocks;
+        double deltaX = double(nX) / double(nXBlocks);
+        double deltaY = double(nY) / double(nYBlocks);
+        double deltaZ = double(nZ) / double(nZBlocks);
 
         int iBlock = rank;
         int iXBlock = iBlock / (nYBlocks * nZBlocks);
-        int iMin = iXBlock == 0 ? 0 : iXBlock * deltaX - 1;
-        int iMax = (iXBlock + 1) * deltaX + 1 < nX ? (iXBlock + 1) * deltaX + 1 : nX;
+        int iMin = int(round(deltaX * double(iXBlock))) - 1;
+        iMin = iMin >= 0 ? iMin : 0;
+        int iMax = int(round(deltaX * double(iXBlock + 1))) + 1;
+        iMax = iMax < nX ? iMax : nX;
 
         iBlock = iBlock % (nYBlocks * nZBlocks);
         int iYBlock = iBlock / nZBlocks;
-        int jMin = iYBlock == 0 ? 0 : iYBlock * deltaY - 1;
-        int jMax = (iYBlock + 1) * deltaY + 1 < nY ? (iYBlock + 1) * deltaY + 1 : nY;
+        int jMin = int(round(deltaY * double(iYBlock))) - 1;
+        jMin = jMin >= 0 ? jMin : 0;
+        int jMax = int(round(deltaY * double(iYBlock + 1))) + 1;
+        jMax = jMax < nY ? jMax : nY;
 
         int iZBlock = iBlock % nZBlocks;
-        int kMin = iZBlock == 0 ? 0 : iZBlock * deltaZ - 1;
-        int kMax = (iZBlock + 1) * deltaZ + 1 < nZ ? (iZBlock + 1) * deltaZ + 1 : nZ;
+        int kMin = int(round(deltaZ * double(iZBlock))) - 1;
+        kMin = kMin >= 0 ? kMin : 0;
+        int kMax = int(round(deltaZ * double(iZBlock + 1))) + 1;
+        kMax = kMax < nZ ? kMax : nZ;
 
         int subRegion[6];
         subRegion[0] = iMin; subRegion[1] = iMax;
