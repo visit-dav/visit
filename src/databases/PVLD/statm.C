@@ -35,8 +35,8 @@
 #include <process.h>
 #endif
 
-void getstatm_(int *totsize, int *rss, int* share, int *text, int *lib, 
-               int *data, int* dt)
+void getstatm_(unsigned int *totsize, unsigned int *rss, unsigned int* share,
+    unsigned int *text, unsigned int *lib, unsigned int *data, unsigned int* dt)
 {
   char buf[40];
   
@@ -69,7 +69,7 @@ void getstatm_(int *totsize, int *rss, int* share, int *text, int *lib,
 
 #ifdef DEBUG_STATM 
 int main(){
-  int totsize,rss, share, text,lib,data,dt;
+  unsigned int totsize,rss, share, text,lib,data,dt;
   getstatm_(&totsize,&rss,&share,&text, &lib,&data,&dt);
   printf("%u, %u, %u, %u, %u, %u, %u\n",totsize, rss, share, text, lib, data, dt);
   return 0;

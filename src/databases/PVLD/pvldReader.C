@@ -240,7 +240,7 @@ LoadSampleDatasetNames( const string& filename, const string& grpname,
                 vector<int> cnt;
                 cnt.resize( dsdims[0][0] );
                 hid_t did = OpenDataSet( gid, number_of_history_name.c_str() );
-                ReadDataSet( did, H5T_NATIVE_INT, cnt.data() );
+                ReadDataSet( did, H5T_NATIVE_INT, &cnt[0] );
                 CloseDataSet(did);
                 mxhv = *(std::max_element( cnt.begin(), cnt.end() ));
 #ifdef PARALLEL
@@ -1814,7 +1814,7 @@ GetMaterialType( hid_t file_id, const char* grpname )
             hsize_t dims[1];
             GetAttributeSize( aid, ndim, dims );
             type.resize( dims[0] );
-            ReadAttribute( aid, H5T_NATIVE_INT, type.data() );
+            ReadAttribute( aid, H5T_NATIVE_INT, &type[0] );
             CloseAttribute( aid );
 
             // verify
@@ -1944,7 +1944,7 @@ ReadInfo( hid_t file_id, const char* name,
             {
                 npart = default_number_of_partitions;
                 part.resize( npart+1 );
-                EquallyPartition( npart, num, part.data() );
+                EquallyPartition( npart, num, &part[0] );
             }
             else
             {
@@ -1952,7 +1952,7 @@ ReadInfo( hid_t file_id, const char* name,
                 if( npart>0 )
                 {
                     part.resize( npart+1 );
-                    EquallyPartition( npart, num, part.data() );
+                    EquallyPartition( npart, num, &part[0] );
                 }
                 else
                 {
@@ -1963,7 +1963,7 @@ ReadInfo( hid_t file_id, const char* name,
                         hsize_t dims[1];
                         GetAttributeSize( aid, ndim, dims );
                         part.resize( dims[0] );
-                        ReadAttribute( aid, H5T_NATIVE_INT, part.data() );
+                        ReadAttribute( aid, H5T_NATIVE_INT, &part[0] );
                         CloseAttribute( aid );
                         npart = dims[0]-1;
                     }
@@ -2025,14 +2025,14 @@ ReadNodeIndexCoord( hid_t fid )
         if( PAR_Rank()==0 )
         {
             ReadGroupDataSet( fid, node_name.c_str(), "Index",
-                              H5T_NATIVE_INT, node_idx_.data() );
+                              H5T_NATIVE_INT, &node_idx_[0] );
             ReadGroupDataSet( fid, node_name.c_str(), "Coordinate",
-                              H5T_NATIVE_DOUBLE, dbl.data() );
+                              H5T_NATIVE_DOUBLE, &dbl[0] );
         }
-        //MPI_Bcast( node_idx_.data(),   nnode_, MPI_INT,   0, VISIT_MPI_COMM );
-        //MPI_Bcast( node_crd_.data(), 3*nnode_, MPI_FLOAT, 0, VISIT_MPI_COMM );
-        BroadcastIntArray( node_idx_.data(),   nnode_ );
-        BroadcastDoubleArray( dbl.data(), 3*nnode_ );
+        //MPI_Bcast( &node_idx_[0],   nnode_, MPI_INT,   0, VISIT_MPI_COMM );
+        //MPI_Bcast( &node_crd_[0], 3*nnode_, MPI_FLOAT, 0, VISIT_MPI_COMM );
+        BroadcastIntArray( &node_idx_[0],   nnode_ );
+        BroadcastDoubleArray( &dbl[0], 3*nnode_ );
         for( int i=0; i<3*nnode_; i++ )
             node_crd_[i] = dbl[i];
     }
@@ -2041,7 +2041,7 @@ ReadNodeIndexCoord( hid_t fid )
     //   int nprocs = PAR_Size();
 
     //   vector<int> psft(nprocs+1);
-    //   EquallyPartition( nprocs, nnode_, psft.data() );
+    //   EquallyPartition( nprocs, nnode_, &psft[0] );
 
     //   vector<int> pcnt(nprocs);
     //   for( int r=0; r<nprocs; r++ )
@@ -2053,28 +2053,28 @@ ReadNodeIndexCoord( hid_t fid )
 
     //   vector<int> ibuf( len[0] );
     //   ReadGroupDataSet( fid, node_name.c_str(), "Index",
-    //               H5T_NATIVE_INT, ibuf.data(), 1, sft, len );
+    //               H5T_NATIVE_INT, &ibuf[0], 1, sft, len );
 
     //   vector<float> dbuf( 3*len[0] );
     //   ReadGroupDataSet( fid, node_name.c_str(), "Coordinate",
-    //               H5T_NATIVE_FLOAT, dbuf.data(), 2, sft, len );
+    //               H5T_NATIVE_FLOAT, &dbuf[0], 2, sft, len );
 
-    //   MPI_Allgatherv( ibuf.data(), pcnt[myrank], MPI_INT,
-    //             node_idx_.data(), pcnt.data(), psft.data(), MPI_INT,
+    //   MPI_Allgatherv( &ibuf[0], pcnt[myrank], MPI_INT,
+    //             &node_idx_[0], &pcnt[0], &psft[0], MPI_INT,
     //             VISIT_MPI_COMM );
 
     //   for( auto& c : pcnt ) c*=3;
     //   for( auto& s : psft ) s*=3;
-    //   MPI_Allgatherv( dbuf.data(), pcnt[myrank], MPI_DOUBLE,
-    //             node_crd_.data(), pcnt.data(), psft.data(), MPI_FLOAT,
+    //   MPI_Allgatherv( &dbuf[0], pcnt[myrank], MPI_DOUBLE,
+    //             &node_crd_[0], &pcnt[0], &psft[0], MPI_FLOAT,
     //             VISIT_MPI_COMM );
     // }
 #else
     {
         ReadGroupDataSet( fid, node_name.c_str(), "Index",
-                          H5T_NATIVE_INT, node_idx_.data() );
+                          H5T_NATIVE_INT, &node_idx_[0] );
         ReadGroupDataSet( fid, node_name.c_str(), "Coordinate",
-                          H5T_NATIVE_FLOAT, node_crd_.data() );
+                          H5T_NATIVE_FLOAT, &node_crd_[0] );
     }
 #endif
 
@@ -2110,7 +2110,7 @@ ReadNodeData( hid_t fid, int varInd, const vector<int>& map,
 
     vector<float> buf( tot );
     ReadGroupDataSet( fid, node_name.c_str(), node_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, buf.data() );
+                      H5T_NATIVE_FLOAT, &buf[0] );
     dims = dd;
     dims[0] = map.size();
 
@@ -2147,7 +2147,7 @@ ReadSolidBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
     hsize_t nd = len[0]*len[1];
     elmt.resize( nd );
     ReadGroupDataSet( fid, solid_name.c_str(), "Nodes",
-                      H5T_NATIVE_INT, elmt.data(), 2, sft, len );
+                      H5T_NATIVE_INT, &elmt[0], 2, sft, len );
 
     vector<int> loc( nnode_ );
     std::fill( loc.begin(), loc.end(), -1 );
@@ -2202,7 +2202,7 @@ ReadSolidBlockData( hid_t fid, int varInd, int blkInd,
 
     edat.resize( tot );
     ReadGroupDataSet( fid, solid_name.c_str(), solid_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, edat.data(), ndim, sft.data(), len.data() );
+                      H5T_NATIVE_FLOAT, &edat[0], ndim, &sft[0], &len[0] );
 }
 
 
@@ -2239,7 +2239,7 @@ ReadShellBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, v
     hsize_t nd = len[0]*len[1];
     elmt.resize( nd );
     ReadGroupDataSet( fid, shell_name.c_str(), "Nodes",
-                      H5T_NATIVE_INT, elmt.data(), 2, sft, len );
+                      H5T_NATIVE_INT, &elmt[0], 2, sft, len );
 
     vector<int> loc( nnode_ );
     std::fill( loc.begin(), loc.end(), -1 );
@@ -2294,7 +2294,7 @@ ReadShellBlockData( hid_t fid, int varInd, int blkInd,
 
     edat.resize( tot );
     ReadGroupDataSet( fid, shell_name.c_str(), shell_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, edat.data(), ndim, sft.data(), len.data() );
+                      H5T_NATIVE_FLOAT, &edat[0], ndim, &sft[0], &len[0] );
 }
 
 
@@ -2328,7 +2328,7 @@ ReadBeamBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd, ve
     hsize_t nd = len[0]*len[1];
     elmt.resize( nd );
     ReadGroupDataSet( fid, beam_name.c_str(), "Nodes",
-                      H5T_NATIVE_INT, elmt.data(), 2, sft, len );
+                      H5T_NATIVE_INT, &elmt[0], 2, sft, len );
 
     vector<int> loc( nnode_ );
     std::fill( loc.begin(), loc.end(), -1 );
@@ -2385,7 +2385,7 @@ ReadBeamBlockData( hid_t fid, int varInd, int blkInd,
 
     edat.resize( tot );
     ReadGroupDataSet( fid, beam_name.c_str(), beam_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, edat.data(), ndim, sft.data(), len.data() );
+                      H5T_NATIVE_FLOAT, &edat[0], ndim, &sft[0], &len[0] );
 }
 
 
@@ -2419,7 +2419,7 @@ ReadSurfaceBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd,
     hsize_t nd = len[0]*len[1];
     elmt.resize( nd );
     ReadGroupDataSet( fid, surface_name.c_str(), "Nodes",
-                      H5T_NATIVE_INT, elmt.data(), 2, sft, len );
+                      H5T_NATIVE_INT, &elmt[0], 2, sft, len );
 
     vector<int> loc( nnode_ );
     std::fill( loc.begin(), loc.end(), -1 );
@@ -2474,7 +2474,7 @@ ReadSurfaceBlockData( hid_t fid, int varInd, int blkInd,
 
     edat.resize( tot );
     ReadGroupDataSet( fid, surface_name.c_str(), surf_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, edat.data(), ndim, sft.data(), len.data() );
+                      H5T_NATIVE_FLOAT, &edat[0], ndim, &sft[0], &len[0] );
 }
 
 
@@ -2501,7 +2501,7 @@ ReadSphBlockMesh( hid_t fid, int nb, vector<float>& vcrd, vector<int>& elmt )
 
     vcrd.resize( len[0]*len[1] );
     ReadGroupDataSet( fid, sph_name.c_str(), "Coordinate",
-                      H5T_NATIVE_FLOAT, vcrd.data(), 2, sft, len );
+                      H5T_NATIVE_FLOAT, &vcrd[0], 2, sft, len );
 }
 
 
@@ -2531,7 +2531,7 @@ ReadSphBlockData( hid_t fid, int varInd, int blkInd,
 
     edat.resize( tot );
     ReadGroupDataSet( fid, sph_name.c_str(), sph_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, edat.data(), ndim, sft.data(), len.data() );
+                      H5T_NATIVE_FLOAT, &edat[0], ndim, &sft[0], &len[0] );
 }
 
 
@@ -2548,12 +2548,12 @@ ReadHistoryDataInfo( hid_t fid, const char* meshname, const vector<int>& part, i
 #endif
     {
         ReadGroupDataSet( fid, meshname, number_of_history_name.c_str(),
-                          H5T_NATIVE_INT, cnt.data() );
+                          H5T_NATIVE_INT, &cnt[0] );
     }
 #ifdef PARALLEL
     {
-        //MPI_Bcast( cnt.data(), ne, MPI_INT, 0, VISIT_MPI_COMM );
-        BroadcastIntArray( cnt.data(), ne );
+        //MPI_Bcast( &cnt[0], ne, MPI_INT, 0, VISIT_MPI_COMM );
+        BroadcastIntArray( &cnt[0], ne );
     }
 #endif
 
@@ -2588,7 +2588,7 @@ ReadBlockHistoryData( hid_t fid, const char* meshname, int blkInd, int varInd,
     if( hvsft.size() != len+1 )
     {
         hvsft.resize( len+1 );
-        int* d1 = hvsft.data()+1;
+        int* d1 = &hvsft[0]+1;
         ReadGroupDataSet( fid, meshname, number_of_history_name.c_str(),
                           H5T_NATIVE_INT, d1, 1, &sft, &len );
         hvsft[0]=0;
@@ -2603,7 +2603,7 @@ ReadBlockHistoryData( hid_t fid, const char* meshname, int blkInd, int varInd,
 
     vector<float> buf( nhv );
     ReadGroupDataSet( fid, meshname, history_name.c_str(),
-                      H5T_NATIVE_FLOAT, buf.data(), 1, &shv, &nhv );
+                      H5T_NATIVE_FLOAT, &buf[0], 1, &shv, &nhv );
 
     data.resize(len);
     std::fill( data.begin(), data.end(), 0. );
@@ -2639,7 +2639,7 @@ ReadTiedSetBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd,
     hsize_t nd = len[0]*len[1];
     elmt.resize( nd );
     ReadGroupDataSet( fid, tiedset_name.c_str(), "MstSeg",
-                      H5T_NATIVE_INT, elmt.data(), 2, sft, len );
+                      H5T_NATIVE_INT, &elmt[0], 2, sft, len );
 
     vector<int> loc( nnode_ );
     std::fill( loc.begin(), loc.end(), -1 );
@@ -2685,7 +2685,7 @@ ReadTiedSetSlaveBlockMesh( hid_t fid, int nb, vector<float>& crd )
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
     ReadGroupDataSet( fid, tiedset_name.c_str(), "XSlave",
-                      H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
+                      H5T_NATIVE_FLOAT, &crd[0], 2, sft, len );
 }
 
 
@@ -2707,7 +2707,7 @@ ReadTiedSetMasterBlockMesh( hid_t fid, int nb, vector<float>& crd )
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
     ReadGroupDataSet( fid, tiedset_name.c_str(), "XMaster",
-                      H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
+                      H5T_NATIVE_FLOAT, &crd[0], 2, sft, len );
 }
 
 
@@ -2739,7 +2739,7 @@ ReadTiedSetBlockData( hid_t fid, int varInd, int blkInd,
 
     edat.resize( tot );
     ReadGroupDataSet( fid, tiedset_name.c_str(), tdst_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, edat.data(), ndim, sft.data(), len.data() );
+                      H5T_NATIVE_FLOAT, &edat[0], ndim, &sft[0], &len[0] );
 }
 
 
@@ -2763,7 +2763,7 @@ ReadContactBlockMesh( hid_t fid, int nb, vector<int>& vmap, vector<float>& vcrd,
     hsize_t nd = len[0]*len[1];
     elmt.resize( nd );
     ReadGroupDataSet( fid, contact_name.c_str(), "MstSeg",
-                      H5T_NATIVE_INT, elmt.data(), 2, sft, len );
+                      H5T_NATIVE_INT, &elmt[0], 2, sft, len );
 
     vector<int> loc( nnode_ );
     std::fill( loc.begin(), loc.end(), -1 );
@@ -2808,7 +2808,7 @@ ReadContactSlaveBlockMesh( hid_t fid, int nb, vector<float>& crd )
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
     ReadGroupDataSet( fid, contact_name.c_str(), "XSlave",
-                      H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
+                      H5T_NATIVE_FLOAT, &crd[0], 2, sft, len );
 }
 
 
@@ -2829,7 +2829,7 @@ ReadContactMasterBlockMesh( hid_t fid, int nb, vector<float>& crd )
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
     ReadGroupDataSet( fid, contact_name.c_str(), "XMaster",
-                      H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
+                      H5T_NATIVE_FLOAT, &crd[0], 2, sft, len );
 }
 
 
@@ -2859,7 +2859,7 @@ ReadContactBlockData( hid_t fid, int varInd, int blkInd,
 
     edat.resize( tot );
     ReadGroupDataSet( fid, contact_name.c_str(), cntt_dsname_[varInd].c_str(),
-                      H5T_NATIVE_FLOAT, edat.data(), ndim, sft.data(), len.data() );
+                      H5T_NATIVE_FLOAT, &edat[0], ndim, &sft[0], &len[0] );
 }
 
 
@@ -3026,7 +3026,7 @@ CollectMaterial( hid_t fid, const char* grpname, const vector<string>& dsname,
     {
         vector<int> mdat( ne );
         ReadGroupDataSet( fid, grpname, "Material",
-                          H5T_NATIVE_INT, mdat.data() );
+                          H5T_NATIVE_INT, &mdat[0] );
         set<int> mset;
         for( vector<int>::const_iterator iter=mdat.begin(); iter!=mdat.end(); iter++ )
             mset.insert( *iter );
@@ -3039,8 +3039,8 @@ CollectMaterial( hid_t fid, const char* grpname, const vector<string>& dsname,
         //MPI_Bcast( &len, 1, MPI_INT, 0, VISIT_MPI_COMM );
         BroadcastInt( len );
         mat.resize(len);
-        //MPI_Bcast( mat.data(), len, MPI_INT, 0, VISIT_MPI_COMM );
-        BroadcastIntArray( mat.data(), len );
+        //MPI_Bcast( &mat[0], len, MPI_INT, 0, VISIT_MPI_COMM );
+        BroadcastIntArray( &mat[0], len );
     }
 #endif
     }
@@ -3048,7 +3048,7 @@ CollectMaterial( hid_t fid, const char* grpname, const vector<string>& dsname,
     {
         vector<int> mdat( ne );
         ReadGroupDataSet( fid, grpname, "Material",
-                          H5T_NATIVE_INT, mdat.data() );
+                          H5T_NATIVE_INT, &mdat[0] );
         set<int> mset;
         for( vector<int>::const_iterator iter=mdat.begin(); iter!=mdat.end(); iter++ )
             mset.insert( *iter );
@@ -3527,7 +3527,7 @@ ReadStringArrayAttribute( hid_t loc, const char* att_name,  vector<string>& str_
     hid_t sid = H5Aget_space( aid );
     int ndim = H5Sget_simple_extent_ndims( sid );
     vector<hsize_t> dims( ndim );
-    H5Sget_simple_extent_dims( sid, dims.data(), NULL );
+    H5Sget_simple_extent_dims( sid, &dims[0], NULL );
     H5Sclose(sid);
     if( ndim != 1 )
     {
@@ -3628,12 +3628,12 @@ ReadSolidBlockIndexVariable( const string& idxname,
                                   idxname.c_str(),
                                   varname.c_str(),
                                   H5T_NATIVE_DOUBLE,
-                                  smpl.data() );
+                                  &smpl[0] );
                 CloseGroup( gid );
                 CloseFile( fid );
 #     ifdef PARALLEL
             }
-            BroadcastDoubleArray( smpl.data(), dsz );
+            BroadcastDoubleArray( &smpl[0], dsz );
 #     endif
         }
 
@@ -3705,12 +3705,12 @@ ReadShellBlockIndexVariable( const string& idxname,
                                   idxname.c_str(),
                                   varname.c_str(),
                                   H5T_NATIVE_DOUBLE,
-                                  smpl.data() );
+                                  &smpl[0] );
                 CloseGroup( gid );
                 CloseFile( fid );
 #     ifdef PARALLEL
             }
-            BroadcastDoubleArray( smpl.data(), dsz );
+            BroadcastDoubleArray( &smpl[0], dsz );
 #     endif
         }
 

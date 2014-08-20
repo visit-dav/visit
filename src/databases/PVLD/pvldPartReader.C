@@ -669,7 +669,7 @@ ReadMaterialInfo( hid_t fid, const char* grpname,
     {
         vector<int> mdat( ne );
         ReadGroupDataSet( fid, grpname, "Material",
-                          H5T_NATIVE_INT, mdat.data() );
+                          H5T_NATIVE_INT, &mdat[0] );
 
         vector<int> mcnt( nmmat_ );
         std::fill( mcnt.begin(), mcnt.end(), 0 );
@@ -763,27 +763,27 @@ ReadMaterialInfo( hid_t fid, const char* grpname,
         len = part.size();
         BroadcastInt( len );
         part.resize(len);
-        BroadcastIntArray( part.data(), len );
+        BroadcastIntArray( &part[0], len );
 
         len = prtsft.size();
         BroadcastInt( len );
         prtsft.resize(len);
-        BroadcastIntArray( prtsft.data(), len );
+        BroadcastIntArray( &prtsft[0], len );
 
         len = mat.size();
         BroadcastInt( len );
         mat.resize(len);
-        BroadcastIntArray( mat.data(), len );
+        BroadcastIntArray( &mat[0], len );
 
         len = matsft.size();
         BroadcastInt( len );
         matsft.resize(len);
-        BroadcastIntArray( matsft.data(), len );
+        BroadcastIntArray( &matsft[0], len );
 
         len = matidx.size();
         BroadcastInt( len );
         matidx.resize(len);
-        BroadcastIntArray( matidx.data(), len );
+        BroadcastIntArray( &matidx[0], len );
     }
 #endif
 }
@@ -800,7 +800,7 @@ ReadHistoryDataInfo( hid_t fid, const char* meshname, const vector<int>& part, i
         int ne = part[np];
         vector<int> cnt(ne);
         ReadGroupDataSet( fid, meshname, number_of_history_name.c_str(),
-                          H5T_NATIVE_INT, cnt.data() );
+                          H5T_NATIVE_INT, &cnt[0] );
         mxnb = *(std::max_element( cnt.begin(), cnt.end() ));
     }
 #ifdef PARALLEL
@@ -843,7 +843,7 @@ ReadRawData( hid_t fid,
 #endif
     {
         vector<int> tem( ne*sz );
-        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_INT, tem.data() );
+        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_INT, &tem[0] );
 
         for( int i=0; i<ne; i++ )
         {
@@ -855,7 +855,7 @@ ReadRawData( hid_t fid,
     }
 #ifdef PARALLEL
     {
-        BroadcastIntArray( data.data(), ne*sz );
+        BroadcastIntArray( &data[0], ne*sz );
     }
 #endif
 }
@@ -891,11 +891,11 @@ ReadRawData( hid_t fid,
     if( PAR_Rank()==0 )
 #endif
     {
-        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_DOUBLE, tem.data() );
+        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_DOUBLE, &tem[0] );
     }
 #ifdef PARALLEL
     {
-        BroadcastDoubleArray( tem.data(), ne*sz );
+        BroadcastDoubleArray( &tem[0], ne*sz );
     }
 #endif
     for( int i=0; i<ne; i++ )
@@ -927,7 +927,7 @@ ReadRawHistoryData( hid_t fid,
     {
         vector<int> cnt(ne);
         ReadGroupDataSet( fid, grpname, number_of_history_name.c_str(),
-                          H5T_NATIVE_INT, cnt.data() );
+                          H5T_NATIVE_INT, &cnt[0] );
 
         vector<int> dsp(ne+1);
         dsp[0]=0;
@@ -935,7 +935,7 @@ ReadRawHistoryData( hid_t fid,
             dsp[i+1] = dsp[i] + cnt[i];
 
         vector<double> tem( dsp[ne] );
-        ReadGroupDataSet( fid, grpname, history_name.c_str(), H5T_NATIVE_DOUBLE, tem.data() );
+        ReadGroupDataSet( fid, grpname, history_name.c_str(), H5T_NATIVE_DOUBLE, &tem[0] );
 
         tgt.resize( dsp[ne] );
         sft.resize(ne+1);
@@ -956,11 +956,11 @@ ReadRawHistoryData( hid_t fid,
         len = sft.size();
         BroadcastInt( len );
         sft.resize(len);
-        BroadcastIntArray( sft.data(), len );
+        BroadcastIntArray( &sft[0], len );
         len = tgt.size();
         BroadcastInt( len );
         tgt.resize(len);
-        BroadcastDoubleArray( tgt.data(), len );
+        BroadcastDoubleArray( &tgt[0], len );
     }
 #endif
 
@@ -986,7 +986,7 @@ ReadElementIndex( hid_t fid,
     {
         vector<int> mdat( ne );
         ReadGroupDataSet( fid, grpname, "Material",
-                          H5T_NATIVE_INT, mdat.data() );
+                          H5T_NATIVE_INT, &mdat[0] );
 
         vector<int> mmap( nmmat_ );
         std::fill( mmap.begin(), mmap.end(), 0 );
@@ -1006,7 +1006,7 @@ ReadElementIndex( hid_t fid,
     }
 #ifdef PARALLEL
     {
-        BroadcastIntArray( matidx.data(), ne );
+        BroadcastIntArray( &matidx[0], ne );
     }
 #endif
 }
