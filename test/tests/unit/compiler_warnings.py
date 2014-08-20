@@ -161,11 +161,7 @@ if len(improved_counts):
     json.dump(baseline_counts,bfile,indent=4,sort_keys=True)
     bfile.write("\n")
     bfile.close()
-    #pcommit = subprocess.Popen("/usr/bin/svn commit -m 'Updating warning counts' %s"%bfilename)
-    #(output, error) = pcommit.communicate()
-    #pcommit.wait()
     retval = subprocess.call(["/usr/bin/svn","commit","-m","'Updating warning counts'","%s"%bfilename])
-    print "got retval=%d\n"%retval
 
 #
 # Generate the (sorted) warning counts data
