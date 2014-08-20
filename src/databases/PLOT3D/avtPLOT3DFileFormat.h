@@ -49,7 +49,8 @@
 #include <string>
 
 
-class     vtkVisItPLOT3DReader;
+class     DBOptionsAttributes;
+class     vtkPLOT3DReader;
 
 
 // ****************************************************************************
@@ -66,7 +67,7 @@ class     vtkVisItPLOT3DReader;
 class avtPLOT3DFileFormat : public avtSTMDFileFormat
 {
   public:
-                          avtPLOT3DFileFormat(const char *);
+                          avtPLOT3DFileFormat(const char *, DBOptionsAttributes *);
     virtual              ~avtPLOT3DFileFormat();
     
     virtual const char   *GetType(void) { return "PLOT3D File Format"; };
@@ -78,7 +79,9 @@ class avtPLOT3DFileFormat : public avtSTMDFileFormat
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
   protected:
-    vtkVisItPLOT3DReader *reader;
+    vtkPLOT3DReader *reader;
+    std::string           visitMetaFile;
+    bool                  ReadVisItMetaFile(void);
 };
 
 
