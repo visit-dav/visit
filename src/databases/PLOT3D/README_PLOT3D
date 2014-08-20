@@ -19,11 +19,13 @@ by having a multigrid file).
 
 In addition, PLOT3D is not a self-describing format.  The way to get around
 this is to have the user tell us what variant it is.  This can be done
-through a database window.  Since that is not currently available, it can
-also be done through a text file.  The text file specifies which variants
-the current PLOT3D file is.
+through database options, or via a text 'meta' file, specifying which  
+which variants the current PLOT3D file is.
 
-The text file must have the extension ".vp3d".
+If utilizing the database options to specify the variants, the grid file should
+be the one that is opened by VisIt.
+
+If VisIt is opening the Meta file: the text file must have the extension ".vp3d".
 
 Below is an example of the text file:
 % cat NHLP_2D.v3pd
@@ -49,13 +51,12 @@ MULTI_GRID
 #BINARY
 ASCII
 
-# Endianness.  This only applies to BINARY files.  Native endian will
+# Endianness.  This only applies to BINARY files.  Big endian will
 # be assumed if no value is specified.
 #
 # Options:
 #LITTLE_ENDIAN
 #BIG_ENDIAN
-#NATIVE_ENDIAN
 
 
 # Structured grid vs unstructured grids.  Structured grids will be assumed
@@ -94,8 +95,7 @@ SINGLE_PRECISION
 # COMPRESSED_ASCII
 # UNCOMPRESSED_ASCII
 
-# C vs Fortran Binary.  Fortran Binary is not supported.  This option is for
-# future support.  C-Binary is assumed.
+# C vs Fortran Binary.  C-Binary is assumed.
 #
 # Options:
 # C_BINARY

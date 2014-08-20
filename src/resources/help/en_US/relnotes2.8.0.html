@@ -76,7 +76,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Curv2d reader can now read double-precision sized data.  Scaling may be required to correctly render very-large sized values.</li>
   <li>The CGNS reader was updated to use cngslib version 3.2.1.</li> 
   <li>A reader for the MFEM finite element library was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file. MFEM is a toolkit that supports meshes with higher order finite elements. This reader provides level-of-detail support that refines MFEM meshes to standard VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
-  </li>
+  <li>The PLOT3D reader was updated to include support for reading Fortran-formatted binary data, to pass along double-precision data if present in the files, and to fix bugs.  The reader now has File Open options that can replace the use of the .vp3d Meta File for specifying file format variants.  If utilizing the options, have VisIt open the grid file, and then specify the Solution file name in the options.  The solution file location is assumed relative to the grid file location.</li>
+  <li>The PLOT2D reader was removed, as the PLOT3D reader supports 2D data.</li>
+</ul>
 </ul>
 
 <a name="Operator_changes"></a>
