@@ -44,9 +44,12 @@
 #define AVT_SLICE_FILTER_H
 
 #include <avtPluginDataTreeIterator.h>
+
 #include <SliceAttributes.h>
 
 #include <vtkType.h>
+
+class avtPointAttribute;
 
 class vtkDataSet;
 class vtkRectilinearGrid;
@@ -128,6 +131,9 @@ class vtkSlicer;
 //    Brad Whitlock, Tue Mar 13 14:42:27 PDT 2012
 //    Replace float with double.
 //
+//    Eric Brugger, Thu Aug 14 16:33:47 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginDataTreeIterator
@@ -160,7 +166,7 @@ class avtSliceFilter : public avtPluginDataTreeIterator
     vtkMatrix4x4                 *origTrans;
 
     virtual avtContract_p   ModifyContract(avtContract_p);
-    virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void            PreExecute(void);
     virtual void            PostExecute(void);
 

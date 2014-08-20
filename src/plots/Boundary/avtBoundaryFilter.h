@@ -44,6 +44,7 @@
 #define AVT_BOUNDARY_FILTER_H
 
 #include <avtSIMODataTreeIterator.h>
+
 #include <BoundaryAttributes.h>
 
 #include <string>
@@ -64,6 +65,9 @@
 //    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004
 //    Moved constructor to source file, added keepNodeZone data member.
 //
+//    Eric Brugger, Tue Aug 19 09:57:11 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtBoundaryFilter : public avtSIMODataTreeIterator
@@ -81,7 +85,7 @@ class avtBoundaryFilter : public avtSIMODataTreeIterator
   protected:
     BoundaryAttributes    plotAtts;
 
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p ExecuteDataTree(avtDataRepresentation *);
     virtual void          UpdateDataObjectInfo(void);
     virtual avtContract_p
                           ModifyContract(avtContract_p);

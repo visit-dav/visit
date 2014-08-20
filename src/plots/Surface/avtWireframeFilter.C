@@ -159,28 +159,34 @@ avtWireframeFilter::Equivalent(const AttributeGroup *a)
 //      to a scaled version of the point/cell data.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label as a string.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset. 
+//  Returns:      The output data representation. 
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 24, 2004 
 //
 //  Modifications:
 //
-//     Hank Childs, Thu Jul 29 17:24:40 PDT 2004
-//     Reverse order of inputs to appender to get around VTK funniness.
+//    Hank Childs, Thu Jul 29 17:24:40 PDT 2004
+//    Reverse order of inputs to appender to get around VTK funniness.
 //
-//     Hank Childs, Wed Mar  9 15:53:09 PST 2005
-//     Fix memory leak.
+//    Hank Childs, Wed Mar  9 15:53:09 PST 2005
+//    Fix memory leak.
+//
+//    Eric Brugger, Tue Aug 19 11:22:57 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtWireframeFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     // xtract the edges for correct wireframe rendering.
     
     geoFilter->SetInputData(inDS);
@@ -204,9 +210,11 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     appendFilter->SetInputConnectionByNumber(1, geoFilter->GetOutputPort());
     appendFilter->Update();
     vtkPolyData *outPolys = appendFilter->GetOutput();
-    outPolys->Register(NULL);
 
-    return outPolys;
+    avtDataRepresentation *outDR = new avtDataRepresentation(outPolys,
+        inDR->GetDomain(), inDR->GetLabel());
+
+    return outDR;
 }
 
 

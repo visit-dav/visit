@@ -43,11 +43,10 @@
 #ifndef AVT_Replicate_FILTER_H
 #define AVT_Replicate_FILTER_H
 
-
 #include <avtSIMODataTreeIterator.h>
 #include <avtPluginFilter.h>
-#include <ReplicateAttributes.h>
 
+#include <ReplicateAttributes.h>
 
 class vtkDataArray;
 class vtkDataSet;
@@ -80,6 +79,9 @@ class vtkRectilinearGrid;
 //    origin in this case).  Add support for shifting atoms to a new
 //    unit cell origin.
 //
+//    Eric Brugger, Thu Aug 14 08:53:21 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtReplicateFilter : public virtual avtSIMODataTreeIterator,
@@ -102,7 +104,7 @@ class avtReplicateFilter : public virtual avtSIMODataTreeIterator,
     ReplicateAttributes   atts;
 
     virtual void          PostExecute(void);
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p ExecuteDataTree(avtDataRepresentation *);
     virtual avtContract_p
                           ModifyContract(avtContract_p);
     virtual void          UpdateDataObjectInfo(void);

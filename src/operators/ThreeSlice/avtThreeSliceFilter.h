@@ -43,14 +43,12 @@
 #ifndef AVT_ThreeSlice_FILTER_H
 #define AVT_ThreeSlice_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <ThreeSliceAttributes.h>
 
-
-class vtkAppendPolyData;
-class vtkDataSet;
 class vtkSlicer;
+
 
 // ****************************************************************************
 //  Class: avtThreeSliceFilter
@@ -65,6 +63,9 @@ class vtkSlicer;
 //    David Camp, Thu May 23 12:52:53 PDT 2013
 //    Removed the vtkSlicer and vtkAppendPolyData objects from class. They are
 //    now created in the execute method. This is done for threading VisIt.
+//
+//    Eric Brugger, Tue Aug 19 09:26:30 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -86,7 +87,7 @@ class avtThreeSliceFilter : public avtPluginDataTreeIterator
   protected:
     ThreeSliceAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 
     virtual void            UpdateDataObjectInfo(void);    
     virtual void            ReleaseData(void);

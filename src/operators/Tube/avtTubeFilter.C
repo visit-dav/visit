@@ -151,11 +151,9 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //      Sends the specified input and output through the Tube filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: childs<generated>
 //  Creation:   August28,2001
@@ -192,14 +190,22 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Tue Aug  7 10:52:13 PDT 2012
 //    Send the scale variable to the vtk tube filter when needed.
 // 
-//     Eric Brugger, Wed Jan  9 13:17:11 PST 2013
-//     Modified to inherit from vtkPolyDataAlgorithm.
+//    Eric Brugger, Wed Jan  9 13:17:11 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+//    Eric Brugger, Tue Aug 19 09:45:37 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtTubeFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     bool haveSurface = false;
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
         haveSurface = true;
@@ -281,7 +287,9 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         output = vtktube->GetOutput();
     }
 
-    ManageMemory(output);
+    avtDataRepresentation *out_dr = new avtDataRepresentation(output,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
     vtktube->Delete();
     tube->Delete();
     cpd->Delete();
@@ -289,7 +297,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     if (ugridAsPD != NULL)
         ugridAsPD->Delete();
 
-    return output;
+    return out_dr;
 }
 
 

@@ -116,11 +116,21 @@ avtBoundaryFilter::SetPlotAtts(const BoundaryAttributes *atts)
 //    Hank Childs, Thu Feb 21 16:13:14 PST 2008
 //    Initialize variable, in case scanf fails.
 //
+//    Eric Brugger, Tue Aug 19 10:00:11 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
+avtBoundaryFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
         in_ds->GetNumberOfCells() == 0)
     {

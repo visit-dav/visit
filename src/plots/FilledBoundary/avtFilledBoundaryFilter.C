@@ -126,12 +126,21 @@ avtFilledBoundaryFilter::SetPlotAtts(const FilledBoundaryAttributes *atts)
 //    which may not work perfectly or optimally in the general case, but
 //    is acceptable for how it's being used at the moment.
 //
+//    Eric Brugger, Tue Aug 19 10:15:20 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
-                                         string label)
+avtFilledBoundaryFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
         in_ds->GetNumberOfCells() == 0)
     {

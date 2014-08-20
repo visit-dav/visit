@@ -43,11 +43,10 @@
 #ifndef AVT_TENSOR_FILTER_H
 #define AVT_TENSOR_FILTER_H
 
-
 #include <avtDataTreeIterator.h>
 
-class  vtkTensorReduceFilter;
-class  vtkVertexFilter;
+class vtkTensorReduceFilter;
+class vtkVertexFilter;
 
 
 // ****************************************************************************
@@ -63,6 +62,9 @@ class  vtkVertexFilter;
 //  Modifications:
 //    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005
 //    Added keepNodeZone & ModifyContract.
+//
+//    Eric Brugger, Tue Aug 19 11:28:07 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -89,7 +91,7 @@ class avtTensorFilter : public avtDataTreeIterator
     int                       stride;
     int                       nTensors;
 
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
                               ModifyContract(avtContract_p);

@@ -208,11 +208,9 @@ avtTensorFilter::Equivalent(bool us, int red)
 //      Takes in an input dataset and creates the vector poly data.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer:   Hank Childs
 //  Creation:     September 23, 2003
@@ -232,11 +230,18 @@ avtTensorFilter::Equivalent(bool us, int red)
 //    Removed the reduce and vertex variables from the class. They are now 
 //    created in the exectue method. This was done for threading VisIt.
 //
+//    Eric Brugger, Tue Aug 19 11:28:49 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtTensorFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
 
     vtkTensorReduceFilter *reduce = vtkTensorReduceFilter::New();
     vtkVertexFilter *vertex = vtkVertexFilter::New();
@@ -263,12 +268,14 @@ avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     reduce->SetInputConnection(vertex->GetOutputPort());
     reduce->Update();
     vtkPolyData *outPD = reduce->GetOutput();
-    outPD->Register(NULL);
+
+    avtDataRepresentation *outDR = new avtDataRepresentation(outPD,
+        inDR->GetDomain(), inDR->GetLabel());
 
     reduce->Delete();
     vertex->Delete();
 
-    return outPD;
+    return outDR;
 }
 
 

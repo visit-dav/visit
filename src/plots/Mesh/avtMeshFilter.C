@@ -115,11 +115,9 @@ avtMeshFilter::~avtMeshFilter()
 //      Sends the specified input and output through the mesh filter.
 //
 //  Arguments:
-//      inDS       The input dataset.
-//      dom        The domain number.
-//      lab        The label.
+//      inDR       The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 8, 2001
@@ -195,16 +193,26 @@ avtMeshFilter::~avtMeshFilter()
 //    Hank Childs, Thu Jan  8 11:29:28 CST 2009
 //    Fix two problem sized memory leaks.
 //
+//    Eric Brugger, Tue Aug 19 10:55:44 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
+avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+    int domain = inDR->GetDomain();
+    std::string label = inDR->GetLabel();
+
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
     int topoDim = datts.GetTopologicalDimension();
 
     if (topoDim == 0) 
-        return new avtDataTree(inDS, dom, lab);
+        return new avtDataTree(inDS, domain, label);
 
     vtkLinesFromOriginalCells *lineFilter = vtkLinesFromOriginalCells::New();
     vtkGeometryFilter *geometryFilter = vtkGeometryFilter::New();
@@ -374,13 +382,13 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
             append->Update();
             vtkPolyData *outPoly = vtkPolyData::New();
             outPoly->ShallowCopy(append->GetOutput());
-            rv = new avtDataTree(outPoly, dom, lab);
+            rv = new avtDataTree(outPoly, domain, label);
             outPoly->Delete();
             append->Delete();
         }
         else  
         {
-            rv = new avtDataTree(outDS, dom, lab);
+            rv = new avtDataTree(outDS, domain, label);
         }
     }
 

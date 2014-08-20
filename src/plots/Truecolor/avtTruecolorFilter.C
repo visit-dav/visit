@@ -82,29 +82,30 @@ avtTruecolorFilter::~avtTruecolorFilter()
 //      Does the actual VTK code to modify the dataset.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      inDR      The input data repesentation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer: Chris Wojtan
 //  Creation:   Monday, June 15 2004
 //
 //  Modifications:
 //
-//     Chris Wojtan Mon Jun 21 15:44 PDT 2004
-//     Changed vector dimension from 3D to 4D
+//    Chris Wojtan Mon Jun 21 15:44 PDT 2004
+//    Changed vector dimension from 3D to 4D
 //
-//     Hank Childs, Wed Nov 10 11:33:59 PST 2004
-//     Fix memory leak.
+//    Hank Childs, Wed Nov 10 11:33:59 PST 2004
+//    Fix memory leak.
 //
-//     Hank Childs, Fri May 20 14:52:21 PDT 2005
-//     Add support for nodal colors.
+//    Hank Childs, Fri May 20 14:52:21 PDT 2005
+//    Add support for nodal colors.
 //
-//     Brad Whitlock, Mon Apr 23 16:35:43 PST 2007
-//     Convert data arrays to 4 component tuples if they are not already
-//     4-component.
+//    Brad Whitlock, Mon Apr 23 16:35:43 PST 2007
+//    Convert data arrays to 4 component tuples if they are not already
+//    4-component.
+//
+//    Eric Brugger, Tue Aug 19 11:46:38 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -117,13 +118,18 @@ DoubleToColor(const double c)
     return (unsigned char)ic;
 }
 
-vtkDataSet *
-avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtTruecolorFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     // if we do not know the name of the data array to display,
     // we cannot display it
     if (variable_name == NULL)
-        return inDS;
+        return inDR;
 
     vtkDataSet *outDS = (vtkDataSet *) inDS->NewInstance();
     outDS->ShallowCopy(inDS);
@@ -136,7 +142,7 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     {
         vecdata = inDS->GetPointData()->GetArray(variable_name);
         if (vecdata == NULL)
-            return inDS;
+            return inDR;
         isZonal = false;
     }
 
@@ -217,10 +223,12 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     color_array->Delete();
 
-    outDS->Register(NULL);
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
+        inDR->GetDomain(), inDR->GetLabel());
+
     outDS->Delete();
 
-    return outDS;
+    return outDR;
 }
 
 

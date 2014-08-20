@@ -668,10 +668,9 @@ avtParallelCoordinatesFilter::PostExecute(void)
 //           curves of a ParallelCoordinates plot.
 //
 //  Arguments:
-//      in_ds  :  The input dataset.
-//      domain :  The domain number of the input dataset.
+//      in_dr  :  The input data representation.
 //
-//  Returns: The output dataset (curves of the ParallelCoordinates plot).
+//  Returns:      The output data tree.
 //
 //  Programmer: Mark Blair
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
@@ -736,8 +735,14 @@ avtParallelCoordinatesFilter::PostExecute(void)
 // ****************************************************************************
 
 avtDataTree_p 
-avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
+avtParallelCoordinatesFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set and domain number.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+
     // NOTE: we will never enter this function for the case where we have
     // gotten a histogram specification from the database.
 

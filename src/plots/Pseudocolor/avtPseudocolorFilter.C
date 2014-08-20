@@ -92,8 +92,6 @@ avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 }
 
 
-
-
 // ****************************************************************************
 //  Method: avtPseudocolorFilter::ExecuteData
 //
@@ -101,23 +99,23 @@ avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 //      Returns input. 
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer:   Kathleen Bonnell
 //  Creation:     October 29, 2004
 //
 //  Modifications:
+//    Eric Brugger, Tue Aug 19 11:11:13 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtPseudocolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtPseudocolorFilter::ExecuteData(avtDataRepresentation *inDR)
 {
-    return inDS;
+    return inDR;
 }
 
 

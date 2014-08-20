@@ -43,10 +43,9 @@
 #ifndef AVT_WIREFRAME_FILTER_H
 #define AVT_WIREFRAME_FILTER_H
 
-
 #include <avtDataTreeIterator.h>
-#include <SurfaceAttributes.h>
 
+#include <SurfaceAttributes.h>
 
 class vtkDataSet;
 class vtkAppendPolyData;
@@ -68,6 +67,9 @@ class vtkGeometryFilter;
 //
 //    Hank Childs, Fri Jul 30 12:09:16 PDT 2004
 //    Moved PostExecute to avtSurfaceFilter.
+//
+//    Eric Brugger, Tue Aug 19 11:22:06 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -92,7 +94,7 @@ class avtWireframeFilter : public avtDataTreeIterator
     vtkAppendPolyData      *appendFilter;
     vtkUniqueFeatureEdges  *edgesFilter;
 
-    virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 };
 
 

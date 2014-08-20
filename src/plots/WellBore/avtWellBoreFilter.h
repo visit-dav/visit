@@ -43,8 +43,8 @@
 #ifndef AVT_WellBore_FILTER_H
 #define AVT_WellBore_FILTER_H
 
-
 #include <avtDataTreeIterator.h>
+
 #include <WellBoreAttributes.h>
 
 #include <string>
@@ -56,6 +56,7 @@ class vtkPoints;
 class vtkPolyData;
 
 #define MAX_DETAIL_LEVELS 4
+
 
 // ****************************************************************************
 //  Class: avtWellBoreFilter
@@ -69,6 +70,9 @@ class vtkPolyData;
 //  Modifications:
 //      Eric Brugger, Mon Nov 10 13:06:30 PST 2008
 //      Added the ability to add a well bore name and stem.
+//
+//      Eric Brugger, Tue Aug 19 14:15:00 PDT 2014
+//      Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -90,7 +94,7 @@ class avtWellBoreFilter : public avtSIMODataTreeIterator
 
     float                    *cyl_pts[MAX_DETAIL_LEVELS];
 
-    virtual avtDataTree_p     ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p     ExecuteDataTree(avtDataRepresentation *);
     virtual void              RefashionDataObjectInfo(void);
 
     void                      CalculateCylPts(void);

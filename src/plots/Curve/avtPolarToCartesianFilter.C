@@ -96,22 +96,27 @@ avtPolarToCartesianFilter::~avtPolarToCartesianFilter()
 //    cartesian.   
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer:   Kathleen Biagas
 //  Creation:     September 11, 2013
 //
 //  Modifications:
+//    Eric Brugger, Tue Aug 19 10:03:39 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtPolarToCartesianFilter::ExecuteData(vtkDataSet *inDS, int, string)
+avtDataRepresentation *
+avtPolarToCartesianFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     if (inDS->GetDataObjectType() != VTK_POLY_DATA)
         EXCEPTION1(ImproperUseException, "Expecting PolyData");
 
@@ -142,9 +147,13 @@ avtPolarToCartesianFilter::ExecuteData(vtkDataSet *inDS, int, string)
     }
     outPoly->SetPoints(outPts); 
     outPts->Delete();
-    ManageMemory(outPoly);
+
+    avtDataRepresentation *outDR = new avtDataRepresentation(outPoly,
+        inDR->GetDomain(), inDR->GetLabel());
+
     outPoly->Delete();
-    return outPoly;
+
+    return outDR;
 }
 
 
