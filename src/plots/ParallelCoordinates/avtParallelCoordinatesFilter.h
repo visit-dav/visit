@@ -42,10 +42,10 @@
 #ifndef AVT_PARALLEL_COORDINATES_FILTER_H
 #define AVT_PARALLEL_COORDINATES_FILTER_H
 
-
-#include <ParallelCoordinatesAttributes.h>
 #include <avtSIMODataTreeIterator.h>
 #include <avtHistogramSpecification.h>
+
+#include <ParallelCoordinatesAttributes.h>
 
 #include <vector>
 #include <string>
@@ -96,6 +96,9 @@ class vtkPoints;
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Eric Brugger, Tue Aug 19 11:03:10 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtParallelCoordinatesFilter : public avtSIMODataTreeIterator
@@ -117,7 +120,7 @@ public:
 
 protected:
     virtual avtContract_p       ModifyContract(avtContract_p);
-    virtual avtDataTree_p       ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p       ExecuteDataTree(avtDataRepresentation *);
 
     virtual void                UpdateDataObjectInfo(void);
     virtual void                PreExecute(void);

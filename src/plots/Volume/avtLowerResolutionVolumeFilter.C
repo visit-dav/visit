@@ -219,9 +219,9 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
 //   ds
 //
 // Arguments:
-//   ds : The dataset on which we'll operate.
+//   in_dr :   The input data representation.
 //
-// Returns:    The input dataset.
+// Returns:    The output data representation.
 //
 // Note:       This filter assumes that there will only be 1 domain. This is
 //             fine because we call it after the resample filter.
@@ -233,12 +233,20 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
 //   Brad Whitlock, Mon Aug 20 16:31:01 PDT 2012
 //   Get the color variable by passing NULL into VolumeGetScalar.
 //
+//   Eric Brugger, Tue Aug 19 14:06:17 PDT 2014
+//   Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtLowerResolutionVolumeFilter::ExecuteData(vtkDataSet *ds, int, std::string)
+avtDataRepresentation *
+avtLowerResolutionVolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
     StackTimer t("avtLowerResolutionVolumeFilter::ExecuteData");
+
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *ds = in_dr->GetDataVTK();
 
     vtkDataSet *rv = ds;
     // If we're not doing linear scaling then we have to create a copy dataset
@@ -286,7 +294,13 @@ avtLowerResolutionVolumeFilter::ExecuteData(vtkDataSet *ds, int, std::string)
 
     CalculateHistograms(rv);
 
-    return rv;
+    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    if (rv != ds)
+        rv->Delete();
+
+    return out_dr;
 }
 
 // ****************************************************************************

@@ -47,6 +47,7 @@
 
 #include <string>
 
+
 // ****************************************************************************
 //  Class: avtLabelSubsetsFilter
 //
@@ -60,6 +61,9 @@
 //    Brad Whitlock, Wed Aug 3 17:58:50 PST 2005
 //    Copied from the Subset plot and made its only job to split up materials
 //    and pass along other subset variables.
+//
+//    Eric Brugger, Tue Aug 19 10:51:44 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -75,7 +79,7 @@ class avtLabelSubsetsFilter : public avtSIMODataTreeIterator
 
     void                  SetNeedMIR(bool val) { needMIR = val; };
   protected:
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p ExecuteDataTree(avtDataRepresentation *);
     virtual avtContract_p
                           ModifyContract(avtContract_p);
 

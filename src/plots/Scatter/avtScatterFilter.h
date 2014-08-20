@@ -44,7 +44,9 @@
 #define AVT_SCATTER_FILTER_H
 
 #include <avtDataTreeIterator.h>
+
 #include <ScatterAttributes.h>
+
 
 // ****************************************************************************
 //  Class: avtScatterFilter
@@ -75,6 +77,9 @@
 //
 //    Kathleen Biagas, Thu Mar  1 14:49:50 MST 2012
 //    Add keepNodeZone and dataArray (origNodes) arg to PointMeshFromVariables.
+//
+//    Eric Brugger, Tue Aug 19 11:13:13 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -114,7 +119,7 @@ protected:
     doubleVector               thisProcsSpatialExtents;
 
     virtual void               PreExecute(void);
-    virtual vtkDataSet        *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void               PostExecute(void);
     virtual void               UpdateDataObjectInfo(void);
     virtual avtContract_p     

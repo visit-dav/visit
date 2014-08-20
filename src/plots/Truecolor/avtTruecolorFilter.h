@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtTruecolorFilter.h                              //
+//                            avtTruecolorFilter.h                           //
 // ************************************************************************* //
 
 #ifndef AVT_Truecolor_FILTER_H
@@ -57,12 +57,15 @@
 //
 //  Modifications:
 //
-//     Chris Wojtan Mon Jun 21 15:45 PDT 2004
-//     Added "variable_name" member variable
-//     Added SetVarName member function
+//    Chris Wojtan Mon Jun 21 15:45 PDT 2004
+//    Added "variable_name" member variable
+//    Added SetVarName member function
 //
-//     Hank Childs, Fri May 20 14:55:06 PDT 2005
-//     Remove UpdateDataObjectInfo (it was empty).
+//    Hank Childs, Fri May 20 14:55:06 PDT 2005
+//    Remove UpdateDataObjectInfo (it was empty).
+//
+//    Eric Brugger, Tue Aug 19 11:46:04 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -79,7 +82,7 @@ class avtTruecolorFilter : public avtDataTreeIterator
                                   {variable_name = name;}
 
   protected:
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     const char               *variable_name;
 };
 

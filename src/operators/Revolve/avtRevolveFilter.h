@@ -43,13 +43,11 @@
 #ifndef AVT_Revolve_FILTER_H
 #define AVT_Revolve_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <RevolveAttributes.h>
 
 #include <avtTypes.h>
-
-class vtkDataSet;
 
 
 // ****************************************************************************
@@ -65,6 +63,9 @@ class vtkDataSet;
 //
 //    Hank Childs, Sun Mar 18 10:57:33 PDT 2007
 //    Add new methods to better support RZ meshes.
+//
+//    Eric Brugger, Thu Aug 14 09:03:55 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -86,7 +87,7 @@ class avtRevolveFilter : public avtPluginDataTreeIterator
   protected:
     RevolveAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 
     virtual void          UpdateDataObjectInfo(void);
     virtual void          VerifyInput(void);

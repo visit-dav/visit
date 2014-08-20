@@ -43,10 +43,10 @@
 #ifndef AVT_Label_FILTER_H
 #define AVT_Label_FILTER_H
 
-
 #include <avtDataTreeIterator.h>
 
 class vtkDataSet;
+
 
 // ****************************************************************************
 //  Class: avtLabelFilter
@@ -58,6 +58,8 @@ class vtkDataSet;
 //  Creation:   Thu Jan 22 11:52:38 PDT 2004
 //
 //  Modifications:
+//    Eric Brugger, Tue Aug 19 10:32:52 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -88,7 +90,7 @@ class avtLabelFilter : public avtDataTreeIterator
 
     char                     *labelVariable;
 
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
 };
 

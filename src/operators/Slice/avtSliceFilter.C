@@ -1127,9 +1127,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //      Sends the specified input and output through the slicer.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      domain     The domain number.
-//      <unused>   The label.
+//      in_dr      The input data representation.
 //
 //  Notes:
 //     In the context of selection by the database it may seem like we should
@@ -1137,7 +1135,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //     that the database still serves up a slab of zones (a 3D mesh) 
 //     from which a 2D slice needs to be computed.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2000
@@ -1193,11 +1191,20 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    Hank Childs, Thu Nov 20 14:02:34 PST 2008
 //    No longer use the per-domain bounds to set the plane orientation.
 //
+//    Eric Brugger, Thu Aug 14 16:37:36 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
+avtDataRepresentation *
+avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set and domain number.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+
     if (!CanIntersectPlane(in_ds))
     {
         debug5 << "Not slicing domain " << domain
@@ -1263,11 +1270,13 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         rv = NULL;
     }
     
-    ManageMemory(rv);
+    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
     if (out_ds != NULL)
         out_ds->Delete();
     
-    return rv;
+    return out_dr;
 }
 
 

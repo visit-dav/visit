@@ -215,11 +215,9 @@ avtScatterFilter::PreExecute(void)
 //      Sends the specified input and output through the scatter filter.
 //
 //  Arguments:
-//      inDS       The input dataset.
-//      dom        The domain number.
-//      lab        The label.
+//      inDR       The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data representation.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Nov 2 22:36:23 PST 2004
@@ -244,12 +242,21 @@ avtScatterFilter::PreExecute(void)
 //    Kathleen Biagas, Thu Mar  1 14:49:50 MST 2012
 //    Keep track of original node numbers.
 //
+//    Eric Brugger, Tue Aug 19 11:13:44 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtScatterFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtScatterFilter::ExecuteData(avtDataRepresentation *inDR)
 {
-debug4 << "avtScatterFilter::ExecuteData" << endl;
+    debug4 << "avtScatterFilter::ExecuteData" << endl;
+
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
 
     // Determine the name of the first variable.
@@ -397,7 +404,13 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
     }
     ENDTRY
 
-    return outDS;
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
+        inDR->GetDomain(), inDR->GetLabel());
+
+    if (outDS != NULL)
+        outDS->Delete();
+
+    return outDR;
 }
 
 // ****************************************************************************
@@ -948,16 +961,12 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     //
     // Set the final spatial extents value.
     //
-
     thisProcsSpatialExtents[0] = xMin;
     thisProcsSpatialExtents[1] = xMax;
     thisProcsSpatialExtents[2] = yMin;
     thisProcsSpatialExtents[3] = yMax;
     thisProcsSpatialExtents[4] = zMin;
     thisProcsSpatialExtents[5] = zMax;
-
-    outDS->Register(NULL);
-    outDS->Delete();
 
     return outDS;
 }

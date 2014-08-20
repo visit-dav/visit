@@ -43,7 +43,6 @@
 #ifndef AVT_Histogram_FILTER_H
 #define AVT_Histogram_FILTER_H
 
-
 #include <avtDataTreeIterator.h>
 
 #include <HistogramAttributes.h>
@@ -83,6 +82,9 @@
 //    Kevin Bensema, Mon Nov 11 12:42 2013
 //    Modified ScaleBins to compute CDFs and normalization.
 //
+//    Eric Brugger, Tue Aug 19 10:28:00 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtHistogramFilter : public avtDataTreeIterator
@@ -106,7 +108,7 @@ class avtHistogramFilter : public avtDataTreeIterator
     double                    logWorkingRange[2], sqrtWorkingRange[2];
     int                       workingNumBins;
 
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
     virtual void              PreExecute();
     virtual void              PostExecute();

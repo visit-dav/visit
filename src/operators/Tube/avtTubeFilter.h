@@ -43,12 +43,9 @@
 #ifndef AVT_Tube_FILTER_H
 #define AVT_Tube_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
+
 #include <TubeAttributes.h>
-
-
-class vtkDataSet;
 
 
 // ****************************************************************************
@@ -67,6 +64,9 @@ class vtkDataSet;
 //
 //    Hank Childs, Wed Oct 20 20:30:37 PDT 2010
 //    Add support for scaling by fraction of the bounding box.
+//
+//    Eric Brugger, Tue Aug 19 09:44:48 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -91,7 +91,7 @@ class avtTubeFilter : public avtPluginDataTreeIterator
 
     virtual void          PreExecute(void);
     virtual void          UpdateDataObjectInfo(void);
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual avtContract_p ModifyContract(avtContract_p);
 };
 
