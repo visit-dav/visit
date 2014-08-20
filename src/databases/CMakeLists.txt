@@ -173,6 +173,9 @@
 #    Kathleen Biagas, Tue Aug 19 16:36:56 PDT 2014
 #    Remove SimV1 and SimV2Writer.
 #
+#    Kathleen Biagas, Tue Aug 19 23:02:45 PDT 2014
+#    Removed PLOT2D, as the PLOT3D reader can read 2D data.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -352,7 +355,6 @@ OVERFLOW
 OpenFOAM
 PATRAN
 PuReMD
-PLOT2D
 PLOT3D
 PlainText
 PLY
