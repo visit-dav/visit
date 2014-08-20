@@ -155,11 +155,9 @@ print_array_names(vtkDataSet *inDS)
 //      Does the actual VTK code to modify the dataset.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Jan 7 14:58:26 PST 2004
@@ -177,11 +175,19 @@ print_array_names(vtkDataSet *inDS)
 //    Brad Whitlock, Sat Apr 21 21:34:45 PDT 2012
 //    Change label cell centers from float to double.
 //
+//    Eric Brugger, Tue Aug 19 10:33:45 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
+avtDataRepresentation *
+avtLabelFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     vtkDataSet *newDS = (vtkDataSet *) inDS->NewInstance();
     newDS->ShallowCopy(inDS);
     vtkDataSet *outDS = newDS;
@@ -487,12 +493,6 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    debug3 << "avtLabelFilter::ExecuteData: 3.75: The data arrays are:" << endl;
 //    print_array_names(outDS);
 
-    if (outDS == newDS)
-    {
-        outDS->Register(NULL);
-    }
-    newDS->Delete();
-
     //
     // Set a flag in the data validity that will prevent the plot from
     // creating normals since they are not appropriate.
@@ -501,7 +501,12 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     visitTimer->StopTimer(total, "avtLabelFilter::ExecuteData");
 
-    return outDS;
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
+        inDR->GetDomain(), inDR->GetLabel());
+
+    outDS->Delete();
+
+    return outDR;
 }
 
 

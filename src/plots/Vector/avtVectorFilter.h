@@ -43,11 +43,10 @@
 #ifndef AVT_VECTOR_FILTER_H
 #define AVT_VECTOR_FILTER_H
 
-
 #include <avtDataTreeIterator.h>
 
-class  vtkVectorReduceFilter;
-class  vtkVertexFilter;
+class vtkVectorReduceFilter;
+class vtkVertexFilter;
 
 
 // ****************************************************************************
@@ -89,6 +88,9 @@ class  vtkVertexFilter;
 //    Hank Childs, Wed Dec 22 01:27:33 PST 2010
 //    Add PostExecute method.
 //
+//    Eric Brugger, Tue Aug 19 11:50:28 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtVectorFilter : public avtDataTreeIterator
@@ -119,7 +121,7 @@ class avtVectorFilter : public avtDataTreeIterator
 
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
                               ModifyContract(avtContract_p);

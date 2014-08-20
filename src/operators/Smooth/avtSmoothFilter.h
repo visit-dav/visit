@@ -43,10 +43,9 @@
 #ifndef AVT_Smooth_FILTER_H
 #define AVT_Smooth_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
-#include <SmoothOperatorAttributes.h>
 
+#include <SmoothOperatorAttributes.h>
 
 class vtkDataSet;
 
@@ -63,6 +62,9 @@ class vtkDataSet;
 //  Modifications:
 //    Jeremy Meredith, Fri Apr 30 16:54:29 EDT 2010
 //    Removed warning for non-polydata -- just try to fix it instead.
+//
+//    Eric Brugger, Thu Aug 14 16:39:28 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -84,7 +86,7 @@ class avtSmoothFilter : public avtPluginDataTreeIterator
   protected:
     SmoothOperatorAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void          PreExecute(void);
     virtual void          UpdateDataObjectInfo(void);
 };

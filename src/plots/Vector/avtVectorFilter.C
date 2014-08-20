@@ -315,11 +315,9 @@ avtVectorFilter::Equivalent(bool us, int red, bool orig)
 //      Takes in an input dataset and creates the vector poly data.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      inDR      The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer:   Hank Childs
 //  Creation:     March 21, 2001
@@ -351,11 +349,19 @@ avtVectorFilter::Equivalent(bool us, int red, bool orig)
 //    Fixed a bug where we got no glyphs when there were more domains than
 //    target glyphs.
 //
+//    Eric Brugger, Tue Aug 19 11:51:14 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
+avtDataRepresentation *
+avtVectorFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
     vtkVectorReduceFilter *reduce = vtkVectorReduceFilter::New();
     vtkVertexFilter       *vertex = vtkVertexFilter::New();
     if (useStride)
@@ -383,10 +389,14 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
     reduce->Update();
 
     vtkPolyData *outPD = reduce->GetOutput();
-    outPD->Register(NULL);
+
+    avtDataRepresentation *outDR = new avtDataRepresentation(outPD,
+        inDR->GetDomain(), inDR->GetLabel());
+
     reduce->Delete();
     vertex->Delete();
-    return outPD;
+
+    return outDR;
 }
 
 

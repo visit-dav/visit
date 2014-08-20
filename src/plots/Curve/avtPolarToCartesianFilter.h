@@ -56,6 +56,8 @@
 //  Creation:   September 11, 2013
 //
 //  Modifications:
+//      Eric Brugger, Tue Aug 19 10:03:09 PDT 2014
+//      Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -75,7 +77,7 @@ class avtPolarToCartesianFilter : public avtDataTreeIterator
                                   { useDegrees = val; }
 
   protected:
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              PostExecute(void);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p     ModifyContract(avtContract_p);

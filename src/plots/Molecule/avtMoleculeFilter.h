@@ -43,12 +43,13 @@
 #ifndef AVT_MOLECULE_FILTER_H
 #define AVT_MOLECULE_FILTER_H
 
+#include <avtDataTreeIterator.h>
 
 #include <MoleculeAttributes.h>
-#include <avtDataTreeIterator.h>
+
 #include <set>
-#include <vector>
 #include <string>
+#include <vector>
 
 class  vtkMoleculeReduceFilter;
 
@@ -63,6 +64,8 @@ class  vtkMoleculeReduceFilter;
 //  Creation:   February 14, 2006
 //
 //  Modifications:
+//    Eric Brugger, Tue Aug 19 10:59:44 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -88,7 +91,7 @@ class avtMoleculeFilter : public avtDataTreeIterator
 
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
                               ModifyContract(avtContract_p);

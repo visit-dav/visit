@@ -273,11 +273,9 @@ avtReplicateFilter::UpdateDataObjectInfo(void)
 //      Sends the specified input and output through the Replicate filter.
 //
 //  Arguments:
-//      in_ds      The input dataset.
-//      dom        The domain number.
-//      str        An identifying string.
+//      in_dr      The input data representation.
 //
-//  Returns:       The output dataset.
+//  Returns:       The output data tree.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
@@ -307,6 +305,9 @@ avtReplicateFilter::UpdateDataObjectInfo(void)
 //    sit at 0,0,0, even if a simulation with periodic boundary conditions
 //    has it starting at some other point.
 //
+//    Eric Brugger, Thu Aug 14 08:53:49 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 static void TransformVector(const double m[16], double v[3])
 {
@@ -316,11 +317,18 @@ static void TransformVector(const double m[16], double v[3])
 }
 
 avtDataTree_p 
-avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
+avtReplicateFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     int  i, j, k;
 
-    if (in_ds == NULL)
+    if (in_dr == NULL)
     {
         return NULL;
     }
@@ -412,16 +420,16 @@ avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
                     output = newoutput;
                 }
             }
-            rv = new avtDataTree(1, (vtkDataSet**)(&output), dom, str);
+            rv = new avtDataTree(1, (vtkDataSet**)(&output), domain, label);
         }
         else
         {
-            rv = new avtDataTree(nrep, replications, dom, str);
+            rv = new avtDataTree(nrep, replications, domain, label);
         }
     }
     else
     {
-        rv = new avtDataTree(nrep, replications, dom, str);
+        rv = new avtDataTree(nrep, replications, domain, label);
     }
 
     //

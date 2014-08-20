@@ -43,8 +43,8 @@
 #ifndef AVT_MESH_FILTER_H
 #define AVT_MESH_FILTER_H
 
-
 #include <avtSIMODataTreeIterator.h>
+
 #include <MeshAttributes.h>
 
 #include <string>
@@ -82,6 +82,9 @@ class vtkDataSet;
 //    Removed data member filters to simplify memory management.  Also removed
 //    ReleaseData.
 //
+//    Eric Brugger, Tue Aug 19 10:55:03 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtMeshFilter : public avtSIMODataTreeIterator
@@ -98,7 +101,7 @@ class avtMeshFilter : public avtSIMODataTreeIterator
     MeshAttributes             atts;
     bool                       keepNodeZone;
 
-    virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p      ExecuteDataTree(avtDataRepresentation *);
     virtual void               UpdateDataObjectInfo(void);
     virtual avtContract_p     
                                ModifyContract(avtContract_p spec);

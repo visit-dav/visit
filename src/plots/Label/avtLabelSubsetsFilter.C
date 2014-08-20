@@ -88,12 +88,21 @@ avtLabelSubsetsFilter::avtLabelSubsetsFilter()
 //  Creation:   December 14, 2001 
 //
 //  Modifications:
+//    Eric Brugger, Tue Aug 19 10:52:38 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //    
 // ****************************************************************************
 
 avtDataTree_p
-avtLabelSubsetsFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
+avtLabelSubsetsFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
         in_ds->GetNumberOfCells() == 0)
     {

@@ -44,12 +44,14 @@
 #define AVT_ZoneDump_FILTER_H
 
 #include <avtPluginDataTreeIterator.h>
+
 #include <ZoneDumpAttributes.h>
 
 #include <string>
 #include <vector>
 
 class vtkDataSet;
+
 
 // ****************************************************************************
 //  Class: avtZoneDumpFilter
@@ -63,6 +65,9 @@ class vtkDataSet;
 //  Modifications:
 //    Cyrus Harrison, Mon Apr 30 10:51:03 PDT 2007
 //    Fixed spelling mistake.
+//
+//    Eric Brugger, Tue Aug 19 09:53:03 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -122,7 +127,7 @@ class avtZoneDumpFilter : public avtPluginDataTreeIterator
 
     ZoneDumpAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual avtContract_p ModifyContract
                                  (avtContract_p contract);
 

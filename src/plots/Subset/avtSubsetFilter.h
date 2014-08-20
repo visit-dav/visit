@@ -43,11 +43,12 @@
 #ifndef AVT_SUBSET_FILTER_H
 #define AVT_SUBSET_FILTER_H
 
-
 #include <avtSIMODataTreeIterator.h>
+
 #include <SubsetAttributes.h>
 
 #include <string>
+
 
 // ****************************************************************************
 //  Class: avtSubsetFilter
@@ -71,6 +72,9 @@
 //    Kathleen Bonnell, Fri Nov 12 11:50:33 PST 2004
 //    Moved constructor to source code, added keepNodeZone data member. 
 //
+//    Eric Brugger, Tue Aug 19 11:19:35 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class avtSubsetFilter : public avtSIMODataTreeIterator
@@ -88,7 +92,7 @@ class avtSubsetFilter : public avtSIMODataTreeIterator
   protected:
     SubsetAttributes      plotAtts;
 
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p ExecuteDataTree(avtDataRepresentation *);
     virtual void          UpdateDataObjectInfo(void);
     virtual avtContract_p
                           ModifyContract(avtContract_p);

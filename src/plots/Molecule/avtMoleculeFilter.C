@@ -114,17 +114,25 @@ avtMoleculeFilter::~avtMoleculeFilter()
 //    Brad Whitlock, Fri Apr 20 16:17:08 PDT 2012
 //    Support non-float arrays.
 //
+//    Eric Brugger, Tue Aug 19 11:00:33 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtMoleculeFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     vtkIdType natoms = in_ds->GetNumberOfPoints();
     vtkDataArray *primary = in_ds->GetPointData()->GetScalars();
     if (!primary)
     {
         debug4<<"avtMoleculeFilter::ExecuteData: primary was NULL\n";
-        return  in_ds;
+        return  in_dr;
     }
 
     if (natoms>0 && primary)
@@ -178,7 +186,7 @@ avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             delete [] hasval;
         }
     }
-    return in_ds;
+    return in_dr;
 }
 
 
