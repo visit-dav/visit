@@ -786,10 +786,10 @@ GetAuxiliaryData( const char *varname, int domain,
                     int dims[1];
                     dims[0]=mid.size();
                     avtMaterial *amat = new avtMaterial(
-                        mat.size(), mat.data(),
+                        mat.size(), &mat[0],
                         mnames,
                         ndims, dims,
-                        0, mid.data(),
+                        0, &mid[0],
                         0, // length of mix arrays
                         0, // mix_mat array
                         0, // mix_next array
@@ -2407,7 +2407,7 @@ avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm
     pts->Delete();
 
     vtkIdType verts[8];
-    const int* cnt=elm.data();
+    const int* cnt=&elm[0];
     for( int i=0; i<nele; i++ )
     {
         for( int j=0; j<8; j++ )
@@ -2446,7 +2446,7 @@ avtPVLDFileFormat::GenerateShellMesh( vector<float>& crd, const vector<int>& elm
     pts->Delete();
 
     vtkIdType verts[4];
-    const int* cnt=elm.data();
+    const int* cnt=&elm[0];
     for( int i=0; i<nele; i++ )
     {
         for( int j=0; j<4; j++ )
@@ -2470,7 +2470,7 @@ avtPVLDFileFormat::GenerateBeamMesh( vector<float>& crd, const vector<int>& elm 
     pts->Delete();
 
     vtkIdType verts[2];
-    const int* cnt=elm.data();
+    const int* cnt=&elm[0];
     for( int i=0; i<nele; i++ )
     {
         for( int j=0; j<2; j++ )
@@ -2495,7 +2495,7 @@ avtPVLDFileFormat::GenerateSphMesh( vector<float>& crd, const vector<int>& elm )
     pts->Delete();
 
     vtkIdType verts[1];
-    const int* cnt=elm.data();
+    const int* cnt=&elm[0];
     for( int i=0; i<nele; i++ )
     {
         verts[0] = *cnt++;
@@ -2591,7 +2591,7 @@ avtPVLDFileFormat::GenerateVariable( const vector<int>& dims, vector<float>& dat
         var->SetNumberOfTuples( msz );
 
         float *des = (float *)var->GetVoidPointer(0);
-        const float *src = dat.data();
+        const float *src = &dat[0];
         for( int i=0; i<msz*ncmp; i++ )
             *des++ = *src++;
     }
@@ -2610,7 +2610,7 @@ avtPVLDFileFormat::GenerateDyna3dStressTensor( const vector<int>& dims, const ve
     var->SetNumberOfTuples( msz );
 
     float *des = (float *)var->GetVoidPointer(0);
-    const float *src = dat.data();
+    const float *src = &dat[0];
     for( int i=0; i<msz; i++ )
     {
         PVLD_Reader::ConvDyna3dStreeTensor( src, des );
@@ -2633,7 +2633,7 @@ GenerateSphStressTensor( const vector<int>& dims, const vector<float>& dat )
     var->SetNumberOfTuples( msz );
 
     float *des = (float *)var->GetVoidPointer(0);
-    const float *src = dat.data();
+    const float *src = &dat[0];
     for( int i=0; i<msz; i++ )
     {
         PVLD_Reader::ConvSphStreeTensor( src, des );
@@ -2657,7 +2657,7 @@ GenerateSphStressTensor( const vector<int>& dims, const vector<float>& dat )
 //   var->SetNumberOfTuples( msz );
 
 //   float *des = (float *)var->GetVoidPointer(0);
-//   const float *src = dat.data();
+//   const float *src = &dat[0];
 //   for( int i=0; i<msz*ncmp; i++ ) {
 //     *des++ = *src++;
 //   }
