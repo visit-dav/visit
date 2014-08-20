@@ -36,7 +36,7 @@ int main( int argc, char** argv )
   reader.FreeResource();
 
   vector<int> sft(nprocs+1);
-  EquallyPartition( nprocs, reader.GetNumOfNodes(), sft.data() );
+  EquallyPartition( nprocs, reader.GetNumOfNodes(), &sft[0] );
 
   t1 = std::chrono::high_resolution_clock::now();
   reader.ReadNodes( sft );

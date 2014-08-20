@@ -5,7 +5,6 @@
     </FilePatterns>
     <CXXFLAGS> 
       ${HDF5_INCLUDE_DIR}
-      -std=c++1y
     </CXXFLAGS>
     <LDFLAGS>  
       ${HDF5_LIBRARY_DIR} 
