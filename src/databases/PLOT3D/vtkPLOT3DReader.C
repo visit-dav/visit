@@ -559,12 +559,7 @@ vtkPLOT3DReader::ReadGeometryHeader(FILE* xyzFp, vtkInformationVector *outputVec
 
     for (int i=0, gridSize=0; i<this->NumberOfGrids; i++)
       {
-      if (!this->TwoDimensionalGeometry)
-        gridSize =GridDimensions[3*i]*GridDimensions[1+3*i]*GridDimensions[2+3*i];
-      else
-        gridSize = GridDimensions[2*i]*GridDimensions[1+2*i];
-
-      GridSizes[i] = gridSize;
+      GridSizes[i] = GridDimensions[3*i]*GridDimensions[1+3*i]*GridDimensions[2+3*i];
       }
     }
 
@@ -2176,17 +2171,9 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp, vtkStructuredGrid *output)
   if (0 <= this->GridNumber && this->GridNumber < this->NumberOfGrids)
     {
     this->NumberOfPoints = this->GridSizes[this->GridNumber];
-    if (!this->TwoDimensionalGeometry)
-      {
-      output->SetDimensions(this->GridDimensions[  3*this->GridNumber],
-                            this->GridDimensions[1+3*this->GridNumber],
-                            this->GridDimensions[2+3*this->GridNumber]);
-      }
-    else
-      {
-      output->SetDimensions(this->GridDimensions[  2*this->GridNumber],
-                            this->GridDimensions[1+2*this->GridNumber], 1);
-      }
+    output->SetDimensions(this->GridDimensions[  3*this->GridNumber],
+                          this->GridDimensions[1+3*this->GridNumber],
+                          this->GridDimensions[2+3*this->GridNumber]);
     }
   else
     {
@@ -2210,6 +2197,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp, vtkStructuredGrid *output)
   int offset = this->ComputeGridOffset(xyzFp);
   fseek(xyzFp, (long)(offset), SEEK_SET);
 
+  this->SkipByteCount(xyzFp);
   if (this->ReadVector(xyzFp, this->NumberOfPoints, pointArray) == 0)
     {
     vtkErrorMacro("Encountered premature end-of-file while reading "
@@ -2246,33 +2234,42 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
 
     for (int j = i+1; j <= this->GridNumber; j++)
       {
+      int nd = this->TwoDimensionalGeometry ? 2 : 3;
       if (this->BinaryFile)
         {
         int bc = this->HasByteCount ? sizeof(int) : 0;
         if (this->IBlanking)
           {
-          this->GridOffsets[j] = (this->GridOffsets[j-1] + 4*this->GridSizes[j-1]*4) + bc;
+          this->GridOffsets[j] = (this->GridOffsets[j-1] + (nd+1)*this->GridSizes[j-1]*4) + bc;
           }
         else
           {
-          this->GridOffsets[j] = (this->GridOffsets[j-1] + 3*this->GridSizes[j-1]*4) + bc;
+          if (this->DoublePrecision)
+            {
+            this->GridOffsets[j] = (this->GridOffsets[j-1] + nd*this->GridSizes[j-1]*8) + 2*bc;
+            }
+          else
+            {
+            this->GridOffsets[j] = (this->GridOffsets[j-1] + nd*this->GridSizes[j-1]*4) + 2*bc;
+            }
           }
         }
       else
         {
-        int * numbersToSkip;
         int numberOfElements;
         if (this->IBlanking)
           {
-          numberOfElements = 4*GridSizes[j-1];
+          numberOfElements = (nd+1)*GridSizes[j-1];
           }
         else
           {
-          numberOfElements = 3*GridSizes[j-1];
+          numberOfElements = (nd)*GridSizes[j-1];
           }
-        numbersToSkip = new int[numberOfElements];
         fseek(xyzFp,(long)(this->GridOffsets[j-1]),SEEK_SET);
-        this->ReadIntBlock(xyzFp,numberOfElements,numbersToSkip);
+        vtkDataArray *numbersToSkip = this->NewFloatArray();
+        numbersToSkip->SetNumberOfTuples(numberOfElements);
+        this->ReadScalar(xyzFp,numberOfElements,numbersToSkip);
+        numbersToSkip->Delete();
         this->GridOffsets[j] = ftell(xyzFp);
         }
       }
@@ -2397,17 +2394,28 @@ vtkPLOT3DReader::ComputeSolutionOffset(FILE *qFp)
 
     for (int j = i+1; j<= this->GridNumber; j++)
       {
+      // Number of scalars to  be read: 1 for density, 1 for energy and NUmDims for Momentum
+      int ns = 1  + 1  + (this->TwoDimensionalGeometry ? 2 : 3);
       if (this->BinaryFile)
         {
         int bc = this->HasByteCount ? sizeof(int) : 0;
 
-        this->SolutionOffsets[j] = this->SolutionOffsets[0] +
-                             4 * sizeof(float) + 2*bc +
-                             5 * this->GridSizes[j-1]*sizeof(float) + 3*bc;
+        if (this->DoublePrecision)
+          {
+          this->SolutionOffsets[j] = this->SolutionOffsets[0] +
+                               4 * sizeof(double) + 2*bc +
+                               ns * this->GridSizes[j-1]*sizeof(double) + 2*bc;
+          }
+        else
+          {
+          this->SolutionOffsets[j] = this->SolutionOffsets[0] +
+                               4 * sizeof(float) + 2*bc +
+                               ns * this->GridSizes[j-1]*sizeof(float) + 2*bc;
+          }
         }
       else
         {
-        int numberOfElements = 4 + 5*GridSizes[j-1];
+        int numberOfElements = 4 + ns*GridSizes[j-1];
         fseek(qFp,(long)this->SolutionOffsets[j-1],SEEK_SET);
         vtkDataArray *numbersToSkip = this->NewFloatArray();
         numbersToSkip->SetNumberOfTuples(numberOfElements);
