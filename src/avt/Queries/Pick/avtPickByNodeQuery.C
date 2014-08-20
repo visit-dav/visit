@@ -54,7 +54,7 @@
 #include <avtVector.h>
 
 #include <BadNodeException.h>
-
+#include <float.h>
 
 
 // ****************************************************************************
@@ -271,8 +271,18 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // transformed space, so  ????????
     //
     double coord[3];
-    ds->GetPoint(nodeid, coord);
-    pickAtts.SetCellPoint(coord);
+    double *p = pickAtts.GetCellPoint();
+    if (p[0] == FLT_MAX)
+    {
+        ds->GetPoint(nodeid, coord);
+        pickAtts.SetCellPoint(coord);
+    }
+    else
+    {
+        coord[0] = p[0];
+        coord[1] = p[1];
+        coord[2] = p[2];
+    }
     if (transform != NULL)
     {
         avtVector v1(coord);
