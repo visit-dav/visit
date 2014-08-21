@@ -1,6 +1,5 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
-#  VARGS: -create-ghosts-for-t-intersections
 #
 #  Test Case:  amr_stitch.py
 #
