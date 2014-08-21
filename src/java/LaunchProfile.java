@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class LaunchProfile extends AttributeSubject
 {
-    private static int LaunchProfile_numAdditionalAtts = 34;
+    private static int LaunchProfile_numAdditionalAtts = 35;
 
     public LaunchProfile()
     {
@@ -97,6 +97,7 @@ public class LaunchProfile extends AttributeSubject
         XArguments = new String("");
         launchXServers = false;
         XDisplay = new String(":%l");
+        numThreads = 0;
     }
 
     public LaunchProfile(int nMoreFields)
@@ -137,6 +138,7 @@ public class LaunchProfile extends AttributeSubject
         XArguments = new String("");
         launchXServers = false;
         XDisplay = new String(":%l");
+        numThreads = 0;
     }
 
     public LaunchProfile(LaunchProfile obj)
@@ -182,6 +184,7 @@ public class LaunchProfile extends AttributeSubject
         XArguments = new String(obj.XArguments);
         launchXServers = obj.launchXServers;
         XDisplay = new String(obj.XDisplay);
+        numThreads = obj.numThreads;
 
         SelectAll();
     }
@@ -243,7 +246,8 @@ public class LaunchProfile extends AttributeSubject
                 (GPUsPerNode == obj.GPUsPerNode) &&
                 (XArguments.equals(obj.XArguments)) &&
                 (launchXServers == obj.launchXServers) &&
-                (XDisplay.equals(obj.XDisplay)));
+                (XDisplay.equals(obj.XDisplay)) &&
+                (numThreads == obj.numThreads));
     }
 
     // Property setting methods
@@ -451,6 +455,12 @@ public class LaunchProfile extends AttributeSubject
         Select(33);
     }
 
+    public void SetNumThreads(int numThreads_)
+    {
+        numThreads = numThreads_;
+        Select(34);
+    }
+
     // Property getting methods
     public String  GetProfileName() { return profileName; }
     public int     GetTimeout() { return timeout; }
@@ -486,6 +496,7 @@ public class LaunchProfile extends AttributeSubject
     public String  GetXArguments() { return XArguments; }
     public boolean GetLaunchXServers() { return launchXServers; }
     public String  GetXDisplay() { return XDisplay; }
+    public int     GetNumThreads() { return numThreads; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -558,6 +569,8 @@ public class LaunchProfile extends AttributeSubject
             buf.WriteBool(launchXServers);
         if(WriteSelect(33, buf))
             buf.WriteString(XDisplay);
+        if(WriteSelect(34, buf))
+            buf.WriteInt(numThreads);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -666,6 +679,9 @@ public class LaunchProfile extends AttributeSubject
         case 33:
             SetXDisplay(buf.ReadString());
             break;
+        case 34:
+            SetNumThreads(buf.ReadInt());
+            break;
         }
     }
 
@@ -706,6 +722,7 @@ public class LaunchProfile extends AttributeSubject
         str = str + stringToString("XArguments", XArguments, indent) + "\n";
         str = str + boolToString("launchXServers", launchXServers, indent) + "\n";
         str = str + stringToString("XDisplay", XDisplay, indent) + "\n";
+        str = str + intToString("numThreads", numThreads, indent) + "\n";
         return str;
     }
 
@@ -745,5 +762,6 @@ public class LaunchProfile extends AttributeSubject
     private String  XArguments;
     private boolean launchXServers;
     private String  XDisplay;
+    private int     numThreads;
 }
 

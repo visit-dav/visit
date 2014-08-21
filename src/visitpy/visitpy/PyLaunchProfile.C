@@ -209,6 +209,8 @@ PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sXDisplay = \"%s\"\n", prefix, atts->GetXDisplay().c_str());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%snumThreads = %d\n", prefix, atts->GetNumThreads());
+    str += tmpStr;
     return str;
 }
 
@@ -1062,6 +1064,30 @@ LaunchProfile_GetXDisplay(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+LaunchProfile_SetNumThreads(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the numThreads in the object.
+    obj->data->SetNumThreads((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LaunchProfile_GetNumThreads(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumThreads()));
+    return retval;
+}
+
 
 
 PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH] = {
@@ -1134,6 +1160,8 @@ PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH] = {
     {"GetLaunchXServers", LaunchProfile_GetLaunchXServers, METH_VARARGS},
     {"SetXDisplay", LaunchProfile_SetXDisplay, METH_VARARGS},
     {"GetXDisplay", LaunchProfile_GetXDisplay, METH_VARARGS},
+    {"SetNumThreads", LaunchProfile_SetNumThreads, METH_VARARGS},
+    {"GetNumThreads", LaunchProfile_GetNumThreads, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1230,6 +1258,8 @@ PyLaunchProfile_getattr(PyObject *self, char *name)
         return LaunchProfile_GetLaunchXServers(self, NULL);
     if(strcmp(name, "XDisplay") == 0)
         return LaunchProfile_GetXDisplay(self, NULL);
+    if(strcmp(name, "numThreads") == 0)
+        return LaunchProfile_GetNumThreads(self, NULL);
 
     return Py_FindMethod(PyLaunchProfile_methods, self, name);
 }
@@ -1312,6 +1342,8 @@ PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = LaunchProfile_SetLaunchXServers(self, tuple);
     else if(strcmp(name, "XDisplay") == 0)
         obj = LaunchProfile_SetXDisplay(self, tuple);
+    else if(strcmp(name, "numThreads") == 0)
+        obj = LaunchProfile_SetNumThreads(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
