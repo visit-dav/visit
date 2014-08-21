@@ -292,6 +292,9 @@ class BoundaryHelperFunctions
 //    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
 //    Support anisotropic refinement.
 //
+//    Gunther H. Weber, Thu Aug 21 14:16:29 PDT 2014
+//    Make new ghost zone generation method default.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries

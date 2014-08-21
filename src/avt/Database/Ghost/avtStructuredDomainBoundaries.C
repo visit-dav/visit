@@ -80,7 +80,7 @@ using   std::sort;
 //                            static data members
 // ----------------------------------------------------------------------------
 
-bool avtStructuredDomainBoundaries::createGhostsForTIntersections = false;
+bool avtStructuredDomainBoundaries::createGhostsForTIntersections = true;
 
 // ----------------------------------------------------------------------------
 //                            private helper methods

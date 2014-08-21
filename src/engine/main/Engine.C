@@ -1981,6 +1981,11 @@ Engine::ProcessInput()
 //    Tom Fogal, Wed May 26 09:56:08 MDT 2010
 //    Don't parse x-args here; use an RTS.
 //
+//    Gunther H. Weber, Thu Aug 21 14:14:46 PDT 2014
+//    Change option from "-enable-ghosts-for-t-intersections" to
+//    "-disable-ghosts-for-t-intersections" since new ghost generation
+//    method is now default.
+//
 // ****************************************************************************
 
 void
@@ -2213,9 +2218,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             LoadBalancer::SetScheme(LOAD_BALANCE_ABSOLUTE);
         }
-        else if (strcmp(argv[i], "-create-ghosts-for-t-intersections") == 0)
+        else if (strcmp(argv[i], "-disable-ghosts-for-t-intersections") == 0)
         {
-            avtStructuredDomainBoundaries::SetCreateGhostsForTIntersections(true);
+            avtStructuredDomainBoundaries::SetCreateGhostsForTIntersections(false);
         }
         else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
         {
