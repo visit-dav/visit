@@ -53,10 +53,10 @@ function bv_pyside_initialize_vars
 
 function bv_pyside_info
 {
-export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.2.1"}
+export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.2.2"}
 export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-${PYSIDE_VERSION}.tar.gz"}
 export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
-export PYSIDE_MD5_CHECKSUM="b96663b1b361c876ef834d6c338d44c4"
+export PYSIDE_MD5_CHECKSUM="b33dde999cc4eb13933be43f49c1e890"
 export PYSIDE_SHA256_CHECKSUM=""
 }
 
