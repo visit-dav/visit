@@ -4,7 +4,7 @@ Atomic Weapons Establishment network:awe
 Clemson University network:clemson
 Lawrence Livermore National Laboratory (LLNL) open network:llnl
 Lawrence Livermore National Laboratory (LLNL) closed network:llnl_closed
-Lawrence Livermore National Laboratory (LLNL) lz network:llnl_lz
+Lawrence Livermore National Laboratory (LLNL) rz network:llnl_rz
 Los Alamos National Laboratory (LANL) closed network:lanl_closed
 Lousiana State University network:lsu
 National Center for Supercomputing Applications (NCSA) network:ncsa
