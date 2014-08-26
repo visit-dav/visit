@@ -31,7 +31,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.8</font></b></p>
 <ul>
-  <li>VisIt's Export mechanism has been enhanced so that all active plots in the plot list are considered for export. The current implementation will create numbered files with one file per plot, though this leaves some room for future improvement.</li>
+  <li>VisIt's Export mechanism has been enhanced so that all active plots in the plot list are now exported instead of just the first active plot in the plot list. The current implementation creates numbered files with one file per plot.</li>
   <li>VisIt now features a database plugin that enables VisIt to export <i>FieldView XDB</i> extract files for subsequent analysis in Intelligent Light's commercial post-processing software, FieldView.</li>
   <li>VisIt's Export mechanism has been enhanced so that all time states in a dataset can be exported. Click the <i>"Export all time states"</i> check box in the Export window to enable exporting all time states.</li>
   <li>VisIt's CLI now handles <i>sys.argv</i> like a traditional python interpreter. This shift simplifies argument parsing by standard python modules. The <i>Argv()</i> function is preserved for existing VisIt scripts.</li>
@@ -68,7 +68,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>An enhanced version of the AMR reader was added.</li>
   <li>A reader for parallel Velodyne files was added.</li>
   <li>A reader for ViSUS IDX files was added, incorporating view-dependent data loading.</li>
-  <li>The Silo reader was updated to <b>require</b> Silo 4.10. The Silo reader will no longer compile with any version of Silo earlier than 4.10. Maintining the necessary conditional compilation logic to support multiple older versions of the Silo library was becomming too much of a maintenance burden.</li>
+  <li>The Silo reader was updated to use Silo 4.10.</li>
   <li>The Silo plugin now supports namescheme'd multi-block objects with empty Silo objects replacing the "EMPTY" keyword convention. It is no longer necessary for data producers to use the DBOPT_MB_REPR_BLOCK_IDX option.</li>
   <li>The Silo plugin now supports tensor multi-vars. Previously, data producers were required to write scalar multi-vars and then bundle these into a tensor multivar using a defvars object.</li>
   <li>The Silo plugin now supports curves stored in the Silo file via polar coordinates.</li>
@@ -76,7 +76,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>For more information regarding new features of Silo 4.10, please see <a href="https://wci.llnl.gov/simulation/computer-codes/silo/releases">these notes</a>. But be aware that some features available in Silo 4.10 library are yet to be supported by VisIt's Silo reader.</li>
   <li>The Curv2d reader can now read double-precision sized data.  Scaling may be required to correctly render very-large sized values.</li>
   <li>The CGNS reader was updated to use cngslib version 3.2.1.</li> 
-  <li>A reader for the MFEM finite element library was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file. MFEM is a toolkit that supports meshes with higher order finite elements. This reader provides level-of-detail support that refines MFEM meshes to standard VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
+  <li>A reader for MFEM files was added. The reader supports collections of MFEM meshes and grid functions grouped by a simple JSON file. MFEM is a toolkit that supports meshes with higher order finite elements. This reader provides level-of-detail support that refines MFEM meshes to standard VTK elements of increasing resolution. Use the "MultiresControl" operator to select the refinement level for a given plot. Example datasets are available <a href="http://portal.nersc.gov/svn/visit/trunk/data/mfem_test_data.tar.gz">here</a>.
   <li>The PLOT3D reader was updated to include support for reading Fortran-formatted binary data, to pass along double-precision data if present in the files, and to fix bugs.  The reader now has File Open options that can replace the use of the .vp3d Meta File for specifying file format variants.  If utilizing the options, have VisIt open the grid file, and then specify the Solution file name in the options.  The solution file location is assumed relative to the grid file location.</li>
   <li>The PLOT2D reader was removed, as the PLOT3D reader supports 2D data.</li>
 </ul>
@@ -153,12 +153,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The windowsbuild directory has been reorganized to reduce the number of files a Windows developer needs to download. Third-party pre-built dll's are now stored in a separate subdirectory for each Visual Studio version (eg <i>MSVC2012 for 32 bit or MSVC2012-x64 for 64 bit.</i>), and are all top-level within windowsbuild.</li>
   <li>Pre-built third-party dll support has been dropped for Visual Studio 2008 (MSVC 9).</li>
   <li>For windows builds, VISIT_WINDOWS_DIR can now be specified via CMake option, allowing a different location than the standard peer-to-src windowsbuild directory.</li> 
-  <li>The Silo plugin will no longer build against releases of Silo and now requires version 4.10.</li>
+  <li>The Silo plugin will no longer build against older releases of Silo and now requires version 4.10. Maintining the necessary conditional compilation logic to support multiple older versions of the Silo library was becomming too much of a maintenance burden.</li>
   <li>VisIt is now using newer versions of the following third party support libaries:
   <ul>
   <li>cgns 3.2.1</li>
   <li>Python 2.7.6</li>
-  <li>Silo 4.1.0</li>
+  <li>Silo 4.10</li>
   <li>VTK 6.1.0</li>
   </ul>
   </li>
