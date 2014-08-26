@@ -768,6 +768,10 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 //    Add filter metadata used in export.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Kathleen Biagas, Tue Aug 26 12:33:08 PDT 2014
+//    Remove setting of OrigElementsRequiredForPick, seems to be no longer
+//    necessary.
+//
 // ****************************************************************************
 
 void
@@ -775,8 +779,6 @@ avtClipFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
-    GetOutput()->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
-
     GetOutput()->GetInfo().GetAttributes().AddFilterMetaData("Clip");
 }
 
@@ -790,23 +792,15 @@ avtClipFilter::UpdateDataObjectInfo(void)
 //  Creation:   Apr 28, 2006 
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 26 12:33:08 PDT 2014
+//    Remove turning on of node/zone numbers, seems to be no longer
+//    necessary.
 //
 // ****************************************************************************
 
 avtContract_p
 avtClipFilter::ModifyContract(avtContract_p spec)
 {
- 
-    if (spec->GetDataRequest()->MayRequireZones() ||
-        spec->GetDataRequest()->MayRequireNodes())
-    {
-        avtContract_p ns = new avtContract(spec);
-        // Turn on both Nodes and Zones, to prevent another re-execution if 
-        // user switches between zone and node pick.
-        ns->GetDataRequest()->TurnZoneNumbersOn();
-        ns->GetDataRequest()->TurnNodeNumbersOn();
-        return ns;
-    }
     return spec;
 }
 
