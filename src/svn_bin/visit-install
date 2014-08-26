@@ -10,9 +10,9 @@
 # Usage
 #    visit-install    [-c anag | anl | arl | asu | awe | clemson | cscs |"
 #                         eth_zurich | llnl_open | llnl_open_rz |"
-#                         llnl_open_cz | llnl_closed | lsu | nersc |"
-#                         nics | ornl | princeton | sandia |"
-#                         sandia_closed | tacc | umich]"
+#                         llnl_open_cz | llnl_closed | lsu | ncar |"
+#                         nersc | nics | ornl | princeton | sandia |"
+#                         sandia_closed | tacc | umich | uutah]"
 #                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
 #                      [-beta | -private] version platform directory"
 #
@@ -429,9 +429,9 @@ done
 if [ "$#" != "3" ]; then
    echo "Usage: visit-install [-c anag | anl | arl | asu | awe | clemson | cscs |"
    echo "                         eth_zurich | llnl_open | llnl_open_rz |"
-   echo "                         llnl_open_cz | llnl_closed | lsu | nersc |"
-   echo "                         nics | ornl | princeton | sandia |"
-   echo "                         sandia_closed | tacc | umich]"
+   echo "                         llnl_open_cz | llnl_closed | lsu | ncar |"
+   echo "                         nersc | nics | ornl | princeton | sandia |"
+   echo "                         sandia_closed | tacc | umich | uutah]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -652,6 +652,14 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
+    echo "Testing ncar configuration..."
+    rm -rf $dir
+    $0 -c ncar $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_ncar*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
     echo "Testing nersc configuration..."
     rm -rf $dir
     $0 -c nersc $version $platform $dir > /dev/null 2>&1
@@ -716,6 +724,14 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
+    echo "Testing uutah configuration..."
+    rm -rf $dir
+    $0 -c uutah $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_uutah*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
     exit 0
 fi
 
@@ -736,21 +752,23 @@ while [ "$config" = "prompt" ]; do
    echo "   7)  Clemson University network"
    echo "   8)  ETH Zurich network"
    echo "   9)  LLNL open network (CZ and RZ)"
-   echo "   10)   LLNL open network (CZ only)"
-   echo "   11)   LLNL open network (RZ only)"
+   echo "   10) LLNL open network (CZ only)"
+   echo "   11) LLNL open network (RZ only)"
    echo "   12) LLNL closed network"
    echo "   13) Lousiana State University network"
-   echo "   14) NERSC network"
-   echo "   15) NICS at University of Tennessee at Knoxville"
-   echo "   16) ORNL network"
-   echo "   17) Princeton network"
-   echo "   18) Sandia network"
-   echo "   19) Sandia closed network"
-   echo "   20) Swiss National Supercomputing Center (CSCS) network"
+   echo "   14) NCAR network"
+   echo "   15) NERSC network"
+   echo "   16) NICS at University of Tennessee at Knoxville"
+   echo "   17) ORNL network"
+   echo "   18) Princeton network"
+   echo "   19) Sandia network"
+   echo "   20) Sandia closed network"
+   echo "   21) Swiss National Supercomputing Center (CSCS) network"
    echo "   22) TACC network"
-   echo "   22) U of Michigan Center for Advanced Computing network"
+   echo "   23) U of Michigan Center for Advanced Computing network"
+   echo "   24) U of Utah Center for High Performance Computing network"
    echo ""
-   echo "Enter (1-21):"
+   echo "Enter (1-24):"
 
    read config
    case "$config" in
@@ -794,31 +812,37 @@ while [ "$config" = "prompt" ]; do
          config=lsu
          ;;
       14)
-         config=nersc
+         config=ncar
          ;;
       15)
-         config=nics
+         config=nersc
          ;;
       16)
-         config=ornl
+         config=nics
          ;;
       17)
-         config=princeton
+         config=ornl
          ;;
       18)
-         config=sandia
+         config=princeton
          ;;
       19)
-         config=sandia_closed
+         config=sandia
          ;;
       20)
-         config=cscs
+         config=sandia_closed
          ;;
       21)
-         config=tacc
+         config=cscs
          ;;
       22)
+         config=tacc
+         ;;
+      23)
          config=umich
+         ;;
+      24)
+         config=uutah
          ;;
       *)
          config=prompt
@@ -853,6 +877,8 @@ case "$config" in
       ;;
    lsu)
       ;;
+   ncar)
+      ;;
    nersc)
       ;;
    nics)
@@ -871,11 +897,13 @@ case "$config" in
       ;;
    umich)
       ;;
+   uutah)
+      ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
-      echo "llnl_open_cz, llnl_closed, lsu, nersc, nics, ornl, princeton,"
-      echo "sandia, sandia_closed, tacc, umich"
+      echo "llnl_open_cz, llnl_closed, lsu, ncar, nersc, nics, ornl, princeton,"
+      echo "sandia, sandia_closed, tacc, umich, uutah"
       exit 4
       ;;
 esac
@@ -985,7 +1013,12 @@ echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 rm -rf "$dir"/$version+/.visit
 mkdir  "$dir"/$version+/.visit
 mkdir  "$dir"/$version+/.visit/hosts
-if [ "$config" = "anl" ]; then
+if [ "$config" = "anag" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/config                 "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/guiconfig              "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visitrc                "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/customlauncher         "$dir"/$version+/bin/
+elif [ "$config" = "anl" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "arl" ]; then
@@ -1031,6 +1064,9 @@ elif [ "$config" = "llnl_closed" ]; then
 elif [ "$config" = "lsu" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "ncar" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
@@ -1055,11 +1091,8 @@ elif [ "$config" = "tacc" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "umich" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
-elif [ "$config" = "anag" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/config                 "$dir"/$version+/.visit/
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/guiconfig              "$dir"/$version+/.visit/
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visitrc                "$dir"/$version+/.visit/
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/customlauncher         "$dir"/$version+/bin/
+elif [ "$config" = "uutah" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
 fi
 
 # Do the bank fixup
