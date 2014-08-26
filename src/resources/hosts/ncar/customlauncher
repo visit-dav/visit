@@ -1,0 +1,71 @@
+###############################################################################
+# Class: JobSubmitter_bsub_NCAR
+#
+# Purpose:    Custom "bsub" job submitter for NCAR.
+#
+# Programmer: Allen Sanderson
+# Date:       August 25 2014
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_bsub_NCAR(JobSubmitter_bsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_NCAR, self).__init__(launcher)
+
+    def Executable(self):
+        return ["bsub"]
+
+    def CreateCommand(self, args, debugger):
+        bsub, sublauncher = self.LauncherAndSubLauncher()
+        #
+        # Check for a plain mpirun sublauncher if present use mpirun.lsf
+        # instead.
+        #
+        if [sublauncher] == "mpirun":
+            sublauncher = [sublauncher] + ".lsf"
+        parcmd = self.Executable()
+        parcmd = parcmd + ["-I"]
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-q", self.parallel.partition]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["-W", self.parallel.time]
+        parcmd = parcmd + [sublauncher]
+        if self.parallel.sublaunchargs != None:
+            parcmd = parcmd + self.parallel.sublaunchargs
+        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+        return parcmd
+
+
+###############################################################################
+# Class: NCARLauncher
+#
+# Purpose:    Custom launcher for NCAR
+#
+# Programmer: Allen Sanderson
+# Date:       August 25 2014
+#
+# Modifications:
+#
+###############################################################################
+
+class NCARLauncher(MainLauncher):
+    def __init__(self):
+        super(NCARLauncher, self).__init__()
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "bsub":
+            return JobSubmitter_bsub_NCAR(self)
+        return super(NCARLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return NCARLauncher()
