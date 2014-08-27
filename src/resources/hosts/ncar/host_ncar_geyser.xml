@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">yellowstone</Field>
+    <Field name="hostNickname" type="string">NCAR Geyser</Field>
     <Field name="host" type="string">yellowstone.ucar.edu</Field>
     <Field name="userName" type="string"></Field>
     <Field name="hostAliases" type="string"></Field>
@@ -39,10 +39,10 @@
         <Field name="parallel" type="bool">true</Field>
         <Field name="launchArgsSet" type="bool"></Field>
         <Field name="launchArgs" type="string"></Field>
-        <Field name="sublaunchArgsSet" type="bool">true</Field>
-        <Field name="sublaunchArgs" type="string">poe</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
         <Field name="sublaunchPreCmdSet" type="bool">false</Field>
-        <Field name="sublaunchPreCmd" type="string">poe</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
         <Field name="sublaunchPostCmdSet" type="bool">false</Field>
         <Field name="sublaunchPostCmd" type="string"></Field>
         <Field name="machinefileSet" type="bool">false</Field>
@@ -53,7 +53,7 @@
         <Field name="XArguments" type="string"></Field>
         <Field name="launchXServers" type="bool">false</Field>
         <Field name="XDisplay" type="string">:%l</Field>
-        <Field name="profileName" type="string">geyser</Field>
+        <Field name="profileName" type="string">geyser parallel</Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>
 </Object>
