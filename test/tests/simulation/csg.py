@@ -20,14 +20,14 @@ sim.addargument("-echo")
 # Test that we can start and connect to the simulation.
 started, connected = TestSimStartAndConnect("csg00", sim)
 
-def step(sim):
-    sim.consolecommand("step")
+def simcommand(sim, com):
+    sim.consolecommand(com)
     # Read from stderr to look for the echoed command. Sync.
     keepGoing = True
     while keepGoing:
         buf = sim.p.stderr.readline()
         print buf
-        if "Command 'step'" in buf:
+        if "Command '%s'"%com in buf:
             keepGoing = False
 
 # Perform our tests.
@@ -42,14 +42,19 @@ if connected:
     DrawPlots()
     Test("csg02")
 
+    times = "Times:\n"
+    SetQueryOutputToValue();
+    times = times + str(Query("Time")) + "\n"
     for i in range(10):
-        step(sim)
-        step(sim)
-        sim.consolecommand("update")
+        simcommand(sim, 'step')
+        simcommand(sim, 'step')
+        simcommand(sim, 'update')
         Test("csg%02d" % (i+3))
-
+        times = times + str(Query("Time")) + "\n"
+        
+    TestText("csg13", times)
     DeleteAllPlots()   
-
+    SetQueryOutputToString()
 
 # Close down the simulation.
 if started:        
