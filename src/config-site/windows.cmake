@@ -75,7 +75,7 @@ ENDIF()
 ##
 ## PYSIDE
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/PySide/1.2.1)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/PySide/1.2.2)
 
 ##############################################################
 ##
