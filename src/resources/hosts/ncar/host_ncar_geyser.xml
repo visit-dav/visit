@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">yellowstone</Field>
+    <Field name="hostNickname" type="string">NCAR Geyser</Field>
     <Field name="host" type="string">yellowstone.ucar.edu</Field>
     <Field name="userName" type="string"></Field>
     <Field name="hostAliases" type="string"></Field>
