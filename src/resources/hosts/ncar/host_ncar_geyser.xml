@@ -39,10 +39,10 @@
         <Field name="parallel" type="bool">true</Field>
         <Field name="launchArgsSet" type="bool"></Field>
         <Field name="launchArgs" type="string"></Field>
-        <Field name="sublaunchArgsSet" type="bool">true</Field>
-        <Field name="sublaunchArgs" type="string">poe</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
         <Field name="sublaunchPreCmdSet" type="bool">false</Field>
-        <Field name="sublaunchPreCmd" type="string">poe</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
         <Field name="sublaunchPostCmdSet" type="bool">false</Field>
         <Field name="sublaunchPostCmd" type="string"></Field>
         <Field name="machinefileSet" type="bool">false</Field>
