@@ -403,13 +403,14 @@ FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
     # if there truly are current definitions, and more than 1 in the list, then
     # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.  
     # Grab the first item in the list for comparison instead.
-    LIST(GET currentDefs 0 firstItem )
-    IF(${firstItem} MATCHES NOTFOUND)
-        SET(allDefs ${newDefs})
-    ELSE(${firstItem} MATCHES NOTFOUND)
-        SET(allDefs ${currentDefs} ${newDefs})
-    ENDIF(${firstItem} MATCHES NOTFOUND)
-   
+    if (currentDefs)
+        LIST(GET currentDefs 0 firstItem )
+        IF(${firstItem} MATCHES NOTFOUND)
+            SET(allDefs ${newDefs})
+        ELSE(${firstItem} MATCHES NOTFOUND)
+            SET(allDefs ${currentDefs} ${newDefs})
+        ENDIF(${firstItem} MATCHES NOTFOUND)
+    endif()
     SET_TARGET_PROPERTIES(${target} PROPERTIES
         COMPILE_DEFINITIONS "${allDefs}"
     )
