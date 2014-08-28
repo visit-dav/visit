@@ -121,16 +121,14 @@ avtXYZWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Jeremy Meredith, Tue Jun 30 12:14:58 EDT 2009
 //    Added check for negative atomic numbers.
 //
+//    Mark C. Miller, Thu Aug 28 15:41:12 PDT 2014
+//    Made it less strict about type of vtk dataset that arrives here.
 // ****************************************************************************
 
 void
 avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
-    if (ds->GetDataObjectType() != VTK_POLY_DATA)
-        return;
-
-    vtkPolyData *pd = (vtkPolyData*)ds;
-    int natoms = pd->GetNumberOfVerts();
+    int natoms = ds->GetNumberOfPoints();
     if (natoms == 0)
         return;
 
@@ -140,9 +138,9 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     vtkDataArray *arrays[MAX_XYZ_VARS];
     vtkDataArray *element = NULL;
 
-    for (int i=0; i<pd->GetPointData()->GetNumberOfArrays(); i++)
+    for (int i=0; i<ds->GetPointData()->GetNumberOfArrays(); i++)
     {
-        vtkDataArray *arr = pd->GetPointData()->GetArray(i);
+        vtkDataArray *arr = ds->GetPointData()->GetArray(i);
         if (strlen(arr->GetName()) >= 7 &&
             strncmp(arr->GetName(),"element",7) == 0)
         {
@@ -159,18 +157,14 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     // Write out the atoms.
     out << "  "<< natoms << endl;
     out << "visit export chunk "<<chunk<<endl;
-    vtkCellArray *atomCells = pd->GetVerts();
-    vtkIdType *ids;
-    vtkIdType nids;
-    atomCells->InitTraversal();
-    while (atomCells->GetNextCell(nids, ids))
+    for (int a = 0; a < natoms; a++)
     {
-        double *coord = pd->GetPoint(ids[0]);
+        double *coord = ds->GetPoint((vtkIdType)a);
 
         // Get a viable atomic number
         int atomicNumber = 0;
         if (element)
-            atomicNumber = element->GetTuple1(ids[0]);
+            atomicNumber = element->GetTuple1((vtkIdType)a);
         if (atomicNumber < 0 || atomicNumber > MAX_ELEMENT_NUMBER)
             atomicNumber = 0;
 
@@ -180,7 +174,7 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
         out << coord[1] << "\t";
         out << coord[2] << "\t";
         for (int j=0; j<nvars; j++)
-            out << arrays[j]->GetTuple1(ids[0]) << "\t";
+            out << arrays[j]->GetTuple1((vtkIdType)a) << "\t";
         out << endl;
     }
 }
