@@ -642,7 +642,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
                   recvbuff, recvcount, recvdisp, mpi_datatype,
                   VISIT_MPI_COMM);
 
-    for (i = 0 ; i < (size_t)nprocs ; i++)
+    for (i = 0 ; i < nprocs ; i++)
         tmp_ptr[i] = recvbuff + recvdisp[i];
     for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
@@ -3871,7 +3871,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                         int d2 = doms[list[j]];
                         if (iteration == 0)
                         {
-                            if (levels[d2] != (l+1)) // at same refinement level
+                            if ((size_t)levels[d2] != (l+1)) // at same refinement level
                                 // and we want one finer
                                 continue;
                         }
