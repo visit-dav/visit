@@ -305,6 +305,8 @@ export DO_FORTRAN="no"
 export ON_FORTRAN="off"
 export DO_SLIVR="no"
 export ON_SLIVR="off"
+export DO_PARADIS="no"
+export ON_PARADIS="off"
 export PREVENT_ICET="no"
 GRAPHICAL="no"
 ON_GRAPHICAL="off"
@@ -944,6 +946,7 @@ for arg in "${arguments[@]}" ; do
         --print-vars) next_action="print-vars";;
         --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
+        --paradis) DO_PARADIS="yes"; ON_PARADIS="on";;
         --static) DO_STATIC_BUILD="yes"; USE_VISIBILIITY_HIDDEN="no";;
         --thread) DO_THREAD_BUILD="yes";;
         --stdout) LOG_FILE="/dev/tty";;
@@ -1112,7 +1115,8 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "Java"       "enable java client library"      $ON_JAVA\
            "Fortran"    "enable fortran in third party libraries"  $ON_FORTRAN\
            "SLIVR"      "enable SLIVR volume rendering library"  $ON_SLIVR\
-           "EnvVars"     "specify build environment var values"   $ON_verify\
+           "Paradis"    "enable paraDIS client library"   $ON_PARADIS\
+           "EnvVars"    "specify build environment var values"   $ON_verify\
            "Advanced"   "display advanced options"        $ON_MORE  3>&1 1>&2 2>&3)
     retval=$?
 
@@ -1129,6 +1133,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         DO_JAVA="no"
         DO_FORTRAN="no"
         DO_SLIVR="no"
+        DO_PARADIS="no"
         verify="no"
         DO_MORE="no"
         for OPTION in $choice
@@ -1154,6 +1159,8 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  DO_FORTRAN="yes";;
               SLIVR)
                  DO_SLIVR="yes";;
+              Paradis)
+                 DO_PARADIS="yes";;
               EnvVars)
                  verify="yes";;
               Advanced)
