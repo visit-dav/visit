@@ -1,14 +1,9 @@
-#/Projects/VisIt/trunk/visit/cmake/2.8.10.2/i386-apple-darwin12_gcc-4.2/bin/cmake
+#/Projects/VisIt/trunk/visit/cmake/2.8.12.2/i386-apple-darwin12_gcc-4.2/bin/cmake
 ##
 ## src/svn_bin/build_visit generated host.cmake
 ## created: Fri Jan 17 08:51:42 MST 2014
 ## system: Darwin lautertun.sci.utah.edu 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
 ## by: allen
-
-##
-## Enable verbose makefiles (show compiler & linker calls)
-##
-#SET(VISIT_VERBOSE_MAKEFILE TRUE)
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -35,21 +30,6 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISITHOME}/mpich/3.0.1/${VISITARCH}/bi
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
-##
-## Install MPICH when building the package.
-##
-SET(VISIT_MPICH_INSTALL TRUE)
-
-##
-## When building the package make a dmg
-##
-SET(VISIT_CREATE_APPBUNDLE_PACKAGE TRUE)
-
-##
-## Install thirdpary libraries when building the package.
-##
-SET(VISIT_INSTALL_THIRD_PARTY TRUE)
-
 ##############################################################
 ##
 ## Database reader plugin support libraries
@@ -61,12 +41,17 @@ SET(VISIT_INSTALL_THIRD_PARTY TRUE)
 ## Libraries with LIBDEP settings that depend on other
 ## Library's LIBDEP settings must come after them.
 ##############################################################
+
+##
+## R
+##
+VISIT_OPTION_DEFAULT(VISIT_R_DIR ${VISITHOME}/R/2.13.2/${VISITARCH}/lib/R)
 ##
 
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.6/${VISITARCH})
 
 ##
 ## Qt
@@ -76,9 +61,26 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 ##
 ## VTK
 ##
-SETUP_VTK_VERSION(6.0.0)
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
+SETUP_VTK_VERSION(6.1.0)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk-r/${VTK_VERSION}/${VISITARCH})
+
 ##
+## MPICH
+##
+
+# Give VisIt information so it can install MPI into the binary distribution.
+VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.4/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON)
+
+# Tell VisIt the parallel compiler so it can deduce parallel flags
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISIT_MPICH_DIR}/bin/mpicc)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+
+##
+## ADIOS
+## (configured w/ mpi compiler wrapper)
+##
+VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/ADIOS/1.7.0/${VISITARCH})
 
 ##
 ## AdvIO
@@ -114,7 +116,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## CGNS
 ##
-VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/3.0.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/3.2.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
@@ -152,7 +154,7 @@ VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.9.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
@@ -165,4 +167,30 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/1.6.0beta/${VISITARCH}
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5  VTK_LIBRARY_DIRS vtklibxml2-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}  TYPE STRING)
+
+
+##############################################################
+
+##
+## Enable verbose makefiles (show compiler & linker calls)
+##
+#SET(VISIT_VERBOSE_MAKEFILE TRUE)
+
+##
+## Install MPICH when building the package.
+##
+SET(VISIT_MPICH_INSTALL TRUE)
+VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)
+
+##
+## Install thirdpary libraries when building the package.
+##
+SET(VISIT_INSTALL_THIRD_PARTY TRUE)
+VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON TYPE BOOL)
+
+##
+## When building the package make a dmg
+##
+SET(VISIT_CREATE_APPBUNDLE_PACKAGE TRUE)
+VISIT_OPTION_DEFAULT(VISIT_CREATE_APPBUNDLE_PACKAGE ON TYPE BOOL)
 
