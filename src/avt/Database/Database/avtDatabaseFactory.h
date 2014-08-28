@@ -143,7 +143,8 @@ class DATABASE_API avtDatabaseFactory
                                           const char * const *, int, int,
                                           std::vector<std::string> &,
                                           const char * = NULL, bool = false,
-                                          bool = false);
+                                          bool = false,
+                                          int = -1);
     static avtDatabase          *VisitFile(DatabasePluginManager *,
                                            const char *, int,
                                            std::vector<std::string> &,

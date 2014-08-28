@@ -370,7 +370,7 @@ class DATABASE_API avtDatabase
     virtual void                GetDomainName(const std::string &, const int ts,
                                     const int dom, std::string &) {;};
 
-    static void                 GetFileListFromTextFile(const char *,
+    static bool                 GetFileListFromTextFile(const char *,
                                                         char **&, int &, int * =0);
 
     void                        SetFileFormat(const std::string &ff)

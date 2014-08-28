@@ -369,7 +369,8 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                              int timestep, vector<string> &plugins,
                              const char *format,
                              bool forceReadAllCyclesAndTimes,
-                             bool treatAllDBsAsTimeVarying)
+                             bool treatAllDBsAsTimeVarying,
+                             int bang_nblocks)
 {
     vector<string> noncompliantPlugins;
     vector<string> noncompliantErrors;
@@ -382,12 +383,23 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     avtDatabase *rv = NULL;
     int fileIndex = 0;
 
-    int nBlocks = 1;
+    int nBlocks = bang_nblocks > 0 ? bang_nblocks : 1;
     bool filesAreEnsemble = false;
     vector<double> times;
     for (int f = 0 ; f < filelistN ; f++)
     {
-         if (strstr(filelist[fileIndex], "!NBLOCKS ") != NULL)
+         //
+         // MCM-28Aug14: All the logic for handling these special values should probably
+         // be re-factored to GetFileListFromTextFile. There is already logic there
+         // for !NBLOCKS and it is being duplicated here. Furthermore, the
+         // list of strings passed in to FileList here is called a 'filelist' but nonetheless
+         // is expected/allowed to contain strings that are certainly not files. OTOH,
+         // the set of !KEYWORDS being processed here has grown on a few occasions and
+         // instead of continuing to add args to the method itself for each such keyword
+         // setting, maybe its ok to use the list of strings passed here as a sort of
+         // catchall container for all such possible !KEYWORD settings.
+         //
+         if (bang_nblocks < 0 && strstr(filelist[fileIndex], "!NBLOCKS ") != NULL)
          {
              errno = 0;
              nBlocks = strtol(filelist[fileIndex] + strlen("!NBLOCKS "), 0, 10);
@@ -1075,7 +1087,8 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
     //
     char  **reallist  = NULL;
     int     listcount = 0;
-    avtDatabase::GetFileListFromTextFile(visitFile, reallist, listcount);
+    int     bang_nblocks = -1;
+    avtDatabase::GetFileListFromTextFile(visitFile, reallist, listcount, &bang_nblocks);
 
 #if defined(_WIN32)
     //
@@ -1118,8 +1131,8 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
     //
     // Create a database using the list of files.
     //
-    avtDatabase *rv = FileList(dbmgr, reallist, listcount, timestep, plugins, format,
-                               forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
+    avtDatabase *rv = FileList(dbmgr, reallist, listcount, timestep, plugins,
+        format, forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying, bang_nblocks);
 
     //
     // Clean up memory
