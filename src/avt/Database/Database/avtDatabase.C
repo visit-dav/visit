@@ -2372,16 +2372,15 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Added support for !NBLOCKS declaration in the file
 // ****************************************************************************
 
-void
+bool
 avtDatabase::GetFileListFromTextFile(const char *textfile,
-                                     char **&filelist, int &filelistN, int *bang_nBlocks)
+    char **&filelist, int &filelistN, int *bang_nBlocksp)
 {
+    debug1 << "Reading file list from text file \"" << textfile << "\"" << endl;
+
     ifstream ifile(textfile);
 
-    if (ifile.fail())
-    {
-        EXCEPTION1(InvalidFilesException, textfile);
-    }
+    if (ifile.fail()) return false;
 
     char          dir[1024];
     const char   *p = textfile, *q = NULL;
@@ -2394,34 +2393,55 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 
     vector<char *>  list;
     char  str_auto[1024];
-    char  str_with_dir[1024];
+    char  str_with_dir[2048];
     int   count = 0;
     int   badCount = 0;
-    while (!ifile.eof() && badCount < 10000)
+    int   bang_nBlocks = -1;
+    bool failed = false;
+    while (!ifile.eof() && !failed && badCount < 10000)
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
+        if (ifile.fail() && !ifile.eof())
+        {
+            failed = true;
+            debug1 << "Got a failure with string \"" << str_auto << "\"" << endl;
+            continue;
+        }
         size_t str_auto_len = strlen(str_auto);
-
+        for (int i = 0; i < (int) str_auto_len; i++)
+        {
+            if (!isprint(str_auto[i]))
+            {
+                debug1 << "Got a bad string \"" << str_auto << "\"" << endl;
+                failed = true;
+                break;
+            }
+            if (failed) continue;
+        }
+            
         if (str_auto_len > 0 && str_auto[str_auto_len-1] == '\r')
             str_auto[str_auto_len-1] = '\0';
 
         if (str_auto[0] != '\0' && str_auto[0] != '#')
         {
-            if (strstr(str_auto, "!NBLOCKS ") != NULL)
+            char *bnbp = strstr(str_auto, "!NBLOCKS ");
+            if (bnbp && bnbp == str_auto && !count)
             {
                 errno = 0;
-                int bnb = strtol(str_auto + strlen("!NBLOCKS "), 0, 10);
-                if (errno != 0 || bnb <= 0)
+                bang_nBlocks = strtol(str_auto + strlen("!NBLOCKS "), 0, 10);
+                if (errno != 0 || bang_nBlocks <= 0)
                 {
                     debug1 << "BAD SYNTAX FOR !NBLOCKS, \"" << str_auto << "\", RESETTING TO 1"  << endl;
-                    bnb = 1;
+                    failed = true;
                 }
                 else
-                    debug1 << "Found a multi-block file with " << bnb << " blocks." << endl;
+                    debug1 << "Found a multi-block file with " << bang_nBlocks << " blocks." << endl;
 
-                if (bang_nBlocks)
-                    *bang_nBlocks = bnb;
+                if (bang_nBlocksp)
+                    *bang_nBlocksp = bang_nBlocks;
+ 
+                continue;
             }
 
             ConvertSlashes(str_auto);
@@ -2442,15 +2462,35 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             ++badCount;
     }
 
-    filelist = new char*[count];
-    vector<char *>::iterator it;
-    filelistN = 0;
-    for (it = list.begin() ; it != list.end() ; ++it)
+    if (bang_nBlocks > 0 && !failed)
     {
-        filelist[filelistN++] = *it;
+        if (count % bang_nBlocks)
+        {
+            failed = true;
+            debug1 << "File count of " << count << " not evenly divided by !NBLOCKS value of " << bang_nBlocks << endl;
+        }
     }
-}
 
+    vector<char *>::iterator it;
+    if (failed)
+    {
+        for (it = list.begin() ; it != list.end() ; ++it)
+        {
+            free(*it);
+        }
+    }
+    else
+    {
+        filelist = new char*[count];
+        filelistN = 0;
+        for (it = list.begin() ; it != list.end() ; ++it)
+        {
+            filelist[filelistN++] = *it;
+        }
+    }
+
+    return !failed;
+}
 
 // ****************************************************************************
 //  Method: avtDatabase::Query
