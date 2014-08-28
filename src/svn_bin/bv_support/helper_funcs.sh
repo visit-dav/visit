@@ -1408,6 +1408,14 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_BOOST OFF TYPE BOOL)" >> $HOSTCONF
     fi
 
+    if [[ "${DO_PARADIS}" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## VisIt paraDIS Option." >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_PARADIS ON TYPE BOOL)" >> $HOSTCONF
+    fi
+
     echo >> $HOSTCONF
     echo \
 "##############################################################" >> $HOSTCONF
@@ -1519,6 +1527,7 @@ function usage
   printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
   printf "%-15s %s [%s]\n" "--server-components-only" "Only build VisIt's server components (mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
   printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
+  printf "%-15s %s [%s]\n" "--paradis" "Build with the paraDIS client library" "${DO_PARADIS}"
   printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
   printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
   
