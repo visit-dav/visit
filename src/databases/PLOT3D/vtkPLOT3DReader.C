@@ -557,7 +557,7 @@ vtkPLOT3DReader::ReadGeometryHeader(FILE* xyzFp, vtkInformationVector *outputVec
     this->SkipByteCount(xyzFp); //do we do this now?
     this->GridOffsets[0] = ftell(xyzFp);
 
-    for (int i=0, gridSize=0; i<this->NumberOfGrids; i++)
+    for (int i=0; i<this->NumberOfGrids; i++)
       {
       GridSizes[i] = GridDimensions[3*i]*GridDimensions[1+3*i]*GridDimensions[2+3*i];
       }
@@ -650,7 +650,6 @@ int vtkPLOT3DReader::ReadFunctionHeader(FILE* fp, vtkIdList*& counts)
                   << ni << " " << nj << " " << nk
                   << ", " << ns << "Scalars");
     counts->InsertNextId(ns);
-    int extent[6];
     if (this->GridDimensions[    3*i] != ni ||
         this->GridDimensions[1 + 3*i] != nj ||
         this->GridDimensions[2 + 3*i] != nk)
@@ -805,13 +804,8 @@ int vtkPLOT3DReader::RequestData(
   this->SetErrorCode(vtkErrorCode::NoError);
 
   FILE* xyzFp;
-  int i;
-  int ndim, nx, ny, nz;
-  int numberOfDims;
-  vtkIdType index;
 
   vtkStructuredGrid *output = vtkStructuredGrid::GetData(outputVector);
-  vtkPointData *outputPD = output->GetPointData();
 
   if ( this->CheckGeometryFile(xyzFp) != VTK_OK)
     {
