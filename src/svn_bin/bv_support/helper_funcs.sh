@@ -843,6 +843,7 @@ function check_more_options
            "Symbol"    "enable debug compiling"                 $ON_DEBUG \
            "Group"     "specify group name for install"         $ON_GROUP \
            "HostConf"  "create host.conf file"                  $ON_HOSTCONF \
+           "Boost"     "if possible use the system boost"       $ON_BOOST \
            "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
            "Trace"     "enable SHELL debugging"      $ON_VERBOSE 3>&1 1>&2 2>&3)
         retval=$?
@@ -858,6 +859,7 @@ function check_more_options
             DO_DEBUG="no"
             DO_GROUP="no"
             DO_HOSTCONF="no"
+            DO_BOOST="no"
             DO_PATH="no"
             DO_VERBOSE="no"
             for OPTION in $choice
@@ -884,6 +886,8 @@ function check_more_options
                      DO_GROUP="yes";;
                   HostConf)
                       DO_HOSTCONF="yes";;
+                  Boost)
+                      DO_BOOST="yes";;
                   Path)
                      result=$($DLG --backtitle "$DLG_BACKTITLE" \
                         --nocancel --inputbox \
@@ -1322,6 +1326,10 @@ function build_hostconf
     fi
 
     if [[ "${DO_JAVA}" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## VisIt Java Option." >> $HOSTCONF
+        echo "##" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_JAVA ON TYPE BOOL)" >> $HOSTCONF
     fi
 
@@ -1388,6 +1396,16 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_THREAD ON TYPE BOOL)" >> $HOSTCONF
     else
         echo "VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)" >> $HOSTCONF
+    fi
+
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## VisIt Boost Option." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    if [[ "${DO_BOOST}" == "yes" ]] ; then
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)" >> $HOSTCONF
+    else
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_BOOST OFF TYPE BOOL)" >> $HOSTCONF
     fi
 
     echo >> $HOSTCONF
@@ -1495,6 +1513,7 @@ function usage
   printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
   printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
   printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
+  printf "%-15s %s [%s]\n" "--no-boost" "Do not use the system boost." "$ON_BOOST"
   printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
   printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
   printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"

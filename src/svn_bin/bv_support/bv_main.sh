@@ -275,6 +275,9 @@ done
 export DO_HOSTCONF="yes"
 export ON_HOSTCONF="on"
 
+export DO_BOOST="yes"
+export ON_BOOST="on"
+
 export DO_DEBUG="no"
 export ON_DEBUG="off"
 export DO_GROUP="no"
@@ -935,6 +938,7 @@ for arg in "${arguments[@]}" ; do
         --java) DO_JAVA="yes"; ON_JAVA="on";;
         --makeflags) next_arg="makeflags";;
         --no-hostconf) DO_HOSTCONF="no"; ON_HOSTCONF="off";;
+        --no-boost) DO_BOOST="no"; ON_BOOST="off";;
         --parallel) parallel="yes"; DO_ICET="yes"; ON_ICET="on"; ON_parallel="on";;
         --prefix) next_arg="prefix";;
         --print-vars) next_action="print-vars";;
