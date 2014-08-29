@@ -20,6 +20,7 @@ VTKLibs = (\
 "libvtkCommonMisc-6.1.1.dylib",
 "libvtkCommonSystem-6.1.1.dylib",
 "libvtkCommonTransforms-6.1.1.dylib",
+"libvtkDICOMParser-6.1.1.dylib",
 "libvtkFiltersCore-6.1.1.dylib",
 "libvtkFiltersExtraction-6.1.1.dylib",
 "libvtkFiltersFlowPaths-6.1.1.dylib",
@@ -30,6 +31,7 @@ VTKLibs = (\
 "libvtkIOCore-6.1.1.dylib",
 "libvtkIOImage-6.1.1.dylib",
 "libvtkIOLegacy-6.1.1.dylib",
+"libvtkIOXMLParser-6.1.1.dylib",
 "libvtkImagingCore-6.1.1.dylib",
 "libvtkImagingFourier-6.1.1.dylib",
 "libvtkImagingHybrid-6.1.1.dylib",
@@ -39,10 +41,14 @@ VTKLibs = (\
 "libvtkRenderingFreeTypeOpenGL-6.1.1.dylib",
 "libvtkRenderingOpenGL-6.1.1.dylib",
 "libvtkalglib-6.1.1.dylib",
+"libvtkexpat-6.1.1.dylib",
 "libvtkfreetype-6.1.1.dylib",
 "libvtkftgl-6.1.1.dylib",
 "libvtkjpeg-6.1.1.dylib",
+"libvtkmetaio-6.1.1.dylib",
+"libvtkpng-6.1.1.dylib",
 "libvtktiff-6.1.1.dylib",
+"libvtksys-6.1.1.dylib",
 "libvtkzlib-6.1.1.dylib")
 
 MPILibs = (\
