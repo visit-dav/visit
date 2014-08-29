@@ -2,7 +2,7 @@
 <page>
   <title><![CDATA[Archive of VisIt Releases]]></title>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[November 27, 2013]]></lastchanged>
+  <lastchanged><![CDATA[September 2, 2014]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -21,22 +21,37 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>September, 2014 - VisIt 2.8 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.8, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.8.0">VisIt 2.8 Release Notes</a>.</p>
+<h4>1.  Many enhancements have been made to the database readers.</h4>
+<ul>
+<li>A reader for parallel Velodyne files was added.</li>
+<li>A reader for ViSUS IDX files was added, incorporating view-dependent data loading.</li>
+<li>A reader for MFEM files was added.</li>
+<li>The Silo reader was updated to Silo 4.10.</li>
+<li>The CGNS reader was updated to use cgnslib version 3.2.1.</li>
+<li>The Curv2d reader can now read double-precision sized data.</li>
+</ul>
+<h4>2.  VisIt's export mechanism has been enhanced.</h4>
+<ul>
+<li>VisIt now exports all the active plots instead of just the first active plot, creating numbered files with one file per plot.</li>
+<li>It is now possible to export all the time states in a dataset at once.</li>
+</ul>
+<h4>3.  The tabs in the Psueudocolor plot attributes window have been replaced with collapsible panels.</h4>
+<p>This is an experimental change and we would like to hear user feedback on the usefulness of the feature before adding it to other windows.</p>
 <h2>June, 2014 - VisIt 2.7.3 released</h2>
 <p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.7.3, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a> is primarily a bug-fix release that resolves about three dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.7.3">VisIt 2.7.3 Release Notes</a>.</p>
-
 <h2>March, 2014 - VisIt 2.7.2 released</h2>
 <p>VisIt 2.7.2was primarily a bug-fix release that resolves about two dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.7.2">VisIt 2.7.2 Release Notes</a>.</p>
-
-
 <h2>January, 2014 - VisIt 2.7.1 released</h2>
 <p>VisIt 2.7.1 was primarily a bug-fix release that resolves over a dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.7.1">VisIt 2.7.1 Release Notes</a>.</p>
 <h2>October, 2013 - VisIt 2.7 released</h2>
 <p>VisIt 2.7 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.7.0">VisIt 2.7 Release Notes</a>.</p>
-<b>1.  VisIt was modified to use the newly released VTK-6.0.</b>
+<h4>1.  VisIt was modified to use the newly released VTK-6.0.</h4>
 <p>This brings improved performance, more robust algorithms, and lays the foundation for many additional enhancements in the future, such as support for multithreading on multicore processors.</p>
-<b>2.  VisIt now allows the user the ability to specify the floating point precision used in its internal calculations.</b>
+<h4>2.  VisIt now allows the user the ability to specify the floating point precision used in its internal calculations.</h4>
 <p>The precision can be set in the graphical user interface on the <i>Preferences</i> window and through the command line interface with the <i>SetPrecisionType</i> function. The precision can be set to "float", "double" or "native".</p>
-<b>3.  Several enhancements have been made to the database readers.</b>
+<h4>3.  Several enhancements have been made to the database readers.</h4>
 <ul>
 <li>A reader was added to read GHOST (Geophysical High Order Suite for Turbulence) files.</li>
 <li>A reader was added to read BOUT++ files.</li>
