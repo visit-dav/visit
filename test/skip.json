@@ -31,8 +31,7 @@
                     {"category":"unit","file":"namescheme.py","platform":"win"},
                     {"category":"unit","file":"stringhelpers.py","platform":"win"},
                     {"category":"plots","file":"pics.py","platform":"win"},
-                    {"category":"plots","file":"pathlines.py","platform":"win"},
-                    {"category":"plots","file":"pics.py"}
+                    {"category":"plots","file":"pathlines.py","platform":"win"}
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
@@ -60,7 +59,6 @@
                     {"category":"databases","file":"rect.py","platform":"win"},
                     {"category":"databases","file":"itaps.py","platform":"win"},
                     {"category":"databases","file":"claw.py","platform":"win"},
-                    {"category":"plots","file":"pics.py"},
                     {"category":"plots","file":"streamline_geom.py","cases":["streamline_geom_10","streamline_geom_11","streamline_geom_12","streamline_geom_13","streamline_geom_14"]}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
@@ -77,7 +75,6 @@
                     {"category":"operators" ,"file": "transform.py","cases":["ops_transform05"]},
                     {"category":"session","file":"correlationsession.py","cases":["correlationsession00"]},
                     {"category":"session","file":"legendproperties.py","cases":["legendpropeties00","legendproperties01"]},
-                    {"category":"queries","file": "revolved_surface_area.py"},
-                    {"category":"plots","file":"pics.py"}
+                    {"category":"queries","file": "revolved_surface_area.py"}
                     ]}
 ]}
