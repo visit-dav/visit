@@ -439,6 +439,9 @@ plugin_state_callback_handler(Subject *s, void *data)
 //   Hank Childs, Thu Apr 24 09:08:23 PDT 2008
 //   Add a print statement when a callback can't be called.
 //
+//   Kathleen Biagas, Wed Sep  3 15:53:37 PDT 2014
+//   Use PyObject_CallObject, when args is Py_None, so we can pass NULL args,
+//   otherwise PyObject_Call thinks there are really args.
 // ****************************************************************************
 
 static void
@@ -483,7 +486,11 @@ ViewerRPC_callback(Subject *subj, void *data)
         }
 
         // Call the user's callback function.
-        PyObject *ret = PyObject_Call(pycb, args, NULL);
+        PyObject *ret = NULL;
+        if (args == Py_None)
+            ret = PyObject_CallObject(pycb, NULL);
+        else 
+            ret = PyObject_Call(pycb, args, NULL);
         if (ret == NULL)
         {
             cerr << "VISIT IS UNABLE TO CALL YOUR CALLBACK." << endl;
