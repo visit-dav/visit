@@ -57,12 +57,12 @@ is suspected during the download process.</p>
           <th width="138">Executable</th>
         </tr>
 		<tr>
-          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2010</td>
+          <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit2.8.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />
-          Visual Studio 2010</td>
+          Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit2.8.0_x64.exe">Download</a></td>
         </tr>
         <tr>
