@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt Source Code ]]></title>
+  <IM>LLNL-WEB-659427</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
   <lastchanged><![CDATA[September 2, 2014]]></lastchanged>
   <template><![CDATA[l2]]></template> 
@@ -42,11 +43,11 @@ Please use the following acknowledgement and send us references to any publicati
 
 <div class="span3">
 
-<h2>VisIt 2.8.0</h2>
+<h2>VisIt 2.8</h2>
 
 <ul>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit2.8.0.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.3/visitdev2.8.0.exe">VisIt Windows sources</a></li>
+  <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visitdev2.8.0.exe">VisIt Windows sources</a></li>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/build_visit2_8_0">VisIt build_visit script</a></li>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit_md5_checksums">VisIt md5 checksums</a></li>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit_sha1_checksums">VisIt sha1 checksums</a></li>
@@ -161,7 +162,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 2.6.0</h2>
+<h2>VisIt 2.6</h2>
 
 <ul>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2.6.0.tar.gz">VisIt sources</a> </li>
@@ -204,7 +205,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 2.5.0</h2>
+<h2>VisIt 2.5</h2>
 
 <ul>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2.5.0.tar.gz">VisIt sources</a> </li>
@@ -246,7 +247,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 2.4.0</h2>
+<h2>VisIt 2.4</h2>
 
 <ul>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2.4.0.tar.gz">VisIt sources</a> </li>
@@ -288,7 +289,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 2.3.0</h2>
+<h2>VisIt 2.3</h2>
 
 <ul>
   <li> <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2.3.0.tar.gz">VisIt sources</a> </li>
@@ -330,7 +331,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 2.2.0</h2>
+<h2>VisIt 2.2</h2>
 
 <ul>
   <li> <a href="https://wci.llnl.gov/codes/visit/2.2.0/visit2.2.0.tar.gz">VisIt sources</a> </li>
@@ -369,7 +370,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 2.1.0</h2>
+<h2>VisIt 2.1</h2>
 
 <ul>
   <li> <a href="https://wci.llnl.gov/codes/visit/2.1.0/visit2.1.0.tar.gz">VisIt sources</a> </li>
@@ -409,7 +410,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 2.0.0</h2>
+<h2>VisIt 2.0</h2>
 
 <ul>
   <li> <a href="https://wci.llnl.gov/codes/visit/2.0.0/visit2.0.0.tar.gz">VisIt sources</a> </li>
@@ -452,7 +453,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 1.12.0</h2>
+<h2>VisIt 1.12</h2>
 
 <ul>
   <li> <a href="https://wci.llnl.gov/codes/visit/1.12.0/visit1.12.0.tar.gz">VisIt sources</a> </li>
@@ -497,7 +498,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 1.11.0</h2>
+<h2>VisIt 1.11</h2>
 
 <ul>
   <li> <a href="https://wci.llnl.gov/codes/visit/1.11.0/visit1.11.0.tar.gz">VisIt sources</a> </li>
@@ -512,7 +513,7 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 
 <div class="span3">
-<h2>VisIt 1.10.0</h2>
+<h2>VisIt 1.10</h2>
 
 <ul>
   <li> <a href="https://wci.llnl.gov/codes/visit/1.10.0/visit1.10.0.tar.gz">VisIt sources</a> </li>
@@ -526,15 +527,6 @@ Please use the following acknowledgement and send us references to any publicati
 </div>
 </div>
 
-<div class="row">
-<div class="span3">
-<h2>VisIt Third Party Libraries</h2>
-
-<ul>
-  <li> <a href="http://portal.nersc.gov/svn/visit/tags/2.4.2/third_party">VisIt 2.4.2</a> </li>
-</ul>
-</div>  
-</div>
 </div>
 </div>	
 	  
