@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[Archive of VisIt Releases]]></title>
+  <IM>LLNL-WEB-659427</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
   <lastchanged><![CDATA[September 2, 2014]]></lastchanged>
   <template><![CDATA[l2]]></template> 
@@ -189,14 +190,14 @@
 <p>VisIt 1.11.2 was primarily a bug-fix release that resolved nearly 30 important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-1.11.2">VisIt 1.11.2 Release Notes</a>.</p>
 <h2>December, 2008 - VisIt 1.11.1 Released</h2>
 <p>VisIt 1.11.1 was primarily a bug-fix release that resolved 18 important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-1.11.1">VisIt 1.11.1 Release Notes</a>.</p>
-<h2>November, 2008 - VisIt 1.11.0 Released</h2>
+<h2>November, 2008 - VisIt 1.11 Released</h2>
 <h4>1. Gadget database reader Added.</h4>
 <p> A database reader has been added for reading data from the Gadget 2 cosmological N-body/SPH simulation code.</p>
 <h4>2. Lighting has been added to the Volume plot.</h4>
 <p>The Volume plot's ray-casting option now has a lighting model. This results in significantly higher quality pictures, at the cost of more computation time. To use the old (faster) method, disable lighting in the plot options.</p>
 <h4>3. Several database readers have been enhanced.</h4>
 <p>The Silo, PDB/Flash, ITAPS, MFIX, PlainText, Tecplot and SAMRAI readers have been enhanced or had bugs fixed.</p>
-<h2>August, 2008 - VisIt 1.10.0 Released</h2>
+<h2>August, 2008 - VisIt 1.10 Released</h2>
 <h4>1. The streamline plot has been significantly improved.</h4>
 <ul>
 <li>It can now integrate streamlines across domain boundaries.</li>
@@ -229,7 +230,7 @@
 <li>Multi-variable expressions now work with curves.</li>
 <li>The Miranda reader no longer has a problem reading some 2D data in the new format.</li>
 </ul>
-<h2>April, 2008 - VisIt 1.9.0 Released</h2>
+<h2>April, 2008 - VisIt 1.9 Released</h2>
 <h4>1. VisIt has new mailing lists for customer support.</h4>
 <p>The old mailing lists have been replaced with several new mailing lists. There is a VisIt users list for users to ask questions and exchange information about VisIt. There are also several mailing lists for use by users associated with organizations that fund VisIt to get support. Go to the <a href="simulation/computer-codes/visit/faqs">FAQ</a> for more information about the mailing lists.</p>
 <h4>2. VisIt now reads <a href="http://www.xdmf.org/index.php/Main_Page">XDMF</a> files.</h4>
@@ -244,7 +245,7 @@
 <p>VisIt's CLI has been enhanced so that it supports registration of user-defined callback functions for many actions. These can be used to customize behavior (even through the GUI) at a very fine level of granularity. For example, an action could be associated with opening a database.</p>
 <h2>March, 2008 - VisIt 1.8.1 Released</h2>
 <p>VisIt 1.8.1 was primarily a bug-fix release and resolved 10 important issues.</p>
-<h2>January, 2008 - VisIt 1.8.0 Released</h2>
+<h2>January, 2008 - VisIt 1.8 Released</h2>
 <h4>1. Visual Studio 2005 is now supported on Windows.</h4>
 <p>Support for building VisIt on Windows using Microsoft Visual Studio 2005 has been added.  There are now project and solution files for 2003 and 2005 versions of Microsoft Visual Studio.</p>
 <h4>2. There is more per-plot control.</h4>
