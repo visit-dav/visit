@@ -153,6 +153,9 @@ def parse_test_specific_vargs(test_file):
 #    Eric Brugger, Fri Aug 15 10:04:27 PDT 2014
 #    I added the ability to specify the parallel launch method.
 #
+#    Kathleen Biagas, Thu Sep 4 16:45:39 MST 2014
+#    Use exe path only for sim_dir on Windows.
+#
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -238,7 +241,10 @@ def launch_visit_test(args):
     tparams["parallel_launch"]= opts["parallel_launch"]
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
-    tparams["sim_dir"] = os.path.abspath(os.path.join(exe_dir, ".."))
+    if sys.platform.startswith("win"):
+        tparams["sim_dir"] = os.path.abspath(exe_dir)
+    else:
+        tparams["sim_dir"] = os.path.abspath(os.path.join(exe_dir, ".."))
 
     if not opts["no_skip"]:
         tparams["skip_file"]  = opts["skip_file"]

@@ -1928,7 +1928,10 @@ def SimVisItDir():
     return TestEnv.params["sim_dir"]
 
 def SimProgram(sim):
-    return os.path.join(SimVisItDir(),"tools","DataManualExamples","Simulations",sim)
+    if not sys.platform.startswith("win"):
+        return os.path.join(SimVisItDir(), "tools","DataManualExamples","Simulations",sim)
+    else:
+        return os.path.join(SimVisItDir(), "tools","DataManualExamples","Simulations","%s.exe"%sim)
 
 def SimFile(sim2):
     workingdir = os.curdir
@@ -1952,6 +1955,10 @@ def TestParallelSimulation(sim, sim2, np):
 #
 #    Brad Whitlock, Thu Sep  4 15:58:13 PDT 2014
 #    Added valgrind support for serial.
+#
+#    Kathleen Biagas, Thu Sep 4 16:43:27 MST 2014
+#    Set close_fds to False for windows.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1):
@@ -2014,8 +2021,18 @@ class Simulation(object):
         for a in args:
             s = s + a + " "
         print s
-        self.p = subprocess.Popen(args, 
-                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        if not sys.platform.startswith("win"):
+            self.p = subprocess.Popen(args,
+                                      stdin=subprocess.PIPE,
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE,
+                                      close_fds=True)
+        else:
+            self.p = subprocess.Popen(args,
+                                      stdin=subprocess.PIPE,
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE,
+                                      close_fds=False)
            
         return self.p != None
 
@@ -2062,7 +2079,8 @@ class Simulation(object):
         """
         Tell the simulation to terminate."
         """
-        if self.connected:
+        # 'being nice' hangs on windows
+        if not sys.platform.startswith("win") and self.connected:
             # Be nice about it.
             self.p.stdin.write("quit\n")
             self.p.communicate()
