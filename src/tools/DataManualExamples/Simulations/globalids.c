@@ -1320,6 +1320,21 @@ int main(int argc, char **argv)
     {
         if(strcmp(argv[i], "-echo") == 0)
             sim.echo = 1;
+        else if(strcmp(argv[i], "-nx") == 0 && (i+1) < argc)
+        {
+            sim.nx = atoi(argv[i+1]);
+            ++i;
+        }
+        else if(strcmp(argv[i], "-ny") == 0 && (i+1) < argc)
+        {
+            sim.ny = atoi(argv[i+1]);
+            ++i;
+        }
+        else if(strcmp(argv[i], "-nz") == 0 && (i+1) < argc)
+        {
+            sim.nz = atoi(argv[i+1]);
+            ++i;
+        }
     }
 
 #ifdef PARALLEL
@@ -1436,6 +1451,19 @@ SimGetMetaData(void *cbdata)
             VisIt_SimulationMetaData_addVariable(md, vmd);
         }
 
+        /* Add mesh metadata. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "tetmesh");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_UNSTRUCTURED);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 3);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 3);
+            VisIt_MeshMetaData_setNumDomains(mmd, 8);
+
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
+
         /* Add surface mesh metadata. */
         if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
         {
@@ -1497,6 +1525,46 @@ SimGetMetaData(void *cbdata)
 
 /******************************************************************************
  *
+ * Purpose: Make tet connectivity from hex connectivity.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Thu Sep  4 10:57:00 PDT 2014
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+void
+MakeTetConnectivity(const int *conn, int lconn, int **newconn, int *lnewconn)
+{
+    const int tets[][4] = {
+        {0,1,3,7},{1,6,3,7},{1,2,3,6},{4,5,0,7},{0,5,1,7},{1,6,5,7}};
+
+    /* We know that the input connectivity is all hexes. */
+    int i, j, nelem, *nc;
+    const int *c;
+
+    c = conn + 1;
+    nelem = lconn / 9;
+    *lnewconn = nelem * 6 * (4 + 1);
+    nc = (int *)malloc(*lnewconn * sizeof(int));
+    *newconn = nc;
+    for(i = 0; i < nelem; ++i)
+    {
+        for(j = 0; j < 6; ++j)
+        {
+            *nc++ = VISIT_CELL_TET;
+            *nc++ = c[tets[j][0]];
+            *nc++ = c[tets[j][1]];
+            *nc++ = c[tets[j][2]];
+            *nc++ = c[tets[j][3]];
+        }
+        c += 9;
+    }
+}
+
+/******************************************************************************
+ *
  * Purpose: This callback function returns meshes.
  *
  * Programmer: Brad Whitlock
@@ -1512,7 +1580,7 @@ SimGetMesh(int domain, const char *name, void *cbdata)
     visit_handle h = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
 
-    if(strcmp(name, "mesh") == 0)
+    if(strcmp(name, "mesh") == 0 || strcmp(name, "tetmesh") == 0)
     {
         if(VisIt_UnstructuredMesh_alloc(&h) != VISIT_ERROR)
         {
@@ -1523,21 +1591,33 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             VisIt_UnstructuredMesh_setCoords(h, hxyz);
 
             VisIt_VariableData_alloc(&hc);
-            VisIt_VariableData_setDataI(hc, VISIT_OWNER_SIM, 1, sim->domains[domain].connectivityLen,
-                sim->domains[domain].connectivity);
-            VisIt_UnstructuredMesh_setConnectivity(h, sim->domains[domain].ncells, hc);
+            if(strcmp(name, "tetmesh") == 0)
+            {
+                int *tetconn = NULL, ltetconn = 0;
+                MakeTetConnectivity(sim->domains[domain].connectivity, 
+                                    sim->domains[domain].connectivityLen,
+                                    &tetconn, &ltetconn);
+                VisIt_VariableData_setDataI(hc, VISIT_OWNER_VISIT, 1, ltetconn, tetconn);
+                VisIt_UnstructuredMesh_setConnectivity(h, ltetconn / 5, hc);
+            }
+            else
+            {
+                VisIt_VariableData_setDataI(hc, VISIT_OWNER_SIM, 1, sim->domains[domain].connectivityLen,
+                    sim->domains[domain].connectivity);
+                VisIt_UnstructuredMesh_setConnectivity(h, sim->domains[domain].ncells, hc);
+
+                /* Global Cell Ids */
+                VisIt_VariableData_alloc(&glc);
+                VisIt_VariableData_setDataI(glc, VISIT_OWNER_SIM, 1, 
+                    sim->domains[domain].ncells, sim->domains[domain].globalCellIds);
+                VisIt_UnstructuredMesh_setGlobalCellIds(h, glc);
+            }
 
             /* Global Node Ids */
             VisIt_VariableData_alloc(&gln);
             VisIt_VariableData_setDataI(gln, VISIT_OWNER_SIM, 1, 
                 sim->domains[domain].nnodes, sim->domains[domain].globalNodeIds);
             VisIt_UnstructuredMesh_setGlobalNodeIds(h, gln);
-
-            /* Global Cell Ids */
-            VisIt_VariableData_alloc(&glc);
-            VisIt_VariableData_setDataI(glc, VISIT_OWNER_SIM, 1, 
-                sim->domains[domain].ncells, sim->domains[domain].globalCellIds);
-            VisIt_UnstructuredMesh_setGlobalCellIds(h, glc);
         }
     }
     else if(strcmp(name, "surface") == 0)
