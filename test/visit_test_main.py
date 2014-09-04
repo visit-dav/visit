@@ -1950,6 +1950,8 @@ def TestParallelSimulation(sim, sim2, np):
 #    Brad Whitlock, Fri Jun 27 11:14:56 PDT 2014
 #    Added some parallel launch code.    
 #
+#    Brad Whitlock, Thu Sep  4 15:58:13 PDT 2014
+#    Added valgrind support for serial.
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1):
@@ -1961,6 +1963,10 @@ class Simulation(object):
         self.connected = False
         self.extraargs = []
         self.np = np
+        self.valgrind = False
+
+    def enablevalgrind(self):
+        self.valgrind = True
 
     def startsim(self):
         """
@@ -1998,6 +2004,12 @@ class Simulation(object):
                     args = ["srun", "-n", str(self.np)] + args
             else:
                 args = ["mpiexec", "-n", str(self.np)] + args
+        else:
+            # Serial
+            if self.valgrind:
+                logfile = GenFileNames("valgrind", ".txt")[0]
+                args = ["env", "GLIBCXX_FORCE_NEW=1", "valgrind", "--tool=memcheck", "--leak-check=full", "--log-file="+logfile] + args
+
         s="Running: "
         for a in args:
             s = s + a + " "
@@ -2013,14 +2025,28 @@ class Simulation(object):
         """
         self.extraargs = self.extraargs + [arg]
 
+    def wait(self):
+        for i in xrange(120): # Wait up to 2 minutes.
+            try:
+                s = os.stat(self.sim2)
+                return True
+            except:
+                time.sleep(1)
+        return False
+
     def connect(self):
         """
         Connect to the simulation."
         """
         print "Connecting to simulation ", self.simulation
-        ret = OpenDatabase(self.sim2)
-        if ret:
-            self.connected = True
+
+        # The sim might not have started by the time we get here.
+        # Wait for the sim2 file to exist.
+        ret = False
+        if self.wait():
+            ret = OpenDatabase(self.sim2)
+            if ret:
+                self.connected = True
         return ret
 
     def disconnect(self):
@@ -2117,6 +2143,51 @@ def TestSimMetaData(testname, md):
             outline = "simInfo.host = HOST"
         txt = txt + outline + "\n"
     TestText(testname, txt)
+
+# ----------------------------------------------------------------------------
+#  Class: SimulationMemoryRecorder
+#
+#  Programmer: Brad Whitlock
+#  Date:       Thu Sep  4 15:57:33 PDT 2014
+#
+#  Modifications:
+#
+# ----------------------------------------------------------------------------
+class SimulationMemoryRecorder(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.samples = {}
+        self.times = []
+        self.iteration = 0
+
+    def AddSample(self):
+        #Query("Time")
+        #self.times = self.times + [GetQueryOutputValue()]
+        self.times = self.times + [self.iteration]
+        self.iteration = self.iteration + 1
+
+        engine = None
+        engines = GetEngineList(1)
+        for e in engines:
+            if ".sim2" in e[1]:
+                engine = e
+                break;
+
+        pa = GetProcessAttributes("engine", engine[0], engine[1])
+        for i in range(len(pa.pids)):
+            if self.samples.has_key(pa.pids[i]):
+                self.samples[pa.pids[i]] = self.samples[pa.pids[i]] + [pa.memory[i]]
+            else:
+                self.samples[pa.pids[i]] = [pa.memory[i]]
+        self.WriteFile()
+
+    def WriteFile(self):
+        f = open(self.filename, "wt")            
+        for k in self.samples.keys():
+            f.write("#pid_%s\n" % str(k))
+            for i in range(len(self.samples[k])):
+                f.write("%g %g\n" % (self.times[i], self.samples[k][i]))
+        f.close()
 
 #############################################################################
 #   Argument/Environment Processing
