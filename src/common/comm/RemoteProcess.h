@@ -198,6 +198,7 @@ private:
     char **CreateSplitCommandLine(const stringVector &args, int &argc) const;
     void DestroySplitCommandLine(char **args, int argc) const;
     char *StrDup(const std::string &) const;
+    void attachSIGCHLDHandler();
 private:
     DESCRIPTOR               listenSocketNum;
     struct sockaddr_in       sin;
