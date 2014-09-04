@@ -598,7 +598,17 @@ void  VisItTimeStepChanged(void);
  *
  * Returns:   None
  *
- * Note:      All processors must call this function.
+ * Note:      This function has no effect when called by non-master
+ *            processes. When VisIt is connected to the simulation, calling 
+ *            this function on the master process will send commands to process
+ *            to VisIt's viewer. The sim will then process VisIt commands in
+ *            a synchronization loop if synchronization is enabled. In that case,
+ *            ALL processors must call this function. During the synchronization
+ *            loop, VisIt commands will be handled via the normal simulation
+ *            callback functions. Once synchronization is complete, the function
+ *            returns. If synchronization is not enabled then this function
+ *            returns immediately and relies on the simulation's main loop
+ *            for processing VisIt commands that result from the update.
  *
  * ****************************************************************************/
 void  VisItUpdatePlots(void);
@@ -619,7 +629,17 @@ void  VisItUpdatePlots(void);
  * Note:      And example call to this function could look like:
  *            VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
  *
- *            Only the root processor should call this function.
+ *            This function has no effect when called by non-master
+ *            processes. When VisIt is connected to the simulation, calling 
+ *            this function on the master process will send commands to process
+ *            to VisIt's viewer. The sim will then process VisIt commands in
+ *            a synchronization loop if synchronization is enabled. In that case,
+ *            ALL processors must call this function. During the synchronization
+ *            loop, VisIt commands will be handled via the normal simulation
+ *            callback functions. Once synchronization is complete, the function
+ *            returns. If synchronization is not enabled then this function
+ *            returns immediately and relies on the simulation's main loop
+ *            for processing VisIt commands that result from the command.
  *
  * ****************************************************************************/
 void  VisItExecuteCommand(const char *);
