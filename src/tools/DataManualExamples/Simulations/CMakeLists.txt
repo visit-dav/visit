@@ -76,6 +76,10 @@
 #   Use 'project' on Windows instead of 'all_simulations' when
 #   VISIT_DATA_MANUAL_EXAMPLES not turned on.
 #
+#   Kathleen Biagas, Wed Sep 3 17:23:47 MST 2014
+#   Change target location on Windows, to be relative to in the exe dir,
+#   will aid running sim examples via test suite.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -126,16 +130,27 @@ ENDIF()
 # it won't be built unless we explicitly build it or make the "all_simulations"
 # target.
 FUNCTION(SET_SIMULATION_PROPERTIES target)
-    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
-        OUTPUT_NAME ${target}
-        RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/Simulations
-        FOLDER tools/DataManualExamples/Simulations
-    )
-    IF(NOT VISIT_DATA_MANUAL_EXAMPLES AND NOT WIN32)
+    IF(NOT WIN32)
         SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
-            EXCLUDE_FROM_ALL TRUE
+            OUTPUT_NAME ${target}
+            RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/Simulations
+            FOLDER tools/DataManualExamples/Simulations
         )
-        ADD_DEPENDENCIES(all_simulations sim_${target})
+        IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
+            SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
+                EXCLUDE_FROM_ALL TRUE
+            )
+            ADD_DEPENDENCIES(all_simulations sim_${target})
+        ENDIF()
+    ELSE()
+        SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
+            OUTPUT_NAME ${target}
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
+            RUNTIME_OUTPUT_DIRECTORY_REWITHDEBINFO ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
+            RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
+            FOLDER tools/DataManualExamples/Simulations
+        )
     ENDIF()
 ENDFUNCTION(SET_SIMULATION_PROPERTIES)
 
