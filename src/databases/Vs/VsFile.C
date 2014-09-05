@@ -22,41 +22,41 @@ VsFile::VsFile(VsRegistry* r, std::string name, hid_t id):
   fileName = name;
   VsLog::debugLog() <<"File name is: " <<name <<std::endl;
   
-  /* Code to determine dump number from file name
-  int underscoreLocation = fileName.find_last_of('_') + 1;
-  VsLog::debugLog() <<"dump number starts at position: " <<underscoreLocation <<std::endl;
-  if (underscoreLocation != -1) {
-    int periodLocation = fileName.find_first_of('.', underscoreLocation);
-    VsLog::debugLog() <<"period location is: " <<periodLocation <<std::endl;
-    if (periodLocation == -1) {
-      periodLocation = fileName.length() - 1;
-    }
-    VsLog::debugLog() <<"period location is: " <<periodLocation <<std::endl;
-        
-    std::string dumpNumberString = name.substr(underscoreLocation, (periodLocation - underscoreLocation));
-    VsLog::errorLog() <<"DumpNumberString is: " <<dumpNumberString <<std::endl;
-    dumpNumber = atoi(dumpNumberString.c_str());
-    VsLog::errorLog() <<"Dump number is: " <<dumpNumber <<std::endl;
-  }
-  */
+// Code to determine dump number from file name
+//  int underscoreLocation = fileName.find_last_of('_') + 1;
+//  VsLog::debugLog() <<"dump number starts at position: " <<underscoreLocation <<std::endl;
+//  if (underscoreLocation != -1) {
+//    int periodLocation = fileName.find_first_of('.', underscoreLocation);
+//    VsLog::debugLog() <<"period location is: " <<periodLocation <<std::endl;
+//    if (periodLocation == -1) {
+//      periodLocation = fileName.length() - 1;
+//    }
+//    VsLog::debugLog() <<"period location is: " <<periodLocation <<std::endl;
+//        
+//    std::string dumpNumberString = name.substr(underscoreLocation, (periodLocation - underscoreLocation));
+//    VsLog::errorLog() <<"DumpNumberString is: " <<dumpNumberString <<std::endl;
+//    dumpNumber = atoi(dumpNumberString.c_str());
+//    VsLog::errorLog() <<"Dump number is: " <<dumpNumber <<std::endl;
+//  }
   
-  /* quiet HDF5 stderr output */
+// Quiet HDF5 stderr output
   H5Eset_auto(H5E_DEFAULT , 0, 0);
   
   
 }
 
 VsFile::~VsFile() {
-  //we clear all objects that were read from this file
-  //so that we can close the file itself.
-  //Note that this does not delete the registry object
-  //which will be deleted in ~avtVsFileFormat
+
+// We clear all objects that were read from this file
+// so that we can close the file itself.
+// Note that this does not delete the registry object
+// which will be deleted in ~avtVsFileFormat
   registry->deleteAllObjects();
   
-    // Check if anything is still open
+// Check if anything is still open
   int cnt = H5Fget_obj_count(getId(), H5F_OBJ_ALL);
-  //CNT will always be >= 1 because the FILE is still open
-  //So only output the error message if there is MORE than 1 open id
+// CNT will always be >= 1 because the FILE is still open
+// So only output the error message if there is MORE than 1 open id
   if (cnt > 1) {
     VsLog::debugLog() << "File still has " << cnt << " open objects:" <<std::endl;
     std::vector<hid_t> objIds(cnt);
@@ -74,9 +74,7 @@ VsFile::~VsFile() {
     VsLog::debugLog() << std::endl;
   }
 
-  //VsLog::debugLog() << "Strong close should take care of this." << std::endl;
-  
-  //close this file
+// Close this file
   H5Fclose(getId());
 }
 
