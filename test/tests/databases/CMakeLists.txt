@@ -38,7 +38,7 @@
 SET(PY_TESTS
     ANALYZE ANSYS bov chgcar claw curve ddcMD Fluent image
     imgvol lata leos miranda NASTRAN OpenFOAM overlink
-    PATRAN RAW rect scale_mesh shapefile singlemulti tecplot
+    PATRAN PLOT3D RAW rect scale_mesh shapefile singlemulti tecplot
     unv vtk Xmdv xyz)
 IF(RUN_BROKEN_TESTS)
   LIST(APPEND PY_TESTS diff zipwrapper)
