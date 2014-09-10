@@ -1,0 +1,6 @@
+PickByZone on Pseudcolor and Boundary plots yielded same point.
+Zone Center query returned same coords as Pick.
+Pick using coord from Zone Center query returned zone: 482, (should be: 482).
+PickByNode on Pseudcolor and Boundary plots yielded same point.
+Node Coords query returned same coords as Pick.
+Pick using coord from Node Coord query returned node: 498, (should be: 498).
