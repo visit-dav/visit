@@ -5,7 +5,7 @@
 #
 #  Tests:      mesh      - a ucd mesh with arbitrary polyhedral zones 
 #              plots     - pc, contour, mat subset, mesh
-#              operators - none
+#              operators - OnionPeel
 #              selection - material
 #
 #  Defect ID:  none
@@ -22,6 +22,10 @@
 #
 #    Cyrus Harrison, Thu Aug 26 08:55:04 PDT 2010
 #    Update set index after SIL generation changes.
+#
+#    Kathleen Biagas, Wed Sep 10 14:15:44 PDT 2014
+#    Added tests for OnionPeel'd arb poly, and a single-zone arb-poly set.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -90,5 +94,27 @@ DeleteActivePlots()
 AddPlot("Pseudocolor","zvar3")
 DrawPlots()
 Test("arbpoly_07")
+
+DeleteActivePlots()
+ma.lineWidth = 3
+SetPlotOptions(ma)
+AddPlot("FilledBoundary", "MMATERIAL")
+AddPlot("Subset", "domains")
+AddOperator("OnionPeel", 1)
+op = OnionPeelAttributes()
+op.index = 99
+SetOperatorOptions(op,0,1)
+DrawPlots()
+Test("arbpoly_08")
+DeleteAllPlots()
+CloseDatabase(data_path("overlink_test_data/ev_0_0_100/OvlTop.silo"))
+
+OpenDatabase(silo_data_path("arbpoly.silo"))
+AddPlot("Mesh", "clipped_hex")
+ma.opaqueMode = ma.On
+SetPlotOptions(ma)
+DrawPlots()
+Test("arbpoly_09")
+
 
 Exit()
