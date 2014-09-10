@@ -110,6 +110,9 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 //    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
 //    Call Update on the filter, not the data object.
 //
+//    Kathleen Biagas, Wed Sep 10 14:36:03 PDT 2014
+//    Make a final attempt with vtkExtractEdges if other logic yields no cells.
+//
 // ****************************************************************************
 int vtkLinesFromOriginalCells::RequestData(
   vtkInformation *vtkNotUsed(request),
@@ -254,17 +257,31 @@ int vtkLinesFromOriginalCells::RequestData(
       }//for all edges of cell
   }//for all cells
 
-  vtkDebugMacro(<<"Created " << newLines->GetNumberOfCells() << " edges");
+  if (newLines->GetNumberOfCells() > 0)
+  {
+      output->SetLines(newLines);
+      vtkDebugMacro(<<"Created " << newLines->GetNumberOfCells() << " edges");
+  }
+  else
+  {
+      // HACK to work-around problem with arb-poly data. The logic above
+      // using 3DCellNumbers may not allow any edges to be added, so if that
+      // is the case, use the edges filter.
+      vtkDebugMacro(<<"Finding unique edges failed. Using vtkExtractEdges.");
+      vtkExtractEdges *extractor = vtkExtractEdges::New();
+      extractor->SetInputData(input);
+      extractor->Update();
+      output->ShallowCopy(extractor->GetOutput());
+      extractor->Delete();
+      vtkDebugMacro(<<"Created " << output->GetNumberOfCells() << " edges");
+  }
 
   //
   //  Update ourselves.
   //
   edgeTable->Delete();
   edgeNeighbors->Delete();
-
-  output->SetLines(newLines);
   newLines->Delete();
-
   output->Squeeze();
 
   return 1;
