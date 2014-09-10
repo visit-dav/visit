@@ -3005,15 +3005,6 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         }
 
         //
-        // Force an Update.  This needs to be done and if we do it when we
-        // read it in, then it guarantees it only happens once.
-        //
-        // FIX_ME_VTK6.0, ESB, I assume this needs to be done for VTK based
-        // readers. Can we eliminate this or do we need to move it somewhere
-        // else. All the tests pass with this commented out.
-        // mesh->Update();
-
-        //
         // VTK creates a trivial producer for each data set.  It later does
         // garbage collection and that takes a long time if we have a lot
         // of trivial producers.  Make one trivial producer for all
@@ -11055,6 +11046,10 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Kathleen Biagas, Tue Sep  9 13:57:55 PDT 2014
+//    Don't take ghost zones into account if they came from DB.
+//
 // ****************************************************************************
 
 bool
@@ -11071,15 +11066,18 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
         if (currentid == -1) 
             return false;
     }
+    avtDatabaseMetaData *md = GetMetaData(ts);
     string meshName;
     if (mN == NULL || strcmp(mN, "default") == 0)
-        meshName = GetMetaData(ts)->MeshForVar(varName);
+        meshName = md->MeshForVar(varName);
     else 
         meshName = mN; 
+    int ghostType = md->GetContainsGhostZones(meshName);
     vtkDataSet *ds =  NULL;
     TRY
     {
-        // dataRequest is a placeholder for when this information will come from elsewhere 
+        // dataRequest is a placeholder for when this information will come
+        // from elsewhere
         avtDataRequest_p dataRequest;
         ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dataRequest);
     }
@@ -11097,7 +11095,8 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
             {
-                if (ds->GetCellData()->GetArray("avtGhostZones") != NULL) 
+                if ((ds->GetCellData()->GetArray("avtGhostZones") != NULL) &&
+                    (ghostType != AVT_HAS_GHOSTS))
                 {
                     int dims[3], ijk[3] = {0, 0, 0};
                     vtkVisItUtility::GetDimensions(ds, dims);
@@ -11124,7 +11123,8 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
             {
-                if (ds->GetCellData()->GetArray("avtGhostZones") != NULL) 
+                if ((ds->GetCellData()->GetArray("avtGhostZones") != NULL) &&
+                    (ghostType != AVT_HAS_GHOSTS))
                 {
                     int dims[3], ijk[3] = {0, 0, 0};
                     vtkVisItUtility::GetDimensions(ds, dims);
