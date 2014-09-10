@@ -51,7 +51,7 @@ PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
     TESTNAMES queriesOverTime)
 
 PY_3RDPARTY_TEST(PY_TESTS SILO
-    avg_value bestfitline casetest centroid curvature
+    avg_value bestfitline casetest centroid consistencyChecks curvature
     database hohlraum l2norm length pickarray
     pickcleanzonesonly pickNamedArgs py_queries queryMultiWindow
     revolved_surface_area scf streamlineInfo watertight
