@@ -289,6 +289,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Thu Jul 31 11:43:08 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Tue Sep  9 13:56:00 PDT 2014
+//    Only remove ghost cells if VisIt created them (eg didn't come from db).
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -375,10 +378,13 @@ avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
     vtkDataSetRemoveGhostCells *removeGhostCells = NULL;
     if (in_ds->GetCellData()->GetArray("avtGhostZones"))
     {
-        removeGhostCells = vtkDataSetRemoveGhostCells::New();
-        removeGhostCells->SetInputData(ds);
-        removeGhostCells->Update();
-        ds = removeGhostCells->GetOutput();
+        if(GetInput()->GetInfo().GetAttributes().GetContainsGhostZones() == AVT_CREATED_GHOSTS)
+        {
+            removeGhostCells = vtkDataSetRemoveGhostCells::New();
+            removeGhostCells->SetInputData(ds);
+            removeGhostCells->Update();
+            ds = removeGhostCells->GetOutput();
+        }
     }
 
     avtDataAttributes &da = GetInput()->GetInfo().GetAttributes();
