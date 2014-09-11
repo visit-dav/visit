@@ -82,6 +82,9 @@
 #    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
 #    Use named arguments. 
 #
+#    Kathleen Biagas, Thu Sep 11 11:40:25 PDT 2014
+#    Add QueryArbPoly.
+#
 # ----------------------------------------------------------------------------
 
 def QueryRect2d():
@@ -1002,6 +1005,54 @@ def QueryZR_RZ():
 
     TestText("QueryZR_RZ", s)
 
+def QueryArbPoly():
+    SetQueryOutputToString()
+
+    OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+    AddPlot("Mesh", "3D/mesh1")
+    DrawPlots()
+    s = "arbpoly-zoohybrid:\n"
+    s = s + Query("NumZones", use_actual_data=1) + "\n"
+    s = s + Query("NumZones", use_actual_data=0) + "\n"
+    s = s + Query("NumNodes", use_actual_data=1) + "\n"
+    s = s + Query("NumNodes", use_actual_data=0) + "\n"
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+
+    OpenDatabase(silo_data_path("poly3d.silo"))
+    AddPlot("Mesh", "ucdmesh3d")
+    DrawPlots()
+    s = s + "\npoly3d:\n"
+    s = s + Query("NumZones", use_actual_data=1) + "\n"
+    s = s + Query("NumZones", use_actual_data=0) + "\n"
+    s = s + Query("NumNodes", use_actual_data=1) + "\n"
+    s = s + Query("NumNodes", use_actual_data=0) + "\n"
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("poly3d.silo"))
+
+    OpenDatabase(data_path("overlink_test_data/ev_0_0_100/OvlTop.silo"))
+    AddPlot("Mesh","MMESH")
+    DrawPlots()
+    s = s + "\nOvlTop:" + "\n"
+    s = s + Query("NumZones", use_actual_data=1) + "\n"
+    s = s + Query("NumZones", use_actual_data=0) + "\n"
+    s = s + Query("NumNodes", use_actual_data=1) + "\n"
+    s = s + Query("NumNodes", use_actual_data=0) + "\n"
+    DeleteAllPlots()
+    CloseDatabase(data_path("overlink_test_data/ev_0_0_100/OvlTop.silo"))
+
+    OpenDatabase(silo_data_path("arbpoly.silo"))
+    AddPlot("Mesh", "clipped_hex")
+    DrawPlots()
+    s = s + "\narbpoly:" + "\n"
+    s = s + Query("NumZones", use_actual_data=1) + "\n"
+    s = s + Query("NumZones", use_actual_data=0) + "\n"
+    s = s + Query("NumNodes", use_actual_data=1) + "\n"
+    s = s + Query("NumNodes", use_actual_data=0) + "\n"
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("arbpoly.silo"))
+    TestText("QueryArbPoly", s)
+
 
 def QueryMain():
     QueryBigSil()
@@ -1019,6 +1070,7 @@ def QueryMain():
     QueryHistogram()
     QueryGlobalId()
     QueryZR_RZ()
+    QueryArbPoly()
 
 # Call the main function
 TurnOnAllAnnotations()
