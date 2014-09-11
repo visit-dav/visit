@@ -12,7 +12,7 @@
 #                         eth_zurich | llnl_open | llnl_open_rz |"
 #                         llnl_open_cz | llnl_closed | lsu | ncar |"
 #                         nersc | nics | ornl | princeton | sandia |"
-#                         sandia_closed | tacc | umich | uutah]"
+#                         sandia_closed | tacc | umich | utah]"
 #                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
 #                      [-beta | -private] version platform directory"
 #
@@ -431,7 +431,7 @@ if [ "$#" != "3" ]; then
    echo "                         eth_zurich | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lsu | ncar |"
    echo "                         nersc | nics | ornl | princeton | sandia |"
-   echo "                         sandia_closed | tacc | umich | uutah]"
+   echo "                         sandia_closed | tacc | umich | utah]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -724,10 +724,10 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
-    echo "Testing uutah configuration..."
+    echo "Testing utah configuration..."
     rm -rf $dir
-    $0 -c uutah $version $platform $dir > /dev/null 2>&1
-    files=`ls $dir/$version/.visit/hosts/host_uutah*` 
+    $0 -c utah $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_utah*`
     if [ "$files" == "" ]; then
        echo "failed"
        exit 1
@@ -842,7 +842,7 @@ while [ "$config" = "prompt" ]; do
          config=umich
          ;;
       24)
-         config=uutah
+         config=utah
          ;;
       *)
          config=prompt
@@ -897,13 +897,13 @@ case "$config" in
       ;;
    umich)
       ;;
-   uutah)
+   utah)
       ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
       echo "llnl_open_cz, llnl_closed, lsu, ncar, nersc, nics, ornl, princeton,"
-      echo "sandia, sandia_closed, tacc, umich, uutah"
+      echo "sandia, sandia_closed, tacc, umich, utah"
       exit 4
       ;;
 esac
@@ -1091,7 +1091,7 @@ elif [ "$config" = "tacc" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "umich" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
-elif [ "$config" = "uutah" ]; then
+elif [ "$config" = "utah" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
 fi
 
