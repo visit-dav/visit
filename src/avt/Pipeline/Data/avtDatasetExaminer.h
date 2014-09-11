@@ -91,15 +91,18 @@ class     vtkDataArray;
 //    Added 'connecteNodesOnly' to GetDataExtents.  Meant to be set to true
 //    if actual extents are desired.
 //
+//    Kathleen Biagas, Thu Sep 11 09:17:10 PDT 2014
+//    Added bool flag to GetNumberZones for counting original only.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
 {
   public:
     static VISIT_LONG_LONG    GetNumberOfNodes(avtDataset_p &);
-    static VISIT_LONG_LONG    GetNumberOfZones(avtDataset_p &);
+    static VISIT_LONG_LONG    GetNumberOfZones(avtDataset_p &, bool = false);
     static void               GetNumberOfZones(avtDataset_p&, VISIT_LONG_LONG&,
-                                               VISIT_LONG_LONG&);
+                                               VISIT_LONG_LONG&, bool=false);
     static void               GetNumberOfNodes(avtDataset_p&, VISIT_LONG_LONG&,
                                                VISIT_LONG_LONG&);
     static void               GetVariableList(avtDataset_p &, VarList &);

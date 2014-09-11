@@ -125,6 +125,10 @@ avtNumZonesQuery::GetDefaultInputParams(MapNode &params)
 //    Kathleen Biagas, Wed Feb 12 09:07:34 PST 2014
 //    Add xml results.
 //
+//    Kathleen Biagas, Thu Sep 11 09:13:45 PDT 2014
+//    Added flag to count original zones only (may be needed for arbpoly
+//    data that was split by the DB reader.
+//
 // ****************************************************************************
 
 void
@@ -141,6 +145,10 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     int usedDomains = 
         GetInput()->GetInfo().GetValidity().GetHasEverOwnedAnyDomain() ? 1 : 0;
 
+    bool countOriginalOnly = OriginalData() &&
+            !GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
+             GetInput()->GetInfo().GetAttributes().GetContainsOriginalCells();
+
     avtGhostType gt = GetInput()->GetInfo().GetAttributes().GetContainsGhostZones();
     VISIT_LONG_LONG totalZones [2] = {0, 0};
     char msg[200];
@@ -150,11 +158,12 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
 
         if (gt != AVT_HAS_GHOSTS)
         {
-            totalZones[0] = avtDatasetExaminer::GetNumberOfZones(input);
+            totalZones[0] = avtDatasetExaminer::GetNumberOfZones(input, countOriginalOnly);
         }
         else 
         {
-            avtDatasetExaminer::GetNumberOfZones(input, totalZones[0], totalZones[1]);
+            avtDatasetExaminer::GetNumberOfZones(input, totalZones[0], totalZones[1],
+                                                 countOriginalOnly);
         }
     }
 

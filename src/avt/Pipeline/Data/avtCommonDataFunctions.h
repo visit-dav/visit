@@ -50,6 +50,8 @@
 
 #include <vector>
 #include <string>
+#include <utility>
+#include <set>
 
 #include <visit-config.h>
 
@@ -141,6 +143,9 @@ class     vtkDataArray;
 //    Kathleen Biagas, Wed May 28 17:25:57 MST 2014
 //    Added connectedNodesOnly to GetVariableRangeArgs.
 //
+//    Kathleen Biagas, Thu Sep 11 09:29:57 PDT 2014
+//    Added 'Original' options for GetNumberOfZones.
+//
 // ****************************************************************************
 
 //
@@ -156,6 +161,7 @@ PIPELINE_API void CCalculateHistogram(avtDataRepresentation &,
                                                void *, bool &);
 PIPELINE_API void CGetAllDatasets(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetNumberOfOriginalZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByDomain(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CPruneByDomainList(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByLabel(avtDataRepresentation &, void *, bool &);
@@ -170,6 +176,7 @@ PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetNumberOfRealOriginalZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CExpandSingletonConstants(avtDataRepresentation &,
                                                      void *, bool &);
@@ -258,6 +265,12 @@ typedef struct
     std::string                    variable;
     std::vector<VISIT_LONG_LONG>   numVals;
 } CalculateHistogramArgs;
+
+typedef struct
+{
+    std::set< std::pair<unsigned int, unsigned int> > elementCount;
+    std::set< std::pair<unsigned int, unsigned int> > ghostElementCount;
+} OrigElementCountArgs;
 
 
 // ****************************************************************************

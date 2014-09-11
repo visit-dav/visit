@@ -75,10 +75,14 @@
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of zones with a long long.
 //
+//    Kathleen Biagas, Thu Sep 11 08:49:01 PDT 2014
+//    Add 'originalOnly' arg, to call a method that only counts original
+//    zones (utilizes avtOriginalCellNumbers).
+//
 // ****************************************************************************
- 
+
 VISIT_LONG_LONG
-avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds)
+avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, bool originalOnly)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
@@ -86,7 +90,19 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds)
     if (*dataTree != NULL)
     {
         bool dummy;
-        dataTree->Traverse(CGetNumberOfZones, &numZones, dummy);
+        if (!originalOnly)
+        {
+            dataTree->Traverse(CGetNumberOfZones, &numZones, dummy);
+        }
+        else
+        {
+            OrigElementCountArgs args;
+            dataTree->Traverse(CGetNumberOfOriginalZones, (void *)&args, dummy);
+            if (args.elementCount.size() > 0)
+                numZones = args.elementCount.size();
+            else
+                numZones = GetNumberOfZones(ds);
+        }
     }
     return numZones;
 }
@@ -661,22 +677,43 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds)
 //    Hank Childs, Sat Nov 21 13:16:09 PST 2009
 //    Calculate number of zones with a long long.
 //
+//    Kathleen Biagas, Thu Sep 11 08:49:01 PDT 2014
+//    Add 'originalOnly' arg, to call a method that only counts original
+//    zones (utilizes avtOriginalCellNumbers).
+//
 // ****************************************************************************
 
 void
-avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, VISIT_LONG_LONG &nReal, 
-                                     VISIT_LONG_LONG &nGhost)
+avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, VISIT_LONG_LONG &nReal,
+                                     VISIT_LONG_LONG &nGhost, bool originalOnly)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    VISIT_LONG_LONG numZones[2] = {0, 0} ;
+    VISIT_LONG_LONG numZones[2] = {0, 0};
     if (*dataTree != NULL)
     {
         bool dummy;
-        dataTree->Traverse(CGetNumberOfRealZones, numZones, dummy);
+        if (!originalOnly)
+        {
+            dataTree->Traverse(CGetNumberOfRealZones, numZones, dummy);
+            nReal = numZones[0];
+            nGhost = numZones[1];
+        }
+        else
+        {
+            OrigElementCountArgs args;
+            dataTree->Traverse(CGetNumberOfRealOriginalZones, (void*)&args, dummy);
+            if (args.elementCount.size() > 0 || args.ghostElementCount.size() > 0)
+            {
+                nReal = args.elementCount.size();
+                nGhost = args.ghostElementCount.size();
+            }
+            else
+            {
+                GetNumberOfZones(ds, nReal, nGhost);
+            }
+        }
     }
-    nReal = numZones[0];
-    nGhost = numZones[1];
 }
 
 
@@ -791,5 +828,4 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
     
     return somebodyFailed;
 }
-
 
