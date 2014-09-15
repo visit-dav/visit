@@ -104,6 +104,8 @@ QvisPreferencesWindow::QvisPreferencesWindow(
     allowFileSelectionChangeToggle = 0;
     enableWarnPopups = true;
     enableWarningPopupsToggle = 0;
+
+    backendType = NULL;
 }
 
 
@@ -697,9 +699,12 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
 
     if(doAll || atts->IsSelected(GlobalAttributes::ID_backendType))
     {
-        backendType->blockSignals(true);
-        backendType->button((int)atts->GetBackendType())->setChecked(true);
-        backendType->blockSignals(false);
+        if(backendType != NULL)
+        {
+            backendType->blockSignals(true);
+            backendType->button((int)atts->GetBackendType())->setChecked(true);
+            backendType->blockSignals(false);
+        }
     }
 
     if(doAll)
