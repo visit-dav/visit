@@ -78,6 +78,11 @@
 
 #include <TimingsManager.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
+
 using     std::string;
 using namespace std;
 
@@ -1798,6 +1803,9 @@ avtunvFileFormat::FreeUpResources(void)
 void
 avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+#ifdef PARALLEL
+    md->SetFormatCanDoDomainDecomposition(true) ;
+#endif
     // CODE TO ADD A MESH
     ReadFile();
     //
@@ -1994,6 +2002,10 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //KineticEnergy_expr.SetDefinition("0.5*(momentum*momentum)/(rho*rho)");
     //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);
     //md->AddExpression(&KineticEnergy_expr);
+#ifdef PARALLEL
+    if (PAR_Rank() != 0) 
+        avtunvFileFormat::FreeUpResources() ;
+#endif
 }
 
 
@@ -2021,6 +2033,13 @@ avtunvFileFormat::GetMesh(const char *meshname)
     if (debuglevel >= 2) fprintf(stdout, "meshname=%s\n",meshname);
 #else
     debug2 << "meshname=" << meshname << endl;
+#endif
+#ifdef MDSERVER
+    return 0;
+#endif
+#ifdef PARALLEL
+    if (PAR_Rank() != 0)
+        return 0 ;
 #endif
     if (strcmp(meshname, "mesh") == 0)
     {
@@ -2697,6 +2716,13 @@ avtunvFileFormat::GetMesh(const char *meshname)
 vtkDataArray *
 avtunvFileFormat::GetVar(const char *varname)
 {
+#ifdef MDSERVER
+    return 0;
+#endif
+#ifdef PARALLEL
+    if (PAR_Rank() != 0)
+        return 0 ;
+#endif
     // If you have a file format where variables don't apply (for example a
     // strictly polygonal format like the STL (Stereo Lithography) format,
     // then uncomment the code below.
@@ -2810,6 +2836,13 @@ vtkDataArray *
 avtunvFileFormat::GetVectorVar(const char *varname)
 {
     // YOU MUST IMPLEMENT THIS
+#ifdef MDSERVER
+    return 0;
+#endif
+#ifdef PARALLEL
+    if (PAR_Rank() != 0)
+        return 0 ;
+#endif
 
     debug2 << "GRF: GetVectorVar function match to set normals = " << varname << endl;
     if (strcmp(varname, "sets_normals") == 0 || strcmp(varname, "free_normals") == 0)
@@ -3784,6 +3817,13 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
     if (debuglevel >= 3) fprintf(stdout,"var='%s', type='%s'\n",var,type);
 #else
     debug3 << "var='" << var << "', type='" << type << "%s'" << endl;
+#endif
+#ifdef MDSERVER
+    return retval;
+#endif
+#ifdef PARALLEL
+    if (PAR_Rank() != 0)
+        return retval ;
 #endif
     if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
