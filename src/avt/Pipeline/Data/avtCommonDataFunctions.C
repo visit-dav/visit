@@ -2731,6 +2731,58 @@ CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
 
 
 // ****************************************************************************
+//  Method: CGetNumberOfOriginalNodes
+//
+//  Purpose:
+//    Adds the number of nodes in the vtk input to the passed sum argument.
+//    Utilizes avtOriginalNodeNumbers to ensure count does not include dups.
+//
+//  Arguments:
+//    data      The data from which to calculate number of nodes.
+//    arg       A place to store the cumulative number of nodes.
+//    <unused>
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   September 11, 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+CGetNumberOfOriginalNodes(avtDataRepresentation &data, void *arg, bool &)
+{
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    vtkDataSet *ds = data.GetDataVTK();
+    vtkIntArray *onArray = vtkIntArray::SafeDownCast(
+              ds->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+    if (onArray)
+    {
+        OrigElementCountArgs *args = (OrigElementCountArgs *) arg;
+        int ncomp = onArray->GetNumberOfComponents();
+        int ntups = onArray->GetNumberOfTuples();
+        for (int i = 0; i < ntups; ++i)
+        {
+            unsigned int oNode = onArray->GetComponent(i, ncomp-1);
+            if (oNode == -1)
+                continue;
+            unsigned int dom = ncomp == 1 ? 0 : onArray->GetComponent(i, 0);
+            args->elementCount.insert(pair<unsigned int, unsigned int>(dom, oNode));
+        }
+    }
+
+}
+
+
+// ****************************************************************************
 //  Method: CGetNumberOfRealZones
 //
 //  Purpose:
@@ -2947,6 +2999,108 @@ CGetNumberOfRealNodes(avtDataRepresentation &data, void *sum, bool &)
     else
     {
         numNodes[0] += nPoints;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: CGetNumberOfRealOriginalNodes
+//
+//  Purpose:
+//    Adds the number of nodes in the vtk input to the passed sum argument.
+//    Counts 'real' and 'ghost' separately.
+//    Utilizes avtOriginalNodeNumbers to ensure count does not include dups.
+//
+//  Arguments:
+//    data      The data from which to calculate number of nodes.
+//    sum       A place to store the cumulative number of nodes.
+//    <unused>
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   September 11, 2014
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+CGetNumberOfRealOriginalNodes(avtDataRepresentation &data, void *arg, bool &dummy)
+{
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    vtkDataSet *ds = data.GetDataVTK();
+    vtkUnsignedCharArray *ghostNodes = (vtkUnsignedCharArray*)
+        ds->GetPointData()->GetArray("avtGhostNodes");
+    vtkUnsignedCharArray *ghostZones = (vtkUnsignedCharArray*)
+        ds->GetCellData()->GetArray("avtGhostZones");
+
+    if (!ghostNodes && !ghostZones)
+    {
+        CGetNumberOfOriginalNodes(data, arg, dummy);
+        return;
+    }
+
+    vtkIntArray *onArray = vtkIntArray::SafeDownCast(
+        ds->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+
+    if (onArray)
+    {
+        OrigElementCountArgs *args = (OrigElementCountArgs*)arg;
+        int nPoints = ds->GetNumberOfPoints();
+        int nComp = onArray->GetNumberOfComponents();
+        if (ghostNodes != NULL)
+        {
+            unsigned char *gptr = ghostNodes->GetPointer(0);
+            for (int i = 0; i < nPoints; i++)
+            {
+              unsigned int origNode = onArray->GetComponent(i, nComp-1);
+              if (origNode == -1)
+                  continue;
+              unsigned int dom = nComp == 1 ? 0 : onArray->GetComponent(i, 0);
+
+              if (gptr[i])
+              {
+                  args->ghostElementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+              }
+              else
+              {
+                  args->elementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+              }
+            }
+        }
+        else
+        {
+            unsigned char *gptr = ghostZones->GetPointer(0);
+            vtkIdList *ids = vtkIdList::New();
+            for (int i = 0; i < nPoints; i++)
+            {
+               unsigned int origNode = onArray->GetComponent(i, nComp-1);
+               if (origNode == -1)
+                   continue;
+               unsigned int dom = nComp == 1 ? 0 : onArray->GetComponent(i, 0);
+
+               ds->GetPointCells(i, ids);    
+               int numGhostCells = 0;
+               if (ids->GetNumberOfIds() == 0)
+                   continue;
+
+               for (int j = 0; j < ids->GetNumberOfIds(); j++)
+               {
+                   numGhostCells += gptr[ids->GetId(j)] > 0 ? 1 : 0;
+               }
+               if (numGhostCells == ids->GetNumberOfIds())
+                   args->ghostElementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+               else
+                   args->elementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+            }
+            ids->Delete();
+        }
     }
 }
 

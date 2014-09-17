@@ -144,7 +144,7 @@ class     vtkDataArray;
 //    Added connectedNodesOnly to GetVariableRangeArgs.
 //
 //    Kathleen Biagas, Thu Sep 11 09:29:57 PDT 2014
-//    Added 'Original' options for GetNumberOfZones.
+//    Added 'Original' options for GetNumberOfZones/Nodes.
 //
 // ****************************************************************************
 
@@ -175,9 +175,11 @@ PIPELINE_API void CLocateNode(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetNumberOfOriginalNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealOriginalZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealNodes(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetNumberOfRealOriginalNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CExpandSingletonConstants(avtDataRepresentation &,
                                                      void *, bool &);
 PIPELINE_API void CConvertUnstructuredGridToPolyData(avtDataRepresentation &,

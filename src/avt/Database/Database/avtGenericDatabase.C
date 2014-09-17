@@ -2938,6 +2938,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
 //
+//    Kathleen Biagas, Thu Sep 11 09:10:42 PDT 2014
+//    Keep avtOriginalNodeNumbers if present.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -3076,6 +3079,12 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         rv->GetCellData()->AddArray(
             mesh->GetCellData()->GetArray("avtOriginalCellNumbers"));
         GetMetaData(ts)->SetContainsOriginalCells(meshname, true);
+    }
+    if (mesh->GetPointData()->GetArray("avtOriginalNodeNumbers"))
+    {
+        rv->GetPointData()->AddArray(
+            mesh->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+        GetMetaData(ts)->SetContainsOriginalNodes(meshname, true);
     }
     rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
 
