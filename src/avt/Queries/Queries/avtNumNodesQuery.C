@@ -115,6 +115,10 @@ avtNumNodesQuery::GetDefaultInputParams(MapNode &params)
 //    Kathleen Biagas, Wed Feb 12 08:17:21 PST 2014
 //    Add xml results.
 //
+//    Kathleen Biagas, Thu Sep 11 09:13:45 PDT 2014
+//    Added flag to count original nodes only (may be needed for arbpoly
+//    data that was split by the DB reader.
+//
 // ****************************************************************************
 
 void
@@ -135,6 +139,10 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
     avtGhostType gzt = 
         GetInput()->GetInfo().GetAttributes().GetContainsGhostZones();
 
+    bool countOriginalOnly = OriginalData() &&
+            !GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
+             GetInput()->GetInfo().GetAttributes().GetContainsOriginalNodes();
+
     VISIT_LONG_LONG totalNodes[2] = {0, 0};
     VISIT_LONG_LONG tn[2] = {0, 0};
     char msg[200];
@@ -143,12 +151,14 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
         avtDataset_p input = GetTypedInput();
         if (gzt != AVT_HAS_GHOSTS)
         {
-            totalNodes[0] = avtDatasetExaminer::GetNumberOfNodes(input);
+            totalNodes[0] = avtDatasetExaminer::GetNumberOfNodes(input,
+                                                 countOriginalOnly);
         }
         else 
         {
             avtDatasetExaminer::GetNumberOfNodes(input, totalNodes[0], 
-                                                 totalNodes[1]);
+                                                 totalNodes[1],
+                                                 countOriginalOnly);
         }
     }
 
