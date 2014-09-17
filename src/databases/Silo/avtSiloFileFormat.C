@@ -9459,6 +9459,10 @@ RemapFacelistForPolyhedronZones(DBfacelist *sfl, DBzonelist *szl)
 //    Mark C. Miller, Wed Jul 11 10:41:56 PDT 2012
 //    Changed interface to ReadInConnectivity to support repeated calls to
 //    ReadInArbConnectivity for different segments of same zonelist.
+//
+//    Kathleen Biagas, Wed Sep 17 09:56:05 PDT 2014
+//    Create avtOriginaNodeNumbers array when nodes added (eg arb poly).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -9598,6 +9602,33 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         if (um->phzones->gzoneno != NULL)
             HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
                 um->phzones->nzones, um->phzones->gnznodtype);
+    }
+
+    if (rv->GetNumberOfPoints() > um->nnodes)
+    {
+        int numCurrentNodes = rv->GetNumberOfPoints();
+        vtkIntArray *origNodes = vtkIntArray::New();
+        origNodes->SetName("avtOriginalNodeNumbers");
+        origNodes->SetNumberOfComponents(2);
+        origNodes->SetNumberOfTuples(numCurrentNodes);
+        int *ptr = origNodes->GetPointer(0);
+        for (int i = 0; i < um->nnodes; ++i)
+        {
+            *ptr = domain;
+            ptr++;
+            *ptr = i;
+            ptr++;
+        }
+        int numNewNodes = numCurrentNodes - um->nnodes;
+        for (int i = 0; i < numNewNodes; ++i)
+        {
+            *ptr = domain;
+            ptr++;
+            *ptr = -1;
+            ptr++;
+        }
+        rv->GetPointData()->AddArray(origNodes);
+        origNodes->Delete();
     }
 
     points->Delete();
