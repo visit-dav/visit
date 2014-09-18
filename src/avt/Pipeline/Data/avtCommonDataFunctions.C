@@ -2771,11 +2771,11 @@ CGetNumberOfOriginalNodes(avtDataRepresentation &data, void *arg, bool &)
         int ntups = onArray->GetNumberOfTuples();
         for (int i = 0; i < ntups; ++i)
         {
-            unsigned int oNode = onArray->GetComponent(i, ncomp-1);
+            int oNode = onArray->GetComponent(i, ncomp-1);
             if (oNode == -1)
                 continue;
             unsigned int dom = ncomp == 1 ? 0 : onArray->GetComponent(i, 0);
-            args->elementCount.insert(pair<unsigned int, unsigned int>(dom, oNode));
+            args->elementCount.insert(pair<unsigned int, unsigned int>(dom, (unsigned int)oNode));
         }
     }
 
@@ -3059,18 +3059,18 @@ CGetNumberOfRealOriginalNodes(avtDataRepresentation &data, void *arg, bool &dumm
             unsigned char *gptr = ghostNodes->GetPointer(0);
             for (int i = 0; i < nPoints; i++)
             {
-              unsigned int origNode = onArray->GetComponent(i, nComp-1);
+              int origNode = onArray->GetComponent(i, nComp-1);
               if (origNode == -1)
                   continue;
               unsigned int dom = nComp == 1 ? 0 : onArray->GetComponent(i, 0);
 
               if (gptr[i])
               {
-                  args->ghostElementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+                  args->ghostElementCount.insert(pair<unsigned int, unsigned int>(dom, (unsigned int)origNode));
               }
               else
               {
-                  args->elementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+                  args->elementCount.insert(pair<unsigned int, unsigned int>(dom, (unsigned int)origNode));
               }
             }
         }
@@ -3080,7 +3080,7 @@ CGetNumberOfRealOriginalNodes(avtDataRepresentation &data, void *arg, bool &dumm
             vtkIdList *ids = vtkIdList::New();
             for (int i = 0; i < nPoints; i++)
             {
-               unsigned int origNode = onArray->GetComponent(i, nComp-1);
+               int origNode = onArray->GetComponent(i, nComp-1);
                if (origNode == -1)
                    continue;
                unsigned int dom = nComp == 1 ? 0 : onArray->GetComponent(i, 0);
@@ -3095,9 +3095,9 @@ CGetNumberOfRealOriginalNodes(avtDataRepresentation &data, void *arg, bool &dumm
                    numGhostCells += gptr[ids->GetId(j)] > 0 ? 1 : 0;
                }
                if (numGhostCells == ids->GetNumberOfIds())
-                   args->ghostElementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+                   args->ghostElementCount.insert(pair<unsigned int, unsigned int>(dom, (unsigned int)origNode));
                else
-                   args->elementCount.insert(pair<unsigned int, unsigned int>(dom, origNode));
+                   args->elementCount.insert(pair<unsigned int, unsigned int>(dom, (unsigned int)origNode));
             }
             ids->Delete();
         }
