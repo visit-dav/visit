@@ -86,15 +86,6 @@ def TestExpressions(name):
     TestText(name, testString)
 
 #
-# Create test cases for the time varying metadata files.
-#
-def TestTimeVarying(testIndex):
-    # Test what the first time step looks like.
-    Test("reopen_%02d" % testIndex)
-    TestLength("reopen_%02d" % (testIndex + 1))
-    return testIndex + 2
-
-#
 # Returns whether all files in the list are in the current directory.
 #
 def FilesPresent(files):
@@ -219,7 +210,7 @@ def SetTheView():
 # Make sure that Reopen does not reset the time slider state and also make
 # sure that we are getting the metadata for a late time state.
 #
-def test1(testIndex):
+def test1():
     #
     # This will open at timestep 0.  The variable "transient" will not be
     # available then.
@@ -231,7 +222,7 @@ def test1(testIndex):
     # Now set the time to a timestep when "transient" is available.
     #
     SetTimeSliderState(20)
-    TestWindowInformation("reopen_00")
+    TestWindowInformation("reopen_1_00")
 
     #
     # If we were to try and make a PC plot of transient right now, it wouldn't
@@ -245,25 +236,25 @@ def test1(testIndex):
     AddPlot("Pseudocolor","transient")
     DrawPlots()
     SetTheView()
-    Test("reopen_01")
+    Test("reopen_1_01")
 
     #
     # Delete the plots and close the database
     #
     DeleteAllPlots()
     CloseDatabase(db)
-    TestWindowInformation("reopen_02")
+    TestWindowInformation("reopen_1_02")
 
-    return testIndex + 3
 
 #
 # Now test that reopening a file actually makes the time slider longer. First
 # create a new .visit file that we can add onto later.
 #
-def test2(testIndex):
+def test2():
     VirtualDatabase = 0
     VisItFile = 1
 
+    testIndex = 0
     for method in (VirtualDatabase, VisItFile):
         # Add a section title.
         if(method == VirtualDatabase):
@@ -281,24 +272,24 @@ def test2(testIndex):
 
         # Go to the last time state.
         SetTimeSliderState(TimeSliderGetNStates() - 1)
-        Test("reopen_%02d" % testIndex)
-        TestLength("reopen_%02d" % (testIndex + 1))
+        Test("reopen_2_%02d" % testIndex)
+        TestLength("reopen_2_%02d" % (testIndex + 1))
 
         # Create more time states in the file.
         db, files = CreateMTFile("", method, 60)
         ReOpenDatabase(db)
         # Go to the last time state.
         SetTimeSliderState(TimeSliderGetNStates() - 1)
-        Test("reopen_%02d" % (testIndex + 2))
-        TestLength("reopen_%02d" % (testIndex + 3))
+        Test("reopen_2_%02d" % (testIndex + 2))
+        TestLength("reopen_2_%02d" % (testIndex + 3))
 
         # Create more time states in the file.
         db, files = CreateMTFile("", method, 100)
         ReOpenDatabase(db)
         # Go to the last time state.
         SetTimeSliderState(TimeSliderGetNStates() - 1)
-        Test("reopen_%02d" % (testIndex + 4))
-        TestLength("reopen_%02d" % (testIndex + 5))
+        Test("reopen_2_%02d" % (testIndex + 4))
+        TestLength("reopen_2_%02d" % (testIndex + 5))
 
         # Get rid of the .visit file that we created.
         DestroyMTFile(method, db)
@@ -308,15 +299,15 @@ def test2(testIndex):
         # Get to the next testIndex
         testIndex = testIndex + 6
 
-    return testIndex
 
 #
 # Now that we've tested time-invariant databases, try testing reopen with
 # a time-varying database to see if we get the right plots.
 #
-def test3(testIndex):
+def test3():
     TestSection("Reopening .visit file of time-varying data")
 
+    testIndex = 0
     for percent in (30,60,100):
         db = CreateTimeVaryingMTFile(percent)
         if(percent == 30):
@@ -340,7 +331,9 @@ def test3(testIndex):
             SetView3D(v0)
 
             # Save a test
-            testIndex = TestTimeVarying(testIndex)
+            Test("reopen_3_%02d" % testIndex)
+            TestLength("reopen_3_%02d" % (testIndex + 1))
+
         else:
             # Reopen the database to add the new time states.
             ReOpenDatabase(db)
@@ -349,19 +342,18 @@ def test3(testIndex):
         SetTimeSliderState(TimeSliderGetNStates() - 1)
 
         # Save a test
-        testIndex = TestTimeVarying(testIndex)
+        Test("reopen_3_%02d" % testIndex)
+        TestLength("reopen_3_%02d" % (testIndex + 1))
 
     # Clean up the time varying .visit file.
     DeleteAllPlots()
     CloseDatabase(db)
     DestroyTimeVaryingMTFile(db)
 
-    return testIndex
-
 #
 # Test that reopening a file that has been overwritten works.
 #
-def test4(testIndex):
+def test4():
     TestSection("Reopening overwritten file to test engine")
 
     # Copy curv2d to the current directory.
@@ -375,7 +367,7 @@ def test4(testIndex):
     OpenDatabase(db)
     AddPlot("Pseudocolor", "u")
     DrawPlots()
-    Test("reopen_%02d" % testIndex)
+    Test("reopen_4_00")
 
     # Delete the file
     try:
@@ -391,7 +383,7 @@ def test4(testIndex):
 
     ReOpenDatabase(db)
     ResetView()
-    Test("reopen_%02d" % (testIndex + 1))
+    Test("reopen_4_01")
 
     DeleteAllPlots()
     # Delete the file
@@ -401,41 +393,38 @@ def test4(testIndex):
         # Ignore any exceptions
         pass
 
-    return testIndex + 2
 
 #
 # Test that expressions are not lost after reopening a file when there
 # are multiple windows.
 #
-def test5(testIndex):
+def test5():
     TestSection("Testing reopen/expressions with multiple windows")
     db = silo_data_path("curv3d.silo") 
     AddWindow()
     SetActiveWindow(1)
     OpenDatabase(db)
-    TestExpressions("reopen_%02d" % testIndex)
+    TestExpressions("reopen_5_00")
 
     # See if the expressions are right after reopening.
     ReOpenDatabase(db)
-    TestExpressions("reopen_%02d" % (testIndex + 1))
+    TestExpressions("reopen_5_01")
 
     # Delete the window that we added.
     SetActiveWindow(2)
     DeleteWindow()
     CloseDatabase(db)
 
-    return testIndex + 2
-
 #
 # Test that time sliders are shortened when we reopen an MT database
 # that has had time states removed.
 #
-def test6(testIndex):
+def test6():
     TestSection("Testing reopen at an invalid time state")
     RemoveAllSiloAndVisItFiles()
 
     # Make sure that there is no open database.
-    TestLength("reopen_%02d" % testIndex)
+    TestLength("reopen_6_00")
 
     # Create a short MT file.
     db, files = CreateMTFile("", 0, (10. / 71.) * 100.)
@@ -446,14 +435,14 @@ def test6(testIndex):
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()
-    Test("reopen_%02d" % (testIndex + 1))
-    TestLength("reopen_%02d" % (testIndex + 2))
+    Test("reopen_6_01")
+    TestLength("reopen_6_02")
 
     # Make a copy of the first window.
     CloneWindow()
     DrawPlots()
-    Test("reopen_%02d" % (testIndex + 3))
-    TestLength("reopen_%02d" % (testIndex + 4))
+    Test("reopen_6_03")
+    TestLength("reopen_6_04")
     SetActiveWindow(1)
 
     # Delete the last few time states
@@ -467,8 +456,8 @@ def test6(testIndex):
     # Change to a time state that we deleted. This should put the plot
     # in the error state and we should get an error message.
     SetTimeSliderState(nStates - 2)
-    Test("reopen_%02d" % (testIndex + 5))
-    TestText("reopen_%02d" % (testIndex + 6), GetLastError())
+    Test("reopen_6_05")
+    TestText("reopen_6_06", GetLastError())
 
     # Do the same thing in window 2 so we can check leter if reopen
     # causes the time slider, etc to be corrected.
@@ -481,14 +470,14 @@ def test6(testIndex):
     # in bounds. The compute engine also should not crash.
     ReOpenDatabase(db)
     DrawPlots()
-    Test("reopen_%02d" % (testIndex + 7))
-    TestLength("reopen_%02d" % (testIndex + 8))
+    Test("reopen_6_07")
+    TestLength("reopen_6_08")
 
     # See if we're at the right time state in window 2 too.
     SetActiveWindow(2)
     DrawPlots()
-    Test("reopen_%02d" % (testIndex + 9))
-    TestLength("reopen_%02d" % (testIndex + 10))
+    Test("reopen_6_09")
+    TestLength("reopen_6_10")
     DeleteWindow()
 
     # Delete all of the plots in window 1 and close the database.
@@ -498,12 +487,11 @@ def test6(testIndex):
     # Delete the last few files.
     DestroyMTFile(0, db)
 
-    return testIndex + 11
 
 #
 # Test reopening a database that has been removed from disk.
 #
-def test7(testIndex):
+def test7():
     TestSection("Testing reopen on a deleted file")
     # Link a file from the data directory to the current directory.
     db = "reopen_globe.silo"
@@ -515,7 +503,7 @@ def test7(testIndex):
     OpenDatabase(db)
     AddPlot("Pseudocolor", "t")
     DrawPlots()
-    Test("reopen_%02d" % testIndex)
+    Test("reopen_7_00")
 
     # Remove the file and make sure that we can't reopen it.
     RemoveAllSiloAndVisItFiles()
@@ -523,16 +511,15 @@ def test7(testIndex):
         s = "VisIt was able to reopen " + db
     else:
         s = "VisIt was *NOT* able to reopen " + db + "!"
-    TestText("reopen_%02d" % (testIndex+1), s)
+    TestText("reopen_7_01", s)
 
     # Do something that will make the plot be regenerated. Here we're changing
     # plot variables to force VisIt to recalculate the plot.
     ChangeActivePlotsVar("u")
-    Test("reopen_%02d" % (testIndex+2))
+    Test("reopen_7_02")
     DeleteAllPlots()
     CloseDatabase(db)
 
-    return testIndex+3
 
 #
 # Run the tests
@@ -543,13 +530,13 @@ try:
     RemoveAllSiloAndVisItFiles()
 
     # Run the tests
-    testIndex = test1(0)
-    testIndex = test2(testIndex)
-    testIndex = test3(testIndex)
-    testIndex = test4(testIndex)
-    testIndex = test5(testIndex)
-    testIndex = test6(testIndex)
-    testIndex = test7(testIndex)
+    test1()
+    test2()
+    test3()
+    test4()
+    test5()
+    test6()
+    test7()
 except:
     # If we got any kind of exception, make sure that we get rid of
     # all of the .silo and .visit files that might be left.
