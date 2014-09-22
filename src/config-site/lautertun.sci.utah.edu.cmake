@@ -1,34 +1,39 @@
-#/Projects/VisIt/trunk/visit/cmake/2.8.12.2/i386-apple-darwin12_gcc-4.2/bin/cmake
+#/Projects/VisIt/trunk/thirdparty/visit/cmake/2.8.12.2/i386-apple-darwin12_gcc/bin/cmake
 ##
-## src/svn_bin/build_visit generated host.cmake
-## created: Fri Jan 17 08:51:42 MST 2014
-## system: Darwin lautertun.sci.utah.edu 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
+## ../src/svn_bin/build_visit generated host.cmake
+## created: Fri Sep 19 18:00:54 MDT 2014
+## system: Darwin mashtun.sci.utah.edu 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
 ## by: allen
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /Projects/VisIt/trunk/visit)
-SET(VISITARCH i386-apple-darwin12_gcc-4.2)
+SET(VISITHOME /Projects/VisIt/trunk/thirdparty/visit)
+SET(VISITARCH i386-apple-darwin12_gcc)
 
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISITHOME}/mpich/3.0.1/${VISITARCH}/bin/mpicc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISITHOME}/mpich/3.0.4/${VISITARCH}/bin/mpicc TYPE FILEPATH)
 
 ##
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
+
+##
+## VisIt Boost Option.
+##
+VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -56,14 +61,13 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.6/${VISITARCH})
 ##
 ## Qt
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.6/${VISITARCH}/bin)
 
 ##
 ## VTK
 ##
 SETUP_VTK_VERSION(6.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk-r/${VTK_VERSION}/${VISITARCH})
-
 ##
 ## MPICH
 ##
@@ -80,7 +84,7 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## ADIOS
 ## (configured w/ mpi compiler wrapper)
 ##
-VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/ADIOS/1.7.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/1.7.0/${VISITARCH})
 
 ##
 ## AdvIO
@@ -116,8 +120,8 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## CGNS
 ##
-VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/3.2.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+#VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/3.2.1/${VISITARCH})
+#VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
 ## FastBit
@@ -147,11 +151,6 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
-## PySide
-##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
-
-##
 ## Silo
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10/${VISITARCH})
@@ -163,11 +162,15 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/1.6.0beta/${VISITARCH})
 
 ##
+## VISUS 
+##
+VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITDIR}/visus/27d3d79/${VISITARCH})
+
+##
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5  VTK_LIBRARY_DIRS vtklibxml2-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}  TYPE STRING)
-
 
 ##############################################################
 
