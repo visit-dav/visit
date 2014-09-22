@@ -117,21 +117,29 @@ function build_cgns
     info "Configuring CGNS . . ."
     cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
     info "Invoking command to configure CGNS"
+#    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+#            cf_build_type=""
+#        else
+#            cf_build_type="--enable-shared=all"
+#    fi
     # optionally add HDF5 and szip to the configure.
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        fi
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
         fi
     fi
     info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-       ./configure --enable-64bit $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       ./configure --enable-64bit $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
        warn "CGNS configure failed.  Giving up"
@@ -187,7 +195,8 @@ function build_cgns
                 H5LINK="$H5LINK $VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.dylib"
             fi
         fi
-        /usr/bin/libtool -o libcgns.${SO_EXT} -dynamic DARWIN/libcgns.a \
+        /usr/bin/libtool -o libcgns.${SO_EXT} \
+	   -dynamic $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib/libcgns.a \
            -lSystem $USESTUBS $H5LINK -headerpad_max_install_names \
            -install_name $INSTALLNAMEPATH/libcgns.${SO_EXT} \
            -compatibility_version $CGNS_COMPATIBILITY_VERSION \
