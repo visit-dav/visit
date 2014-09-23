@@ -67,7 +67,15 @@
                     {"category":"databases","file":"rect.py","platform":"win"},
                     {"category":"databases","file":"itaps.py","platform":"win"},
                     {"category":"databases","file":"claw.py","platform":"win"},
-                    {"category":"plots","file":"streamline_geom.py","cases":["streamline_geom_10","streamline_geom_11","streamline_geom_12","streamline_geom_13","streamline_geom_14"]}
+                    {"category":"plots","file":"streamline_geom.py","cases":["streamline_geom_10","streamline_geom_11","streamline_geom_12","streamline_geom_13","streamline_geom_14"]},
+                    {"category":"simulation","file":"csg.py","platform":"win"},
+                    {"category":"simulation","file":"curve.py","platform":"win"},
+                    {"category":"simulation","file":"domainlist.py","platform":"win"},
+                    {"category":"simulation","file":"globalids.py","platform":"win"},
+                    {"category":"simulation","file":"life.py","platform":"win"},
+                    {"category":"simulation","file":"mandelbrot.py","platform":"win"},
+                    {"category":"simulation","file":"ucdcurve.py","platform":"win"},
+                    {"category":"simulation","file":"updateplots.py","platform":"win"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
@@ -83,6 +91,14 @@
                     {"category":"operators" ,"file": "transform.py","cases":["ops_transform05"]},
                     {"category":"session","file":"correlationsession.py","cases":["correlationsession00"]},
                     {"category":"session","file":"legendproperties.py","cases":["legendpropeties00","legendproperties01"]},
-                    {"category":"queries","file": "revolved_surface_area.py"}
+                    {"category":"queries","file": "revolved_surface_area.py"},
+                    {"category":"simulation","file":"csg.py","platform":"win"},
+                    {"category":"simulation","file":"curve.py","platform":"win"},
+                    {"category":"simulation","file":"domainlist.py","platform":"win"},
+                    {"category":"simulation","file":"globalids.py","platform":"win"},
+                    {"category":"simulation","file":"life.py","platform":"win"},
+                    {"category":"simulation","file":"mandelbrot.py","platform":"win"},
+                    {"category":"simulation","file":"ucdcurve.py","platform":"win"},
+                    {"category":"simulation","file":"updateplots.py","platform":"win"}
                     ]}
 ]}
