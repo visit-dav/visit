@@ -332,7 +332,9 @@ def test3():
 
             # Save a test
             Test("reopen_3_%02d" % testIndex)
-            TestLength("reopen_3_%02d" % (testIndex + 1))
+            testIndex = testIndex + 1
+            TestLength("reopen_3_%02d" % testIndex)
+            testIndex = testIndex + 1
 
         else:
             # Reopen the database to add the new time states.
@@ -343,7 +345,9 @@ def test3():
 
         # Save a test
         Test("reopen_3_%02d" % testIndex)
-        TestLength("reopen_3_%02d" % (testIndex + 1))
+        testIndex = testIndex + 1
+        TestLength("reopen_3_%02d" % testIndex)
+        testIndex = testIndex + 1
 
     # Clean up the time varying .visit file.
     DeleteAllPlots()
