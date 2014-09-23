@@ -93,6 +93,10 @@ ${CMAKE_CURRENT_BINARY_DIR}/pyside_gui/pysidegui_wrapper.cpp
 ${CMAKE_CURRENT_BINARY_DIR}/pyside_gui/guiwrapper_wrapper.cpp
 ${CMAKE_CURRENT_BINARY_DIR}/pyside_gui/pyside_gui_module_wrapper.cpp)
 
+IF(WIN32)
+  LINK_DIRECTORIES(${QT_SHAREDLIB_DIR} ${QT_LIBRARY_DIR})
+ENDIF(WIN32)
+
 #
 # For dev build, we may need to link to mesa on Linux.
 #
