@@ -60,6 +60,9 @@
 #   Burlen Loring, Thu Jul 17 10:49:46 PDT 2014
 #   Added support for testsuites modes.
 #
+#   Kathleen Biagas, Tue Sep 23 13:15:13 MST 2014
+#   Use TESTSUITE_VISIT_EXEC on all platforms. (Fixes ctest issue on Windows).
+#
 # ****************************************************************************
 
 # by default run the same modes as edge, these could be restricted on
@@ -78,12 +81,14 @@ SET(TESTSUITE_OPTIONS "" CACHE STRING
 MARK_AS_ADVANCED(TESTSUITE_MODE_FLAGS TESTSUITE_OPTIONS)
 
 SET(TESTSUITE_PLATFORM_ARGS)
-SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/visit.exe")
+SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/bin/visit")
 IF(WIN32)
     # windows needs skiplist to various prevent crashes
     # and msvc needs configuration specific paths
     IF(MSVC_IDE)
-        SET(TESTSUITE_VISIT_EXEC ${CMAKE_BINARY_DIR}/exe/$<CONFIGURATION>/visit.exe)
+        SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/$<CONFIGURATION>/visit.exe")
+    ELSE()
+        SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/visit.exe")
     ENDIF()
 ELSE()
     # TODO -- verify we get it right with the skiplist on.
@@ -110,7 +115,7 @@ MACRO(ADD_VISIT_PY_TESTS MODULE_NAME PY_TESTS)
                 -n 1 --no-data-check --ctest --lessverbose --cleanup-delay=1 --threshold-diff
                 ${TESTSUITE_PLATFORM_ARGS} ${TEST_EXTRA_ARGS} ${TESTSUITE_OPTIONS}
                 -m ${MODE_FLAGS} -d ${VISIT_DATA_DIR} -b ${VISIT_BASELINE_DIR}
-                -e ${CMAKE_BINARY_DIR}/bin/visit -o ${CMAKE_BINARY_DIR}/PyTestOutput
+                -e ${TESTSUITE_VISIT_EXEC} -o ${CMAKE_BINARY_DIR}/PyTestOutput
                 ${CMAKE_CURRENT_SOURCE_DIR}/${PY_TEST}.py
                 )
         # set labels
