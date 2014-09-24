@@ -284,9 +284,9 @@ avtMoleculeRenderer::SetAtts(const AttributeGroup *a)
 //
 // ****************************************************************************
 void
-avtMoleculeRenderer::GlobalSetAmbientCoefficient(float coeff)
+avtMoleculeRenderer::GlobalSetAmbientCoefficient(double coeff)
 {
-    ambient_coeff = coeff;
+    ambient_coeff = float(coeff);
 }
 
 // ****************************************************************************

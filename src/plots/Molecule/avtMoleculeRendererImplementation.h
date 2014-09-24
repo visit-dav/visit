@@ -70,7 +70,12 @@ struct avtViewInfo;
 class avtMoleculeRendererImplementation
 {
   public:
-                   avtMoleculeRendererImplementation() {}
+    avtMoleculeRendererImplementation()
+    {
+        VTKRen = NULL;
+        VTKActor = NULL;
+        levelsLUT = NULL;
+    }
     virtual       ~avtMoleculeRendererImplementation() {}
     virtual void   Render(vtkPolyData *data, const MoleculeAttributes&,
                           bool immediateModeRendering,

@@ -2117,10 +2117,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 long int tval = strtol(argv[i+1], &endptr, 10);
                 if (*(argv[i+1]) != '\0' && *endptr == '\0' && errno == 0)
                 {
-#ifdef PARALLEL
                     int nanoSecsOfSleeps = (int) tval;
                     int secsOfSpinBeforeSleeps = -1;
-#endif
+
                     if (i+2 < argc)
                     {
                         endptr = 0;
@@ -2128,15 +2127,15 @@ Engine::ProcessCommandLine(int argc, char **argv)
                         tval = strtol(argv[i+2], &endptr, 10);
                         if (*(argv[i+2]) != '\0' && *endptr == '\0' && errno == 0)
                         {
-#ifdef PARALLEL
                             secsOfSpinBeforeSleeps = (int) tval;
-#endif
                             i++;
                         }
                     }
 #ifdef PARALLEL
                     MPIXfer::SetUIBcastThresholds(nanoSecsOfSleeps, secsOfSpinBeforeSleeps);
 #endif
+                    debug1 << "-ui-bcast-thresholds " << nanoSecsOfSleeps << " "
+                           << secsOfSpinBeforeSleeps << endl;
                 }
                 else
                 {
