@@ -404,7 +404,7 @@ avtMultiCurveFilter::Execute(void)
             {
                 yMin = var->GetTuple1(i);
                 yMax = var->GetTuple1(i);
-                for (i = i; i < nx * ny; i++)
+                for (; i < nx * ny; i++)
                 {
                     if (var2->GetTuple1(i) >= 0.)
                     {
