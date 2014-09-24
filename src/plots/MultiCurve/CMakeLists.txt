@@ -23,6 +23,7 @@ QvisMultiCurvePlotWindow.h
 )
 
 SET(LIBV_SOURCES
+MultiCurveViewerEnginePluginInfo.C
 MultiCurveViewerPluginInfo.C
 avtMultiCurvePlot.C
 avtMultiCurveFilter.C
@@ -31,6 +32,7 @@ ${COMMON_SOURCES}
 )
 
 SET(LIBE_SOURCES
+MultiCurveViewerEnginePluginInfo.C
 MultiCurveEnginePluginInfo.C
 avtMultiCurvePlot.C
 avtMultiCurveFilter.C
@@ -67,7 +69,9 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/Proxies
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/Tools
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/gui
+${VISIT_INCLUDE_DIR}/viewer/core
 ${VISIT_INCLUDE_DIR}/viewer/main
+${VISIT_INCLUDE_DIR}/viewer/main/ui
 ${VISIT_INCLUDE_DIR}/viewer/proxy
 ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil

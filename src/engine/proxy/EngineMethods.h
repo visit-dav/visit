@@ -157,7 +157,7 @@ public:
     avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
                                  void (*waitCB)(void *), void *cbData);
 
-    avtDataObjectReader_p    Execute(bool, void (*waitCB)(void*),void *cbData);
+    avtDataObjectReader_p    Execute(bool replyWithNullData, void (*waitCB)(void*),void *cbData);
 
     void                     ClearCache();
     void                     ClearCache(const std::string &);

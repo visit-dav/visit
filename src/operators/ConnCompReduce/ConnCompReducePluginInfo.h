@@ -86,7 +86,7 @@ class ConnCompReduceGUIPluginInfo : public virtual GUIOperatorPluginInfo, public
         QvisNotepadArea *notepad);
 };
 
-class ConnCompReduceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ConnCompReduceCommonPluginInfo
+class ConnCompReduceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ConnCompReduceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class ConnCompReduceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class ConnCompReduceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     static ConnCompReduceAttributes *clientAtts;
 };
 
-class ConnCompReduceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ConnCompReduceCommonPluginInfo
+class ConnCompReduceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ConnCompReduceViewerEnginePluginInfo
+{
+  public:
+};
+
+class ConnCompReduceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ConnCompReduceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

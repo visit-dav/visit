@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* DeformSphereGlyph_GetEngineInfo()
 {
+    DeformSphereGlyphEnginePluginInfo::InitializeGlobalObjects();
     return new DeformSphereGlyphEnginePluginInfo;
 }
 

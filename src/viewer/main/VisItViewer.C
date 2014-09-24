@@ -3,12 +3,17 @@
 #include <qdir.h>
 #include <avtCallback.h>
 
-#include <ViewerFileServer.h>
+#include <ViewerFileServerInterface.h>
+#include <ViewerMessaging.h>
 #include <ViewerProperties.h>
 #include <ViewerSubject.h>
 #include <ViewerState.h>
+#include <ViewerText.h>
 #include <ViewerMethods.h>
+
+#ifdef HAVE_DDT
 #include <DDTManager.h>
+#endif
 
 #include <DebugStream.h>
 #include <VisItInit.h>
@@ -21,6 +26,7 @@
 #include <RuntimeSetting.h>
 #include <InstallationFunctions.h>
 
+#include <FileFunctions.h>
 #include <StringHelpers.h>
 
 #include <visit-config.h>
@@ -81,11 +87,13 @@ VisItViewer::Initialize(int *argc, char ***argv)
     if (!nowin)
         LogGlxAndXdpyInfo();
 
+#ifdef HAVE_DDT
     // If VisIt has been launched by DDT, try to connect to DDT once the event
     // loop is started (socket communication needs the event loop to be active)
     if (getenv("DDT_LAUNCHED_VISIT")!=NULL)
         QMetaObject::invokeMethod(DDTManager::getInstance(),"makeConnection",
                 Qt::QueuedConnection);
+#endif
 }
 
 // ****************************************************************************
@@ -613,12 +621,12 @@ const avtDatabaseMetaData *
 VisItViewer::GetMetaData(const std::string &hostDB, int ts)
 {
     std::string host, db;
-    ViewerFileServer::SplitHostDatabase(hostDB, host, db);
+    FileFunctions::SplitHostDatabase(hostDB, host, db);
     const avtDatabaseMetaData *md = 0;
     if(ts == -1)
-        md = ViewerFileServer::Instance()->GetMetaData(host, db);
+        md = ViewerBase::GetViewerFileServer()->GetMetaData(host, db);
     else
-        md = ViewerFileServer::Instance()->GetMetaDataForState(host, db, ts);
+        md = ViewerBase::GetViewerFileServer()->GetMetaDataForState(host, db, ts);
     return md;
 }
 
@@ -645,7 +653,7 @@ VisItViewer::GetMetaData(const std::string &hostDB, int ts)
 void
 VisItViewer::Error(const QString &msg)
 {
-    viewer->Error(msg);
+    viewer->GetViewerMessaging()->Error(msg.toStdString());
 }
 
 // ****************************************************************************
@@ -671,7 +679,7 @@ VisItViewer::Error(const QString &msg)
 void
 VisItViewer::Warning(const QString &msg)
 {
-    viewer->Warning(msg);
+    viewer->GetViewerMessaging()->Warning(msg.toStdString());
 }
 
 // ****************************************************************************
@@ -905,7 +913,7 @@ VisItViewer::GetVisItCommand() const
 static void
 ViewerErrorCallback(void *ptr, const char *msg)
 {
-    ((ViewerSubject *)ptr)->Error(msg);
+    ((ViewerSubject *)ptr)->GetViewerMessaging()->Error(msg);
 }
 
 
@@ -931,7 +939,7 @@ ViewerErrorCallback(void *ptr, const char *msg)
 static void
 ViewerWarningCallback(void *ptr, const char *msg)
 {
-    ((ViewerSubject *)ptr)->Warning(msg);
+    ((ViewerSubject *)ptr)->GetViewerMessaging()->Warning(msg);
 }
 
 #if !defined(_WIN32) && ! (defined(Q_WS_MACX) || defined(Q_OS_MAC))

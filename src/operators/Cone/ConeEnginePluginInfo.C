@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Cone_GetEngineInfo()
 {
+    ConeEnginePluginInfo::InitializeGlobalObjects();
     return new ConeEnginePluginInfo;
 }
 

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* LineSampler_GetEngineInfo()
 {
+    LineSamplerEnginePluginInfo::InitializeGlobalObjects();
     return new LineSamplerEnginePluginInfo;
 }
 

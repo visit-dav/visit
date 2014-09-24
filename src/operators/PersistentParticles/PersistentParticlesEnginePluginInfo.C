@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* PersistentParticles_GetEngineInfo()
 {
+    PersistentParticlesEnginePluginInfo::InitializeGlobalObjects();
     return new PersistentParticlesEnginePluginInfo;
 }
 

@@ -177,11 +177,11 @@ MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &ob
 }
 
 Target: xml2info
-Function: MultiCurveViewerPluginInfo::InitializeGlobalObjects
+Function: MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects
 Declaration: static void InitializeGlobalObjects();
 Definition:
 // ****************************************************************************
-// Method:  MultiCurveViewerPluginInfo::InitializeGlobalObjects
+// Method:  MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects
 //
 // Purpose:
 //   Initialize the plot atts.
@@ -193,20 +193,20 @@ Definition:
 //
 // ****************************************************************************
 void
-MultiCurveViewerPluginInfo::InitializeGlobalObjects()
+MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    MultiCurveViewerPluginInfo::clientAtts  = new MultiCurveAttributes;
-    MultiCurveViewerPluginInfo::defaultAtts = new MultiCurveAttributes;
+    MultiCurveViewerEnginePluginInfo::clientAtts  = new MultiCurveAttributes;
+    MultiCurveViewerEnginePluginInfo::defaultAtts = new MultiCurveAttributes;
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
 }
 
-Function: MultiCurveViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: MultiCurveViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-// Method: MultiCurveViewerPluginInfo::InitializePlotAtts
+// Method: MultiCurveViewerEnginePluginInfo::InitializePlotAtts
 //
 // Purpose:
 //   Initialize the plot attributes to the default attributes.
@@ -223,8 +223,8 @@ Definition:
 // ****************************************************************************
 
 void
-MultiCurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *)
+MultiCurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &)
 {
     MultiCurveAttributes *multiCurve = (MultiCurveAttributes *)atts;
     *multiCurve = *defaultAtts;
@@ -233,11 +233,11 @@ MultiCurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
     InitializeDefaultPalette(multiCurve);
 }
 
-Function: MultiCurveViewerPluginInfo::InitializeDefaultPalette
+Function: MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette
 Declaration: static void InitializeDefaultPalette(MultiCurveAttributes *);
 Definition:
 // ****************************************************************************
-// Method: MultiCurveViewerPluginInfo::InitializeDefaultPalette
+// Method: MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette
 //
 // Purpose:
 //   Initializes the default palette in the multiCurve attributes using the
@@ -258,7 +258,7 @@ Definition:
 #include <avtColorTables.h>
 #include <ColorTableAttributes.h>
 void
-MultiCurveViewerPluginInfo::InitializeDefaultPalette(
+MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette(
     MultiCurveAttributes *multiCurve)
 {
     // Copy over the multiCurve's defaultPalette with the default discrete

@@ -70,6 +70,7 @@
 #include <Utility.h>
 
 #include <visit-config.h>
+#include <FileFunctions.h>
 
 using std::map;
 using std::string;
@@ -104,7 +105,7 @@ HasAllComponents(vector<string>& fieldList, bool eraseAllIfFound,
         bool foundIt = false;
         for (i = 0; i < fieldList.size(); i++)
         {
-            const char *baseName = StringHelpers::Basename(fieldList[i].c_str());
+            const char *baseName = FileFunctions::Basename(fieldList[i].c_str());
             if (strcmp(baseName, name) == 0)
             {
                 foundIt = true;

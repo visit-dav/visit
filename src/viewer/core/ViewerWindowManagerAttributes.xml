@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <Attribute name="ViewerWindowManagerAttributes" purpose="This class contains the attributes that dictate where viewer windows are positioned, etc." persistent="true" codefile="ViewerWindowManagerAttributes.code" exportAPI="VIEWERCORE_API" exportInclude="viewercore_exports.h">
+    <Field name="actionConfigurations" label="actionConfigurations" type="attVector" subtype="ActionGroupDescription" init="true">
+    </Field>
+    <Field name="toolbarsVisible" label="Toolbars visible" type="bool">
+      true
+    </Field>
+    <Field name="largeIcons" label="Large icons" type="bool">
+      false
+    </Field>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="ProcessOldVersions" user="true" member="true">
+    </Function>
+    <Function name="RemoveActionFromNode" user="true" member="true">
+    </Function>
+    <Function name="RemoveActionFromNode2" user="true" member="true">
+    </Function>
+    <Function name="AddAction" user="true" member="true">
+    </Function>
+    <Function name="AddActionGroup" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="true">
+      ViewerRPC.h
+    </Include>
+  </Attribute>

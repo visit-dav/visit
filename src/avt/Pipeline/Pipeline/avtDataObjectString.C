@@ -216,6 +216,11 @@ avtDataObjectString::GetString(int n, char *&s, int &l)
 //  Programmer:   Hank Childs
 //  Creation:     September 16, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Mon Sep 15 17:21:30 PDT 2014
+//    Call a helper function to actually get the whole string if we need to
+//    make it.
+//
 // ****************************************************************************
 
 void
@@ -228,25 +233,31 @@ avtDataObjectString::GetWholeString(char *&s, int &l)
     }
     else
     {
-        int totalLength = GetTotalLength();
-        wholeString = new char[totalLength];
-
-        int nstrs  = strs.size();
-        int offset = 0;
-        for (int i = 0 ; i < nstrs ; i++)
-        {
-            for (int j = 0 ; j < lens[i] ; j++)
-            {
-                wholeString[offset] = strs[i][j];
-                offset++;
-            }
-        }
-
+        wholeString = GetWholeString(l);
         s = wholeString;
-        l = totalLength;
     }
 }
 
+char *
+avtDataObjectString::GetWholeString(int &l) const
+{
+    int totalLength = GetTotalLength();
+    char *s = new char[totalLength];
+
+    int nstrs  = strs.size();
+    int offset = 0;
+    for (int i = 0 ; i < nstrs ; i++)
+    {
+        for (int j = 0 ; j < lens[i] ; j++)
+        {
+            s[offset] = strs[i][j];
+            offset++;
+        }
+    }
+
+    l = totalLength;
+    return s;
+}
 
 // ****************************************************************************
 //  Method: avtDataObjectString::GetNStrings
@@ -264,7 +275,7 @@ avtDataObjectString::GetWholeString(char *&s, int &l)
 // ****************************************************************************
 
 int
-avtDataObjectString::GetNStrings(void)
+avtDataObjectString::GetNStrings(void) const
 {
     return strs.size();
 }
@@ -284,7 +295,7 @@ avtDataObjectString::GetNStrings(void)
 // ****************************************************************************
 
 int
-avtDataObjectString::GetTotalLength(void)
+avtDataObjectString::GetTotalLength(void) const
 {
     int rv = 0;
     int nStrings = strs.size();

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* SiloDump_GetEngineInfo()
 {
+    SiloDumpEnginePluginInfo::InitializeGlobalObjects();
     return new SiloDumpEnginePluginInfo;
 }
 

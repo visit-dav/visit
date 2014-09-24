@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* RectilinearProject2D_GetEngineInfo()
 {
+    RectilinearProject2DEnginePluginInfo::InitializeGlobalObjects();
     return new RectilinearProject2DEnginePluginInfo;
 }
 

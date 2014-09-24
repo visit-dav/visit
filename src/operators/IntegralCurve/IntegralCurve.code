@@ -392,11 +392,11 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
 }
 
 Target: xml2info
-Function: IntegralCurveViewerPluginInfo::GetOperatorVarDescription
-Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const ViewerPlot *plot);
+Function: IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
 // ****************************************************************************
-//  Method: IntegralCurveViewerPluginInfo::GetOperatorVarDescription
+//  Method: IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription
 //
 //  Purpose:
 //    Return the operator variable description.
@@ -410,11 +410,11 @@ Definition:
 //
 // ****************************************************************************
 
-#include <ViewerPlot.h>
-
+#include <avtPlotMetaData.h>
+#include <cstring>
 std::string
-IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
-                                                    const ViewerPlot *plot)
+IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                               const avtPlotMetaData &plot)
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
@@ -424,7 +424,7 @@ IntegralCurveViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
          "Ave. dist. from seed", "Correlation Distance", "Difference",
          "Variable" };
 
-    std::string var = plot->GetVariableName();
+    std::string var = plot.GetVariableName();
 
     if( strncmp(var.c_str(), "operators/IntegralCurve/",
                 strlen("operators/IntegralCurve/")) == 0)

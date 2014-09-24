@@ -138,6 +138,7 @@ avtLineoutActor.C
 avtMapper.C
 avtPickActor.C
 avtPlot.C
+avtPlotMetaData.C
 avtPointGlypher.C
 avtSoftwareShader.C
 avtSurfaceAndWireframeRenderer.C

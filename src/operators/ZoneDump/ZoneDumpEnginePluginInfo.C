@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ZoneDump_GetEngineInfo()
 {
+    ZoneDumpEnginePluginInfo::InitializeGlobalObjects();
     return new ZoneDumpEnginePluginInfo;
 }
 

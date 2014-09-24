@@ -38,6 +38,9 @@
 
 #ifndef ENGINE_H
 #define ENGINE_H
+#include <EngineBase.h>
+
+#include <EnginePropertiesRPC.h>
 
 // RPCs
 class ApplyOperatorRPC;
@@ -45,7 +48,6 @@ class ClearCacheRPC;
 class CloneNetworkRPC;
 class ConstructDataBinningRPC;
 class DefineVirtualDatabaseRPC;
-#include <EnginePropertiesRPC.h>
 class ExecuteRPC;
 class ExportDatabaseRPC;
 class KeepAliveRPC;
@@ -91,7 +93,6 @@ class Xfer;
 #include <vector>
 #include <avtDataObjectWriter.h>
 #include <BufferConnection.h>
-#include <SaveWindowAttributes.h>
 #include <engine_main_exports.h>
 
 // ****************************************************************************
@@ -232,13 +233,16 @@ class Xfer;
 //    Brad Whitlock, Fri Sep 28 09:15:46 PDT 2012
 //    I added InitializeCompute.
 //
+//    Brad Whitlock, Wed Sep 17 18:21:40 PDT 2014
+//    Lots of changes to support in situ.
+//
 // ****************************************************************************
 
-class ENGINE_MAIN_API Engine
+class ENGINE_MAIN_API Engine : public EngineBase
 {
   public:
-                   ~Engine();
-    static Engine  *Instance();
+    Engine();
+    virtual ~Engine();
 
     // Initialization routines
     void            Initialize(int *argc, char **argv[], bool sigs);
@@ -251,24 +255,21 @@ class ENGINE_MAIN_API Engine
     void            EnableSimulationPlugins();
     void            PopulateSimulationMetaData(const std::string &db,
                                                const std::string &fmt);
-    void            SimulationTimeStepChanged();
-    void            SimulationInitiateCommand(const std::string &);
+    virtual void    SimulationTimeStepChanged();
+    virtual void    SimulationInitiateCommand(const std::string &);
     void            SetSimulationCommandCallback(void(*)(const char*, const char*, void*), void*);
-    void            ExecuteSimulationCommand(const std::string&,
+    virtual void    ExecuteSimulationCommand(const std::string&,
                                              const std::string&);
     static void     DisconnectSimulation();
     void            Message(const std::string &msg);
     void            Error(const std::string &msg);
-    bool            SaveWindow(const intVector &ids, const std::string &, 
-                               int, int, 
-                               SaveWindowAttributes::FileFormat);
 
     // Two event loops
     bool            EventLoop();
     void            PAR_EventLoop();
 
     // Get the network manager
-    NetworkManager *GetNetMgr()                   { return netmgr; }
+    NetworkManager *GetNetMgr() { return netmgr; }
 
     // Methods needed for an external event loop
     int             GetInputSocket();
@@ -276,13 +277,21 @@ class ENGINE_MAIN_API Engine
     void            PAR_ProcessInput();
 
     // Method to write data back to the viewer
-    void            WriteData(NonBlockingRPC *, avtDataObjectWriter_p &,
-                        bool useCompression=false,
-                        bool respondWithNull=false, int scalableThresold=-1,
-                        bool *scalableThresholdExceeded=0,
-                        int currentTotalGlobalCellCount=0,
-                        float cellCountMultiplier=1.0,
-                        int* currentNetworkGlobalCellCount=0);
+    bool            GatherData(avtDataObjectWriter_p &writer,
+                               bool  useCompression,
+                               bool  respondWithNull, 
+                               int   scalableThreshold, 
+                               int   currentTotalGlobalCellCount, 
+                               float cellCountMultiplier,
+                               void (*statusCB)(int,const char*,void*),
+                               void  *statusDBData,
+                               // outputs
+                               void (*writeCB)(avtDataObjectString &,void*),
+                               void *writeCBData,  
+                               std::string         &errMessage,
+                               bool               *scalableThresholdExceeded,
+                               int                *currentNetworkGlobalCellCount);
+    void            WriteByteStreamToSocket(avtDataObjectString &do_str);
     void            SendKeepAliveReply();
 
     // Tell the engine whether or not fatal exceptions have occurred
@@ -314,10 +323,11 @@ class ENGINE_MAIN_API Engine
 
     // Internal methods
   protected:
-                    Engine();
     void            ProcessCommandLine(int argc, char *argv[]);
     bool            ReverseLaunchViewer(int *argc, char **argv[]);
     void            ExtractViewerArguments(int *argc, char **argv[]);
+
+    virtual void    CreatePluginManagers();
 
     static void     AlarmHandler(int signal);
     static void     NewHandler(void);
@@ -326,9 +336,6 @@ class ENGINE_MAIN_API Engine
     void            SetupDisplay();
 
   protected:
-    // The singleton object
-    static Engine       *instance;
-
     // The Viewer
     ParentProcess       *viewerP;       // Used when the viewer launches engine
     ViewerRemoteProcess *viewer;        // Used when engine launches viewer

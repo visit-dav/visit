@@ -1337,8 +1337,8 @@ avtChomboFileFormat::InitializeReader(void)
         {
             mappingFilename.insert(extPos, ".map");
 
-            VisItStat_t fs;
-            if (VisItStat(mappingFilename.c_str(), &fs) == 0)
+            FileFunctions::VisItStat_t fs;
+            if (FileFunctions::VisItStat(mappingFilename.c_str(), &fs) == 0)
             {
                 hid_t mapping_file_handle = H5Fopen(mappingFilename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
                 if (mapping_file_handle > 0)

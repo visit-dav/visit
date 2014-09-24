@@ -164,11 +164,13 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
     ctAtts = cta;
     importingPersonal = false;
     std::string ctdir(GetVisItResourcesDirectory(VISIT_RESOURCES_COLORTABLES));
-    bool r1 = ReadAndProcessDirectory(ctdir, ImportHelper,
-                                      (void*)this, false);
+    bool r1 = FileFunctions::ReadAndProcessDirectory(ctdir,
+                                                     ImportHelper,
+                                                     (void*)this, false);
     importingPersonal = true;
-    bool r2 = ReadAndProcessDirectory(GetUserVisItDirectory(), ImportHelper,
-                                      (void*)this, false);
+    bool r2 = FileFunctions::ReadAndProcessDirectory(GetUserVisItDirectory(),
+                                                     ImportHelper,
+                                                     (void*)this, false);
     return r1 || r2;
 }
 

@@ -85,7 +85,7 @@ class ProgrammableOpGUIPluginInfo : public virtual GUIOperatorPluginInfo, public
         QvisNotepadArea *notepad);
 };
 
-class ProgrammableOpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ProgrammableOpCommonPluginInfo
+class ProgrammableOpViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ProgrammableOpCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -94,13 +94,11 @@ class ProgrammableOpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -108,7 +106,12 @@ class ProgrammableOpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     static ProgrammableOpAttributes *clientAtts;
 };
 
-class ProgrammableOpEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ProgrammableOpCommonPluginInfo
+class ProgrammableOpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ProgrammableOpViewerEnginePluginInfo
+{
+  public:
+};
+
+class ProgrammableOpEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ProgrammableOpViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

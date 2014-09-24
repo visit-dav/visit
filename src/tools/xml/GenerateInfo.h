@@ -225,6 +225,12 @@
 //   Brad Whitlock, Thu Mar 20 14:29:55 PDT 2014
 //   I added GetLicense for database plugins.
 //
+//   Brad Whitlock, Fri Sep 12 12:21:55 PDT 2014
+//   Menu name translation for viewer plugins is now done in the viewer.
+//
+//   Brad Whitlock, Wed Sep 17 09:03:11 PDT 2014
+//   Added common  base class for viewer and engine plot/operator plugins.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -435,18 +441,29 @@ class InfoGeneratorPlugin : public Plugin
                 h << "    virtual const char *GetCategoryName() const;" << endl;
             h << "};" << endl;
             h << endl;
-            h << "class "<<name<<"CommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual "<<name<<"GeneralPluginInfo" << endl;
+
+            // CommonPluginInfo
+            QString infoName = name + "CommonPluginInfo";
+            h << "class "<<infoName<<" : public virtual CommonOperatorPluginInfo, public virtual "<<name<<"GeneralPluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
             h << "    virtual AttributeSubject *AllocAttributes();" << endl;
             h << "    virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);" << endl;
+            if(OverrideBuiltin(infoName + "::GetUserSelectable"))
+                h << "    virtual bool GetUserSelectable() const;" << endl;
+            if(OverrideBuiltin(infoName + "::GetVariableTypes"))
+                h << "    virtual int GetVariableTypes() const;" << endl;
+            if(OverrideBuiltin(infoName + "::GetVariableMask"))
+                h << "    virtual int GetVariableMask() const;" << endl;
             if(createExpression)
             {
                 h << "    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);" << endl;
             }
             h << "};" << endl;
             h << endl;
-            QString infoName = name + "GUIPluginInfo";
+
+            // GUIPluginInfo
+            infoName = name + "GUIPluginInfo";
             h << "class "<<infoName<<" : public virtual GUIOperatorPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
@@ -461,17 +478,13 @@ class InfoGeneratorPlugin : public Plugin
             }
             if(iconFile.length() > 0)
                 h << "    virtual const char **XPMIconData() const;" << endl;
-            if(OverrideBuiltin(infoName + "::GetVariableTypes"))
-                h << "    virtual int GetVariableTypes() const;" << endl;
-            if(OverrideBuiltin(infoName + "::GetVariableMask"))
-                h << "    virtual int GetVariableMask() const;" << endl;
-            if(OverrideBuiltin(infoName + "::GetUserSelectable"))
-                h << "    virtual bool GetUserSelectable() const;" << endl;
             WriteUserDefinedFunctions(h, infoName, true);
             h << "};" << endl;
             h << endl;
-            infoName = name + "ViewerPluginInfo";
-            h << "class "<<infoName<<" : public virtual ViewerOperatorPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
+
+            // ViewerEnginePluginInfo
+            infoName = name + "ViewerEnginePluginInfo";
+            h << "class "<<infoName<<" : public virtual ViewerEngineOperatorPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
             h << "    virtual AttributeSubject *GetClientAtts();" << endl;
@@ -482,17 +495,16 @@ class InfoGeneratorPlugin : public Plugin
                 h << "    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);" << endl;
             h << endl;
             h << "    virtual void InitializeOperatorAtts(AttributeSubject *atts," << endl;
-            h << "                                        const ViewerPlot *plot," << endl;
+            h << "                                        const avtPlotMetaData &plot," << endl;
             h << "                                        const bool fromDefault);" << endl;
             h << "    virtual void UpdateOperatorAtts(AttributeSubject *atts," << endl;
-            h << "                                    const ViewerPlot *plot);" << endl;
-            h << "    virtual std::string GetOperatorVarDescription(AttributeSubject *atts," << endl;
-            h << "                                                  const ViewerPlot *plot);" << endl;
-            h << "    virtual QString *GetMenuName() const;" << endl;
-            if(iconFile.length() > 0)
-                h << "    virtual const char **XPMIconData() const;" << endl;
-            if(OverrideBuiltin(infoName + "::GetUserSelectable"))
-                h << "    virtual bool GetUserSelectable() const;" << endl;
+            h << "                                    const avtPlotMetaData &plot);" << endl;
+            if(OverrideBuiltin(infoName + "::GetOperatorVarDescription"))
+            {
+                h << "    virtual std::string GetOperatorVarDescription(AttributeSubject *atts," << endl;
+                h << "                                                  const avtPlotMetaData &plot);" << endl;
+            }
+            h << "    virtual const char *GetMenuName() const;" << endl;
             if(OverrideBuiltin(infoName + "::Removeable"))
                 h << "    virtual bool Removeable() const;" << endl;
             if(OverrideBuiltin(infoName + "::Moveable"))
@@ -509,14 +521,29 @@ class InfoGeneratorPlugin : public Plugin
             WriteUserDefinedFunctions(h, infoName, true);
             h << "};" << endl;
             h << endl;
+
+            // ViewerPluginInfo
+            infoName = name + "ViewerPluginInfo";
+            h << "class "<<infoName<<" : public virtual ViewerOperatorPluginInfo, public virtual "<<name<<"ViewerEnginePluginInfo" << endl;
+            h << "{" << endl;
+            h << "  public:" << endl;
+            if(iconFile.length() > 0)
+                h << "    virtual const char **XPMIconData() const;" << endl;
+            WriteUserDefinedFunctions(h, infoName, true);
+            h << "};" << endl;
+            h << endl;
+
+            // EnginePluginInfo
             infoName = name + "EnginePluginInfo";
-            h << "class "<<infoName<<" : public virtual EngineOperatorPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
+            h << "class "<<infoName<<" : public virtual EngineOperatorPluginInfo, public virtual "<<name<<"ViewerEnginePluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
             h << "    virtual avtPluginFilter *AllocAvtPluginFilter();" << endl;
             WriteUserDefinedFunctions(h, infoName, true);
             h << "};" << endl;
             h << endl;
+
+            // ScriptingPluginInfo
             infoName = name + "ScriptingPluginInfo";
             h << "class "<<infoName<<" : public virtual ScriptingOperatorPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
             h << "{" << endl;
@@ -564,6 +591,8 @@ class InfoGeneratorPlugin : public Plugin
             h << "//" << endl;
             h << "// ****************************************************************************" << endl;
             h << endl;
+
+            // GeneralPluginInfo
             h << "class "<<name<<"GeneralPluginInfo: public virtual GeneralPlotPluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
@@ -578,14 +607,16 @@ class InfoGeneratorPlugin : public Plugin
             h << "  public:" << endl;
             h << "    virtual AttributeSubject *AllocAttributes();" << endl;
             h << "    virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);" << endl;
+            h << "    virtual int GetVariableTypes() const;" << endl;
             h << "};" << endl;
             h << endl;
+
+            // GUIPluginInfo
             QString infoName = name + "GUIPluginInfo";
             h << "class "<<infoName<<" : public virtual GUIPlotPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
             h << "    virtual QString *GetMenuName() const;" << endl;
-            h << "    virtual int GetVariableTypes() const;" << endl;
             h << "    virtual QvisPostableWindowObserver *CreatePluginWindow(int type," << endl;
             h << "        AttributeSubject *attr, const QString &caption, const QString &shortName," << endl;
             h << "        QvisNotepadArea *notepad);" << endl;
@@ -600,8 +631,10 @@ class InfoGeneratorPlugin : public Plugin
             WriteUserDefinedFunctions(h, infoName, true);
             h << "};" << endl;
             h << endl;
-            infoName = name + "ViewerPluginInfo";
-            h << "class "<<infoName<<" : public virtual ViewerPlotPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
+
+            // ViewerEnginePluginInfo
+            infoName = name + "ViewerEnginePluginInfo";
+            h << "class "<<infoName<<" : public virtual ViewerEnginePlotPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
             h << "    virtual AttributeSubject *GetClientAtts();" << endl;
@@ -617,15 +650,27 @@ class InfoGeneratorPlugin : public Plugin
                 h << "    virtual bool PermitsCurveViewScaling() const;" << endl;
             if(OverrideBuiltin(infoName + "::Permits2DViewScaling"))
                 h << "    virtual bool Permits2DViewScaling() const;" << endl;
-            h << "    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);" << endl;
+            h << "    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);" << endl;
             if(OverrideBuiltin(infoName + "::ReInitializePlotAtts"))
-                h << "    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);" << endl;
+                h << "    virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);" << endl;
             if(OverrideBuiltin(infoName + "::ResetPlotAtts"))
-                h << "    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);" << endl;
-            h << "    virtual QString *GetMenuName() const;" << endl;
+                h << "    virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);" << endl;
+            h << "    virtual const char *GetMenuName() const;" << endl;
+            h << "    static void InitializeGlobalObjects();" << endl;
+            h << "  private:" << endl;
+            h << "    static "<<atts->name<<" *defaultAtts;" << endl;
+            h << "    static "<<atts->name<<" *clientAtts;" << endl;
+            WriteUserDefinedFunctions(h, infoName, true);
+            h << "};" << endl;
+            h << endl;
+
+            // ViewerPluginInfo
+            infoName = name + "ViewerPluginInfo";
+            h << "class "<<infoName<<" : public virtual ViewerPlotPluginInfo, public virtual "<<name<<"ViewerEnginePluginInfo" << endl;
+            h << "{" << endl;
+            h << "  public:" << endl;
             if(iconFile.length() > 0)
                 h << "    virtual const char **XPMIconData() const;" << endl;
-            h << "    virtual int GetVariableTypes() const;" << endl;
             if(OverrideBuiltin(infoName + "::AlternateDisplayCreate"))
                 h << "    virtual void *AlternateDisplayCreate(ViewerPlot *plot);" << endl;
             if(OverrideBuiltin(infoName + "::AlternateDisplayDestroy"))
@@ -641,21 +686,21 @@ class InfoGeneratorPlugin : public Plugin
             if(OverrideBuiltin(infoName + "::AlternateDisplayDeIconify"))
                 h << "    virtual void AlternateDisplayDeIconify(void *dpy);" << endl;
             h << endl;
-            h << "    static void InitializeGlobalObjects();" << endl;
-            h << "  private:" << endl;
-            h << "    static "<<atts->name<<" *defaultAtts;" << endl;
-            h << "    static "<<atts->name<<" *clientAtts;" << endl;
+            //h << "  private:" << endl;
             WriteUserDefinedFunctions(h, infoName, true);
             h << "};" << endl;
             h << endl;
+
+            // EnginePluginInfo
             infoName = name + "EnginePluginInfo";
-            h << "class "<<infoName<<" : public virtual EnginePlotPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
+            h << "class "<<infoName<<" : public virtual EnginePlotPluginInfo, public virtual "<<name<<"ViewerEnginePluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
-            h << "    virtual avtPlot *AllocAvtPlot();" << endl;
             WriteUserDefinedFunctions(h, infoName, true);
             h << "};" << endl;
             h << endl;
+
+            // ScriptingPluginInfo
             infoName = name + "ScriptingPluginInfo";
             h << "class "<<infoName<<" : public virtual ScriptingPlotPluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
             h << "{" << endl;
@@ -1434,6 +1479,73 @@ class InfoGeneratorPlugin : public Plugin
                 c << "}" << endl;
                 c << endl;
             }
+
+            if (type=="plot")
+            {
+                funcName = name + "CommonPluginInfo::GetVariableTypes";
+                if(!ReplaceBuiltin(c, funcName))
+                {
+                    c << "// ****************************************************************************" << endl;
+                    c << "// Method: "<<funcName << endl;
+                    c << "//" << endl;
+                    c << "// Purpose: " << endl;
+                    c << "//   Returns a flag indicating the types of variables that can be put in the" << endl;
+                    c << "//   plot's variable list." << endl;
+                    c << "//" << endl;
+                    c << "// Returns:    A flag indicating the types of variables that can be put in" << endl;
+                    c << "//             the plot's variable list." << endl;
+                    c << "//" << endl;
+                    c << "//  Programmer: generated by xml2info" << endl;
+                    c << "//  Creation:   omitted"<< endl;
+                    c << "//" << endl;
+                    c << "// Modifications:" << endl;
+                    c << "//   " << endl;
+                    c << "// ****************************************************************************" << endl;
+                    c << endl;
+                    c << "int" << endl;
+                    c << funcName<<"() const" << endl;
+                    c << "{" << endl;
+                    c << "    return ";
+                    std::vector<QString> types = SplitValues(vartype);
+                    for (size_t i=0; i<types.size(); i++)
+                    {
+                        if (i>0) c << " | ";
+                        if      (types[i] == "mesh")
+                            c << "VAR_CATEGORY_MESH";
+                        else if (types[i] == "scalar")
+                            c << "VAR_CATEGORY_SCALAR";
+                        else if (types[i] == "material")
+                            c << "VAR_CATEGORY_MATERIAL";
+                        else if (types[i] == "vector")
+                            c << "VAR_CATEGORY_VECTOR";
+                        else if (types[i] == "species")
+                            c << "VAR_CATEGORY_SPECIES";
+                        else if (types[i] == "subset")
+                            c << "VAR_CATEGORY_SUBSET";
+                        else if (types[i] == "curve")
+                            c << "VAR_CATEGORY_CURVE";
+                        else if (types[i] == "tensor")
+                            c << "VAR_CATEGORY_TENSOR";
+                        else if (types[i] == "symmetrictensor")
+                            c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
+                        else if (types[i] == "label")
+                            c << "VAR_CATEGORY_LABEL";
+                        else if (types[i] == "array")
+                            c << "VAR_CATEGORY_ARRAY";
+                    }
+                    c << ";" << endl;
+                    c << "}" << endl;
+                    c << endl;
+                }
+            }
+
+            if (type == "operator")
+            {
+                WriteOverrideDefinition(c, name + "CommonPluginInfo::GetVariableTypes");
+                WriteOverrideDefinition(c, name + "CommonPluginInfo::GetVariableMask");
+                WriteOverrideDefinition(c, name + "CommonPluginInfo::GetUserSelectable");
+            }
+
         }
     }
 
@@ -1500,70 +1612,6 @@ class InfoGeneratorPlugin : public Plugin
             c << endl;
         }
         c << endl;
-        if (type=="plot")
-        {
-            funcName = name + "GUIPluginInfo::GetVariableTypes";
-            if(!ReplaceBuiltin(c, funcName))
-            {
-                c << "// ****************************************************************************" << endl;
-                c << "// Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "// Purpose: " << endl;
-                c << "//   Returns a flag indicating the types of variables that can be put in the" << endl;
-                c << "//   plot's variable list." << endl;
-                c << "//" << endl;
-                c << "// Returns:    A flag indicating the types of variables that can be put in" << endl;
-                c << "//             the plot's variable list." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// Modifications:" << endl;
-                c << "//   " << endl;
-                c << "// ****************************************************************************" << endl;
-                c << endl;
-                c << "int" << endl;
-                c << funcName<<"() const" << endl;
-                c << "{" << endl;
-                c << "    return ";
-                std::vector<QString> types = SplitValues(vartype);
-                for (size_t i=0; i<types.size(); i++)
-                {
-                    if (i>0) c << " | ";
-                    if      (types[i] == "mesh")
-                        c << "VAR_CATEGORY_MESH";
-                    else if (types[i] == "scalar")
-                        c << "VAR_CATEGORY_SCALAR";
-                    else if (types[i] == "material")
-                        c << "VAR_CATEGORY_MATERIAL";
-                    else if (types[i] == "vector")
-                        c << "VAR_CATEGORY_VECTOR";
-                    else if (types[i] == "species")
-                        c << "VAR_CATEGORY_SPECIES";
-                    else if (types[i] == "subset")
-                        c << "VAR_CATEGORY_SUBSET";
-                    else if (types[i] == "curve")
-                        c << "VAR_CATEGORY_CURVE";
-                    else if (types[i] == "tensor")
-                        c << "VAR_CATEGORY_TENSOR";
-                    else if (types[i] == "symmetrictensor")
-                        c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
-                    else if (types[i] == "label")
-                        c << "VAR_CATEGORY_LABEL";
-                    else if (types[i] == "array")
-                        c << "VAR_CATEGORY_ARRAY";
-                }
-                c << ";" << endl;
-                c << "}" << endl;
-                c << endl;
-            }
-        }
-        else if (type == "operator")
-        {
-            WriteOverrideDefinition(c, name + "GUIPluginInfo::GetVariableTypes");
-            WriteOverrideDefinition(c, name + "GUIPluginInfo::GetVariableMask");
-            WriteOverrideDefinition(c, name + "GUIPluginInfo::GetUserSelectable");
-        }
         funcName = name + "GUIPluginInfo::CreatePluginWindow";
         if(!ReplaceBuiltin(c, funcName))
         {
@@ -1643,12 +1691,10 @@ class InfoGeneratorPlugin : public Plugin
         c << "// ************************************************************************* //" << endl;
         c << endl;
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
-        c << "#include <QApplication>" << endl;
         if (type=="operator")
             c << "#include <"<<atts->name<<".h>" << endl;
-        else if (type=="plot")
-            c << "#include <avt"<<name<<"Plot.h>" << endl;
         c << endl;
+
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetViewerInfo" << endl;
         c << "//" << endl;
@@ -1668,384 +1714,10 @@ class InfoGeneratorPlugin : public Plugin
         c << "    return new "<<name<<"ViewerPluginInfo;" << endl;
         c << "}" << endl;
         c << endl;
-        c << "//" << endl;
-        c << "// Storage for static data elements." << endl;
-        c << "//" << endl;
-        c << atts->name<<" *"<<name<<"ViewerPluginInfo::clientAtts = NULL;" << endl;
-        c << atts->name<<" *"<<name<<"ViewerPluginInfo::defaultAtts = NULL;" << endl;
-        c << endl;
-        QString funcName = name + "ViewerPluginInfo::InitializeGlobalObjects";
-        if(!ReplaceBuiltin(c, funcName))
-        {
-            c << "// ****************************************************************************" << endl;
-            c << "//  Method:  "<<funcName << endl;
-            c << "//" << endl;
-            c << "//  Purpose:" << endl;
-            c << "//    Initialize the "<<type<<" atts." << endl;
-            c << "//" << endl;
-            c << "//  Programmer: generated by xml2info" << endl;
-            c << "//  Creation:   omitted"<< endl;
-            c << "//" << endl;
-            c << "// ****************************************************************************" << endl;
-            c << "void" << endl;
-            c << funcName << "()" << endl;
-            c << "{" << endl;
-            c << "    "<<name<<"ViewerPluginInfo::clientAtts  = new "<<atts->name<<";" << endl;
-            c << "    "<<name<<"ViewerPluginInfo::defaultAtts = new "<<atts->name<<";" << endl;
-            c << "}" << endl;
-        }
-        c << endl;
-        funcName = name + "ViewerPluginInfo::GetClientAtts";
-        if(!ReplaceBuiltin(c, funcName))
-        {
-            c << "// ****************************************************************************" << endl;
-            c << "//  Method: "<<funcName << endl;
-            c << "//" << endl;
-            c << "//  Purpose:" << endl;
-            c << "//    Return a pointer to the viewer client attributes." << endl;
-            c << "//" << endl;
-            c << "//  Returns:    A pointer to the viewer client attributes." << endl;
-            c << "//" << endl;
-            c << "//  Programmer: generated by xml2info" << endl;
-            c << "//  Creation:   omitted"<< endl;
-            c << "//" << endl;
-            c << "// ****************************************************************************" << endl;
-            c << endl;
-            c << "AttributeSubject *" << endl;
-            c << funcName<<"()" << endl;
-            c << "{" << endl;
-            c << "    return clientAtts;" << endl;
-            c << "}" << endl;
-            c << endl;
-        }
-        funcName = name + "ViewerPluginInfo::GetDefaultAtts";
-        if(!ReplaceBuiltin(c, funcName))
-        {
-            c << "// ****************************************************************************" << endl;
-            c << "//  Method: "<<funcName << endl;
-            c << "//" << endl;
-            c << "//  Purpose:" << endl;
-            c << "//    Return a pointer to the viewer default attributes." << endl;
-            c << "//" << endl;
-            c << "//  Returns:    A pointer to the viewer default attributes." << endl;
-            c << "//" << endl;
-            c << "//  Programmer: generated by xml2info" << endl;
-            c << "//  Creation:   omitted"<< endl;
-            c << "//" << endl;
-            c << "// ****************************************************************************" << endl;
-            c << endl;
-            c << "AttributeSubject *" << endl;
-            c << funcName<<"()" << endl;
-            c << "{" << endl;
-            c << "    return defaultAtts;" << endl;
-            c << "}" << endl;
-        }
-        c << endl;
-        funcName = name + "ViewerPluginInfo::SetClientAtts";
-        if(!ReplaceBuiltin(c, funcName))
-        {
-            c << "// ****************************************************************************" << endl;
-            c << "//  Method: "<<funcName << endl;
-            c << "//" << endl;
-            c << "//  Purpose:" << endl;
-            c << "//    Set the viewer client attributes." << endl;
-            c << "//" << endl;
-            c << "//  Arguments:" << endl;
-            c << "//    atts      A pointer to the new client attributes." << endl;
-            c << "//" << endl;
-            c << "//  Programmer: generated by xml2info" << endl;
-            c << "//  Creation:   omitted"<< endl;
-            c << "//" << endl;
-            c << "// ****************************************************************************" << endl;
-            c << endl;
-            c << "void" << endl;
-            c << funcName << "(AttributeSubject *atts)" << endl;
-            c << "{" << endl;
-            c << "    *clientAtts = *("<<atts->name<<" *)atts;" << endl;
-            c << "    clientAtts->Notify();" << endl;
-            c << "}" << endl;
-        }
-        c << endl;
-        funcName = name + "ViewerPluginInfo::GetClientAtts";
-        if(!ReplaceBuiltin(c, funcName + "1"))
-        {
-            c << "// ****************************************************************************" << endl;
-            c << "//  Method: "<<funcName<< endl;
-            c << "//" << endl;
-            c << "//  Purpose:" << endl;
-            c << "//    Get the viewer client attributes." << endl;
-            c << "//" << endl;
-            c << "//  Arguments:" << endl;
-            c << "//    atts      A pointer to return the client default attributes in." << endl;
-            c << "//" << endl;
-            c << "//  Programmer: generated by xml2info" << endl;
-            c << "//  Creation:   omitted"<< endl;
-            c << "//" << endl;
-            c << "// ****************************************************************************" << endl;
-            c << endl;
-            c << "void" << endl;
-            c << funcName<<"(AttributeSubject *atts)" << endl;
-            c << "{" << endl;
-            c << "    *("<<atts->name<<" *)atts = *clientAtts;" << endl;
-            c << "}" << endl;
-        }
-        c << endl;
-        if (type=="operator")
-        {
-            funcName = name + "ViewerPluginInfo::GetClientAtts";
-            if(ReplaceBuiltin(c, funcName + "3"))
-            {
-                c << endl;
-            }
-        }
-        if (type=="plot")
-        {
-            funcName = name + "ViewerPluginInfo::AllocAvtPlot";
-            if(!ReplaceBuiltin(c, funcName))
-            {
-                c << "// ****************************************************************************" << endl;
-                c << "//  Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "//  Purpose:" << endl;
-                c << "//    Return a pointer to a newly allocated avt plot." << endl;
-                c << "//" << endl;
-                c << "//  Returns:    A pointer to the newly allocated avt plot." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// ****************************************************************************" << endl;
-                c << endl;
-                c << "avtPlot *" << endl;
-                c << funcName<<"()" << endl;
-                c << "{" << endl;
-                c << "    return new avt"<<name<<"Plot;" << endl;
-                c << "}" << endl;
-            }
-            c << endl;
-        }
-
-        if (type == "operator")
-        {
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::GetUserSelectable");
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::Removeable");
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::Moveable");
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::AllowsSubsequentOperators");
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::GetCreatedVariables");
-
-            funcName = name + "ViewerPluginInfo::InitializeOperatorAtts";
-            if(!ReplaceBuiltin(c, funcName))
-            {
-                c << "// ****************************************************************************" << endl;
-                c << "//  Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "//  Purpose:" << endl;
-                c << "//    Initialize the "<<type<<" attributes to the default attributes." << endl;
-                c << "//" << endl;
-                c << "//  Arguments:" << endl;
-                c << "//    atts        The attribute subject to initialize." << endl;
-                c << "//    plot        The viewer plot that owns the operator." << endl;
-                c << "//    fromDefault True to initialize the attributes from the defaults. False" << endl;
-                c << "//                to initialize from the current attributes." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// ****************************************************************************" << endl;
-                c << endl;
-                c << "void" << endl;
-                c << funcName << "(AttributeSubject *atts," << endl
-                  << "                                              const ViewerPlot *plot," << endl
-                  << "                                              const bool fromDefault)" << endl;
-                c << "{" << endl;
-                c << "    if (fromDefault)" << endl;
-                c << "        *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
-                c << "    else" << endl;
-                c << "        *("<<atts->name<<"*)atts = *clientAtts;" << endl;
-                c << "" << endl;
-                c << "    UpdateOperatorAtts(atts, plot);" << endl;
-                c << "}" << endl;
-                c << "" << endl;
-            }
-
-            funcName = name + "ViewerPluginInfo::UpdateOperatorAtts";
-            if(!ReplaceBuiltin(c, funcName))
-            {
-                c << "// ****************************************************************************" << endl;
-                c << "//  Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "//  Purpose:" << endl;
-                c << "//    Update the "<<type<<" attributes when using operator expressions." << endl;
-                c << "//" << endl;
-                c << "//  Arguments:" << endl;
-                c << "//    atts        The attribute subject to update." << endl;
-                c << "//    plot        The viewer plot that owns the operator." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// ****************************************************************************" << endl;
-                c << endl;
-                c << "void" << endl;
-                c << funcName << "(AttributeSubject *atts," << endl
-                  << "                                              const ViewerPlot *plot)" << endl;
-                c << "{" << endl;
-                c << "}" << endl;
-                c << "" << endl;
-            }
-
-            funcName = name + "ViewerPluginInfo::GetOperatorVarDescription";
-            if(!ReplaceBuiltin(c, funcName))
-            {
-                c << "// ****************************************************************************" << endl;
-                c << "//  Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "//  Purpose:" << endl;
-                c << "//    Return the "<<type<<"  variable description." << endl;
-                c << "//" << endl;
-                c << "//  Arguments:" << endl;
-                c << "//    atts        The current attributes." << endl;
-                c << "//    plot        The viewer plot that owns the operator." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// ****************************************************************************" << endl;
-                c << endl;
-                c << "std::string" << endl;
-                c << funcName << "(AttributeSubject *atts," << endl
-                  << "                                              const ViewerPlot *plot)" << endl;
-                c << "{" << endl;
-                c << "    return std::string(\"\");" << endl;
-                c << "}" << endl;
-                c << "" << endl;
-            }
-        }
-        else if(type == "plot")
-        {
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::ProvidesLegend");
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::PermitsCurveViewScaling");
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::Permits2DViewScaling");
-
-            funcName = name + "ViewerPluginInfo::InitializePlotAtts";
-            if(!ReplaceBuiltin(c, funcName))
-            {
-                c << "// ****************************************************************************" << endl;
-                c << "//  Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "//  Purpose:" << endl;
-                c << "//    Initialize the "<<type<<" attributes to the default attributes." << endl;
-                c << "//" << endl;
-                c << "//  Arguments:" << endl;
-                c << "//    atts      The attribute subject to initialize." << endl;
-                c << "//    plot      The viewer plot whose attributes are getting initialized." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// ****************************************************************************" << endl;
-                c << endl;
-                c << "void" << endl;
-                c << funcName<<"(AttributeSubject *atts," << endl
-                  << "    const ViewerPlot *)" << endl;
-                c << "{" << endl;
-                c << "    *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
-                c << "}" << endl;
-            }
-
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::ReInitializePlotAtts");
-            WriteOverrideDefinition(c, name + "ViewerPluginInfo::ResetPlotAtts");
-        }
-
-        if (type=="plot")
-        {
-            funcName = name + "ViewerPluginInfo::GetVariableTypes";
-            if(!ReplaceBuiltin(c, funcName))
-            {
-                c << endl;
-                c << "// ****************************************************************************" << endl;
-                c << "// Method: "<<funcName << endl;
-                c << "//" << endl;
-                c << "// Purpose: " << endl;
-                c << "//   Returns a flag indicating the types of variables that can be put in the" << endl;
-                c << "//   plot's variable list." << endl;
-                c << "//" << endl;
-                c << "// Returns:    A flag indicating the types of variables that can be put in" << endl;
-                c << "//             the plot's variable list." << endl;
-                c << "//" << endl;
-                c << "//  Programmer: generated by xml2info" << endl;
-                c << "//  Creation:   omitted"<< endl;
-                c << "//" << endl;
-                c << "// Modifications:" << endl;
-                c << "//   " << endl;
-                c << "// ****************************************************************************" << endl;
-                c << endl;
-                c << "int" << endl;
-                c << funcName<<"() const" << endl;
-                c << "{" << endl;
-                c << "    return ";
-                std::vector<QString> types = SplitValues(vartype);
-                for (size_t i=0; i<types.size(); i++)
-                {
-                    if (i>0) c << " | ";
-                    if      (types[i] == "mesh")
-                        c << "VAR_CATEGORY_MESH";
-                    else if (types[i] == "scalar")
-                        c << "VAR_CATEGORY_SCALAR";
-                    else if (types[i] == "material")
-                        c << "VAR_CATEGORY_MATERIAL";
-                    else if (types[i] == "vector")
-                        c << "VAR_CATEGORY_VECTOR";
-                    else if (types[i] == "species")
-                        c << "VAR_CATEGORY_SPECIES";
-                    else if (types[i] == "subset")
-                        c << "VAR_CATEGORY_SUBSET";
-                    else if (types[i] == "curve")
-                        c << "VAR_CATEGORY_CURVE";
-                    else if (types[i] == "tensor")
-                        c << "VAR_CATEGORY_TENSOR";
-                    else if (types[i] == "symmetrictensor")
-                        c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
-                    else if (types[i] == "label")
-                        c << "VAR_CATEGORY_LABEL";
-                    else if (types[i] == "array")
-                        c << "VAR_CATEGORY_ARRAY";
-                }
-                c << ";" << endl;
-                c << "}" << endl;
-            }
-            c << endl;
-        }
-
-        funcName = name + "ViewerPluginInfo::GetMenuName";
-        if(!ReplaceBuiltin(c, funcName))
-        {
-            c << "// ****************************************************************************" << endl;
-            c << "//  Method: "<<funcName << endl;
-            c << "//" << endl;
-            c << "//  Purpose:" << endl;
-            c << "//    Return a pointer to the name to use in the viewer menus." << endl;
-            c << "//" << endl;
-            c << "//  Returns:    A pointer to the name to use in the viewer menus." << endl;
-            c << "//" << endl;
-            c << "//  Programmer: generated by xml2info" << endl;
-            c << "//  Creation:   omitted"<< endl;
-            c << "//" << endl;
-            c << "// ****************************************************************************" << endl;
-            c << endl;
-            c << "QString *" << endl;
-            c << funcName<<"() const" << endl;
-            c << "{" << endl;
-            if(type == "plot")
-                c << "    return new QString(qApp->translate(\"PlotNames\", \""<<label<<"\"));" << endl;
-            else if(type == "operator")
-                c << "    return new QString(qApp->translate(\"OperatorNames\", \""<<label<<"\"));" << endl;
-            c << "}" << endl;
-        }
 
         if(iconFile.length() > 0)
         {
-            funcName = name + "ViewerPluginInfo::XPMIconData";
+            QString funcName = name + "ViewerPluginInfo::XPMIconData";
             if(!ReplaceBuiltin(c, funcName))
             {
                 c << endl;
@@ -2086,6 +1758,335 @@ class InfoGeneratorPlugin : public Plugin
         WriteUserDefinedFunctions(c, name + "ViewerPluginInfo", false);
     }
 
+    void WriteViewerEngineInfoSource(QTextStream &c)
+    {
+        if (type=="database")
+            return;
+
+        c << copyright_str << endl;
+        c << "// ************************************************************************* //" << endl;
+        c << "//  File: "<<name<<"ViewerEnginePluginInfo.C" << endl;
+        c << "// ************************************************************************* //" << endl;
+        c << endl;
+        c << "#include <"<<name<<"PluginInfo.h>" << endl;
+        if (type=="plot")
+            c << "#include <avt"<<name<<"Plot.h>" << endl;
+        c << "#include <"<<atts->name<<".h>" << endl;
+        c << endl;
+        c << "//" << endl;
+        c << "// Storage for static data elements." << endl;
+        c << "//" << endl;
+        c << atts->name<<" *"<<name<<"ViewerEnginePluginInfo::clientAtts = NULL;" << endl;
+        c << atts->name<<" *"<<name<<"ViewerEnginePluginInfo::defaultAtts = NULL;" << endl;
+        c << endl;
+
+        QString funcName = name + "ViewerEnginePluginInfo::InitializeGlobalObjects";
+        if(!ReplaceBuiltin(c, funcName))
+        {
+            c << "// ****************************************************************************" << endl;
+            c << "//  Method:  "<<funcName << endl;
+            c << "//" << endl;
+            c << "//  Purpose:" << endl;
+            c << "//    Initialize the "<<type<<" atts." << endl;
+            c << "//" << endl;
+            c << "//  Programmer: generated by xml2info" << endl;
+            c << "//  Creation:   omitted"<< endl;
+            c << "//" << endl;
+            c << "// ****************************************************************************" << endl;
+            c << "void" << endl;
+            c << funcName << "()" << endl;
+            c << "{" << endl;
+            c << "    "<<name<<"ViewerEnginePluginInfo::clientAtts  = new "<<atts->name<<";" << endl;
+            c << "    "<<name<<"ViewerEnginePluginInfo::defaultAtts = new "<<atts->name<<";" << endl;
+            c << "}" << endl;
+        }
+        c << endl;
+        funcName = name + "ViewerEnginePluginInfo::GetClientAtts";
+        if(!ReplaceBuiltin(c, funcName))
+        {
+            c << "// ****************************************************************************" << endl;
+            c << "//  Method: "<<funcName << endl;
+            c << "//" << endl;
+            c << "//  Purpose:" << endl;
+            c << "//    Return a pointer to the viewer client attributes." << endl;
+            c << "//" << endl;
+            c << "//  Returns:    A pointer to the viewer client attributes." << endl;
+            c << "//" << endl;
+            c << "//  Programmer: generated by xml2info" << endl;
+            c << "//  Creation:   omitted"<< endl;
+            c << "//" << endl;
+            c << "// ****************************************************************************" << endl;
+            c << endl;
+            c << "AttributeSubject *" << endl;
+            c << funcName<<"()" << endl;
+            c << "{" << endl;
+            c << "    return clientAtts;" << endl;
+            c << "}" << endl;
+            c << endl;
+        }
+        funcName = name + "ViewerEnginePluginInfo::GetDefaultAtts";
+        if(!ReplaceBuiltin(c, funcName))
+        {
+            c << "// ****************************************************************************" << endl;
+            c << "//  Method: "<<funcName << endl;
+            c << "//" << endl;
+            c << "//  Purpose:" << endl;
+            c << "//    Return a pointer to the viewer default attributes." << endl;
+            c << "//" << endl;
+            c << "//  Returns:    A pointer to the viewer default attributes." << endl;
+            c << "//" << endl;
+            c << "//  Programmer: generated by xml2info" << endl;
+            c << "//  Creation:   omitted"<< endl;
+            c << "//" << endl;
+            c << "// ****************************************************************************" << endl;
+            c << endl;
+            c << "AttributeSubject *" << endl;
+            c << funcName<<"()" << endl;
+            c << "{" << endl;
+            c << "    return defaultAtts;" << endl;
+            c << "}" << endl;
+        }
+        c << endl;
+        funcName = name + "ViewerEnginePluginInfo::SetClientAtts";
+        if(!ReplaceBuiltin(c, funcName))
+        {
+            c << "// ****************************************************************************" << endl;
+            c << "//  Method: "<<funcName << endl;
+            c << "//" << endl;
+            c << "//  Purpose:" << endl;
+            c << "//    Set the viewer client attributes." << endl;
+            c << "//" << endl;
+            c << "//  Arguments:" << endl;
+            c << "//    atts      A pointer to the new client attributes." << endl;
+            c << "//" << endl;
+            c << "//  Programmer: generated by xml2info" << endl;
+            c << "//  Creation:   omitted"<< endl;
+            c << "//" << endl;
+            c << "// ****************************************************************************" << endl;
+            c << endl;
+            c << "void" << endl;
+            c << funcName << "(AttributeSubject *atts)" << endl;
+            c << "{" << endl;
+            c << "    *clientAtts = *("<<atts->name<<" *)atts;" << endl;
+            c << "    clientAtts->Notify();" << endl;
+            c << "}" << endl;
+        }
+        c << endl;
+        funcName = name + "ViewerEnginePluginInfo::GetClientAtts";
+        if(!ReplaceBuiltin(c, funcName + "1"))
+        {
+            c << "// ****************************************************************************" << endl;
+            c << "//  Method: "<<funcName<< endl;
+            c << "//" << endl;
+            c << "//  Purpose:" << endl;
+            c << "//    Get the viewer client attributes." << endl;
+            c << "//" << endl;
+            c << "//  Arguments:" << endl;
+            c << "//    atts      A pointer to return the client default attributes in." << endl;
+            c << "//" << endl;
+            c << "//  Programmer: generated by xml2info" << endl;
+            c << "//  Creation:   omitted"<< endl;
+            c << "//" << endl;
+            c << "// ****************************************************************************" << endl;
+            c << endl;
+            c << "void" << endl;
+            c << funcName<<"(AttributeSubject *atts)" << endl;
+            c << "{" << endl;
+            c << "    *("<<atts->name<<" *)atts = *clientAtts;" << endl;
+            c << "}" << endl;
+        }
+        c << endl;
+        if (type=="operator")
+        {
+            funcName = name + "ViewerEnginePluginInfo::GetClientAtts";
+            if(ReplaceBuiltin(c, funcName + "3"))
+            {
+                c << endl;
+            }
+
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::Removeable");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::Moveable");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AllowsSubsequentOperators");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::GetCreatedVariables");
+
+            QString funcName = name + "ViewerEnginePluginInfo::InitializeOperatorAtts";
+            if(!ReplaceBuiltin(c, funcName))
+            {
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<funcName << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//    Initialize the "<<type<<" attributes to the default attributes." << endl;
+                c << "//" << endl;
+                c << "//  Arguments:" << endl;
+                c << "//    atts        The attribute subject to initialize." << endl;
+                c << "//    plot        The viewer plot that owns the operator." << endl;
+                c << "//    fromDefault True to initialize the attributes from the defaults. False" << endl;
+                c << "//                to initialize from the current attributes." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: generated by xml2info" << endl;
+                c << "//  Creation:   omitted"<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "void" << endl;
+                c << funcName << "(AttributeSubject *atts," << endl
+                  << "                                              const avtPlotMetaData &plot," << endl
+                  << "                                              const bool fromDefault)" << endl;
+                c << "{" << endl;
+                c << "    if (fromDefault)" << endl;
+                c << "        *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
+                c << "    else" << endl;
+                c << "        *("<<atts->name<<"*)atts = *clientAtts;" << endl;
+                c << "" << endl;
+                c << "    UpdateOperatorAtts(atts, plot);" << endl;
+                c << "}" << endl;
+                c << "" << endl;
+            }
+
+            funcName = name + "ViewerEnginePluginInfo::UpdateOperatorAtts";
+            if(!ReplaceBuiltin(c, funcName))
+            {
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<funcName << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//    Update the "<<type<<" attributes when using operator expressions." << endl;
+                c << "//" << endl;
+                c << "//  Arguments:" << endl;
+                c << "//    atts        The attribute subject to update." << endl;
+                c << "//    plot        The viewer plot that owns the operator." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: generated by xml2info" << endl;
+                c << "//  Creation:   omitted"<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "void" << endl;
+                c << funcName << "(AttributeSubject *atts, const avtPlotMetaData &plot)" << endl;
+                c << "{" << endl;
+                c << "}" << endl;
+                c << "" << endl;
+            }
+
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::GetOperatorVarDescription");
+#if 0
+            funcName = name + "ViewerEnginePluginInfo::GetOperatorVarDescription";
+            if(!ReplaceBuiltin(c, funcName))
+            {
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<funcName << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//    Return the "<<type<<"  variable description." << endl;
+                c << "//" << endl;
+                c << "//  Arguments:" << endl;
+                c << "//    atts        The current attributes." << endl;
+                c << "//    plot        The viewer plot that owns the operator." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: generated by xml2info" << endl;
+                c << "//  Creation:   omitted"<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "std::string" << endl;
+                c << funcName << "(AttributeSubject *atts," << endl
+                  << "                                              const avtPlotMetaData &plot)" << endl;
+                c << "{" << endl;
+                c << "    return std::string(\"\");" << endl;
+                c << "}" << endl;
+                c << "" << endl;
+            }
+#endif
+        }
+        if (type=="plot")
+        {
+            funcName = name + "ViewerEnginePluginInfo::AllocAvtPlot";
+            if(!ReplaceBuiltin(c, funcName))
+            {
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<funcName << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//    Return a pointer to a newly allocated avt plot." << endl;
+                c << "//" << endl;
+                c << "//  Returns:    A pointer to the newly allocated avt plot." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: generated by xml2info" << endl;
+                c << "//  Creation:   omitted"<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "avtPlot *" << endl;
+                c << funcName<<"()" << endl;
+                c << "{" << endl;
+                c << "    return new avt"<<name<<"Plot;" << endl;
+                c << "}" << endl;
+            }
+            c << endl;
+
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::ProvidesLegend");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::PermitsCurveViewScaling");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::Permits2DViewScaling");
+
+            funcName = name + "ViewerEnginePluginInfo::InitializePlotAtts";
+            if(!ReplaceBuiltin(c, funcName))
+            {
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<funcName << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//    Initialize the "<<type<<" attributes to the default attributes." << endl;
+                c << "//" << endl;
+                c << "//  Arguments:" << endl;
+                c << "//    atts      The attribute subject to initialize." << endl;
+                c << "//    plot      The viewer plot whose attributes are getting initialized." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: generated by xml2info" << endl;
+                c << "//  Creation:   omitted"<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "void" << endl;
+                c << funcName<<"(AttributeSubject *atts," << endl
+                  << "    const avtPlotMetaData &)" << endl;
+                c << "{" << endl;
+                c << "    *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
+                c << "}" << endl;
+            }
+
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::ReInitializePlotAtts");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::ResetPlotAtts");
+        }
+
+        funcName = name + "ViewerEnginePluginInfo::GetMenuName";
+        if(!ReplaceBuiltin(c, funcName))
+        {
+            c << "// ****************************************************************************" << endl;
+            c << "//  Method: "<<funcName << endl;
+            c << "//" << endl;
+            c << "//  Purpose:" << endl;
+            c << "//    Return a pointer to the name to use in the viewer menus." << endl;
+            c << "//" << endl;
+            c << "//  Returns:    A pointer to the name to use in the viewer menus." << endl;
+            c << "//" << endl;
+            c << "//  Programmer: generated by xml2info" << endl;
+            c << "//  Creation:   omitted"<< endl;
+            c << "//" << endl;
+            c << "// ****************************************************************************" << endl;
+            c << endl;
+            c << "const char *" << endl;
+            c << funcName<<"() const" << endl;
+            c << "{" << endl;
+            c << "    return \""<<label<<"\";" << endl;
+            c << "}" << endl;
+        }
+
+        c << endl;
+        WriteUserDefinedFunctions(c, name + "ViewerEnginePluginInfo", false);
+    }
+
+
     void WriteMDServerInfoSource(QTextStream &c)
     {
         if (type=="database")
@@ -2116,6 +2117,8 @@ class InfoGeneratorPlugin : public Plugin
             WriteUserDefinedFunctions(c, name + "MDServerPluginInfo", false);
         }
     }
+
+
     void WriteEngineInfoSource(QTextStream &c)
     {
         if (type=="database")
@@ -2199,6 +2202,7 @@ class InfoGeneratorPlugin : public Plugin
             else if (type=="plot")
                 c << "extern \"C\" PLOT_EXPORT EnginePlotPluginInfo* " << name << "_GetEngineInfo()" << endl;
             c << "{" << endl;
+            c << "    "<<name<<"EnginePluginInfo::InitializeGlobalObjects();" << endl;
             c << "    return new "<<name<<"EnginePluginInfo;" << endl;
             c << "}" << endl;
             c << endl;
@@ -2225,31 +2229,6 @@ class InfoGeneratorPlugin : public Plugin
                     c << funcName<<"()" << endl;
                     c << "{" << endl;
                     c << "    return new avt"<<name<<"Filter;" << endl;
-                    c << "}" << endl;
-                }
-            }
-            else if(type == "plot")
-            {
-                QString funcName = name + "EnginePluginInfo::AllocAvtPlot";
-                if(!ReplaceBuiltin(c, funcName))
-                {
-                    c << "// ****************************************************************************" << endl;
-                    c << "//  Method: "<<funcName << endl;
-                    c << "//" << endl;
-                    c << "//  Purpose:" << endl;
-                    c << "//    Return a pointer to a newly allocated avt plot." << endl;
-                    c << "//" << endl;
-                    c << "//  Returns:    A pointer to the newly allocated avt plot." << endl;
-                    c << "//" << endl;
-                    c << "//  Programmer: generated by xml2info" << endl;
-                    c << "//  Creation:   omitted"<< endl;
-                    c << "//" << endl;
-                    c << "// ****************************************************************************" << endl;
-                    c << endl;
-                    c << "avtPlot *" << endl;
-                    c << funcName<<"()" << endl;
-                    c << "{" << endl;
-                    c << "    return new avt"<<name<<"Plot;" << endl;
                     c << "}" << endl;
                 }
             }

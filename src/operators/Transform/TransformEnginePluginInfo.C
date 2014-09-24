@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Transform_GetEngineInfo()
 {
+    TransformEnginePluginInfo::InitializeGlobalObjects();
     return new TransformEnginePluginInfo;
 }
 

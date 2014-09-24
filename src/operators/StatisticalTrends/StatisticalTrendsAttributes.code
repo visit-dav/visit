@@ -74,11 +74,11 @@ StatisticalTrendsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaDa
     return el;
 }
 
-Function: StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts
-Declaration: virtual void InitializeOperatorAtts(AttributeSubject *atts, const ViewerPlot *plot, const bool fromDefault);
+Function: StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts
+Declaration: virtual void InitializeOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
 Definition:
 // ****************************************************************************
-//  Method: StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts
+//  Method: StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts
 //
 //  Purpose:
 //    Update the operator attributes when using operator expressions.
@@ -92,11 +92,11 @@ Definition:
 //
 // ****************************************************************************
 
-#include <ViewerPlot.h>
-
+#include <avtPlotMetaData.h>
+#include <cstring>
 void
-StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
-                                                      const ViewerPlot *plot)
+StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
+                                                      const avtPlotMetaData &plot)
 {
     StatisticalTrendsAttributes *atts_in = (StatisticalTrendsAttributes *)atts;
 
@@ -104,7 +104,7 @@ StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
     const char *typeString[6] = { "Sum", "Mean", "Variance",
                                   "Std. Dev.", "Slope", "Residuals" };
 
-    std::string var = plot->GetVariableName();
+    std::string var = plot.GetVariableName();
 
     if( strncmp(var.c_str(), "operators/StatisticalTrends/",
                 strlen("operators/StatisticalTrends/")) == 0)
@@ -133,11 +133,11 @@ StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
     }
 }
 
-Function: StatisticalTrendsViewerPluginInfo::GetOperatorVarDescription
-Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const ViewerPlot *plot);
+Function: StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
 // ****************************************************************************
-//  Method: StatisticalTrendsViewerPluginInfo::GetOperatorVarDescription
+//  Method: StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription
 //
 //  Purpose:
 //    Return the operator variable description.
@@ -151,18 +151,18 @@ Definition:
 //
 // ****************************************************************************
 
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 
 std::string
-StatisticalTrendsViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
-                                                             const ViewerPlot *plot)
+StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                                   const avtPlotMetaData &plot)
 {
     StatisticalTrendsAttributes *atts_in = (StatisticalTrendsAttributes *)atts;
     const char numTypes = 6;
     const char *typeString[6] = { "Sum", "Mean", "Variance",
                                   "Std. Dev.", "Slope", "Residuals" };
 
-    std::string var = plot->GetVariableName();
+    std::string var = plot.GetVariableName();
 
     if( strncmp(var.c_str(), "operators/StatisticalTrends/",
                 strlen("operators/StatisticalTrends/")) == 0)

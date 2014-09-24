@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ExtremeValueAnalysis_GetEngineInfo()
 {
+    ExtremeValueAnalysisEnginePluginInfo::InitializeGlobalObjects();
     return new ExtremeValueAnalysisEnginePluginInfo;
 }
 

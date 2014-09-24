@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* RadialResample_GetEngineInfo()
 {
+    RadialResampleEnginePluginInfo::InitializeGlobalObjects();
     return new RadialResampleEnginePluginInfo;
 }
 

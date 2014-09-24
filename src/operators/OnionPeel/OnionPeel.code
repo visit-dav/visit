@@ -1,9 +1,9 @@
 Target: xml2info
-Function: OnionPeelViewerPluginInfo::InitializeOperatorAtts
-Declaration: virtual void OnionPeelViewerPluginInfo::InitializeOperatorAtts(...);
+Function: OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts
+Declaration: virtual void OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
 Definition:
 // ****************************************************************************
-//  Method: OnionPeelViewerPluginInfo::InitializeOperatorAtts
+//  Method: OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts
 //
 //  Purpose:
 //    Initialize the operator attributes to the default attributes.
@@ -34,10 +34,10 @@ Definition:
 #include <avtSIL.h>
 #include <avtSILRestriction.h>
 #include <CompactSILRestrictionAttributes.h>
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 void
-OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
-                                              const ViewerPlot *plot,
+OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
+                                              const avtPlotMetaData &plot,
                                               const bool fromDefault)
 {
     if (fromDefault)
@@ -56,7 +56,7 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 
     bool categoryNameValid = false;
     bool subsetNameValid = false;
-    avtSILRestriction_p restriction = plot->GetSILRestriction();
+    avtSILRestriction_p restriction = plot.GetSILRestriction();
     int silTopSet = restriction->GetTopSet();
 
     // 
@@ -100,7 +100,12 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                     if (silAtts->GetTopSetIsAllOn())
                         isOn = true;
                     else
-                        isOn = (useSet[collection->GetSubset(i)] != 0);
+                    {
+                        int idx = collection->GetSubset(i);
+                        if(idx >= 0 && idx < (int)useSet.size())
+                            isOn = (useSet[idx] != 0);
+                    }
+
                     if (isOn)
                     {
                         avtSILSet_p set = restriction->GetSILSet(collection->GetSubset(i));

@@ -87,7 +87,7 @@ class ClipGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual C
     virtual const char **XPMIconData() const;
 };
 
-class ClipViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ClipCommonPluginInfo
+class ClipViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ClipCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class ClipViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class ClipViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     static ClipAttributes *clientAtts;
 };
 
-class ClipEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ClipCommonPluginInfo
+class ClipViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ClipViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class ClipEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ClipViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

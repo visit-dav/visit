@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Revolve_GetEngineInfo()
 {
+    RevolveEnginePluginInfo::InitializeGlobalObjects();
     return new RevolveEnginePluginInfo;
 }
 

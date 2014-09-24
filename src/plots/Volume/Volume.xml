@@ -254,7 +254,7 @@
       </Function>
       <Function name="SetTransferFunctionDim" user="false" member="true">
       </Function>
-      <Function name="VolumeViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
+      <Function name="VolumeViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>
       <Function name="VolumeAttributes_SetMaterialProperties" user="false" member="true">
       </Function>

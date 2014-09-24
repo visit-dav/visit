@@ -345,9 +345,9 @@ avtAUXFileFileFormat::ReadFile()
     //
     // Read the whole file's contents into a buffer
     //
-    VisItStat_t statbuf;
-    VisItStat(fileName.c_str(), &statbuf);
-    VisItOff_t fileSize = statbuf.st_size;
+    FileFunctions::VisItStat_t statbuf;
+    FileFunctions::VisItStat(fileName.c_str(), &statbuf);
+    FileFunctions::VisItOff_t fileSize = statbuf.st_size;
 
     // for the metadata server, only check the first 10k bytes
     if (avtDatabase::OnlyServeUpMetaData())

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* PDF_GetEngineInfo()
 {
+    PDFEnginePluginInfo::InitializeGlobalObjects();
     return new PDFEnginePluginInfo;
 }
 

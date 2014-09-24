@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Project_GetEngineInfo()
 {
+    ProjectEnginePluginInfo::InitializeGlobalObjects();
     return new ProjectEnginePluginInfo;
 }
 

@@ -69,8 +69,6 @@ visit_handle SimGetDomainList(const char *, void *);
 #define SIM_STOPPED       0
 #define SIM_RUNNING       1
 
-#define SIM_EXPORT
-
 typedef struct
 {
 #ifdef PARALLEL
@@ -85,12 +83,9 @@ typedef struct
     int      savingFiles;
     int      saveCounter;
     int      batch;
-#ifdef SIM_EXPORT
     int      export;
-#endif
+    char    *sessionfile;
 
-    int      pcId;
-    int      meshId;
     int      echo;
 } simulation_data;
 
@@ -106,18 +101,20 @@ simulation_data_ctor(simulation_data *sim)
     sim->savingFiles = 0;
     sim->saveCounter = 0;
     sim->batch = 0;
-#ifdef SIM_EXPORT
     sim->export = 0;
-#endif
+    sim->sessionfile = NULL;
 
-    sim->pcId = -1;
-    sim->meshId = -1;
     sim->echo = 0;
 }
 
 void
 simulation_data_dtor(simulation_data *sim)
 {
+    if(sim->sessionfile != NULL)
+    {
+        free(sim->sessionfile);
+        sim->sessionfile = NULL;
+    }
 }
 
 const char *cmd_names[] = {"halt", "step", "run", "addplot", "export"};
@@ -145,6 +142,8 @@ const char *cmd_names[] = {"halt", "step", "run", "addplot", "export"};
  *****************************************************************************/
 void simulate_one_timestep(simulation_data *sim)
 {
+    int savedFile = 0, exportedFile = 0;
+
     ++sim->cycle;
     sim->time += (M_PI / 10.);
 
@@ -163,7 +162,7 @@ void simulate_one_timestep(simulation_data *sim)
         sprintf(filename, "updateplots%04d.jpg", sim->saveCounter);
         if(VisItSaveWindow(filename, 800, 800, VISIT_IMAGEFORMAT_JPEG) == VISIT_OKAY)
         {
-            sim->saveCounter++;
+            savedFile = 1;
             if(sim->par_rank == 0)
                 printf("Saved %s\n", filename);
         }
@@ -171,22 +170,27 @@ void simulate_one_timestep(simulation_data *sim)
             printf("The image could not be saved to %s\n", filename);
     }
 
-#ifdef SIM_EXPORT
     if(sim->export)
     {
-        char cmd[500];
-        sprintf(cmd,  
-        "dbAtts = ExportDBAttributes()\n"
-        "dbAtts.db_type= \"Silo\"\n"
-        "dbAtts.filename = \"updateplots_export%04d\"\n"
-        "dbAtts.dirname = \".\"\n"
-        "dbAtts.variables = (\"default\",)\n"
-        "ExportDatabase(dbAtts)",
-        sim->saveCounter);
-        VisItExecuteCommand(cmd);
-        sim->saveCounter++;
+        char filename[100];
+        visit_handle vars = VISIT_INVALID_HANDLE;
+        VisIt_NameList_alloc(&vars);
+        VisIt_NameList_addName(vars, "default");
+        
+        sprintf(filename, "updateplots_export%04d", sim->saveCounter);
+        if(VisItExportDatabase(filename, "Silo_1.0", vars) &&
+           sim->par_rank == 0)
+        {
+            printf("Exported %s\n", filename);
+        }
+
+        VisIt_NameList_free(vars);
+
+        exportedFile = 1;
     }
-#endif
+
+    if(savedFile || exportedFile)
+        sim->saveCounter++;
 }
 
 
@@ -210,10 +214,8 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
         VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
         VisItExecuteCommand("DrawPlots()\n");
     }
-#ifdef SIM_EXPORT
     else if(strcmp(cmd, "export") == 0)
         sim->export = 1;
-#endif
 }
 
 /* CHANGE 1 */
@@ -351,10 +353,8 @@ ProcessConsoleCommand(simulation_data *sim)
         VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
         VisItExecuteCommand("DrawPlots()\n");
     }
-#ifdef SIM_EXPORT
     else if(strcmp(cmd, "export") == 0)
         sim->export = 1;
-#endif
 
     if(sim->echo && sim->par_rank == 0)
     {
@@ -373,6 +373,8 @@ ProcessConsoleCommand(simulation_data *sim)
  * Date:      Fri Sep 28 15:35:05 PDT 2012
  *
  * Modifications:
+ *   Brad Whitlock, Fri Sep 19 16:06:28 PDT 2014
+ *   Try restoring a session file.
  *
  *****************************************************************************/
 
@@ -384,14 +386,27 @@ void mainloop_batch(simulation_data *sim)
 
     /* Set up some plots. */
     simulate_one_timestep(sim);
-    
-    /* Set up some plots using libsim functions. */
-    VisItAddPlot("Pseudocolor_1.0", "zonal", &sim->pcId);
-/*        VisItSetPlotOptionsS(sim->pcId, "colorTableName", "calewhite");*/
-    VisItDrawPlot(sim->pcId);
 
-    VisItAddPlot("Mesh_1.0", "mesh2d", &sim->meshId);
-    VisItDrawPlot(sim->meshId);
+    if(sim->sessionfile != NULL)
+    {
+        if(VisItRestoreSession(sim->sessionfile) != VISIT_OKAY)
+        {
+            if(sim->par_rank == 0)
+            {
+                fprintf(stderr, "Could not restore session file %s\n",
+                        sim->sessionfile);
+            }
+            return;
+        }
+    }
+    else
+    {
+        /* Set up some plots using libsim functions. */
+        VisItAddPlot("Mesh", "mesh2d");
+        VisItAddPlot("Contour", "zonal");
+        VisItAddPlot("Pseudocolor", "zonal");
+        VisItDrawPlots();
+    }
 
     /* Turn in image saving. */
     sim->savingFiles = 1;
@@ -537,8 +552,15 @@ int main(int argc, char **argv)
     {
         if(strcmp(argv[i], "-batch") == 0)
             sim.batch = 1;
+        else if(strcmp(argv[i], "-export") == 0)
+            sim.export = 1;
         else if(strcmp(argv[i], "-echo") == 0)
             sim.echo = 1;
+        else if(strcmp(argv[i], "-sessionfile") == 0 && (i+1) < argc)
+        {
+            sim.sessionfile = strdup(argv[i+1]);
+            ++i;
+        }
     }
 
     /* Initialize environment variables. */

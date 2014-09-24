@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* OnionPeel_GetEngineInfo()
 {
+    OnionPeelEnginePluginInfo::InitializeGlobalObjects();
     return new OnionPeelEnginePluginInfo;
 }
 

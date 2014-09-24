@@ -80,20 +80,20 @@ class SurfaceCommonPluginInfo : public virtual CommonPlotPluginInfo, public virt
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class SurfaceGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual SurfaceCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class SurfaceViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual SurfaceCommonPluginInfo
+class SurfaceViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual SurfaceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class SurfaceViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virt
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static SurfaceAttributes *defaultAtts;
     static SurfaceAttributes *clientAtts;
 };
 
-class SurfaceEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual SurfaceCommonPluginInfo
+class SurfaceViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual SurfaceViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class SurfaceEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual SurfaceViewerEnginePluginInfo
+{
+  public:
 };
 
 class SurfaceScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual SurfaceCommonPluginInfo

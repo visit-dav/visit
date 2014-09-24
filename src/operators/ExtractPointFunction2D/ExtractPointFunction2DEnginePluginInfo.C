@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ExtractPointFunction2D_GetEngineInfo()
 {
+    ExtractPointFunction2DEnginePluginInfo::InitializeGlobalObjects();
     return new ExtractPointFunction2DEnginePluginInfo;
 }
 

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* RemoveCells_GetEngineInfo()
 {
+    RemoveCellsEnginePluginInfo::InitializeGlobalObjects();
     return new RemoveCellsEnginePluginInfo;
 }
 

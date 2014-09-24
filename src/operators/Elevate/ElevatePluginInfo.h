@@ -87,7 +87,7 @@ class ElevateGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtua
     virtual const char **XPMIconData() const;
 };
 
-class ElevateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ElevateCommonPluginInfo
+class ElevateViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ElevateCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class ElevateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class ElevateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
     static ElevateAttributes *clientAtts;
 };
 
-class ElevateEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ElevateCommonPluginInfo
+class ElevateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ElevateViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class ElevateEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ElevateViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

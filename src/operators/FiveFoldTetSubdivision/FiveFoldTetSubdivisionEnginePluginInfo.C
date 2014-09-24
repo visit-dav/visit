@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* FiveFoldTetSubdivision_GetEngineInfo()
 {
+    FiveFoldTetSubdivisionEnginePluginInfo::InitializeGlobalObjects();
     return new FiveFoldTetSubdivisionEnginePluginInfo;
 }
 

@@ -64,7 +64,7 @@
 #include <InvalidFilesException.h>
 #include <Expression.h>
 #include <DebugStream.h>
-#include <StringHelpers.h>
+#include <FileFunctions.h>
 
 #ifdef HAVE_LIBHDF4
 #include <hdf.h>
@@ -381,7 +381,7 @@ avtEnzoFileFormat::ReadHierachyFile()
             h >> buff; // '='
             h >> fullpath;
             g.gridFileName = fname_dir + "/" +
-                    StringHelpers::Basename(fullpath.c_str());
+                    FileFunctions::Basename(fullpath.c_str());
 
             while (buff != "NumberOfParticles")
             {
@@ -399,7 +399,7 @@ avtEnzoFileFormat::ReadHierachyFile()
                 h >> buff; // '='
                 h >> fullpath;
                 g.particleFileName = fname_dir + "/" +
-                    StringHelpers::Basename(fullpath.c_str());
+                    FileFunctions::Basename(fullpath.c_str());
             }
 
             g.level = level;
@@ -778,7 +778,7 @@ avtEnzoFileFormat::avtEnzoFileFormat(const char *filename)
                    "It was not a .hierarchy or .boundary file.");
     }
 
-    fname_dir = StringHelpers::Dirname(fname_base.c_str());
+    fname_dir = FileFunctions::Dirname(fname_base.c_str());
 }
 
 // ****************************************************************************

@@ -80,19 +80,19 @@ class WellBoreCommonPluginInfo : public virtual CommonPlotPluginInfo, public vir
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class WellBoreGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual WellBoreCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
 };
 
-class WellBoreViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual WellBoreCommonPluginInfo
+class WellBoreViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual WellBoreCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -102,10 +102,8 @@ class WellBoreViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static WellBoreAttributes *defaultAtts;
@@ -115,10 +113,15 @@ class WellBoreViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vir
     static void InitializeDefaultPalette(WellBoreAttributes *);
 };
 
-class WellBoreEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual WellBoreCommonPluginInfo
+class WellBoreViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual WellBoreViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+
+};
+
+class WellBoreEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual WellBoreViewerEnginePluginInfo
+{
+  public:
 };
 
 class WellBoreScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual WellBoreCommonPluginInfo

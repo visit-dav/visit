@@ -67,6 +67,7 @@ DataNetwork.C
 ClonedDataNetwork.C
 CumulativeQueryNamedSelectionExtension.C
 Engine.C
+EngineBase.C
 LoadBalancer.C
 MesaDisplay.C
 Netnodes.C

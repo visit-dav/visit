@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* MetricThreshold_GetEngineInfo()
 {
+    MetricThresholdEnginePluginInfo::InitializeGlobalObjects();
     return new MetricThresholdEnginePluginInfo;
 }
 

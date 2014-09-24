@@ -87,7 +87,7 @@ class PeaksOverThresholdGUIPluginInfo : public virtual GUIOperatorPluginInfo, pu
         QvisNotepadArea *notepad);
 };
 
-class PeaksOverThresholdViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual PeaksOverThresholdCommonPluginInfo
+class PeaksOverThresholdViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual PeaksOverThresholdCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,11 @@ class PeaksOverThresholdViewerPluginInfo : public virtual ViewerOperatorPluginIn
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +108,12 @@ class PeaksOverThresholdViewerPluginInfo : public virtual ViewerOperatorPluginIn
     static PeaksOverThresholdAttributes *clientAtts;
 };
 
-class PeaksOverThresholdEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual PeaksOverThresholdCommonPluginInfo
+class PeaksOverThresholdViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual PeaksOverThresholdViewerEnginePluginInfo
+{
+  public:
+};
+
+class PeaksOverThresholdEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual PeaksOverThresholdViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

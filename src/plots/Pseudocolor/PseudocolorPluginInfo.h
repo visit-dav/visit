@@ -80,20 +80,20 @@ class PseudocolorCommonPluginInfo : public virtual CommonPlotPluginInfo, public 
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class PseudocolorGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual PseudocolorCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class PseudocolorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual PseudocolorCommonPluginInfo
+class PseudocolorViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual PseudocolorCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class PseudocolorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public 
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static PseudocolorAttributes *defaultAtts;
     static PseudocolorAttributes *clientAtts;
 };
 
-class PseudocolorEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual PseudocolorCommonPluginInfo
+class PseudocolorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual PseudocolorViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class PseudocolorEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual PseudocolorViewerEnginePluginInfo
+{
+  public:
 };
 
 class PseudocolorScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual PseudocolorCommonPluginInfo

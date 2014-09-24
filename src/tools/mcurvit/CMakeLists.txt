@@ -96,7 +96,9 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/gui
+${VISIT_SOURCE_DIR}/viewer/core
 ${VISIT_SOURCE_DIR}/viewer/main
+${VISIT_SOURCE_DIR}/viewer/main/ui
 ${VISIT_SOURCE_DIR}/viewer/rpc
 ${VISIT_SOURCE_DIR}/vtkqt
 ${VTK_INCLUDE_DIRS}

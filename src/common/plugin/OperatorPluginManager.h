@@ -129,11 +129,11 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
     std::string                     GetOperatorCategoryName(const std::string &allid) const;
 
     // Methods that return info about loaded plugins
-    CommonOperatorPluginInfo       *GetCommonPluginInfo(const std::string&);
-    GUIOperatorPluginInfo          *GetGUIPluginInfo(const std::string&);
-    ViewerOperatorPluginInfo       *GetViewerPluginInfo(const std::string&);
-    EngineOperatorPluginInfo       *GetEnginePluginInfo(const std::string&);
-    ScriptingOperatorPluginInfo    *GetScriptingPluginInfo(const std::string&);
+    virtual CommonOperatorPluginInfo    *GetCommonPluginInfo(const std::string&);
+    virtual GUIOperatorPluginInfo       *GetGUIPluginInfo(const std::string&);
+    virtual ViewerOperatorPluginInfo    *GetViewerPluginInfo(const std::string&);
+    virtual EngineOperatorPluginInfo    *GetEnginePluginInfo(const std::string&);
+    virtual ScriptingOperatorPluginInfo *GetScriptingPluginInfo(const std::string&);
 
   private:
     virtual void                    BroadcastGeneralInfo(PluginBroadcaster *);

@@ -38,7 +38,25 @@
 #
 #****************************************************************************/
 
+# This flag controls whether we try to build the simv2 runtime with 
+# viewercore support.
+SET(SIMV2_VIEWER_INTEGRATION ON)
+
+IF(SIMV2_VIEWER_INTEGRATION)
+    SET(LIBSIM_RUNTIME_VIEWER_SOURCES SimEngineManager.C SimFileServer.C)
+    SET(LIBSIM_RUNTIME_VIEWER_LIBS viewercore)
+    SET(VISIT_VIEWER_DIRS
+        ${VISIT_SOURCE_DIR}/viewer/core
+        ${VISIT_SOURCE_DIR}/viewer/rpc
+    )
+    ADD_DEFINITIONS(-DSIMV2_VIEWER_INTEGRATION)
+ENDIF(SIMV2_VIEWER_INTEGRATION)
+
 SET(LIBSIM_RUNTIME_SOURCES 
+${LIBSIM_RUNTIME_VIEWER_SOURCES}
+SimEngine.C
+SimOperatorPluginManager.C
+SimPlotPluginManager.C
 VisItControlInterfaceRuntime.C 
 VisItDataInterfaceRuntime.C 
 VisItDataInterfaceRuntimeP.C 
@@ -74,6 +92,7 @@ INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VTK_INCLUDE_DIRS}
+${VISIT_VIEWER_DIRS}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VISIT_SOURCE_DIR}/avt/DataBinning
@@ -124,7 +143,7 @@ ${ICET_LIBRARY_DIR}
 )
 
 ADD_LIBRARY(simV2runtime_ser ${LIBSIM_RUNTIME_SOURCES} ${LIBSIM_STATIC_SOURCES})
-TARGET_LINK_LIBRARIES(simV2runtime_ser engine_ser)
+TARGET_LINK_LIBRARIES(simV2runtime_ser engine_ser ${LIBSIM_RUNTIME_VIEWER_LIBS})
 
 IF(NOT APPLE)
     SET_TARGET_PROPERTIES(simV2runtime_ser PROPERTIES INSTALL_RPATH "$ORIGIN")
@@ -134,7 +153,7 @@ VISIT_INSTALL_TARGETS(simV2runtime_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(simV2runtime_par ${LIBSIM_RUNTIME_SOURCES} ${LIBSIM_STATIC_SOURCES})
-    TARGET_LINK_LIBRARIES(simV2runtime_par engine_par)
+    TARGET_LINK_LIBRARIES(simV2runtime_par engine_par ${LIBSIM_RUNTIME_VIEWER_LIBS})
     IF(NOT APPLE)
         SET_TARGET_PROPERTIES(simV2runtime_par PROPERTIES INSTALL_RPATH "$ORIGIN")
     ENDIF(NOT APPLE)

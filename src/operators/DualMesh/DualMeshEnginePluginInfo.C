@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* DualMesh_GetEngineInfo()
 {
+    DualMeshEnginePluginInfo::InitializeGlobalObjects();
     return new DualMeshEnginePluginInfo;
 }
 

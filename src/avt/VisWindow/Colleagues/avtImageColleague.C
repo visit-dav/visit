@@ -448,8 +448,7 @@ avtImageColleague::UpdateImage(std::string filename)
 {
     bool retval = true;
 
-    if (filename.size() > 0 && filename[0] == '~')
-        filename = ExpandUserPath(filename);
+    filename = FileFunctions::ExpandPath(filename);
 
     // Get a reader for filename if possible.
     vtkImageReader2 *r =

@@ -97,11 +97,11 @@
       </Function>
       <Function name="SetValue2" user="true" member="true">
       </Function>
-      <Function name="ContourViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
+      <Function name="ContourViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
-      <Function name="ContourViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="ContourViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="ContourViewerPluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
+      <Function name="ContourViewerEnginePluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
       </Function>
       <Constant name="MAX_CONTOURS" member="true">
       </Constant>

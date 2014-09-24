@@ -124,11 +124,11 @@ class PLUGIN_API PlotPluginManager : public PluginManager
 
     virtual void                    ReloadPlugins();
 
-    CommonPlotPluginInfo           *GetCommonPluginInfo(const std::string&);
-    GUIPlotPluginInfo              *GetGUIPluginInfo(const std::string&);
-    ViewerPlotPluginInfo           *GetViewerPluginInfo(const std::string&);
-    EnginePlotPluginInfo           *GetEnginePluginInfo(const std::string&);
-    ScriptingPlotPluginInfo        *GetScriptingPluginInfo(const std::string&);
+    virtual CommonPlotPluginInfo    *GetCommonPluginInfo(const std::string&);
+    virtual GUIPlotPluginInfo       *GetGUIPluginInfo(const std::string&);
+    virtual ViewerPlotPluginInfo    *GetViewerPluginInfo(const std::string&);
+    virtual EnginePlotPluginInfo    *GetEnginePluginInfo(const std::string&);
+    virtual ScriptingPlotPluginInfo *GetScriptingPluginInfo(const std::string&);
 
   private:
     virtual bool                    LoadGeneralPluginInfo();

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* IntegralCurve_GetEngineInfo()
 {
+    IntegralCurveEnginePluginInfo::InitializeGlobalObjects();
     return new IntegralCurveEnginePluginInfo;
 }
 

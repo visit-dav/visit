@@ -91,7 +91,7 @@
 #include <BJHash.h>
 #include <Utility.h>
 #include <Expression.h>
-#include <StringHelpers.h>
+#include <FileFunctions.h>
 
 #include <BadDomainException.h>
 #include <BadIndexException.h>
@@ -109,6 +109,7 @@
 
 #include <visit-config.h>
 
+#include <cerrno>
 #include <sstream>
 #include <snprintf.h>
 #include <stdlib.h> // for qsort
@@ -129,9 +130,6 @@ using std::string;
 using std::vector;
 using std::ostringstream;
 using namespace SiloDBOptions;
-using StringHelpers::Absname;
-using StringHelpers::Basename;
-using StringHelpers::Dirname;
 
 static void      ExceptionGenerator(char *);
 static void      ExceptionGenerator(char *);
@@ -600,7 +598,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     // filename followed by ':' followed by an internal silo directory
     // name.
     //
-    const char *baseFilename = Basename(filenames[f]);
+    const char *baseFilename = FileFunctions::Basename(filenames[f]);
     const char *pColon = strrchr(baseFilename, ':');
     if (pColon != NULL)
     {
@@ -7176,7 +7174,7 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     //
     DBfile *domain_file = dbfile;
     string directory_var;
-    const char *var_dirname = Dirname(var);
+    const char *var_dirname = FileFunctions::Dirname(var);
 
     DetermineFileAndDirectory(var_location.c_str(), var_dirname, domain_file, directory_var);
 
@@ -7359,7 +7357,7 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     //
     DBfile *domain_file = dbfile;
     string directory_var;
-    const char *var_dirname = Dirname(var);
+    const char *var_dirname = FileFunctions::Dirname(var);
 
     DetermineFileAndDirectory(var_location.c_str(),var_dirname, domain_file, directory_var);
 
@@ -8047,7 +8045,7 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
     // so handle that here.  
     //
     DBfile *domain_file = dbfile;
-    const char *mesh_dirname = Dirname(mesh);
+    const char *mesh_dirname = FileFunctions::Dirname(mesh);
     DetermineFileAndDirectory(mesh_location.c_str(), mesh_dirname, domain_file, directory_mesh_out);
 
     if (_mm) *_mm = mm;
@@ -14826,7 +14824,7 @@ avtSiloFileFormat::GetMultiMesh(const char *path, const char *name,
         if(mm->nblocks > 0)
         {
             *cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,
-                 Dirname(full_path.c_str()),mm);
+                 FileFunctions::Dirname(full_path.c_str()),mm);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -14920,7 +14918,7 @@ avtSiloFileFormat::GetMultiVar(const char *path, const char *name,
         if(mv->nvars > 0)
         {
             *cache_ent = new avtSiloMultiVarCacheEntry(dbfile,
-                Dirname(full_path.c_str()),mv);
+                FileFunctions::Dirname(full_path.c_str()),mv);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -15017,7 +15015,7 @@ avtSiloFileFormat::GetMultiMat(const char *path, const char *name,
         if(mm->nmats > 0)
         {
             *cache_ent = new avtSiloMultiMatCacheEntry(dbfile,
-                Dirname(full_path.c_str()),mm);
+                FileFunctions::Dirname(full_path.c_str()),mm);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -15111,7 +15109,7 @@ avtSiloFileFormat::GetMultiSpec(const char *path, const char *name,
         if(ms->nspec > 0)
         {
             *cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,
-                Dirname(full_path.c_str()),ms);
+                FileFunctions::Dirname(full_path.c_str()),ms);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -16927,7 +16925,7 @@ static string ResolveSiloIndObjAbsPath(
 
     // If primary object str is the name of an object as opposed to
     // the dir the object lives in, then compute the dirname
-    string obj_abspath = Absname(dbcwd,
+    string obj_abspath = FileFunctions::Absname(dbcwd,
         primary_objname_incl_any_abs_or_rel_path.c_str(), "/");
     int vtype = DBInqVarType(dbfile, obj_abspath.c_str());
     if (vtype >= 0 && vtype != DB_DIR)
@@ -16940,7 +16938,7 @@ static string ResolveSiloIndObjAbsPath(
         }
     }
 
-    string indobj_abspath = Absname(obj_abspath.c_str(),
+    string indobj_abspath = FileFunctions::Absname(obj_abspath.c_str(),
         indirect_objname_incl_any_abs_or_rel_path.c_str(), "/");
     retval = string(indobj_abspath);
     return retval;

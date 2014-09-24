@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Smooth_GetEngineInfo()
 {
+    SmoothEnginePluginInfo::InitializeGlobalObjects();
     return new SmoothEnginePluginInfo;
 }
 

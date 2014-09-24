@@ -44,6 +44,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+namespace FileFunctions
+{
 //
 // Type definitions
 //
@@ -69,13 +71,46 @@ typedef off_t VisItOff_t;
 
 #endif
 
+typedef enum
+{
+    PERMISSION_RESULT_READABLE,
+    PERMISSION_RESULT_NONREADABLE,
+    PERMISSION_RESULT_NOFILE
+} PermissionsResult;
 
-int         MISC_API VisItStat(const char *filename, VisItStat_t *buf);
+PermissionsResult MISC_API CheckPermissions(const std::string &filename);
+
+int         MISC_API VisItStat(const std::string &filename, VisItStat_t *buf);
 int         MISC_API VisItFstat(int fd, VisItStat_t *buf);
 bool        MISC_API ReadAndProcessDirectory(const std::string &,
                                       ProcessDirectoryCallback *,
                                       void * = 0,
                                       bool = false);
-std::string MISC_API ExpandUserPath(const std::string &);
+std::string MISC_API GetCurrentWorkingDirectory();
+std::string MISC_API ExpandPath(const std::string &path, 
+                                const std::string &workingDir = std::string());
+std::string MISC_API FilteredPath(const std::string &path);
+
+// Filename manipulation
+const char  MISC_API *Basename(const char *path);
+std::string MISC_API  Basename(const std::string &path);
+const char  MISC_API *Dirname(const char *path);
+std::string MISC_API  Dirname(const std::string &path);
+const char  MISC_API *Absname(const char *cwd_context, 
+                              const char *path,
+                              const char *pathSep = VISIT_SLASH_STRING);
+std::string MISC_API  Absname(const std::string &cwd_context, 
+                              const std::string &path,
+                              const std::string &pathSep = std::string(VISIT_SLASH_STRING));
+const char  MISC_API *Normalize(const char *path,
+                                const char *pathSep = VISIT_SLASH_STRING);
+std::string MISC_API  Normalize(const std::string &path,
+                                const std::string &pathSep = std::string(VISIT_SLASH_STRING));
+
+void MISC_API         SplitHostDatabase(const std::string &hostDB, 
+                                        std::string &host, std::string &db);
+std::string MISC_API  ComposeDatabaseName(const std::string &host,
+                                          const std::string &db);
+};
 
 #endif

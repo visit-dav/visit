@@ -155,3 +155,64 @@ LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
     return el;
 }
 
+// ****************************************************************************
+// Method: LineoutCommonPluginInfo::GetVariableTypes
+//
+// Purpose: 
+//   Indicates that if the Lineout operator is present in the selected plot
+//   then the GUI's variable menu should include scalars.
+//
+// Returns:    The allowable variable types for the Lineout operator.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 25 16:51:05 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+LineoutCommonPluginInfo::GetVariableTypes() const
+{
+    return VAR_CATEGORY_SCALAR;
+}
+
+// ****************************************************************************
+// Method: LineoutCommonPluginInfo::GetVariableMask
+//
+// Purpose: 
+//   Returns a mask that lets the Lineout operator eliminate certain variable
+//   types from the variable menu.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 25 16:52:08 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+LineoutCommonPluginInfo::GetVariableMask() const
+{
+    return VAR_CATEGORY_SCALAR;
+}
+
+// ****************************************************************************
+// Method: LineoutCommonPluginInfo::GetUserSelectable
+//
+// Purpose: 
+//   Indicates that the Lineout operator cannot be selected in the GUI.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 25 17:04:25 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+LineoutCommonPluginInfo::GetUserSelectable() const
+{
+    return false;
+}
+

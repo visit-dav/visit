@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* CoordSwap_GetEngineInfo()
 {
+    CoordSwapEnginePluginInfo::InitializeGlobalObjects();
     return new CoordSwapEnginePluginInfo;
 }
 

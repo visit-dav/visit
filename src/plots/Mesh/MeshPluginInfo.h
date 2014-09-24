@@ -80,20 +80,20 @@ class MeshCommonPluginInfo : public virtual CommonPlotPluginInfo, public virtual
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class MeshGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual MeshCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class MeshViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual MeshCommonPluginInfo
+class MeshViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual MeshCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class MeshViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static MeshAttributes *defaultAtts;
     static MeshAttributes *clientAtts;
 };
 
-class MeshEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual MeshCommonPluginInfo
+class MeshViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual MeshViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class MeshEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual MeshViewerEnginePluginInfo
+{
+  public:
 };
 
 class MeshScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual MeshCommonPluginInfo

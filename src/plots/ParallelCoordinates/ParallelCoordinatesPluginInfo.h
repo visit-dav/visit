@@ -80,13 +80,13 @@ class ParallelCoordinatesCommonPluginInfo : public virtual CommonPlotPluginInfo,
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class ParallelCoordinatesGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual ParallelCoordinatesCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
@@ -96,7 +96,7 @@ class ParallelCoordinatesGUIPluginInfo : public virtual GUIPlotPluginInfo, publi
     virtual const char **XPMIconData() const;
 };
 
-class ParallelCoordinatesViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual ParallelCoordinatesCommonPluginInfo
+class ParallelCoordinatesViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual ParallelCoordinatesCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -107,21 +107,24 @@ class ParallelCoordinatesViewerPluginInfo : public virtual ViewerPlotPluginInfo,
     virtual avtPlot *AllocAvtPlot();
 
     virtual bool Permits2DViewScaling() const;
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static ParallelCoordinatesAttributes *defaultAtts;
     static ParallelCoordinatesAttributes *clientAtts;
 };
 
-class ParallelCoordinatesEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual ParallelCoordinatesCommonPluginInfo
+class ParallelCoordinatesViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual ParallelCoordinatesViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class ParallelCoordinatesEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual ParallelCoordinatesViewerEnginePluginInfo
+{
+  public:
 };
 
 class ParallelCoordinatesScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual ParallelCoordinatesCommonPluginInfo

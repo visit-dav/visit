@@ -80,20 +80,20 @@ class TensorCommonPluginInfo : public virtual CommonPlotPluginInfo, public virtu
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class TensorGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual TensorCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class TensorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual TensorCommonPluginInfo
+class TensorViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual TensorCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class TensorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtu
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static TensorAttributes *defaultAtts;
     static TensorAttributes *clientAtts;
 };
 
-class TensorEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual TensorCommonPluginInfo
+class TensorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual TensorViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class TensorEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual TensorViewerEnginePluginInfo
+{
+  public:
 };
 
 class TensorScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual TensorCommonPluginInfo

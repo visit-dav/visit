@@ -10,7 +10,7 @@
       </Function>
       <Function name="SetFromNode" user="false" member="true">
       </Function>
-      <Function name="ThresholdViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
+      <Function name="ThresholdViewerEnginePluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
       <Include file="header" quoted="false">
         AxisRestrictionAttributes.h

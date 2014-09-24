@@ -853,10 +853,9 @@ extern "C" void
 render()
 {
     debug2 << "IceT has invoked our render function." << std::endl;
-    Engine *engy = Engine::Instance();
     IceTNetworkManager *net_mgr;
 
-    net_mgr = dynamic_cast<IceTNetworkManager*>(engy->GetNetMgr());
+    net_mgr = dynamic_cast<IceTNetworkManager*>(IceTNetworkManager::GetEngine()->GetNetMgr());
     net_mgr->RealRender();
 }
 

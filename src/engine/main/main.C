@@ -303,7 +303,7 @@ EngineMain(int argc, char *argv[])
             visitTimer->Enable();
     }
 
-    Engine *engine = Engine::Instance();
+    Engine *engine = EngineBase::GetEngine();
 
     // Do some pre-connect initialization
     engine->Initialize(&argc, &argv, true);

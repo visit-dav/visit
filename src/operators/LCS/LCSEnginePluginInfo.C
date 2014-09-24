@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* LCS_GetEngineInfo()
 {
+    LCSEnginePluginInfo::InitializeGlobalObjects();
     return new LCSEnginePluginInfo;
 }
 

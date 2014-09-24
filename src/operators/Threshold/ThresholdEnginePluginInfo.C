@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Threshold_GetEngineInfo()
 {
+    ThresholdEnginePluginInfo::InitializeGlobalObjects();
     return new ThresholdEnginePluginInfo;
 }
 

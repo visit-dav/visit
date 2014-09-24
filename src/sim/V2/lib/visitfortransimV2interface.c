@@ -214,9 +214,11 @@ f_visit_internal_InstallCallbacks(void)
 #define F_VISITINITIALIZERUNTIME    F77_ID(visitinitializeruntime_,visitinitializeruntime,VISITINITIALIZERUNTIME)
 #define F_VISITADDPLOT              F77_ID(visitaddplot_,visitaddplot,VISITADDPLOT)
 #define F_VISITADDOPERATOR          F77_ID(visitaddoperator_,visitaddoperator,VISITADDOPERATOR)
-#define F_VISITDRAWPLOT             F77_ID(visitdrawplot_,visitdrawplot,VISITDRAWPLOT)
-#define F_VISITDELETEPLOT           F77_ID(visitdeleteplot_,visitdeleteplot,VISITDELETEPLOT)
+#define F_VISITDRAWPLOTS            F77_ID(visitdrawplots_,visitdrawplots,VISITDRAWPLOTS)
+#define F_VISITDELETEACTIVEPLOTS    F77_ID(visitdeleteactiveplots_,visitdeleteactiveplots,VISITDELETEACTIVEPLOTS)
 #define F_VISITGETMEMORY            F77_ID(visitgetmemory_,visitgetmemory,VISITGETMEMORY)
+#define F_VISITEXPORTDATABASE       F77_ID(visitexportdatabase_,visitexportdatabase,VISITEXPORTDATABASE)
+#define F_VISITRESTORESESSION       F77_ID(visitrestoresession_,visitrestoresession,VISITRESTORESESSION)
 
 /******************************************************************************
  * Function: F_VISITSETDIRECTORY
@@ -1011,13 +1013,13 @@ F_VISITINITIALIZERUNTIME(void)
  *****************************************************************************/
 
 FORTRAN
-F_VISITADDPLOT(const char *plotType, int *lplotType, const char *var, int *lvar, int *plotID)
+F_VISITADDPLOT(const char *plotType, int *lplotType, const char *var, int *lvar)
 {
     int ret = VISIT_ERROR;
     char *f_plotType = NULL, *f_var = NULL;
     COPY_FORTRAN_STRING(f_plotType, plotType, lplotType);
     COPY_FORTRAN_STRING(f_var, var, lvar);
-    ret = VisItAddPlot(f_plotType, f_var, plotID);
+    ret = VisItAddPlot(f_plotType, f_var);
     FREE(f_plotType);
     FREE(f_var);
     return ret;
@@ -1036,18 +1038,18 @@ F_VISITADDPLOT(const char *plotType, int *lplotType, const char *var, int *lvar,
  *****************************************************************************/
 
 FORTRAN
-F_VISITADDOPERATOR(int *plotID, const char *operatorType, int *loperatorType, int *operatorID)
+F_VISITADDOPERATOR(const char *operatorType, int *loperatorType, int applyToAll)
 {
     int ret = VISIT_ERROR;
     char *f_operatorType = NULL;
     COPY_FORTRAN_STRING(f_operatorType, operatorType, loperatorType);
-    ret = VisItAddOperator(*plotID, f_operatorType, operatorID);
+    ret = VisItAddOperator(f_operatorType, applyToAll);
     FREE(f_operatorType);
     return ret;
 }
 
 /******************************************************************************
- * Function: F_VISITDRAWPLOT
+ * Function: F_VISITDRAWPLOTS
  *
  * Purpose:   Allows FORTRAN to draw a plot
  *
@@ -1059,13 +1061,13 @@ F_VISITADDOPERATOR(int *plotID, const char *operatorType, int *loperatorType, in
  *****************************************************************************/
 
 FORTRAN
-F_VISITDRAWPLOT(int *plotID)
+F_VISITDRAWPLOTS(void)
 {
-    return VisItDrawPlot(*plotID);
+    return VisItDrawPlots();
 }
 
 /******************************************************************************
- * Function: F_VISITDELETEPLOT
+ * Function: F_VISITDELETEACTIVEPLOTS
  *
  * Purpose:   Allows FORTRAN to delete a plot
  *
@@ -1077,9 +1079,9 @@ F_VISITDRAWPLOT(int *plotID)
  *****************************************************************************/
 
 FORTRAN
-F_VISITDELETEPLOT(int *plotID)
+F_VISITDELETEACTIVEPLOTS(void)
 {
-    return VisItDeletePlot(*plotID);
+    return VisItDeleteActivePlots();
 }
 
 /******************************************************************************
@@ -1098,6 +1100,62 @@ FORTRAN
 F_VISITGETMEMORY(double *m_size, double *m_rss)
 {
     return VisItGetMemory(m_size, m_rss);
+}
+
+/******************************************************************************
+ * Function: F_VISITEXPORTDATABASE
+ *
+ * Purpose:   Allows FORTRAN to setup the VisIt environment variables.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Sep 19 14:15:54 PDT 2014
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITEXPORTDATABASE(VISIT_F77STRING filename, int *lfilename,
+                      VISIT_F77STRING format, int *lformat,
+                      visit_handle *vars)
+{
+    FORTRAN retval;
+    char *f_filename = NULL, *f_format = NULL;
+
+    COPY_FORTRAN_STRING(f_filename, filename, lfilename);
+    COPY_FORTRAN_STRING(f_format, format, lformat);
+
+    retval = VisItExportDatabase(f_filename, f_format, *vars);
+
+    FREE(f_filename);
+    FREE(f_format);
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITRESTORESESSION
+ *
+ * Purpose:   Allows FORTRAN to restore a session file.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Sep 19 14:15:54 PDT 2014
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITRESTORESESSION(VISIT_F77STRING filename, int *lfilename)
+{
+    FORTRAN retval;
+    char *f_filename = NULL;
+
+    COPY_FORTRAN_STRING(f_filename, filename, lfilename);
+
+    retval = VisItRestoreSession(f_filename);
+
+    FREE(f_filename);
+    return retval;
 }
 
 /******************************************************************************

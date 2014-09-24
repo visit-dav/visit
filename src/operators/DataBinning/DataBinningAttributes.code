@@ -150,11 +150,11 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
     return el;
 }
 
-Function: DataBinningViewerPluginInfo::UpdateOperatorAtts
-Declaration: virtual void DataBinningViewerPluginInfo::UpdateOperatorAtts(AttributeSubject *atts, const ViewerPlot *plot, const bool fromDefault);
+Function: DataBinningViewerEnginePluginInfo::UpdateOperatorAtts
+Declaration: virtual void DataBinningViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
 Definition:
 // ****************************************************************************
-//  Method: DataBinningViewerPluginInfo::UpdateOperatorAtts
+//  Method: DataBinningViewerEnginePluginInfo::UpdateOperatorAtts
 //
 //  Purpose:
 //    Update the operator attributes to the default attributes.
@@ -176,16 +176,16 @@ Definition:
 //
 // ****************************************************************************
 
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 
 void
-DataBinningViewerPluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+DataBinningViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     DataBinningAttributes *binning = (DataBinningAttributes *)atts;
 
     // Set the number of dimensions based on the variable name.
-    const char *varname = plot->GetVariableName().c_str();
+    const char *varname = plot.GetVariableName().c_str();
     if (strstr(varname, "operators/DataBinning/1D") != NULL)
         binning->SetNumDimensions(DataBinningAttributes::One);
     else if (strstr(varname, "operators/DataBinning/2D") != NULL)

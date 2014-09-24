@@ -64,7 +64,6 @@
 #include <ClientInformationList.h>
 #include <ColorControlPointList.h>
 #include <ColorTableAttributes.h>
-#include <ConstructDataBinningAttributes.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <DBPluginInfoAttributes.h>
@@ -118,23 +117,26 @@
 #include <ViewerRPC.h>
 #include <Xfer.h>
 
-#include <ViewerActionBase.h>
+#include <DatabaseActions.h>
+#include <ViewerActionLogic.h>
 #include <ViewerActionManager.h>
-#include <ViewerConnectionProgressDialog.h>
+#include <ViewerConnectionProgress.h>
 #include <ParsingExprList.h>
 #include <ViewerClientConnection.h>
 #include <ViewerCommandFromSimObserver.h>
 #include <ViewerConfigManager.h>
-#include <ViewerEngineManager.h>
-#include <ViewerRemoteProcessChooser.h>
-#include <ViewerFileServer.h>
-#include <ViewerMessageBuffer.h>
+#include <ViewerConnectionPrinterUI.h>
+#include <ViewerEngineManagerInterface.h>
+#include <ViewerFactoryUI.h>
+#include <ViewerFileServerInterface.h>
+#include <ViewerInternalCommands.h>
+#include <ViewerMessaging.h>
 #include <ViewerMetaDataObserver.h>
 #include <ViewerMethods.h>
 #include <ViewerObserverToSignal.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPasswordWindow.h>
-#include <ViewerChangeUsernameWindow.h>
+#include <ViewerChangeUsernameUI.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotFactory.h>
 #include <ViewerPlotList.h>
@@ -143,6 +145,7 @@
 #include <ViewerQueryManager.h>
 #include <ViewerServerManager.h>
 #include <ViewerState.h>
+#include <ViewerStateManager.h>
 #include <ViewerStateBuffered.h>
 #include <ViewerSILAttsObserver.h>
 #include <ViewerWindow.h>
@@ -160,7 +163,9 @@
 #include <QSocketNotifier>
 #include <QvisColorTableButton.h>
 #include <QvisNoDefaultColorTableButton.h>
+
 #include <DebugStream.h>
+#include <ParentProcess.h>
 #include <TimingsManager.h>
 #include <WindowMetrics.h>
 
@@ -171,8 +176,9 @@
 #include <avtSimulationCommandSpecification.h>
 #include <SharedDaemon.h>
 
+#ifdef HAVE_DDT
 #include <DDTManager.h>
-#include <DDTSession.h>
+#endif
 
 #if !defined(_WIN32)
 #include <strings.h>
@@ -189,20 +195,105 @@ static int nConfigArgs = 1;
 #include <vtkVisItOSMesaRenderingFactory.h>
 #endif
 
-static std::string getToken(std::string buff, bool reset);
-static int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType);
-static void ReadHostProfileCallback(void *, const std::string&,bool,bool,long);
-static void CleanHostProfileCallback(void *, const std::string&,bool,bool,long);
+// ****************************************************************************
+// Class: ViewerCommandDeferredCommandFromSimulation
+//
+// Purpose:
+//   Handles deferred commands from a simulation.
+//
+// Notes:    
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep  3 11:59:13 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
-struct DeferredCommandFromSimulation
+class ViewerCommandDeferredCommandFromSimulation : public ViewerInternalCommand
 {
-    EngineKey   key;
-    std::string db;
-    std::string command;
+public:
+    ViewerCommandDeferredCommandFromSimulation(ViewerSubject *vs,
+                                               EngineKey a,
+                                               const std::string &b,
+                                               const std::string &c) : 
+        ViewerInternalCommand(), viewerSubject(vs), key(a), db(b), command(c)
+    {
+    }
+
+    virtual ~ViewerCommandDeferredCommandFromSimulation()
+    {
+    }
+
+    virtual void Execute()
+    {
+        viewerSubject->HandleCommandFromSimulation(key, db, command);
+    }
+private:
+    ViewerSubject *viewerSubject;
+    EngineKey      key;
+    std::string    db;
+    std::string    command;
 };
 
-// Global variables.  This is a hack, they should be removed.
-ViewerSubject  *viewerSubject=0;
+// ****************************************************************************
+// Class: ViewerCommandSync
+//
+// Purpose:
+//   Handles sync with clients.
+//
+// Notes:    
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep  3 11:59:41 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class ViewerCommandSync : public ViewerInternalCommand
+{
+public:
+    ViewerCommandSync(ViewerObserverToSignal *obj, int t) : 
+        ViewerInternalCommand(), syncObserver(obj), tag(t)
+    {
+    }
+
+    virtual ~ViewerCommandSync()
+    {
+    }
+
+    virtual void Execute()
+    {
+        syncObserver->SetUpdate(false);
+
+        // Send the sync to all clients.
+        GetViewerState()->GetSyncAttributes()->SetSyncTag(tag);
+        GetViewerState()->GetSyncAttributes()->Notify();
+    }
+private:
+    ViewerObserverToSignal *syncObserver;
+    int tag;
+};
+
+// ****************************************************************************
+// Method: OverrideCreateConnectionPrinter
+//
+// Purpose:
+//   Overrides factory method for creating a connection printer object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Sep  6 02:05:52 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static ViewerConnectionPrinter *
+OverrideCreateConnectionPrinter()
+{
+    return new ViewerConnectionPrinterUI();
+}
 
 using std::string;
 
@@ -269,10 +360,10 @@ using std::string;
 //
 // ****************************************************************************
 
-ViewerSubject::ViewerSubject() : ViewerBase(0), 
+ViewerSubject::ViewerSubject() : ViewerBaseUI(), 
     launchEngineAtStartup(), openDatabaseOnStartup(), openScriptOnStartup(),
     interpretCommands(), xfer(), clients(),
-    engineParallelArguments(), unknownArguments(), clientArguments()
+    unknownArguments(), clientArguments()
 {
     //
     // Initialize pointers to some Qt objects that don't get created
@@ -303,11 +394,6 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     launchingComponent = false;
 
     //
-    // Set by BlockSocketSignals method.
-    //
-    blockSocketSignals = false;
-
-    //
     // Set the processingFromParent flag to false to indicate that we are
     // not currently processing input from the parent and it should be
     // safe to process input from the client.
@@ -332,26 +418,9 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     colorTableObserver = 0;
 
     //
-    // By default, read the config files.
-    //
-    configMgr = new ViewerConfigManager(this);
-    systemSettings = 0;
-    localSettings = 0;
-    originalSystemHostProfileList = 0;
-
-    //
-    // Initialize pointers to some objects that don't get created until later.
-    //
-    plotFactory = 0;
-    operatorFactory = 0;
-    messageBuffer = new ViewerMessageBuffer;
-
-    viewerSubject = this;   // FIX_ME Hack, this should be removed.
-
-    //
     // Create and connect state objects.
     //
-    CreateState();
+    GetViewerStateManager()->CreateState();
     viewerDelayedState = 0;
     viewerDelayedMethods = 0;
 
@@ -365,6 +434,13 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     /// new export functions are getting added and BroadcastToAllClients
     /// would really be inefficient for this process..
     clientIds = 0;
+
+    //
+    // Initialize timer variables.
+    //
+    animationTimeout = 1;
+    lastAnimation = 0;
+    timer = NULL;
 }
 
 // ****************************************************************************
@@ -412,22 +488,24 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
 
 ViewerSubject::~ViewerSubject()
 {
-    delete messageBuffer;
     delete viewerRPCObserver;
     delete postponedActionObserver;
     delete clientMethodObserver;
     delete clientInformationObserver;
     delete colorTableObserver;
 
-    delete plotFactory;
-    delete operatorFactory;
-    delete configMgr;
+    delete GetPlotFactory();
+    delete GetOperatorFactory();
     delete syncObserver;
-    delete originalSystemHostProfileList;
 
     delete GetViewerProperties();
     delete GetViewerState();
     delete GetViewerMethods();
+    delete GetViewerStateManager();
+    delete GetViewerMessaging();
+    delete GetViewerFileServer();
+    delete GetViewerEngineManager();
+
     delete inputConnection;
     delete viewerDelayedState;
     delete viewerDelayedMethods;
@@ -539,6 +617,11 @@ ViewerSubject::Initialize()
 {
     int timeid = visitTimer->StartTimer();
 
+    // If we're not in -nowin mode then use the UI factory. The default is to use
+    // the non-UI factory.
+    if(!GetViewerProperties()->GetNowin())
+        SetViewerFactory(new ViewerFactoryUI());
+
     // Make VisIt translation aware.
     QTranslator *translator = new QTranslator(0);
     QString transPath(GetVisItResourcesDirectory(VISIT_RESOURCES_TRANSLATIONS).c_str());
@@ -558,12 +641,34 @@ ViewerSubject::Initialize()
         delete translator;
     }
 
-    // Customize the colors and fonts.
     if (!GetViewerProperties()->GetNowin())
     {
+        // Install an event processing callback. This is used to process events
+        // while we're waiting for data from the engine.
+        SetProcessEventsCallback(ProcessEventsCB, (void *)this);
+
+        // Customize the colors and fonts.
         GetAppearance(qApp, GetViewerState()->GetAppearanceAttributes());
         CustomizeAppearance();
     }
+
+    // Ensure that we always create a connection printer for VCL that uses 
+    // socket notifiers.
+    GetViewerFactory()->OverrideCreateConnectionPrinter(
+        OverrideCreateConnectionPrinter);
+
+    // Set up some callbacks that perform some extra ViewerSubject stuff.
+    ViewerActionLogic::SetPostponeActionCallback(PostponeActionCallback, (void *)this);
+    DatabaseActionBase::SetSimConnectCallback(ViewerSubject::SimConnectCallback, (void *)this);
+    DatabaseActionBase::SetUpdateExpressionCallback(ViewerSubject::UpdateExpressionCallback, (void*)this);
+
+    // Install a launch progress callback for the server manager.
+    ViewerServerManager::SetLaunchProgressCallback(LaunchProgressCB, (void*)this);
+    // Install a callback for the server manager for when it needs to launch 
+    // programs via the engine.
+    ViewerServerManager::SetOpenWithEngineCallback(OpenWithEngine, (void*)this);
+    // Install a callback to schedule execution of internal commands.
+    GetViewerMessaging()->SetCommandsNotifyCallback(CommandNotificationCallback, (void*)this);
 
     //
     // Set up the Xfer object.
@@ -576,9 +681,9 @@ ViewerSubject::Initialize()
     ConnectObjectsAndHandlers();
 
     //
-    // Connect the objects to the config manager.
+    // Connect the the default state objectsto the config manager.
     //
-    ConnectConfigManager();
+    GetViewerStateManager()->ConnectDefaultState();
 
     //
     // If we are not deferring heavy initialization, do it now.
@@ -588,7 +693,7 @@ ViewerSubject::Initialize()
         //
         // Disable reading of commands from the client.
         //
-        BlockSocketSignals(true);
+        GetViewerMessaging()->BlockClientInput(true);
 
         //
         // Do heavy initialization.
@@ -597,13 +702,13 @@ ViewerSubject::Initialize()
 
         //
         // Enable reading of commands from the client. Note that we call
-        // the EnableSocketSignals slot function using a timer because it
+        // the EnableClientInput slot function using a timer because it
         // must be called from the event loop in case ProcessConfigFileSettings
         // added a slot function to the event loop. This prevents race
         // conditions with reading settings and processing commands from the
         // client.
         //
-        QTimer::singleShot(350, this, SLOT(EnableSocketSignals()));
+        QTimer::singleShot(350, this, SLOT(EnableClientInput()));
     }
     else
     {
@@ -619,94 +724,22 @@ ViewerSubject::Initialize()
 }
 
 // ****************************************************************************
-// Method: ViewerSubject::CreateState
+// Method: ViewerSubject::EnableClientInput
 //
-// Purpose: 
-//   Creates the viewer's state objects and adds them to the viewerState
-//   object, which lets us more easily create copies of the viewer's state.
+// Purpose:
+//   Enables client input.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed May 4 16:19:53 PST 2005
+// Creation:   Wed Sep  3 14:39:26 PDT 2014
 //
 // Modifications:
-//   
-//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//   Added mesh management attributes
-//
-//   Hank Childs, Mon Feb 13 21:54:12 PST 2006
-//   Added construct ddf attributes.
-//
-//   Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
-//   Add plotInfoAtts. 
-//
-//   Brad Whitlock, Mon Feb 12 11:05:27 PDT 2007
-//   Rewrote to use ViewerState.
-//
-//   Jeremy Meredith, Wed Jan 23 16:30:13 EST 2008
-//   Added file open options.
-//
-//   Jeremy Meredith, Mon Feb  4 13:31:02 EST 2008
-//   Added remaining axis array view support.
-//
-//   Brad Whitlock, Fri Jul 23 11:29:50 PDT 2010
-//   I added a selection list.
-//
-//   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
-//   Rename ddf to data binning.
 //
 // ****************************************************************************
 
 void
-ViewerSubject::CreateState()
+ViewerSubject::EnableClientInput()
 {
-    ViewerState *s = GetViewerState();
-
-    // The ViewerState object automatically creates its own state objects in
-    // the right order. However, certain objects in the viewer use their own
-    // copies and it is those objects that we need to use in the ViewerState
-    // object, etc. Let's override the values of some of the objects in the
-    // ViewerState object with those of the other viewer objects.
-    //
-    // Since the important viewer objects now inherit from ViewerBase, they should
-    // use the object from ViewerState *ViewerBase::GetState() when possible 
-    // instead of maintaining their own objects. If we eventually switch to that
-    // paradigm then we can delete this code!
-
-    s->SetDBPluginInfoAttributes(ViewerFileServer::Instance()->GetDBPluginInfoAtts(), false);
-    s->SetFileOpenOptions(ViewerFileServer::Instance()->GetFileOpenOptions(), false);
-    s->SetExportDBAttributes(ViewerEngineManager::Instance()->GetExportDBAtts(),  false);
-    s->SetConstructDataBinningAttributes(ViewerEngineManager::Instance()->GetConstructDataBinningAtts(),  false);
-    s->SetGlobalAttributes(ViewerWindowManager::GetClientAtts(), false);
-    s->SetDatabaseCorrelationList(ViewerFileServer::Instance()->GetDatabaseCorrelationList(), false);
-    s->SetPlotList(ViewerPlotList::GetClientAtts(), false);
-    s->SetHostProfileList(ViewerEngineManager::GetClientAtts(), false);
-    s->SetSaveWindowAttributes(ViewerWindowManager::GetSaveWindowClientAtts(), false);
-    s->SetEngineList(ViewerEngineManager::GetEngineList(), false);
-    s->SetColorTableAttributes(avtColorTables::Instance()->GetColorTables(), false);
-    s->SetExpressionList(ParsingExprList::Instance()->GetList(), false);
-    s->SetAnnotationAttributes(ViewerWindowManager::Instance()->GetAnnotationClientAtts(), false);
-    s->SetSILRestrictionAttributes(ViewerPlotList::GetClientSILRestrictionAtts(), false);
-    s->SetViewAxisArrayAttributes(ViewerWindowManager::Instance()->GetViewAxisArrayClientAtts(), false);
-    s->SetViewCurveAttributes(ViewerWindowManager::Instance()->GetViewCurveClientAtts(), false);
-    s->SetView2DAttributes(ViewerWindowManager::Instance()->GetView2DClientAtts(), false);
-    s->SetView3DAttributes(ViewerWindowManager::Instance()->GetView3DClientAtts(), false);
-    s->SetLightList(ViewerWindowManager::Instance()->GetLightListClientAtts(), false);
-    s->SetAnimationAttributes(ViewerWindowManager::Instance()->GetAnimationClientAtts(), false);
-    s->SetPickAttributes(ViewerQueryManager::Instance()->GetPickClientAtts(), false);
-    s->SetPrinterAttributes(ViewerWindowManager::Instance()->GetPrinterClientAtts(), false);
-    s->SetWindowInformation(ViewerWindowManager::Instance()->GetWindowInformation(), false);
-    s->SetRenderingAttributes(ViewerWindowManager::Instance()->GetRenderingAttributes(), false);
-    s->SetKeyframeAttributes(ViewerWindowManager::Instance()->GetKeyframeClientAtts(), false);
-    s->SetQueryList(ViewerQueryManager::Instance()->GetQueryTypes(), false);
-    s->SetQueryAttributes(ViewerQueryManager::Instance()->GetQueryClientAtts(), false);
-    s->SetMaterialAttributes(ViewerEngineManager::GetMaterialClientAtts(), false);
-    s->SetGlobalLineoutAttributes(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts(), false);
-    s->SetAnnotationObjectList(ViewerWindowManager::GetAnnotationObjectList(), false);
-    s->SetQueryOverTimeAttributes(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts(), false);
-    s->SetInteractorAttributes(ViewerWindowManager::Instance()->GetInteractorClientAtts(), false);
-    s->SetMeshManagementAttributes(ViewerEngineManager::GetMeshManagementClientAtts(), false);
-    s->SetSelectionList(ViewerWindowManager::GetSelectionList(), false);
-    s->SetSelectionProperties(ViewerWindowManager::GetSelectionProperties(), false);
+    GetViewerMessaging()->BlockClientInput(false);
 }
 
 // ****************************************************************************
@@ -876,7 +909,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
     if (!GetViewerProperties()->GetNowin())
     {
         RemoteProcess::SetAuthenticationCallback(&ViewerPasswordWindow::authenticate);
-        RemoteProcess::SetChangeUserNameCallback(&ViewerChangeUsernameWindow::changeUsername);
+        RemoteProcess::SetChangeUserNameCallback(&ViewerChangeUsernameUI::ChangeUsernameCallback);
     }
 #endif
 
@@ -894,83 +927,6 @@ ViewerSubject::ConnectObjectsAndHandlers()
         //
         MachineProfile::SetDefaultUserName(parent->GetTheUserName());
     }
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ConnectConfigManager
-//
-// Purpose: 
-//   Connects objects to the config manager.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Jun 17 14:57:28 PST 2003
-//
-// Modifications:
-//    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
-//    I added curve view client attributes.
-//
-//    Brad Whitlock, Fri Nov 7 13:57:47 PST 2003
-//    I added the default annotation object list to the config manager..
-//
-//    Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003 
-//    Added the default pick attributes to the config manager.
-//
-//    Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
-//    Added ViewerQueryManger's QueryOverTimeAtts to config manager.
-//
-//    Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
-//    Added ViewerWindowManger's InteractorAtts to config manager.
-//
-//    Brad Whitlock, Wed Jun 22 10:23:00 PDT 2005
-//    Added movieAtts.
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added MeshManagementAttributes
-//
-//    Brad Whitlock, Fri Feb 23 11:33:26 PDT 2007
-//    Made it use ViewerState when only client attributes are needed.
-//
-//    Jeremy Meredith, Wed Jan 23 16:30:24 EST 2008
-//    Added file open options.
-//
-//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//    Host profiles are now handled separately from the main config file.
-//    Don't hand it to the config manager.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ConnectConfigManager()
-{
-    //
-    // Connect objects that can be written to the config file. Note that
-    // we don't hook up some fancy mechanism for viewer state because
-    // viewer state contains all of the client attributes and some objects
-    // have client attributes and default attributes. We want to hook up
-    // default attributes if they are available.
-    //
-    configMgr->Add(GetViewerState()->GetGlobalAttributes());
-    configMgr->Add(GetViewerState()->GetSaveWindowAttributes());
-    configMgr->Add(GetViewerState()->GetColorTableAttributes());
-    configMgr->Add(GetViewerState()->GetExpressionList());
-    configMgr->Add(GetViewerState()->GetAnimationAttributes());
-    configMgr->Add(ViewerWindowManager::GetAnnotationDefaultAtts());
-    configMgr->Add(GetViewerState()->GetViewCurveAttributes());
-    configMgr->Add(GetViewerState()->GetView2DAttributes());
-    configMgr->Add(GetViewerState()->GetView3DAttributes());
-    configMgr->Add(ViewerWindowManager::GetLightListDefaultAtts());
-    configMgr->Add(ViewerWindowManager::GetWindowAtts());
-    configMgr->Add(GetViewerState()->GetWindowInformation());
-    configMgr->Add(GetViewerState()->GetPrinterAttributes());
-    configMgr->Add(GetViewerState()->GetRenderingAttributes());
-    configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
-    configMgr->Add(ViewerEngineManager::GetMeshManagementDefaultAtts());
-    configMgr->Add(ViewerWindowManager::GetDefaultAnnotationObjectList());
-    configMgr->Add(ViewerQueryManager::Instance()->GetPickDefaultAtts());
-    configMgr->Add(ViewerQueryManager::Instance()->GetQueryOverTimeDefaultAtts());
-    configMgr->Add(ViewerWindowManager::Instance()->GetInteractorDefaultAtts());
-    configMgr->Add(GetViewerState()->GetMovieAttributes());
-    configMgr->Add(GetViewerState()->GetFileOpenOptions());
 }
 
 // ****************************************************************************
@@ -1057,16 +1013,20 @@ ViewerSubject::HeavyInitialization()
         InformClientOfPlugins();
 
         ViewerQueryManager::Instance()->InitializeQueryList();
+
         //
         // Process the config file settings.
         //
-        ProcessConfigFileSettings();
+        GetViewerStateManager()->ConnectPluginDefaultState();
+        bool local = GetViewerStateManager()->ProcessSettings();
+        if(local)
+            QTimer::singleShot(300, this, SLOT(DelayedProcessSettings()));
 
         //
         // Turn on stereo if it was enabled from the command line
         //
         if (GetViewerProperties()->GetDefaultStereoToOn())
-            ViewerWindowManager::GetRenderingAttributes()->SetStereoRendering(true);
+            GetViewerState()->GetRenderingAttributes()->SetStereoRendering(true);
 
         //
         // Add the initial windows.
@@ -1089,8 +1049,12 @@ ViewerSubject::HeavyInitialization()
         string error = ep + eo;
         if (!error.empty())
         {
-            Warning(error.c_str());
+            GetViewerMessaging()->Warning(error);
         }
+
+#ifdef HAVE_DDT
+        DDTInitialize();
+#endif
 
         //
         // Now that everything's been fully initialized, donate the
@@ -1119,6 +1083,13 @@ ViewerSubject::HeavyInitialization()
         connect(client, SIGNAL(DisconnectClient(ViewerClientConnection *)),
                 this,   SLOT(DisconnectClient(ViewerClientConnection *)));
         clients.push_back(client);
+
+        //
+        // Create a timer that is used for animations.
+        //
+        ViewerWindowManager::Instance()->SetAnimationCallback(AnimationCallback, (void *)this);
+        timer = new QTimer(this);
+        connect(timer, SIGNAL(timeout()), this, SLOT(HandleAnimation()));
 
         // Hook up the viewer delayed state. If we're currently reading from the parent,
         // we don't want to hook it up since it adds observers to the subjects in
@@ -1540,12 +1511,9 @@ ViewerSubject::LoadPlotPlugins()
     //
     // Create the Plot factory.
     //
-    plotFactory = new ViewerPlotFactory();
-    for (int i = 0; i < plotFactory->GetNPlotTypes(); ++i)
+    for (int i = 0; i < GetPlotFactory()->GetNPlotTypes(); ++i)
     {
-        AttributeSubject *attr = plotFactory->GetClientAtts(i);
-        AttributeSubject *defaultAttr = plotFactory->GetDefaultAtts(i);
-
+        AttributeSubject *attr = GetPlotFactory()->GetClientAtts(i);
         if (attr != 0)
         {
             GetViewerState()->RegisterPlotAttributes(attr);
@@ -1553,9 +1521,6 @@ ViewerSubject::LoadPlotPlugins()
             xfer.Add(GetViewerState()->GetPlotAttributes(i));
             xfer.Add(GetViewerState()->GetPlotInformation(i));
         }
-
-        if (defaultAttr != 0)
-            configMgr->Add(defaultAttr);
     }
 
     visitTimer->StopTimer(total, "Loading plot plugins and instantiating objects.");
@@ -1617,20 +1582,14 @@ ViewerSubject::LoadOperatorPlugins()
     //
     // Create the Operator factory.
     //
-    operatorFactory = new ViewerOperatorFactory();
-    for (int i = 0; i < operatorFactory->GetNOperatorTypes(); ++i)
+    for (int i = 0; i < GetOperatorFactory()->GetNOperatorTypes(); ++i)
     {
-        AttributeSubject *attr = operatorFactory->GetClientAtts(i);
-        AttributeSubject *defaultAttr = operatorFactory->GetDefaultAtts(i);
-
+        AttributeSubject *attr = GetOperatorFactory()->GetClientAtts(i);
         if (attr != 0)
         {
             xfer.Add(attr);
             GetViewerState()->RegisterOperatorAttributes(attr);
         }
-
-        if(defaultAttr)
-            configMgr->Add(defaultAttr);
     }
 
     // Set the operator's category name.
@@ -1650,113 +1609,10 @@ ViewerSubject::LoadOperatorPlugins()
         }
     }
 
-    // Set the query manager's operator factory pointer.
-    ViewerQueryManager::Instance()->SetOperatorFactory(operatorFactory);
-
     // List the objects connected to xfer.
     xfer.ListObjects();
 
     visitTimer->StopTimer(total, "Loading operator plugins and instantiating objects.");
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ProcessConfigFileSettings
-//
-// Purpose: 
-//   Processes the config file settings that were read in.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Jun 17 15:19:27 PST 2003
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003
-//   Added PickAtts.
-//
-//   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
-//   Added QueryOverTimeAtts.
-//
-//   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
-//   Added InteractorAtts.
-//
-//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//   Added mesh management attributes
-//
-//   Jeremy Meredith, Wed Jan 23 16:31:06 EST 2008
-//   We might start an mdserver before reading the config files, so
-//   make sure we send default file opening options from the config file
-//   to all existing mdservers.
-//
-//   Brad Whitlock, Tue Apr 14 12:02:10 PDT 2009
-//   Use ViewerProperties.
-//
-//   Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
-//   Host profiles are now handles outside the config manager.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ProcessConfigFileSettings()
-{
-    //
-    // Make the hooked up state objects set their properties from
-    // both the system and local settings.
-    //
-    int timeid = visitTimer->StartTimer();
-    configMgr->ProcessConfigSettings(systemSettings);
-    configMgr->ProcessConfigSettings(localSettings);
-
-    // Import external color tables.
-    if(!GetViewerProperties()->GetNoConfig())
-        avtColorTables::Instance()->ImportColorTables();
-
-    // Send the user's config settings to the client.
-    configMgr->Notify();
-
-    // Notify the host profile list manually, since it's
-    // populated outside the config manager now
-    GetViewerState()->GetHostProfileList()->Notify();
-
-    delete systemSettings; systemSettings = 0;
-
-    // Let other viewer objects set their properties from the local settings.
-    if(localSettings)
-        QTimer::singleShot(300, this, SLOT(DelayedProcessSettings()));
-
-    // Add the appearanceAtts *after* the config settings have been read. This
-    // prevents overwriting the attributes and sending them to the client.
-    configMgr->Add(GetViewerState()->GetAppearanceAttributes());
-
-    // Add the pluginAtts *after* the config settings have been read.
-    // First, tell the client which plugins we've really loaded.
-    configMgr->Add(GetViewerState()->GetPluginManagerAttributes());
-
-    // Copy the default annotation attributes into the client annotation
-    // attributes.
-    ViewerWindowManager::SetClientAnnotationAttsFromDefault();
-
-    // Copy the default material atts to the client material atts
-    ViewerEngineManager::SetClientMaterialAttsFromDefault();
-
-    // Copy the default pick atts to the client pick atts
-    ViewerQueryManager::Instance()->SetClientPickAttsFromDefault();
-
-    // Copy the default time query atts to the client time query atts
-    ViewerQueryManager::Instance()->SetClientQueryOverTimeAttsFromDefault();
-
-    // Copy the default time query atts to the client time query atts
-    ViewerWindowManager::Instance()->SetClientInteractorAttsFromDefault();
-
-    // Send the queries to the client.
-    ViewerQueryManager::Instance()->GetQueryTypes()->Notify();
-
-    // Copy the default mesh management atts to the client material atts
-    ViewerEngineManager::SetClientMeshManagementAttsFromDefault();
-
-    // If we started an mdserver before the default file open options were
-    // obtained from the config file, we need to re-notify mdservers.
-    SetDefaultFileOpenOptions();
-
-    visitTimer->StopTimer(timeid, "Processing config file data.");
 }
 
 // ****************************************************************************
@@ -1784,9 +1640,6 @@ ViewerSubject::AddInitialWindows()
     if (windowManager != NULL)
     {
         int timeid = visitTimer->StartTimer();
-        // Connect
-        connect(windowManager, SIGNAL(createWindow(ViewerWindow *)),
-                this, SLOT(ConnectWindow(ViewerWindow *)));
 
         // Initialize the area that will be used to place the windows.
         InitializeWorkArea();
@@ -1830,7 +1683,7 @@ ViewerSubject::LaunchEngineOnStartup()
     //
     // Launch an engine if needed, never popping up the chooser window
     //
-    if (launchEngineAtStartup != "")
+    if (!launchEngineAtStartup.empty())
     {
         if(launchEngineAtStartup.substr(0,6) == "-host=")
         {
@@ -1849,7 +1702,7 @@ ViewerSubject::LaunchEngineOnStartup()
                 }
             }
 
-            ViewerEngineManager::Instance()->CreateEngine(
+            GetViewerEngineManager()->CreateEngine(
                 EngineKey("localhost",""), // The name of the engine (host)
                 args,               // The engine arguments
                 true,               // Whether to skip the engine chooser
@@ -1860,12 +1713,12 @@ ViewerSubject::LaunchEngineOnStartup()
         }
         else
         {
-            ViewerEngineManager::Instance()->CreateEngine(
-                EngineKey(launchEngineAtStartup,""), // The name of the engine (host)
-                engineParallelArguments,             // The engine arguments
-                true,                                // Whether to skip the engine chooser
-                GetViewerProperties()->GetNumEngineRestarts(), // Number of allowed restarts
-                false);                              // Whether we're reverse launching
+            GetViewerEngineManager()->CreateEngine(
+                EngineKey(launchEngineAtStartup,""),                 // The name of the engine (host)
+                GetViewerProperties()->GetEngineParallelArguments(), // The engine arguments
+                true,                                                // Whether to skip the engine chooser
+                GetViewerProperties()->GetNumEngineRestarts(),       // Number of allowed restarts
+                false);                                              // Whether we're reverse launching
         }
     }
 }
@@ -1883,39 +1736,34 @@ ViewerSubject::LaunchEngineOnStartup()
 //   Jeremy Meredith, Fri Mar 26 13:12:48 EDT 2010
 //   Allow for the -o command line option to take an optional ,<pluginID>
 //   suffix, e.g. "-o foobar,LAMMPS_1.0".
-//   
+//
+//   Brad Whitlock, Thu Aug 28 10:47:15 PDT 2014
+//   Use ViewerMethods to open the database. 
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabaseOnStartup()
 {
-    if(openDatabaseOnStartup != "")
+    if(!openDatabaseOnStartup.empty())
     {
-        stringVector split = StringHelpers::split(openDatabaseOnStartup,',');
-
-        int ts = -1; // OpenDatabaseHelper returns -1 on error
-        if (split.size() == 2)
-        {
-            ts = OpenDatabaseHelper(split[0],  // DB name
-                                    0,         // timeState, 
-                                    true,      // addDefaultPlots
-                                    true,      // updateWindowInfo,
-                                    split[1]); // forcedFileType
-        }
-
-        // If we didn't try, or failed, to open using the above
-        // method, try using just the given name without splitting.
-        if (ts < 0)
-        {
-            ts = OpenDatabaseHelper(openDatabaseOnStartup, // DB name
-                                    0,    // timeState, 
-                                    true, // addDefaultPlots
-                                    true, // updateWindowInfo,
-                                    "");  // forcedFileType
-        }
-
         ViewerWindowManager::Instance()->UpdateActions();
         ViewerWindowManager::Instance()->ShowAllWindows();
+
+        // Open the database.
+        stringVector split = StringHelpers::split(openDatabaseOnStartup,',');
+        std::string db, format;
+        if(split.size() >= 2)
+        {
+            db = split[0];
+            format = split[1];
+        }
+        else if(split.size() == 1)
+            db = split[0];
+        else
+            return;
+
+        GetViewerMethods()->OpenDatabase(db, 0, true, format);
     }
 }
 
@@ -1950,7 +1798,7 @@ ViewerSubject::OpenScriptOnStartup()
 //
 // Purpose: 
 //   Lets the various viewer objects from ViewerSubject on down process
-//   settings using the localSettings DataNode.
+//   settings using the local settings DataNode.
 //
 // Note:       This is a Qt slot function that is called once the program
 //             enters the event loop.
@@ -1959,85 +1807,13 @@ ViewerSubject::OpenScriptOnStartup()
 // Creation:   Wed Jul 2 12:24:07 PDT 2003
 //
 // Modifications:
-//   Brad Whitlock, Tue Mar 7 12:16:39 PDT 2006
-//   I changed this method so that it no longer calls SetFromNode since that
-//   method now contains some code to validate a session file before allowing
-//   it to be imported. Since settings are incomplete session files at best,
-//   the validation code was indicating the session file had errors and VisIt
-//   did not allow the objects to initialize themselves. We call them here
-//   directly so they can initialize themselves without the session file
-//   validation code.
 //
-//   Brad Whitlock, Fri Nov 10 10:56:00 PDT 2006
-//   Added arguments to some SetFromNode methods.
-//
-//   Cyrus Harrison, Fri Mar 16 09:21:24 PDT 2007
-//   Added call to SetFromNode from the ViewerEngineManager
-//
-//   Brad Whitlock, Wed Feb 13 14:06:56 PST 2008
-//   Added configVersion to the calls to SetFromNode.
-//
-//   Brad Whitlock, Fri Jan 9 14:25:04 PST 2009
-//   Added exception handling to make sure that exceptions do not escape
-//   back into the Qt event loop.
-//
-//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
-//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
 ViewerSubject::DelayedProcessSettings()
 {
-    const char *mName = "ViewerSubject::DelayedProcessSettings: ";
-    TRY
-    {
-        if(localSettings != 0)
-        {
-            // Get the VisIt node.
-            DataNode *visitRoot = localSettings->GetNode("VisIt");
-            if(visitRoot == 0)
-            {
-                debug1 << mName << "Can't read VisIt node." << endl;
-                return;
-            }
-
-            // Get the viewer node.
-            DataNode *viewerNode = visitRoot->GetNode("VIEWER");
-            if(viewerNode == 0)
-            {
-                debug1 << mName << "Can't read VisIt node." << endl;
-                return;
-            }
-
-            // Get the ViewerSubject node
-            DataNode *searchNode = viewerNode->GetNode("ViewerSubject");
-            if(searchNode == 0)
-            {
-                debug1 << mName << "Can't read ViewerSubject node." << endl;
-                return;
-            }
-
-            // Get the version
-            std::string configVersion(VISIT_VERSION);
-            DataNode *version = visitRoot->GetNode("Version");
-            if(version != 0)
-                configVersion = version->AsString();
-
-            // Let the important objects read their settings.
-            std::map<std::string, std::string> empty;
-            ViewerFileServer::Instance()->SetFromNode(searchNode, empty, configVersion);
-            ViewerWindowManager::Instance()->SetFromNode(searchNode, empty, configVersion);
-            ViewerQueryManager::Instance()->SetFromNode(searchNode, configVersion);
-            ViewerEngineManager::Instance()->SetFromNode(searchNode, configVersion);
-
-            delete localSettings;  localSettings = 0;
-        }
-    }
-    CATCHALL
-    {
-        ; // nothing
-    }
-    ENDTRY
+    GetViewerStateManager()->ProcessLocalSettings();
 }
 
 // ****************************************************************************
@@ -2104,18 +1880,17 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 void
 ViewerSubject::ProcessEvents()
 {
-    std::map<EngineKey,QSocketNotifier*>::iterator it;
-    for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
-        it->second->setEnabled(false);
-
-    if (interruptionEnabled)
+    if (interruptionEnabled && !WindowMetrics::EmbeddedWindowState()) //if not embedded or pyside client
     {
-        if(!WindowMetrics::EmbeddedWindowState()) //if not embedded or pyside client
-            qApp->processEvents(QEventLoop::AllEvents, 100);
-    }
+        std::map<EngineKey,QSocketNotifier*>::iterator it;
+        for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
+            it->second->setEnabled(false);
 
-    for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
-        it->second->setEnabled(true);
+        qApp->processEvents(QEventLoop::AllEvents, 100);
+
+        for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
+            it->second->setEnabled(true);
+    }
 }
 
 // ****************************************************************************
@@ -2335,48 +2110,6 @@ ViewerSubject::CustomizeAppearance()
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::GetPlotFactory
-//
-//  Purpose:
-//    Return a pointer to the ViewerPlotFactory.
-//
-//  Returns:    A pointer to the ViewerPlotFactory.
-//
-//  Programmer: Eric Brugger
-//  Creation:   September 18, 2000
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-ViewerPlotFactory *
-ViewerSubject::GetPlotFactory() const
-{
-    return plotFactory;
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::GetOperatorFactory
-//
-//  Purpose:
-//    Return a pointer to the ViewerOperatorFactory.
-//
-//  Returns:    A pointer to the ViewerOperatorFactory.
-//
-//  Programmer: Eric Brugger
-//  Creation:   September 18, 2000
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-ViewerOperatorFactory *
-ViewerSubject::GetOperatorFactory() const
-{
-    return operatorFactory;
-}
-
-// ****************************************************************************
 //  Method: ViewerSubject::ReadConfigFiles.
 //
 //  Purpose:
@@ -2422,13 +2155,14 @@ ViewerSubject::GetOperatorFactory() const
 //    Hank Childs, Fri Feb 11 14:19:18 PST 2011
 //    Fix unmatched timer call.
 //
+//    Brad Whitlock, Thu Aug 28 17:06:48 PDT 2014
+//    Use state manager.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ReadConfigFiles(int argc, char **argv)
 {
-    int timeid = visitTimer->StartTimer();
-
     //
     // Look for config file, related flags.
     //
@@ -2467,56 +2201,8 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
         }       
     }
 
-    //
-    // Read the config file and setup the appearance attributes. Note that
-    // we call the routine to process the config file settings here because
-    // it only has to update the appearance attributes.
-    //
-    char *configFile = GetSystemConfigFile();
-    if (GetViewerProperties()->GetNoConfig())
-        systemSettings = NULL;
-    else
-        systemSettings = configMgr->ReadConfigFile(configFile);
-    delete [] configFile;
-    std::string configFileName(GetViewerProperties()->GetConfigurationFileName());
-    const char *cfn = (configFileName != "") ? configFileName.c_str() : NULL;
-    configFile = GetDefaultConfigFile(cfn);
-    if (specifiedConfig && strcmp(configFile, cfn) != 0)
-    {
-        cerr << "\n\nYou specified a config file with the \"-config\" option,"
-                " but the config file could not be located.  Note that this "
-                "may be because you must fully qualify the directory of the "
-                "config file.\n\n\n";
-    }
-    if (GetViewerProperties()->GetNoConfig())
-        localSettings = NULL;
-    else
-        localSettings = configMgr->ReadConfigFile(configFile);
-    delete [] configFile;
-    configMgr->Add(GetViewerState()->GetAppearanceAttributes());
-    configMgr->Add(GetViewerState()->GetPluginManagerAttributes());
-    configMgr->ProcessConfigSettings(systemSettings);
-    configMgr->ProcessConfigSettings(localSettings);
-    configMgr->ClearSubjects();
-
-    // And do the host profiles.  Keep the system one around
-    // so we can see what the user changed and that we have to keep.
-    if (!GetViewerProperties()->GetNoConfig())
-    {
-        if (originalSystemHostProfileList != NULL)
-            delete originalSystemHostProfileList;
-        originalSystemHostProfileList = new HostProfileList;
-        ReadAndProcessDirectory(GetSystemVisItHostsDirectory(),
-                                &ReadHostProfileCallback,
-                                originalSystemHostProfileList);
-        *(GetViewerState()->GetHostProfileList()) =
-                                                *originalSystemHostProfileList;
-        ReadAndProcessDirectory(GetAndMakeUserVisItHostsDirectory(),
-                                &ReadHostProfileCallback,
-                                GetViewerState()->GetHostProfileList());
-    }
-
-    visitTimer->StopTimer(timeid, "Reading config files.");
+    GetViewerStateManager()->ReadConfigFile(specifiedConfig);
+    GetViewerStateManager()->ReadHostProfiles();
 }
 
 // ****************************************************************************
@@ -2759,7 +2445,8 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 
             if (debugLevel > 0 && debugLevel < 6)
             {
-                ViewerServerManager::SetDebugLevel(debugLevel, bufferDebug);
+                GetViewerProperties()->SetDebugLevel(debugLevel);
+                GetViewerProperties()->SetBufferDebug(bufferDebug);
 
                 clientArguments.push_back(argv[i]);
                 clientArguments.push_back(argv[i+1]);
@@ -3014,7 +2701,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
                         "string." << endl;
                 continue;
             }
-            engineParallelArguments = SplitValues(argv[++i], ';');
+            GetViewerProperties()->SetEngineParallelArguments(SplitValues(argv[++i], ';'));
         }
         else if(strcmp(argv[i], "-nowindowmetrics") == 0)
         {
@@ -3023,7 +2710,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if(strcmp(argv[i], "-sshtunneling") == 0)
         {
-            ViewerServerManager::ForceSSHTunnelingForAllConnections();
+            GetViewerProperties()->SetForceSSHTunneling(true);
         }
         else if (strcmp(argv[i], "-assume_format") == 0)
         {
@@ -3032,7 +2719,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
                 cerr << "The -assume_format option must be followed by a "
                         "string." << endl;
             }
-            ViewerFileServer::Instance()->AddAssumedFormatFromCL(argv[i+1]);
+            GetViewerProperties()->GetAssumedFormats().push_back(argv[i+1]);
             ++i;
         }
         else if (strcmp(argv[i], "-fallback_format") == 0)
@@ -3042,7 +2729,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
                 cerr << "The -fallback_format option must be followed by a "
                         "string." << endl;
             }
-            ViewerFileServer::Instance()->AddFallbackFormatFromCL(argv[i+1]);
+            GetViewerProperties()->GetFallbackFormats().push_back(argv[i+1]);
             ++i;
         }
         else if (strcmp(argv[i], "-shared_port") == 0)
@@ -3074,7 +2761,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
 #ifdef VISIT_FORCE_SSH_TUNNELING
         // 20110318 VRS patch to lock in ssh tunneling
-        ViewerServerManager::ForceSSHTunnelingForAllConnections();
+        GetViewerProperties()->SetForceSSHTunneling(true);
 #endif
     }
 
@@ -3099,179 +2786,6 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         GetViewerProperties()->SetWindowGeometry(tmpGeometry);
 
     ViewerServerManager::SetArguments(unknownArguments);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::MessageRendererThread
-//
-//  Purpose:
-//    Send a message to the rendering thread.
-//
-//  Arguments:
-//    message   The message to send to the rendering thread.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 11, 2000
-//
-//  Modifications:
-//    Brad Whitlock, Tue Apr 16 12:42:56 PDT 2002
-//    Added a single-thread implementation that does not use pipes.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::MessageRendererThread(const char *message)
-{
-    messageBuffer->AddString(message);
-    QTimer::singleShot(1, this, SLOT(ProcessRendererMessage()));
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CreateNode
-//
-// Purpose: 
-//   Saves the viewer's state to a DataNode object.
-//
-// Arguments:
-//   parentNode : The node to which the state is added.
-//   detailed   : Tells whether lots of details should be added to the nodes.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Jun 30 12:32:00 PDT 2003
-//
-// Modifications:
-//   Brad Whitlock, Fri Jul 18 10:47:20 PDT 2003
-//   Added detailed argument. Made query manager add its data.
-//
-//   Brad Whitlock, Thu Mar 18 08:47:17 PDT 2004
-//   Made the file server save its settings.
-//
-//   Brad Whitlock, Tue Aug 3 15:35:07 PST 2004
-//   Made the engine manager save its settings so they are available in
-//   session files so visit -movie can use them.
-//
-//   Brad Whitlock, Thu Nov 9 16:13:05 PST 2006
-//   I added code to create a SourceMap node in the saved data so we
-//   can reference it from other parts of the session to make it easier to
-//   change databases.
-//
-//   Brad Whitlock, Tue Mar 27 11:18:36 PDT 2007
-//   Made GetDatabasesForWindows get all databases not just MT ones.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *vsNode = new DataNode("ViewerSubject");
-    parentNode->AddNode(vsNode);
-
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    stringVector databases;
-    intVector    wIds;
-    // Get the ids of the windows that currently exist.
-    int nWin, *windowIndices;
-    windowIndices = wM->GetWindowIndices(&nWin);
-    for(int i = 0; i < nWin; ++i)
-        wIds.push_back(windowIndices[i]);
-    delete [] windowIndices;
-
-    // Get all of the databases that are open in the specified windows
-    // (even the ST databases).
-    wM->GetDatabasesForWindows(wIds, databases, true);
-
-    // Create a map of source ids to source names and also store
-    // that information into the session.
-    char keyName[100];
-    std::map<std::string, std::string> dbToSource;
-    DataNode *sourceMapNode = new DataNode("SourceMap");
-    for(int i = 0; i < (int)databases.size(); ++i)
-    {
-        SNPRINTF(keyName, 100, "SOURCE%02d", i);
-        std::string key(keyName);
-        dbToSource[databases[i]] = key;
-        sourceMapNode->AddNode(new DataNode(key, databases[i]));
-    }
-    vsNode->AddNode(sourceMapNode);
-
-    ViewerFileServer::Instance()->CreateNode(vsNode, dbToSource, detailed);
-    wM->CreateNode(vsNode, dbToSource, detailed);
-    if(detailed)
-        ViewerQueryManager::Instance()->CreateNode(vsNode);
-    ViewerEngineManager::Instance()->CreateNode(vsNode, detailed);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetFromNode
-//
-// Purpose: 
-//   Sets the viewer's state from a DataNode object.
-//
-// Arguments:
-//   parentNode : The DataNode object to use to set the state.
-//
-// Notes:
-//   This method is only called when VisIt is reading session files.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Jun 30 12:36:00 PDT 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Jul 22 10:12:59 PDT 2003
-//   Added code to let the query manager initialize itself.
-//
-//   Brad Whitlock, Thu Mar 18 08:48:39 PDT 2004
-//   Added code to initialize the file server.
-//
-//   Brad Whitlock, Wed Jan 11 14:44:13 PST 2006
-//   I added some error checking to the session file processing.
-//
-//   Brad Whitlock, Thu Nov 9 17:14:12 PST 2006
-//   I added support for SourceMap, which other objects use to get the
-//   names of the databases that are used in the visualization.
-//
-//   Cyrus Harrison, Fri Mar 16 09:02:17 PDT 2007
-//   Added support for ViewerEngineManager to restore its settings
-//   from a node. 
-//
-//   Brad Whitlock, Wed Feb 13 14:08:18 PST 2008
-//   Added configVersion argument.
-//
-//   Brad Whitlock, Mon Oct 26 15:45:27 PDT 2009
-//   I added code to clear the caches of all engines since they could contain
-//   metadata that we want to reread as part of restoring the session file.
-//
-// ****************************************************************************
-
-bool
-ViewerSubject::SetFromNode(DataNode *parentNode, 
-    const std::map<std::string,std::string> &sourceToDB, 
-    const std::string &configVersion)
-{
-    bool fatalError = true;
-
-    if(parentNode == 0)
-        return fatalError;
-
-    DataNode *vsNode = parentNode->GetNode("ViewerSubject");
-    if(vsNode == 0)
-        return fatalError;
-
-    // See if there are any obvious errors in the session file.
-    fatalError = ViewerWindowManager::Instance()->SessionContainsErrors(vsNode);
-    if(!fatalError)
-    {
-        ViewerEngineManager::Instance()->ClearCacheForAllEngines();
-        ViewerFileServer::Instance()->SetFromNode(vsNode, sourceToDB, configVersion);
-        ViewerWindowManager::Instance()->SetFromNode(vsNode, sourceToDB, configVersion);
-        ViewerQueryManager::Instance()->SetFromNode(vsNode, configVersion);
-        ViewerEngineManager::Instance()->SetFromNode(vsNode, configVersion);
-    }
-
-    return fatalError;
 }
 
 // ****************************************************************************
@@ -3326,8 +2840,8 @@ ViewerSubject::Close()
     //
     debug1 << "Starting to close the viewer." << endl;
     ViewerWindowManager::Instance()->HideAllWindows();
-    ViewerFileServer::Instance()->CloseServers();
-    ViewerEngineManager::Instance()->CloseEngines();
+    GetViewerFileServer()->CloseServers();
+    GetViewerEngineManager()->CloseEngines();
 
     //
     // Tell all of the clients to quit.
@@ -3343,194 +2857,61 @@ ViewerSubject::Close()
 }
 
 // ****************************************************************************
-// Method: ViewerSubject::CopyAnnotationsToWindow
+// Method: ViewerSubject::ConnectToMetaDataServer
 //
 // Purpose: 
-//   Copies the annotation attributes from one window to another.
+//   Execute ViewerRPC::ConnectToMetaDataServerRPC
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Jun 27 17:01:32 PST 2002
+// Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-ViewerSubject::CopyAnnotationsToWindow()
+ViewerSubject::ConnectToMetaDataServer()
 {
-    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
-    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
-    CopyAnnotationsToWindow(from, to);
-}
+    const char *mName = "ViewerSubject::ConnectToMetaDataServer: ";
+    int timeid = visitTimer->StartTimer();
 
-// ****************************************************************************
-// Method: ViewerSubject::CopyLightingToWindow
-//
-// Purpose: 
-//   Copies the lighting attributes from one window to another.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 27 17:01:32 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::CopyLightingToWindow()
-{
-    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
-    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
-    CopyLightingToWindow(from, to);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CopyViewToWindow
-//
-// Purpose: 
-//   Copies the view attributes from one window to another.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 27 17:01:32 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::CopyViewToWindow()
-{
-    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
-    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
-    CopyViewToWindow(from, to);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CopyPlotsToWindow
-//
-// Purpose: 
-//   Copies the plots from one window to another.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 15 16:30:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::CopyPlotsToWindow()
-{
-    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
-    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
-    CopyPlotsToWindow(from, to);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::IconifyAllWindows
-//
-// Purpose: 
-//   Iconifies all viewer windows.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Apr 19 11:08:05 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::IconifyAllWindows()
-{
     //
-    // Perform the rpc.
+    // Write the arguments to the debug logs
     //
-    ViewerWindowManager::Instance()->IconifyAllWindows();
-}
+    debug1 << mName << "start" << endl;
+    debug1 << mName << "Telling mdserver on host "
+           << GetViewerState()->GetViewerRPC()->GetProgramHost()
+           << " to connect to another client." << endl;
+    debug1 << "Arguments:" << endl;
+    const stringVector &sv = GetViewerState()->GetViewerRPC()->GetProgramOptions();
+    for(size_t i = 0; i < sv.size(); ++i)
+         debug1 << "\t" << sv[i].c_str() << endl;
 
-// ****************************************************************************
-// Method: ViewerSubject::DeIconifyAllWindows
-//
-// Purpose: 
-//   DeIconifies all viewer windows.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Apr 19 11:08:38 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::DeIconifyAllWindows()
-{
     //
-    // Perform the rpc.
+    // Tell the viewer's fileserver to have its mdserver running on 
+    // the specified host to connect to another process.
     //
-    ViewerWindowManager::Instance()->DeIconifyAllWindows();
-}
+    GetViewerFileServer()->ConnectServer(
+        GetViewerState()->GetViewerRPC()->GetProgramHost(),
+        GetViewerState()->GetViewerRPC()->GetProgramOptions()); 
 
-// ****************************************************************************
-// Method: ViewerSubject::ShowAllWindows
-//
-// Purpose: 
-//   Shows all viewer windows.
-//
-// Programmer: Sean Ahern
-// Creation:   Tue Apr 16 12:33:19 PDT 2002
-//
-// Modifications:
-//   Brad Whitlock, Thu Jul 29 16:43:31 PST 2004
-//   I added a call to HeavyInitialization so the viewer gets initialized
-//   when called with the -defer argument by clients that should not use it
-//   (cli, java).
-//
-// ****************************************************************************
-void
-ViewerSubject::ShowAllWindows()
-{
-    HeavyInitialization();
+    visitTimer->StopTimer(timeid, "Time spent telling mdserver to connect to client.");
 
-    // Perform the rpc.
-    ViewerWindowManager::Instance()->ShowAllWindows();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::HideAllWindows
-//
-// Purpose: 
-//   Hides all viewer windows.
-//
-// Programmer: Sean Ahern
-// Creation:   Tue Apr 16 12:33:39 PDT 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-void
-ViewerSubject::HideAllWindows()
-{
-    // Perform the rpc.
-    ViewerWindowManager::Instance()->HideAllWindows();
-}
-// ****************************************************************************
-//  Method: ViewerSubject::SaveWindow
-//
-//  Purpose:
-//    Saves the window.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 11, 2001
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SaveWindow()
-{
     //
-    // Perform the rpc.
+    // Check to see if there were errors in mdserver plugin initialization
     //
-    ViewerWindowManager::Instance()->SaveWindow();
+    std::string err = GetViewerFileServer()->
+        GetPluginErrors(GetViewerState()->GetViewerRPC()->GetProgramHost());
+    if (!err.empty())
+    {
+        GetViewerMessaging()->Warning(err);
+    }
+    debug1 << mName << "end" << endl;
+
+    //
+    // Do heavy initialization if we still need to do it.
+    //
+    emit scheduleHeavyInitialization();
 }
 
 /*
@@ -3753,16 +3134,16 @@ ViewerSubject::ExportHostProfile()
         else
             name = userdir + VISIT_SLASH_STRING + fileName;
 
-        QString msg2 = tr("Host profile %1 exported to %2").
-                       arg(host.c_str()).
-                       arg(name.c_str());
-        Status(msg2);
+        GetViewerMessaging()->Status(
+            TR("Host profile %1 exported to %2").
+               arg(host).
+               arg(name));
 
         // Tell the user what happened.
-        msg2 = tr("VisIt exported host profile \"%1\" to the file: %2. ").
-           arg(host.c_str()).
-           arg(name.c_str());
-        Message(msg2);
+        GetViewerMessaging()->Message(
+            TR("VisIt exported host profile \"%1\" to the file: %2. ").
+               arg(host).
+               arg(name));
 
         SingleAttributeConfigManager mgr(&pl);
         mgr.Export(name);
@@ -3771,7 +3152,7 @@ ViewerSubject::ExportHostProfile()
 }
 
 // ****************************************************************************
-// Method: QvisHostProfileWindow::Export
+// Method: ViewerSubject::Export
 //
 // Purpose:
 //   Handle new export functions
@@ -3800,2934 +3181,101 @@ ViewerSubject::Export()
 }
 
 // ****************************************************************************
-// Method: ViewerSubject::PrintWindow
+// Method: ViewerSubject::SimConnect
 //
 // Purpose:
-//   Prints the window.
+//   This method is called when we perform database opening actions that require
+//   some extra work to connect to simulations.
+//
+// Arguments:
+//   ek     : The key of the sim to which we're connecting.
+//   cbdata : Callback data.
+//
+// Returns:    
+//
+// Note:       In this case, the extra work we're doing when connecting to the
+//             simulation is to hook up socket notifiers, etc that will help
+//             the viewer respond to asynchronous simulation commands and state
+//             updates.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Feb 20 14:33:11 PST 2002
+// Creation:   Wed Aug 27 17:41:53 PDT 2014
 //
 // Modifications:
 //
 // ****************************************************************************
 
 void
-ViewerSubject::PrintWindow()
+ViewerSubject::SimConnectCallback(EngineKey &ek, void *cbdata)
 {
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager::Instance()->PrintWindow();
+    ViewerSubject *This = (ViewerSubject *)cbdata;
+    This->SimConnect(ek);
+}
+
+void
+ViewerSubject::SimConnect(EngineKey &ek)
+{
+    std::string host(ek.OriginalHostName()), db(ek.SimName());
+
+    int sock = GetViewerEngineManager()->GetWriteSocket(ek);
+    QSocketNotifier *sn = new QSocketNotifier(sock, QSocketNotifier::Read, this);
+
+    simulationSocketToKey[sock] = ek;
+
+    connect(sn, SIGNAL(activated(int)),
+            this, SLOT(ReadFromSimulationAndProcess(int)));
+
+    engineKeyToNotifier[ek] = sn;
+
+    engineMetaDataObserver[ek] = new ViewerMetaDataObserver(
+        GetViewerEngineManager()->GetSimulationMetaData(ek), host, db);
+    connect(engineMetaDataObserver[ek],
+            SIGNAL(metaDataUpdated(const std::string&,const std::string&, const avtDatabaseMetaData*)),
+            this,
+            SLOT(HandleMetaDataUpdated(const std::string&,const std::string&, const avtDatabaseMetaData*)));
+
+    engineSILAttsObserver[ek] = new ViewerSILAttsObserver(
+        GetViewerEngineManager()->GetSimulationSILAtts(ek), host, db);
+    connect(engineSILAttsObserver[ek],
+            SIGNAL(silAttsUpdated(const std::string&,const std::string&, const SILAttributes*)),
+            this,
+            SLOT(HandleSILAttsUpdated(const std::string&,const std::string&, const SILAttributes*)));
+
+    engineCommandObserver[ek] = new ViewerCommandFromSimObserver(
+        GetViewerEngineManager()->GetCommandFromSimulation(ek), ek, db);
+    connect(engineCommandObserver[ek],
+            SIGNAL(execute(const EngineKey&,const std::string&, const std::string &)),
+            this,
+            SLOT(DeferCommandFromSimulation(const EngineKey&,const std::string&, const std::string &)));
 }
 
 // ****************************************************************************
-// Method: ViewerSubject::DisableRedraw
+// Method: ViewerSubject::UpdateExpressionCallback
 //
-// Purpose: 
-//   Disables redraw for the active window.
+// Purpose:
+//   This callback function is called when we open databases and need to update
+//   the viewer's variable menus.
+//
+// Arguments:
+//   md  : A pointer to the new file metadata.
+//
+// Returns:    
+//
+// Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Sep 19 14:56:52 PST 2001
+// Creation:   Wed Aug 27 17:43:03 PDT 2014
 //
 // Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::DisableRedraw()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager::Instance()->DisableRedraw();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::RedrawWindow
-//
-// Purpose: 
-//   Redraws the active window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 19 14:57:15 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::RedrawWindow()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager::Instance()->RedrawWindow();
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SendSimulationCommand
-//
-//  Purpose:
-//    Sends a control command to a simulation.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 21, 2005
-//
-// ****************************************************************************
-void
-ViewerSubject::SendSimulationCommand()
-{
-    //
-    // Get the rpc arguments.
-    //
-    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
-    const std::string &command  = GetViewerState()->GetViewerRPC()->GetStringArg1();
-    const std::string &argument = GetViewerState()->GetViewerRPC()->GetStringArg2();
-
-    //
-    // Perform the RPC.
-    //
-    ViewerEngineManager::Instance()->
-        SendSimulationCommand(EngineKey(hostName, simName), command, argument);
-}
-
-// ****************************************************************************
-// Function: getToken
-//
-// Purpose: 
-//   Return the first token readed from a buffer string. 
-//   If there are no more tokens, it returns an empty string.
-//
-// Programmer: Walter Herrera
-// Creation:   Tue Sep 11 12:07:06 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-std::string getToken(std::string buff, bool reset = false)
-{
-    static std::string::size_type pos1 = 0;
-    std::string::size_type pos2;
-    std::string token;
-    
-    if (reset)
-      pos1 = 0;
-    
-    if (pos1 == std::string::npos)
-        return token;
-
-    pos1 = buff.find_first_not_of(' ', pos1);  
-    if (pos1 == std::string::npos)
-        return token;
-
-    pos2 = buff.find_first_of(' ', pos1);
-    token = buff.substr(pos1, pos2-pos1);
-    pos1 = pos2;
-
-    return token;
-}
-
-
-// ****************************************************************************
-// Function: getVectorTokens
-//
-// Purpose: 
-//   Return a vector of tokens readed from a buffer string. 
-//   The first token tell us the number of tokens that must be readed.
-//
-// Programmer: Walter Herrera
-// Creation:   Tue Sep 11 12:07:06 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-
-int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType)
-{
-    int length, ival;
-    std::string token, numTokens;
-    long lval;
-    float fval;
-    double dval;
-
-    tokens.clear();
-    
-    numTokens = getToken(buff);  
-    if (sscanf(numTokens.c_str(),"%d",&length) != 1)
-        return 0;
-
-    for(int j=0; j<length; j++)
-    {
-        token = getToken(buff);
-        if (token.size() != 0)
-        {
-              switch(nodeType)
-            {
-            case CHAR_ARRAY_NODE:
-            case CHAR_VECTOR_NODE:
-            case UNSIGNED_CHAR_ARRAY_NODE:
-            case UNSIGNED_CHAR_VECTOR_NODE:
-            case INT_ARRAY_NODE:
-            case INT_VECTOR_NODE:
-                if(sscanf(token.c_str(),"%d",&ival) == 1)
-                    tokens.push_back(token);
-                break;
-
-            case LONG_ARRAY_NODE:
-            case LONG_VECTOR_NODE:
-                if(sscanf(token.c_str(),"%ld",&lval) == 1)
-                    tokens.push_back(token);
-                break;        
-            
-            case FLOAT_ARRAY_NODE:
-            case FLOAT_VECTOR_NODE:
-                if(sscanf(token.c_str(),"%f",&fval) == 1)
-                    tokens.push_back(token);
-                break;
-            
-            case DOUBLE_ARRAY_NODE:
-            case DOUBLE_VECTOR_NODE:
-                if(sscanf(token.c_str(),"%lf",&dval) == 1)
-                    tokens.push_back(token);
-                break;
-              
-            case STRING_ARRAY_NODE:
-            case STRING_VECTOR_NODE:
-            case BOOL_ARRAY_NODE:
-            case BOOL_VECTOR_NODE:
-                if (token.size() > 0)
-                    tokens.push_back(token);
-                break;
-          }
-        }
-    }
-
-    if (tokens.size() != (size_t)length)
-        tokens.clear();
-
-    return (int)tokens.size();
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::CreateAttributesDataNode
-//
-// Purpose: 
-//   Create a DataNode with the attributes of one plot.
-//
-// Programmer: Walter Herrera
-// Creation:   Tue Sep 9 10:27:46 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-DataNode *
-ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
-{
-    DataNode *node = 0, *fatherNode, *newNode;
-    std::string nodeTypeToken, fatherName, attrName, attrValue;
-    std::vector<std::string> tokens;
-    int nodeType = 0, length, ival;
-    char cval;
-    unsigned char ucval;
-    long lval;
-    float fval;
-    double dval;
-
-    for(size_t i=0; i < dp->plotAttributes.size(); i++) 
-    {
-        nodeTypeToken = getToken(dp->plotAttributes[i], true);  
-        if(sscanf(nodeTypeToken.c_str(), "%d", &nodeType) != 1)
-            continue;
-
-        fatherName = getToken(dp->plotAttributes[i]);  
-        attrName = getToken(dp->plotAttributes[i]);  
-
-        fatherNode = 0;
-        if (node != 0)
-            fatherNode = node->GetNode(fatherName);
-
-        switch(nodeType)
-        {
-        case INTERNAL_NODE:
-            if(fatherName == "NULL")
-            {
-                if(node != 0)
-                    delete node;
-
-                node = new DataNode(attrName);
-            }
-            else if(fatherNode != 0)
-            {
-                newNode = new DataNode(attrName);
-                fatherNode->AddNode(newNode);
-            }
-            break;
-
-        case CHAR_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-
-                if (sscanf(attrValue.c_str(),"%d",&ival) == 1)
-                {                
-                    cval = (char)ival;
-                    newNode = new DataNode(attrName,cval);
-                    fatherNode->AddNode(newNode);
-                }
-            }
-            break;
-
-        case UNSIGNED_CHAR_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-
-                if (sscanf(attrValue.c_str(),"%d",&ival) == 1)
-                {                
-                    ucval = (unsigned char)ival;
-                    newNode = new DataNode(attrName,ucval);
-                    fatherNode->AddNode(newNode);
-                }
-            }
-            break;
-
-        case INT_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-
-                if (sscanf(attrValue.c_str(),"%d",&ival) == 1)
-                {                
-                    newNode = new DataNode(attrName,ival);
-                    fatherNode->AddNode(newNode);
-                }
-            }
-            break;        
-
-        case LONG_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-
-                if (sscanf(attrValue.c_str(),"%ld",&lval) == 1)
-                {                
-                    newNode = new DataNode(attrName,lval);
-                    fatherNode->AddNode(newNode);
-                }
-            }
-            break;        
-
-        case FLOAT_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-
-                if (sscanf(attrValue.c_str(),"%f",&fval) == 1)
-                {                
-                    newNode = new DataNode(attrName,fval);
-                    fatherNode->AddNode(newNode);
-                }
-            }
-            break;
-
-        case DOUBLE_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-
-                if (sscanf(attrValue.c_str(),"%lf",&dval) == 1)
-                {                
-                    newNode = new DataNode(attrName,dval);
-                    fatherNode->AddNode(newNode);
-                }
-            }
-            break;
-
-        case STRING_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-                if (attrValue.size() != 0)
-                {
-                    newNode = new DataNode(attrName,attrValue);
-                    fatherNode->AddNode(newNode);
-                }
-            }
-            break;
-
-        case BOOL_NODE:
-            if(fatherNode != 0)
-            {
-                attrValue = getToken(dp->plotAttributes[i]);  
-
-                if (attrValue.size() != 0)
-                {
-                    newNode = new DataNode(attrName,(attrValue == "true"));
-                    fatherNode->AddNode(newNode);
-                } 
-            }
-            break;        
-
-        case CHAR_ARRAY_NODE:
-        case CHAR_VECTOR_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                char *arrayItems = new char[length];
-                charVector vectorItems(length);
-
-                for(int j=0; j<length; j++)
-                {
-                    sscanf(tokens[j].c_str(),"%d",&ival);
-                    arrayItems[j] = (char)ival;
-                    vectorItems.push_back(arrayItems[j]);
-                }
-                if (nodeType == CHAR_ARRAY_NODE)
-                    newNode = new DataNode(attrName,arrayItems,length);
-                else
-                    newNode = new DataNode(attrName,vectorItems);
-
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;
-
-        case UNSIGNED_CHAR_ARRAY_NODE:
-        case UNSIGNED_CHAR_VECTOR_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                unsigned char *arrayItems = new unsigned char[length];
-                unsignedCharVector vectorItems(length);
-
-                for(int j=0; j<length; j++)
-                {
-                    sscanf(tokens[j].c_str(),"%d",&ival);
-                    arrayItems[j] = (unsigned char)ival;
-                    vectorItems.push_back(arrayItems[j]);
-                }
-                if (nodeType == UNSIGNED_CHAR_ARRAY_NODE)
-                    newNode = new DataNode(attrName,arrayItems,length);
-                else
-                    newNode = new DataNode(attrName,vectorItems);
-
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;
-
-        case INT_ARRAY_NODE:
-        case INT_VECTOR_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                int *arrayItems = new int[length];
-                intVector vectorItems(length);
-
-                for(int j=0; j<length; j++)
-                {
-                    sscanf(tokens[j].c_str(),"%d",&arrayItems[j]);
-                    vectorItems.push_back(arrayItems[j]);
-                }
-                if (nodeType == INT_ARRAY_NODE)
-                    newNode = new DataNode(attrName,arrayItems,length);
-                else
-                    newNode = new DataNode(attrName,vectorItems);
-
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;
-
-        case LONG_ARRAY_NODE:
-        case LONG_VECTOR_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                long *arrayItems = new long[length];
-                longVector vectorItems(length);
-
-                for(int j=0; j<length; j++)
-                {
-                    sscanf(tokens[j].c_str(),"%ld",&arrayItems[j]);
-                    vectorItems.push_back(arrayItems[j]);
-                }
-                if (nodeType == LONG_ARRAY_NODE)
-                    newNode = new DataNode(attrName,arrayItems,length);
-                else
-                    newNode = new DataNode(attrName,vectorItems);
-
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;        
-
-        case FLOAT_ARRAY_NODE:
-        case FLOAT_VECTOR_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                float *arrayItems = new float[length];
-                floatVector vectorItems(length);
-
-                for(int j=0; j<length; j++)
-                {
-                    sscanf(tokens[j].c_str(),"%f",&arrayItems[j]);
-                    vectorItems.push_back(arrayItems[j]);
-                }
-                if (nodeType == FLOAT_ARRAY_NODE)
-                    newNode = new DataNode(attrName,arrayItems,length);
-                else
-                    newNode = new DataNode(attrName,vectorItems);
-
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;
-
-        case DOUBLE_ARRAY_NODE:
-        case DOUBLE_VECTOR_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                double *arrayItems = new double[length];
-                doubleVector vectorItems(length);
-
-                for(int j=0; j<length; j++)
-                {
-                    sscanf(tokens[j].c_str(),"%lf",&arrayItems[j]);
-                    vectorItems.push_back(arrayItems[j]);
-                }
-                if (nodeType == DOUBLE_ARRAY_NODE)
-                    newNode = new DataNode(attrName,arrayItems,length);
-                else
-                    newNode = new DataNode(attrName,vectorItems);
-
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;
-
-        case STRING_ARRAY_NODE:
-        case STRING_VECTOR_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                std::string *arrayItems = new std::string[length];
-
-                for(int j=0; j<length; j++)
-                {
-                    arrayItems[j] = tokens[j];
-                }
-                if (nodeType == STRING_ARRAY_NODE)
-                    newNode = new DataNode(attrName,arrayItems,length);
-                else
-                    newNode = new DataNode(attrName,tokens);
-
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;
-
-        case BOOL_ARRAY_NODE:
-            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
-
-            if(fatherNode != 0 && length > 0)
-            {
-                bool *arrayItems = new bool[length];
-
-                for(int j=0; j<length; j++)
-                {
-                    arrayItems[j] = (tokens[j] == "true");
-                }
-
-                newNode = new DataNode(attrName,arrayItems,length);
-                fatherNode->AddNode(newNode);
-                delete [] arrayItems;
-            }
-            break;
-        }
-    }
-    
-    return node;
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::OpenDatabaseHelper
-//
-//  Purpose:
-//    Opens a database.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 17, 2000
-//
-//  Modifications:
-//    Jeremy Meredith, Fri Apr 20 10:33:42 PDT 2001
-//    Added code to pass "other" options to the engine when starting.
-//
-//    Brad Whitlock, Wed Nov 14 17:08:07 PST 2001
-//    Added code to set the number of time steps in the animation.
-//
-//    Brad Whitlock, Wed Sep 11 16:29:27 PST 2002
-//    I changed the code so an engine is only launched when the file can
-//    be opened.
-//
-//    Brad Whitlock, Tue Dec 10 15:34:17 PST 2002
-//    I added code to tell the engine to open the database.
-//
-//    Brad Whitlock, Mon Dec 30 14:59:24 PST 2002
-//    I changed how nFrames and nStates are set.
-//
-//    Brad Whitlock, Fri Jan 17 11:35:29 PDT 2003
-//    I added code to reset nFrames if there are no plots in the plot list.
-//
-//    Brad Whitlock, Tue Feb 11 11:56:34 PDT 2003
-//    I made it use STL strings.
-//
-//    Brad Whitlock, Tue Mar 25 14:23:16 PST 2003
-//    I made it capable of defining a virtual database.
-//
-//    Brad Whitlock, Fri Apr 4 11:10:08 PDT 2003
-//    I changed how the number of frames in an animation is updated.
-//
-//    Brad Whitlock, Thu May 15 13:34:19 PST 2003
-//    I added the timeState argument and renamed the method.
-//
-//    Hank Childs, Thu Aug 14 09:10:00 PDT 2003
-//    Added code to manage expressions from databases.
-//
-//    Walter Herrera, Thu Sep 04 16:13:43 PST 2003
-//    I made it capable of creating default plots
-//
-//    Brad Whitlock, Fri Oct 3 10:40:49 PDT 2003
-//    I prevented the addition of default plots if the plot list already
-//    contains plots from the new database.
-//
-//    Brad Whitlock, Wed Oct 22 12:27:30 PDT 2003
-//    I made the method actually use the addDefaultPlots argument.
-//
-//    Brad Whitlock, Fri Oct 24 17:07:52 PST 2003
-//    I moved the code to update the expression list into the plot list.
-//
-//    Hank Childs, Fri Mar  5 11:39:22 PST 2004
-//    Send the file format type to the engine.
-//
-//    Jeremy Meredith, Mon Mar 22 17:12:22 PST 2004
-//    I made use of the "success" result flag from CreateEngine.
-//
-//    Brad Whitlock, Tue Mar 23 17:41:57 PST 2004
-//    I added support for database correlations. I also prevented the default
-//    plot from being realized if the engine was not launched.
-//
-//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//    Added an engine key used to index (and restart) engines.
-//    Added support for connecting to running simulations.
-//
-//    Jeremy Meredith, Fri Apr  2 14:14:54 PST 2004
-//    Made it re-use command line arguments if we had some, as long as 
-//    we were in nowin mode.
-//
-//    Brad Whitlock, Mon Apr 19 10:04:47 PDT 2004
-//    I added the updateWindowInfo argument so we don't always have to update
-//    the window information since that can cause extra updates in the gui.
-//    I also added code to make the plot list check its active source vs the
-//    active time slider so it can reset the active time slider if it no
-//    longer makes sense to have one.
-//
-//    Jeremy Meredith, Wed Aug 25 10:34:53 PDT 2004
-//    Made simulations connect the write socket from the engine to a new
-//    socket notifier, which signals a method to read and process data from
-//    the engine.  Hook up a new metadata and SIL atts observer to the 
-//    metadata and SIL atts from the corresponding engine proxy, and have
-//    those observers call callbacks when they get new information.
-//
-//    Brad Whitlock, Thu Feb 3 10:34:17 PDT 2005
-//    Added a little more code to validate the timeState so if it's out of
-//    range, we update the time slider to a valid value and we tell the
-//    compute engine a valid time state at which to open the database. I also
-//    made the routine return the time state in case it needs to be used
-//    by the caller.
-//
-//    Jeremy Meredith, Tue Feb  8 08:58:49 PST 2005
-//    Added a query for errors detected during plugin initialization.
-//
-//    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
-//    Added security key to simulation connection.
-//
-//    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
-//    Added ability to force using a specific plugin when opening a file.
-//
-//    Hank Childs, Thu Jan 11 15:33:07 PST 2007
-//    Return an invalid time state when the file open fails.
-//
-//    Brad Whitlock, Thu Jan 25 18:48:15 PST 2007
-//    Hooked up code to handle requests from the simulation.
-//
-//    Brad Whitlock, Thu Jan 24 12:00:29 PDT 2008
-//    Added argument to ViewerPlotList::AddPlot().
-//
-//    Brad Whitlock, Fri Feb 15 14:54:34 PST 2008
-//    Delete the adn from the default plot.
-//
-//    Hank Childs, Tue Feb 19 10:28:15 PST 2008
-//    Fix bug introduced by Klocwork fix.
-//
-//    Brad Whitlock, Fri May  9 14:52:00 PDT 2008
-//    Qt 4.
-//
-//    Cyrus Harrison,  Mon Aug  4 16:21:04 PDT 2008
-//    Moved set of active host database until after we have obtained valid
-//    meta data. 
-//
-//    Brad Whitlock, Tue Apr 14 13:38:10 PDT 2009
-//    Use ViewerProperties.
-//
-//    Brad Whitlock, Tue Mar 16 11:56:53 PDT 2010
-//    I added a call to ClearCache for simulations to force this method to
-//    block until metadata and SIL have come back from the simulation.
-//
-//    Hank Childs, Fri Nov 26 10:31:34 PST 2010
-//    Set up expressions from operators when we open a file.
-//
-//    Brad Whitlock, Thu Feb 24 01:55:07 PST 2011
-//    Make a copy of the metadata since something along the way has a 
-//    side-effect of invalidating it, causing a crash when we use -o from the
-//    command line.
-//
-// ****************************************************************************
-
-int
-ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
-    int timeState, bool addDefaultPlots, bool updateWindowInfo,
-    const std::string &forcedFileType)
-{
-    int  i;
-    const char *mName = "ViewerSubject::OpenDatabaseHelper: ";
-    debug1 << mName << "Opening database " << entireDBName.c_str()
-           << ", timeState=" << timeState
-           << ", addDefaultPlots=" << (addDefaultPlots?"true":"false")
-           << ", updateWindowInfo=" << (updateWindowInfo?"true":"false")
-           << ", forcedFileType=\"" << forcedFileType.c_str() << "\"" << endl;
-
-    //
-    // Associate the database with the currently active animation (window).
-    //
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
-
-    //
-    // Expand the new database name and then set it into the plot list.
-    //
-    std::string hdb(entireDBName), host, db;
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    fs->ExpandDatabaseName(hdb, host, db);
-    debug1 << mName << "ExpandDatabaseName(" << hdb << ") -> host=" << host
-           << ", db=" << db << endl;
-
-    //
-    // Get the number of time states and set that information into the
-    // active animation. The mdserver will clamp the time state that it
-    // uses to open the database if timeState is out of range at this point.
-    //
-    debug1 << mName << "Calling GetMetaDataForState(" << host << ", " << db
-           << ", " << timeState << ", " << forcedFileType << ")" << endl;
-    const avtDatabaseMetaData *mdptr = fs->GetMetaDataForState(host, db,
-                                                               timeState,
-                                                               forcedFileType);
-    if (mdptr != NULL)
-    {
-        avtDatabaseMetaData md(*mdptr);
-
-        // set the active host database name now that we have valid metadata.
-        plotList->SetHostDatabaseName(hdb.c_str());
-        
-        //
-        // If the database has more than one time state then we should
-        // add it to the list of database correlations so we have a trivial
-        // correlation for this database.
-        //
-        bool nStatesDecreased = false;
-        if(md.GetNumStates() > 1)
-        {
-            //
-            // Get the name of the database so we can use that for the name
-            // of a new trivial database correlation.
-            //
-            const std::string &correlationName = plotList->GetHostDatabaseName();
-
-            debug3 << mName << "Correlation for " << hdb.c_str() << " is "
-                   << correlationName.c_str() << endl;
-
-            //
-            // In the case where we're reopening a database that now has
-            // fewer time states, clamp the timeState value to be in the new
-            // range of time states so we set the time slider to a valid
-            // value and we use a valid time state when telling the compute
-            // engine to open the database.
-            //
-            if(timeState > md.GetNumStates() - 1)
-            {
-                debug3 << mName << "There are " << md.GetNumStates()
-                       << " time states in the database but timeState was "
-                       << "set to "<< timeState <<". Clamping timeState to ";
-                timeState = md.GetNumStates() - 1;
-                debug3 << timeState << "." << endl;
-                nStatesDecreased = true;
-            }
-
-            //
-            // Tell the window manager to create the correlation. We could
-            // use the file server but this way also creates time sliders
-            // for the new correlation in each window and makes the active
-            // window's active time slider be the new correlation.
-            //
-            stringVector dbs; dbs.push_back(correlationName);
-            int timeSliderState = (timeState >= 0) ? timeState : 0;
-            wM->CreateDatabaseCorrelation(correlationName, dbs, 0,
-                timeSliderState, md.GetNumStates());
-        }
-        else if(timeState > 0)
-        {
-            debug3 << mName << "There is only 1 time state in the database "
-                   << "but timeState was set to "<< timeState <<". Clamping "
-                   << "timeState to 0.";
-            timeState = 0;
-            nStatesDecreased = true;
-        }
-
-        //
-        // Make sure that it is appropriate to have the time slider that
-        // is currently used in the plot list.
-        //
-        if(!wM->GetActiveWindow()->GetTimeLock())
-            plotList->ValidateTimeSlider();
-
-        // Alter the time slider for the database that we opened.
-        if(nStatesDecreased)
-            wM->AlterTimeSlider(hdb);
-
-        //
-        // Update the global atts since that has the list of sources.
-        //
-        wM->UpdateGlobalAtts();
-
-        //
-        // Since we updated the source and we made have also updated the time
-        // slider and time slider states when the new database was opened, send
-        // back the source, time sliders, and animation information.
-        //
-        if(updateWindowInfo || nStatesDecreased)
-        {
-            wM->UpdateWindowInformation(WINDOWINFO_SOURCE |
-                WINDOWINFO_TIMESLIDERS | WINDOWINFO_ANIMATION);
-        }
-
-        //
-        // Update the expression list.
-        //
-        plotList->UpdateExpressionList(false);
-        ExpressionList *adder = ParsingExprList::Instance()->GetList();
-        VariableMenuPopulator::GetOperatorCreatedExpressions(*adder, &md, 
-                                                    GetOperatorPluginManager());
-
-        //
-        // Determine the name of the simulation
-        //
-        std::string sim = "";
-        if (md.GetIsSimulation())
-            sim = db;
-
-        //
-        // Create an engine key, used to index and start engines
-        //
-        debug1 << mName << "Creating engine key from host=" << host << ", sim=" << sim << endl;
-        EngineKey ek(host, sim);
-
-        //
-        // Tell the plot list the new engine key
-        //
-        plotList->SetEngineKey(ek);
-
-        //
-        // Create a compute engine to use with the database.
-        //
-        stringVector noArgs;
-        bool success;
-        if (md.GetIsSimulation())
-        {
-            ViewerEngineManager *vem = ViewerEngineManager::Instance();
-            success = vem->ConnectSim(ek, noArgs,
-                                      md.GetSimInfo().GetHost(),
-                                      md.GetSimInfo().GetPort(),
-                                      md.GetSimInfo().GetSecurityKey());
-
-            if (success)
-            {
-                int sock = vem->GetWriteSocket(ek);
-                QSocketNotifier *sn = new QSocketNotifier(sock,
-                    QSocketNotifier::Read, this);
-
-                simulationSocketToKey[sock] = ek;
-
-                connect(sn, SIGNAL(activated(int)),
-                        this, SLOT(ReadFromSimulationAndProcess(int)));
-
-                engineKeyToNotifier[ek] = sn;
-
-                engineMetaDataObserver[ek] = new ViewerMetaDataObserver(
-                                   vem->GetSimulationMetaData(ek), host, db);
-                connect(engineMetaDataObserver[ek],
-                        SIGNAL(metaDataUpdated(const std::string&,const std::string&,
-                                              const avtDatabaseMetaData*)),
-                        this,
-                        SLOT(HandleMetaDataUpdated(const std::string&,const std::string&,
-                                                 const avtDatabaseMetaData*)));
-
-                engineSILAttsObserver[ek] = new ViewerSILAttsObserver(
-                                   vem->GetSimulationSILAtts(ek), host, db);
-                connect(engineSILAttsObserver[ek],
-                        SIGNAL(silAttsUpdated(const std::string&,const std::string&,
-                                              const SILAttributes*)),
-                        this,
-                        SLOT(HandleSILAttsUpdated(const std::string&,const std::string&,
-                                                  const SILAttributes*)));
-
-                engineCommandObserver[ek] = new ViewerCommandFromSimObserver(
-                                   vem->GetCommandFromSimulation(ek), ek, db);
-                connect(engineCommandObserver[ek],
-                        SIGNAL(execute(const EngineKey&,const std::string&,
-                                       const std::string &)),
-                        this,
-                        SLOT(DeferCommandFromSimulation(const EngineKey&,const std::string&,
-                                                        const std::string &)));
-
-            }
-        }
-        else
-        {
-            if (GetViewerProperties()->GetNowin())
-            {
-                success = ViewerEngineManager::Instance()->
-                    CreateEngine(ek,
-                                 engineParallelArguments,
-                                 false,
-                                 GetViewerProperties()->GetNumEngineRestarts());
-            }
-            else
-            {
-                success = ViewerEngineManager::Instance()->
-                    CreateEngine(ek,
-                                 noArgs,
-                                 false,
-                                 GetViewerProperties()->GetNumEngineRestarts());
-            }
-        }
-
-        if (success)
-        {
-            //
-            // Tell the new engine to open the specified database.
-            // Don't bother if you couldn't even start an engine.
-            //
-            ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-            if(md.GetIsVirtualDatabase() && md.GetNumStates() > 1)
-            {
-                eMgr->DefineVirtualDatabase(ek, md.GetFileFormat(),
-                                            db,
-                                            md.GetTimeStepPath(),
-                                            md.GetTimeStepNames(),
-                                            timeState);
-            }
-            else
-            {
-                eMgr->OpenDatabase(ek, md.GetFileFormat(),
-                                   db, timeState);
-
-                // If we're opening a simulation, send ClearCache to it since that
-                // is a harmless blocking RPC that will prevent OpenDatabaase from
-                // returning until we get simulation metadata and SIL back. This is
-                // a synchronize operation.
-                if(md.GetIsSimulation())
-                    eMgr->ClearCache(ek, "invalid name");
-            }
-        }
-        
-        //
-        // Create default plots if there are no plots from the database
-        // already in the plot list.
-        //
-        if(addDefaultPlots && !plotList->FileInUse(host, db))
-        {
-            bool defaultPlotsAdded = false;
-
-            for(i=0; i<md.GetNumDefaultPlots(); i++)
-            {
-                const avtDefaultPlotMetaData *dp = md.GetDefaultPlot(i);
-                DataNode *adn = CreateAttributesDataNode(dp);
-
-                //
-                // Use the plot plugin manager to get the plot type index from
-                // the plugin id.
-                //
-                int type = GetPlotPluginManager()->GetEnabledIndex(dp->pluginID);
-
-                if(type != -1)
-                {
-                    debug4 << "Adding default plot: type=" << type
-                           << " var=" << dp->plotVar.c_str() << endl;
-                    plotList->AddPlot(type, dp->plotVar, false, false, true, 
-                        false, adn);
-                    defaultPlotsAdded = true;
-                }
-
-                if (adn != NULL)
-                {
-                    delete adn;
-                    adn = NULL;
-                }
-            }
-
-            //
-            // Only realize the plots if we added some default plots *and*
-            // the engine was successfully launched above.
-            //
-            if (defaultPlotsAdded && success)
-            {
-                plotList->RealizePlots();
-            } 
-        }
-        else
-        {
-            debug4 << "Default plots were not added because the plot list "
-                      "already contains plots from "
-                   << host.c_str() << ":" << db.c_str() << endl;
-        }
-    }
-    else
-    {
-        // We had a problem opening the file ... indicate that with the
-        // return value (which is timeState).
-        timeState = -1;
-    }
-
-    //
-    // Check to see if there were errors in the mdserver
-    //
-    string err = ViewerFileServer::Instance()->GetPluginErrors(host);
-    if (!err.empty())
-    {
-        Warning(err.c_str());
-    }
-
-    return timeState;
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::OpenDatabase
-//
-// Purpose: 
-//   Opens a database.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu May 15 13:33:17 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Wed Oct 22 12:28:57 PDT 2003
-//   I made it possible for default plots to not be added.
-//
-//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
-//   I added another argument to OpenDatabaseHelper.
-//
-//   Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
-//   Added ability to force using a specific plugin when opening a file.
-//
-//   Hank Childs, Thu Jan 11 15:33:07 PST 2007
-//   Add return value to indicate errors.
-//
-// ****************************************************************************
-
-bool
-ViewerSubject::OpenDatabase()
-{
-    int ts = OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), GetViewerState()->GetViewerRPC()->GetIntArg1(),
-                       GetViewerState()->GetViewerRPC()->GetBoolFlag(), true,
-                       GetViewerState()->GetViewerRPC()->GetStringArg1());
-    return (ts >= 0 ? true : false);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ActivateDatabase
-//
-// Purpose: 
-//   Sets the specified database as the new active source. This has the effect
-//   of changing the active time slider to the time slider that best matches
-//   the new source and the plot list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jan 29 23:46:49 PST 2004
-//
-// Modifications:
-//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
-//   I added another argument to OpenDatabaseHelper.
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ActivateDatabase()
-{
-    const std::string &database = GetViewerState()->GetViewerRPC()->GetDatabase();
-
-    //
-    // Expand the database name to its full path just in case.
-    //
-    std::string expandedDB(database), host, db;
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    fs->ExpandDatabaseName(expandedDB, host, db);
-
-    //
-    // If the database has been opened before then we can make it the active
-    // plot list's active database. Then we can set the time slider if we
-    // need to.
-    //
-    if(fs->IsDatabase(expandedDB))
-    {
-        const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
-        EngineKey newEngineKey;
-        if (md && md->GetIsSimulation())
-            newEngineKey = EngineKey(host, db);
-        else
-            newEngineKey = EngineKey(host, "");
-
-
-        ViewerWindowManager::Instance()->GetActiveWindow()->
-            GetPlotList()->ActivateSource(expandedDB, newEngineKey);
-    }
-    else
-    {
-        // We have not seen the database before so open it.
-        OpenDatabaseHelper(database, 0, true, true);
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CheckForNewStates
-//
-// Purpose: 
-//   Adds new time states for a database if there are any new states to add.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jan 30 23:56:42 PST 2004
-//
-// Modifications:
-//   Brad Whitlock, Tue Jul 27 10:10:47 PDT 2004
-//   I made it do something.
 //
 // ****************************************************************************
 
 void
-ViewerSubject::CheckForNewStates()
+ViewerSubject::UpdateExpressionCallback(const avtDatabaseMetaData *md, void *)
 {
-    //
-    // Add new states to the specified database and update the metadata,
-    // correlations, and plot list caches.
-    //
-    debug1 << "CheckForNewStates: " << GetViewerState()->GetViewerRPC()->GetDatabase().c_str() << endl;
-
-    ViewerWindowManager::Instance()->CheckForNewStates(GetViewerState()->GetViewerRPC()->GetDatabase());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ReOpendatabase
-//
-// Purpose: 
-//   Reopens a database and updates plots that use it.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Jul 29 15:20:14 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Wed Dec 4 16:25:43 PST 2002
-//   I changed it so view recentering does not happen unless the it is
-//   enabled in the window.
-//
-//   Brad Whitlock, Tue Feb 11 12:00:03 PDT 2003
-//   I made it use STL strings.
-//
-//   Brad Whitlock, Thu Apr 3 10:32:43 PDT 2003
-//   I made some changes that allow for better animation behavior.
-//
-//   Eric Brugger, Fri Apr 18 12:46:00 PDT 2003
-//   I replaced auto center with maintain view.
-//
-//   Brad Whitlock, Fri May 16 11:42:49 PDT 2003
-//   I made it use a helper method to open the database.
-//
-//   Kathleen Bonnell, Wed Jul 23 16:46:30 PDT 2003
-//   Removed view recentering.
-//
-//   Brad Whitlock, Wed Oct 15 14:24:26 PST 2003
-//   I made it call ViewerWindowManager's new ReplaceDatabase method so that
-//   when the file is reopened, we replace the old version of the database
-//   in all windows. This is primarily to let all windows know the new
-//   size of the database if it is virtual and more time states have been
-//   added.
-//
-//   Brad Whitlock, Mon Nov 3 10:03:51 PDT 2003
-//   Made some interface changes to ViewerWindowManager::ReplaceDatabase.
-//
-//   Brad Whitlock, Fri Mar 19 16:20:40 PST 2004
-//   I added code to expand the database name and use time sliders and 
-//   database correlations to figure out where to open the database.
-//
-//   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//   Added an engine key used to index (and restart) engines.
-//
-//   Jeremy Meredith, Thu Apr 15 17:01:11 PDT 2004
-//   Added the reOpenState to the ReplaceDatabase call so that the right
-//   MD/SIL would get used in all circumstances.
-//
-//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
-//   I added another argument to OpenDatabaseHelper.
-//
-//   Brad Whitlock, Mon May 3 13:00:21 PST 2004
-//   I made it pass an engine key to replacedatabase.
-//
-//   Jeremy Meredith, Wed Aug 25 10:39:25 PDT 2004
-//   Made it use the generic integer argument for forceClose so as to not be
-//   misleading.
-//
-//   Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
-//   Changed the interface to ReplaceDatabase to support option for only 
-//   replacing active plots.
-//
-//   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
-//   Added extra flag to tell ClearFile whether or not we want to 
-//   forget which plugin was used to open it.  In this case, we do not.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ReOpenDatabase()
-{
-    //
-    // Get the rpc arguments.
-    //
-    std::string hostDatabase(GetViewerState()->GetViewerRPC()->GetDatabase());
-    bool forceClose = (GetViewerState()->GetViewerRPC()->GetIntArg1() == 1);
-
-    //
-    // Expand the filename.
-    //
-    std::string host, db;
-    ViewerFileServer *fileServer = ViewerFileServer::Instance();
-    fileServer->ExpandDatabaseName(hostDatabase, host, db);
-    debug1 << "Reopening " << hostDatabase.c_str() << endl;
-
-    //
-    // Clear default SIL restrictions
-    //
-    ViewerPlotList::ClearDefaultSILRestrictions(host, db);
-
-    //
-    // Clear out any previous information about the file on the mdserver.
-    //
-    if (forceClose)
-        fileServer->CloseFile(host);
-
-    //
-    // Try to determine the time state at which the file should be
-    // reopened. If the plot list has an active time slider, see if
-    // the time slider's correlation includes the database that we're
-    // reopening. If so, then we can use the active time slider's
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
-    DatabaseCorrelationList *cL = fileServer->GetDatabaseCorrelationList();
-
-    int reOpenState = 0;
-    if(plotList->HasActiveTimeSlider())
-    {
-        const std::string &activeTimeSlider = plotList->GetActiveTimeSlider();
-        debug3 << "Reopening " << hostDatabase.c_str()
-               << " with an active time slider: " << activeTimeSlider.c_str()
-               << endl;
-        DatabaseCorrelation *correlation = cL->FindCorrelation(activeTimeSlider);
-        if(correlation != 0)
-        {
-            int state = 0, nStates = 0;
-            plotList->GetTimeSliderStates(activeTimeSlider, state, nStates);
-            reOpenState = correlation->GetCorrelatedTimeState(hostDatabase, state);
-            debug3 << "The active time slider was a correlation involving "
-                   << hostDatabase.c_str()
-                   << " so we're using the correlated state to reopen the file."
-                   << " state = " << reOpenState << endl;
-        }
-    }
-
-    if(reOpenState < 0)
-    {
-        // There either was no active time slider, no correlation for the
-        // active time slider or there was a correlation for the active time
-        // slider but it had nothing to do with the database that we want to
-        // reopen. We should try and use the active time slider for the
-        // database we're trying to open if there is such a time slider.
-        int ns;
-        plotList->GetTimeSliderStates(hostDatabase, reOpenState, ns);
-        debug3 << "Could not use correlation or active time slider to "
-               << "get the reopen state for " << hostDatabase.c_str()
-               << ". Using state " << reOpenState << endl;
-    }
-
-    //
-    // Get the flag to determine if this is a simulation before we
-    // clear the metadata from the file server.
-    //
-    bool isSim = false;
-    const avtDatabaseMetaData *md = fileServer->GetMetaData(host, db);
-    if (md && md->GetIsSimulation())
-        isSim = true;
-
-    //
-    // Clear out any local information that we've cached about the file. We
-    // have to do this after checking for the correlation because this call
-    // will remove the correlation for the database.  Do not clear the
-    // metadata if it is a simulation because we lose all of our current
-    // information by doing so (since the mdserver has almost no information).
-    // If it is a simulation, we will get updated metadata indirectly when
-    // we open the database again, regardless of if we clear the cached one.
-    //
-    if (!isSim)
-        fileServer->ClearFile(hostDatabase, false);
-
-    //
-    // Tell the compute engine to clear any cached information about the
-    // database so it forces the networks to re-execute.
-    //
-    EngineKey key(host, "");
-    if (isSim)
-        key = EngineKey(host, db);
-
-    //
-    // Clear the cache for the database.
-    //
-    ViewerEngineManager::Instance()->ClearCache(key, db);
-
-    //
-    // Open the database. Since reopening a file can result in a different
-    // number of time states (potentially fewer), use the time state returned
-    // by OpenDatabaseHelper for the replace operation.
-    //
-    reOpenState = OpenDatabaseHelper(hostDatabase, reOpenState, false, true);
-
-    //
-    // Now perform the database replacement in all windows that use the
-    // specified database.
-    //
-    ViewerWindowManager::Instance()->ReplaceDatabase(key, db, reOpenState,
-                                                     false, true, false);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ReplaceDatabase
-//
-// Purpose: 
-//   Replaces the database used in the plots in the current animation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Mar 6 16:27:52 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Wed Dec 4 16:25:43 PST 2002
-//   I changed it so view recentering does not happen unless the it is
-//   enabled in the window.
-//
-//   Brad Whitlock, Tue Feb 11 12:01:37 PDT 2003
-//   I made it use STL strings.
-//
-//   Brad Whitlock, Thu Apr 3 10:32:43 PDT 2003
-//   I made some changes that allow for better animation behavior.
-//
-//   Eric Brugger, Fri Apr 18 12:46:00 PDT 2003
-//   I replaced auto center with maintain view.
-//
-//   Brad Whitlock, Thu May 15 13:30:27 PST 2003
-//   I made it use OpenDatabaseHelper.
-//
-//   Brad Whitlock, Wed Oct 15 15:40:44 PST 2003
-//   I made it possible to replace a database at a later time state.
-//
-//   Brad Whitlock, Mon Nov 3 09:50:21 PDT 2003
-//   I changed a flag to false in the call to OpenDatabaseHelper so the
-//   animation's number of frames would not be updated because this caused
-//   extra work. I passed the time state to the plot list's ReplaceDatabase
-//   method instead.
-//
-//   Eric Brugger, Mon Dec  8 08:09:54 PST 2003
-//   I added a call to turn on view limit merging if the new database
-//   was the same as the old one.  I also made the test controlling
-//   the call to recenter view more restrictive, also requiring the
-//   window to be in 3d mode.
-//
-//   Brad Whitlock, Tue Jan 27 16:52:40 PST 2004
-//   Changed for multiple time sliders.
-//
-//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
-//   I added another argument to OpenDatabaseHelper so it won't update the
-//   window information since we're already doing that here. I also added
-//   a call to validate the plot lists's time slider.
-//
-//   Brad Whitlock, Mon May 3 13:21:19 PST 2004
-//   I made it use the plot list's engine key in the call to ReplaceDatabase.
-//
-//   Brad Whitlock, Thu Feb 3 11:07:53 PDT 2005
-//   I made the time state used for file replacement be the value that is now
-//   returned from OpenDatabaseHelper.
-//
-//   Brad Whitlock, Wed Mar 16 16:32:14 PST 2005
-//   I added code to make sure that the active window is still compatible
-//   with other time-locked windows after the database was replaced.
-//
-//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
-//    Changed the interface to ReplaceDatabase to support option for only 
-//    replacing active plots.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ReplaceDatabase()
-{
-    debug4 << "ReplaceDatabase: db=" 
-           << GetViewerState()->GetViewerRPC()->GetDatabase().c_str()
-           << ", time=" << GetViewerState()->GetViewerRPC()->GetIntArg1() 
-           << ", onlyReplaceActive=" 
-           << GetViewerState()->GetViewerRPC()->GetIntArg2() << endl;
-
-    //
-    // If the replace is merely changing the timestate, then turn on
-    // view limit merging.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    ViewerWindow *win = wM->GetActiveWindow();
-    if(win == 0)
-        return;
-
-    if (GetViewerState()->GetViewerRPC()->GetDatabase() == win->GetPlotList()->GetHostDatabaseName())
-        win->SetMergeViewLimits(true);
-
-    //
-    // First open the database.
-    //
-    int timeState = GetViewerState()->GetViewerRPC()->GetIntArg1();
-    
-    timeState = OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), timeState,
-                                   false, false);
-
-    bool onlyReplaceActive = (bool) GetViewerState()->GetViewerRPC()->GetIntArg2();
-    //
-    // Now perform the database replacement.
-    //
-    ViewerPlotList *plotList = win->GetPlotList();
-    plotList->ReplaceDatabase(plotList->GetEngineKey(),
-                              plotList->GetDatabaseName(),
-                              timeState,
-                              true,
-                              false,
-                              onlyReplaceActive);
-
-    //
-    // If the current window is time-locked then we have to make sure that
-    // its new database is compatible with being time-locked with other
-    // windows.
-    //
-    if(win->GetTimeLock())
-    {
-        intVector windowIds;
-        wM->GetTimeLockedWindowIndices(windowIds);
-        if(windowIds.size() > 1)
-        {
-            debug2 << "We have more than 1 time locked window. We have to "
-                      "make sure that we have a suitable multi-window "
-                      "database correlation."
-                   << endl;
-            // Create or alter the most suitable correlation to be used for
-            // time-locked windows. If we have to create a multi-window
-            // database correlation then we'll have set
-            DatabaseCorrelation *C = wM->CreateMultiWindowCorrelation(windowIds);
-            if(C != 0)
-            {
-                std::string hdb(win->GetPlotList()->GetHostDatabaseName());
-                debug2 << "ReplaceDatabase: The active window is time-locked "
-                          "and uses the multi-window database correlation: "
-                       << C->GetName().c_str() << ". We have to make sure that "
-                       << "we display time state " << timeState << " for the "
-                       << "database: " << hdb.c_str() << endl;
-
-                // We have to find the time state in C where we find
-                // the new database's new state. Then we have to make
-                // the other time locked windows go to that time state.
-                int cts = C->GetInverseCorrelatedTimeState(hdb, timeState);
-                if(cts != -1)
-                {
-                    debug2 << "Correlation state "<< cts
-                           << " will allow us to show time state "
-                           << timeState << " for database " << hdb.c_str()
-                           << ". We also have to update the other locked "
-                              "windows.\n";
-                    wM->SetFrameIndex(cts);
-                }
-            } // C != 0
-        }
-    }
-
-    //
-    // Make sure the time slider is set to something appropriate.
-    //
-    plotList->ValidateTimeSlider();
-
-    //
-    // We have to send back the source and the time sliders since we
-    // could have replaced at a later time state.
-    //
-    wM->UpdateWindowInformation(WINDOWINFO_SOURCE | WINDOWINFO_TIMESLIDERS);
-
-    //
-    // Recenter the active window's view and redraw.
-    //
-    if(!win->GetMaintainViewMode() && (win->GetWindowMode() == WINMODE_3D))
-        wM->RecenterView();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::OverlayDatabase
-//
-// Purpose: 
-//   Creates new plots using the new database and adds them to the plot list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Mar 6 16:27:52 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Tue Feb 11 12:02:33 PDT 2003
-//   I made it use STL strings.
-//
-//   Brad Whitlock, Thu May 15 13:30:57 PST 2003
-//   I made it use OpenDatabaseHelper.
-//
-//   Brad Whitlock, Tue Jan 27 16:56:46 PST 2004
-//   Changed for multiple time sliders.
-//
-//   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//   Added an engine key used to index (and restart) engines.
-//
-//   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
-//   I added another argument to OpenDatabaseHelper.
-//
-//   Brad Whitlock, Mon May 3 13:58:36 PST 2004
-//   I removed an argument from OverlayDatabase.
-//
-//   Brad Whitlock, Thu Jul 24 09:21:56 PDT 2008
-//   Made it possible to overlay at a particular time state.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::OverlayDatabase()
-{
-    int state = GetViewerState()->GetViewerRPC()->GetIntArg1();
-    debug4 << "OverlayDatabase: db=" << GetViewerState()->GetViewerRPC()->GetDatabase().c_str()
-           << ", time=" << state << endl;
-
-    //
-    // First open the database.
-    //
-    OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), 
-                       state, false, true);
-
-    //
-    // Now perform the database replacement.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
-    plotList->OverlayDatabase(plotList->GetEngineKey(),
-                              plotList->GetDatabaseName(), state);
-
-    //
-    // Recenter the active window's view and redraw.
-    //
-    wM->RecenterView();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CloseDatabase
-//
-// Purpose: 
-//   Tell the viewer window manager to try and close the specified database.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 27 12:04:52 PDT 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::CloseDatabase()
-{
-    ViewerWindowManager::Instance()->CloseDatabase(GetViewerState()->GetViewerRPC()->GetDatabase());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::HandleRequestMetaData
-//
-// Purpose: 
-//   Gets metadata for the specified database and time state and returns it
-//   to the client. There should be no side effects such as setting the 
-//   active database.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 9 16:30:48 PST 2007
-//
-// Modifications:
-//   
-//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//   Changed interface to DebugStream to obtain current debug level.
-//
-//   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
-//   Added extra flag to tell ClearFile whether or not we want to 
-//   forget which plugin was used to open it.  In this case, we do not.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::HandleRequestMetaData()
-{
-    const char *mName = "ViewerSubject::HandleRequestMetaData: ";
-
-    //
-    // Expand the new database name and then set it into the plot list.
-    //
-    std::string hdb(GetViewerState()->GetViewerRPC()->GetDatabase()), host, db;
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    fs->ExpandDatabaseName(hdb, host, db);
-
-    //
-    // Get the number of time states and set that information into the
-    // active animation. The mdserver will clamp the time state that it
-    // uses to open the database if timeState is out of range at this point.
-    //
-    const avtDatabaseMetaData *md = NULL;
-    int ts = GetViewerState()->GetViewerRPC()->GetStateNumber();
-    if(ts == -1)
-    {
-        debug4 << mName << "Calling fs->GetMetaData(" << host
-               << ", " << db << ", true)" << endl;
-        md = fs->GetMetaData(host, db, true);
-    }
-    else
-    {
-        // The time state is not "ANY" so we will ask for a particular
-        // database state. Some file formats can be time-varying or
-        // time-invariant and we don't know which it will be so we
-        // need to clear the metadata for the database so we will read
-        // it again at the right time state.
-        // Don't forget which plugin you used, though.
-        fs->ClearFile(hdb, false);
-
-        debug4 << mName << "Calling fs->GetMetaDataForState(" << host
-               << ", " << db << ", " << ts << ", \"\")" << endl;
-        md = fs->GetMetaDataForState(host, db, ts, true, "");
-    }
-
-    if(md != 0)
-    {
-        // Copy the metadata so we can send it to the client.
-        *GetViewerState()->GetDatabaseMetaData() = *md;
-
-        // Print the metadata to the debug logs.
-        debug5 << mName << "Metadata contains: " << endl;
-        if(DebugStream::Level5())
-            md->Print(DebugStream::Stream5(), 1);
-    }
-    else
-    {
-        // Empty out the metadata.
-        *GetViewerState()->GetDatabaseMetaData() = avtDatabaseMetaData();
-
-        debug5 << mName << "No metadata was found." << endl;
-    }
-    GetViewerState()->GetDatabaseMetaData()->SelectAll();
-    GetViewerState()->GetDatabaseMetaData()->Notify();
-
-    //
-    // Check to see if there were errors in the mdserver
-    //
-    string err = ViewerFileServer::Instance()->GetPluginErrors(host);
-    if (!err.empty())
-    {
-        Warning(err.c_str());
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CreateDatabaseCorrelation
-//
-// Purpose: 
-//   Creates a new database correlation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jan 30 23:52:00 PST 2004
-//
-// Modifications:
-//   Brad Whitlock, Mon Apr 19 08:44:46 PDT 2004
-//   I moved the code to update the window information from
-//   ViewerWindowManager::CreateDatabaseCorrelation to here so things in the
-//   gui don't update as frequently when opening a database.
-//
-//   Brad Whitlock, Wed Apr 30 09:18:24 PDT 2008
-//   Support for internationalization.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::CreateDatabaseCorrelation()
-{
-    const std::string &name = GetViewerState()->GetViewerRPC()->GetDatabase();
-
-    //
-    // Make sure that the correlation does not have the same name as
-    // an existing source.
-    //
-    if(ViewerFileServer::Instance()->IsDatabase(name))
-    {
-        QString err = tr("You cannot define a database correlation that "
-                         "has the same name as a source. No database "
-                         "correlation will be created for %1.").
-                      arg(name.c_str());
-        Error(err);
-    }
-    else
-    {
-        ViewerWindowManager::Instance()->CreateDatabaseCorrelation(
-            name, GetViewerState()->GetViewerRPC()->GetProgramOptions(),
-            GetViewerState()->GetViewerRPC()->GetIntArg1(), 0, GetViewerState()->GetViewerRPC()->GetIntArg2());
-        ViewerWindowManager::Instance()->UpdateWindowInformation(
-            WINDOWINFO_TIMESLIDERS | WINDOWINFO_ANIMATION);
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::AlterDatabaseCorrelation
-//
-// Purpose: 
-//   Alters a database correlation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jan 30 23:51:24 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::AlterDatabaseCorrelation()
-{
-    // Alter the database correlation and update all of the windows that
-    // used it.
-    ViewerWindowManager::Instance()->AlterDatabaseCorrelation(
-        GetViewerState()->GetViewerRPC()->GetDatabase(), GetViewerState()->GetViewerRPC()->GetProgramOptions(),
-        GetViewerState()->GetViewerRPC()->GetIntArg1(), GetViewerState()->GetViewerRPC()->GetIntArg2());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::DeleteDatabaseCorrelation
-//
-// Purpose: 
-//   Deletes a database correlation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jan 30 23:50:47 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::DeleteDatabaseCorrelation()
-{
-    // Delete the database correlation and update the windows that used it.
-    const std::string &name = GetViewerState()->GetViewerRPC()->GetDatabase();
-    ViewerWindowManager::Instance()->DeleteDatabaseCorrelation(name);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::OpenComputeEngine
-//
-//  Purpose:
-//    Execute the OpenComputeEngine RPC.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 17, 2000
-//
-//  Modifications:
-//    Brad Whitlock, Mon Apr 30 12:31:21 PDT 2001
-//    Added the implementation.
-//
-//    Jeremy Meredith, Thu Dec 19 12:13:58 PST 2002
-//    Added code to skip the engine profile chooser if options were specified.
-//
-//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//    Added an engine key used to index (and restart) engines.
-//
-//    Jeremy Meredith, Fri Apr  2 14:14:54 PST 2004
-//    Made it re-use command line arguments if we had some, as long as 
-//    we were in nowin mode and no explicit arguments were given.
-//
-//    Brad Whitlock, Wed Apr 13 14:58:21 PST 2005
-//    I made it issue a warning message if a compute engine is already
-//    running on the desired host.
-//
-//    Brad Whitlock, Wed Apr 30 09:19:27 PDT 2008
-//    Support for internationalization.
-//
-//    Brad Whitlock, Tue Apr 14 13:40:52 PDT 2009
-//    Use ViewerProperties.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::OpenComputeEngine()
-{
-    //
-    // Get the rpc arguments.
-    //
-    const string       &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-    const stringVector &options  = GetViewerState()->GetViewerRPC()->GetProgramOptions();
-
-    //
-    // Perform the rpc.
-    //
-    bool givenOptions = (options.size() > 0);
-    bool givenCLArgs  = (engineParallelArguments.size() > 0);
-
-    EngineKey key(hostName, "");
-    if(ViewerEngineManager::Instance()->EngineExists(key))
-    {
-        QString msg = tr("VisIt did not open a new compute engine on host %1 "
-                         "because a compute engine is already running there.").
-                      arg(hostName.c_str());
-        Warning(msg);
-    }
-    else if (givenOptions)
-    {
-        ViewerEngineManager::Instance()->CreateEngine(
-            key,
-            options,
-            true,
-            GetViewerProperties()->GetNumEngineRestarts());
-    }
-    else if (GetViewerProperties()->GetNowin() && givenCLArgs)
-    {
-        ViewerEngineManager::Instance()->CreateEngine(
-            key,
-            engineParallelArguments,
-            true,
-            GetViewerProperties()->GetNumEngineRestarts());
-    }
-    else
-    {
-        ViewerEngineManager::Instance()->CreateEngine(
-            key,
-            options,
-            false,
-            GetViewerProperties()->GetNumEngineRestarts());
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CloseComputeEngine
-//
-// Purpose: 
-//   Execute the CloseComputeEngine RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 13:08:14 PST 2001
-//
-// Modifications:
-//   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//   Added an engine key used to index (and restart) engines.
-//   This was needed for simulation support.
-// 
-//   Brad Whitlock, Mon May 3 14:18:03 PST 2004
-//   I added code to reset the network ids for the plots that use the engine
-//   that we're closing.
-//  
-// ****************************************************************************
-
-void
-ViewerSubject::CloseComputeEngine()
-{
-    //
-    // Get the rpc arguments.
-    //
-    const string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-    const string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
-
-    //
-    // We're closing the engine so reset all of the network ids for plots that
-    // are on the specified engine. This ensures that pick, etc works when
-    // we use a new compute engine.
-    //
-    EngineKey key(hostName, simName);
-    ViewerWindowManager::Instance()->ResetNetworkIds(key);
-
-    //
-    // Perform the RPC.
-    //
-    ViewerEngineManager::Instance()->CloseEngine(key);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::OpenMDServer
-//
-// Purpose: 
-//   Execute the OpenMDServer RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Jan 13 08:58:17 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::OpenMDServer()
-{
-    //
-    // Get the rpc arguments.
-    //
-    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-    const stringVector &options = GetViewerState()->GetViewerRPC()->GetProgramOptions();
-    ViewerFileServer::Instance()->NoFaultStartServer(hostName, options);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::UpdateDBPluginInfo
-//
-// Purpose: 
-//    Updates the DB plugin info.
-//
-// Programmer: Hank Childs
-// Creation:   May 25, 2005
-//
-// ****************************************************************************
-
-void
-ViewerSubject::UpdateDBPluginInfo()
-{
-    //
-    // Get the rpc arguments.
-    //
-    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-
-    //
-    // Perform the RPC.
-    //
-    ViewerFileServer::Instance()->UpdateDBPluginInfo(hostName);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ConstructDataBinning
-//
-// Purpose: 
-//     Construct a data binning.
-//
-// Programmer: Hank Childs
-// Creation:   February 13, 2006
-//
-// Modifications:
-//   Brad Whitlock, Wed Apr 30 09:20:14 PDT 2008
-//   Support for internationalization.
-//
-//   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
-//   Rename method: ddf to data binning.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ConstructDataBinning()
-{
-    //
-    // Perform the RPC.
-    //
-    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-    ViewerPlotList *plist = win->GetPlotList();
-    intVector plotIDs;
-    plist->GetActivePlotIDs(plotIDs);
-    if (plotIDs.size() <= 0)
-    {
-        Error(tr("To construct a data binning, you must have an active"
-                 " plot.  No data binning was created."));
-        return;
-    }
-    if (plotIDs.size() > 1)
-        Message(tr("Only one data binning can be created at a time.  VisIt is using the "
-                   "first active plot."));
-
-    ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
-    const EngineKey   &engineKey = plot->GetEngineKey();
-    int networkId = plot->GetNetworkID();
-    TRY
-    {
-        if (ViewerEngineManager::Instance()->ConstructDataBinning(engineKey, 
-                                                          networkId))
-        {
-            Message(tr("Created data binning"));
-        }
-        else
-        {
-            Error(tr("Unable to create data binning"));
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        char message[1024];
-        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
-                                             e.Message().c_str());
-        Error(message);
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-// Method: GetActivePlotNetworkIds
-//
-// Purpose: 
-//   Gets the network ids for the active plots.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jul 25 00:03:23 EDT 2014
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-GetActivePlotNetworkIds(ViewerPlotList *plist, intVector &networkIds, EngineKey &key)
-{
-    intVector plotIDs;
-    networkIds.clear();
-    plist->GetActivePlotIDs(plotIDs);
-    if (plotIDs.empty())
-        return 1;
-    for(size_t i = 0; i < plotIDs.size(); ++i)
-    {
-        const ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
-        const EngineKey &engineKey = plot->GetEngineKey();
-        if(i == 0)
-            key = engineKey;
-        else
-        {
-            if(key != engineKey)
-                return 2;
-        }
-
-        networkIds.push_back(plot->GetNetworkID());
-    }
-    return 0;
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ExportDatabase
-//
-// Purpose: 
-//     Exports a database.
-//
-// Programmer: Hank Childs
-// Creation:   May 25, 2005
-//
-// Modifications:
-//   Jeremy Meredith, Tue Mar 27 16:55:05 EDT 2007
-//   Added error text to message when we have something more useful to say.
-//
-//   Brad Whitlock, Wed Apr 30 09:21:22 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Fri Jan 24 16:28:35 PST 2014
-//   Allow more than one plot to be exported.
-//   Work partially supported by DOE Grant SC0007548.
-//
-//   Brad Whitlock, Thu Jul 24 21:52:34 EDT 2014
-//   Add export for all time states.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ExportDatabase()
-{
-    //
-    // Get the network ids and check that they are all on the same engine.
-    //
-    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-    ViewerPlotList *plist = win->GetPlotList();
-    intVector networkIds;
-    EngineKey key;
-    int err = GetActivePlotNetworkIds(plist, networkIds, key);
-    if(err == 1)
-    {
-        Error(tr("To export a database, you must have an active plot.  No database was saved."));
-        return;
-    }
-    else if(err == 2)
-    {
-        Error(tr("To export the database for multiple plots, all plots "
-                 "must be processed by the same compute engine."));
-        return;
-    }
-
-    TRY
-    {
-        ExportDBAttributes exportAtts(*ViewerEngineManager::GetExportDBAtts());
-
-        // Do export of all time states.
-        if(!key.IsSimulation() && exportAtts.GetAllTimes() && plist->HasActiveTimeSlider())
-        {
-            // Get the time slider information.
-            int state = 0, nStates = 0;
-            plist->GetTimeSliderStates(plist->GetActiveTimeSlider(), state, nStates);
-
-            // Iterate through time and export the current time state.
-            char digits[10];
-            std::string filename(exportAtts.GetFilename());
-            int status = 0;
-            for(int i = 0; i < nStates && status == 0; ++i)
-            {
-                // Make a new filename for the exported file.
-                if(nStates >= 10000)
-                    SNPRINTF(digits, 10, "%08d", i);
-                else
-                    SNPRINTF(digits, 10, "%04d", i);
-                std::string timeSuffix(digits);
-
-                TRY
-                {
-                    plist->SetTimeSliderState(i);
-                    int err = GetActivePlotNetworkIds(plist, networkIds, key);
-                    if(err == 0)
-                    {
-                        if(ViewerEngineManager::Instance()->ExportDatabases(key, networkIds, exportAtts, timeSuffix))
-                            Message(tr("Exported database time state %1").arg(i));
-                        else
-                            status = 1;
-                    }
-                    else
-                        status = 1;
-
-                    if(status == 1)
-                    {
-                        Error(tr("Unable to export database time "
-                                 "state %1. Stopping export.").arg(i));
-                    }
-                }
-                CATCH2(VisItException,e)
-                {
-                    Error(tr("An unexpected error prevented export of "
-                             "database time state %1. Stopping export. %2").
-                          arg(i).arg(e.Message().c_str()));
-                    status = 2;
-                }
-                ENDTRY
-            }
-
-            // Go back to the original state.
-            plist->SetTimeSliderState(state);
-        }
-        // Do export of current time state.
-        else if (ViewerEngineManager::Instance()->ExportDatabases(key, networkIds, exportAtts, ""))
-        {
-            Message(tr("Exported database"));
-        }
-        else
-        {
-            Error(tr("Unable to export database"));
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        QString msg = tr("Unable to export database: %1").arg(e.Message().c_str());
-        Error(msg);
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ClearCache
-//
-// Purpose: 
-//   Execute the ClearCache RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 30 14:20:23 PST 2002
-//
-// Modifications:
-//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//    Added an engine key used to index (and restart) engines.
-//    This was needed for simulation support.
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ClearCache()
-{
-    //
-    // Get the rpc arguments.
-    //
-    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
-
-    //
-    // Perform the RPC.
-    //
-    ViewerEngineManager::Instance()->ClearCache(EngineKey(hostName, simName));
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ClearCacheForAllEngines
-//
-// Purpose: 
-//   Execute the ClearCache RPC on all engines.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Feb 26 13:33:59 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ClearCacheForAllEngines()
-{
-    //
-    // Perform the RPC.
-    //
-    ViewerEngineManager::Instance()->ClearCacheForAllEngines();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetDefaultPlotOptions
-//
-//  Purpose:
-//    Execute the SetDefaultPlotOptions RPC.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 17, 2000
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void 
-ViewerSubject::SetDefaultPlotOptions()
-{
-    //
-    // Get the rpc arguments.
-    //
-    int       type = GetViewerState()->GetViewerRPC()->GetPlotType();
-
-    //
-    // Perform the rpc.
-    //
-    plotFactory->SetDefaultAttsFromClient(type);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ResetPlotOptions
-//
-//  Purpose:
-//    Execute the ResetPlotOptions RPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Tue Aug 14 17:33:08 PST 2001
-//
-//  Modifications:
-//    Brad Whitlock, Thu Jul 18 16:58:46 PST 2002
-//    I added code to set the attributes back into the selected plots.
-//
-//    Brad Whitlock, Tue Jan 27 16:57:39 PST 2004
-//    Changed for multiple time sliders.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ResetPlotOptions()
-{
-    //
-    // Get the rpc arguments.
-    //
-    int plot = GetViewerState()->GetViewerRPC()->GetPlotType();
-
-    //
-    // Update the client so it has the default attributes.
-    //
-    plotFactory->SetClientAttsFromDefault(plot);
-
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->GetActiveWindow()->GetPlotList()->SetPlotAtts(plot);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::AddInitializedOperator
-//
-//  Purpose:
-//    Execute the AddInitializedOperator RPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Tue May 8 16:54:36 PST 2007
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Sep 14 16:28:38 PDT 2007
-//    Lineout needs a different path.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::AddInitializedOperator()
-{
-    //
-    // Get the rpc arguments.
-    //
-    int type = GetViewerState()->GetViewerRPC()->GetOperatorType();
-
-    OperatorPluginManager *opMgr = GetOperatorPluginManager();
-    bool lineout = (opMgr->GetPluginName(opMgr->GetEnabledID(type))
-                    == "Lineout");
-
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    if (!lineout)
-    {
-        bool applyToAll = wM->GetClientAtts()->GetApplyOperator();
-        wM->GetActiveWindow()->GetPlotList()->AddOperator(type, applyToAll, false);
-    }
-    else
-    {
-        wM->GetActiveWindow()->Lineout(false);
-    }
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetDefaultOperatorOptions
-//
-//  Purpose:
-//    Execute the SetDefaultOperatorOptions RPC.
-//
-//  Programmer: Eric Brugger
-//  Creation:   September 15, 2000
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultOperatorOptions()
-{
-    //
-    // Get the rpc arguments.
-    //
-    int       type = GetViewerState()->GetViewerRPC()->GetOperatorType();
-
-    //
-    // Perform the rpc.
-    //
-    operatorFactory->SetDefaultAttsFromClient(type);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ResetOperatorOptions
-//
-//  Purpose:
-//    Execute the ResetOperatorOptions RPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Tue Aug 14 17:33:08 PST 2001
-//
-//  Modifications:
-//    Brad Whitlock, Thu Jul 18 16:55:02 PST 2002
-//    I added code to set the default attributes back into the selected
-//    plots that have the designated operator.
-//
-//    Brad Whitlock, Tue Jan 27 16:57:57 PST 2004
-//    Changed for multiple time sliders.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ResetOperatorOptions()
-{
-    //
-    // Get the rpc arguments.
-    //
-    int oper = GetViewerState()->GetViewerRPC()->GetOperatorType();
-
-    //
-    // Update the client so it has the default attributes.
-    //
-    operatorFactory->SetClientAttsFromDefault(oper);
-
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    bool applyToAll = wM->GetClientAtts()->GetApplyOperator();
-    wM->GetActiveWindow()->GetPlotList()->SetPlotOperatorAtts(oper, applyToAll);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetViewAxisArray
-//
-// Purpose: 
-//   Tells the viewer window manager to apply the axis array view
-//   attributes to the active window.
-//
-// Programmer: Jeremy Meredith
-// Creation:   February  4, 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetViewAxisArray()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetViewAxisArrayFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetViewCurve
-//
-// Purpose: 
-//   Tells the viewer window manager to apply the curve view attributes to the
-//   active window.
-//
-// Programmer: Eric Brugger
-// Creation:   August 20, 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetViewCurve()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetViewCurveFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetView2D
-//
-// Purpose: 
-//   Tells the viewer window manager to apply the 2d view attributes to the
-//   active window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jul 20 14:52:29 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetView2D()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetView2DFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetView3D
-//
-// Purpose: 
-//   Tells the viewer window manager to apply the 3d view attributes to the
-//   active window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jul 20 14:52:29 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetView3D()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetView3DFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ClearViewKeyframes
-//
-// Purpose: 
-//   Tells the viewer window manager to clear the view keyframes for the
-//   active window.
-//
-// Programmer: Eric Brugger
-// Creation:   January 3, 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ClearViewKeyframes()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->ClearViewKeyframes();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::DeleteViewKeyframe
-//
-// Purpose: 
-//   Tells the viewer window manager to delete a view keyframe from the
-//   active window.
-//
-// Programmer: Eric Brugger
-// Creation:   January 3, 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::DeleteViewKeyframe()
-{
-    //
-    // Get the rpc arguments.
-    //
-    int frame = GetViewerState()->GetViewerRPC()->GetFrame();
- 
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->DeleteViewKeyframe(frame);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::MoveViewKeyframe
-//
-// Purpose: 
-//   Tells the viewer window manager to move a view keyframe in the
-//   active window.
-//
-// Programmer: Eric Brugger
-// Creation:   January 28, 2003
-//
-// ****************************************************************************
-
-void
-ViewerSubject::MoveViewKeyframe()
-{
-    //
-    // Get the rpc arguments.
-    //
-    int oldFrame = GetViewerState()->GetViewerRPC()->GetIntArg1();
-    int newFrame = GetViewerState()->GetViewerRPC()->GetIntArg2();
- 
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager::Instance()->MoveViewKeyframe(oldFrame, newFrame);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetViewKeyframe
-//
-// Purpose: 
-//   Tells the viewer window manager to set a view keyframe for the
-//   active window.
-//
-// Programmer: Eric Brugger
-// Creation:   January 3, 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetViewKeyframe()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetViewKeyframe();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::UpdateColorTable
-//
-// Purpose: 
-//   Updates all plots that use the color table specified in the RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jun 13 17:38:55 PST 2001
-//
-// Notes:      It is worth noting that this RPC may be called with the name
-//             of a color table that does not exist. When that happens, it is
-//             usually assumed to be the case that the default color table
-//             as been deleted and has been set to a new value. This routine
-//             is then called to update all plots which use the default color
-//             table.
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::UpdateColorTable()
-{
-    //
-    // Get the rpc arguments.
-    //
-    const char *ctName = GetViewerState()->GetViewerRPC()->GetColorTableName().c_str();
-
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->UpdateColorTable(ctName);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ExportColorTable
-//
-// Purpose: 
-//   Exports the specified color table.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 1 17:03:13 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Thu Nov 13 12:11:51 PDT 2003
-//   I changed the code to send back a status message and an error message
-//   if the color table could not be exported.
-//
-//   Brad Whitlock, Wed Apr 30 09:25:22 PDT 2008
-//   Support for internationalization.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ExportColorTable()
-{
-    //
-    // Perform the rpc.
-    //
-    const std::string &ctName = GetViewerState()->GetViewerRPC()->GetColorTableName();
-    std::string msg;
-    if(avtColorTables::Instance()->ExportColorTable(ctName, msg))
-    {
-        // If we successfully exported the color table, msg is set to the
-        // name of the color table file that was created. We want to send
-        // a status message and a message.
-        QString msg2 = tr("Color table %1 exported to %2").
-                       arg(ctName.c_str()).
-                       arg(msg.c_str());
-        Status(msg2);
-
-        // Tell the user what happened.
-        msg2 = tr("VisIt exported color table \"%1\" to the file: %2. "
-           "You can share that file with colleagues who want to use your "
-           "color table. Simply put the file in their .visit directory, run "
-           "VisIt and the color table will appear in their list of color "
-           "tables when VisIt starts up.").
-           arg(ctName.c_str()).
-           arg(msg.c_str());
-        Message(msg2);
-    }
-    else
-        Error(msg.c_str(), false);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::WriteConfigFile
-//
-//  Purpose:
-//    Execute the WriteConfigFile RPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Sep 28 11:07:44 PDT 2000
-//
-//  Modifications:
-//    Brad Whitlock, Fri Nov 2 11:26:32 PDT 2001
-//    Added code to tell the ViewerWindowManager to gather the size, location
-//    of its windows so it can be saved.
-//
-//    Brad Whitlock, Fri May 16 15:47:35 PST 2003
-//    I made it capable of saving to the config file that was specified
-//    with the -config option when VisIt started. If no config file was ever
-//    specified, we save to the default config file name.
-//
-//    Brad Whitlock, Wed Feb 16 11:51:49 PDT 2005
-//    Made it call utility function GetDefaultConfigFile.
-//
-//    Brad Whitlock, Thu Feb 17 16:11:21 PST 2005
-//    I made it issue an error message if the settings can't be saved.
-//
-//    Brad Whitlock, Wed Apr 30 09:26:08 PDT 2008
-//    Support for internationalization.
-//
-//    Brad Whitlock, Tue Apr 14 13:42:31 PDT 2009
-//    Use ViewerProperties.
-//
-//    Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
-//    Host profiles are now handled outside the config manager.
-//
-//    Jeremy Meredith, Fri Feb 19 13:29:24 EST 2010
-//    Make sure host profile filenames are unique.
-//
-//    Jeremy Meredith, Wed Apr 21 13:15:09 EDT 2010
-//    Only write out host profiles users have changed.
-//
-//    Jeremy Meredith, Thu Apr 22 13:21:27 EDT 2010
-//    Also make sure to write out new host profiles that don't exist
-//    in the system host profiles.
-//
-//    Jeremy Meredith, Thu Apr 29 14:48:03 EDT 2010
-//    If the user modified a profile from the original system-global one,
-//    only write out the fields they actually changed, not the whole thing.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::WriteConfigFile()
-{
-    std::string configFileName(GetViewerProperties()->GetConfigurationFileName());
-    const char *cfn = (configFileName != "") ? configFileName.c_str() : 0;
-    char *defaultConfigFile = GetDefaultConfigFile(cfn);
-
-    //
-    // Tell the ViewerWindowManager to get the current location, size of the
-    // viewer windows so that information can be saved.
-    //
-    ViewerWindowManager::Instance()->UpdateWindowAtts();
-
-    //
-    // Tell the configuration manager to write the file.
-    //
-    if(!configMgr->WriteConfigFile(defaultConfigFile))
-    {
-        QString err = tr("VisIt could not save your settings to: %1.").
-                      arg(defaultConfigFile);
-        Error(err);
-    }
-
-    //
-    // Delete the memory for the config file name.
-    //
-    delete [] defaultConfigFile;
-
-    //
-    // Clean old user host profiles from the file system
-    // and write the new ones out.
-    //
-    string userdir = GetAndMakeUserVisItHostsDirectory();
-    HostProfileList *hpl = GetViewerState()->GetHostProfileList();
-    ReadAndProcessDirectory(userdir, &CleanHostProfileCallback);
-    // Make a filename-safe version of the nicknames
-    stringVector basenames;
-    int n = hpl->GetNumMachines();
-    for (int i=0; i<n; i++)
-    {
-        MachineProfile &pl = hpl->GetMachines(i);
-        string s = pl.GetHostNickname();
-        for (size_t j=0; j<s.length(); j++)
-        {
-            if (s[j]>='A' && s[j]<='Z')
-                s[j] += int('a')-int('A');
-            if ((s[j]<'a'||s[j]>'z') && (s[j]<'0'||s[j]>'9'))
-                s[j] = '_';
-        }
-        basenames.push_back(s);
-    }
-    // Make sure the filenames are unique
-    for (int i=n-1; i>0; i--)
-    {
-        int count = 0;
-        for (int j=0; j<i; j++)
-        {
-            if (basenames[j] == basenames[i])
-                count++;
-        }
-        if (count > 0)
-        {
-            char tmp[100];
-            sprintf(tmp, "_%d", count+1);
-            basenames[i] += tmp;
-        }
-    }
-    // Write them out if they are different
-    for (int i=0; i<hpl->GetNumMachines(); i++)
-    {
-        MachineProfile &pl = hpl->GetMachines(i);
-        // try to find an original system-global profile which our
-        // user one was modified from
-        MachineProfile *orig = NULL;
-        for (int j=0; j<originalSystemHostProfileList->GetNumMachines(); j++)
-        {
-            MachineProfile &origpl(originalSystemHostProfileList->GetMachines(j));
-            if (origpl.GetHostNickname() == pl.GetHostNickname())
-            {
-                orig = &origpl;
-                break;
-            }
-        }
-        string filename = userdir + VISIT_SLASH_STRING +
-                          "host_" + basenames[i] + ".xml";
-        if (orig)
-        {
-            // if we found a match, compare the original with the new
-            if (*orig != pl)
-            {
-                // if there are differences, we should only write
-                // out the things the user actually changed, so that
-                // they pick up any updates to the system one
-                pl.SelectOnlyDifferingFields(*orig);
-                SingleAttributeConfigManager mgr(&pl);
-                mgr.Export(filename, false);
-            }
-            // else skip it entirely - it's identical
-        }
-        else
-        {
-            // there's no original version - user-created, write it out
-            // in its entirety
-            SingleAttributeConfigManager mgr(&pl);
-            mgr.Export(filename);
-        }
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ExportEntireState
-//
-// Purpose: 
-//   Exports the viewer's entire state to an XML file.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jul 9 12:38:35 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ExportEntireState()
-{
-    configMgr->ExportEntireState(GetViewerState()->GetViewerRPC()->GetVariable());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ImportEntireState
-//
-// Purpose: 
-//   Imports the viewer's entire state from an XML file.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jul 9 12:38:35 PDT 2003
-//
-// Modifications:
-//   Brad Whitlock, Wed Jul 30 14:48:56 PST 2003
-//   Added another argument to ImportEntireState.
-//
-//   Brad Whitlock, Mon Aug 25 14:28:00 PST 2003
-//   Added the NotifyIfSelected method call.
-//
-//   Brad Whitlock, Fri Nov 10 09:38:25 PDT 2006
-//   Added arguments to the call to configMgr->ImportEntireState.
-//
-//   Brad Whitlock, Tue Mar 19 17:40:00 PDT 2013
-//   Delete localSettings to avoid condition where delayed setting processing
-//   can happen after session files are restored. This avoids the settings from
-//   deleting restored plots.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ImportEntireState()
-{
-    // If we're importing a session, delete the localSettings in case the
-    // DelayedProcessSettings method has not fired yet. This affects session
-    // loading via the -sessionfile command line argument.
-    if(localSettings != 0)
-    {
-        delete localSettings;
-        localSettings = 0;
-    }
-
-    stringVector empty;
-    configMgr->ImportEntireState(GetViewerState()->GetViewerRPC()->GetVariable(),
-                                 GetViewerState()->GetViewerRPC()->GetBoolFlag(),
-                                 empty, false);
-    configMgr->NotifyIfSelected();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ImportEntireStateWithDifferentSources
-//
-// Purpose: 
-//   Restores a session file with a different list of sources.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 10 09:37:54 PDT 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ImportEntireStateWithDifferentSources()
-{
-     configMgr->ImportEntireState(GetViewerState()->GetViewerRPC()->GetVariable(),
-                                  GetViewerState()->GetViewerRPC()->GetBoolFlag(),
-                                  GetViewerState()->GetViewerRPC()->GetProgramOptions(), true);
-     configMgr->NotifyIfSelected();
+    ExpressionList *adder = ParsingExprList::Instance()->GetList();
+    VariableMenuPopulator::GetOperatorCreatedExpressions(*adder, md, 
+                                                         ViewerBase::GetOperatorPluginManager());
 }
 
 // ****************************************************************************
@@ -6762,956 +3310,6 @@ ViewerSubject::RemoveCrashRecoveryFile() const
                << filename.toStdString() << endl;
         cr.remove();
     }
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetAnimationAttributes
-//
-//  Purpose:
-//    Execute the SetAnimationonAttributes RPC.
-//
-//  Programmer: Eric Brugger
-//  Creation:   November 19, 2001 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetAnimationAttributes()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetAnimationAttsFromClient();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetAnnotationAttributes
-//
-//  Purpose:
-//    Execute the SetAnnotationAttributes RPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 18, 2001 
-//
-//  Modifications:
-//    Brad Whitlock, Thu Aug 30 09:19:25 PDT 2001
-//    Renamed the method to SetAnnotationAttributes and modified the code
-//    to account for the fact that the annotation attributes are no longer
-//    in this class.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetAnnotationAttributes()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetAnnotationAttsFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetDefaultAnnotationAttributes
-//
-// Purpose: 
-//   Sets the default annotation atts from the client annotation atts.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Aug 30 09:21:17 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultAnnotationAttributes()
-{
-    ViewerWindowManager::SetDefaultAnnotationAttsFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetAnnotationAttributes
-//
-// Purpose: 
-//   Sets the default annotation attributes into the annotation attributes
-//   for the active window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Aug 30 09:37:02 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetAnnotationAttributes()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetAnnotationAttsFromDefault();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::AddAnnotationObject
-//
-// Purpose: 
-//   Handles the AddAnnotationObject RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 29 11:10:40 PDT 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Mar 20 13:47:49 PST 2007
-//   Added name argument.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::AddAnnotationObject()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->AddAnnotationObject(GetViewerState()->GetViewerRPC()->GetIntArg1(),
-                            GetViewerState()->GetViewerRPC()->GetStringArg1());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::HideActiveAnnotationObjects
-//
-// Purpose: 
-//   Handles the HideActiveAnnotationObjects RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 29 11:10:40 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::HideActiveAnnotationObjects()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->HideActiveAnnotationObjects();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::DeleteActiveAnnotationObjects
-//
-// Purpose: 
-//   Handles the DeleteActiveAnnotationObjects RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 29 11:10:40 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::DeleteActiveAnnotationObjects()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->DeleteActiveAnnotationObjects();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::RaiseActiveAnnotationObjects
-//
-// Purpose: 
-//   Handles the RaiseActiveAnnotationObjects RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 29 11:10:40 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::RaiseActiveAnnotationObjects()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->RaiseActiveAnnotationObjects();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::LowerActiveAnnotationObjects
-//
-// Purpose: 
-//   Handles the LowerActiveAnnotationObjects RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 29 11:10:40 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::LowerActiveAnnotationObjects()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->LowerActiveAnnotationObjects();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetAnnotationObjectOptions
-//
-// Purpose: 
-//   Handles the SetAnnotationObjectOptions RPC.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 29 11:10:40 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetAnnotationObjectOptions()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetAnnotationObjectOptions();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetDefaultAnnotationObjectList
-//
-// Purpose: 
-//   Copies the client annotation object list into the default annotation
-//   object list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 7 14:22:31 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultAnnotationObjectList()
-{
-    ViewerWindowManager::SetDefaultAnnotationObjectListFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetAnnotationObjectList
-//
-// Purpose: 
-//   Handles the ResetAnnotationObjectList RPC by copying deleting the
-//   annotation objects in the active window and adding new annotation objects
-//   based on the default annotation object list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 7 14:21:30 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Jul 12 16:12:29 PDT 2011
-//   I changed this routine so we keep the legends from the current list and
-//   we add the default annotation object list to create list of objects that
-//   contains the legends and the defaults. This prevents us from losing the
-//   legends when we reset.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ResetAnnotationObjectList()
-{
-    ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-    ViewerWindow *win = wMgr->GetActiveWindow();
-
-    if(win != 0)
-    {
-        AnnotationObjectList legendPlusDefault;
-
-        // Add the legends.
-        for(int i = 0; i < wMgr->GetAnnotationObjectList()->GetNumAnnotations(); ++i)
-        {
-            if(wMgr->GetAnnotationObjectList()->GetAnnotation(i).GetObjectType() ==
-               AnnotationObject::LegendAttributes)
-            {
-                legendPlusDefault.AddAnnotation(wMgr->GetAnnotationObjectList()->GetAnnotation(i));
-            }
-        }
-        // Add the defaults.
-        for(int i = 0; i < wMgr->GetDefaultAnnotationObjectList()->GetNumAnnotations(); ++i)
-            legendPlusDefault.AddAnnotation(wMgr->GetDefaultAnnotationObjectList()->GetAnnotation(i));
-
-        // We should add an optional bool array to CreateAnnotationObjectsFromList that
-        // lets us tell the routine whether to set the options for the newly created object.
-        // That would let us create annotation objects but not use the attributes we have 
-        // for them. The use case for that is resetting the legends to default values.
-        win->DeleteAllAnnotationObjects();
-        win->CreateAnnotationObjectsFromList(legendPlusDefault);
-        wMgr->UpdateAnnotationObjectList();
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetPickAttributes
-//
-// Purpose: 
-//   Resets pick attributes to default values. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 26, 2003 
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003
-//   Changed call from ResetPickAtts to SetPickAttsFromDefault.
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetPickAttributes()
-{
-    ViewerQueryManager::Instance()->SetPickAttsFromDefault(); 
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetPickLetter
-//
-// Purpose: 
-//   Resets pick letter to default values. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetPickLetter()
-{
-    ViewerQueryManager::Instance()->ResetPickLetter(); 
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::RenamePickLabel
-//
-// Purpose: 
-//   Renames a pick label.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 27 10:28:15 PDT 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::RenamePickLabel()
-{
-    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-    if(win != 0)
-    {
-        win->RenamePickLabel(GetViewerState()->GetViewerRPC()->GetStringArg1(),
-                             GetViewerState()->GetViewerRPC()->GetStringArg2());
-    }
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetKeyframeAttributes
-//
-//  Purpose:
-//    Execute the SetKeyframeAttributes RPC.
-//
-//  Programmer: Eric Brugger
-//  Creation:   November 25, 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
- 
-void
-ViewerSubject::SetKeyframeAttributes()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetKeyframeAttsFromClient();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetMaterialAttributes
-//
-//  Purpose:
-//    Execute the SetMaterialAttributes RPC.
-//
-//  Programmer: Jeremy Meredith 
-//  Creation:   October 24, 2002 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetMaterialAttributes()
-{
-    // Do nothing; there is only a global copy, and nothing
-    // is regenerated automatically just yet
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetDefaultMaterialAttributes
-//
-// Purpose: 
-//   Sets the default material atts from the client material atts.
-//
-// Programmer: Jeremy Meredith
-// Creation:   October 24, 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultMaterialAttributes()
-{
-    ViewerEngineManager *eM=ViewerEngineManager::Instance();
-    eM->SetDefaultMaterialAttsFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetMaterialAttributes
-//
-// Purpose: 
-//   Sets the default material attributes into the material attributes
-//
-// Programmer: Jeremy Meredith
-// Creation:   October 24, 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetMaterialAttributes()
-{
-    ViewerEngineManager *eM=ViewerEngineManager::Instance();
-    eM->SetClientMaterialAttsFromDefault();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetMeshManagementAttributes
-//
-//  Purpose: Execute the SetMeshManagementAttributes RPC.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   November 5, 2005 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetMeshManagementAttributes()
-{
-    // Do nothing; there is only a global copy, and nothing
-    // is regenerated automatically just yet
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetDefaultMeshManagementAttributes
-//
-//  Purpose: Sets the default material atts from the client material atts.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   November 5, 2005 
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultMeshManagementAttributes()
-{
-    ViewerEngineManager *eM=ViewerEngineManager::Instance();
-    eM->SetDefaultMeshManagementAttsFromClient();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ResetMeshManagementAttributes
-//
-//  Purpose: Sets the default material attributes into the material attributes
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   November 5, 2005 
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetMeshManagementAttributes()
-{
-    ViewerEngineManager *eM=ViewerEngineManager::Instance();
-    eM->SetClientMeshManagementAttsFromDefault();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetAppearanceAttributes
-//
-// Purpose: 
-//   Makes the viewer customize its appearance using the new appearance
-//   settings.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 5 10:27:57 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetAppearanceAttributes()
-{
-    CustomizeAppearance();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetLightList
-//
-//  Purpose:
-//    Execute the SetLightList RPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Fri Sep 14 14:10:52 PST 2001
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetLightList()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetLightListFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetDefaultLightList
-//
-// Purpose: 
-//   Sets the default light list from the client light list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 14 14:10:19 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultLightList()
-{
-    ViewerWindowManager::SetDefaultLightListFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetLightList
-//
-// Purpose: 
-//   Sets the default lightlist into the light list for the active window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 14 14:08:56 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetLightList()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetLightListFromDefault();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetRenderingAttributes
-//
-// Purpose: 
-//   Sets the rendering attributes for the active window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Sep 19 13:34:09 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetRenderingAttributes()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetRenderingAttributes();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetWindowArea
-//
-// Purpose: 
-//   Tells the viewer where to put its vis windows.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Jan 29 16:07:04 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Tue Feb 5 09:24:03 PDT 2002
-//   Made it respect the -small flag.
-//
-//   Brad Whitlock, Tue Apr 14 13:43:06 PDT 2009
-//   Use ViewerProperties.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetWindowArea()
-{
-    const char *area = GetViewerState()->GetViewerRPC()->GetWindowArea().c_str();
-    
-    //
-    // Recalculate the layouts and reposition the windows.
-    //
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    if(GetViewerProperties()->GetWindowSmall())
-    {
-        int x, y, w, h;
-        if (sscanf(area, "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
-        {
-            char tmp[30];
-            w /= 2;
-            h /= 2;
-            SNPRINTF(tmp, 30, "%dx%d+%d+%d", w, h, x, y);
-            wM->SetGeometry(tmp);
-        }
-    }
-    else
-        wM->SetGeometry(area);
-
-    wM->SetWindowLayout(wM->GetWindowLayout());
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ConnectToMetaDataServer
-//
-//  Purpose: 
-//    Tells an mdserver to connect to another program. If the desired mdserver
-//    does not exist, it is launched and told to connect to the program.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Tue Nov 21 11:52:23 PDT 2000
-//
-//  Modifications:
-//   Brad Whitlock, Thu Dec 26 16:24:29 PST 2002
-//   I added support for security checking.
-//
-//   Brad Whitlock, Mon May 5 14:31:23 PST 2003
-//   I changed how the arguments are passed.
-//
-//   Brad Whitlock, Mon Oct 6 11:52:06 PDT 2003
-//   Added code to write the arguments to the debug log.
-//
-//   Jeremy Meredith, Tue Feb  8 08:58:49 PST 2005
-//   Added a query for errors detected during plugin initialization.
-//
-//   Brad Whitlock, Thu Apr 22 17:02:23 PST 2010
-//   Defer execution of HeavyInitialization so when it modifies the viewer
-//   state, it does not alter the xfer subjects already in a notify.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ConnectToMetaDataServer()
-{
-    const char *mName = "ViewerSubject::ConnectToMetaDataServer: ";
-    int timeid = visitTimer->StartTimer();
-
-    //
-    // Write the arguments to the debug logs
-    //
-    debug1 << mName << "start" << endl;
-    debug1 << mName << "Telling mdserver on host "
-           << GetViewerState()->GetViewerRPC()->GetProgramHost().c_str()
-           << " to connect to another client." << endl;
-    debug1 << "Arguments:" << endl;
-    const stringVector &sv = GetViewerState()->GetViewerRPC()->GetProgramOptions();
-    for(size_t i = 0; i < sv.size(); ++i)
-         debug1 << "\t" << sv[i].c_str() << endl;
-
-    //
-    // Tell the viewer's fileserver to have its mdserver running on 
-    // the specified host to connect to another process.
-    //
-    ViewerFileServer::Instance()->ConnectServer(
-        GetViewerState()->GetViewerRPC()->GetProgramHost(),
-        GetViewerState()->GetViewerRPC()->GetProgramOptions()); 
-
-    visitTimer->StopTimer(timeid, "Time spent telling mdserver to connect to client.");
-
-    //
-    // Check to see if there were errors in mdserver plugin initialization
-    //
-    string err = ViewerFileServer::Instance()->
-                                GetPluginErrors(GetViewerState()->GetViewerRPC()->GetProgramHost());
-    if (!err.empty())
-    {
-        Warning(err.c_str());
-    }
-    debug1 << mName << "end" << endl;
-
-    //
-    // Do heavy initialization if we still need to do it.
-    //
-    emit scheduleHeavyInitialization();
-}
-
-// ****************************************************************************
-//  Function: ProcessExpressions
-//
-//  Purpose:
-//    RPC function for applying the expressions to the existing plots.
-//
-//  Programmer: Sean Ahern
-//  Creation:   Wed Sep 26 16:35:26 PDT 2001
-//
-//  Modifications:
-//      Commented out the annoying error message.
-//
-// ****************************************************************************
-void
-ViewerSubject::ProcessExpressions()
-{
-    //fprintf(stderr, "ViewerSubject::ProcessExpressions(): NOT YET IMPLEMENTED\n");
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ToggleCameraViewMode
-//
-//  Purpose: 
-//    This is a Qt slot function that toggles whether or not camera view mode
-//    is enabled for the specified window.
-//
-//  Arguments:
-//    windowIndex  The index of the window whose camera view mode will be
-//                 toggled.
-//
-//  Programmer: Eric Brugger
-//  Creation:   January 3, 2003
-//
-//  Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ToggleCameraViewMode(int windowIndex)
-{
-    //
-    // Toggle the window's camera view mode.
-    //
-    ViewerWindowManager::Instance()->ToggleCameraViewMode(windowIndex);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ToggleLockTools.
-//
-// Purpose: 
-//   Locks the tools for the specified window.
-//
-// Arguments:
-//   windowIndex : The index of the window for which to set the locktools flag.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 11 11:52:00 PDT 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ToggleLockTools(int windowIndex)
-{
-     ViewerWindowManager::Instance()->ToggleLockTools(windowIndex);
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::ToggleAllowPopup
-//
-// Purpose:
-//   Enable/disable the popup menu for the specified window
-//
-// Arguments:
-//   windowIndex : The index of the window for which to toggle the popup menu
-//
-// Programmer: Marc Durant
-// Creation:   Thu Jan 12 12:02:00 MST 2012
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ToggleAllowPopup(int windowIndex)
-{
-  ViewerWindowManager::Instance()->ToggleAllowPopup(windowIndex);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ToggleMaintainViewMode
-//
-//  Purpose: 
-//    A Qt slot function that toggles the maintain view mode for the specified
-//    window.
-//
-//  Arguments:
-//    windowIndex  The index of the window whose maintain view mode will be
-//                 toggled.
-//
-//  Programmer: Eric Brugger
-//  Creation:   April 18, 2003
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ToggleMaintainViewMode(int windowIndex)
-{
-    ViewerWindowManager::Instance()->ToggleMaintainViewMode(windowIndex);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetViewExtentsType
-//
-//  Purpose:
-//    Sets the type of extents to use for setting the view.
-//
-//  Programmer:  Eric Brugger
-//  Creation:    February 23, 2001
-//
-//  Modifications:
-//    Brad Whitlock, Mon Sep 16 12:51:51 PDT 2002
-//    I removed the arguments and made the view extents type come from
-//    the viewer rpc.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetViewExtentsType()
-{
-     avtExtentType viewType = (avtExtentType)GetViewerState()->GetViewerRPC()->GetWindowLayout();
-     ViewerWindowManager::Instance()->SetViewExtentsType(viewType);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CopyAnnotationsToWindow
-//
-// Purpose: 
-//   Qt slot function that copies the annotation attributes from one window
-//   to another.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 27 17:01:32 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::CopyAnnotationsToWindow(int from, int to)
-{
-    ViewerWindowManager::Instance()->CopyAnnotationsToWindow(from-1, to-1);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CopyLightingToWindow
-//
-// Purpose: 
-//   Qt slot function that copies the lighting attributes from one window
-//   to another.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 27 17:01:32 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::CopyLightingToWindow(int from, int to)
-{
-    ViewerWindowManager::Instance()->CopyLightingToWindow(from-1, to-1);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CopyViewToWindow
-//
-// Purpose: 
-//   Qt slot function that copies the view attributes from one window to another.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 27 17:01:32 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::CopyViewToWindow(int from, int to)
-{
-    ViewerWindowManager::Instance()->CopyViewToWindow(from-1, to-1);
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::CopyPlotsToWindow
-//
-// Purpose: 
-//   Qt slot function that copies the plots from one window to another.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 15 16:30:56 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Tue Jan 27 17:30:53 PST 2004
-//   I made it use renamed the copy method that it uses.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::CopyPlotsToWindow(int from, int to)
-{
-    ViewerWindowManager::Instance()->CopyPlotListToWindow(from-1, to-1);
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::Query
-//
-// Purpose: 
-//   Performs a query.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   March 1, 2011 
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Query()
-{
-    ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->Query(GetViewerState()->GetViewerRPC()->GetQueryParams());
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::GetQueryParameters
-//
-// Purpose: 
-//   Retrieves default parameters for a query.
-//
-// Programmer: Kathleen Biagas 
-// Creation:   July 15, 2011 
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::GetQueryParameters()
-{
-    ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->GetQueryParameters(GetViewerState()->GetViewerRPC()->GetQueryName());
 }
 
 // ****************************************************************************
@@ -7760,15 +3358,15 @@ ViewerSubject::GetQueryParameters()
 void
 ViewerSubject::ProcessFromParent()
 {
-    if(ViewerEngineManager::Instance()->InExecute() ||
-       ViewerEngineManager::Instance()->InLaunch())
+    if(GetViewerProperties()->GetInExecute() ||
+       GetViewerProperties()->GetInLaunch())
     {
         debug1 << "The viewer engine manager is busy processing a request "
                   "so we should not process input from the client. Let's "
                   "reschedule this method to run again later." << endl;
         QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
     }
-    else if(blockSocketSignals)
+    else if(GetViewerMessaging()->ClientInputBlocked())
     {
         debug1 << "The viewer is set to ignore input from the client at this "
                   "time. Let's reschedule this method to run again later."
@@ -7878,285 +3476,60 @@ ViewerSubject::ReadFromParentAndProcess(int)
 }
 
 // ****************************************************************************
-//  Method:  ViewerSubject::BlockSocketSignals
+// Method: ViewerSubject::CommandNotificationCallback
 //
-//  Purpose:
-//    Blocks any signals from the sockets temporarily
+// Purpose:
+//   This callback is called when internal commands are added to the command
+//   queue inside ViewerMessaging. We use it the callback to fire a timer event
+//   that will process the commands.
 //
-//  Arguments:
-//    b          true to block signals, false to unblock them
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    December 19, 2002
-//
-// ****************************************************************************
-
-void
-ViewerSubject::BlockSocketSignals(bool b)
-{
-    blockSocketSignals = b;
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::EnabledSocketSignals
-//
-// Purpose: 
-//   Enables the viewer to read from the client.
+// Arguments:
+//   cbdata  : The callback data.
+//   timeout : A timeout to use for the timer.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Aug 2 15:44:49 PST 2004
+// Creation:   Wed Sep  3 12:15:57 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-ViewerSubject::EnableSocketSignals()
+ViewerSubject::CommandNotificationCallback(void *cbdata, int timeout)
 {
-    blockSocketSignals = false;
+    ViewerSubject *This = (ViewerSubject *)cbdata;
+    QTimer::singleShot(timeout, This, SLOT(ProcessInternalCommands()));
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::ProcessRendererMessage
+//  Method: ViewerSubject::ProcessInternalCommands
 //
 //  Purpose: 
-//    This is a Qt slot function that is called when there is input
-//    to be read by the rendering thread.
+//    This is a Qt slot function that is called when there are internal commands
+//    that must be processed.
 //
-//  Arguments:
-//    fd        The file descriptor to use for reading.
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep  3 12:18:55 PDT 2014
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 16, 2000
-//
-//  Modifications:
-//    Eric Brugger, Wed Feb 21 08:25:56 PST 2001
-//    Replace the use of VisWindow with ViewerWindow.
-//
-//    Brad Whitlock, Fri Jun 15 13:28:15 PST 2001
-//    Added a handler for redrawWindow.
-//
-//    Brad Whitlock, Wed Aug 22 11:22:57 PDT 2001
-//    Added a handler for deleteWindow.
-//
-//    Brad Whitlock, Tue Apr 16 12:44:09 PDT 2002
-//    Made portions compile conditionally and removed the fd argument.
-//
-//    Brad Whitlock, Fri Jan 31 14:50:42 PST 2003
-//    I added code to update actions when a window is deleted because a
-//    delete can happen using the window decorations which is outside our
-//    normal control paths.
-//
-//    Brad Whitlock, Fri Jul 18 12:20:06 PDT 2003
-//    I added code to handle updateFrame, setInteractiveMode, and
-//    activateTool. I also made the routine reschedule itself with the event
-//    loop and return early if the engine is executing or if we're launching
-//    a component.
-//
-//    Brad Whitlock, Tue Jan 27 17:01:50 PST 2004
-//    Added support for multiple time sliders.
-//
-//    Kathleen Bonnell, Fri Jul  9 13:40:42 PDT 2004 
-//    Added handlers for finishLineout, and finishLineQuery.
-//
-//    Kathleen Bonnell, Thu Aug  5 17:30:06 PDT 2004 
-//    Added handlers for 'Sync'. (at Brad's suggestion).
-//
-//    Mark C. Miller, Thu Nov 11 16:31:43 PST 2004
-//    Moved code to test if VEM is InRender to inside the block that 
-//    processes the SR mode change message
-//
-//    Mark C. Miller, Sat Nov 13 09:35:51 PST 2004
-//    Removed code to test if VEM is InRender and defer SR mode change
-//
-//    Brad Whitlock, Tue Mar 20 11:59:36 PDT 2007
-//    Added updateAOL to update the annotation object list.
-//
-//    Brad Whitlock, Thu Jan 24 09:45:18 PST 2008
-//    Added simcmd to handle deferred simulation commands.
-//
-//    Brad Whitlock, Fri Jan 9 14:47:07 PST 2009
-//    Added exception handling code so exceptions cannot get back into the
-//    Qt event loop.
-//
-//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
-//    Replaced CATCHALL(...) with CATCHALL
-//
-//    Brad Whitlock, Mon Nov  9 11:47:17 PST 2009
-//    Don't process commands during an engine launch.
-//
-//    Jeremy Meredith, Tue Feb  2 15:37:02 EST 2010
-//    Added tool update mode.
-//
-//    Brad Whitlock, Thu Aug 12 17:01:38 PDT 2010
-//    I added updateNamedSelection.
+// Modifications:
 //
 // ****************************************************************************
 
 void
-ViewerSubject::ProcessRendererMessage()
+ViewerSubject::ProcessInternalCommands()
 {
-    TRY
+    // See if we're allowed to process commands right now.
+    bool allowed = !(GetViewerProperties()->GetInExecute() ||
+                     GetViewerProperties()->GetInLaunch()  ||
+                     launchingComponent);
+
+    if(allowed)
+        GetViewerMessaging()->ProcessCommands();
+    else
     {
-        char msg[512];
-
-        //
-        // Add the string to the message buffer and then process messages
-        // from it until there aren't any left.
-        //
-        while (messageBuffer->ReadMessage(msg) > 0)
-        {
-            //
-            // Parse and process the message.
-            //
-            if (strncmp(msg, "updateWindow", 12) == 0)
-            {
-                ViewerWindow *window=0;
-    
-                int  offset = 15;  // = strlen("updateWindow 0x");
-                sscanf (&msg[offset], "%p", &window);
-    
-                window->EnableUpdates();
-            }
-            else if (strncmp(msg, "redrawWindow", 12) == 0)
-            {
-                ViewerWindow *window=0;
-    
-                int  offset = 15;  // = strlen("redrawWindow 0x");
-                sscanf (&msg[offset], "%p", &window);
-    
-                window->RedrawWindow();
-            }
-            //
-            // If the engine manager is executing, return early but tell the
-            // event loop to try to process the message again later.
-            //
-            else if(ViewerEngineManager::Instance()->InExecute() ||
-                    ViewerEngineManager::Instance()->InLaunch() ||
-                    launchingComponent)
-            {
-                // Add the message back into the buffer.
-                messageBuffer->AddString(msg);
-                QTimer::singleShot(400, this, SLOT(ProcessRendererMessage()));
-                CATCH_RETURN(1);
-            }
-            else if (strncmp(msg, "deleteWindow", 12) == 0)
-            {
-                ViewerWindow *window=0;
-    
-                int  offset = 15;  // = strlen("deleteWindow 0x");
-                sscanf (&msg[offset], "%p", &window);
-    
-                // Tell the viewer window manager to delete the window.
-                ViewerWindowManager::Instance()->DeleteWindow(window);
-                ViewerWindowManager::Instance()->UpdateActions();
-            }
-            else if (strncmp(msg, "activateTool", 12) == 0)
-            {
-                ViewerWindow *window = 0;
-                int toolId = 0;
-                int offset = 15;  // = strlen("activateTool 0x");
-                sscanf (&msg[offset], "%p %d", &window, &toolId);
-
-                // Tell the viewer window manager to delete the window.
-                window->SetToolEnabled(toolId, true);
-                ViewerWindowManager::Instance()->UpdateActions();
-            }
-            else if (strncmp(msg, "setInteractionMode", 18) == 0)
-            {
-                ViewerWindow *window = 0;
-                int windowMode = 0;
-                int offset = 21;  // = strlen("setInteractionMode 0x");
-                sscanf (&msg[offset], "%p %d", &window, &windowMode);
-
-                // Tell the window to set its interaction mode.
-                window->SetInteractionMode(INTERACTION_MODE(windowMode));
-                ViewerWindowManager::Instance()->UpdateActions();
-            }
-            else if (strncmp(msg, "setToolUpdateMode", 17) == 0)
-            {
-                ViewerWindow *window = 0;
-                int windowMode = 0;
-                int offset = 20;  // = strlen("setToolUpdateMode 0x");
-                sscanf (&msg[offset], "%p %d", &window, &windowMode);
-
-                // Tell the window to set its toolupdate mode.
-                window->SetToolUpdateMode(TOOLUPDATE_MODE(windowMode));
-                ViewerWindowManager::Instance()->UpdateActions();
-            }
-            else if (strncmp(msg, "updateFrame", 11) == 0)
-            {
-                ViewerWindow *window = 0;
-
-                int offset = 14;  // = strlen("updateFrame 0x");
-                sscanf (&msg[offset], "%p", &window);
-
-                // Tell the window's animation to update.
-                window->GetPlotList()->UpdateFrame();
-                ViewerWindowManager::Instance()->UpdateActions();
-            }
-            else if (strncmp(msg, "setScalableRenderingMode", 24) == 0)
-            {
-                ViewerWindow *window = 0;
-                int iMode = 0;
-                int offset = 27;  // = strlen("setScalableRenderingMode 0x");
-                sscanf (&msg[offset], "%p %d", &window, &iMode);
-                bool newMode = (iMode==1?true:false);
-
-                // Tell the window to change scalable rendering modes, if necessary 
-                if (window->GetScalableRendering() != newMode)
-                    window->ChangeScalableRenderingMode(newMode);
-            }
-            else if (strncmp(msg, "finishLineout", 13) == 0)
-            {
-                ViewerQueryManager::Instance()->FinishLineout(); 
-            }
-            else if (strncmp(msg, "finishLineQuery", 15) == 0)
-            {
-                ViewerQueryManager::Instance()->FinishLineQuery(); 
-                ClearStatus();
-            }
-            else if (strncmp(msg, "Sync", 4) == 0)
-            {
-                int tag = 0; 
-                int offset = 5; // strlen("Sync ");
-                sscanf (&msg[offset], "%d",  &tag);
-                syncObserver->SetUpdate(false);
-
-                // Send the sync to all clients.
-                GetViewerState()->GetSyncAttributes()->SetSyncTag(tag);
-                GetViewerState()->GetSyncAttributes()->Notify();
-            }
-            else if (strncmp(msg, "updateAOL", 9) == 0)
-            {
-                ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
-            }
-            else if (strncmp(msg, "simcmd", 6) == 0)
-            {
-                DeferredCommandFromSimulation *simCmd = 0;
-                int offset = 7;  // = strlen("simcmd ");
-                sscanf (&msg[offset], "%p", &simCmd);
-                if(simCmd != 0)
-                {
-                    HandleCommandFromSimulation(simCmd->key, simCmd->db, simCmd->command);
-                    delete simCmd;
-                }
-            }
-            else if(strncmp(msg, "updateNamedSelection", 20) == 0)
-            {
-                int offset = 21; // strlen("updateNamedSelection ");
-                // trim the ';' from the end of the name.
-                char *str = msg + offset;
-                size_t len = strlen(str);
-                str[len-1] = '\0';
-                UpdateNamedSelection(std::string(str), true, false);
-            }
-        }
+        // We're not allowed to execute commands right now. Schedule for later.
+        CommandNotificationCallback((void *)this, 400);
     }
-    CATCHALL
-    {
-    }
-    ENDTRY
 }
 
 // ****************************************************************************
@@ -8259,19 +3632,19 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     bool retval = true;
     void **data = (void **)d;
     ViewerSubject *This = (ViewerSubject *)data[0];
-    ViewerConnectionProgressDialog *dialog = 
-        (ViewerConnectionProgressDialog *)data[1];
+    ViewerConnectionProgress *progress = (ViewerConnectionProgress *)data[1];
+
     // Only show the dialog if windows have been shown.
     bool windowsShowing = !ViewerWindowManager::Instance()->GetWindowsHidden() &&
-                          dialog != 0;
+                          progress != NULL;
 
     if (stage == 0)
     {
         This->StartLaunchProgress();
         if (windowsShowing)
         {
-            dialog->show();
-            retval = !dialog->getCancelled();
+            progress->Show();
+            retval = !progress->GetCancelled();
         }
     }
     else if (stage == 1)
@@ -8279,7 +3652,7 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
         if (windowsShowing)
         {
             qApp->processEvents(QEventLoop::AllEvents, 50);
-            retval = !dialog->getCancelled();
+            retval = !progress->GetCancelled();
         }
     }
     else if (stage == 2)
@@ -8287,9 +3660,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
         This->EndLaunchProgress();
         if (windowsShowing) 
         {
-            if(!dialog->getIgnoreHide())
-                dialog->hide();
-            retval = !dialog->getCancelled();
+            if(!progress->GetIgnoreHide())
+                progress->Hide();
+            retval = !progress->GetCancelled();
         }
     }
 
@@ -8337,8 +3710,8 @@ ViewerSubject::SendKeepAlives()
     TRY
     {
         if(launchingComponent || 
-           ViewerEngineManager::Instance()->InExecute() ||
-           ViewerEngineManager::Instance()->InLaunch())
+           GetViewerProperties()->GetInExecute() ||
+           GetViewerProperties()->GetInLaunch())
         {
             // We're launching a component so we don't want to send keep alive
             // signals right now but try again in 20 seconds.
@@ -8346,11 +3719,11 @@ ViewerSubject::SendKeepAlives()
         }
         else
         {
-            Status(tr("Sending keep alive signals..."));
-            ViewerFileServer::Instance()->SendKeepAlives();
-            ViewerEngineManager::Instance()->SendKeepAlives();
+            GetViewerMessaging()->Status(TR("Sending keep alive signals..."));
+            GetViewerFileServer()->SendKeepAlives();
+            GetViewerEngineManager()->SendKeepAlives();
             ViewerServerManager::SendKeepAlivesToLaunchers();
-            ClearStatus();
+            GetViewerMessaging()->ClearStatus();
         }
     }
     CATCHALL
@@ -8406,180 +3779,14 @@ ViewerSubject::HandleViewerRPC()
 //  Creation:   Fri Oct 27 14:58:06 PST 2000
 //
 //  Modifications:
-//    Eric Brugger, Tue Jan 28 14:20:30 PST 2003
-//    I added MovePlotKeyframe, MovePlotDatabaseKeyframe and MoveViewKeyframe.
-//
-//    Brad Whitlock, Wed Jan 29 13:53:54 PST 2003
-//    I added support for actions.
-//
-//    Kathleen Bonnell, Wed Feb 19 11:56:32 PST 2003
-//    Added SetGlobalLineoutAttributes.
-//
-//    Brad Whitlock, Mon Mar 17 09:36:03 PDT 2003
-//    I removed some RPC's related to plots and operators since they are now
-//    handled by actions.
-//
-//    Eric Brugger, Fri Apr 18 12:46:00 PDT 2003
-//    I replaced auto center view with maintain view.
-//
-//    Brad Whitlock, Mon Jun 23 16:22:51 PST 2003
-//    I removed ClearWindow, ClearAllWindows, ClearRefLines, ClearPickPoints
-//    since they are now actions.
-//
-//    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
-//    Added SetPickAttributes. 
-//
-//    Brad Whitlock, Tue Jul 1 17:00:30 PST 2003
-//    Added ExportColorTable.
-//
-//    Brad Whitlock, Wed Jul 9 12:35:44 PDT 2003
-//    Added ExportEntireState and ImportEntireState.
-//
-//    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
-//    I added SetViewCurve.
-//
-//    Kathleen Bonnell, Wed Nov 26 14:33:23 PST 2003 
-//    Added ResetPickAttributesRPC.
-//
-//    Brad Whitlock, Wed Oct 29 11:06:48 PDT 2003
-//    I added several new RPCs for handling annotations.
-//
-//    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003 
-//    Added ResetPickLetterRPC, SetDefaultPickAttributesRPC.
-//
-//    Brad Whitlock, Thu Jan 29 23:49:03 PST 2004
-//    Added ActivateSource, CheckForNewStates, CreateDatabaseCorrelation,
-//    AlterDatabaseCorrelation, DeleteDatabaseCorrelation, and CloseDatabase.
-//
-//    Brad Whitlock, Thu Feb 26 13:32:43 PST 2004
-//    Added ClearCacheForAllEngines.
-//
-//    Eric Brugger, Mon Mar 29 14:25:03 PST 2004
-//    I added ToggleMaintainDataModeRPC.
-//
-//    Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
-//    Added methods related to QueryOverTimeAttributes.
-//
-//    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
-//    Added ResetLineoutColorRPC.
-//
-//    Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
-//    Added methods related to InteractorAttributes.
-//
-//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
-//    Added GetProcessAttributes 
-//
-//    Jeremy Meredith, Mon Apr  4 17:33:55 PDT 2005
-//    Added SendSimulationCommand.
-//
-//    Brad Whitlock, Mon Apr 25 18:03:42 PST 2005
-//    I made the actionHandled flag be set to true in the case of a CloseRPC
-//    so we don't attempt to update any of the actions, which can result in
-//    unwanted mdserver launches to update the plot and operator toolbars.
-//
-//    Hank Childs, Thu May 26 17:51:49 PDT 2005
-//    Added export database RPC.
-//
-//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
-//    Added SetTryHarderCyclesTimesRPC
-//
-//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005
-//    Added SuppressQueryOutputRPC.
-//
-//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Added mesh management attributes rpcs 
-//
-//    Brad Whitlock, Thu Nov 17 17:09:13 PST 2005
-//    Added methods rpcs to move and resize windows.
-//
-//    Brad Whitlock, Thu Jan 5 16:10:44 PST 2006
-//    Added code to broadcast the RPC to be executed to all clients so one
-//    client can log the actions taken by another.
-//
-//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
-//    Add UpdatePlotInfoAtts. 
-//
-//    Brad Whitlock, Fri Nov 10 09:39:18 PDT 2006
-//    Added ImportEntireStateWithDifferentSourcesRPC.
-//
-//    Hank Childs, Fri Jan 12 10:02:32 PST 2007
-//    If there was a failure from an RPC, then don't call update actions.
-//
-//    Brad Whitlock, Mon Feb 12 16:35:16 PST 2007
-//    Made it use ViewerState.
-//
-//    Brad Whitlock, Fri Mar 9 16:26:48 PST 2007
-//    Added RequestMetaData.
-//
-//    Brad Whitlock, Tue May 8 16:57:00 PST 2007
-//    Added AddInitializedOperator.
-//
-//    Cyrus Harrison, Tue Sep 18 11:14:37 PDT 2007
-//    Added SetQueryFloatFormat()
-//
-//    Kathleen Bonnell, Tue Oct  9 17:04:58 PDT 2007 
-//    Add SetCreateMeshQualityExpressions, SetCreateTimeDerivativeExpressions.
-//
-//    Cyrus Harrison, Wed Nov 28 12:04:31 PST 2007
-//    Add SetCreateVectorMagnitudeExpressions
-//
-//    Jeremy Meredith, Wed Jan 23 16:32:35 EST 2008
-//    Added SetDefaultFileOpenOptionsRPC.
-//
-//    Jeremy Meredith, Mon Feb  4 13:31:02 EST 2008
-//    Added remaining axis array view support.
-//
-//    Cyrus Harrison, Thu Feb 21 16:12:44 PST 2008
-//    Add SetSuppressMessages
-//
-//    Brad Whitlock, Wed Jan 14 13:58:02 PST 2009
-//    I removed UpdatePlotInfoAtts.
-//
-//    Hank Childs, Wed Jan 28 14:51:03 PST 2009
-//    Added support for named selections.
-//
-//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
-//    Removed maintain data; moved maintain view from Global settings
-//    (Main window) to per-window Window Information (View window).
-//
-//    Brad Whitlock, Wed Aug 11 16:14:11 PDT 2010
-//    I added SetNamedSelectionAutoApply and UpdateNamedSelection.
-//
-//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
-//    Rename ddf to data binning.
-//
-//    Brad Whitlock, Fri Aug 27 10:29:23 PDT 2010
-//    I added RenamePickLabel.
-//
-//    Kathleen Bonnell, Fri Jun 17 16:33:17 PDT 2011
-//    Add Query, which replaces Database, Line and PointQuery.
-//
-//    Marc Durant, Thu Jan 12 12:35:00 MST 2012
-//    Added ToggleAllowPopup
-//
-//    Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
-//    Added DDTFocus and DDTConnect
-//
-//    Kathleen Biagas, Fri Oct 19 13:55:00 PDT 2012
-//    Reorderd DDT entries, made MaxRPC the last case before default.
-//
-//    Kathleen Biagas, Wed Aug  7 13:00:17 PDT 2013
-//    Added SetPrecisionTypeRPC.
-//
-//    Cameron Christensen, Tuesday, June 10, 2014
-//    Added SetBackendTypeRPC.
+//    Brad Whitlock, Fri Aug 29 00:10:15 PDT 2014
+//    Massive rewrite.
 //
 // ****************************************************************************
 
 void
 ViewerSubject::HandleViewerRPCEx()
 {
-    //
-    // Get a pointer to the active window's action manager.
-    //
-    bool actionHandled = false;
-    ViewerActionManager *actionMgr = 0;
-
     // Tell the clients that state logging should be turned off. By state
     // logging, I mean all freely exchanged state objects except for the
     // logRPC, which should be logged when received unless it is a
@@ -8588,425 +3795,52 @@ ViewerSubject::HandleViewerRPCEx()
     GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetStateLoggingRPC);
     GetViewerState()->GetLogRPC()->SetBoolFlag(false);
     GetViewerState()->GetLogRPC()->Notify();
-    //BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
     GetViewerState()->GetLogRPC()->CopyAttributes(GetViewerState()->GetViewerRPC());
     GetViewerState()->GetLogRPC()->Notify();
-    //BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
 
     debug4 << "Handling "
            << ViewerRPC::ViewerRPCType_ToString(GetViewerState()->GetViewerRPC()->GetRPCType()).c_str()
            << " RPC." << endl;
 
     //
-    // Handle the RPC. Note that these should be replaced with actions.
+    // Handle the RPC. These are special cases. Use the action mechanism.
     //
-    bool everythingOK = true;
     switch(GetViewerState()->GetViewerRPC()->GetRPCType())
     {
     case ViewerRPC::CloseRPC:
-        actionHandled = true;
         Close();
         break;
-    case ViewerRPC::OpenDatabaseRPC:
-        everythingOK = everythingOK && OpenDatabase();
-        break;
-    case ViewerRPC::CloseDatabaseRPC:
-        CloseDatabase();
-        break;
-    case ViewerRPC::ActivateDatabaseRPC:
-        ActivateDatabase();
-        break;
-    case ViewerRPC::CheckForNewStatesRPC:
-        CheckForNewStates();
-        break;
-    case ViewerRPC::ReOpenDatabaseRPC:
-        ReOpenDatabase();
-        break;
-    case ViewerRPC::ReplaceDatabaseRPC:
-        ReplaceDatabase();
-        break;
-    case ViewerRPC::OverlayDatabaseRPC:
-        OverlayDatabase();
-        break;
-    case ViewerRPC::CreateDatabaseCorrelationRPC:
-        CreateDatabaseCorrelation();
-        break;
-    case ViewerRPC::AlterDatabaseCorrelationRPC:
-        AlterDatabaseCorrelation();
-        break;
-    case ViewerRPC::DeleteDatabaseCorrelationRPC:
-        DeleteDatabaseCorrelation();
-        break;
-    case ViewerRPC::OpenComputeEngineRPC:
-        OpenComputeEngine();
-        break;
-    case ViewerRPC::CloseComputeEngineRPC:
-        CloseComputeEngine();
-        break;
-    case ViewerRPC::SaveWindowRPC:
-        SaveWindow();
-        break;
-    case ViewerRPC::SetDefaultPlotOptionsRPC:
-        SetDefaultPlotOptions();
-        break;
-    case ViewerRPC::AddInitializedOperatorRPC:
-        AddInitializedOperator();
-        break;
-    case ViewerRPC::SetDefaultOperatorOptionsRPC:
-        SetDefaultOperatorOptions();
-        break;
-    case ViewerRPC::WriteConfigFileRPC:
-        WriteConfigFile();
-        break;
     case ViewerRPC::ConnectToMetaDataServerRPC:
+        // This comes in before the action manager is initialized so let's handle
+        // it without actions. It's okay since this is not an RPC that we'd usually
+        // handle from something that's not the viewer.
         ConnectToMetaDataServer();
         break;
-    case ViewerRPC::IconifyAllWindowsRPC:
-        IconifyAllWindows();
-        break;
-    case ViewerRPC::DeIconifyAllWindowsRPC:
-        DeIconifyAllWindows();
-        break;
-    case ViewerRPC::ShowAllWindowsRPC:
-        ShowAllWindows();
-        break;
-    case ViewerRPC::HideAllWindowsRPC:
-        HideAllWindows();
-        break;
-    case ViewerRPC::UpdateColorTableRPC:
-        UpdateColorTable();
-        break;
-    case ViewerRPC::SetAnnotationAttributesRPC:
-        SetAnnotationAttributes();
-        break;
-    case ViewerRPC::SetDefaultAnnotationAttributesRPC:
-        SetDefaultAnnotationAttributes();
-        break;
-    case ViewerRPC::ResetAnnotationAttributesRPC:
-        ResetAnnotationAttributes();
-        break;
-    case ViewerRPC::SetKeyframeAttributesRPC:
-        SetKeyframeAttributes();
-        break;
-    case ViewerRPC::SetViewAxisArrayRPC:
-        SetViewAxisArray();
-        break;
-    case ViewerRPC::SetViewCurveRPC:
-        SetViewCurve();
-        break;
-    case ViewerRPC::SetView2DRPC:
-        SetView2D();
-        break;
-    case ViewerRPC::SetView3DRPC:
-        SetView3D();
-        break;
-    case ViewerRPC::ClearViewKeyframesRPC:
-        ClearViewKeyframes();
-        break;
-    case ViewerRPC::DeleteViewKeyframeRPC:
-        DeleteViewKeyframe();
-        break;
-    case ViewerRPC::MoveViewKeyframeRPC:
-        MoveViewKeyframe();
-        break;
-    case ViewerRPC::SetViewKeyframeRPC:
-        SetViewKeyframe();
-        break;
-    case ViewerRPC::ResetPlotOptionsRPC:
-        ResetPlotOptions();
-        break;
-    case ViewerRPC::ResetOperatorOptionsRPC:
-        ResetOperatorOptions();
-        break;
-    case ViewerRPC::SetAppearanceRPC:
-        SetAppearanceAttributes();
-        break;
-    case ViewerRPC::ProcessExpressionsRPC:
-        ProcessExpressions();
-        break;
-    case ViewerRPC::SetLightListRPC:
-        SetLightList();
-        break;
-    case ViewerRPC::SetDefaultLightListRPC:
-        SetDefaultLightList();
-        break;
-    case ViewerRPC::ResetLightListRPC:
-        ResetLightList();
-        break;
-    case ViewerRPC::SetAnimationAttributesRPC:
-        SetAnimationAttributes();
-        break;
-    case ViewerRPC::DisableRedrawRPC:
-        DisableRedraw();
-        break;
-    case ViewerRPC::RedrawRPC:
-        RedrawWindow();
-        break;
-    case ViewerRPC::SetWindowAreaRPC:
-        SetWindowArea();
-        break;
-    case ViewerRPC::PrintWindowRPC:
-        PrintWindow();
-        break;
-    case ViewerRPC::ToggleMaintainViewModeRPC:
-        ToggleMaintainViewMode();
-        break;
-    case ViewerRPC::ToggleCameraViewModeRPC:
-        ToggleCameraViewMode();
-        break;
-    case ViewerRPC::CopyViewToWindowRPC:
-        CopyViewToWindow();
-        break;
-    case ViewerRPC::CopyLightingToWindowRPC:
-        CopyLightingToWindow();
-        break;
-    case ViewerRPC::CopyAnnotationsToWindowRPC:
-        CopyAnnotationsToWindow();
-        break;
-    case ViewerRPC::CopyPlotsToWindowRPC:
-        CopyPlotsToWindow();
-        break;
-    case ViewerRPC::ClearCacheRPC:
-        ClearCache();
-        break;
-    case ViewerRPC::ClearCacheForAllEnginesRPC:
-        ClearCacheForAllEngines();
-        break;
-    case ViewerRPC::SetViewExtentsTypeRPC:
-        SetViewExtentsType();
-        break;
-    case ViewerRPC::SetRenderingAttributesRPC:
-        SetRenderingAttributes();
-        break;
-    case ViewerRPC::QueryRPC:
-        Query();
-        break;
-    case ViewerRPC::SetMaterialAttributesRPC:
-        SetMaterialAttributes();
-        break;
-    case ViewerRPC::SetDefaultMaterialAttributesRPC:
-        SetDefaultMaterialAttributes();
-        break;
-    case ViewerRPC::ResetMaterialAttributesRPC:
-        ResetMaterialAttributes();
-        break;
-    case ViewerRPC::ToggleAllowPopupRPC:
-        ToggleAllowPopup();
-        break;
-    case ViewerRPC::ToggleLockToolsRPC:
-        ToggleLockTools();
-        break;
-    case ViewerRPC::OpenMDServerRPC:
-        OpenMDServer();
-        break;
-    case ViewerRPC::SetGlobalLineoutAttributesRPC:
-        SetGlobalLineoutAttributes();
-        break;
-    case ViewerRPC::SetPickAttributesRPC:
-        SetPickAttributes();
-        break;
-    case ViewerRPC::ExportRPC:
-        Export();
-        break;
-    case ViewerRPC::ExportColorTableRPC:
-        ExportColorTable();
-        break;
-    case ViewerRPC::ExportEntireStateRPC:
-        ExportEntireState();
-        break;
-    case ViewerRPC::ImportEntireStateRPC:
-        ImportEntireState();
-        break;
-    case ViewerRPC::ImportEntireStateWithDifferentSourcesRPC:
-        ImportEntireStateWithDifferentSources();
-        break;
-    case ViewerRPC::ResetPickAttributesRPC:
-        ResetPickAttributes();
-        break;
-    case ViewerRPC::AddAnnotationObjectRPC:
-        AddAnnotationObject();
-        break;
-    case ViewerRPC::HideActiveAnnotationObjectsRPC:
-        HideActiveAnnotationObjects();
-        break;
-    case ViewerRPC::DeleteActiveAnnotationObjectsRPC:
-        DeleteActiveAnnotationObjects();
-        break;
-    case ViewerRPC::RaiseActiveAnnotationObjectsRPC:
-        RaiseActiveAnnotationObjects();
-        break;
-    case ViewerRPC::LowerActiveAnnotationObjectsRPC:
-        LowerActiveAnnotationObjects();
-        break;
-    case ViewerRPC::SetAnnotationObjectOptionsRPC:
-        SetAnnotationObjectOptions();
-        break;
-    case ViewerRPC::SetDefaultAnnotationObjectListRPC:
-        SetDefaultAnnotationObjectList();
-        break;
-    case ViewerRPC::ResetAnnotationObjectListRPC:
-        ResetAnnotationObjectList();
-        break;
-    case ViewerRPC::ResetPickLetterRPC:
-        ResetPickLetter();
-        break;
-    case ViewerRPC::SetDefaultPickAttributesRPC:
-        SetDefaultPickAttributes();
-        break;
-    case ViewerRPC::SetQueryOverTimeAttributesRPC:
-        SetQueryOverTimeAttributes();
-        break;
-    case ViewerRPC::SetDefaultQueryOverTimeAttributesRPC:
-        SetDefaultQueryOverTimeAttributes();
-        break;
-    case ViewerRPC::ResetQueryOverTimeAttributesRPC:
-        ResetQueryOverTimeAttributes();
-        break;
-    case ViewerRPC::ResetLineoutColorRPC:
-        ResetLineoutColor();
-        break;
-    case ViewerRPC::SetInteractorAttributesRPC:
-        SetInteractorAttributes();
-        break;
-    case ViewerRPC::SetDefaultInteractorAttributesRPC:
-        SetDefaultInteractorAttributes();
-        break;
-    case ViewerRPC::ResetInteractorAttributesRPC:
-        ResetInteractorAttributes();
-        break;
-    case ViewerRPC::GetProcInfoRPC:
-        GetProcessAttributes();
-        break;
-    case ViewerRPC::SendSimulationCommandRPC:
-        SendSimulationCommand();
-        break;
-    case ViewerRPC::UpdateDBPluginInfoRPC:
-        UpdateDBPluginInfo();
-        break;
-    case ViewerRPC::ExportDBRPC:
-        ExportDatabase();
-        break;
-    case ViewerRPC::SetTryHarderCyclesTimesRPC:
-        SetTryHarderCyclesTimes();
-        break;
     case ViewerRPC::OpenClientRPC:
+        // This action only has relevance for the viewer.
         OpenClient();
         break;
-    case ViewerRPC::SuppressQueryOutputRPC:
-        SuppressQueryOutput();
-        break;
-   case ViewerRPC::SetQueryFloatFormatRPC:
-        SetQueryFloatFormat();
-        break;
-    case ViewerRPC::SetMeshManagementAttributesRPC:
-        SetMeshManagementAttributes();
-        break;
-    case ViewerRPC::SetDefaultMeshManagementAttributesRPC:
-        SetDefaultMeshManagementAttributes();
-        break;
-    case ViewerRPC::ResetMeshManagementAttributesRPC:
-        ResetMeshManagementAttributes();
-        break;
-    case ViewerRPC::MoveWindowRPC:
-        MoveWindow();
-        break;
-    case ViewerRPC::MoveAndResizeWindowRPC:
-        MoveAndResizeWindow();
-        break;
-    case ViewerRPC::ResizeWindowRPC:
-        ResizeWindow();
-        break;
-    case ViewerRPC::ConstructDataBinningRPC:
-        ConstructDataBinning();
-        break;
-    case ViewerRPC::RequestMetaDataRPC:
-        HandleRequestMetaData();
-        break;
-    case ViewerRPC::SetTreatAllDBsAsTimeVaryingRPC:
-        SetTreatAllDBsAsTimeVarying();
-        break;
-    case ViewerRPC::SetCreateMeshQualityExpressionsRPC:
-        SetCreateMeshQualityExpressions();
-        break;
-    case ViewerRPC::SetCreateTimeDerivativeExpressionsRPC:
-        SetCreateTimeDerivativeExpressions();
-        break;
-    case ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC:
-        SetCreateVectorMagnitudeExpressions();
-        break;
-    case ViewerRPC::SetPrecisionTypeRPC:
-        SetPrecisionType();
-        break;
-    case ViewerRPC::SetBackendTypeRPC:
-        SetBackendType();
-        break;
-    case ViewerRPC::SetDefaultFileOpenOptionsRPC:
-        SetDefaultFileOpenOptions();
-        break;
-    case ViewerRPC::SetSuppressMessagesRPC:
-        SetSuppressMessages();
-        break;
-    case ViewerRPC::ApplyNamedSelectionRPC:
-        ApplyNamedSelection();
-        break;
-    case ViewerRPC::CreateNamedSelectionRPC:
-        CreateNamedSelection();
-        break;
-    case ViewerRPC::DeleteNamedSelectionRPC:
-        DeleteNamedSelection();
-        break;
-    case ViewerRPC::LoadNamedSelectionRPC:
-        LoadNamedSelection();
-        break;
-    case ViewerRPC::SaveNamedSelectionRPC:
-        SaveNamedSelection();
-        break;
-    case ViewerRPC::SetNamedSelectionAutoApplyRPC:
-        SetNamedSelectionAutoApply();
-        break;
-    case ViewerRPC::UpdateNamedSelectionRPC:
-        UpdateNamedSelection();
-        break;
-    case ViewerRPC::InitializeNamedSelectionVariablesRPC:
-        InitializeNamedSelectionVariables();
-        break;
-    case ViewerRPC::RenamePickLabelRPC:
-        RenamePickLabel();
-        break;
-    case ViewerRPC::GetQueryParametersRPC:
-        GetQueryParameters();
-        break;
-    case ViewerRPC::DDTConnectRPC:
-        DDTConnect();
-        break;
-    case ViewerRPC::DDTFocusRPC:
-        DDTFocus();
+    case ViewerRPC::ExportRPC:
+        // This action only has relevance for the viewer.
+        Export();
         break;
     case ViewerRPC::MaxRPC:
+        // no-op
         break;
     default:
-        // If an RPC is not handled in the above cases, handle it as
-        // an action.
-        actionMgr = ViewerWindowManager::Instance()->
-            GetActiveWindow()->GetActionManager();
-        actionMgr->HandleAction(*GetViewerState()->GetViewerRPC());
-        actionHandled = true;
+        // If an RPC is not handled in the above cases, handle it as an action.
+        ViewerWindowManager::Instance()->GetActiveWindow()->GetActionManager()->
+            HandleAction(*GetViewerState()->GetViewerRPC());
     }
 
-    //
-    // We need to do this until all items in the switch statement are
-    // removed and converted to actions.
-    //
+
     if(GetViewerState()->GetViewerRPC()->GetRPCType() == ViewerRPC::DrawPlotsRPC)
         BroadcastAdvanced(0);
-    if (everythingOK && !actionHandled)
-        ViewerWindowManager::Instance()->UpdateActions();
 
     // Tell the clients that it's okay to start logging again.
     GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetStateLoggingRPC);
     GetViewerState()->GetLogRPC()->SetBoolFlag(true);
     GetViewerState()->GetLogRPC()->Notify();
-    //BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
 
     debug4 << "Done handling "
            << ViewerRPC::ViewerRPCType_ToString(GetViewerState()->GetViewerRPC()->GetRPCType()).c_str()
@@ -9195,6 +4029,7 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
     /// save memory..
     qatts->ClearVars();
 }
+
 // ****************************************************************************
 // Method: ViewerSubject::PostponeAction
 //
@@ -9225,8 +4060,10 @@ ViewerSubject::BroadcastAdvanced(AttributeSubject* subj)
 // ****************************************************************************
 
 void
-ViewerSubject::PostponeAction(ViewerActionBase *action)
+ViewerSubject::PostponeActionCallback(int windowId, const ViewerRPC &args, void *cbdata)
 {
+    ViewerSubject *This = (ViewerSubject *)cbdata;
+
     //
     // Okay so this is a little weird. We store the action's RPC information
     // into a postponedAction object which we then write into the
@@ -9240,15 +4077,14 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
     //
 
     // Store the action information into the postponedAction object.
-    GetViewerState()->GetPostponedAction()->SetWindow(
-        action->GetWindow()->GetWindowId());
-    GetViewerState()->GetPostponedAction()->SetRPC(action->GetArgs());
+    GetViewerState()->GetPostponedAction()->SetWindow(windowId);
+    GetViewerState()->GetPostponedAction()->SetRPC(args);
 
     // Add the postponed input to the xfer object so it can be executed later.
-    AddInputToXfer(0, GetViewerState()->GetPostponedAction());
+    This->AddInputToXfer(0, GetViewerState()->GetPostponedAction());
 
     debug4 << "Postponing execution of  "
-           << action->GetName().c_str()
+           << ViewerRPC::ViewerRPCType_ToString(args.GetRPCType())
            << " action." << endl;
 }
 
@@ -9429,12 +4265,11 @@ ViewerSubject::ProcessSpecialOpcodes(int opcode)
         // more than 1 engine at the same time then we would have to
         // know which engine is executing right now.
         debug1 << "Interrupt: telling engines to interrupt." << endl;
-        ViewerEngineManager *eM = ViewerEngineManager::Instance();
-        EngineList *engines = eM->GetEngineList();
+        const EngineList *engines = GetViewerState()->GetEngineList();
         const stringVector &hosts = engines->GetEngineName();
         const stringVector &sims  = engines->GetSimulationName();
         for(size_t i = 0; i < hosts.size(); ++i)
-            eM->InterruptEngine(EngineKey(hosts[i], sims[i]));
+            GetViewerEngineManager()->InterruptEngine(EngineKey(hosts[i], sims[i]));
     }
     else if(opcode == animationStopOpcode)
         wMgr->Stop();
@@ -9484,7 +4319,8 @@ ViewerSubject::BroadcastToAllClients(void *data1, Subject *data2)
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the syncAtts are modified
-//   by the client. This function sends the syncAtts back to the client.
+//   by the client. This function queues an internal command that will send
+//   the syncAtts back to the client.
 //
 // Note:       This slot function sends the syncAtts back to the client.
 //
@@ -9492,17 +4328,7 @@ ViewerSubject::BroadcastToAllClients(void *data1, Subject *data2)
 // Creation:   Mon Sep 17 11:17:08 PDT 2001
 //
 // Modifications:
-//   Kathleen Bonnell, Thu Aug  5 17:30:06 PDT 2004
-//   Defer sending the syncAtts back by creating a MessageRendererThread,
-//   at Brad's suggestion to help alleviate synchronization problems found
-//   with the CLI (through regression tests).
 //
-//   Brad Whitlock, Fri Jan 9 14:25:04 PST 2009
-//   Added exception handling to make sure that exceptions do not escape
-//   back into the Qt event loop.
-//
-//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
-//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -9510,9 +4336,9 @@ ViewerSubject::HandleSync()
 {
     TRY
     {
-        char msg[100];
-        SNPRINTF(msg, 100, "Sync %d;", GetViewerState()->GetSyncAttributes()->GetSyncTag());
-        MessageRendererThread(msg);
+        GetViewerMessaging()->QueueCommand(
+            new ViewerCommandSync(syncObserver,
+                                  GetViewerState()->GetSyncAttributes()->GetSyncTag()));
     }
     CATCHALL
     {
@@ -9690,312 +4516,6 @@ ViewerSubject::DiscoverClientInformation()
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::ConnectWindow
-//
-//  Purpose: 
-//    This is a Qt slot function that is called when a window is created. Its
-//    job is to connect the new window's signals to ViewerSubject's slots.
-//
-//  Arguments:
-//    win       A pointer to the newly created window.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Nov 27 14:21:48 PST 2000
-//
-//  Modifications:
-//    Brad Whitlock, Wed Jan 29 14:12:55 PST 2003
-//    I removed the old coding.
-//
-//    Brad Whitlock, Fri Jan 9 14:25:04 PST 2009
-//    Added exception handling to make sure that exceptions do not escape
-//    back into the Qt event loop.
-//
-//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
-//    Replaced CATCHALL(...) with CATCHALL
-//
-//    Brad Whitlock, Wed May 12 14:09:23 PST 2010
-//    Add an extra Show() for MacOS X since 10.5 versions weren't showing new
-//    windows.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ConnectWindow(ViewerWindow *win)
-{
-    TRY
-    {
-        win->GetActionManager()->EnableActions(ViewerWindowManager::Instance()->GetWindowAtts());
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
-        win->Show();
-#endif
-    }
-    CATCHALL
-    {
-        ; // nothing
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetGlobalLineoutAttributes
-//
-//  Purpose:
-//    Execute the SetGlobalLineoutAttributes RPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   February 19, 2003 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetGlobalLineoutAttributes()
-{
-    ViewerQueryManager *qM=ViewerQueryManager::Instance();
-    qM->SetGlobalLineoutAttsFromClient();
-}
-
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetPickAttributes
-//
-//  Purpose:
-//    Execute the SetPickAttributes RPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 30, 2003 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetPickAttributes()
-{
-    ViewerQueryManager::Instance()->SetPickAttsFromClient();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetDefaultPickAttributes
-//
-//  Purpose:
-//    Execute the SetDefaultPickAttributes RPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 9, 2003 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultPickAttributes()
-{
-    ViewerQueryManager::Instance()->SetDefaultPickAttsFromClient();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetQueryOverTimeAttributes
-//
-//  Purpose:
-//    Execute the SetQueryOverTimeAttributes RPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 24, 2004 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetQueryOverTimeAttributes()
-{
-    ViewerQueryManager::Instance()->SetQueryOverTimeAttsFromClient();
-}
-
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetDefaultQueryOverTimeAttributes
-//
-//  Purpose:
-//    Execute the SetDefaultQueryOverTimeAttributes RPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 24, 2004 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultQueryOverTimeAttributes()
-{
-    ViewerQueryManager::Instance()->SetDefaultQueryOverTimeAttsFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetQueryOverTimeAttributes
-//
-// Purpose: 
-//   Resets time query attributes to default values. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   March 24, 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetQueryOverTimeAttributes()
-{
-    ViewerQueryManager::Instance()->SetQueryOverTimeAttsFromDefault(); 
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetLineoutColor
-//
-// Purpose: 
-//   Resets color used by lineout to default values. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   August 5, 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetLineoutColor()
-{
-    ViewerQueryManager::Instance()->ResetLineoutColor(); 
-}
-
-
-// ****************************************************************************
-//  Method: ViewerSubject::SetInteractorAttributes
-//
-//  Purpose:
-//    Execute the SetInteractorAttributes RPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 16, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetInteractorAttributes()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetInteractorAttsFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetDefaultInteractorAttributes
-//
-// Purpose: 
-//   Sets the default interactor atts from the client interactor atts.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   August 16, 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultInteractorAttributes()
-{
-    ViewerWindowManager::SetDefaultInteractorAttsFromClient();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResetInteractorAttributes
-//
-// Purpose: 
-//   Sets the default interactor attributes into the interactor attributes
-//   for the active window.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   August 16, 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResetInteractorAttributes()
-{
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->SetInteractorAttsFromDefault();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::GetProcessAttributes
-//
-// Purpose: Gets unix process information
-//
-// Programmer: Mark C. Miller
-// Creation:   Tuesday, January 18, 2004 
-// 
-// Modifications:
-//   Brad Whitlock, Tue May 10 16:36:54 PST 2005
-//   Made it work on Win32.
-//
-//   Brad Whitlock, Mon Feb 12 12:11:16 PDT 2007
-//   Made it use ViewerState.
-//
-//   Mark C. Miller, Wed Jan 20 16:41:24 PST 2010
-//   Changed pids, ppids of ProcessAttributes to intVectors.
-// ****************************************************************************
-
-void
-ViewerSubject::GetProcessAttributes()
-{
-    ProcessAttributes tmpAtts;
-
-    string componentName = VisItInit::ComponentIDToName(GetViewerState()->GetViewerRPC()->GetIntArg1());
-    if (componentName == "engine")
-    {
-        const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-        const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
-
-        ViewerEngineManager *vem = ViewerEngineManager::Instance();
-        vem->GetProcInfo(EngineKey(hostName, simName), tmpAtts);
-    }
-    else if (componentName == "viewer")
-    {
-#if defined(_WIN32)
-        int pid = _getpid();
-        int ppid = -1;
-#else
-        int pid = getpid();
-        int ppid = getppid();
-#endif
-        char myHost[256];
-        gethostname(myHost, sizeof(myHost));
-
-        std::vector<int> tmpPids;
-        tmpPids.push_back(pid);
-
-        std::vector<int> tmpPpids;
-        tmpPpids.push_back(ppid);
-
-        std::vector<string> tmpHosts;
-        tmpHosts.push_back(myHost);
-
-        tmpAtts.SetPids(tmpPids);
-        tmpAtts.SetPpids(tmpPpids);
-        tmpAtts.SetHosts(tmpHosts);
-        tmpAtts.SetIsParallel(false); // would be better to check for threads
-    }
-    else
-    {
-        Warning(tr("Currently, GetProcessAttributes() works only for "
-                "\"engine\" or \"viewer\""));
-        return;
-    }
-
-    *GetViewerState()->GetProcessAttributes() = tmpAtts;
-    GetViewerState()->GetProcessAttributes()->SelectAll();
-    GetViewerState()->GetProcessAttributes()->Notify();
-}
-
-// ****************************************************************************
 // Method: ViewerSubject::OpenClient
 //
 // Purpose: 
@@ -10029,20 +4549,18 @@ ViewerSubject::OpenClient()
     ViewerClientConnection *newClient = new 
         ViewerClientConnection(GetViewerState(), this, clientName.c_str());
     newClient->SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
-    ViewerConnectionProgressDialog *dialog = 0;
+
+    ViewerConnectionProgress *progress = NULL;
 
     TRY
     {
         if(!GetViewerProperties()->GetNowin())
         {
-            dialog = new ViewerConnectionProgressDialog("localhost");
-            dialog->setComponentName(clientName.c_str());
-            dialog->setParallel(false);
-            dialog->setTimeout(5);
-            // Register the dialog with the password window so we can set
-            // the dialog's timeout to zero if we have to prompt for a
-            // password.
-            ViewerPasswordWindow::SetConnectionProgressDialog(dialog);
+            progress = GetViewerFactory()->CreateConnectionProgress();
+            progress->SetHostName("localhost");
+            progress->SetComponentName(clientName);
+            progress->SetParallel(false);
+            progress->SetTimeout(5);
         }
 
         //
@@ -10051,7 +4569,7 @@ ViewerSubject::OpenClient()
         //
         void *cbData[2];
         cbData[0] = (void *)this;
-        cbData[1] = (void *)dialog;
+        cbData[1] = (void *)progress;
         stringVector args(clientArguments);
         for(size_t i = 0; i < programOptions.size(); ++i)
             args.push_back(programOptions[i]);
@@ -10064,7 +4582,7 @@ ViewerSubject::OpenClient()
         connect(newClient, SIGNAL(DisconnectClient(ViewerClientConnection *)),
                 this,      SLOT(DisconnectClient(ViewerClientConnection *)));
 
-        Message(tr("Added a new client to the viewer."));
+        GetViewerMessaging()->Message(TR("Added a new client to the viewer."));
 
         // Discover the client's information.
         QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
@@ -10073,13 +4591,13 @@ ViewerSubject::OpenClient()
     {
         delete newClient;
 
-        QString msg = tr("VisIt could not connect to the new client %1.").
-                      arg(program.c_str());
-        Error(msg);
+        GetViewerMessaging()->Error(
+           TR("VisIt could not connect to the new client %1.").
+           arg(program));
     }
     ENDTRY
 
-    delete dialog;
+    delete progress;
 }
 
 // ****************************************************************************
@@ -10114,18 +4632,16 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
     if (simulationSocketToKey.count(socket) <= 0)
         return;
 
-    ViewerEngineManager *vem = ViewerEngineManager::Instance();
-
     EngineKey ek = simulationSocketToKey[socket];
 
     TRY
     {
-       vem->ReadDataAndProcess(ek);
+       GetViewerEngineManager()->ReadDataAndProcess(ek);
     }
     CATCH(LostConnectionException)
     {
         ViewerWindowManager::Instance()->ResetNetworkIds(ek);
-        ViewerEngineManager::Instance()->CloseEngine(ek);
+        GetViewerEngineManager()->CloseEngine(ek);
         delete engineMetaDataObserver[ek];
         delete engineSILAttsObserver[ek];
         delete engineCommandObserver[ek];
@@ -10192,7 +4708,7 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
     TRY
     {
         // Handle MetaData updates
-        ViewerFileServer *fs = ViewerFileServer::Instance();
+        ViewerFileServerInterface *fs = GetViewerFileServer();
 
         *GetViewerState()->GetDatabaseMetaData() = *md;
         if (DebugStream::Level4())
@@ -10219,6 +4735,7 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
         GetViewerState()->GetDatabaseMetaData()->SelectAll();
         GetViewerState()->GetDatabaseMetaData()->Notify();
 
+#ifdef HAVE_DDT
         // If this is a DDTSim simulation, we may be using the animation controls to control
         // the sim. Update the animation window information.
         if (DDTManager::isDatabaseDDTSim(file) && DDTManager::isDDTSim(wM->GetActiveWindow()))
@@ -10227,7 +4744,7 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
             wM->UpdateActions();
 
             const EngineKey &key = plotList->GetEngineKey();
-            const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+            const avtDatabaseMetaData *md = GetViewerEngineManager()->GetSimulationMetaData(key);
             // If supported, send a command to the DDTSim simulation to (optionally)
             // generate python commands to set up suitable plots for the current
             // vispoint
@@ -10236,11 +4753,12 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
                 for (int i=0; i<md->GetSimInfo().GetNumGenericCommands(); ++i)
                     if (md->GetSimInfo().GetGenericCommands(i).GetName()=="plot")
                     {
-                        ViewerEngineManager::Instance()->SendSimulationCommand(
+                        GetViewerEngineManager()->SendSimulationCommand(
                                 key, "plot", "");
                     }
             }
         }
+#endif
     }
     CATCHALL
     {
@@ -10295,7 +4813,7 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
     TRY
     {
         // Handle SIL updates
-        ViewerFileServer *fs = ViewerFileServer::Instance();
+        ViewerFileServerInterface *fs = GetViewerFileServer();
 
         *GetViewerState()->GetSILAttributes() = *sa;
         fs->SetSimulationSILAtts(host, file, *GetViewerState()->GetSILAttributes());
@@ -10403,21 +4921,15 @@ ViewerSubject::HandleColorTable()
 //   RPCs while we may already be waiting on a blocking RPC.
 //
 // Arguments:
-//
-// Returns:    
-//
-// Note:       
+//  key : The simulation that sent the command.
+//  db  : The filename of the simulation that sent the command.
+//  command : The command.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jan 24 09:40:58 PST 2008
 //
 // Modifications:
-//   Brad Whitlock, Fri Jan 9 14:25:04 PST 2009
-//   Added exception handling to make sure that exceptions do not escape
-//   back into the Qt event loop.
-//   
-//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
-//   Replaced CATCHALL(...) with CATCHALL
+//
 // ****************************************************************************
 
 void
@@ -10430,17 +4942,10 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
                << ", db=" << db.c_str() << ", command=\"" << command.c_str() << "\""
                << endl;
 
-        // Save the arguments for later.
-        DeferredCommandFromSimulation *simCmd = new DeferredCommandFromSimulation;
-        simCmd->key = key;
-        simCmd->db = db;
-        simCmd->command = command;
-
-        // Send a message to process the simulation command from the top level
-        // of the event loop.
-        char msg[200];
-        SNPRINTF(msg, 200, "simcmd %p;", (void*)simCmd);
-        MessageRendererThread(msg);
+        // Defer execution of the command.
+        ViewerCommandDeferredCommandFromSimulation *cmd = 
+            new ViewerCommandDeferredCommandFromSimulation(this, key, db, command);
+        GetViewerMessaging()->QueueCommand(cmd);
     }
     CATCHALL
     {
@@ -10487,8 +4992,8 @@ void
 ViewerSubject::HandleCommandFromSimulation(const EngineKey &key, 
     const std::string &db, const std::string &command)
 {
-    debug1 << "HandleCommandFromSimulation: key=" << key.ID().c_str()
-           << ", db=" << db.c_str() << ", command=\"" << command.c_str() << "\""
+    debug1 << "HandleCommandFromSimulation: key=" << key.ID()
+           << ", db=" << db.c_str() << ", command=\"" << command << "\""
            << endl;
 
     if(command == "UpdatePlots")
@@ -10500,11 +5005,11 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
     }
     else if(command.substr(0,8) == "Message:")
     {
-        Message(command.substr(8,command.size()-8).c_str());
+        GetViewerMessaging()->Message(command.substr(8,command.size()-8));
     }
     else if(command.substr(0,6) == "Error:")
     {
-        Error(command.substr(6,command.size()-6).c_str());
+        GetViewerMessaging()->Error(command.substr(6,command.size()-6));
     }
     else if(command.substr(0,10) == "Interpret:")
     {
@@ -10515,7 +5020,7 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         // Send the command back to the engine so it knows we're done syncing.
         std::string cmd("INTERNALSYNC");
         std::string args(command.substr(13, command.size()-1));
-        ViewerEngineManager::Instance()->SendSimulationCommand(key, cmd, args);
+        GetViewerEngineManager()->SendSimulationCommand(key, cmd, args);
     }
     else if(command.substr(0,5) == "SetUI")
     {
@@ -10664,1157 +5169,6 @@ ViewerSubject::InterpretCommands(const std::string &commands)
 }
 
 // ****************************************************************************
-//  Method:  ViewerSubject::SetTryHarderCyclesTimes
-//
-//  Purpose: Handle a SetTryHarderCyclesTimes RPC
-//
-//  Programmer:  Mark C. Miller 
-//  Creation:    May 25, 2005 
-//
-//  Modifications:
-//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
-//    Moved storage for this state info to VWM which is managing
-//    GlobalAttributes.
-// ****************************************************************************
-
-void
-ViewerSubject::SetTryHarderCyclesTimes()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetTryHarderCyclesTimes(GetViewerState()->GetViewerRPC()->GetIntArg1());
-}
-
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetTreatAllDBsAsTimeVarying
-//
-//  Purpose: Handle a SetTreatAllDBsAsTimeVarying RPC
-//
-//  Programmer:  Mark C. Miller 
-//  Creation:    June 11, 2007 
-//
-//  Modifications:
-//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
-//    Moved storage for this state info to VWM which is managing
-//    GlobalAttributes.
-// ****************************************************************************
-
-void
-ViewerSubject::SetTreatAllDBsAsTimeVarying()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetTreatAllDBsAsTimeVarying(GetViewerState()->GetViewerRPC()->GetIntArg1());
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::SuppressQueryOutput
-//
-// Purpose: 
-//   Turns on/off printing of query output. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   July 27, 2005 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SuppressQueryOutput()
-{
-    ViewerQueryManager::Instance()->
-        SuppressQueryOutput(GetViewerState()->GetViewerRPC()->GetBoolFlag());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetQueryFloatFormat
-//
-// Purpose: 
-//   Sets the floating point format string used for queries.
-//
-// Programmer: Cyrus Harrison
-// Creation:   September 18, 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetQueryFloatFormat()
-{
-    ViewerQueryManager::Instance()->
-        SetQueryFloatFormat(GetViewerState()->GetViewerRPC()->GetStringArg1());
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::MoveWindow
-//
-// Purpose: 
-//   Moves a window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Nov 17 17:10:57 PST 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::MoveWindow()
-{
-    ViewerWindowManager::Instance()->MoveWindow(
-        GetViewerState()->GetViewerRPC()->GetWindowId()-1,
-        GetViewerState()->GetViewerRPC()->GetIntArg1(),
-        GetViewerState()->GetViewerRPC()->GetIntArg2());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::MoveAndResizeWindow
-//
-// Purpose: 
-//   Moves and resizes a window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Nov 17 17:11:08 PST 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::MoveAndResizeWindow()
-{
-    ViewerWindowManager::Instance()->MoveAndResizeWindow(
-        GetViewerState()->GetViewerRPC()->GetWindowId()-1,
-        GetViewerState()->GetViewerRPC()->GetIntArg1(),
-        GetViewerState()->GetViewerRPC()->GetIntArg2(),
-        GetViewerState()->GetViewerRPC()->GetIntArg3(),
-        GetViewerState()->GetViewerRPC()->GetWindowLayout());
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ResizeWindow
-//
-// Purpose: 
-//   Resizes a window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Nov 17 17:11:26 PST 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ResizeWindow()
-{
-    ViewerWindowManager::Instance()->ResizeWindow(
-        GetViewerState()->GetViewerRPC()->GetWindowId()-1,
-        GetViewerState()->GetViewerRPC()->GetIntArg1(),
-        GetViewerState()->GetViewerRPC()->GetIntArg2());
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetCreateMeshQualityExpressions
-//
-//  Purpose: Handle a SetCreateMeshQualityExpressions RPC
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    October 9, 2007 
-//
-//  Modifications:
-// ****************************************************************************
-
-void
-ViewerSubject::SetCreateMeshQualityExpressions()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetCreateMeshQualityExpressions(
-        GetViewerState()->GetViewerRPC()->GetIntArg1());
-}
-
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetCreateTimeDerivativeExpressions
-//
-//  Purpose: Handle a SetCreateTimeDerivativeExpressions RPC
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    October 9, 2007 
-//
-//  Modifications:
-// ****************************************************************************
-
-void
-ViewerSubject::SetCreateTimeDerivativeExpressions()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetCreateTimeDerivativeExpressions(
-        GetViewerState()->GetViewerRPC()->GetIntArg1());
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetCreateVectorMagnitudeExpressions
-//
-//  Purpose: Handle a SetCreateVectorMagnitudeExpression RPC
-//
-//  Programmer:  Cyrus Harrison
-//  Creation:    November 28, 2007 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetCreateVectorMagnitudeExpressions()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetCreateVectorMagnitudeExpressions(
-        GetViewerState()->GetViewerRPC()->GetIntArg1());
-}
-
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetPrecisionType
-//
-//  Purpose: Handle a SetPrecisionType RPC
-//
-//  Programmer:  Kathleen Biagas
-//  Creation:    August 7, 2013
-//
-//  Modifications:
-// ****************************************************************************
-
-void
-ViewerSubject::SetPrecisionType()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetPrecisionType(
-        GetViewerState()->GetViewerRPC()->GetIntArg1());
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetBackendType
-//
-//  Purpose: Handle a SetBackendType RPC
-//
-//  Programmer:  Cameron Christensen
-//  Creation:    June 10, 2014
-//
-//  Modifications:
-// ****************************************************************************
-
-void
-ViewerSubject::SetBackendType()
-{
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->SetBackendType(
-        GetViewerState()->GetViewerRPC()->GetIntArg1());
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::ApplyNamedSelection()
-//
-//  Purpose: Handle a ApplyNamedSelection RPC
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 28, 2009
-//
-//  Modifications:
-//    Hank Childs, Tue Jul 14 14:03:58 PDT 2009
-//    Tell the plot about its named selection.
-// 
-//    Brad Whitlock, Tue Aug 10 15:53:27 PDT 2010
-//    I improved how the code works.
-//
-//    Brad Whitlock, Mon Aug 22 11:03:00 PDT 2011
-//    I removed the code to tell the engine to apply the named selection since
-//    it is no longer necessary.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ApplyNamedSelection()
-{
-    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
-
-    //
-    // Get some information about the selection.
-    //
-    std::string originatingPlot;
-    if(selName != "")
-    {
-        int selIndex = ViewerWindowManager::GetSelectionList()->GetSelection(selName);
-        if(selIndex < 0)
-        {
-            Error(tr("An invalid selection name was provided. No selection was applied."));
-            return;
-        }
-        originatingPlot = ViewerWindowManager::GetSelectionList()->
-            GetSelections(selIndex).GetOriginatingPlot();
-    }
-
-    // 
-    // Get the indices of the plots to which the selection may be applied.
-    //
-    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-    ViewerPlotList *plist = win->GetPlotList();
-    intVector plotIDs;
-    if(ViewerWindowManager::Instance()->GetClientAtts()->GetApplySelection())
-    {
-        // If we're applying selection to all plots, get all plot ids.
-        for(int i = 0; i < plist->GetNumPlots(); ++i)
-            plotIDs.push_back(i);
-    }
-    else
-        plist->GetActivePlotIDs(plotIDs, false);
-    if (plotIDs.size() <= 0)
-    {
-        Error(tr("To apply a named selection, you must have an active"
-                 " plot.  No named selection was applied."));
-        return;
-    }
-
-    //
-    // Make sure that all of the named selections being applied are for
-    // the same engine as the first plot. Also exclude the plot if it
-    // is the originating plot for a selection since we can't apply a
-    // selection to the plot that generates it.
-    //
-    intVector ePlotIDs;
-    ViewerPlot *plot0 = plist->GetPlot(plotIDs[0]);
-    const EngineKey &engineKey = plot0->GetEngineKey();
-    for (size_t i = 0 ; i < plotIDs.size() ; i++)
-    {
-        ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
-        if (plot->GetEngineKey() != engineKey)
-        {
-            Error(tr("All plots involving a named selection must come from"
-                 " the same engine.  No named selection was applied."));
-            return;
-        }
-        else if(plot->GetPlotName() != originatingPlot)
-        {
-            ePlotIDs.push_back(plotIDs[i]);
-        }
-    }
-
-    //
-    // Apply the named selection.
-    //
-    TRY
-    {
-        for(size_t i = 0; i < ePlotIDs.size(); ++i)
-        {
-            ViewerPlot *plot = plist->GetPlot(ePlotIDs[i]);
-            plot->SetNamedSelection(selName);
-            plot->ClearActors();
-        }
-        plist->RealizePlots(false);
-        plist->UpdatePlotList();
-
-        if(!selName.empty())
-            Message(tr("Applied named selection"));
-    }
-    CATCH2(VisItException, e)
-    {
-        char message[1024];
-        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
-                                              e.Message().c_str());
-        Error(message);
-    }
-    ENDTRY
-}
-
-
-// ****************************************************************************
-//  Method:  ViewerSubject::CreateNamedSelection()
-//
-//  Purpose: Handle a CreateNamedSelection RPC
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 28, 2009
-//
-//  Modifications:
-//    Brad Whitlock, Tue Aug 17 11:10:13 PDT 2010
-//    I added the selection list.
-//
-//    Brad Whitlock, Tue Dec 14 11:44:41 PST 2010
-//    Pass selection properties to the engine manager. Allow that the selection
-//    might have been passed beforehand.
-//
-//    Brad Whitlock, Fri Aug 19 10:18:37 PDT 2011
-//    Send expressions down to the engine when we're creating a selection that
-//    is not based on a plot.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::CreateNamedSelection()
-{
-    const char *mName = "ViewerSubject::CreateNamedSelection: ";
-    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
-    bool useCurrentPlot = GetViewerState()->GetViewerRPC()->GetBoolFlag();
-
-    debug1 << mName << "0: selName=" << selName << endl;
-    SelectionList *selList = ViewerWindowManager::Instance()->GetSelectionList();
-    SelectionProperties &currentProps = *ViewerWindowManager::GetSelectionProperties();
-
-    // We'll fill in these properties to get the selection properties we send 
-    // down to the engine to create the selection.
-    int         networkId = -1;
-    EngineKey   engineKey;
-    std::string selSource;
-
-    //
-    // Look up some information from the originating plot
-    //
-    if(useCurrentPlot)
-    {
-        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-        ViewerPlotList *plist = win->GetPlotList();
-        intVector plotIDs;
-        plist->GetActivePlotIDs(plotIDs);
-        if (plotIDs.size() <= 0)
-        {
-            Error(tr("To create a named selection, you must have an active "
-                     "plot that has been drawn.  No named selection was created."));
-            return;
-        }
-        if (plotIDs.size() > 1)
-        {
-            Error(tr("You can only have one active plot when creating a named"
-                     " selection.  No named selection was created."));
-            return;
-        }
-    
-        ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
-        networkId = plot->GetNetworkID();
-        engineKey = plot->GetEngineKey();
-        selSource = plot->GetPlotName();
-    }
-    else
-    {
-        //
-        // Turn the current selection source into a db and engine key.
-        //
-        std::string host, db, sim;
-        ViewerFileServer *fs = ViewerFileServer::Instance();
-        fs->ExpandDatabaseName(currentProps.GetSource(), host, db);
-
-        const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
-        if (md != NULL && md->GetIsSimulation())
-            sim = db;
-
-        engineKey = EngineKey(host, sim);
-        selSource = db;
-
-        // We're doing a selection based directly on the database. We need to
-        // send the expression definitions to the engine since we haven't yet
-        // created any plots.
-        ExpressionList exprList;
-        ViewerFileServer::Instance()->GetAllExpressions(exprList, host, db, 
-            ViewerFileServer::ANY_STATE);
-        ViewerEngineManager::Instance()->UpdateExpressions(engineKey, exprList);
-    }
-
-    TRY
-    {
-        SelectionProperties props;
-        int index = -1;
-        if(currentProps.GetName() == selName)
-        {
-            props = currentProps;
-        }
-        else
-        {
-            index = selList->GetSelection(selName);
-            if(index >= 0)
-            {
-                // We found an existing definition in the list so use it.
-                props = selList->GetSelections(index);
-            }
-            else
-            {
-                props.SetName(selName);
-            }
-        }
-
-        // Set the source for the selection.
-        props.SetSource(selSource);
-
-        debug1 << mName << "1" << endl;
-
-        if (ViewerEngineManager::Instance()->CreateNamedSelection(engineKey, 
-            networkId, props))
-        {
-            Message(tr("Created named selection"));
-            debug1 << mName << "2" << endl;
-
-            // Add a new selection to the selection list.
-            if(index < 0)
-                selList->AddSelections(props);
-
-            debug1 << mName << "3" << endl;
-            currentProps = props;
-        }
-        else
-        {
-            Error(tr("Unable to create named selection"));
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        char message[1024];
-        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
-                                              e.Message().c_str());
-        Error(message);
-    }
-    ENDTRY
-
-    debug1 << mName << "4" << endl;
-
-    // Send list of selections to the clients.
-    selList->Notify();
-
-    debug1 << mName << "5" << endl;
-}
-
-// ****************************************************************************
-// Method: GetNamedSelectionEngineKey
-//
-// Purpose: 
-//   Get the engine key of the plot associated with the named selection.
-//
-// Arguments:
-//   selName : The name of the selection.
-//   ek      : The return engine key.
-//
-// Returns:    True if the engine key was found. false otherwise.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Aug 11 11:45:08 PDT 2010
-//
-// Modifications:
-//   Brad Whitlock, Thu Jun  9 11:20:44 PDT 2011
-//   Allow for selections that are not associated with plots.
-//
-// ****************************************************************************
-
-bool
-GetNamedSelectionEngineKey(const std::string &selName, EngineKey &ek)
-{
-    bool retval = false;
-
-    ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-    int index = wMgr->GetSelectionList()->GetSelection(selName);
-    if(index != -1)
-    {
-        std::string source(wMgr->GetSelectionList()->
-              GetSelections(index).GetOriginatingPlot());
-
-        // Look for the plot whose name is the same as the originating plot.
-        // If we find a match, use the plot's engine key.
-        int nWindows = 0, *windowIndices = 0;
-        windowIndices = wMgr->GetWindowIndices(&nWindows);
-        for(int i = 0; i < nWindows; ++i)
-        {
-            ViewerWindow *win = wMgr->GetWindow(windowIndices[i]);
-            ViewerPlotList *plist = win->GetPlotList();
-            for(int j = 0; j < plist->GetNumPlots(); ++j)
-            {
-                ViewerPlot *plot = plist->GetPlot(j);
-                if(plot->GetPlotName() == source)
-                {
-                    delete [] windowIndices;
-                    ek = plot->GetEngineKey();
-                    return true;
-                }
-            }
-        }
-        delete [] windowIndices;
-
-        // There was no plot with the selection's source name. Assume that
-        // it is a database.
-        std::string host, db, sim;
-        ViewerFileServer *fs = ViewerFileServer::Instance();
-        fs->ExpandDatabaseName(source, host, db);
-        const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
-        if (md != NULL)
-        {
-            if(md->GetIsSimulation())
-                sim = db;
-            ek = EngineKey(host, sim);
-            retval = true;
-        }
-    }
-
-    return retval;
-}
-
-// ****************************************************************************
-// Method: ReplaceNamedSelection
-//
-// Purpose: 
-//   This code replaces the selection on all plots that use it with another
-//   selection.
-//
-// Arguments:
-//   engineKey  : The engine that defines the selection.
-//   selName    : The selection to replace.
-//   newSelName : The new selection.
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Aug 12 15:33:05 PDT 2010
-//
-// Modifications:
-//   Brad Whitlock, Mon Aug 22 11:04:50 PDT 2011
-//   I removed some code to associate selections with plots in the engine since
-//   it is no longer necessary.
-//
-// ****************************************************************************
-
-static void
-ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName, 
-    const std::string &newSelName)
-{
-    ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-
-    // Replace the selection in all plots that use it.
-    int nWindows = 0, *windowIndices = 0;
-    windowIndices = wMgr->GetWindowIndices(&nWindows);
-    bool *plotlistsChanged = new bool[nWindows+1];
-    for(int i = 0; i < nWindows; ++i)
-    {
-        plotlistsChanged[i] = false;
-
-        ViewerWindow *win = wMgr->GetWindow(windowIndices[i]);
-        ViewerPlotList *plist = win->GetPlotList();
-        for(int j = 0; j < plist->GetNumPlots(); ++j)
-        {
-            ViewerPlot *plot = plist->GetPlot(j);
-            if(plot->GetNamedSelection() == selName)
-            {
-                plot->SetNamedSelection(newSelName);
-                plot->ClearActors();
-
-                plotlistsChanged[i] = true;
-            }
-        }
-    }
-
-    // Update the plot list in the client.
-    wMgr->GetActiveWindow()->GetPlotList()->UpdatePlotList();
-
-    TRY
-    {   
-        // Reexecute all of the affected plots.
-        for(int i = 0; i < nWindows; ++i)
-        {
-            if(plotlistsChanged[i])
-            {
-                wMgr->GetWindow(windowIndices[i])->GetPlotList()->
-                    RealizePlots(false);
-            }
-        }
-    }
-    CATCH(VisItException)
-    {
-        ;
-    }
-    ENDTRY
-
-    delete [] windowIndices;
-    delete [] plotlistsChanged;
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::DeleteNamedSelection()
-//
-//  Purpose: Handle a DeleteNamedSelection RPC
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 28, 2009
-//
-//  Modifications:
-//    Brad Whitlock, Wed Aug 11 11:09:46 PDT 2010
-//    I added code to remove the selection from the list and from plots that 
-//    use it.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::DeleteNamedSelection()
-{
-    //
-    // Get the rpc arguments.
-    //
-    std::string selName(GetViewerState()->GetViewerRPC()->GetStringArg1());
-
-    //
-    // Perform the RPC.
-    //
-    bool okay = false;
-    ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-    EngineKey engineKey;
-
-    TRY
-    {
-        // Actually delete the selection.
-        okay = GetNamedSelectionEngineKey(selName, engineKey);
-        if(okay)
-            okay = ViewerEngineManager::Instance()->DeleteNamedSelection(engineKey, selName);
-    }
-    CATCH2(VisItException, e)
-    {
-        char message[1024];
-        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
-                                              e.Message().c_str());
-        Error(message);
-    }
-    ENDTRY
-
-    // Make all plots that used the selection have no selection and make
-    // them redraw.
-    ReplaceNamedSelection(engineKey, selName, "");
-
-    if(okay)
-        Message(tr("Deleted named selection"));
-    else
-        Error(tr("Unable to delete named selection"));
-
-    // Remove the selection from the selection list.
-    int index = wMgr->GetSelectionList()->GetSelection(selName);
-    if(index != -1)
-    {
-        wMgr->GetSelectionList()->RemoveSelections(index);
-        wMgr->GetSelectionList()->Notify();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  ViewerSubject::LoadNamedSelection()
-//
-//  Purpose: Handle a LoadNamedSelection RPC
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 28, 2009
-//
-//  Modifications:
-//    Brad Whitlock, Mon Oct 11 16:04:41 PDT 2010
-//    Add the new file-based selection to the list.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::LoadNamedSelection()
-{
-    //
-    // Get the rpc arguments.
-    //
-    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
-
-    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
-    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
-
-    EngineKey engineKey(hostName, simName);
-
-    //
-    // Perform the RPC.
-    //
-    TRY
-    {
-        if (ViewerEngineManager::Instance()->LoadNamedSelection(engineKey, selName))
-        {
-            Message(tr("Loaded named selection"));
-
-            ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-
-            // Remove any selection that may already exist by this name.
-            int index = wMgr->GetSelectionList()->GetSelection(selName);
-            if(index >= 0)
-                wMgr->GetSelectionList()->RemoveSelections(index);
-
-            // Add a new selection to the selection list. Just set the name so
-            // it will not have an originating plot.
-            SelectionProperties props;
-            props.SetName(selName);
-            wMgr->GetSelectionList()->AddSelections(props);
-            wMgr->GetSelectionList()->Notify();
-        }
-        else
-        {
-            Error(tr("Unable to load named selection"));
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        char message[1024];
-        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
-                                             e.Message().c_str());
-        Error(message);
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::UpdateNamedSelection
-//
-// Purpose: 
-//   Update the specified named selection.
-//
-// Arguments:
-//   selName     : The name of the selection to update.
-//   updatePlots : Whether to update plots.
-//   allowCache  : Whether the NSM's intermediate data cache can be used.
-//
-// Returns:    
-//
-// Note:       This routine deletes the named selection, recreates it and
-//             updates any plots that use it.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 13 13:59:06 PDT 2010
-//
-// Modifications:
-//   Brad Whitlock, Tue Dec 14 11:47:12 PST 2010
-//   Pass selection properties to the engine manager.
-//
-//   Brad Whitlock, Thu Jun  9 11:26:20 PDT 2011
-//   Adjust to allow for selections that come from files.
-//
-//   Brad Whitlock, Fri Aug 19 12:33:03 PDT 2011
-//   Send expressions to the engine to make sure that it has them.
-//
-//   Brad Whitlock, Wed Sep  7 14:42:21 PDT 2011
-//   I added the allowCache argument.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::UpdateNamedSelection(const std::string &selName, bool updatePlots,
-    bool allowCache)
-{
-    EngineKey engineKey;
-    bool okay = GetNamedSelectionEngineKey(selName, engineKey);
-    if(!okay)
-    {
-        Error(tr("VisIt could not determine the source or plot that creates "
-                 "the %1 selection.").arg(selName.c_str()));
-        return;
-    }
-
-    ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-    int selIndex = wMgr->GetSelectionList()->GetSelection(selName);
-    if(selIndex < 0)
-    {
-        Error(tr("VisIt cannot update the %1 selection because it does "
-                 "not exist").arg(selName.c_str()));
-        return;
-    }
-    const SelectionProperties &props = wMgr->GetSelectionList()->
-        GetSelections(selIndex);
-    std::string originatingPlot = props.GetOriginatingPlot();
-
-    //
-    // Get the network id of the originating plot.
-    //
-    int networkId = -1;
-    int nWindows = 0, *windowIndices = 0;
-    windowIndices = wMgr->GetWindowIndices(&nWindows);
-    stringVector plotNames;
-    for(int i = 0; i < nWindows && networkId == -1; ++i)
-    {
-        ViewerWindow *win = wMgr->GetWindow(windowIndices[i]);
-        ViewerPlotList *plist = win->GetPlotList();
-        for(int j = 0; j < plist->GetNumPlots() && networkId == -1; ++j)
-        {
-            ViewerPlot *plot = plist->GetPlot(j);
-            if(plot->GetPlotName() == originatingPlot)
-                networkId = plot->GetNetworkID();
-        }
-    }
-    delete [] windowIndices;
-
-    // If we have a selection based on a database, send the expression list 
-    // to the engine.
-    if(networkId == -1)
-    {
-        ExpressionList exprList;
-        std::string host, db, sim, src(props.GetSource());
-        ViewerFileServer::Instance()->ExpandDatabaseName(src, host, db);
-        ViewerFileServer::Instance()->GetAllExpressions(exprList, host, db, 
-            ViewerFileServer::ANY_STATE);
-        ViewerEngineManager::Instance()->UpdateExpressions(engineKey, exprList);
-    }
-
-    // Create the named selection again and reapply it to plots that use it.
-    if(ViewerEngineManager::Instance()->UpdateNamedSelection(
-         engineKey, networkId, props, allowCache))
-    {
-        if(updatePlots)
-            ReplaceNamedSelection(engineKey, selName, selName);
-    }
-
-    // Send list of selections to the clients so the selection summary is 
-    // sent back.
-    wMgr->GetSelectionList()->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::UpdateNamedSelection
-//
-// Purpose: 
-//   This function handles the UpdateNamedSelection RPC.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 13 14:00:58 PDT 2010
-//
-// Modifications:
-//   Brad Whitlock, Mon Aug 22 16:33:41 PDT 2011
-//   Get updatePlots flag from the rpc.
-//
-//   Brad Whitlock, Wed Sep  7 15:25:17 PDT 2011
-//   Get allowCache flag from the rpc.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::UpdateNamedSelection()
-{
-    std::string selName(GetViewerState()->GetViewerRPC()->GetStringArg1());
-
-    // Poke the new selection properties into the selection list.
-    if(GetViewerState()->GetViewerRPC()->GetBoolFlag())
-    {
-        ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-        int selIndex = wMgr->GetSelectionList()->GetSelection(selName);
-        if(selIndex < 0)
-            return;
-        SelectionProperties &props = wMgr->GetSelectionList()->
-            GetSelections(selIndex);
-        props = *wMgr->GetSelectionProperties();
-    }
-
-    bool updatePlots = (GetViewerState()->GetViewerRPC()->GetIntArg1() != 0);
-    bool allowCache = (GetViewerState()->GetViewerRPC()->GetIntArg2() != 0);
-
-    UpdateNamedSelection(selName, updatePlots, allowCache);
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SaveNamedSelection()
-//
-//  Purpose: Handle a SaveNamedSelection RPC
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 28, 2009
-//
-//  Modifications:
-//    Brad Whitlock, Wed Aug 11 15:07:04 PDT 2010
-//    Get the engine key associated with the selection name.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SaveNamedSelection()
-{
-    //
-    // Get the rpc arguments.
-    //
-    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
-
-    //
-    // Perform the RPC.
-    //
-    TRY
-    {
-        EngineKey engineKey;
-        bool okay = GetNamedSelectionEngineKey(selName, engineKey);
-
-        if(okay)
-            okay = ViewerEngineManager::Instance()->SaveNamedSelection(engineKey, selName);
-
-        if (okay)
-        {
-            Message(tr("Saved named selection"));
-        }
-        else
-        {
-            Error(tr("Unable to save named selection"));
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        char message[1024];
-        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
-                                             e.Message().c_str());
-        Error(message);
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::SetNamedSelectionAutoApply
-//
-// Purpose: 
-//   Sets the auto apply mode for named selections.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Aug 11 16:13:00 PDT 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetNamedSelectionAutoApply()
-{
-    ViewerWindowManager::GetSelectionList()->SetAutoApplyUpdates(
-        GetViewerState()->GetViewerRPC()->GetBoolFlag());
-    ViewerWindowManager::GetSelectionList()->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::InitializeNamedSelectionVariables
-//
-// Purpose: 
-//   Initialize the named selection's range variable list based on the 
-//   originating plot's variables.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon May  2 15:02:19 PDT 2011
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::InitializeNamedSelectionVariables()
-{
-    std::string selName(GetViewerState()->GetViewerRPC()->GetStringArg1());
-
-    EngineKey engineKey;
-    bool okay = GetNamedSelectionEngineKey(selName, engineKey);
-    if(!okay)
-        return;
-
-    ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
-    int selIndex = wMgr->GetSelectionList()->GetSelection(selName);
-    if(selIndex < 0)
-        return;
-    SelectionProperties &props = wMgr->GetSelectionList()->
-        GetSelections(selIndex);
-    std::string originatingPlot = props.GetOriginatingPlot();
-
-    bool notHandled = true;
-    int nWindows = 0;
-    int *winIndices = wMgr->GetWindowIndices(&nWindows);
-    for(int w = 0; w < nWindows && notHandled; ++w)
-    {
-        ViewerPlotList *pL = wMgr->GetWindow(winIndices[w])->GetPlotList();
-        for(int i = 0; i < pL->GetNumPlots() && notHandled; ++i)
-        {
-            // We found the originating plot
-            if(pL->GetPlot(i)->GetPlotName() == originatingPlot)
-            {
-                AttributeSubject *vr = pL->GetPlot(i)->GetPlotAtts()->
-                    CreateCompatible("AxisRestrictionAttributes");
-                AxisRestrictionAttributes *varRanges = 
-                    dynamic_cast<AxisRestrictionAttributes *>(vr);
-                if(varRanges != NULL)
-                {
-                    // Override the variables and ranges with the ones from the plot.
-                    props.SetVariables(varRanges->GetNames());
-                    props.SetVariableMins(varRanges->GetMinima());
-                    props.SetVariableMaxs(varRanges->GetMaxima());
-
-                    delete vr;
-
-#if 0
-                    // Clear the selection summary
-                    int summaryIdx = wMgr->GetSelectionList()->GetSelectionSummary(selName);
-                    if(summaryIdx != -1)
-                    {
-                        wMgr->GetSelectionList()->GetSelectionSummary(summaryIdx).ClearVariables();
-                    }
-#endif
-
-                    // Send out the new selection list
-                    wMgr->GetSelectionList()->SelectAll();
-                    wMgr->GetSelectionList()->Notify();
-                }
-                
-                notHandled = false;
-            }
-        }
-    }
-
-    delete [] winIndices;
-}
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetSuppressMessages()
-//
-//  Purpose: Handle a SetSuppressMessages RPC
-//
-//  Programmer:  Cyrus Harrison
-//  Creation:    February  21, 2008
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetSuppressMessages()
-{
-    bool value = (bool) GetViewerState()->GetViewerRPC()->GetIntArg1();
-    if(value)
-        EnableMessageSuppression();
-    else
-        DisableMessageSuppression();
-}
-
-
-// ****************************************************************************
-//  Method:  ViewerSubject::SetDefaultFileOpenOptions
-//
-//  Purpose:
-//    Makes the current state file open options the default for all
-//    future opening actions by broadcasting them to the existing
-//    metadata servers and engines, and having the file server and
-//    engine manager keep track of them and send them to new engines/
-//    mdservers.
-//
-//  Arguments:
-//    none
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 23, 2008
-//
-// ****************************************************************************
-
-void
-ViewerSubject::SetDefaultFileOpenOptions()
-{
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    fs->BroadcastUpdatedFileOpenOptions();
-    ViewerEngineManager *em = ViewerEngineManager::Instance();
-    em->UpdateDefaultFileOpenOptions(fs->GetFileOpenOptions());
-}
-
-// ****************************************************************************
 // Method: ViewerSubject::GetNowinMode
 //
 // Purpose: 
@@ -11868,125 +5222,7 @@ ViewerSubject::SetNowinMode(bool value)
     avtCallback::SetSoftwareRendering(value);
     avtCallback::SetNowinMode(value);
 }
-
-
-// ****************************************************************************
-// Method:  CleanHostProfileCallback
-//
-// Purpose:
-//   Callback for directory processing.  Unlinks old host profiles.
-//
-// Arguments:
-//   file       the current filename
-//   isdir      true if it's a directory
-//
-// Programmer:  Jeremy Meredith
-// Creation:    February 18, 2010
-//
-// ****************************************************************************
-static void
-CleanHostProfileCallback(void *,
-                         const string &file,
-                         bool isdir,
-                         bool canaccess,
-                         long size)
-{
-    if (isdir)
-        return;
-    string base = StringHelpers::Basename(file.c_str());
-    if (base.length()<=5 ||
-        (base.substr(0,5) != "host_" &&
-         base.substr(0,5) != "HOST_"))
-        return;
-    if (base.length()<=4 ||
-        (base.substr(base.length()-4) != ".xml" &&
-         base.substr(base.length()-4) != ".XML"))
-        return;
-#ifdef WIN32
-    _unlink(file.c_str());
-#else
-    unlink(file.c_str());
-#endif
-}
-
-// ****************************************************************************
-// Method:  ReadostProfileCallback
-//
-// Purpose:
-//   Callback for directory processing.  Reads old host profiles.
-//
-// Arguments:
-//   hpl        the host profile list to load into
-//   file       the current filename
-//   isdir      true if it's a directory
-//
-// Programmer:  Jeremy Meredith
-// Creation:    February 18, 2010
-//
-// Modifications:
-//   Jeremy Meredith, Wed Apr 21 11:29:10 EDT 2010
-//   If we're reading something with the same nickname, clobber the old one.
-//   This allows user-saved profiles to override system ones.
-//
-//   Jeremy Meredith, Thu Apr 29 15:05:52 EDT 2010
-//   Don't completely override the old one -- instead, import it over top of
-//   the original one.  We no longer assume that host profiles saved to disk
-//   are complete -- they now only contain values users changed from the 
-//   system-global host profiles.
-//
-// ****************************************************************************
-static void
-ReadHostProfileCallback(void *hpl,
-                        const string &file,
-                        bool isdir,
-                        bool canaccess,
-                        long size)
-{
-    HostProfileList *profileList = (HostProfileList*)hpl;
-    if (isdir)
-        return;
-    string base = StringHelpers::Basename(file.c_str());
-    if (base.length()<=5 ||
-        (base.substr(0,5) != "host_" &&
-         base.substr(0,5) != "HOST_"))
-        return;
-    if (base.length()<=4 ||
-        (base.substr(base.length()-4) != ".xml" &&
-         base.substr(base.length()-4) != ".XML"))
-        return;
-
-    // Import the machine profile
-    MachineProfile mp;
-    SingleAttributeConfigManager mgr(&mp);
-    mgr.Import(file);
-    mp.SelectAll();
-
-    // If it matches one of the existing ones, import it
-    // over top of the old one so the old settings remain
-    bool found = false;
-    for (int i=0; i<profileList->GetNumMachines(); i++)
-    {
-        MachineProfile &mpold(profileList->GetMachines(i));
-        if (mpold.GetHostNickname() == mp.GetHostNickname())
-        {
-            // note: yes, it's less inefficient to import it
-            // twice, but the only easy way to override only
-            // some of the old settings instead of all of them
-            SingleAttributeConfigManager mgr2(&mpold);
-            mgr2.Import(file);
-            found = true;
-            break;
-        }
-    }
-    // and if it doesn't match, just add it to the list
-    if (!found)
-    {
-        profileList->AddMachines(mp);
-    }
-    mp.SelectAll();
-    profileList->SelectMachines();
-}
-                             
+                 
 // ****************************************************************************
 // Method: ViewerSubject::OpenWithEngine
 //
@@ -12018,16 +5254,14 @@ ViewerSubject::OpenWithEngine(const std::string &remoteHost,
 
     // We use the data argument to pass in a pointer to the connection
     // progress window.
-    ViewerConnectionProgressDialog *dialog =
-        (ViewerConnectionProgressDialog *)data;
+    ViewerConnectionProgress *progress = (ViewerConnectionProgress *)data;
 
-    if(dialog != NULL)
-        dialog->setIgnoreHide(true);
+    if(progress != NULL)
+        progress->SetIgnoreHide(true);
 
     // Launch an engine if one does not exist so we're able to use the
     // same dialog as the mdserver.
-    ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-    if(!eMgr->EngineExists(ek))
+    if(!GetViewerEngineManager()->EngineExists(ek))
     {
         debug1 << mName << "Creating engine for " << ek.HostName() << endl;
 
@@ -12035,71 +5269,353 @@ ViewerSubject::OpenWithEngine(const std::string &remoteHost,
         bool skipChooser = false;
         int numRestarts = 0;
         bool reverseLaunch = false;
-        eMgr->CreateEngineEx(ek, moreArgs, skipChooser, numRestarts, 
-            reverseLaunch, dialog);
+        GetViewerEngineManager()->CreateEngineEx(ek, moreArgs, skipChooser, numRestarts, 
+            reverseLaunch, progress);
     }
 
     debug1 << mName << "Telling engine on host " << ek.HostName() << "to run program:" << endl;
     for(size_t i = 0; i < args.size(); ++i)
         debug1 << "\t" << args[i] << endl;
     debug1 << endl;
-    eMgr->LaunchProcess(ek, args);
+    GetViewerEngineManager()->LaunchProcess(ek, args);
 
-    if(dialog != NULL)
-        dialog->setIgnoreHide(false);
+    if(progress != NULL)
+        progress->SetIgnoreHide(false);
 
     debug1 << mName << "end" << endl;
 }
 
 // ****************************************************************************
-// Method:  DDTConnect
+// Method: ViewerSubject::AnimationCallback
 //
 // Purpose:
-//   Connects/disconnects the viewer with DDT
+//   This callback function is registered with ViewerWindowManager to provide
+//   animation timer services.
 //
-// Programmer:  Jonathan Byrd
-// Creation:    December 18, 2011
+// Arguments:
+//   op     : The operation 0==update, 1=stop.
+//   cbdata : the callback data.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep  2 15:40:04 PDT 2014
+//
+// Modifications:
 //
 // ****************************************************************************
 
-void ViewerSubject::DDTConnect()
+void
+ViewerSubject::AnimationCallback(int op, void *cbdata)
 {
-    DDTManager* manager = DDTManager::getInstance();
-    DDTSession* ddt = manager->getSessionNC();
-    if (ddt!=NULL && ddt->connected())
-        manager->disconnect();
-    else if (ddt==NULL)
-        ddt = manager->makeConnection();
+    ViewerSubject *This = (ViewerSubject *)cbdata;
+    if(op == 0)
+        This->UpdateAnimationTimer();
+    else
+        This->StopAnimationTimer();
 }
 
 // ****************************************************************************
-// Method:  DDTFocus
+//  Method: ViewerSubject::UpdateAnimationTimer
 //
-// Purpose:
-//   Instructs DDT to focus on a specific domain & element
+//  Purpose: 
+//    This routine determines if the timer for performing animations should
+//    be changed (either turned on or off) based on the current state of the
+//    timer and the state of all the animations.
 //
-// Programmer:  Jonathan Byrd
-// Creation:    December 18, 2011
+//  Programmer: Eric Brugger
+//  Creation:   October 26, 2001
 //
-// Modifications:
-//   Jonathan Byrd, Mon Feb 4, 2013
-//   Focus on variable & element within a domain, not just a domain
+//  Modifications:
+//    Brad Whitlock, Tue May 14 11:25:01 PDT 2002
+//    Added code to allow the playback speed to be changed.
+//
+//    Brad Whitlock, Tue Jul 23 17:03:59 PST 2002
+//    I fixed a bug that prevented animations from playing if the first
+//    window does not exist.
+//
+//    Brad Whitlock, Wed Jan 22 16:48:41 PST 2003
+//    I added code to turn off the animation timer if the windows are hidden
+//    or iconified.
+//
+//    Brad Whitlock, Wed Mar 12 09:44:55 PDT 2003
+//    I added a check to make sure that individual windows are checked for
+//    visibility before they are considered for animation.
+//
+//    Brad Whitlock, Mon Jan 26 09:49:19 PDT 2004
+//    I changed how we check the window for animation.
+//
+//    Brad Whitlock, Wed Dec 10 16:24:29 PST 2008
+//    Use AnimationAttributes.
+//
+//    Brad Whitlock, Tue Sep  2 15:37:13 PDT 2014
+//    Rewrite for ViewerSubject.
 //
 // ****************************************************************************
 
-void ViewerSubject::DDTFocus()
+void
+ViewerSubject::UpdateAnimationTimer()
 {
-    const int domain  = GetViewerState()->GetViewerRPC()->GetIntArg1();
-    const int element = GetViewerState()->GetViewerRPC()->GetIntArg2();
-    const std::string variable = GetViewerState()->GetViewerRPC()->GetStringArg1();
-    const std::string value    = GetViewerState()->GetViewerRPC()->GetStringArg2();
-
-    DDTSession* ddt = DDTManager::getInstance()->getSession();
-    if (ddt!=NULL)
-        ddt->setFocusOnElement(domain, variable, element, value);
+    //
+    // Determine if any animations are playing.
+    //
+    bool playing = false;
+    ViewerWindowManager *windowMgr = ViewerWindowManager::Instance();
+    if(windowMgr->GetWindowsHidden() || windowMgr->GetWindowsIconified())
+         playing = false;
     else
-        Error(tr("Cannot focus DDT on domain %0, element %1 of %2:: failed to connect to DDT").arg(
-                    QString::number(domain),
-                    QString::number(element),
-                    QString::fromLatin1(variable.c_str())));
+    {
+         // Look for an animation that is playing.
+        std::vector<ViewerWindow *> windows = windowMgr->GetWindows();
+        for (size_t i = 0; i < windows.size(); i++)
+        {
+            if (windows[i]->IsVisible())
+            {
+                AnimationAttributes::AnimationMode mode =
+                    windows[i]->GetPlotList()->GetAnimationAttributes().GetAnimationMode();
+
+                if (mode == AnimationAttributes::PlayMode ||
+                    mode == AnimationAttributes::ReversePlayMode)
+                {
+                    playing = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    //
+    // Turn on timer if one doesn't already exist and an animation is
+    // playing or turn off the timer if it is on and no animations are
+    // playing.
+    //
+    if (playing)
+    {
+        int timeout = GetViewerState()->GetAnimationAttributes()->GetTimeout();
+        if (!timer->isActive())
+        {
+            timer->start(timeout);
+        }
+        else if(timeout != animationTimeout)
+        {
+            // Change the playback speed.
+            timer->setInterval(timeout);
+        }
+        animationTimeout = timeout;
+    }
+    else if (timer->isActive())
+        timer->stop();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::StopAnimationTimer
+//
+// Purpose: 
+//   Turns off the animation timer and makes all animations stop.
+//
+// Note:       This method is only called when a window is deleted using
+//             the window decorations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 24 17:50:04 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Mon Jan 26 09:48:30 PDT 2004
+//   I changed how animations are stopped.
+//
+//   Brad Whitlock, Wed Dec 10 16:27:15 PST 2008
+//   Use AnimationAttributes.
+//
+//   Brad Whitlock, Tue Sep  2 15:37:13 PDT 2014
+//   Rewrite for ViewerSubject.
+//
+// ****************************************************************************
+
+void
+ViewerSubject::StopAnimationTimer()
+{
+    if(timer->isActive())
+    {
+        //
+        // Turn off the timer so we don't try to animate anything while
+        // we're waiting for the window to delete.
+        //
+        timer->stop();
+
+        //
+        // Turn off animation in all windows.
+        //
+        int numWindows = 0;
+        std::vector<ViewerWindow *> windows = ViewerWindowManager::Instance()->GetWindows();
+        for(size_t i = 0; i < windows.size(); ++i)
+        {
+            AnimationAttributes a(windows[i]->GetPlotList()->GetAnimationAttributes());
+            a.SetAnimationMode(AnimationAttributes::StopMode);
+            windows[i]->GetPlotList()->SetAnimationAttributes(a);
+            ++numWindows;
+        }
+
+        //
+        // If there is only one window, update the global atts since there
+        // will be no pending delete to update them.
+        //
+        if(numWindows < 2)
+            ViewerWindowManager::Instance()->UpdateWindowInformation(WINDOWINFO_ANIMATION);
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::HandleAnimation
+//
+//  Purpose: 
+//    This routine gets called whenever the animation timer goes off.  It
+//    advances the appropriate animation to the next frame.  The routine
+//    uses a round robin approach to decide which animation to advance so
+//    so that all the animations will get advanced synchronously.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 26, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Thu May 9 12:33:53 PDT 2002
+//    Added code to prevent going to the next frame when the engine is
+//    already executing.
+//
+//    Brad Whitlock, Wed Jul 24 14:55:50 PST 2002
+//    I fixed the scheduling algorithm for choosing the next window.
+//
+//    Brad Whitlock, Tue Sep 9 15:16:55 PST 2003
+//    I added code to tell the ViewerSubject to process some of the input
+//    that it received from the client. I had to do this because the animation's
+//    NextFrame and PrevFrame methods often need to get a new plot from the
+//    compute engine. It uses an RPC to do that and while it is in the RPC,
+//    it checks for new input from the client and it looks for an interrupt
+//    opcode in that input. If it finds an interrupt then it interrupts,
+//    otherwise the input is left unprocessed in the input buffer. The RPC
+//    also calls some code to process Qt window events. Unfortunately, that
+//    function call does not process client input because the socket has been
+//    read. This is okay because it would process client input, which could
+//    potentially alter the plot, in the middle of executing a plot. To fix
+//    the situation, I tell the ViewerSubject to process any client input
+//    that it has after the plot has been executed. This lets us process
+//    client input without the danger of being inside the engine proxy's
+//    Execute RPC and it is pretty much a noop when we get to this function
+//    with an animation that's been cached.
+//
+//    Brad Whitlock, Mon Jan 26 09:51:08 PDT 2004
+//    I changed how we check for animation since there are now multiple
+//    time sliders that could update.
+//
+//    Brad Whitlock, Wed Dec 10 16:25:10 PST 2008
+//    Use AnimationAttributes.
+//
+//    Brad Whitlock, Fri Jan 9 15:05:09 PST 2009
+//    Added code to make sure that exceptions do not get propagated into the
+//    Qt event loop.
+//
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
+//
+//    Brad Whitlock, Tue Sep  2 15:37:13 PDT 2014
+//    Rewrite for ViewerSubject.
+//
+// ****************************************************************************
+
+void
+ViewerSubject::HandleAnimation()
+{
+    ViewerWindowManager *windowMgr = ViewerWindowManager::Instance();
+
+    //
+    // Return without doing anything if the engine is executing.
+    //
+    if(GetViewerProperties()->GetInExecute() || 
+       windowMgr->GetWindowsHidden() ||
+       windowMgr->GetWindowsIconified())
+    {
+        return;
+    }
+
+    //
+    // Determine the next animation to update.
+    //
+    std::vector<ViewerWindow *> windows = windowMgr->GetWindows();
+    int i, startFrame = lastAnimation + 1;
+    if(startFrame == (int)windows.size())
+        startFrame = 0;
+    for(i = startFrame; i != lastAnimation; )
+    {
+        AnimationAttributes::AnimationMode mode =
+            windows[i]->GetPlotList()->GetAnimationAttributes().GetAnimationMode();
+
+        if (mode == AnimationAttributes::PlayMode ||
+            mode == AnimationAttributes::ReversePlayMode)
+        {
+            lastAnimation = i;
+            break;
+        }
+
+        // Go to the next window index wrapping around if needed.
+        if(i == int(windows.size() - 1))
+            i = 0;
+        else
+            ++i;
+    }
+
+    //
+    // Advance the animation if animation is allowed for the new
+    // animation. We check the flag first in case the window was deleted.
+    //
+    if(windows[lastAnimation] != NULL)
+    {
+        AnimationAttributes::AnimationMode mode =
+            windows[lastAnimation]->GetPlotList()->GetAnimationAttributes().GetAnimationMode();
+
+        // Prevent the timer from emitting any signals since the
+        // code to handle animation may get back to the Qt event
+        // loop which makes it possible to get back here reentrantly.
+        timer->blockSignals(true);
+
+        TRY
+        {
+            if (mode == AnimationAttributes::PlayMode)
+            {
+                // Change to the next frame in the animation, which will likely
+                // cause us to have to read a plot from the compute engine.
+                windows[lastAnimation]->GetPlotList()->ForwardStep();
+
+                // Send new window information to the client if we're animating
+                // the active window.
+                windowMgr->UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
+
+                // Process any client input that we had to ignore while reading
+                // the plot from the compute engine.
+                ProcessFromParent();
+            }
+            else if(mode == AnimationAttributes::ReversePlayMode)
+            {
+                // Change to the next frame in the animation, which will likely
+                // cause us to have to read a plot from the compute engine.
+                windows[lastAnimation]->GetPlotList()->BackwardStep();
+
+                // Send new window information to the client if we're animating
+                // the active window.
+                windowMgr->UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
+
+                // Process any client input that we had to ignore while reading
+                // the plot from the compute engine.
+                ProcessFromParent();
+            }
+        }
+        CATCHALL
+        {
+            ; // nothing
+        }
+        ENDTRY 
+
+        // Start the timer up again.
+        timer->blockSignals(false);
+    }
 }

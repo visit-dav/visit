@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* SurfCompPrep_GetEngineInfo()
 {
+    SurfCompPrepEnginePluginInfo::InitializeGlobalObjects();
     return new SurfCompPrepEnginePluginInfo;
 }
 

@@ -55,10 +55,19 @@
 #include <DebugStream.h>
 #include <vtkImageResample.h>
 
+#include <snprintf.h>
+
 // This array contains strings that correspond to the file types that are 
 // enumerated in the ImageFileFormat enum.
-const char *avtImageFileWriter::extensions[] = {
-".bmp", ".jpeg", ".png", ".ps", ".ppm", ".rgb", ".tif"};
+const char *avtImageFileWriter::extensions[][4] = {
+{".bmp", ".BMP", NULL, NULL},
+{".jpeg", ".jpg", ".JPEG", ".JPG"},
+{".png", ".PNG", NULL, NULL},
+{".ps", ".PS", NULL, NULL},
+{".ppm", ".PPM", NULL, NULL},
+{".rgb", ".RGB", NULL, NULL},
+{".tif", ".tiff", ".TIF", ".TIFF"}
+};
 
 
 // ****************************************************************************
@@ -293,6 +302,11 @@ avtImageFileWriter::FileHasExtension(const char *filename, const char *ext) cons
 //   Fixed a problem that caused the file base from being ignored when files
 //   did not have an extension.
 //
+//   Brad Whitlock, Thu Sep 18 22:55:57 PDT 2014
+//   Check some other file extensions before appending the default file
+//   extension for the format. This is because some file formats have allowable
+//   file extension variants.
+//
 // ****************************************************************************
 
 char *
@@ -301,6 +315,7 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
 {
     char *str = NULL;
     int len = strlen(base);
+    int iformat = (int)format;
 
     // Reset the nFilesWritten count if the file base changes.
     if(family)
@@ -320,23 +335,33 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
         }
     }
 
-    // Get memory for the filename. The 9 is for "0000.tif"
-    str = new char[len + 1 + 9];
+    // Get memory for the filename. The 10 is for "0000.jpeg"
+    len += (1 + 10);
+    str = new char[len];
 
     // The family flag indicates whether or not to include the number of
     // files written as part of the filename.
     if(family)
     {
-        sprintf(str, "%s%04d%s", base, nFilesWritten,
-                extensions[(int)format]);
+        SNPRINTF(str, len, "%s%04d%s", base, nFilesWritten,
+                 extensions[iformat][0]);
     }
     else
     {
-        sprintf(str, "%s", base);
+        SNPRINTF(str, len, "%s", base);
 
-        if(!FileHasExtension(base, extensions[(int)format]))
+        // We're passing a full filename. See if we need to append a 
+        // file extension.
+        bool hasExtension = false;
+        for(int i = 0; i < 4; ++i)
         {
-            sprintf(str, "%s%s", base, extensions[(int)format]);
+            if(extensions[iformat][i] != NULL)
+                hasExtension |= FileHasExtension(base, extensions[iformat][i]);
+        }
+
+        if(!hasExtension)
+        {
+            SNPRINTF(str, len, "%s%s", base, extensions[iformat][0]);
         }
     }
 
@@ -347,7 +372,7 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
 }
 
 // ****************************************************************************
-// Method: avtImageFileWriter::WriteToString
+// Method: avtImageFileWriter::WriteToByteArray
 //
 // Purpose:
 //   Writes image to byte array

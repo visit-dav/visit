@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* BoundaryOp_GetEngineInfo()
 {
+    BoundaryOpEnginePluginInfo::InitializeGlobalObjects();
     return new BoundaryOpEnginePluginInfo;
 }
 

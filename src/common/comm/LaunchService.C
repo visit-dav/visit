@@ -382,8 +382,7 @@ LaunchService::Launch(const stringVector &origLaunchArgs, bool doBridge,
             close(k);
         }
         // Execute the process on the local machine.
-        if (remoteProgram.size() > 0 && remoteProgram[0] == '~')
-            remoteProgram = ExpandUserPath(remoteProgram);
+        remoteProgram = FileFunctions::ExpandPath(remoteProgram);
         execvp(remoteProgram.c_str(), args);
         exit(-1); // HOOKS_IGNORE
         break;   // OCD

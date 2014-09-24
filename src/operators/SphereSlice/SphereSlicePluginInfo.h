@@ -87,7 +87,7 @@ class SphereSliceGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vi
     virtual const char **XPMIconData() const;
 };
 
-class SphereSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SphereSliceCommonPluginInfo
+class SphereSliceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual SphereSliceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class SphereSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class SphereSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     static SphereSliceAttributes *clientAtts;
 };
 
-class SphereSliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SphereSliceCommonPluginInfo
+class SphereSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SphereSliceViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class SphereSliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SphereSliceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

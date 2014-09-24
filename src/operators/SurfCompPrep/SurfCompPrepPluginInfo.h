@@ -86,7 +86,7 @@ class SurfCompPrepGUIPluginInfo : public virtual GUIOperatorPluginInfo, public v
         QvisNotepadArea *notepad);
 };
 
-class SurfCompPrepViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SurfCompPrepCommonPluginInfo
+class SurfCompPrepViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual SurfCompPrepCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class SurfCompPrepViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pu
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class SurfCompPrepViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pu
     static SurfCompPrepAttributes *clientAtts;
 };
 
-class SurfCompPrepEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SurfCompPrepCommonPluginInfo
+class SurfCompPrepViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SurfCompPrepViewerEnginePluginInfo
+{
+  public:
+};
+
+class SurfCompPrepEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SurfCompPrepViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

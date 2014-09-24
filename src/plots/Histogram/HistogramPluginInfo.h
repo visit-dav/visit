@@ -80,20 +80,20 @@ class HistogramCommonPluginInfo : public virtual CommonPlotPluginInfo, public vi
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class HistogramGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual HistogramCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class HistogramViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual HistogramCommonPluginInfo
+class HistogramViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual HistogramCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -104,23 +104,26 @@ class HistogramViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vi
     virtual avtPlot *AllocAvtPlot();
 
     virtual bool ProvidesLegend() const;
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static HistogramAttributes *defaultAtts;
     static HistogramAttributes *clientAtts;
 };
 
-class HistogramEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual HistogramCommonPluginInfo
+class HistogramViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual HistogramViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class HistogramEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual HistogramViewerEnginePluginInfo
+{
+  public:
 };
 
 class HistogramScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual HistogramCommonPluginInfo

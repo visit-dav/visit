@@ -87,7 +87,7 @@ class ThreeSliceGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vir
     virtual const char **XPMIconData() const;
 };
 
-class ThreeSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ThreeSliceCommonPluginInfo
+class ThreeSliceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ThreeSliceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class ThreeSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publ
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class ThreeSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publ
     static ThreeSliceAttributes *clientAtts;
 };
 
-class ThreeSliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ThreeSliceCommonPluginInfo
+class ThreeSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ThreeSliceViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class ThreeSliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ThreeSliceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

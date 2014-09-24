@@ -353,34 +353,14 @@ avtTSurfFileFormat::ReadFile(const char *name, int nLines)
     int nCells = 100;
     if(nLines == ALL_LINES)
     {
-#if 0
-        // Do it this way for VisIt 1.5.3
-        VisItStat_t statbuf;
-        VisItStat(name, &statbuf);
-        VisItOff_t fileSize = statbuf.st_size;
+        FileFunctions::VisItStat_t statbuf;
+        FileFunctions::VisItStat(name, &statbuf);
+        FileFunctions::VisItOff_t fileSize = statbuf.st_size;
 
         // Make a guess about the number of cells and points based on
         // the size of the file.
-        nPoints = fileSize / (VisItOff_t) 60;
-        nCells  = fileSize / (VisItOff_t) 45;
-#else
-        // For now
-        long fileSize = 0;
-        FILE *fp = fopen(name, "rb");
-        if(fp == 0)
-        {
-            EXCEPTION1(InvalidFilesException, name);
-        }
-        fseek(fp, 0, SEEK_END);
-        fileSize = ftell(fp);
-        fclose(fp);
-        debug4 << "File is " << fileSize << " bytes long." << endl;
-
-        // Make a guess about the number of cells and points based on
-        // the size of the file.
-        nPoints = fileSize / 60;
-        nCells  = fileSize / 45;
-#endif
+        nPoints = fileSize / (FileFunctions::VisItOff_t) 60;
+        nCells  = fileSize / (FileFunctions::VisItOff_t) 45;
     }
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(nPoints);

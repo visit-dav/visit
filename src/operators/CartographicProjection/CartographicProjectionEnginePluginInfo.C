@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* CartographicProjection_GetEngineInfo()
 {
+    CartographicProjectionEnginePluginInfo::InitializeGlobalObjects();
     return new CartographicProjectionEnginePluginInfo;
 }
 

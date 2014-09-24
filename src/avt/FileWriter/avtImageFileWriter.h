@@ -96,7 +96,7 @@ class vtkImageWriter;
 //    have problems with them.
 //
 //    Brad Whitlock, Mon Mar 6 17:35:28 PST 2006
-//    I made it reset nFilesWritten if the nase changes.
+//    I made it reset nFilesWritten if the base changes.
 //
 // ****************************************************************************
 
@@ -127,7 +127,7 @@ class AVTFILEWRITER_API avtImageFileWriter : public avtTerminatingImageSink
     bool               FileHasExtension(const char *filename, const char *ext)
                              const;
 
-    static const char *extensions[];
+    static const char *extensions[][4];
     int                nFilesWritten;
     char              *oldFileBase;
 };

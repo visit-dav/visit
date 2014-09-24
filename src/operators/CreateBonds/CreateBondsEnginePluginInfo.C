@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* CreateBonds_GetEngineInfo()
 {
+    CreateBondsEnginePluginInfo::InitializeGlobalObjects();
     return new CreateBondsEnginePluginInfo;
 }
 

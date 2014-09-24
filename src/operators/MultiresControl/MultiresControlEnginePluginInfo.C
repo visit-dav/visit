@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* MultiresControl_GetEngineInfo()
 {
+    MultiresControlEnginePluginInfo::InitializeGlobalObjects();
     return new MultiresControlEnginePluginInfo;
 }
 

@@ -29,6 +29,7 @@ QvisParallelCoordinatesPlotWizardPage.h
 )
 
 SET(LIBV_SOURCES
+ParallelCoordinatesViewerEnginePluginInfo.C
 ParallelCoordinatesViewerPluginInfo.C
 avtParallelCoordinatesPlot.C
 avtParallelCoordinatesFilter.C
@@ -36,6 +37,7 @@ ${COMMON_SOURCES}
 )
 
 SET(LIBE_SOURCES
+ParallelCoordinatesViewerEnginePluginInfo.C
 ParallelCoordinatesEnginePluginInfo.C
 avtParallelCoordinatesPlot.C
 avtParallelCoordinatesFilter.C
@@ -71,7 +73,9 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/Proxies
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/Tools
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/gui
+${VISIT_INCLUDE_DIR}/viewer/core
 ${VISIT_INCLUDE_DIR}/viewer/main
+${VISIT_INCLUDE_DIR}/viewer/main/ui
 ${VISIT_INCLUDE_DIR}/viewer/proxy
 ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil

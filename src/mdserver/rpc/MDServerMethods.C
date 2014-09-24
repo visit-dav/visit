@@ -274,8 +274,17 @@ MDServerMethods::GetMetaData(const std::string &file, int timeState,
                                          createMeshQualityExpressions,
                                          createTimeDerivativeExpressions,
                                          createVectorMagnitudeExpressions);
-
 #ifdef DEBUG
+cout << "GetMetaData: file=" << file
+     << ", timeState=" << timeState
+     << ", forceReadAllCyclesTimes=" << forceReadAllCyclesTimes
+     << ", forcedFileType=" << forcedFileType
+     << ", treatAllDBsAsTimeVarying=" << treatAllDBsAsTimeVarying
+     << ", createMeshQualityExpressions=" << createMeshQualityExpressions
+     << ", createTimeDerivativeExpressions=" << createTimeDerivativeExpressions
+     << ", createVectorMagnitudeExpressions=" << createVectorMagnitudeExpressions
+     << endl;
+
     // Write the metadata to stdout.
     debug3 << "METADATA=" << endl;
     md->Print(debug3_real);

@@ -86,7 +86,7 @@ class StaggerGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtua
         QvisNotepadArea *notepad);
 };
 
-class StaggerViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual StaggerCommonPluginInfo
+class StaggerViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual StaggerCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class StaggerViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class StaggerViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
     static StaggerAttributes *clientAtts;
 };
 
-class StaggerEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual StaggerCommonPluginInfo
+class StaggerViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual StaggerViewerEnginePluginInfo
+{
+  public:
+};
+
+class StaggerEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual StaggerViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

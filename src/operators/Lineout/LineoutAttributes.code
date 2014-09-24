@@ -119,11 +119,11 @@ LineoutAttributes::Print(ostream &out, bool selected_only) const
 }
 
 Target: xml2info
-Function: LineoutGUIPluginInfo::GetVariableTypes
+Function: LineoutCommonPluginInfo::GetVariableTypes
 Declaration: virtual int GetVariableTypes() const;
 Definition:
 // ****************************************************************************
-// Method: LineoutGUIPluginInfo::GetVariableTypes
+// Method: LineoutCommonPluginInfo::GetVariableTypes
 //
 // Purpose: 
 //   Indicates that if the Lineout operator is present in the selected plot
@@ -139,16 +139,16 @@ Definition:
 // ****************************************************************************
 
 int
-LineoutGUIPluginInfo::GetVariableTypes() const
+LineoutCommonPluginInfo::GetVariableTypes() const
 {
     return VAR_CATEGORY_SCALAR;
 }
 
-Function: LineoutGUIPluginInfo::GetVariableMask
+Function: LineoutCommonPluginInfo::GetVariableMask
 Declaration: virtual int GetVariableMask() const;
 Definition:
 // ****************************************************************************
-// Method: LineoutGUIPluginInfo::GetVariableMask
+// Method: LineoutCommonPluginInfo::GetVariableMask
 //
 // Purpose: 
 //   Returns a mask that lets the Lineout operator eliminate certain variable
@@ -162,16 +162,16 @@ Definition:
 // ****************************************************************************
 
 int
-LineoutGUIPluginInfo::GetVariableMask() const
+LineoutCommonPluginInfo::GetVariableMask() const
 {
     return VAR_CATEGORY_SCALAR;
 }
 
-Function: LineoutGUIPluginInfo::GetUserSelectable
+Function: LineoutCommonPluginInfo::GetUserSelectable
 Declaration: virtual bool GetUserSelectable() const;
 Definition:
 // ****************************************************************************
-// Method: LineoutGUIPluginInfo::GetUserSelectable
+// Method: LineoutCommonPluginInfo::GetUserSelectable
 //
 // Purpose: 
 //   Indicates that the Lineout operator cannot be selected in the GUI.
@@ -184,56 +184,34 @@ Definition:
 // ****************************************************************************
 
 bool
-LineoutGUIPluginInfo::GetUserSelectable() const
+LineoutCommonPluginInfo::GetUserSelectable() const
 {
     return false;
 }
 
-Function: LineoutViewerPluginInfo::GetUserSelectable
-Declaration: virtual bool GetUserSelectable() const;
-Definition:
-// ****************************************************************************
-// Method: LineoutViewerPluginInfo::GetUserSelectable
-//
-// Purpose: 
-//   Indicates that the Lineout operator cannot be selected in the Viewer.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Apr 25 17:04:25 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-LineoutViewerPluginInfo::GetUserSelectable() const
-{
-    return false;
-}
-
-Function: LineoutViewerPluginInfo::Removeable
+Function: LineoutViewerEnginePluginInfo::Removeable
 Declaration: virtual bool Removeable() const;
 Definition:
 bool
-LineoutViewerPluginInfo::Removeable() const
+LineoutViewerEnginePluginInfo::Removeable() const
 {
     return false;
 }
 
-Function: LineoutViewerPluginInfo::Moveable
+Function: LineoutViewerEnginePluginInfo::Moveable
 Declaration: virtual bool Moveable() const;
 Definition:
 bool
-LineoutViewerPluginInfo::Moveable() const
+LineoutViewerEnginePluginInfo::Moveable() const
 {
     return false;
 }
 
-Function: LineoutViewerPluginInfo::AllowsSubsequentOperators
+Function: LineoutViewerEnginePluginInfo::AllowsSubsequentOperators
 Declaration: virtual bool AllowsSubsequentOperators() const;
 Definition:
 bool
-LineoutViewerPluginInfo::AllowsSubsequentOperators() const
+LineoutViewerEnginePluginInfo::AllowsSubsequentOperators() const
 {
     return false;
 }

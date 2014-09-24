@@ -87,7 +87,7 @@ class RemoveCellsGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vi
     virtual const char **XPMIconData() const;
 };
 
-class RemoveCellsViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual RemoveCellsCommonPluginInfo
+class RemoveCellsViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual RemoveCellsCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class RemoveCellsViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class RemoveCellsViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     static RemoveCellsAttributes *clientAtts;
 };
 
-class RemoveCellsEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual RemoveCellsCommonPluginInfo
+class RemoveCellsViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual RemoveCellsViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class RemoveCellsEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual RemoveCellsViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

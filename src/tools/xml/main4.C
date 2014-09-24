@@ -128,6 +128,15 @@ CallGenerator(const QString &docType, Attribute *attribute, Plugin *plugin, cons
             delete fgc;
         }
 
+        QFile *fvec;
+        if ((fvec = Open(plugin->name+"ViewerEnginePluginInfo.C")) != 0)
+        {
+            QTextStream vc(fvec);
+            plugin->WriteViewerEngineInfoSource(vc);
+            fvec->close();
+            delete fvec;
+        }
+
         QFile *fvc;
         if ((fvc = Open(plugin->name+"ViewerPluginInfo.C")) != 0)
         {

@@ -39,10 +39,12 @@
 #include <cassert>
 #include <cstdio>
 #include <StringHelpers.h>
+#include <FileFunctions.h>
 #include <visitstream.h>
 #include <vector>
 
 using namespace StringHelpers;
+using namespace FileFunctions;
 using std::vector;
 using std::string;
 

@@ -80,19 +80,19 @@ class MultiCurveCommonPluginInfo : public virtual CommonPlotPluginInfo, public v
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class MultiCurveGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual MultiCurveCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
 };
 
-class MultiCurveViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual MultiCurveCommonPluginInfo
+class MultiCurveViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual MultiCurveCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -102,10 +102,8 @@ class MultiCurveViewerPluginInfo : public virtual ViewerPlotPluginInfo, public v
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static MultiCurveAttributes *defaultAtts;
@@ -115,10 +113,15 @@ class MultiCurveViewerPluginInfo : public virtual ViewerPlotPluginInfo, public v
     static void InitializeDefaultPalette(MultiCurveAttributes *);
 };
 
-class MultiCurveEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual MultiCurveCommonPluginInfo
+class MultiCurveViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual MultiCurveViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+
+};
+
+class MultiCurveEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual MultiCurveViewerEnginePluginInfo
+{
+  public:
 };
 
 class MultiCurveScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual MultiCurveCommonPluginInfo

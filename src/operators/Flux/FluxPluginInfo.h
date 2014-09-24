@@ -87,7 +87,7 @@ class FluxGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual F
         QvisNotepadArea *notepad);
 };
 
-class FluxViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FluxCommonPluginInfo
+class FluxViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual FluxCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,11 @@ class FluxViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +108,12 @@ class FluxViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     static FluxAttributes *clientAtts;
 };
 
-class FluxEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FluxCommonPluginInfo
+class FluxViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FluxViewerEnginePluginInfo
+{
+  public:
+};
+
+class FluxEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FluxViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

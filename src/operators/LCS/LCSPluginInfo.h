@@ -87,7 +87,7 @@ class LCSGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual LC
         QvisNotepadArea *notepad);
 };
 
-class LCSViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LCSCommonPluginInfo
+class LCSViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual LCSCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,13 @@ class LCSViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virt
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
+                                    const avtPlotMetaData &plot);
     virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                                  const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +110,12 @@ class LCSViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virt
     static LCSAttributes *clientAtts;
 };
 
-class LCSEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LCSCommonPluginInfo
+class LCSViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LCSViewerEnginePluginInfo
+{
+  public:
+};
+
+class LCSEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LCSViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

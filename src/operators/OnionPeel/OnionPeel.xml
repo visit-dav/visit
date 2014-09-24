@@ -36,7 +36,7 @@
       <Field name="honorOriginalMesh" label="honorOriginalMesh" type="bool">
         true
       </Field>
-      <Function name="OnionPeelViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
+      <Function name="OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

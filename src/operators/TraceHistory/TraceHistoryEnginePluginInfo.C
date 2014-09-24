@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* TraceHistory_GetEngineInfo()
 {
+    TraceHistoryEnginePluginInfo::InitializeGlobalObjects();
     return new TraceHistoryEnginePluginInfo;
 }
 

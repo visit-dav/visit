@@ -86,7 +86,7 @@ class MultiresControlGUIPluginInfo : public virtual GUIOperatorPluginInfo, publi
         QvisNotepadArea *notepad);
 };
 
-class MultiresControlViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual MultiresControlCommonPluginInfo
+class MultiresControlViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual MultiresControlCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class MultiresControlViewerPluginInfo : public virtual ViewerOperatorPluginInfo,
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class MultiresControlViewerPluginInfo : public virtual ViewerOperatorPluginInfo,
     static MultiresControlAttributes *clientAtts;
 };
 
-class MultiresControlEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual MultiresControlCommonPluginInfo
+class MultiresControlViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual MultiresControlViewerEnginePluginInfo
+{
+  public:
+};
+
+class MultiresControlEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual MultiresControlViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

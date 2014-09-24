@@ -68,7 +68,7 @@
       </Field>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
-      <Function name="IndexSelectViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
+      <Function name="IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

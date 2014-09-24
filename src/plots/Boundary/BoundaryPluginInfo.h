@@ -80,20 +80,20 @@ class BoundaryCommonPluginInfo : public virtual CommonPlotPluginInfo, public vir
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class BoundaryGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual BoundaryCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class BoundaryViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual BoundaryCommonPluginInfo
+class BoundaryViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual BoundaryCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,26 +103,29 @@ class BoundaryViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static BoundaryAttributes *defaultAtts;
     static BoundaryAttributes *clientAtts;
     // User-defined functions
   private:
-    void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 };
 
-class BoundaryEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual BoundaryCommonPluginInfo
+class BoundaryViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual BoundaryViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class BoundaryEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual BoundaryViewerEnginePluginInfo
+{
+  public:
 };
 
 class BoundaryScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual BoundaryCommonPluginInfo

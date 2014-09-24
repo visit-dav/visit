@@ -163,11 +163,11 @@ WellBoreAttributes::ChangesRequireRecalculation(const WellBoreAttributes &obj)
 }
 
 Target: xml2info
-Function: WellBoreViewerPluginInfo::InitializeGlobalObjects
+Function: WellBoreViewerEnginePluginInfo::InitializeGlobalObjects
 Declaration: static void InitializeGlobalObjects();
 Definition:
 // ****************************************************************************
-// Method:  WellBoreViewerPluginInfo::InitializeGlobalObjects
+// Method:  WellBoreViewerEnginePluginInfo::InitializeGlobalObjects
 //
 // Purpose:
 //   Initialize the plot atts.
@@ -179,20 +179,20 @@ Definition:
 //
 // ****************************************************************************
 void
-WellBoreViewerPluginInfo::InitializeGlobalObjects()
+WellBoreViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    WellBoreViewerPluginInfo::clientAtts  = new WellBoreAttributes;
-    WellBoreViewerPluginInfo::defaultAtts = new WellBoreAttributes;
+    WellBoreViewerEnginePluginInfo::clientAtts  = new WellBoreAttributes;
+    WellBoreViewerEnginePluginInfo::defaultAtts = new WellBoreAttributes;
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
 }
 
-Function: WellBoreViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: WellBoreViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-// Method: WellBoreViewerPluginInfo::InitializePlotAtts
+// Method: WellBoreViewerEnginePluginInfo::InitializePlotAtts
 //
 // Purpose:
 //   Initialize the plot attributes to the default attributes.
@@ -209,8 +209,8 @@ Definition:
 // ****************************************************************************
 
 void
-WellBoreViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *)
+WellBoreViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &)
 {
     WellBoreAttributes *wellBore = (WellBoreAttributes *)atts;
     *wellBore = *defaultAtts;
@@ -219,11 +219,11 @@ WellBoreViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
     InitializeDefaultPalette(wellBore);
 }
 
-Function: WellBoreViewerPluginInfo::InitializeDefaultPalette
+Function: WellBoreViewerEnginePluginInfo::InitializeDefaultPalette
 Declaration: static void InitializeDefaultPalette(WellBoreAttributes *);
 Definition:
 // ****************************************************************************
-// Method: WellBoreViewerPluginInfo::InitializeDefaultPalette
+// Method: WellBoreViewerEnginePluginInfo::InitializeDefaultPalette
 //
 // Purpose:
 //   Initializes the default palette in the wellBore attributes using the
@@ -241,7 +241,7 @@ Definition:
 #include <avtColorTables.h>
 #include <ColorTableAttributes.h>
 void
-WellBoreViewerPluginInfo::InitializeDefaultPalette(
+WellBoreViewerEnginePluginInfo::InitializeDefaultPalette(
     WellBoreAttributes *wellBore)
 {
     // Copy over the wellBore's defaultPalette with the default discrete

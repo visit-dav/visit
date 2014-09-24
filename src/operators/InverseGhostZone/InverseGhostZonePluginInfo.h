@@ -87,7 +87,7 @@ class InverseGhostZoneGUIPluginInfo : public virtual GUIOperatorPluginInfo, publ
     virtual const char **XPMIconData() const;
 };
 
-class InverseGhostZoneViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual InverseGhostZoneCommonPluginInfo
+class InverseGhostZoneViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual InverseGhostZoneCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class InverseGhostZoneViewerPluginInfo : public virtual ViewerOperatorPluginInfo
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class InverseGhostZoneViewerPluginInfo : public virtual ViewerOperatorPluginInfo
     static InverseGhostZoneAttributes *clientAtts;
 };
 
-class InverseGhostZoneEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual InverseGhostZoneCommonPluginInfo
+class InverseGhostZoneViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual InverseGhostZoneViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class InverseGhostZoneEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual InverseGhostZoneViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

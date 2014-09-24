@@ -558,11 +558,11 @@ VolumeAttributes::SetTransferFunctionDim(int transferFunctionDim_)
 }
 
 Target: xml2info
-Function: VolumeViewerPluginInfo::Permits2DViewScaling
+Function: VolumeViewerEnginePluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:
 bool
-VolumeViewerPluginInfo::Permits2DViewScaling() const
+VolumeViewerEnginePluginInfo::Permits2DViewScaling() const
 {
     return false;
 }

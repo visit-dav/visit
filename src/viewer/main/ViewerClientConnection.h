@@ -38,7 +38,7 @@
 
 #ifndef VIEWER_CLIENT_CONNECTION_H
 #define VIEWER_CLIENT_CONNECTION_H
-#include <ViewerBase.h>
+#include <ViewerBaseUI.h>
 #include <SimpleObserver.h>
 #include <vectortypes.h>
 #include <ViewerClientAttributes.h>
@@ -80,11 +80,12 @@ class ViewerState;
 //
 // ****************************************************************************
 
-class ViewerClientConnection : public ViewerBase, public SimpleObserver
+class ViewerClientConnection : public ViewerBaseUI, public SimpleObserver
 {
     Q_OBJECT
 public:
-    ViewerClientConnection(const ViewerState *, QObject *parent, const QString &name, const bool _allState = false);
+    ViewerClientConnection(const ViewerState *, QObject *parent, 
+                           const QString &name, const bool _allState = false);
     ViewerClientConnection(ParentProcess *, QSocketNotifier *, const ViewerState *,
                            QObject *parent, const QString &name, const bool _allState = false);
     virtual ~ViewerClientConnection();

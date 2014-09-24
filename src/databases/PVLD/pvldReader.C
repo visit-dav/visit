@@ -92,7 +92,7 @@ void CollectFileNames( const string& surname, const string& dirname, vector<stri
     file_match_struct cbData;
     cbData.surname = &surname;
     cbData.fnames = &fnames;
-    ReadAndProcessDirectory(dirname, AppendMatchingFiles, (void *)&cbData, false);
+    FileFunctions::ReadAndProcessDirectory(dirname, AppendMatchingFiles, (void *)&cbData, false);
 }
 #else
 

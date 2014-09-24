@@ -80,20 +80,20 @@ class VectorCommonPluginInfo : public virtual CommonPlotPluginInfo, public virtu
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class VectorGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual VectorCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class VectorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual VectorCommonPluginInfo
+class VectorViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual VectorCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class VectorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtu
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static VectorAttributes *defaultAtts;
     static VectorAttributes *clientAtts;
 };
 
-class VectorEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual VectorCommonPluginInfo
+class VectorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual VectorViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class VectorEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual VectorViewerEnginePluginInfo
+{
+  public:
 };
 
 class VectorScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual VectorCommonPluginInfo

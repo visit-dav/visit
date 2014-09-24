@@ -10,10 +10,10 @@
  */
 
 /* Prototype plot setup/management functions. */
-int VisItAddPlot(const char *plotType, const char *var, int *plotID);
-int VisItAddOperator(int plotID, const char *operatorType, int *operatorID);
-int VisItDrawPlot(int plotID);
-int VisItDeletePlot(int plotID);
+int VisItAddPlot(const char *plotType, const char *var);
+int VisItAddOperator(const char *operatorType, int applyToAll);
+int VisItDrawPlots(void);
+int VisItDeleteActivePlots(void);
 
 /* Maybe having 1 function is better...*/
 int VisItSetPlotOptionsC(int id,const char*n,char v);

@@ -86,7 +86,7 @@ class SmoothGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual
         QvisNotepadArea *notepad);
 };
 
-class SmoothViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SmoothCommonPluginInfo
+class SmoothViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual SmoothCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class SmoothViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public v
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class SmoothViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public v
     static SmoothOperatorAttributes *clientAtts;
 };
 
-class SmoothEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SmoothCommonPluginInfo
+class SmoothViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SmoothViewerEnginePluginInfo
+{
+  public:
+};
+
+class SmoothEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SmoothViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

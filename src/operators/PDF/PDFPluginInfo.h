@@ -86,7 +86,7 @@ class PDFGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual PD
         QvisNotepadArea *notepad);
 };
 
-class PDFViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual PDFCommonPluginInfo
+class PDFViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual PDFCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class PDFViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virt
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class PDFViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virt
     static PDFAttributes *clientAtts;
 };
 
-class PDFEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual PDFCommonPluginInfo
+class PDFViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual PDFViewerEnginePluginInfo
+{
+  public:
+};
+
+class PDFEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual PDFViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

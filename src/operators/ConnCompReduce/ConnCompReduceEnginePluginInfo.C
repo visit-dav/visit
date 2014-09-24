@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ConnCompReduce_GetEngineInfo()
 {
+    ConnCompReduceEnginePluginInfo::InitializeGlobalObjects();
     return new ConnCompReduceEnginePluginInfo;
 }
 

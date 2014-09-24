@@ -86,7 +86,7 @@ class ChannelCommGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vi
         QvisNotepadArea *notepad);
 };
 
-class ChannelCommViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ChannelCommCommonPluginInfo
+class ChannelCommViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ChannelCommCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class ChannelCommViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class ChannelCommViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     static ChannelCommAttributes *clientAtts;
 };
 
-class ChannelCommEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ChannelCommCommonPluginInfo
+class ChannelCommViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ChannelCommViewerEnginePluginInfo
+{
+  public:
+};
+
+class ChannelCommEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ChannelCommViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

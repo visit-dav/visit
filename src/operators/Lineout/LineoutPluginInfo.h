@@ -75,6 +75,9 @@ class LineoutCommonPluginInfo : public virtual CommonOperatorPluginInfo, public 
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual bool GetUserSelectable() const;
+    virtual int GetVariableTypes() const;
+    virtual int GetVariableMask() const;
     virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 };
 
@@ -86,12 +89,9 @@ class LineoutGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtua
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-    virtual int GetVariableMask() const;
-    virtual bool GetUserSelectable() const;
 };
 
-class LineoutViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LineoutCommonPluginInfo
+class LineoutViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual LineoutCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -100,15 +100,11 @@ class LineoutViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual bool GetUserSelectable() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
     virtual bool Removeable() const;
     virtual bool Moveable() const;
     virtual bool AllowsSubsequentOperators() const;
@@ -119,7 +115,13 @@ class LineoutViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
     static LineoutAttributes *clientAtts;
 };
 
-class LineoutEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LineoutCommonPluginInfo
+class LineoutViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LineoutViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class LineoutEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LineoutViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

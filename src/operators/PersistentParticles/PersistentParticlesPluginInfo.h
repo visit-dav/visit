@@ -87,7 +87,7 @@ class PersistentParticlesGUIPluginInfo : public virtual GUIOperatorPluginInfo, p
     virtual const char **XPMIconData() const;
 };
 
-class PersistentParticlesViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual PersistentParticlesCommonPluginInfo
+class PersistentParticlesViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual PersistentParticlesCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class PersistentParticlesViewerPluginInfo : public virtual ViewerOperatorPluginI
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class PersistentParticlesViewerPluginInfo : public virtual ViewerOperatorPluginI
     static PersistentParticlesAttributes *clientAtts;
 };
 
-class PersistentParticlesEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual PersistentParticlesCommonPluginInfo
+class PersistentParticlesViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual PersistentParticlesViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class PersistentParticlesEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual PersistentParticlesViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

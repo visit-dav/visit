@@ -210,7 +210,7 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="LCSViewerPluginInfo::GetOperatorVarDescription" user="false" member="true">
+      <Function name="LCSViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

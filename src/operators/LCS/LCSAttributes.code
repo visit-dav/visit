@@ -203,11 +203,11 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
 }
 
 Target: xml2info
-Function: LCSViewerPluginInfo::GetOperatorVarDescription
-Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const ViewerPlot *plot);
+Function: LCSViewerEnginePluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
 // ****************************************************************************
-//  Method: LCSViewerPluginInfo::GetOperatorVarDescription
+//  Method: LCSViewerEnginePluginInfo::GetOperatorVarDescription
 //
 //  Purpose:
 //    Return the operator variable description.
@@ -221,11 +221,12 @@ Definition:
 //
 // ****************************************************************************
 
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
+#include <cstring>
 
 std::string
-LCSViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
-                                               const ViewerPlot *plot)
+LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                     const avtPlotMetaData &plot)
 {
     LCSAttributes *atts_in = (LCSAttributes *)atts;
 
@@ -235,7 +236,7 @@ LCSViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 
     const char *operatorString[4] = { "Base", "Gradient", "Jacobian", "Ratio" };
 
-    std::string var = plot->GetVariableName();
+    std::string var = plot.GetVariableName();
 
     if( strncmp(var.c_str(), "operators/LCS/",
                 strlen("operators/LCS/")) == 0)

@@ -86,7 +86,7 @@ class EllipsoidSliceGUIPluginInfo : public virtual GUIOperatorPluginInfo, public
         QvisNotepadArea *notepad);
 };
 
-class EllipsoidSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual EllipsoidSliceCommonPluginInfo
+class EllipsoidSliceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual EllipsoidSliceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class EllipsoidSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class EllipsoidSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     static EllipsoidSliceAttributes *clientAtts;
 };
 
-class EllipsoidSliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual EllipsoidSliceCommonPluginInfo
+class EllipsoidSliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual EllipsoidSliceViewerEnginePluginInfo
+{
+  public:
+};
+
+class EllipsoidSliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual EllipsoidSliceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

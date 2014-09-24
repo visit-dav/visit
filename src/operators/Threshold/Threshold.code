@@ -207,11 +207,11 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
 
 
 Target: xml2info
-Function: ThresholdViewerPluginInfo::InitializeOperatorAtts
-Declaration: virtual void ThresholdViewerPluginInfo::InitializeOperatorAtts(...);
+Function: ThresholdViewerEnginePluginInfo::InitializeOperatorAtts
+Declaration: virtual void ThresholdViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
 Definition:
 // ****************************************************************************
-//  Method: ThresholdViewerPluginInfo::InitializeOperatorAtts
+//  Method: ThresholdViewerEnginePluginInfo::InitializeOperatorAtts
 //
 //  Purpose:
 //    Initialize the operator attributes to the default attributes.
@@ -244,11 +244,11 @@ Definition:
 //     Set attribute flag that indicates whether plot variable is a scalar.
 //
 // ****************************************************************************
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 #include <DebugStream.h>
 void
-ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
-                                                  const ViewerPlot *plot,
+ThresholdViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
+                                                  const avtPlotMetaData &plot,
                                                   const bool fromDefault)
 {
     if (fromDefault)
@@ -260,8 +260,8 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
         
     initAtts->SupplyMissingDefaultsIfAppropriate();
     
-    initAtts->SetDefaultVarName(plot->GetVariableName());
-    initAtts->SetDefaultVarIsScalar(plot->GetVarType() == AVT_SCALAR_VAR);
+    initAtts->SetDefaultVarName(plot.GetVariableName());
+    initAtts->SetDefaultVarIsScalar(plot.GetVariableType() == AVT_SCALAR_VAR);
 
     UpdateOperatorAtts(initAtts, plot);
 }

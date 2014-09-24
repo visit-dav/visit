@@ -80,20 +80,20 @@ class LabelCommonPluginInfo : public virtual CommonPlotPluginInfo, public virtua
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class LabelGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual LabelCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class LabelViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual LabelCommonPluginInfo
+class LabelViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual LabelCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,26 +103,29 @@ class LabelViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtua
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static LabelAttributes *defaultAtts;
     static LabelAttributes *clientAtts;
     // User-defined functions
   private:
-    void PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+    void PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 };
 
-class LabelEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual LabelCommonPluginInfo
+class LabelViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual LabelViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class LabelEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual LabelViewerEnginePluginInfo
+{
+  public:
 };
 
 class LabelScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual LabelCommonPluginInfo

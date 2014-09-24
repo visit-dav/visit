@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* FFT_GetEngineInfo()
 {
+    FFTEnginePluginInfo::InitializeGlobalObjects();
     return new FFTEnginePluginInfo;
 }
 

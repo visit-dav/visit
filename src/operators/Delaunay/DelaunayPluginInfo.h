@@ -86,7 +86,7 @@ class DelaunayGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtu
         QvisNotepadArea *notepad);
 };
 
-class DelaunayViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DelaunayCommonPluginInfo
+class DelaunayViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual DelaunayCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class DelaunayViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class DelaunayViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     static DelaunayAttributes *clientAtts;
 };
 
-class DelaunayEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DelaunayCommonPluginInfo
+class DelaunayViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DelaunayViewerEnginePluginInfo
+{
+  public:
+};
+
+class DelaunayEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DelaunayViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

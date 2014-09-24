@@ -23,11 +23,13 @@ QvisExtractPointFunction2DWindow.h
 )
 
 SET(LIBV_SOURCES
+ExtractPointFunction2DViewerEnginePluginInfo.C
 ExtractPointFunction2DViewerPluginInfo.C
 ${COMMON_SOURCES}
 )
 
 SET(LIBE_SOURCES
+ExtractPointFunction2DViewerEnginePluginInfo.C
 ExtractPointFunction2DEnginePluginInfo.C
 avtExtractPointFunction2DFilter.C
 ${COMMON_SOURCES}
@@ -74,7 +76,9 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/gui
 ${VISIT_INCLUDE_DIR}/mdserver/proxy
 ${VISIT_INCLUDE_DIR}/mdserver/rpc
+${VISIT_INCLUDE_DIR}/viewer/core
 ${VISIT_INCLUDE_DIR}/viewer/main
+${VISIT_INCLUDE_DIR}/viewer/main/ui
 ${VISIT_INCLUDE_DIR}/viewer/proxy
 ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil

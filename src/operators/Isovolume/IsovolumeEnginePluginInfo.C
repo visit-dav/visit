@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Isovolume_GetEngineInfo()
 {
+    IsovolumeEnginePluginInfo::InitializeGlobalObjects();
     return new IsovolumeEnginePluginInfo;
 }
 

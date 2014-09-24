@@ -54,15 +54,13 @@
 #include <vector>
 
 #include <visit-config.h>
+#include <FileFunctions.h>
 
 using std::map;
 using std::string;
 using std::vector;
 
 static string IGNORE_CHARS = StringHelpers::NON_RELEVANT_CHARS;
-
-const int STATIC_BUF_SIZE = 4096;
-static char StaticStringBuf[STATIC_BUF_SIZE];
 
 bool has_nonspace_chars(const std::string &s);
 
@@ -317,13 +315,13 @@ StringHelpers::GroupStringsAsPaths(vector<string> stringList,
 
    // now, scan the sorted list of strings for value transitions
    // in the Dirname of each member
-   string lastVal = Dirname(stringPtrs[0]);
+   string lastVal = FileFunctions::Dirname(stringPtrs[0]);
    groupNames.push_back(lastVal);
    vector<string> curGroup;
    curGroup.push_back(stringPtrs[0]);
    for (i = 1; i < nStrings; i++)
    {
-       string thisVal = Dirname(stringPtrs[i]);
+       string thisVal = FileFunctions::Dirname(stringPtrs[i]);
 
        if (thisVal != lastVal)
        {
@@ -629,327 +627,6 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
         }
     }
     return retval;
-}
-
-// ****************************************************************************
-//  Function: Basename
-//
-//  Purpose: Find the basename of a file path string
-//
-//  Programmer: Mark C. Miller
-//  Creation:   Unknown
-//
-//  Modifications:
-//    Jeremy Meredith, Wed May 20 13:46:39 EDT 2009
-//    Should default to "0" for start, and only use "-1" for
-//    the "all-slash-string" case.
-//
-//    Kathleen Biagas, Thu Jul 28 09:41:27 PDT 2011
-//    When searching the string, look for either type of slash char, but still
-//    use the sys-dependent VISIT_SLASH_STRING when setting in the empty buf.
-//
-// ****************************************************************************
-static const char *
-basename(const char *path, int& start)
-{
-   start = 0;
-
-   if (path == 0)
-   {
-       strcpy(StaticStringBuf, ".");
-       return StaticStringBuf;
-   }
-   else if (*path == '\0')
-   {
-       strcpy(StaticStringBuf, ".");
-       return StaticStringBuf;
-   }
-   else
-   {
-       // find end of path string
-       int n = 0;
-       while ((path[n] != '\0') && (n < STATIC_BUF_SIZE))
-           n++;
-
-       // deal with string too large
-       if (n == STATIC_BUF_SIZE)
-       {
-           strcpy(StaticStringBuf, ".");
-           return StaticStringBuf;
-       }
-
-       // backup, skipping over all trailing slash chars
-       int j = n-1;
-       while ((j >= 0) && (path[j] == '/' || path[j] == '\\'))
-           j--;
-
-       // deal with string consisting of all slash chars
-       if (j == -1)
-       {
-           start = -1;
-           strcpy(StaticStringBuf, VISIT_SLASH_STRING);
-           return StaticStringBuf;
-       }
-
-       // backup to just after next slash char
-       int i = j-1;
-       while ((i >= 0) && (path[i] != '/' && path[i] != '\\'))
-           i--;
-       i++;
-       start = i;
-
-       // build the return string
-       int k;
-       for (k = 0; k < j - i + 1; k++)
-           StaticStringBuf[k] = path[i+k];
-       StaticStringBuf[k] = '\0';
-       return StaticStringBuf;
-   }
-}
-
-const char *
-StringHelpers::Basename(const char *path)
-{
-   int dummy1;
-   return basename(path, dummy1);
-}
-
-string
-StringHelpers::Basename(string const path)
-{
-    return Basename(path.c_str());
-}
-
-// ****************************************************************************
-//  Function: Dirname
-//
-//  Purpose: Find the dirname of a file path string
-//
-//  Programmer: Mark C. Miller
-//  Creation:   Unknown
-//
-//  Modifications:
-//    Jeremy Meredith, Wed May 20 13:46:39 EDT 2009
-//    Special cases were unnecessary; they fall out of the start position
-//    returned from the above implementation of basename naturally.  Fixed
-//    a couple of the special cases as well.
-//
-//    Kathleen Biagas, Thu Jul 28 09:41:27 PDT 2011
-//    When searching the string, look for either type of slash char, but still
-//    use the sys-dependent VISIT_SLASH_STRING when setting in the empty buf.
-//
-//    Mark C. Miller, Wed Jul 11 20:03:16 PDT 2012
-//    Fixed the special case where the only part of the string left after
-//    eliminating the basename part is a single slash char at index zero.
-// ****************************************************************************
-const char *
-StringHelpers::Dirname(const char *path)
-{
-    int start;
-
-    // ok, figure out the basename
-    basename(path, start);
-
-    if (start == -1)
-    {
-        strcpy(StaticStringBuf, VISIT_SLASH_STRING);
-        return StaticStringBuf;
-    }
-    else if (start == 0)
-    {
-        strcpy(StaticStringBuf, ".");
-        return StaticStringBuf;
-    }
-    else
-    {
-        int i;
-        for (i = 0; i < start; i++)
-            StaticStringBuf[i] = path[i];
-        if (i > 1 && (StaticStringBuf[i-1] == '/' ||
-                      StaticStringBuf[i-1] == '\\'))
-            StaticStringBuf[i-1] = '\0';
-        else
-            StaticStringBuf[i] = '\0';
-        return StaticStringBuf;
-    }
-}
-
-string
-StringHelpers::Dirname(string const path)
-{
-    return Dirname(path.c_str());
-}
-
-// ****************************************************************************
-//  Function: Normalize
-//
-//  Purpose: Normalize a pathname; removing all embedded './' and/or '../' or
-//  '//', and any trailing '/'. Note, however, that he code is written to use
-//  whatever the VISIT_SLASH_STRING is so it should work on Windows as well
-//  with the exception of a leading drive letter and colon.
-//
-//  Programmer: Mark C. Miller, Mon Jul 16 21:56:03 PDT 2012
-//
-//  Modifications:
-//    Kathleen Biagas, Thu June 6 09:39:25 PDT 2013
-//    Added pathSep argument that defaults to platform-specific 
-//    VISIT_SLASH_STRING.  Use of non-platform specific case my be needed if
-//    parsing internal database path-names.
-//
-// ****************************************************************************
-
-const char *
-StringHelpers::Normalize(const char *path, const char *pathSep)
-{
-    string retval = string(path);
-
-    // First, remove any double slashes
-    string dbl_slash = string(pathSep) + string(pathSep);
-    size_t dbl_slash_idx = retval.rfind(dbl_slash);
-    while (dbl_slash_idx != std::string::npos)
-    {
-        retval.erase(dbl_slash_idx, 1);
-        dbl_slash_idx = retval.rfind(dbl_slash);
-    }
-
-    // Remove any terms of the form "./". These have no effect
-    string dot_slash = string(".") + string(pathSep);
-    size_t dot_slash_idx = retval.rfind(dot_slash);
-    while (dot_slash_idx != std::string::npos)
-    {
-        if ((dot_slash_idx > 0 && retval[dot_slash_idx-1] != '.') ||
-             dot_slash_idx == 0)
-        {
-            retval.erase(dot_slash_idx, 2);
-            dot_slash_idx = retval.rfind(dot_slash,dot_slash_idx-1);
-        }
-        else
-        {
-            if (dot_slash_idx > 0)
-                dot_slash_idx = retval.rfind(dot_slash,dot_slash_idx-1);
-            else
-                dot_slash_idx = std::string::npos;
-        }
-    }
-
-    // Remove any trailing slash if one exists
-    if (retval[retval.size()-1] == pathSep[0])
-        retval.erase(retval.size()-1);
-
-    // At this point we have a string that begins with a slash
-    // and has only <path> terms or "../" terms. We need to
-    // resolve any "../" terms by backing up through the <path>
-    // terms that precede them.
-    string slash_dot_dot = string(pathSep) + string("..");
-    size_t slash_dot_dot_idx = retval.find(slash_dot_dot);
-    bool noCharsRemainingToBackup = false;
-    while (slash_dot_dot_idx != std::string::npos)
-    {
-        size_t preceding_slash_idx = retval.rfind(pathSep, slash_dot_dot_idx-1);
-        if (preceding_slash_idx == std::string::npos)
-        {
-            size_t nchars = slash_dot_dot_idx + 3;
-            retval.erase(0, nchars);
-            slash_dot_dot_idx = retval.find(slash_dot_dot);
-            if (slash_dot_dot_idx == 0)
-            {
-                retval = "";
-                noCharsRemainingToBackup = true;
-                break;
-            }
-        }
-        else
-        {
-            size_t nchars = slash_dot_dot_idx - preceding_slash_idx + 3;
-            retval.erase(preceding_slash_idx+1, nchars);
-            slash_dot_dot_idx = retval.find(slash_dot_dot);
-        }
-    }
-
-    // Remove any trailing slash if one exists
-    if (retval.size() && retval[retval.size()-1] == pathSep[0])
-        retval.erase(retval.size()-1);
-
-    if (retval == "" && !noCharsRemainingToBackup) retval = ".";
-
-    StaticStringBuf[0] = '\0';
-    strcat(StaticStringBuf, retval.c_str());
-    return StaticStringBuf;
-}
-
-string
-StringHelpers::Normalize(const string& path, string const pathSep)
-{
-    return Normalize(path.c_str(), pathSep.c_str());
-}
-
-// ****************************************************************************
-//  Function: Absname
-//
-//  Purpose: Compute absolute path name based on cwd and a path relative to
-//  the cwd.
-//
-//  Programmer: Mark C. Miller, Mon Jul 16 21:56:03 PDT 2012
-//
-//  Modifications:
-//    Kathleen Biagas, Thu June 6 09:39:25 PDT 2013
-//    Added pathSep argument that defaults to platform-specific 
-//    VISIT_SLASH_STRING.  Use of non-platform specific case my be needed if
-//    parsing internal database path-names.
-//
-// ****************************************************************************
-
-const char *
-StringHelpers::Absname(const char *cwd_context, const char *path, 
-    const char *pathSep)
-{
-    // Clear our temporary array for handling char * return values.
-    StaticStringBuf[0] = '\0';
-
-    // cwd_context is null or empty string
-    if (!cwd_context || cwd_context[0] == '\0')
-    {
-        if (!path) return StaticStringBuf;
-        if (path[0] != pathSep[0]) return StaticStringBuf;
-
-        string npath = Normalize(path, pathSep);
-        strcpy(StaticStringBuf, npath.c_str());
-        return StaticStringBuf;
-    }
-
-    // path is null or empty string
-    if (!path || path[0] == '\0')
-    {
-        if (!cwd_context) return StaticStringBuf;
-        if (cwd_context[0] != pathSep[0]) return StaticStringBuf;
-
-        string ncwd = Normalize(cwd_context, pathSep);
-        strcpy(StaticStringBuf, ncwd.c_str());
-        return StaticStringBuf;
-    }
-
-    if (path[0] == pathSep[0])
-    {
-        string npath = Normalize(path, pathSep);
-        strcpy(StaticStringBuf, npath.c_str());
-        return StaticStringBuf;
-    }
-
-    if (cwd_context[0] != pathSep[0]) return StaticStringBuf;
-
-    // Catenate path to cwd_context and then Normalize the result
-    string path2 = string(cwd_context) + string(pathSep) + string(path);
-    string npath = Normalize(path2.c_str(), pathSep);
-    strcpy(StaticStringBuf, npath.c_str());
-    return StaticStringBuf;
-}
-
-string
-StringHelpers::Absname(string const cwd_context, 
-                       string const path, 
-                       string const pathSep)
-{
-    return Absname(cwd_context.c_str(), path.c_str(), pathSep.c_str());
 }
 
 // ****************************************************************************
@@ -1478,5 +1155,35 @@ StringHelpers::trim(string &val)
     ltrim(val);
 }
 
+// ****************************************************************************
+// Method: StringHelpers::UpperCase
+//
+// Purpose:
+//   Make the string all upper case.
+//
+// Arguments:
+//   src : The source string.
+//
+// Returns:    An upper case string.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep  8 14:42:48 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
+std::string
+StringHelpers::UpperCase(const std::string &src)
+{
+    std::string tmp(src);
+    for(size_t i = 0; i < tmp.size(); ++i)
+    {
+        if(tmp[i] >= 'a' && tmp[i] <= 'z')
+            tmp[i] -= 'a' - 'A';
+    }
+    return tmp;
+}
 

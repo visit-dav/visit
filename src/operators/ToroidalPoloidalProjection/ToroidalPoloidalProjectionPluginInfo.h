@@ -86,7 +86,7 @@ class ToroidalPoloidalProjectionGUIPluginInfo : public virtual GUIOperatorPlugin
         QvisNotepadArea *notepad);
 };
 
-class ToroidalPoloidalProjectionViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ToroidalPoloidalProjectionCommonPluginInfo
+class ToroidalPoloidalProjectionViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ToroidalPoloidalProjectionCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class ToroidalPoloidalProjectionViewerPluginInfo : public virtual ViewerOperator
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class ToroidalPoloidalProjectionViewerPluginInfo : public virtual ViewerOperator
     static ToroidalPoloidalProjection *clientAtts;
 };
 
-class ToroidalPoloidalProjectionEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ToroidalPoloidalProjectionCommonPluginInfo
+class ToroidalPoloidalProjectionViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ToroidalPoloidalProjectionViewerEnginePluginInfo
+{
+  public:
+};
+
+class ToroidalPoloidalProjectionEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ToroidalPoloidalProjectionViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

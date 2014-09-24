@@ -86,7 +86,7 @@ class SiloDumpGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtu
         QvisNotepadArea *notepad);
 };
 
-class SiloDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SiloDumpCommonPluginInfo
+class SiloDumpViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual SiloDumpCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class SiloDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class SiloDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     static SiloDumpAttributes *clientAtts;
 };
 
-class SiloDumpEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SiloDumpCommonPluginInfo
+class SiloDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SiloDumpViewerEnginePluginInfo
+{
+  public:
+};
+
+class SiloDumpEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SiloDumpViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();
