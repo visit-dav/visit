@@ -91,6 +91,10 @@
 
 #include <avtColorTables.h>
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 #include <snprintf.h>
 
 static void ReadHostProfileCallback(void *, const std::string&,bool,bool,long);

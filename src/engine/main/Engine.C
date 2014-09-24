@@ -2119,9 +2119,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 {
 #ifdef PARALLEL
                     int nanoSecsOfSleeps = (int) tval;
-#endif
                     int secsOfSpinBeforeSleeps = -1;
-
+#endif
                     if (i+2 < argc)
                     {
                         endptr = 0;
@@ -2129,7 +2128,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
                         tval = strtol(argv[i+2], &endptr, 10);
                         if (*(argv[i+2]) != '\0' && *endptr == '\0' && errno == 0)
                         {
+#ifdef PARALLEL
                             secsOfSpinBeforeSleeps = (int) tval;
+#endif
                             i++;
                         }
                     }

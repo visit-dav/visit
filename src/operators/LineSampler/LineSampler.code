@@ -69,17 +69,16 @@ LineSamplerViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts,
       LineSamplerAttributes::ViewDimension oldViewDim =
         (*(LineSamplerAttributes *)atts).GetViewDimension();
 
-      LineSamplerAttributes::ViewDimension newViewDim =
-        (*clientAtts).GetViewDimension();
-
       LineSamplerAttributes::ViewGeometry oldViewGeom =
         (*(LineSamplerAttributes *)atts).GetViewGeometry();
 
+// Just do this stuff in the viewer version.
+#if !defined(ELineSamplerOperator_ser_EXPORTS) && !defined(ELineSamplerOperator_par_EXPORTS)
+      LineSamplerAttributes::ViewDimension newViewDim =
+        (*clientAtts).GetViewDimension();
       LineSamplerAttributes::ViewGeometry newViewGeom =
         (*clientAtts).GetViewGeometry();
 
-// Just do this stuff in the viewer version.
-#if !defined(ELineSamplerOperator_ser_EXPORTS) && !defined(ELineSamplerOperator_par_EXPORTS)
       if( activeOperator && 
           (newViewDim != oldViewDim ||
            newViewGeom != oldViewGeom) )

@@ -51,6 +51,8 @@
 #ifdef _WIN32
 #include <process.h>
 #include <WinSock2.h>
+#else
+#include <unistd.h>
 #endif
 
 //
