@@ -902,7 +902,7 @@ SpreadsheetTable::SpreadsheetTable(QWidget *parent) : QTableView(parent)
     setItemDelegate(d);
 
     connect(selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-            this, SIGNAL(selectionChanged()));
+            this, SIGNAL(tableSelectionChanged()));
 }
 
 // ****************************************************************************

@@ -139,7 +139,7 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual bool        PlotIsImageBased(void);
     virtual avtImage_p  ImageExecute(avtImage_p, const WindowAttributes &);
     virtual int         GetNumberOfStagesForImageBasedPlot(
-                                                     const WindowAttributes &);
+                                                     const WindowAttributes &) const;
     virtual bool        Equivalent(const AttributeGroup *);
 
     virtual bool        UtilizeRenderingFilters(void) { return false; };

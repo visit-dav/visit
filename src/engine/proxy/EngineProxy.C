@@ -536,7 +536,7 @@ EngineProxy::GetCommandFromSimulation()
 void
 EngineProxy::Interrupt()
 {
-    xfer.SendInterruption();
+    xfer.SendInterruption(0);
 }
 
 // ****************************************************************************

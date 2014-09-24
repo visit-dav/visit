@@ -257,7 +257,7 @@ Xfer::Update(Subject *TheChangedSubject)
 // ****************************************************************************
 
 void
-Xfer::SendInterruption()
+Xfer::SendInterruption(int)
 {
     output->WriteInt(-1);
     output->WriteInt(0);

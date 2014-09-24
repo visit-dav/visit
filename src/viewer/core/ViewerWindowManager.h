@@ -697,7 +697,6 @@ public:
     int               preshiftX;
     int               preshiftY;
 
-    int               filesWritten;
     avtFileWriter    *fileWriter;
 
     int               nWindows;
