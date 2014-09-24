@@ -1922,25 +1922,16 @@ SpreadsheetViewer::moveSliceToCurrentPick()
     if (plotAtts->GetCurrentPickValid())
     {
         int sliceAxis = -1;
-        int rowAxis = -1;
-        int columnAxis = -1;
-
         switch (plotAtts->GetNormal())
         {
             case SpreadsheetAttributes::X:
                 sliceAxis = 0;
-                rowAxis = 1;
-                columnAxis = 2;
                 break;
             case SpreadsheetAttributes::Y:
                 sliceAxis = 1;
-                rowAxis = 0;
-                columnAxis = 2;
                 break;
             case SpreadsheetAttributes::Z:
                 sliceAxis = 2;
-                rowAxis = 1;
-                columnAxis = 0;
                 break;
             default:
                 debug1 << mName << "Invalid normal specified in plot attributes.";
