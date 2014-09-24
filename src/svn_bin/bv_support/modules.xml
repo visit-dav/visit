@@ -62,7 +62,6 @@
             <lib name="fastbit"/>
             <lib name="hdf5"/>
             <lib name="h5part"/>
-            <lib name="manta"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
@@ -134,7 +133,6 @@
         <group name="nonio" comment="Build non I/O libraries">
             <lib name="icet"/>
             <lib name="mesa"/>
-            <lib name="manta"/>
         </group>
 
         <!--
