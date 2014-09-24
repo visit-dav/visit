@@ -351,6 +351,7 @@ function build_vtk
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
+    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=false"
     if test "${OPSYS}" = "Darwin" ; then
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
         vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${vtk_inst_path}/lib"
