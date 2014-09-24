@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ThreeSlice_GetEngineInfo()
 {
+    ThreeSliceEnginePluginInfo::InitializeGlobalObjects();
     return new ThreeSliceEnginePluginInfo;
 }
 

@@ -573,13 +573,13 @@ main(int argc, char *argv[])
         std::string visitSystemRc(GetSystemVisItRCFile());
         std::string visitUserRc(GetUserVisItRCFile());
 
-        VisItStat_t s;
+        FileFunctions::VisItStat_t s;
         std::string visitrc;
-        if(VisItStat(visitUserRc.c_str(), &s) == 0)
+        if(FileFunctions::VisItStat(visitUserRc.c_str(), &s) == 0)
         {
             visitrc = visitUserRc;
         }
-        else if (VisItStat(visitSystemRc.c_str(), &s) == 0)
+        else if (FileFunctions::VisItStat(visitSystemRc.c_str(), &s) == 0)
         {
             visitrc = visitSystemRc;
         }

@@ -86,7 +86,7 @@ class TraceHistoryGUIPluginInfo : public virtual GUIOperatorPluginInfo, public v
         QvisNotepadArea *notepad);
 };
 
-class TraceHistoryViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual TraceHistoryCommonPluginInfo
+class TraceHistoryViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual TraceHistoryCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class TraceHistoryViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pu
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class TraceHistoryViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pu
     static TraceHistoryAttributes *clientAtts;
 };
 
-class TraceHistoryEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual TraceHistoryCommonPluginInfo
+class TraceHistoryViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual TraceHistoryViewerEnginePluginInfo
+{
+  public:
+};
+
+class TraceHistoryEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual TraceHistoryViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

@@ -46,7 +46,9 @@ set(pyqtgui_include_paths ${CMAKE_CURRENT_SOURCE_DIR}
                     ${QT_QTGUI_INCLUDE_DIR} 
                     ${QT_QTOPENGL_INCLUDE_DIR} 
                     ${QT_INCLUDE_DIR} 
+                    ${VISIT_SOURCE_DIR}/viewer/core 
                     ${VISIT_SOURCE_DIR}/viewer/main 
+                    ${VISIT_SOURCE_DIR}/viewer/main/ui
                     ${VISIT_SOURCE_DIR}/viewer/proxy
                     ${VISIT_SOURCE_DIR}/viewer/subjectproxy
                     ${VISIT_SOURCE_DIR}/viewer/rpc

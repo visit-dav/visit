@@ -34,11 +34,11 @@ PyLabelAttributes_SetDefaults(const LabelAttributes *atts)
 }
 
 Target: xml2info
-Function: LabelViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: LabelViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: LabelViewerPluginInfo::InitializePlotAtts
+//  Method: LabelViewerEnginePluginInfo::InitializePlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -62,15 +62,15 @@ Definition:
 // ****************************************************************************
 
 void
-LabelViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+LabelViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     *(LabelAttributes*)atts = *defaultAtts;
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: LabelViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: LabelViewerEnginePluginInfo::ReInitializePlotAtts
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
 //  Method: SubsetViewerPluginInfo::ReInitializePlotAtts
@@ -94,14 +94,14 @@ Definition:
 // ****************************************************************************
 
 void
-LabelViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+LabelViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: LabelViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: LabelViewerEnginePluginInfo::ResetPlotAtts
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
 //  Method: SubsetViewerPluginInfo::ResetPlotAtts
@@ -124,18 +124,18 @@ Definition:
 // ****************************************************************************
 
 void
-LabelViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+LabelViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 
 {
     ReInitializePlotAtts(atts, plot);
 }
 
-Function: LabelViewerPluginInfo::PrivateSetPlotAtts
-Declaration: void PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: LabelViewerEnginePluginInfo::PrivateSetPlotAtts
+Declaration: void PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-// Method: LabelViewerPluginInfo::PrivateSetPlotAtts
+// Method: LabelViewerEnginePluginInfo::PrivateSetPlotAtts
 //
 // Purpose: 
 //   Initializes the plot's varType attribute using the metadata.
@@ -161,24 +161,24 @@ Definition:
 #include <avtDatabaseMetaData.h>
 #include <Expression.h>
 #include <DebugStream.h>
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 void
-LabelViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const ViewerPlot *plot)
+LabelViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+    const avtPlotMetaData &plot)
 {
     LabelAttributes *labelAtts = (LabelAttributes *)atts;
 
     //
     // Get the meta-data and initialize the variable type in the atts.
     //
-    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const avtDatabaseMetaData *md = plot.GetMetaData();
     if (md == NULL)
     {
         labelAtts->SetVarType(LabelAttributes::LABEL_VT_UNKNOWN_TYPE);
         return;
     }
 
-    avtSubsetType st = md->DetermineSubsetType(plot->GetVariableName());
+    avtSubsetType st = md->DetermineSubsetType(plot.GetVariableName());
     if(st != AVT_UNKNOWN_SUBSET && st != AVT_MATERIAL_SUBSET)
     {
         labelAtts->SetVarType(LabelAttributes::LABEL_VT_SUBSET);
@@ -186,7 +186,7 @@ LabelViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     }
     else
     {
-        avtVarType t = md->DetermineVarType(plot->GetVariableName());
+        avtVarType t = md->DetermineVarType(plot.GetVariableName());
 
         if(t == AVT_SCALAR_VAR)
         {
@@ -197,7 +197,7 @@ LabelViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
             for(int i = 0; i < md->GetNumberOfExpressions(); ++i)
             {
                 const Expression *e = md->GetExpression(i);
-                if(e->GetName() == plot->GetVariableName())
+                if(e->GetName() == plot.GetVariableName())
                 {
                     if(e->GetType() == Expression::VectorMeshVar)
                         t = AVT_VECTOR_VAR;

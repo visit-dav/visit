@@ -85,9 +85,9 @@
       </Function>
       <Function name="ParallelCoordinatesGUIPluginInfo::CreatePluginWizard" user="false" member="true">
       </Function>
-      <Function name="ParallelCoordinatesViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
+      <Function name="ParallelCoordinatesViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>
       <Include file="header" quoted="false">
         AxisRestrictionAttributes.h

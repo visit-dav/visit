@@ -43,17 +43,7 @@
 #include <InstallationFunctions.h>
 #include <MovieTemplateConfig.h>
 #include <DebugStream.h>
-
-static void UpperCase(const std::string &src, std::string &dest)
-{
-    std::string tmp(src);
-    for(size_t i = 0; i < tmp.size(); ++i)
-    {
-        if(tmp[i] >= 'a' && tmp[i] <= 'z')
-            tmp[i] -= 'a' - 'A';
-    }
-    dest = tmp;
-}
+#include <StringHelpers.h>
 
 // ****************************************************************************
 // Class: MovieTemplateFileList
@@ -114,7 +104,7 @@ AddMovieTemplateCB(void *cbdata, const std::string &filename, bool isDir,
     if(!isDir && canAccess)
     {
         std::string ext(filename.substr(filename.size() - 3, filename.size()-1));
-        UpperCase(ext, ext);
+        ext = StringHelpers::UpperCase(ext);
         if(ext == ".MT")
         {
             void **arr = (void **)cbdata;
@@ -155,14 +145,14 @@ GetVisItMovieTemplates()
     std::string templateDir(GetVisItResourcesDirectory(VISIT_RESOURCES_MOVIETEMPLATES));
     debug1 << "GetVisItMovieTemplates: Trying to read system movie templates from " 
            << templateDir.c_str() << endl;
-    ReadAndProcessDirectory(templateDir, AddMovieTemplateCB, (void *)cb_data, true);
+    FileFunctions::ReadAndProcessDirectory(templateDir, AddMovieTemplateCB, (void *)cb_data, true);
 
     // Get the names of the VisIt template files that the user may have.
     templateDir = GetUserVisItDirectory() + "movietemplates";
     cb_data[1] = (void *)1;
     debug1 << "GetVisItMovieTemplates: Trying to read user movie templates from " 
            << templateDir.c_str() << endl;
-    ReadAndProcessDirectory(templateDir, AddMovieTemplateCB, (void *)cb_data, true);
+    FileFunctions::ReadAndProcessDirectory(templateDir, AddMovieTemplateCB, (void *)cb_data, true);
 
     return fileList;
 }

@@ -91,6 +91,7 @@ using StringHelpers::HumanReadableList;
 bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
+bool    avtDatabaseFactory::checkFilePermissions = true;
 FileOpenOptions avtDatabaseFactory::defaultFileOpenOptions;
 avtPrecisionType avtDatabaseFactory::precisionType = AVT_PRECISION_NATIVE;
 avtBackendType avtDatabaseFactory::backendType = AVT_BACKEND_VTK;
@@ -361,6 +362,11 @@ avtDatabaseFactory::SetBackendType(const int bType)
 //    Mark C. Miller, Wed Jan  8 18:15:01 PST 2014
 //    Added some error checking for !NBLOCKS, !TIMES declarations and adjusted
 //    the debug output to be a little more helpful.
+//
+//    Brad Whitlock, Thu Sep 18 23:02:07 PDT 2014
+//    Allow file permission check to be bypassed. We don't want it for batch
+//    in situ.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -447,7 +453,8 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     //
     // Make sure we can read the file before we proceed.
     //
-    CheckPermissions(filelist[fileIndex]);
+    if(checkFilePermissions)
+        CheckPermissions(filelist[fileIndex]);
 
     //
     // If we were specifically told which format to use, then try that now.
@@ -1180,90 +1187,23 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
 //    Test for file's existence on Windows. Throwing the exception here can
 //    prevent engine crashing elsewhere. (conn_cmfe test with bad_file.silo).
 //
+//    Brad Whitlock, Mon Sep  8 14:25:23 PDT 2014
+//    Moved code to FileFunctions.
+//
 // ****************************************************************************
 
-#if defined(_WIN32)
 static void
 CheckPermissions(const char *filename)
 {
-    VisItStat_t s;
-    int result = VisItStat(filename, &s);
-    if (result < 0)
+    FileFunctions::PermissionsResult result = 
+        FileFunctions::CheckPermissions(filename);
+    if (result == FileFunctions::PERMISSION_RESULT_NOFILE)
     {
         EXCEPTION1(FileDoesNotExistException, filename);
     }
+    else if (result == FileFunctions::PERMISSION_RESULT_NONREADABLE)
+    {
+        EXCEPTION1(BadPermissionException, filename);
+    }
 }
 
-#else
-static bool    setUpUserInfo = false;
-static uid_t   uid;
-static gid_t   gids[100];
-static int     ngids;
-
-static void
-SetUpUserInfo(void)
-{
-    setUpUserInfo = true;
-    uid = getuid();
-    ngids = getgroups(100, gids);
-}
-
-static void
-CheckPermissions(const char *filename)
-{
-    if (!setUpUserInfo)
-    {
-        SetUpUserInfo();
-    }
-
-    VisItStat_t s;
-    int rv = VisItStat(filename, &s);
-    if (rv < 0)
-    {
-        if(errno == ENOENT || errno == ENOTDIR)
-        {
-            EXCEPTION1(FileDoesNotExistException, filename);
-        }
-        else
-        {
-            EXCEPTION1(BadPermissionException, filename);
-        }
-    }
-    mode_t mode = s.st_mode;
-
-    //
-    // If other has permission, then we are set.
-    //
-    if (mode & S_IROTH)
-    {
-        return;
-    }
-
-    //
-    // If we are the user and the user has permission, then we are set.
-    //
-    bool isuser =  (s.st_uid == uid);
-    if (isuser && (mode & S_IRUSR))
-    {
-        return;
-    }
-
-    //
-    // If we are in the group and the group has permission, then we are set.
-    //
-    bool isgroup = false;
-    for (int i = 0 ; i < ngids ; i++)
-    {
-        if (gids[i] == s.st_gid)
-        {
-            isgroup = true;
-        }
-    }
-    if (isgroup && (mode & S_IRGRP))
-    {
-        return;
-    }
-
-    EXCEPTION1(BadPermissionException, filename);
-}
-#endif

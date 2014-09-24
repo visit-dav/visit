@@ -43,6 +43,8 @@
 #include <GL/ice-t.h>
 #include <engine_main_exports.h>
 
+class Engine;
+
 // ****************************************************************************
 //  Class: IceTNetworkManager
 //
@@ -88,6 +90,8 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
     virtual avtDataObject_p Render(bool, intVector networkIds, bool getZBuffer,
                                    int annotMode, int windowID, bool leftEye);
     void       RealRender(); /// OpenGL calls sourced from here
+
+    static Engine *engine_for_render;
 
  protected:
 

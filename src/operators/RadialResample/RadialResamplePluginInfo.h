@@ -86,7 +86,7 @@ class RadialResampleGUIPluginInfo : public virtual GUIOperatorPluginInfo, public
         QvisNotepadArea *notepad);
 };
 
-class RadialResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual RadialResampleCommonPluginInfo
+class RadialResampleViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual RadialResampleCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class RadialResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class RadialResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, 
     static RadialResampleAttributes *clientAtts;
 };
 
-class RadialResampleEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual RadialResampleCommonPluginInfo
+class RadialResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual RadialResampleViewerEnginePluginInfo
+{
+  public:
+};
+
+class RadialResampleEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual RadialResampleViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

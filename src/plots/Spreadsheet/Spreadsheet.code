@@ -269,11 +269,11 @@ SpreadsheetAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
 }
 
 Target: xml2info
-Function: SpreadsheetViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SpreadsheetViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-// Method: SpreadsheetViewerPluginInfo::InitializePlotAtts
+// Method: SpreadsheetViewerEnginePluginInfo::InitializePlotAtts
 //
 // Purpose: 
 //   Initializes the plot attributes.
@@ -290,19 +290,19 @@ Definition:
 //   
 // ****************************************************************************
 void
-SpreadsheetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+SpreadsheetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     *(SpreadsheetAttributes*)atts = *defaultAtts;
 
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: SpreadsheetViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-// Method: SpreadsheetViewerPluginInfo::ReInitializePlotAtts
+// Method: SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts
 //
 // Purpose: 
 //   Makes sure that the subset name in the plot attributes is valid.
@@ -319,17 +319,17 @@ Definition:
 //   
 // ****************************************************************************
 void
-SpreadsheetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: SpreadsheetViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SpreadsheetViewerEnginePluginInfo::ResetPlotAtts
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-// Method: SpreadsheetViewerPluginInfo::ResetPlotAtts
+// Method: SpreadsheetViewerEnginePluginInfo::ResetPlotAtts
 //
 // Purpose: 
 //   Resets the plot attributes.
@@ -347,8 +347,8 @@ Definition:
 // ****************************************************************************
 
 void
-SpreadsheetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+SpreadsheetViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 
 {
     *(SpreadsheetAttributes*)atts = *defaultAtts;
@@ -356,11 +356,11 @@ SpreadsheetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: SpreadsheetViewerPluginInfo::ProvidesLegend
+Function: SpreadsheetViewerEnginePluginInfo::ProvidesLegend
 Declaration: virtual bool ProvidesLegend() const;
 Definition:
 bool
-SpreadsheetViewerPluginInfo::ProvidesLegend() const
+SpreadsheetViewerEnginePluginInfo::ProvidesLegend() const
 {
     return false;
 }
@@ -586,11 +586,11 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify(void *dpy)
     }
 }
 
-Function: SpreadsheetViewerPluginInfo::PrivateSetPlotAtts
-Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts
+Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-// Method: SpreadsheetViewerPluginInfo::PrivateSetPlotAtts
+// Method: SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts
 //
 // Purpose: 
 //   Makes sure that the subset name in the plot attributes is valid.
@@ -612,11 +612,11 @@ Definition:
 //
 // ****************************************************************************
 #include <avtSILRestriction.h>
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 
 void
-SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const ViewerPlot *plot)
+SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+    const avtPlotMetaData &plot)
 {
     // Search for a SIL_DOMAIN category under the current silTopSet and add
     // sets that are used.
@@ -625,7 +625,7 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     bool firstNameSet = false;
     std::string firstName;
     int nSets = 1;
-    avtSILRestriction_p silr = plot->GetSILRestriction();
+    avtSILRestriction_p silr = plot.GetSILRestriction();
     avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
     const std::vector<int> &mapsOut = current->GetMapsOut();
     for(size_t j = 0; j < mapsOut.size() && !validName; ++j)
@@ -671,11 +671,11 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     }
 }
 
-Function: SpreadsheetViewerPluginInfo::Permits2DViewScaling
+Function: SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:
 bool
-SpreadsheetViewerPluginInfo::Permits2DViewScaling() const
+SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling() const
 {
     return false;
 }

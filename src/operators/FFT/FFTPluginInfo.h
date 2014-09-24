@@ -86,7 +86,7 @@ class FFTGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual FF
         QvisNotepadArea *notepad);
 };
 
-class FFTViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FFTCommonPluginInfo
+class FFTViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual FFTCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class FFTViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virt
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class FFTViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virt
     static FFTAttributes *clientAtts;
 };
 
-class FFTEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FFTCommonPluginInfo
+class FFTViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FFTViewerEnginePluginInfo
+{
+  public:
+};
+
+class FFTEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FFTViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

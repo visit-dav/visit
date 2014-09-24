@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* SurfaceNormal_GetEngineInfo()
 {
+    SurfaceNormalEnginePluginInfo::InitializeGlobalObjects();
     return new SurfaceNormalEnginePluginInfo;
 }
 

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* FTLE_GetEngineInfo()
 {
+    FTLEEnginePluginInfo::InitializeGlobalObjects();
     return new FTLEEnginePluginInfo;
 }
 

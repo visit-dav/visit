@@ -87,7 +87,7 @@ class ModelBasedClusteringGUIPluginInfo : public virtual GUIOperatorPluginInfo, 
         QvisNotepadArea *notepad);
 };
 
-class ModelBasedClusteringViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ModelBasedClusteringCommonPluginInfo
+class ModelBasedClusteringViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ModelBasedClusteringCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,11 @@ class ModelBasedClusteringViewerPluginInfo : public virtual ViewerOperatorPlugin
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +108,12 @@ class ModelBasedClusteringViewerPluginInfo : public virtual ViewerOperatorPlugin
     static ModelBasedClusteringAttributes *clientAtts;
 };
 
-class ModelBasedClusteringEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ModelBasedClusteringCommonPluginInfo
+class ModelBasedClusteringViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ModelBasedClusteringViewerEnginePluginInfo
+{
+  public:
+};
+
+class ModelBasedClusteringEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ModelBasedClusteringViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

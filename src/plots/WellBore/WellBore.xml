@@ -97,11 +97,11 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="WellBoreViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
+      <Function name="WellBoreViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
-      <Function name="WellBoreViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="WellBoreViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="WellBoreViewerPluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
+      <Function name="WellBoreViewerEnginePluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
       </Function>
       <Include file="source" quoted="false">
         ColorControlPoint.h

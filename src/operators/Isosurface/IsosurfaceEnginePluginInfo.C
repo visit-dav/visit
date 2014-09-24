@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Isosurface_GetEngineInfo()
 {
+    IsosurfaceEnginePluginInfo::InitializeGlobalObjects();
     return new IsosurfaceEnginePluginInfo;
 }
 

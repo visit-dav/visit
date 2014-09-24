@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Cylinder_GetEngineInfo()
 {
+    CylinderEnginePluginInfo::InitializeGlobalObjects();
     return new CylinderEnginePluginInfo;
 }
 

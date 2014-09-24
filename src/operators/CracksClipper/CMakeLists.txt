@@ -23,6 +23,7 @@ QvisCracksClipperWindow.h
 )
 
 SET(LIBV_SOURCES
+CracksClipperViewerEnginePluginInfo.C
 CracksClipperViewerPluginInfo.C
 avtCracksClipperFilter.C
 avtRemoveCracksFilter.C
@@ -33,6 +34,7 @@ ${COMMON_SOURCES}
 )
 
 SET(LIBE_SOURCES
+CracksClipperViewerEnginePluginInfo.C
 CracksClipperEnginePluginInfo.C
 avtCracksClipperFilter.C
 avtRemoveCracksFilter.C
@@ -83,7 +85,9 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/gui
 ${VISIT_INCLUDE_DIR}/mdserver/proxy
 ${VISIT_INCLUDE_DIR}/mdserver/rpc
+${VISIT_INCLUDE_DIR}/viewer/core
 ${VISIT_INCLUDE_DIR}/viewer/main
+${VISIT_INCLUDE_DIR}/viewer/main/ui
 ${VISIT_INCLUDE_DIR}/viewer/proxy
 ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil

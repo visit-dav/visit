@@ -153,13 +153,13 @@
       </Function>
       <Function name="ProcessOldVersions" user="true" member="true" access="private">
       </Function>
-      <Function name="CurveViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
+      <Function name="CurveViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
-      <Function name="CurveViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="CurveViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="CurveViewerPluginInfo::SetColor" user="true" member="true" access="private">
+      <Function name="CurveViewerEnginePluginInfo::SetColor" user="true" member="true" access="private">
       </Function>
-      <Function name="CurveViewerPluginInfo::PermitsCurveViewScaling" user="false" member="true">
+      <Function name="CurveViewerEnginePluginInfo::PermitsCurveViewScaling" user="false" member="true">
       </Function>
       <Include file="source" quoted="false">
         Line.h

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Replicate_GetEngineInfo()
 {
+    ReplicateEnginePluginInfo::InitializeGlobalObjects();
     return new ReplicateEnginePluginInfo;
 }
 

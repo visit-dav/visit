@@ -48,9 +48,9 @@
       </Field>
       <Function name="StatisticalTrendsCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
       </Function>
-      <Function name="StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts" user="false" member="true">
+      <Function name="StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts" user="false" member="true">
       </Function>
-      <Function name="StatisticalTrendsViewerPluginInfo::GetOperatorVarDescription" user="false" member="true">
+      <Function name="StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

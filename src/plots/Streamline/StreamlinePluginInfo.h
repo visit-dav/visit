@@ -80,20 +80,20 @@ class StreamlineCommonPluginInfo : public virtual CommonPlotPluginInfo, public v
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class StreamlineGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual StreamlineCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class StreamlineViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual StreamlineCommonPluginInfo
+class StreamlineViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual StreamlineCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class StreamlineViewerPluginInfo : public virtual ViewerPlotPluginInfo, public v
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static StreamlineAttributes *defaultAtts;
     static StreamlineAttributes *clientAtts;
 };
 
-class StreamlineEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual StreamlineCommonPluginInfo
+class StreamlineViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual StreamlineViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class StreamlineEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual StreamlineViewerEnginePluginInfo
+{
+  public:
 };
 
 class StreamlineScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual StreamlineCommonPluginInfo

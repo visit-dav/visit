@@ -41,7 +41,7 @@
 
 #include <Engine.h>
 
-#include <RPCExecutor.h>
+#include <EngineRPCExecutor.h>
 
 #include <AbortException.h>
 #include <DatabasePluginManager.h>
@@ -94,10 +94,13 @@
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
 
+#include <avtParallel.h>
+#include <avtDataObjectString.h>
+
 #include <string>
 
 // ****************************************************************************
-//  Method: RPCExecutor<QuitRPC>::Execute
+//  Method: EngineRPCExecutor<QuitRPC>::Execute
 //
 //  Purpose:
 //      Execute a QuitRPC.
@@ -115,7 +118,7 @@
 // ****************************************************************************
 template<>
 void
-RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
+EngineRPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
 {
 
     debug2 << "Executing QuitRPC" << endl;
@@ -124,16 +127,14 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
     else
     {
 #ifdef DEBUG_MEMORY_LEAKS
-        Engine         *engine = Engine::Instance();
-        NetworkManager *netmgr = engine->GetNetMgr();
-        netmgr->ClearAllNetworks();
+        GetEngine()->GetNetMgr()->ClearAllNetworks();
 #endif
         rpc->SendReply();
     }
 }
 
 // ****************************************************************************
-// Method: RPCExecutor<KeepAliveRPC>::Execute
+// Method: EngineRPCExecutor<KeepAliveRPC>::Execute
 //
 // Purpose: 
 //   Handles the KeepAliveRPC.
@@ -150,17 +151,16 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
 
 template<>
 void
-RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
+EngineRPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 {
     //
     // Now send back some data on the command and data sockets.
     //
-    Engine *engine = Engine::Instance();
-    engine->SendKeepAliveReply();
+    GetEngine()->SendKeepAliveReply();
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<ReadRPC>::Execute
+//  Method: EngineRPCExecutor<ReadRPC>::Execute
 //
 //  Purpose:
 //      Execute a ReadRPC.
@@ -225,10 +225,9 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 
 template<>
 void
-RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
+EngineRPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing ReadRPC" << endl;
     TRY
@@ -257,7 +256,7 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<PrepareOperatorRPC>::Execute
+//  Method: EngineRPCExecutor<PrepareOperatorRPC>::Execute
 //
 //  Purpose:
 //      Allocate space for the attributes for an ApplyOperatorRPC.
@@ -299,10 +298,9 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
+EngineRPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing PrepareOperatorRPC: " << rpc->GetID().c_str() << endl;
     TRY 
@@ -332,7 +330,7 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
 
 
 // ****************************************************************************
-//  Method: RPCExecutor<ApplyOperatorRPC>::Execute
+//  Method: EngineRPCExecutor<ApplyOperatorRPC>::Execute
 //
 //  Purpose:
 //      Execute an ApplyOperatorRPC.
@@ -357,15 +355,14 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
+EngineRPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
-    debug2 << "Executing ApplyOperatorRPC: " << rpc->GetID().c_str() << endl;
+    debug2 << "Executing ApplyOperatorRPC: " << rpc->GetID() << endl;
     TRY
     {
-        netmgr->AddFilter(rpc->GetID().c_str(), rpc->GetAtts());
+        netmgr->AddFilter(rpc->GetID(), rpc->GetAtts());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -377,7 +374,7 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<PreparePlotPlotRPC>::Execute
+//  Method: EngineRPCExecutor<PreparePlotPlotRPC>::Execute
 //
 //  Purpose:
 //      Allocate space for the attributes for a MakePlotRPC.
@@ -417,10 +414,9 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
+EngineRPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing PreparePlotRPC: " << rpc->GetID().c_str() << endl;
     TRY
@@ -448,7 +444,7 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<MakePlotRPC>::Execute
+//  Method: EngineRPCExecutor<MakePlotRPC>::Execute
 //
 //  Purpose:
 //      Execute a MakePlotRPC.
@@ -485,10 +481,9 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
+EngineRPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing MakePlotRPC: " << rpc->GetID().c_str() << endl;
     TRY 
@@ -507,7 +502,7 @@ RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<UseNetworkRPC>::Execute
+//  Method: EngineRPCExecutor<UseNetworkRPC>::Execute
 //
 //  Purpose:
 //      Execute a UseNetworkRPC.
@@ -522,10 +517,9 @@ RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<UseNetworkRPC>::Execute(UseNetworkRPC *rpc)
+EngineRPCExecutor<UseNetworkRPC>::Execute(UseNetworkRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing UseNetworkRPC: " << rpc->GetID() << endl;
     TRY 
@@ -541,7 +535,7 @@ RPCExecutor<UseNetworkRPC>::Execute(UseNetworkRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute
+//  Method: EngineRPCExecutor<PrepareUpdatePlotAttsRPC>::Execute
 //
 //  Purpose:
 //      Allocate space for the attributes for a UpdatePlotAttsRPC.
@@ -559,13 +553,12 @@ RPCExecutor<UseNetworkRPC>::Execute(UseNetworkRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
+EngineRPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
 {
     debug2 << "Executing PrepareUpdatePlotAttsRPC: " << rpc->GetID().c_str() << endl;
     TRY
     {
-        Engine         *engine = Engine::Instance();
-        NetworkManager *netmgr = engine->GetNetMgr();
+        NetworkManager *netmgr = GetEngine()->GetNetMgr();
         std::string id = rpc->GetID().c_str();
 
         if (!netmgr->GetPlotPluginManager()->PluginAvailable(id))
@@ -588,7 +581,7 @@ RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<UpdatePlotAttsRPC>::Execute
+//  Method: EngineRPCExecutor<UpdatePlotAttsRPC>::Execute
 //
 //  Purpose:
 //      Execute a UpdatePlotAttsRPC.
@@ -603,10 +596,9 @@ RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
+EngineRPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing UpdatePlotAttsRPC: " << rpc->GetID().c_str() << endl;
     TRY 
@@ -624,7 +616,7 @@ RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<PickRPC>::Execute
+//  Method: EngineRPCExecutor<PickRPC>::Execute
 //
 //  Purpose:
 //
@@ -650,10 +642,9 @@ RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
+EngineRPCExecutor<PickRPC>::Execute(PickRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing PickRPC: " << endl; 
     TRY 
@@ -689,7 +680,7 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
 
 
 // ****************************************************************************
-//  Method: RPCExecutor<StartPickRPC>::Execute
+//  Method: EngineRPCExecutor<StartPickRPC>::Execute
 //
 //  Purpose:
 //
@@ -706,10 +697,9 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
+EngineRPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing StartPickRPC: " << endl; 
 
@@ -730,7 +720,7 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 
 
 // ****************************************************************************
-//  Method: RPCExecutor<StartQueryRPC>::Execute
+//  Method: EngineRPCExecutor<StartQueryRPC>::Execute
 //
 //  Purpose:
 //      Indicates that we should start query mode or stop query mode.
@@ -743,10 +733,9 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<StartQueryRPC>::Execute(StartQueryRPC *rpc)
+EngineRPCExecutor<StartQueryRPC>::Execute(StartQueryRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing StartQueryRPC: " << endl; 
 
@@ -766,7 +755,7 @@ RPCExecutor<StartQueryRPC>::Execute(StartQueryRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<SetWinAnnotAttsRPC>::Execute
+//  Method: EngineRPCExecutor<SetWinAnnotAttsRPC>::Execute
 //
 //  Purpose:
 //      Execute a SetWinAnnotAttsRPC.
@@ -809,10 +798,9 @@ RPCExecutor<StartQueryRPC>::Execute(StartQueryRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
+EngineRPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing SetWinAnnotAttsRPC "
            << rpc->GetWindowAtts().GetSize()[0] << "x"
@@ -840,7 +828,7 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 
 
 // ****************************************************************************
-//  Method: RPCExecutor<ExecuteRPC>::Execute
+//  Method: EngineRPCExecutor<ExecuteRPC>::Execute
 //
 //  Purpose:
 //      Execute an ExecuteRPC.
@@ -933,14 +921,43 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Changed to pass compression bool to Engine::WriteData
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
-//    Minor alteration to debug2 statement outpu 
+//    Minor alteration to debug2 statement output.
+//
+//    Brad Whitlock, Mon Sep 22 21:24:54 PDT 2014
+//    Use some callback functions to handle status and writing the data back
+//    to the engine socket.
+// 
 // ****************************************************************************
+
+static void
+Execute_statusCB(int percent, const char *msg, void *cbdata)
+{
+    NonBlockingRPC *rpc = (NonBlockingRPC *)cbdata;
+    rpc->SendStatus(percent,
+                    rpc->GetCurStageNum(),
+                    msg,
+                    rpc->GetMaxStageNum());
+}
+
+static void
+Execute_writeCB(avtDataObjectString &do_str, void *cbdata)
+{
+    NonBlockingRPC *rpc = (NonBlockingRPC *)cbdata;
+
+    // Set the return data size so we know the size of the data
+    // message to read.
+    int totalSize = do_str.GetTotalLength();
+    rpc->SendReply(totalSize);
+
+    // Send the data back to the viewer.
+    Engine::GetEngine()->WriteByteStreamToSocket(do_str);
+}
+
 template<>
 void
-RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
+EngineRPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     int gettingData = visitTimer->StartTimer();
     int writingData = -1;
@@ -1001,12 +1018,21 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         bool scalableThresholdExceeded = false;
         bool useCompression = netmgr->GetShouldUseCompression(winId);
 
-        // Send the data back to the viewer.
-        engine->WriteData(rpc, writer, useCompression,
-                    rpc->GetRespondWithNull(),
-                    scalableThreshold, &scalableThresholdExceeded,
-                    currentTotalGlobalCellCount, cellCountMultiplier,
-                    &currentNetworkGlobalCellCount);
+        // Gather the data for the viewer into the data object string.
+        std::string errorMessage;
+        bool success = GetEngine()->GatherData(writer,
+                           useCompression,
+                           rpc->GetRespondWithNull(),
+                           scalableThreshold, 
+                           currentTotalGlobalCellCount, cellCountMultiplier,
+                           Execute_statusCB, (void *)rpc,
+                           Execute_writeCB, (void*)rpc,
+                           errorMessage,
+                           &scalableThresholdExceeded,
+                           &currentNetworkGlobalCellCount);
+
+        if (PAR_UIProcess() && !success)
+            rpc->SendError(errorMessage);
 
         // re-set the network if we exceeded the scalable threshold
         if (scalableThresholdExceeded && !rpc->GetRespondWithNull())
@@ -1022,7 +1048,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     }
     CATCH(ImproperUseException)
     {
-        engine->SetNoFatalExceptions(false);
+        GetEngine()->SetNoFatalExceptions(false);
     }
     CATCH2(VisItException, e)
     {
@@ -1049,7 +1075,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<ClearCacheRPC>::Execute
+//  Method: EngineRPCExecutor<ClearCacheRPC>::Execute
 //
 //  Purpose:
 //      Execute a ClearCacheRPC.
@@ -1068,10 +1094,9 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
+EngineRPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing ClearCacheRPC: file = " 
            << rpc->GetDatabaseName().c_str() << endl;
@@ -1095,7 +1120,7 @@ RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
 
  
 // ****************************************************************************
-//  Method: RPCExecutor<ProcInfoRPC>::Execute
+//  Method: EngineRPCExecutor<ProcInfoRPC>::Execute
 //
 //  Purpose:  Execute a request for process infor.
 //
@@ -1105,15 +1130,13 @@ RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<ProcInfoRPC>::Execute(ProcInfoRPC *rpc)
+EngineRPCExecutor<ProcInfoRPC>::Execute(ProcInfoRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-
     debug2 << "Executing ProcInfoRPC: " << endl;
 
     TRY
     {
-        rpc->SendReply(engine->GetProcessAttributes());
+        rpc->SendReply(GetEngine()->GetProcessAttributes());
     }
     CATCH2(VisItException, e)
     {
@@ -1123,7 +1146,7 @@ RPCExecutor<ProcInfoRPC>::Execute(ProcInfoRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<EnginePropertiesRPC>::Execute
+//  Method: EngineRPCExecutor<EnginePropertiesRPC>::Execute
 //
 //  Purpose:  Execute a request for process infor.
 //
@@ -1133,15 +1156,13 @@ RPCExecutor<ProcInfoRPC>::Execute(ProcInfoRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<EnginePropertiesRPC>::Execute(EnginePropertiesRPC *rpc)
+EngineRPCExecutor<EnginePropertiesRPC>::Execute(EnginePropertiesRPC *rpc)
 {
-    Engine *engine = Engine::Instance();
-
     debug2 << "Executing EnginePropertiesRPC: " << endl;
 
     TRY
     {
-        EngineProperties props(engine->GetEngineProperties());
+        EngineProperties props(GetEngine()->GetEngineProperties());
         rpc->SendReply(&props);
     }
     CATCH2(VisItException, e)
@@ -1152,7 +1173,7 @@ RPCExecutor<EnginePropertiesRPC>::Execute(EnginePropertiesRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<QueryRPC>::Execute
+//  Method: EngineRPCExecutor<QueryRPC>::Execute
 //
 //  Purpose:  Execute a query.
 //
@@ -1172,10 +1193,9 @@ RPCExecutor<EnginePropertiesRPC>::Execute(EnginePropertiesRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
+EngineRPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing QueryRPC: " << endl;
 
@@ -1215,7 +1235,7 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
 
 
 // ****************************************************************************
-//  Method: RPCExecutor<QueryParametersRPC>::Execute
+//  Method: EngineRPCExecutor<QueryParametersRPC>::Execute
 //
 //  Purpose:  Retrieve query parameters.
 //
@@ -1227,10 +1247,9 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<QueryParametersRPC>::Execute(QueryParametersRPC *rpc)
+EngineRPCExecutor<QueryParametersRPC>::Execute(QueryParametersRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing QueryParametersRPC: " << endl;
 
@@ -1249,7 +1268,7 @@ RPCExecutor<QueryParametersRPC>::Execute(QueryParametersRPC *rpc)
 
 
 // ****************************************************************************
-//  Method: RPCExecutor<ReleaseDataRPC>::Execute
+//  Method: EngineRPCExecutor<ReleaseDataRPC>::Execute
 //
 //  Purpose:
 //      Execute a ReleaseDataRPC.
@@ -1264,10 +1283,9 @@ RPCExecutor<QueryParametersRPC>::Execute(QueryParametersRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
+EngineRPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing ReleaseDataRPC: " << rpc->GetID() << endl;
     TRY 
@@ -1284,7 +1302,7 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 
 
 // ****************************************************************************
-//  Method: RPCExecutor<OpenDatabaseRPC>::Execute
+//  Method: EngineRPCExecutor<OpenDatabaseRPC>::Execute
 //
 //  Purpose:
 //      Execute an OpenDatabaseRPC.
@@ -1330,13 +1348,11 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
+EngineRPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 {
-    Engine *engine = Engine::Instance();
-
     TRY
     {
-        NetworkManager *netmgr = engine->GetNetMgr();
+        NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
         debug2 << "Executing OpenDatabaseRPC: db=" 
                << rpc->GetDatabaseName().c_str()
@@ -1356,19 +1372,19 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
                                fileMayHaveUnloadedPlugin,
                                rpc->GetIgnoreExtents());
 
-        engine->PopulateSimulationMetaData(rpc->GetDatabaseName(),
+        GetEngine()->PopulateSimulationMetaData(rpc->GetDatabaseName(),
                                            rpc->GetFileFormat());
     }
     CATCH2(VisItException, e)
     {
-        engine->Error((e.GetExceptionType() + ": ") + e.Message());
+        GetEngine()->Error((e.GetExceptionType() + ": ") + e.Message());
         debug1 << "An error occurred while opening the database." << endl;
     }
     ENDTRY
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<DefineVirtualDatabaseRPC>::Execute
+//  Method: EngineRPCExecutor<DefineVirtualDatabaseRPC>::Execute
 //
 //  Purpose:
 //      Execute a DefineVirtualDatabaseRPC.
@@ -1399,10 +1415,9 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
+EngineRPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing DefineVirtualDatabaseRPC: "
            << "db=" << rpc->GetDatabaseName().c_str()
@@ -1435,7 +1450,7 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<RenderRPC>::Execute
+//  Method: EngineRPCExecutor<RenderRPC>::Execute
 //
 //  Purpose:
 //      Execute a RenderRPC.
@@ -1486,13 +1501,16 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //    I changed the code to account for NetworkManager::Render now returning
 //    an avtDataObject_p.
 //
+//    Brad Whitlock, Mon Sep 22 21:26:20 PDT 2014
+//    Handle data writing and status differently.
+//
 // ****************************************************************************
+
 template<>
 void
-RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
+EngineRPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing RenderRPC for the following plots" << endl;
     debug2 << "   ";
@@ -1530,7 +1548,29 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 
         // Send the data back to the viewer.
         bool useCompression = netmgr->GetShouldUseCompression(rpc->GetWindowID());
-        engine->WriteData(rpc, writer, useCompression);
+
+        std::string errorMessage;
+        bool  respondWithNull = false;
+        int   scalableThreshold = -1;
+        bool  scalableThresholdExceeded = false;
+        int   currentTotalGlobalCellCount = 0;
+        float cellCountMultiplier = 1.f;
+        int   currentNetworkGlobalCellCount = 0;
+
+        bool success = GetEngine()->GatherData(writer,
+                           useCompression,
+                           respondWithNull,
+                           scalableThreshold, 
+                           currentTotalGlobalCellCount, cellCountMultiplier,
+                           Execute_statusCB, (void *)rpc,
+                           Execute_writeCB, (void *)rpc,
+                           errorMessage,
+                           &scalableThresholdExceeded,
+                           &currentNetworkGlobalCellCount);
+
+        if (PAR_UIProcess() && !success)
+            rpc->SendError(errorMessage);
+
         visitTimer->OutputAllTimings();
     }
     CATCH2(VisItException, e)
@@ -1551,7 +1591,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<CloneNetworkRPC>::Execute
+//  Method: EngineRPCExecutor<CloneNetworkRPC>::Execute
 //
 //  Purpose:
 //      Execute a CloneNetworkRPC.
@@ -1566,10 +1606,9 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
+EngineRPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing CloneNetworkRPC: " << rpc->GetID() << endl;
     TRY
@@ -1589,7 +1628,7 @@ RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<SimulationCommandRPC>::Execute
+//  Method:  EngineRPCExecutor<SimulationCommandRPC>::Execute
 //
 //  Purpose:
 //    Execute a simulation command.
@@ -1604,14 +1643,13 @@ RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
+EngineRPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 {
-    Engine *engine = Engine::Instance();
     debug2 << "Executing SimulationCommandRPC: " << rpc->GetCommand().c_str() << endl;
 
     TRY
     {
-        engine->ExecuteSimulationCommand(rpc->GetCommand(),
+        GetEngine()->ExecuteSimulationCommand(rpc->GetCommand(),
                                          rpc->GetStringData());
         rpc->SendReply();
     }
@@ -1623,7 +1661,7 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<NamedSelectionRPC>::Execute
+//  Method:  EngineRPCExecutor<NamedSelectionRPC>::Execute
 //
 //  Purpose:
 //      Handles a NamedSelection RPC.
@@ -1648,10 +1686,9 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
+EngineRPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
 {
-    Engine *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     const char *mName = "Executing NamedSelectionRPC: ";
     debug2 << mName << "0" << endl;
@@ -1717,7 +1754,7 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<ConstructDataBinningRPC>::Execute
+//  Method:  EngineRPCExecutor<ConstructDataBinningRPC>::Execute
 //
 //  Purpose:
 //      Constructs a data binning.
@@ -1733,10 +1770,9 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<ConstructDataBinningRPC>::Execute(ConstructDataBinningRPC *rpc)
+EngineRPCExecutor<ConstructDataBinningRPC>::Execute(ConstructDataBinningRPC *rpc)
 {
-    Engine *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing ConstructDataBinningRPC." << endl;
 
@@ -1765,7 +1801,7 @@ RPCExecutor<ConstructDataBinningRPC>::Execute(ConstructDataBinningRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<ExportDatabaseRPC>::Execute
+//  Method:  EngineRPCExecutor<ExportDatabaseRPC>::Execute
 //
 //  Purpose:
 //      Exports a database.
@@ -1781,10 +1817,9 @@ RPCExecutor<ConstructDataBinningRPC>::Execute(ConstructDataBinningRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
+EngineRPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
 {
-    Engine *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
+    NetworkManager *netmgr = GetEngine()->GetNetMgr();
 
     debug2 << "Executing ExportDatabaseRPC." << endl;
 
@@ -1813,7 +1848,7 @@ RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<SetEFileOpenOptionsRPC>::Execute
+//  Method:  EngineRPCExecutor<SetEFileOpenOptionsRPC>::Execute
 //
 //  Purpose:
 //    Set the new default file opening options in the database factory.
@@ -1827,14 +1862,14 @@ RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<SetEFileOpenOptionsRPC>::Execute(SetEFileOpenOptionsRPC *rpc)
+EngineRPCExecutor<SetEFileOpenOptionsRPC>::Execute(SetEFileOpenOptionsRPC *rpc)
 {
     avtDatabaseFactory::SetDefaultFileOpenOptions(rpc->GetFileOpenOptions());
     rpc->SendReply();
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<SetPrecisionTypeRPC>::Execute
+//  Method:  EngineRPCExecutor<SetPrecisionTypeRPC>::Execute
 //
 //  Purpose:
 //    Set the new precision type in the database factory.
@@ -1845,14 +1880,14 @@ RPCExecutor<SetEFileOpenOptionsRPC>::Execute(SetEFileOpenOptionsRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<SetPrecisionTypeRPC>::Execute(SetPrecisionTypeRPC *rpc)
+EngineRPCExecutor<SetPrecisionTypeRPC>::Execute(SetPrecisionTypeRPC *rpc)
 {
     avtDatabaseFactory::SetPrecisionType(rpc->GetPrecisionType());
     rpc->SendReply();
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<SetBackendTypeRPC>::Execute
+//  Method:  EngineRPCExecutor<SetBackendTypeRPC>::Execute
 //
 //  Purpose:
 //    Set the new backend type.
@@ -1863,7 +1898,7 @@ RPCExecutor<SetPrecisionTypeRPC>::Execute(SetPrecisionTypeRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<SetBackendTypeRPC>::Execute(SetBackendTypeRPC *rpc)
+EngineRPCExecutor<SetBackendTypeRPC>::Execute(SetBackendTypeRPC *rpc)
 {
     avtDatabaseFactory::SetBackendType(rpc->GetBackendType());
     avtCallback::SetBackendType((GlobalAttributes::BackendType)rpc->GetBackendType());
@@ -1871,7 +1906,7 @@ RPCExecutor<SetBackendTypeRPC>::Execute(SetBackendTypeRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<LaunchRPC>::Execute
+//  Method: EngineRPCExecutor<LaunchRPC>::Execute
 //
 //  Purpose:  Launch a process.
 //
@@ -1881,15 +1916,13 @@ RPCExecutor<SetBackendTypeRPC>::Execute(SetBackendTypeRPC *rpc)
 // ****************************************************************************
 template<>
 void
-RPCExecutor<LaunchRPC>::Execute(LaunchRPC *rpc)
+EngineRPCExecutor<LaunchRPC>::Execute(LaunchRPC *rpc)
 {
-    Engine *engine = Engine::Instance();
-
     debug2 << "Executing LaunchRPC: " << endl;
 
     TRY
     {
-        engine->LaunchProcess(rpc->GetLaunchArgs());
+        GetEngine()->LaunchProcess(rpc->GetLaunchArgs());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

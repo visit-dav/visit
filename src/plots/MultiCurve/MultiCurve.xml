@@ -72,11 +72,11 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="MultiCurveViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
+      <Function name="MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
-      <Function name="MultiCurveViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="MultiCurveViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="MultiCurveViewerPluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
+      <Function name="MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
       </Function>
       <Include file="source" quoted="false">
         ColorControlPoint.h

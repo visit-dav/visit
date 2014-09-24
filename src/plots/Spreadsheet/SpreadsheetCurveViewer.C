@@ -55,6 +55,8 @@
 #ifdef PLOT_ENABLED
 #include <PlotPluginManager.h>
 #include <ViewerWindowManager.h>
+#include <ViewerMessaging.h>
+#include <ViewerText.h>
 #include <ViewerWindow.h>
 #include <ViewerMethods.h>
 #endif
@@ -252,7 +254,7 @@ SpreadsheetCurveViewer::saveCurveFile(const QString &name)
     else
     {
         QString err(tr("Could not write file %1.").arg(name));
-        plot->Error(err);
+        plot->GetViewerMessaging()->Error(err.toStdString());
         filename = "";
     }
 }

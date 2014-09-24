@@ -87,7 +87,7 @@ class ReplicateGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virt
     virtual const char **XPMIconData() const;
 };
 
-class ReplicateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ReplicateCommonPluginInfo
+class ReplicateViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ReplicateCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class ReplicateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publi
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class ReplicateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publi
     static ReplicateAttributes *clientAtts;
 };
 
-class ReplicateEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ReplicateCommonPluginInfo
+class ReplicateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ReplicateViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class ReplicateEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ReplicateViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

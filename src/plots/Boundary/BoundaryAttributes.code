@@ -89,11 +89,11 @@ PyBoundaryAttributes_SetDefaults(const BoundaryAttributes *atts)
 }
 
 Target: xml2info
-Function: BoundaryViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: BoundaryViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: BoundaryViewerPluginInfo::InitializePlotAtts
+//  Method: BoundaryViewerEnginePluginInfo::InitializePlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -125,19 +125,19 @@ Definition:
 // ****************************************************************************
 
 void
-BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+BoundaryViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     *(BoundaryAttributes*)atts = *defaultAtts;
 
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: BoundaryViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: BoundaryViewerEnginePluginInfo::ReInitializePlotAtts
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: BoundaryViewerPluginInfo::ReInitializePlotAtts
+//  Method: BoundaryViewerEnginePluginInfo::ReInitializePlotAtts
 //
 //  Purpose:
 //    ReInitialize the plot attributes.
@@ -158,17 +158,17 @@ Definition:
 // ****************************************************************************
 
 void
-BoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+BoundaryViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: BoundaryViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: BoundaryViewerEnginePluginInfo::ResetPlotAtts
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: BoundaryViewerPluginInfo::ResetPlotAtts
+//  Method: BoundaryViewerEnginePluginInfo::ResetPlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -200,17 +200,17 @@ Definition:
 // ****************************************************************************
 
 void
-BoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+BoundaryViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: BoundaryViewerPluginInfo::PrivateSetPlotAtts
-Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
+Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: BoundaryViewerPluginInfo::PrivateSetPlotAtts
+//  Method: BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes. 
@@ -255,14 +255,14 @@ Definition:
 #include <avtTypes.h>
 #include <set>
 
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
 void
-BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const ViewerPlot *plot)
+BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+    const avtPlotMetaData &plot)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
 
@@ -270,7 +270,7 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Get the meta-data and initialize the boundary names and colors in the
     // new BoundaryAttributes object.
     //
-    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const avtDatabaseMetaData *md = plot.GetMetaData();
     if (md == NULL)
     {
         return;
@@ -278,7 +278,7 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    std::string vn(plot->GetVariableName());
+    std::string vn(plot.GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
 

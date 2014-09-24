@@ -516,11 +516,11 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
 
 }
 
-Function: ParallelCoordinatesViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: ParallelCoordinatesViewerPluginInfo::InitializePlotAtts
+//  Method: ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -545,7 +545,7 @@ Definition:
 //    the axis restriction tool has been used to limit the axis extents.
 //
 // ****************************************************************************
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 #include <ParsingExprList.h>
 #include <Expression.h>
 #include <ColorAttribute.h>
@@ -558,8 +558,8 @@ Definition:
 #include <DebugStream.h>
 
 void
-ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
-    AttributeSubject *atts, const ViewerPlot *plot)
+ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts(
+    AttributeSubject *atts, const avtPlotMetaData &plot)
 {
     // If we had scalar names, we can just copy the default atts
     // and return.
@@ -579,8 +579,8 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
 
     // Otherwise,  we must be an array variable; try to get
     // some names for its components....
-    const avtDatabaseMetaData *md = plot->GetMetaData();
-    const std::string &var = plot->GetVariableName();
+    const avtDatabaseMetaData *md = plot.GetMetaData();
+    const std::string &var = plot.GetVariableName();
     const avtArrayMetaData *array = md->GetArray(var);
     stringVector subNames;
     if (array)
@@ -590,7 +590,7 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
     else
     {
         Expression *exp =
-            ParsingExprList::GetExpression(plot->GetVariableName());
+            ParsingExprList::GetExpression(plot.GetVariableName());
         if (exp == NULL || exp->GetType() != Expression::ArrayMeshVar)
         {
             debug3 << "ParallelCoordinatesAttributes::InitializePlotAtts: "
@@ -636,11 +636,11 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
     *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
 }
 
-Function: ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling
+Function: ParallelCoordinatesViewerEnginePluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:
 bool
-ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling() const
+ParallelCoordinatesViewerEnginePluginInfo::Permits2DViewScaling() const
 {
     return false;
 }

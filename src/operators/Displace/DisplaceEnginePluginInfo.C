@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Displace_GetEngineInfo()
 {
+    DisplaceEnginePluginInfo::InitializeGlobalObjects();
     return new DisplaceEnginePluginInfo;
 }
 

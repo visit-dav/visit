@@ -23,6 +23,7 @@ QvisStreamlinePlotWindow.h
 )
 
 SET(LIBV_SOURCES
+StreamlineViewerEnginePluginInfo.C
 StreamlineViewerPluginInfo.C
 avtStreamlinePlot.C
 avtStreamlineRenderer.C
@@ -32,6 +33,7 @@ ${COMMON_SOURCES}
 )
 
 SET(LIBE_SOURCES
+StreamlineViewerEnginePluginInfo.C
 StreamlineEnginePluginInfo.C
 avtStreamlinePlot.C
 avtStreamlineRenderer.C
@@ -75,7 +77,9 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/Proxies
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/Tools
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/gui
+${VISIT_INCLUDE_DIR}/viewer/core
 ${VISIT_INCLUDE_DIR}/viewer/main
+${VISIT_INCLUDE_DIR}/viewer/main/ui
 ${VISIT_INCLUDE_DIR}/viewer/proxy
 ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil

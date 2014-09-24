@@ -22,7 +22,7 @@
 //   
 // ****************************************************************************
 
-ViewerStateBuffered::ViewerStateBuffered(ViewerState *s) : ViewerBase(), SimpleObserver()
+ViewerStateBuffered::ViewerStateBuffered(ViewerState *s) : ViewerBaseUI(), SimpleObserver()
 {
     // Create a copy of ViewerState and make this object observe it.
     viewerState = new ViewerState(*s);

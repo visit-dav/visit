@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ProgrammableOp_GetEngineInfo()
 {
+    ProgrammableOpEnginePluginInfo::InitializeGlobalObjects();
     return new ProgrammableOpEnginePluginInfo;
 }
 

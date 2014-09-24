@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Elevate_GetEngineInfo()
 {
+    ElevateEnginePluginInfo::InitializeGlobalObjects();
     return new ElevateEnginePluginInfo;
 }
 

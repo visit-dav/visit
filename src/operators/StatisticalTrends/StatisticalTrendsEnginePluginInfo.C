@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* StatisticalTrends_GetEngineInfo()
 {
+    StatisticalTrendsEnginePluginInfo::InitializeGlobalObjects();
     return new StatisticalTrendsEnginePluginInfo;
 }
 

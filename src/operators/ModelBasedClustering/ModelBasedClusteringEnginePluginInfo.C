@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ModelBasedClustering_GetEngineInfo()
 {
+    ModelBasedClusteringEnginePluginInfo::InitializeGlobalObjects();
     return new ModelBasedClusteringEnginePluginInfo;
 }
 

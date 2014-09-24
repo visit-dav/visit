@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Context_GetEngineInfo()
 {
+    ContextEnginePluginInfo::InitializeGlobalObjects();
     return new ContextEnginePluginInfo;
 }
 

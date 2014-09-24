@@ -38,12 +38,12 @@
 
 #ifndef NETWORK_MANAGER_H
 #define NETWORK_MANAGER_H
+#include <EngineBase.h>
 
 #include <avtDataObjectWriter.h>
 #include <avtPlot.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
-#include <SaveWindowAttributes.h>
 #include <SelectionSummary.h>
 #include <VisualCueList.h>
 #include <WindowAttributes.h>
@@ -438,7 +438,7 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //
 // ****************************************************************************
 
-class ENGINE_MAIN_API NetworkManager
+class ENGINE_MAIN_API NetworkManager : public EngineBase
 {
     typedef std::map<std::string, stringVector> StringVectorMap;
     struct render_state {
@@ -462,6 +462,11 @@ class ENGINE_MAIN_API NetworkManager
                   NetworkManager(void);
     virtual      ~NetworkManager(void);
 
+    // Set the plugin managers.
+    void SetDatabasePluginManager(DatabasePluginManager *mgr);
+    void SetPlotPluginManager(PlotPluginManager *mgr);
+    void SetOperatorPluginManager(OperatorPluginManager *mgr);
+
     // Get the plugin managers
     DatabasePluginManager *GetDatabasePluginManager() const;
     OperatorPluginManager *GetOperatorPluginManager() const;
@@ -470,6 +475,7 @@ class ENGINE_MAIN_API NetworkManager
     void          ClearAllNetworks(void);
     void          ClearNetworksWithDatabase(const std::string &);
 
+    stringVector  GetOpenDatabases() const;
     NetnodeDB*    GetDBFromCache(const std::string &filename, int time,
                                  const char * = NULL, bool=false,
                                  bool=false, bool=false);
@@ -534,9 +540,6 @@ class ENGINE_MAIN_API NetworkManager
                                    int windowID, bool leftEye);
     avtDataObjectWriter_p CreateNullDataWriter() const;
 
-    bool          SaveWindow(const intVector &ids, const std::string &, int, int, 
-                             SaveWindowAttributes::FileFormat);
-
     void          StartPickMode(const bool);
     void          StopPickMode(void);
     void          StartQueryMode(void);
@@ -566,6 +569,7 @@ class ENGINE_MAIN_API NetworkManager
     static void   SetStereoEnabled();
 
  protected:
+    bool               ValidNetworkId(int id) const;
     void               ExportSingleDatabase(int, const ExportDBAttributes &);
 
     virtual avtImage_p RenderGeometry();

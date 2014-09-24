@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ChannelComm_GetEngineInfo()
 {
+    ChannelCommEnginePluginInfo::InitializeGlobalObjects();
     return new ChannelCommEnginePluginInfo;
 }
 

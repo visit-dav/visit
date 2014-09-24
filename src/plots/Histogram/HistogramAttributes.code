@@ -67,11 +67,11 @@ HistogramAttributes::CopyAttributes(const AttributeGroup *atts)
 }
 
 Target: xml2info
-Function: HistogramViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: HistogramViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: HistogramViewerPluginInfo::InitializePlotAtts
+//  Method: HistogramViewerEnginePluginInfo::InitializePlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -92,12 +92,12 @@ Definition:
 //    Changed API.
 //
 // ****************************************************************************
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 #include <avtDatabaseMetaData.h>
 
 void
-HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+HistogramViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     *(HistogramAttributes*)atts = *defaultAtts;
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
@@ -105,14 +105,14 @@ HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
     //
     // Get the meta-data and initialize the variable type in the atts.
     //
-    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const avtDatabaseMetaData *md = plot.GetMetaData();
     if (md == NULL)
     {
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
         return;
     }
 
-    avtVarType t = md->DetermineVarType(plot->GetVariableName());
+    avtVarType t = md->DetermineVarType(plot.GetVariableName());
     if (t == AVT_SCALAR_VAR)
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
     else if (t == AVT_ARRAY_VAR)
@@ -121,11 +121,11 @@ HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
 }
 
-Function: HistogramViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: HistogramViewerEnginePluginInfo::ReInitializePlotAtts
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: HistogramViewerPluginInfo::ReInitializePlotAtts
+//  Method: HistogramViewerEnginePluginInfo::ReInitializePlotAtts
 //
 //  Purpose:
 //    ReInitialize the plot attributes.
@@ -143,22 +143,22 @@ Definition:
 // ****************************************************************************
 
 void
-HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+HistogramViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
 
     //
     // Get the meta-data and initialize the variable type in the atts.
     //
-    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const avtDatabaseMetaData *md = plot.GetMetaData();
     if (md == NULL)
     {
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
         return;
     }
 
-    avtVarType t = md->DetermineVarType(plot->GetVariableName());
+    avtVarType t = md->DetermineVarType(plot.GetVariableName());
     if (t == AVT_SCALAR_VAR)
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
     else if (t == AVT_ARRAY_VAR)
@@ -167,11 +167,11 @@ HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
 }
 
-Function: HistogramViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: HistogramViewerEnginePluginInfo::ResetPlotAtts
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: HistogramViewerPluginInfo::ResetPlotAtts
+//  Method: HistogramViewerEnginePluginInfo::ResetPlotAtts
 //
 //  Purpose:
 //    Reset the plot attributes.
@@ -188,17 +188,17 @@ Definition:
 //
 // ****************************************************************************
 void
-HistogramViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+HistogramViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     ReInitializePlotAtts(atts, plot);
 }
 
-Function: HistogramViewerPluginInfo::ProvidesLegend
+Function: HistogramViewerEnginePluginInfo::ProvidesLegend
 Declaration: virtual bool ProvidesLegend() const;
 Definition:
 bool
-HistogramViewerPluginInfo::ProvidesLegend() const
+HistogramViewerEnginePluginInfo::ProvidesLegend() const
 {
     return false;
 }

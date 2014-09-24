@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Lagrangian_GetEngineInfo()
 {
+    LagrangianEnginePluginInfo::InitializeGlobalObjects();
     return new LagrangianEnginePluginInfo;
 }
 

@@ -54,11 +54,11 @@ PySubsetAttributes_SetDefaults(const SubsetAttributes *atts)
 }
 
 Target: xml2info
-Function: SubsetViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SubsetViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: SubsetViewerPluginInfo::InitializePlotAtts
+//  Method: SubsetViewerEnginePluginInfo::InitializePlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -90,19 +90,19 @@ Definition:
 // ****************************************************************************
 
 void
-SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+SubsetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     *(SubsetAttributes*)atts = *defaultAtts;
 
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: SubsetViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SubsetViewerEnginePluginInfo::ReInitializePlotAtts
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: SubsetViewerPluginInfo::ReInitializePlotAtts
+//  Method: SubsetViewerEnginePluginInfo::ReInitializePlotAtts
 //
 //  Purpose:
 //    ReInitialize the plot attributes.
@@ -123,17 +123,17 @@ Definition:
 // ****************************************************************************
 
 void
-SubsetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+SubsetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: SubsetViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SubsetViewerEnginePluginInfo::ResetPlotAtts
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: SubsetViewerPluginInfo::ResetPlotAtts
+//  Method: SubsetViewerEnginePluginInfo::ResetPlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -165,18 +165,18 @@ Definition:
 // ****************************************************************************
 
 void
-SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const ViewerPlot *plot)
+SubsetViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
 
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
-Function: SubsetViewerPluginInfo::PrivateSetPlotAtts
-Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: SubsetViewerEnginePluginInfo::PrivateSetPlotAtts
+Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: SubsetViewerPluginInfo::PrivateSetPlotAtts
+//  Method: SubsetViewerEnginePluginInfo::PrivateSetPlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes. 
@@ -237,14 +237,14 @@ Definition:
 #include <avtTypes.h>
 #include <set>
 
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
 void
-SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const ViewerPlot *plot)
+SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+    const avtPlotMetaData &plot)
 {
     SubsetAttributes *subsetAtts = (SubsetAttributes *)atts;
 
@@ -252,7 +252,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Get the meta-data and initialize the subset names and colors in the
     // new SubsetAttributes object.
     //
-    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const avtDatabaseMetaData *md = plot.GetMetaData();
     if (md == NULL)
     {
         return;
@@ -260,7 +260,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    std::string vn(plot->GetVariableName());
+    std::string vn(plot.GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
     const avtScalarMetaData *smd = NULL;

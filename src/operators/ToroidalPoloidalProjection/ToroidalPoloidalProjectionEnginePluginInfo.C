@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ToroidalPoloidalProjection_GetEngineInfo()
 {
+    ToroidalPoloidalProjectionEnginePluginInfo::InitializeGlobalObjects();
     return new ToroidalPoloidalProjectionEnginePluginInfo;
 }
 

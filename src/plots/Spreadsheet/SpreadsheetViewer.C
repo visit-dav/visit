@@ -90,8 +90,11 @@
 #include <vtkVisItCellLocator.h>
 
 #include <ViewerPlot.h>
+#include <ViewerMessaging.h>
 #include <ViewerMethods.h>
 #include <ViewerState.h>
+#include <ViewerText.h>
+
 #include <DebugStream.h>
 
 #include <Subject.h>
@@ -2707,7 +2710,7 @@ SpreadsheetViewer::saveAsText()
             else
             {
                 QString err(tr("Could not write %1.").arg(fileName));
-                plot->Error(err.toStdString().c_str());
+                plot->GetViewerMessaging()->Error(err.toStdString());
             }
         }
     }

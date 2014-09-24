@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Clip_GetEngineInfo()
 {
+    ClipEnginePluginInfo::InitializeGlobalObjects();
     return new ClipEnginePluginInfo;
 }
 

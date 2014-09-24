@@ -52,11 +52,11 @@ IndexSelectAttributes::ProcessOldVersions(DataNode *parentNode,
 }
 
 Target: xml2info
-Function: IndexSelectViewerPluginInfo::InitializeOperatorAtts
-Declaration: virtual void InitializeOperatorAtts(...);
+Function: IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts
+Declaration: virtual void InitializeOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
 Definition: 
 // ****************************************************************************
-//  Method: IndexSelectViewerPluginInfo::InitializeOperatorAtts
+//  Method: IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts
 //
 //  Purpose:
 //    Initialize the operator attributes to the default attributes.
@@ -86,11 +86,11 @@ Definition:
 #include <CompactSILRestrictionAttributes.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMeshMetaData.h>
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
 void
-IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
-                                              const ViewerPlot *plot,
-                                              const bool fromDefault)
+IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
+                                                          const avtPlotMetaData &plot,
+                                                          const bool fromDefault)
 {
     if (fromDefault)
         *(IndexSelectAttributes*)atts = *defaultAtts;
@@ -107,7 +107,7 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 
     bool categoryNameValid = false;
     bool subsetNameValid = false;
-    avtSILRestriction_p restriction = plot->GetSILRestriction();
+    avtSILRestriction_p restriction = plot.GetSILRestriction();
     int silTopSet = restriction->GetTopSet();
 
     // 
@@ -151,7 +151,12 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                     if (silAtts->GetTopSetIsAllOn())
                         isOn = true;
                     else
-                        isOn = (useSet[collection->GetSubset(i)] != 0);
+                    {
+                        int idx = collection->GetSubset(i);
+                        if(idx >= 0 && idx < (int)useSet.size())
+                            isOn = (useSet[idx] != 0);
+                    }
+
                     if (isOn)
                     {
                         avtSILSet_p set = restriction->GetSILSet(collection->GetSubset(i));
@@ -197,10 +202,10 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     }
 
     // Set the topological dimension and the logical bounds
-    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const avtDatabaseMetaData *md = plot.GetMetaData();
     if(md != 0)
     {
-       const avtMeshMetaData *mmd = md->GetMesh(plot->GetMeshName());
+       const avtMeshMetaData *mmd = md->GetMesh(plot.GetMeshName());
        if(mmd && mmd->hasLogicalBounds)
        {
            if( mmd->meshType == AVT_POINT_MESH ||

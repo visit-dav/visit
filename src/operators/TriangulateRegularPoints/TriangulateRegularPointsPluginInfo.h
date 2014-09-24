@@ -86,7 +86,7 @@ class TriangulateRegularPointsGUIPluginInfo : public virtual GUIOperatorPluginIn
         QvisNotepadArea *notepad);
 };
 
-class TriangulateRegularPointsViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual TriangulateRegularPointsCommonPluginInfo
+class TriangulateRegularPointsViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual TriangulateRegularPointsCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class TriangulateRegularPointsViewerPluginInfo : public virtual ViewerOperatorPl
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class TriangulateRegularPointsViewerPluginInfo : public virtual ViewerOperatorPl
     static TriangulateRegularPointsAttributes *clientAtts;
 };
 
-class TriangulateRegularPointsEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual TriangulateRegularPointsCommonPluginInfo
+class TriangulateRegularPointsViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual TriangulateRegularPointsViewerEnginePluginInfo
+{
+  public:
+};
+
+class TriangulateRegularPointsEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual TriangulateRegularPointsViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

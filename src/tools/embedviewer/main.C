@@ -121,6 +121,18 @@ EmbeddedMain(int argc, char *argv[])
             if (okay) okay = d2.cd("src");
             if (okay) visithome = std::string(d2.absolutePath().toStdString());
         }
+
+        // See if there's an override on the command line. We need this for
+        // out of source builds currently.
+        for(int i = 1; i < argc; ++i)
+        {
+           if(strcmp(argv[i], "-visithome") == 0 && (i+1)<argc)
+           {
+               visithome = argv[i+1];
+               ++i;
+           }
+        }
+
         qDebug("Setting VISITHOME to %s", visithome.c_str());
         viewer.SetVISITHOME(visithome);
 #endif

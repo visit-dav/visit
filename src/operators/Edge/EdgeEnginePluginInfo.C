@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Edge_GetEngineInfo()
 {
+    EdgeEnginePluginInfo::InitializeGlobalObjects();
     return new EdgeEnginePluginInfo;
 }
 

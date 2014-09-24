@@ -77,7 +77,7 @@
 // ****************************************************************************
 
 ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
-    QObject *parent, const QString &n,const bool _allState) : ViewerBase(parent),
+    QObject *parent, const QString &n,const bool _allState) : ViewerBaseUI(parent),
     SimpleObserver(), name(n)
 {
     notifier = 0;
@@ -130,7 +130,7 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
 
 ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
     QSocketNotifier *sn, const ViewerState *s, QObject *parent,
-    const QString &n, const bool _allState) : ViewerBase(parent), name(n)
+    const QString &n, const bool _allState) : ViewerBaseUI(parent), name(n)
 {
     notifier = sn;
     if(notifier != 0)

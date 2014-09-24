@@ -455,7 +455,9 @@ class CMakeGeneratorPlugin : public Plugin
             out << VisItIncludeDir() << "/mdserver/proxy" << endl;
             out << VisItIncludeDir() << "/mdserver/rpc" << endl;
         }
+        out << VisItIncludeDir() << "/viewer/core" << endl;
         out << VisItIncludeDir() << "/viewer/main" << endl;
+        out << VisItIncludeDir() << "/viewer/main/ui" << endl;
         out << VisItIncludeDir() << "/viewer/proxy" << endl;
         out << VisItIncludeDir() << "/viewer/rpc" << endl;
         out << VisItIncludeDir() << "/winutil" << endl;
@@ -538,6 +540,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         // libV sources
         out << "SET(LIBV_SOURCES" << endl;
+        out << name<<"ViewerEnginePluginInfo.C" << endl;
         out << name<<"ViewerPluginInfo.C" << endl;
         out << "avt"<<name<<"Plot.C" << endl;
         if (customvfiles)
@@ -563,6 +566,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         // libE sources
         out << "SET(LIBE_SOURCES" << endl;
+        out << name<<"ViewerEnginePluginInfo.C" << endl;
         out << name<<"EnginePluginInfo.C" << endl;
         out << "avt"<<name<<"Plot.C" << endl;
         if (customefiles)
@@ -786,6 +790,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         // libV sources
         out << "SET(LIBV_SOURCES" << endl;
+        out << name<<"ViewerEnginePluginInfo.C" << endl;
         out << name<<"ViewerPluginInfo.C" << endl;
         if (customvfiles)
         {
@@ -810,6 +815,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         // libE sources
         out << "SET(LIBE_SOURCES" << endl;
+        out << name<<"ViewerEnginePluginInfo.C" << endl;
         out << name<<"EnginePluginInfo.C" << endl;
         if (customefiles)
         {

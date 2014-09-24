@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Delaunay_GetEngineInfo()
 {
+    DelaunayEnginePluginInfo::InitializeGlobalObjects();
     return new DelaunayEnginePluginInfo;
 }
 

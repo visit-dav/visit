@@ -88,7 +88,7 @@ class SurfaceNormalGUIPluginInfo : public virtual GUIOperatorPluginInfo, public 
     virtual const char **XPMIconData() const;
 };
 
-class SurfaceNormalViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SurfaceNormalCommonPluginInfo
+class SurfaceNormalViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual SurfaceNormalCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -97,14 +97,11 @@ class SurfaceNormalViewerPluginInfo : public virtual ViewerOperatorPluginInfo, p
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -112,7 +109,13 @@ class SurfaceNormalViewerPluginInfo : public virtual ViewerOperatorPluginInfo, p
     static SurfaceNormalAttributes *clientAtts;
 };
 
-class SurfaceNormalEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SurfaceNormalCommonPluginInfo
+class SurfaceNormalViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SurfaceNormalViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class SurfaceNormalEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SurfaceNormalViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

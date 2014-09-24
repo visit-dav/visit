@@ -57,8 +57,9 @@ set(pyside_gui_include_paths
     ${VISIT_SOURCE_DIR}/gui/
     ${VISIT_SOURCE_DIR}/gui/main
     ${VISIT_SOURCE_DIR}/viewer/subjectproxy
+    ${VISIT_SOURCE_DIR}/viewer/core
     ${VISIT_SOURCE_DIR}/viewer/main 
-    ${VISIT_SOURCE_DIR}/viewer/mainproxy
+    ${VISIT_SOURCE_DIR}/viewer/main/ui
     ${VISIT_SOURCE_DIR}/viewer/proxy
     ${VISIT_SOURCE_DIR}/viewer/rpc
     ${VISIT_SOURCE_DIR}/vtkqt

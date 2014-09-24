@@ -86,7 +86,7 @@ class RectilinearProject2DGUIPluginInfo : public virtual GUIOperatorPluginInfo, 
         QvisNotepadArea *notepad);
 };
 
-class RectilinearProject2DViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual RectilinearProject2DCommonPluginInfo
+class RectilinearProject2DViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual RectilinearProject2DCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class RectilinearProject2DViewerPluginInfo : public virtual ViewerOperatorPlugin
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class RectilinearProject2DViewerPluginInfo : public virtual ViewerOperatorPlugin
     static RectilinearProject2DAttributes *clientAtts;
 };
 
-class RectilinearProject2DEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual RectilinearProject2DCommonPluginInfo
+class RectilinearProject2DViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual RectilinearProject2DViewerEnginePluginInfo
+{
+  public:
+};
+
+class RectilinearProject2DEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual RectilinearProject2DViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

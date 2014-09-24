@@ -94,13 +94,13 @@
       </Function>
       <Function name="CreateNode" user="false" member="true">
       </Function>
-      <Function name="SpreadsheetViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="SpreadsheetViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="SpreadsheetViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      <Function name="SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="SpreadsheetViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      <Function name="SpreadsheetViewerEnginePluginInfo::ResetPlotAtts" user="false" member="true">
       </Function>
-      <Function name="SpreadsheetViewerPluginInfo::ProvidesLegend" user="false" member="true">
+      <Function name="SpreadsheetViewerEnginePluginInfo::ProvidesLegend" user="false" member="true">
       </Function>
       <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayCreate" user="false" member="true">
       </Function>
@@ -116,9 +116,9 @@
       </Function>
       <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify" user="false" member="true">
       </Function>
-      <Function name="SpreadsheetViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
+      <Function name="SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
-      <Function name="SpreadsheetViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
+      <Function name="SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>

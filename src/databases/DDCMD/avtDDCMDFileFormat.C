@@ -1618,11 +1618,11 @@ avtDDCMDFileFormat::DetermineProcessorReadOffset(const DDCMDHeader *header,
     for (unsigned int i = 0; i < nFiles; i++)
     {
         char          string[1024];
-        VisItStat_t   statbuf;
+        FileFunctions::VisItStat_t   statbuf;
 
         sprintf(string, "%s/%s#%6.6u", fname.c_str(), subname.c_str(), i);
 
-        VisItStat(string, &statbuf);
+        FileFunctions::VisItStat(string, &statbuf);
         fileSizeList[i] = (unsigned long)(statbuf.st_size); 
         fileSize += fileSizeList[i];
     } 

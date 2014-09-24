@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Slice_GetEngineInfo()
 {
+    SliceEnginePluginInfo::InitializeGlobalObjects();
     return new SliceEnginePluginInfo;
 }
 

@@ -554,11 +554,11 @@ ContourAttributes::SetValue(const std::string &name, const doubleVector &value)
 }
 
 Target: xml2info
-Function: ContourViewerPluginInfo::InitializeGlobalObjects
+Function: ContourViewerEnginePluginInfo::InitializeGlobalObjects
 Declaration: static void InitializeGlobalObjects();
 Definition:
 // ****************************************************************************
-//  Method:  ContourViewerPluginInfo::InitializeGlobalObjects
+//  Method:  ContourViewerEnginePluginInfo::InitializeGlobalObjects
 //
 //  Purpose:
 //    Initialize the plot atts.
@@ -568,20 +568,20 @@ Definition:
 //
 // ****************************************************************************
 void
-ContourViewerPluginInfo::InitializeGlobalObjects()
+ContourViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    ContourViewerPluginInfo::clientAtts  = new ContourAttributes;
-    ContourViewerPluginInfo::defaultAtts = new ContourAttributes;
+    ContourViewerEnginePluginInfo::clientAtts  = new ContourAttributes;
+    ContourViewerEnginePluginInfo::defaultAtts = new ContourAttributes;
 
     InitializeDefaultPalette(clientAtts);
     InitializeDefaultPalette(defaultAtts);
 }
 
-Function: ContourViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: ContourViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: ContourViewerPluginInfo::InitializePlotAtts
+//  Method: ContourViewerEnginePluginInfo::InitializePlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -605,8 +605,8 @@ Definition:
 // ****************************************************************************
 
 void
-ContourViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *)
+ContourViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &)
 {
     ContourAttributes *contour = (ContourAttributes *)atts;
     *contour = *defaultAtts;
@@ -615,11 +615,11 @@ ContourViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
     InitializeDefaultPalette(contour);
 }
 
-Function: ContourViewerPluginInfo::InitializeDefaultPalette
+Function: ContourViewerEnginePluginInfo::InitializeDefaultPalette
 Declaration: static void InitializeDefaultPalette(ContourAttributes *); 
 Definition:
 // ****************************************************************************
-// Method: ContourViewerPluginInfo::InitializeDefaultPalette
+// Method: ContourViewerEnginePluginInfo::InitializeDefaultPalette
 //
 // Purpose: 
 //   Initializes the default palette in the contour attributes using the
@@ -640,7 +640,7 @@ Definition:
 #include <avtColorTables.h>
 #include <ColorTableAttributes.h>
 void
-ContourViewerPluginInfo::InitializeDefaultPalette(ContourAttributes *contour)
+ContourViewerEnginePluginInfo::InitializeDefaultPalette(ContourAttributes *contour)
 {
     // Copy over the contour's defaultPalette with the default discrete
     // color table from avtColorTable.

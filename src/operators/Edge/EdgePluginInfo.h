@@ -86,7 +86,7 @@ class EdgeGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual E
         QvisNotepadArea *notepad);
 };
 
-class EdgeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual EdgeCommonPluginInfo
+class EdgeViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual EdgeCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class EdgeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class EdgeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     static EdgeAttributes *clientAtts;
 };
 
-class EdgeEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual EdgeCommonPluginInfo
+class EdgeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual EdgeViewerEnginePluginInfo
+{
+  public:
+};
+
+class EdgeEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual EdgeViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

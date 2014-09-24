@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* SphereSlice_GetEngineInfo()
 {
+    SphereSliceEnginePluginInfo::InitializeGlobalObjects();
     return new SphereSliceEnginePluginInfo;
 }
 

@@ -80,13 +80,13 @@ class ScatterCommonPluginInfo : public virtual CommonPlotPluginInfo, public virt
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class ScatterGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual ScatterCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
@@ -96,7 +96,7 @@ class ScatterGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual Sc
     virtual const char **XPMIconData() const;
 };
 
-class ScatterViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual ScatterCommonPluginInfo
+class ScatterViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual ScatterCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -106,21 +106,24 @@ class ScatterViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virt
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static ScatterAttributes *defaultAtts;
     static ScatterAttributes *clientAtts;
 };
 
-class ScatterEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual ScatterCommonPluginInfo
+class ScatterViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual ScatterViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class ScatterEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual ScatterViewerEnginePluginInfo
+{
+  public:
 };
 
 class ScatterScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual ScatterCommonPluginInfo

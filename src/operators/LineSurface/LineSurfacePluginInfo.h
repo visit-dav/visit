@@ -86,7 +86,7 @@ class LineSurfaceGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vi
         QvisNotepadArea *notepad);
 };
 
-class LineSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LineSurfaceCommonPluginInfo
+class LineSurfaceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual LineSurfaceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class LineSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class LineSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     static LineSurfaceAttributes *clientAtts;
 };
 
-class LineSurfaceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LineSurfaceCommonPluginInfo
+class LineSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LineSurfaceViewerEnginePluginInfo
+{
+  public:
+};
+
+class LineSurfaceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LineSurfaceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

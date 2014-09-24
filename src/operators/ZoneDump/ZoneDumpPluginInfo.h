@@ -86,7 +86,7 @@ class ZoneDumpGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtu
         QvisNotepadArea *notepad);
 };
 
-class ZoneDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ZoneDumpCommonPluginInfo
+class ZoneDumpViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ZoneDumpCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class ZoneDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class ZoneDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     static ZoneDumpAttributes *clientAtts;
 };
 
-class ZoneDumpEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ZoneDumpCommonPluginInfo
+class ZoneDumpViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ZoneDumpViewerEnginePluginInfo
+{
+  public:
+};
+
+class ZoneDumpEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ZoneDumpViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

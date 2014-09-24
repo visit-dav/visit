@@ -87,7 +87,7 @@ class LagrangianGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vir
         QvisNotepadArea *notepad);
 };
 
-class LagrangianViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LagrangianCommonPluginInfo
+class LagrangianViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual LagrangianCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,11 @@ class LagrangianViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publ
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +108,12 @@ class LagrangianViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publ
     static LagrangianAttributes *clientAtts;
 };
 
-class LagrangianEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LagrangianCommonPluginInfo
+class LagrangianViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LagrangianViewerEnginePluginInfo
+{
+  public:
+};
+
+class LagrangianEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LagrangianViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

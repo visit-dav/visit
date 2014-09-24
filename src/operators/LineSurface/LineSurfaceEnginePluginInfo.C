@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* LineSurface_GetEngineInfo()
 {
+    LineSurfaceEnginePluginInfo::InitializeGlobalObjects();
     return new LineSurfaceEnginePluginInfo;
 }
 

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* ExternalSurface_GetEngineInfo()
 {
+    ExternalSurfaceEnginePluginInfo::InitializeGlobalObjects();
     return new ExternalSurfaceEnginePluginInfo;
 }
 

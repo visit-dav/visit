@@ -211,8 +211,8 @@ avtDebugDumpOptions::SetDumpDirectory(const string &odir)
         else if (!(resAttrs & FILE_ATTRIBUTE_DIRECTORY))
             invalidDir = true;
 #else
-        VisItStat_t s;
-        VisItStat(res_dir.c_str(), &s);
+        FileFunctions::VisItStat_t s;
+        FileFunctions::VisItStat(res_dir.c_str(), &s);
         mode_t mode = s.st_mode;
         invalidDir = (!S_ISDIR(mode));
 #endif

@@ -48,6 +48,9 @@
 !   Brad Whitlock, Fri Jun 13 09:38:34 PDT 2014
 !   Functions for getting/setting global node/cell ids.
 !
+!   Brad Whitlock, Fri Sep 19 14:05:50 PDT 2014
+!   Added visitexportdatabase, visitrestoresession.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -469,22 +472,33 @@
       integer  visitinitializeruntime
 
 ! visitaddplot(string plotType, int lplotType, string var, 
-!              int lvar, (out)int plotID)
+!              int lvar)
       external visitaddplot
       integer  visitaddplot
 
-! visitaddoperator(int plotID, string operatorType, int loperatorType, 
-!                  (out)int operatorID)
+! visitaddoperator(string operatorType, int loperatorType,
+!                  int applyToAll) 
       external visitaddoperator
       integer  visitaddoperator
 
-! visitdrawplot(int plotID)
-      external visitdrawplot
-      integer  visitdrawplot
+! visitdrawplots()
+      external visitdrawplots
+      integer  visitdrawplots
 
-! visitdeleteplot(int plotID)
-      external visitdeleteplot
-      integer  visitdeleteplot
+! visitdeleteactiveplots()
+      external visitdeleteactiveplots
+      integer  visitdeleteactiveplots
+
+! visitexportdatabase(string filename, int lfilename,
+!                     string format, int lformat,
+!                     visit_handle vars)
+      external visitexportdatabase
+      integer  visitexportdatabase
+
+! visitrestoresession(string filename, int lfilename)
+      external visitrestoresession
+      integer  visitrestoresession
+
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! Metric functions 

@@ -87,7 +87,7 @@ class DataBinningGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vi
         QvisNotepadArea *notepad);
 };
 
-class DataBinningViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DataBinningCommonPluginInfo
+class DataBinningViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual DataBinningCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,11 @@ class DataBinningViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +108,12 @@ class DataBinningViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     static DataBinningAttributes *clientAtts;
 };
 
-class DataBinningEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DataBinningCommonPluginInfo
+class DataBinningViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DataBinningViewerEnginePluginInfo
+{
+  public:
+};
+
+class DataBinningEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DataBinningViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

@@ -37,9 +37,11 @@
 *****************************************************************************/
 
 #include <iostream>
+#include <ViewerBase.h>
 #include <ViewerProxy.h>
 #include <ViewerSubject.h>
 #include <ViewerSubjectProxy.h>
+#include <ViewerSubjectProxyFactory.h>
 #include <VisItInit.h>
 #include <RuntimeSetting.h>
 
@@ -52,6 +54,7 @@
 #include <PlotPluginInfo.h>
 #include <OperatorPluginInfo.h>
 
+#include <ViewerWindowUI.h>
 
 #include <ClientInformation.h>
 #include <ClientMethod.h>
@@ -252,8 +255,6 @@ void ViewerSubjectProxy::Initialize(int argc,char* argv[])
         vissubject->ProcessCommandLine(argc,argv);
         vissubject->Initialize();
         viewerWindowCreated(ViewerWindowManager::Instance()->GetActiveWindow());
-        connect(ViewerWindowManager::Instance(),SIGNAL(createWindow(ViewerWindow*)),
-                this,SLOT(viewerWindowCreated(ViewerWindow*)));
     }
     catch(VisItException e)
     {
@@ -330,6 +331,10 @@ ViewerSubjectProxy::ViewerSubjectProxy(int argc, char *argv[]):ViewerProxy()
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
 
+    factory = new ViewerSubjectProxyFactory;
+    factory->SetCreateViewerWindowCallback(viewerWindowCreatedCallback, this);
+    ViewerBase::SetViewerFactory(factory);
+
     initialize = true;
     //setting to ViewerBase works because they are static
     gstate = ViewerBase::GetViewerState();
@@ -353,6 +358,10 @@ ViewerSubjectProxy::ViewerSubjectProxy(ViewerSubjectProxy* proxy):ViewerProxy()
     this->gstate = proxy->GetViewerState();
     this->gmethods = proxy->GetViewerMethods();
 
+    factory = new ViewerSubjectProxyFactory;
+    factory->SetCreateViewerWindowCallback(viewerWindowCreatedCallback, this);
+    ViewerBase::SetViewerFactory(factory);
+
     testconn = new TestConnection();
     plotplugin = new PlotPluginManager();
     operatorplugin = new OperatorPluginManager();
@@ -368,6 +377,7 @@ ViewerSubjectProxy::~ViewerSubjectProxy()
     delete testconn;
     delete plotplugin;
     delete operatorplugin;
+    delete factory;
 }
 
 
@@ -451,9 +461,20 @@ ViewerSubjectProxy::Update(Subject *subj)
 }
 
 void
+ViewerSubjectProxy::viewerWindowCreatedCallback(ViewerWindow *window, void *cbdata)
+{
+    ViewerSubjectProxy *This = (ViewerSubjectProxy *)cbdata;
+    This->viewerWindowCreated(window);
+}
+
+void
 ViewerSubjectProxy::viewerWindowCreated(ViewerWindow *window)
 {
-    QMenu* menu = window->GetPopupMenu()->GetPopup();
+    ViewerWindowUI *ui = ViewerWindowUI::SafeDownCast(window);
+    if(ui == NULL)
+        return;
+
+    QMenu* menu = ui->GetPopupMenu()->GetPopup();
     QList<QAction*> actions = menu->actions();
     for(int i = 0; i < actions.size(); ++i)
     {
@@ -478,7 +499,7 @@ ViewerSubjectProxy::viewerWindowCreated(ViewerWindow *window)
         }
     }
 
-    ViewerToolbar* toolbar = window->GetToolbar();
+    ViewerToolbar* toolbar = ui->GetToolbar();
     toolbar->HideAll();
 
     int visid = window->GetWindowId()+1; //+1 Gets vtkQtRenderWindow id..

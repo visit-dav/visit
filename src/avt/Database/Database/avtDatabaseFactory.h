@@ -134,6 +134,9 @@ class DatabasePluginManager;
 //    Cameron Christensen, Wednesday, June 11, 2014
 //    Add methods for setting/getting backend type specified by user.
 //
+//    Brad Whitlock, Thu Sep 18 23:02:56 PDT 2014
+//    Added methods for bypassing file permission checks.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -176,6 +179,11 @@ class DATABASE_API avtDatabaseFactory
     static void                  SetBackendType(const int bType);
     static avtBackendType        GetBackendType()
                                      { return backendType;}
+
+    static void                  SetCheckFilePermissions(bool val)
+                                     { checkFilePermissions = val; }
+    static bool                  GetCheckFilePermissions()
+                                     { return checkFilePermissions; }
   protected:
     static avtDatabase          *SetupDatabase(CommonDatabasePluginInfo *,
                                                const char * const *, int,
@@ -186,6 +194,7 @@ class DATABASE_API avtDatabaseFactory
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;
     static bool                  createVectorMagnitudeExpressions;
+    static bool                  checkFilePermissions;
     static FileOpenOptions       defaultFileOpenOptions;
     static avtPrecisionType      precisionType;
     static avtBackendType        backendType;

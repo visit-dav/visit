@@ -1154,8 +1154,8 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 
     // Does the file exist?
     bool firstTime = false;
-    VisItStat_t s;
-    if(VisItStat(rcFile.c_str(), &s) == -1)
+    FileFunctions::VisItStat_t s;
+    if(FileFunctions::VisItStat(rcFile.c_str(), &s) == -1)
         firstTime = true;
 
     ConfigStateEnum code2;

@@ -60,7 +60,7 @@
 
 #include <avtResolutionSelection.h>
 
-#include <StringHelpers.h>
+#include <FileFunctions.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
 #include <vtkLine.h>
@@ -148,8 +148,8 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     /// Open the root file
     ///
     std::string root_file(GetFilename());   
-    root_file = StringHelpers::Absname(".",root_file);
-    std::string root_dir =  StringHelpers::Dirname(root_file);
+    root_file = FileFunctions::Absname(".",root_file);
+    std::string root_dir =  FileFunctions::Dirname(root_file);
 
     // dont think we would hit this case, but better safe than sorry:
     if(root)

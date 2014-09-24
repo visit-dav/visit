@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* InverseGhostZone_GetEngineInfo()
 {
+    InverseGhostZoneEnginePluginInfo::InitializeGlobalObjects();
     return new InverseGhostZoneEnginePluginInfo;
 }
 

@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* EllipsoidSlice_GetEngineInfo()
 {
+    EllipsoidSliceEnginePluginInfo::InitializeGlobalObjects();
     return new EllipsoidSliceEnginePluginInfo;
 }
 

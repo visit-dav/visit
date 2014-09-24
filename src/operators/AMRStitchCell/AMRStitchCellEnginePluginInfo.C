@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* AMRStitchCell_GetEngineInfo()
 {
+    AMRStitchCellEnginePluginInfo::InitializeGlobalObjects();
     return new AMRStitchCellEnginePluginInfo;
 }
 

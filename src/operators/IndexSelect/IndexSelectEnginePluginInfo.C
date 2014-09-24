@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* IndexSelect_GetEngineInfo()
 {
+    IndexSelectEnginePluginInfo::InitializeGlobalObjects();
     return new IndexSelectEnginePluginInfo;
 }
 

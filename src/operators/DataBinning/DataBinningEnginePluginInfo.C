@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* DataBinning_GetEngineInfo()
 {
+    DataBinningEnginePluginInfo::InitializeGlobalObjects();
     return new DataBinningEnginePluginInfo;
 }
 

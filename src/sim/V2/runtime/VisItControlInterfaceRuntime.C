@@ -41,7 +41,7 @@
 #include <VisItInterfaceTypes_V2P.h>
 
 #include <DebugStream.h>
-#include <Engine.h>
+#include <SimEngine.h>
 #include <NetworkManager.h>
 #include <LostConnectionException.h>
 #include <LoadBalancer.h>
@@ -65,57 +65,44 @@
 #include <vector>
 
 #include <vtkVisItUtility.h>
+#include <avtDatabaseFactory.h>
 #include <avtFileDescriptorManager.h>
+
+#include <simv2_NameList.h>
 
 
 extern void DataCallbacksCleanup(void);
 
-//
-// Data that helps us keep track of plot and operator attributes.
-//
-struct OperatorInformation
+// Engine creation callback.
+static Engine *
+simv2_create_engine(void *)
 {
-    std::string       id;
-    AttributeSubject *atts;
-};
-
-struct PlotInformation
-{
-    std::string                      id;
-    std::string                      plotName;
-    std::string                      plotDB;
-    std::string                      plotVar;
-    int                              network;
-    AttributeSubject                *atts;
-    int                              windowID;
-    std::vector<OperatorInformation> operators;
-};
-
-static std::map<int,PlotInformation> *plotInformation = NULL;
-
-static std::map<int,PlotInformation> *
-GetPlotInformation()
-{
-    if(plotInformation == NULL)
-        plotInformation = new std::map<int,PlotInformation>();
-    return plotInformation;
+    return new SimEngine;
 }
 
 // ****************************************************************************
-//  Library:  VisItEngine, Version 2
+// Method: simv2_get_engine
 //
-//  Purpose:
-//    Wrapper for simulations to control an engine.
+// Purpose:
+//   SimV2 runtime function to get the engine pointer, creating the object if 
+//   necessary.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 25, 2004
+// Returns:    A pointer to the engine.
 //
-//  Modifications:
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:38:01 PDT 2014
+//
+// Modifications:
 //
 // ****************************************************************************
 
 void *simv2_get_engine()
 {
+    // Set the engine creation callback so it will create our SimEngine subclass.
+    EngineBase::SetEngineCreationCallback(simv2_create_engine, NULL);
+
     // Make sure the timer is initialized. In visit this is normally
     // done in the main function but for the simulation it's done here.
     if (visitTimer == NULL)
@@ -128,19 +115,43 @@ void *simv2_get_engine()
         visitTimer->NoForcedTiming();
     }
 
-    Engine *engine = Engine::Instance();
-    engine->EnableSimulationPlugins();
-    return (void*)engine;
+    Engine::GetEngine()->EnableSimulationPlugins();
+    return (void*)Engine::GetEngine();
 }
 
-int simv2_initialize(void *e, int argc, char *argv[])
+// ****************************************************************************
+// Method: simv2_initialize
+//
+// Purpose:
+//   SimV2 runtime function to initialize the engine.
+//
+// Arguments:
+//   e    : The engine pointer.
+//   argc : The number of command line args.
+//   argv : The command line args.
+//   batch : True if we're initializing the engine for batch.
+//
+// Returns:    1 on success, 0 on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:39:01 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static int simv2_initialize_helper(void *e, int argc, char *argv[], bool batch)
 {
     int retval = 1;
-    Engine *engine = (Engine*)(e);
+    SimEngine *engine = (SimEngine*)(e);
     TRY
     {
         engine->Initialize(&argc, &argv, false);
         engine->InitializeCompute();
+        if(batch)
+            engine->InitializeViewer();
         LoadBalancer::SetScheme(LOAD_BALANCE_RESTRICTED);
     }
     CATCHALL
@@ -151,11 +162,44 @@ int simv2_initialize(void *e, int argc, char *argv[])
     return retval;
 }
 
+int simv2_initialize(void *e, int argc, char *argv[])
+{
+    return simv2_initialize_helper(e, argc, argv, false);
+}
+
+int simv2_initialize_batch(void *e, int argc, char *argv[])
+{
+    avtDatabaseFactory::SetCheckFilePermissions(false);
+    return simv2_initialize_helper(e, argc, argv, true);
+}
+
+// ****************************************************************************
+// Method: simv2_connect_viewer
+//
+// Purpose:
+//   SimV2 runtime function to connect to the viewer.
+//
+// Arguments:
+//   e    : The engine pointer.
+//   argc : The number of command line args.
+//   argv : The command line args.
+//
+// Returns:    1 on success, 0 on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:40:01 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
 int simv2_connect_viewer(void *e, int argc, char *argv[])
 {
     TRY
     {
-        Engine *engine = (Engine*)(e);
+        SimEngine *engine = (SimEngine*)(e);
         bool success = engine->ConnectViewer(&argc, &argv);
         if (!success)
         {
@@ -175,15 +219,56 @@ int simv2_connect_viewer(void *e, int argc, char *argv[])
     return 0;
 }
 
+// ****************************************************************************
+// Method: simv2_get_descriptor
+//
+// Purpose:
+//   SimV2 runtime function to get the engine input socket descriptor.
+//
+// Arguments:
+//   e : The engine pointer.
+//
+// Returns:    The engine's input socket.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   way back
+//
+// Modifications:
+//
+// ****************************************************************************
+
 int simv2_get_descriptor(void *e)
 {
-    Engine *engine = (Engine*)(e);
+    SimEngine *engine = (SimEngine*)(e);
     return engine->GetInputSocket();
 }
 
+// ****************************************************************************
+// Method: simv2_process_input
+//
+// Purpose:
+//   SimV2 runtime function to process input for the engine (commands from the
+//   viewer socket).
+//
+// Arguments:
+//   e : The engine pointer.
+//
+// Returns:    1 on success, 0 on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   way back
+//
+// Modifications:
+//
+// ****************************************************************************
+
 int simv2_process_input(void *e)
 {
-    Engine *engine = (Engine*)(e);
+    SimEngine *engine = (SimEngine*)(e);
 
     TRY {
 #ifdef PARALLEL
@@ -211,9 +296,29 @@ int simv2_process_input(void *e)
     return 1;
 }
 
+// ****************************************************************************
+// Method: simv2_time_step_changed
+//
+// Purpose:
+//   SimV2 runtime function called when the time step changes.
+//
+// Arguments:
+//   e : The engine pointer.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   way back
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void simv2_time_step_changed(void *e)
 {
-    Engine *engine = (Engine*)(e);
+    SimEngine *engine = (SimEngine*)(e);
     TRY
     {
         engine->SimulationTimeStepChanged();
@@ -224,13 +329,34 @@ void simv2_time_step_changed(void *e)
     ENDTRY
 }
 
+// ****************************************************************************
+// Method: simv2_execute_command
+//
+// Purpose:
+//   SimV2 runtime function called when we want to execute a command.
+//
+// Arguments:
+//   e : The engine pointer.
+//   command : A command string.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   way back
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void simv2_execute_command(void *e, const char *command)
 {
     TRY
     {
         if(command != NULL)
         {
-            Engine *engine = (Engine*)(e);       
+            SimEngine *engine = (SimEngine*)(e);       
             engine->SimulationInitiateCommand(command);
         }
     }
@@ -239,6 +365,19 @@ void simv2_execute_command(void *e, const char *command)
     }
     ENDTRY
 }
+
+// ****************************************************************************
+// Method: simv2_disconnect
+//
+// Purpose:
+//   SimV2 runtime function called when we want to disconnect from the simulation.
+//
+// Programmer: Brad Whitlock
+// Creation:   way back
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void simv2_disconnect()
 {
@@ -263,6 +402,27 @@ void simv2_disconnect()
     ENDTRY
 }
 
+// ****************************************************************************
+// Method: simv2_set_slave_process_callback
+//
+// Purpose:
+//   SimV2 runtime function called when we want to install a slave process callback.
+//
+// Arguments:
+//   spic : The new callback function.
+//
+// Returns:    
+//
+// Note:       The slave process callback helps broadcast commands from the
+//             viewer to other ranks.
+//
+// Programmer: Brad Whitlock
+// Creation:   way back
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void simv2_set_slave_process_callback(void(*spic)())
 {
 #ifdef PARALLEL
@@ -270,59 +430,56 @@ void simv2_set_slave_process_callback(void(*spic)())
 #endif
 }
 
+// ****************************************************************************
+// Method: simv2_set_command_callback
+//
+// Purpose:
+//   SimV2 runtime function called when we want to install a callback to process
+//   commands.
+//
+// Arguments:
+//   e : The engine pointer.
+//   sc : The command callback
+//   scdata : The command callback data.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   way back
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void simv2_set_command_callback(void *e,void(*sc)(const char*,const char*,void*),
     void *scdata)
 {
-    Engine *engine = (Engine*)(e);
+    SimEngine *engine = (SimEngine*)(e);
     engine->SetSimulationCommandCallback(sc, scdata);
 }
 
-int
-simv2_save_window(void *e, const char *filename, int w, int h, int format)
-{
-    Engine *engine = (Engine*)(e);
-    int retval = VISIT_OKAY;
-    TRY
-    {
-        SaveWindowAttributes::FileFormat fmt;
-        if(format == VISIT_IMAGEFORMAT_BMP)
-            fmt = SaveWindowAttributes::BMP;
-        else if(format == VISIT_IMAGEFORMAT_JPEG)
-            fmt = SaveWindowAttributes::JPEG;
-        else if(format == VISIT_IMAGEFORMAT_PNG)
-            fmt = SaveWindowAttributes::PNG;
-        else if(format == VISIT_IMAGEFORMAT_POVRAY)
-            fmt = SaveWindowAttributes::POVRAY;
-        else if(format == VISIT_IMAGEFORMAT_PPM)
-            fmt = SaveWindowAttributes::PPM;
-        else if(format == VISIT_IMAGEFORMAT_RGB)
-            fmt = SaveWindowAttributes::RGB;
-        else
-            fmt = SaveWindowAttributes::TIFF;
-#if 1
-        intVector networkIds;
-        std::map<int, PlotInformation>::iterator it = GetPlotInformation()->begin();
-        for(; it != GetPlotInformation()->end(); ++it)
-        {
-            debug1 << "Plot network: " << it->second.network << endl;
-            networkIds.push_back(it->second.network);
-        }
-
-        retval =  engine->GetNetMgr()->SaveWindow(networkIds, filename, w, h, fmt) ?
-            VISIT_OKAY : VISIT_ERROR;
-#else
-        retval =  engine->SaveWindow(filename, w, h, fmt) ?
-            VISIT_OKAY : VISIT_ERROR;
-#endif
-    }
-    CATCHALL
-    {
-        retval = VISIT_ERROR;
-    }
-    ENDTRY
-
-    return retval;
-}
+// ****************************************************************************
+// Method: simv2_debug_logs
+//
+// Purpose:
+//   SimV2 runtime function that adds a message to the debug logs.
+//
+// Arguments:
+//   level : The debug level.
+//   msg   : The message to write.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:54:26 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 simv2_debug_logs(int level, const char *msg)
@@ -349,6 +506,26 @@ simv2_debug_logs(int level, const char *msg)
     }
 }
 
+// ****************************************************************************
+// Method: simv2_set_mpicomm
+//
+// Purpose:
+//   SimV2 runtime function that sets the MPI communicator.
+//
+// Arguments:
+//   comm : The MPI communicator.
+//
+// Returns:    VISIT_OKAY, VISIT_ERROR
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:55:08 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
 int
 simv2_set_mpicomm(void *comm)
 {
@@ -359,210 +536,156 @@ simv2_set_mpicomm(void *comm)
 #endif
 }
 
-int
-simv2_add_plot(void *e, const char *simfile, const char *plotType, const char *var, int *plotID)
-{
-    static int plotCounter = 0;
-    const char *mName = "simv2_add_plot: ";
+///////////////////////////////////////////////////////////////////////////////
+/// THESE FUNCTIONS ARE MORE EXPERIMENTAL
+///////////////////////////////////////////////////////////////////////////////
 
-    Engine *engine = (Engine*)(e);
-    NetworkManager *netmgr = engine->GetNetMgr();
-    int status = VISIT_ERROR;
-
-    *plotID = -1;
-    TRY
-    {
-        int windowID = 0;
-
-        // Force us to get new metadata, thus setting Engine::filename so 
-        // Engine::SimulationTimeStepChanged works later.
-        engine->PopulateSimulationMetaData(simfile, "SimV2_1.0");
-
-        // PreparePlotRPC
-        std::string id(plotType);
-        if (!netmgr->GetPlotPluginManager()->PluginAvailable(id))
-        {
-            debug1 << mName << "Requested plot does not exist for the engine" << endl;
-            CATCH_RETURN2(1, VISIT_ERROR);
-        }
-        AttributeSubject *atts = netmgr->GetPlotPluginManager()->
-            GetEnginePluginInfo(id)->AllocAttributes();
-
-        // Save the plot information.
-        if(atts != NULL)
-        {
-            char plotName[10];
-            SNPRINTF(plotName, 10, "Plot%04d", plotCounter);
-            PlotInformation p;
-            p.id = id;
-            p.plotName = plotName;
-            p.plotDB = simfile;           
-            p.plotVar = var;
-            p.network = -1;
-            p.atts = atts;
-            p.windowID = windowID;
-            GetPlotInformation()->operator[](plotCounter) = p;
-
-            debug3 << mName << "Added new " << plotType << " plot of " << var
-                   << ". plotID=" << plotCounter << endl;
-
-            *plotID = plotCounter;
-            plotCounter++;
-        }
-
-        status = VISIT_OKAY;
-    }
-    CATCHALL
-    {
-        debug3 << mName << "Cancelling network" << endl;
-        netmgr->CancelNetwork();
-    }
-    ENDTRY
-
-    return status;
-}
+// ****************************************************************************
+// Method: simv2_save_window
+//
+// Purpose:
+//   SimV2 runtime function called when we want to save a window.
+//
+// Arguments:
+//   e : The engine pointer.
+//   filename : The filename to save to.
+//   w : The image width
+//   h : The image height
+//   format : The image format.
+//
+// Returns:    VISIT_OKAY or VISIT_ERROR.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:52:03 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
 int
-simv2_add_operator(void *e, int plotID, const char *operatorType, int *operatorID)
+simv2_save_window(void *e, const char *filename, int w, int h, int format)
 {
-    Engine *engine = (Engine*)(e);
-    NetworkManager *netmgr = engine->GetNetMgr();
-    int status = VISIT_ERROR;
-    TRY
-    {
-        std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
-        if(it != GetPlotInformation()->end())
-        {
-            std::string id(operatorType);
-
-            if (!netmgr->GetOperatorPluginManager()->PluginAvailable(id))
-            {
-                debug1 << "Requested operator does not exist for the engine" << endl;
-                CATCH_RETURN2(1, VISIT_ERROR);
-            }
-
-            AttributeSubject *atts = netmgr->GetOperatorPluginManager()->
-                GetEnginePluginInfo(id)->AllocAttributes();
-            if(atts != NULL)
-            {
-                OperatorInformation op;
-                op.id = id;
-                op.atts = atts;
-                it->second.operators.push_back(op);
-                *operatorID = it->second.operators.size()-1;
-
-                debug3 << "Added new " << operatorType << " operator to plot " << it->second.id << endl;
-            }
-            else
-                *operatorID = -1;
-
-            status = VISIT_OKAY;
-        }
-    }
-    CATCHALL
-    {
-        status = VISIT_ERROR;
-    }
-    ENDTRY
-
-    return status;
+    SimEngine *engine = (SimEngine*)(e);
+    return engine->SaveWindow(filename, w, h, format) ?
+           VISIT_OKAY : VISIT_ERROR;
 }
+
+// ****************************************************************************
+// Method: simv2_add_plot
+//
+// Purpose:
+//   SimV2 runtime function called when we want to add a plot
+//
+// Arguments:
+//   e        : The engine pointer.
+//   plotType : The plot type.
+//   var      : The plot variable.
+//
+// Returns:    VISIT_OKAY or VISIT_ERROR.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:52:03 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
 int
-simv2_draw_plot(void *e, int plotID)
+simv2_add_plot(void *e, const char *plotType, const char *var)
 {
-    const char *mName = "simv2_draw_plot: ";
-    Engine *engine = (Engine*)(e);
-    NetworkManager *netmgr = engine->GetNetMgr();
-    int status = VISIT_ERROR;
-    TRY
-    {
-        std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
-        if(it != GetPlotInformation()->end())
-        {
-            if(true) //it->second.network == -1)
-            {
-                // ReadRPC
-                debug3 << mName << "Starting new network for file=" 
-                       << it->second.plotDB << " var=" << it->second.plotVar << endl;
-                netmgr->StartNetwork("SimV2_1.0", 
-                    it->second.plotDB, it->second.plotVar, 0);
-
-                // Add the operators.
-                for(size_t i = 0; i < it->second.operators.size(); ++i)
-                {
-                    debug3 << mName << "Adding " << it->second.operators[i].id << " operator to the network" << endl;
-                    netmgr->AddFilter(it->second.operators[i].id, it->second.operators[i].atts);
-                }
-
-                // MakePlotRPC
-                debug3 << mName << "Adding " << it->second.id << " plot to the network." << endl;
-                std::vector<double> dataExtents;
-                netmgr->MakePlot(it->second.plotName, it->second.id, it->second.atts, dataExtents);
-        
-                // End network.
-                it->second.network = netmgr->EndNetwork(it->second.windowID);
-                debug3 << mName << "Ending network. id = " << it->second.network << endl;
-                status = (it->second.network != -1) ? VISIT_OKAY : VISIT_ERROR;
-            }
-            else
-            {
-                debug3 << mName << "Use network. id=" << it->second.network << endl;
-                netmgr->UseNetwork(it->second.network);
-
-                // Update the plot atts.
-                debug3 << mName << "Updating plot attributes" << endl;
-                netmgr->UpdatePlotAtts(it->second.network, it->second.atts);
-
-                status = VISIT_OKAY;
-            }
-
-            // Set up some callback functions
-            avtDataObjectSource::RegisterProgressCallback(
-                Engine::EngineUpdateProgressCallback, NULL);
-            LoadBalancer::RegisterProgressCallback(
-                Engine::EngineUpdateProgressCallback, NULL);
-            avtOriginatingSource::RegisterInitializeProgressCallback(
-                Engine::EngineInitializeProgressCallback, NULL);
-
-            debug3 << mName << "Get network manager output" << endl;
-
-            // Try and force the network to execute so it will be around for when
-            // we render.
-            float cellCountMultiplier = 0.f;
-            netmgr->GetOutput(false, false, &cellCountMultiplier);
-        }
-    }
-    CATCHALL
-    {
-        debug3 << mName << "Cancelling network" << endl;
-        netmgr->CancelNetwork();
-        status = VISIT_ERROR;
-    }
-    ENDTRY
-
-    return status;
+    SimEngine *engine = (SimEngine*)(e); 
+    return engine->AddPlot(plotType, var) ? VISIT_OKAY : VISIT_ERROR;
 }
+
+// ****************************************************************************
+// Method: simv2_add_operator
+//
+// Purpose:
+//   SimV2 runtime function called when we want to add a operator
+//
+// Arguments:
+//   e            : The engine pointer.
+//   operatorType : The operator type.
+//   applyToAll   : Whether to apply the operator to all plots.
+//
+// Returns:    VISIT_OKAY or VISIT_ERROR.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:52:03 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
 int
-simv2_delete_plot(void *e, int plotID)
+simv2_add_operator(void *e, const char *operatorType, int applyToAll)
 {
-    Engine *engine = (Engine*)(e);
-    NetworkManager *netmgr = engine->GetNetMgr();
-    std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
-    if(it != GetPlotInformation()->end())
-    {
-        if(it->second.network != -1)
-            netmgr->DoneWithNetwork(it->second.network);
-
-        // Delete the plot information.
-        for(size_t i = 0; i < it->second.operators.size(); ++i)
-            delete it->second.operators[i].atts;
-        delete it->second.atts;
-        GetPlotInformation()->erase(it);
-    }
-    return VISIT_OKAY;
+    SimEngine *engine = (SimEngine*)(e); 
+    return engine->AddOperator(operatorType, applyToAll) ? VISIT_OKAY : VISIT_ERROR;
 }
+
+// ****************************************************************************
+// Method: simv2_draw_plots
+//
+// Purpose:
+//   SimV2 runtime function called when we want to draw a plot.
+//
+// Arguments:
+//   e : The engine pointer.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 18 18:03:28 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_draw_plots(void *e)
+{
+    SimEngine *engine = (SimEngine*)(e);
+    return engine->DrawPlots() ? VISIT_OKAY : VISIT_ERROR;
+}
+
+// ****************************************************************************
+// Method: simv2_delete_active_plots
+//
+// Purpose:
+//   SimV2 runtime function called when we want to delete the active plots.
+//
+// Arguments:
+//   e : The engine pointer.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 18 18:03:28 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_delete_active_plots(void *e)
+{
+    SimEngine *engine = (SimEngine*)(e);
+    return engine->DeleteActivePlots() ? VISIT_OKAY : VISIT_ERROR;
+}
+
+#if 0
+// We don't need this stuff just yet...
 
 template <class T>
 static std::vector<T> makevector(const T *val, int nval)
@@ -723,12 +846,14 @@ SetAttributeSubjectValues(AttributeSubject *atts,
 
     return status;
 }
+#endif
 
 int
 simv2_set_plot_options(void * /*e*/, int plotID, const char *fieldName, 
     int fieldType, void *fieldVal, int fieldLen)
 {
     int status = VISIT_ERROR;
+#if 0
     TRY
     {
         std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
@@ -741,7 +866,7 @@ simv2_set_plot_options(void * /*e*/, int plotID, const char *fieldName,
     {
     }
     ENDTRY
-
+#endif
     return status;
 }
 
@@ -750,6 +875,7 @@ simv2_set_operator_options(void * /*e*/, int plotID, int operatorID, const char 
     int fieldType, void *fieldVal, int fieldLen)
 {
     int status = VISIT_ERROR;
+#if 0
     TRY
     {
         std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
@@ -766,6 +892,87 @@ simv2_set_operator_options(void * /*e*/, int plotID, int operatorID, const char 
     {
     }
     ENDTRY
+#endif
+    return status;
+}
+
+// ****************************************************************************
+// Method: simv2_exportdatabase
+//
+// Purpose:
+//   SimV2 runtime function called when we want to execute a command.
+//
+// Arguments:
+//   e : The engine pointer.
+//   command : A command string.
+//
+// Returns:    
+//
+// Note:       EXPERIMENTAL
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 18 10:53:32 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_exportdatabase(void *e, const char *filename, const char *format, 
+    visit_handle names)
+{
+    int status = VISIT_ERROR;
+    stringVector varNames;
+    int n;
+    if(simv2_NameList_getNumName(names, &n) == VISIT_OKAY)
+    {
+        for(int i = 0; i < n; ++i)
+        {
+            char *var = NULL;
+            if(simv2_NameList_getName(names, i, &var) == VISIT_OKAY)
+            {
+                if(var != NULL)
+                     varNames.push_back(var);
+            }
+        }
+    }
+    else
+    {
+        varNames.push_back("default");
+    }
+
+    SimEngine *engine = (SimEngine*)e;
+    if(engine->ExportDatabase(filename, format, varNames))
+        status = VISIT_OKAY;
 
     return status;
 }
+
+// ****************************************************************************
+// Method: simv2_restoresession
+//
+// Purpose:
+//   SimV2 runtime function called when we want to restore a session.
+//
+// Arguments:
+//   e : The engine pointer.
+//   filename : The session filename.
+//
+// Returns:    
+//
+// Note:       EXPERIMENTAL
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 18 10:53:32 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_restoresession(void *e, const char *filename)
+{
+    SimEngine *engine = (SimEngine*)e;
+    return engine->RestoreSession(filename) ? VISIT_OKAY : VISIT_ERROR;
+}
+

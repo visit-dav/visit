@@ -987,111 +987,6 @@ MDServerConnection::GetDBPluginInfo()
 }
 
 // ****************************************************************************
-// Method: MDServerConnection::FilteredPath
-//
-// Purpose: 
-//   Filters extra junk out of a path.
-//
-// Arguments:
-//   path : The path string that we're filtering.
-//
-// Returns:    A filtered path string.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Feb 13 14:08:01 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Thu Mar 18 11:40:40 PDT 2004
-//   I fixed the code so it filters out .. properly.
-//
-//   Brad Whitlock, Wed Apr 14 17:22:53 PST 2004
-//   I fixed the .. filtering for Windows.
-//
-//   Brad Whitlock, Mon Sep 28 16:36:18 PDT 2009
-//   Don't pop_back unless there's something to remove.
-//
-// ****************************************************************************
-
-std::string
-MDServerConnection::FilteredPath(const std::string &path) const
-{
-    // Remove multiple slashes in a row.
-    size_t i = 0;
-    size_t state = 0;
-    std::string filteredPath;
-    for(i = 0; i < path.length(); ++i)
-    {
-        if(state == 0)
-        {
-            filteredPath += path[i];
-            if(path[i] == VISIT_SLASH_CHAR)
-                state = 1;
-        }
-        else if(path[i] != VISIT_SLASH_CHAR)
-        {
-            filteredPath += path[i];
-            state = 0;
-        }
-    }
-
-    std::string path2(filteredPath);
-    if(path2.length() > 0 && path2[path2.length() - 1] == VISIT_SLASH_CHAR)
-    {
-        filteredPath = path2.substr(0, path2.length() - 1);
-    }
-
-    if(filteredPath.size() == 0)
-        filteredPath = VISIT_SLASH_STRING;
-    else
-    {
-        // Filter out .. so we get the right path.
-        stringVector tmpNames;
-        std::string  tmp;
-        state = 0;
-        const char *str = filteredPath.c_str();
-        for(i = 0; i < filteredPath.length() + 1; ++i)
-        {
-            if(str[i] == VISIT_SLASH_CHAR || str[i] == '\0')
-            {
-                if(tmp.size() > 0)
-                {
-                    if(tmp == "..")
-                    {
-                        if(tmpNames.size() > 0)
-                            tmpNames.pop_back();
-                    }
-                    else
-                        tmpNames.push_back(tmp);
-                }
-                tmp = "";
-            }
-            else
-                tmp += str[i];
-        }
-
-        // Reassemble the path fragments.
-        if(tmpNames.size() > 0)
-        {
-            filteredPath = "";
-            for(i = 0; i < tmpNames.size(); ++i)
-            { 
-#if defined(_WIN32)
-                if(i > 0)
-                    filteredPath += VISIT_SLASH_STRING;
-#else
-                filteredPath += VISIT_SLASH_STRING;
-#endif
-                filteredPath += tmpNames[i];
-            }
-        }
-    }
-
-    return filteredPath;
-}
-
-// ****************************************************************************
 // Function: MDServerConnection::ExpandPath
 //
 // Purpose:
@@ -1130,88 +1025,7 @@ MDServerConnection::FilteredPath(const std::string &path) const
 std::string
 MDServerConnection::ExpandPath(const std::string &path)
 {
-    return ExpandPathHelper(path, currentWorkingDirectory);
-}
-
-// ****************************************************************************
-// Method: MDServerConnection::ExpandPathHelper
-//
-// Purpose: 
-//   Expands the path.
-//
-// Arguments:
-//   path       : The path to be expanded.
-//   workingDir : The current working dir to use.
-//
-// Returns:    The expanded path.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Apr 2 12:47:50 PDT 2003
-//
-// Modifications:
-//   Brad Whitlock, Thu Feb 17 15:05:34 PST 2005
-//   Moved some code into the utility library, callable from ExpandUserPath.
-//
-//   Kathleen Bonnell, Wed Nov 5 18:59:26 PST 2008  
-//   Modified how absolute path is determined on Windows. 
-//
-//   Brad Whitlock, Thu Feb 24 23:31:32 PST 2011
-//   Make sure that the path is at least 1 character long
-//
-//   Kathleen Biagas, Wed Nov 2 17:16:43 MST 2011
-//   Don't do anything if path is 'My Computer' as this is a special folder.
-//
-// ****************************************************************************
-
-std::string
-MDServerConnection::ExpandPathHelper(const std::string &path,
-    const std::string &workingDir) const
-{
-    std::string newPath;
-
-#if defined(_WIN32)
-    if(path.size() > 0 && path[0] == '~')
-    {
-        newPath = ExpandUserPath(path);
-    }
-    else if(path.substr(0, 12) == "My Computer\\" && path[13] == ':')
-    {
-        // Filter out the "My Computer" part of the path.
-        newPath = path.substr(12);
-    }
-    else if(path.size() > 1 && path[1] == ':')
-    {
-        // absolute path. do nothing
-        newPath = path;
-    }
-    else if(path == "My Computer")
-    {
-        // special path. do nothing
-        newPath = path;
-    }
-    else
-    {
-        // relative path:
-        newPath = workingDir + "\\" + path;
-    }
-#else
-    if(path[0]=='~')
-    {
-        newPath = ExpandUserPath(path);
-    }
-    else if(path[0] != '/')
-    {
-        // relative path:
-        newPath = workingDir + "/" + path;
-    }
-    else
-    {
-        // absolute path: do nothing
-        newPath = path;
-    }
-#endif
-
-    return FilteredPath(newPath);
+    return FileFunctions::ExpandPath(path, currentWorkingDirectory);
 }
 
 // ****************************************************************************
@@ -1338,26 +1152,7 @@ MDServerConnection::GetCurrentWorkingDirectory() const
 void
 MDServerConnection::ReadCWD()
 {
-    // Note -- this is not called by the GetDirectoryRPC.  It is only
-    // called once at the start of the program and once at every
-    // directory change.
-    char tmpcwd[1024];
-#if defined(_WIN32)
-    _getcwd(tmpcwd,1023);
-#else
-    char* res = getcwd(tmpcwd,1023);
-    if(res == NULL)
-    {
-        debug1 <<"failed to get current working directory via getcwd()" 
-              << std::endl;
-    }
-#endif
-    tmpcwd[1023]='\0';
-
-    currentWorkingDirectory = ExpandPath(tmpcwd);
-#ifdef DEBUG
-    debug2 << "CWD: '" << currentWorkingDirectory.c_str() << "'" << endl;
-#endif
+    currentWorkingDirectory = ExpandPath(FileFunctions::GetCurrentWorkingDirectory());
 }
 
 // ****************************************************************************
@@ -1567,8 +1362,8 @@ MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
             origType == GetFileListRPC::UNCHECKED_REMOVE_IF_NOT_DIR))
         {
             ++nStat;
-            VisItStat_t s;
-            VisItStat((currentWorkingDirectory + "/" + fl.names[i]).c_str(), &s);
+            FileFunctions::VisItStat_t s;
+            FileFunctions::VisItStat((currentWorkingDirectory + "/" + fl.names[i]).c_str(), &s);
     
             mode_t mode = s.st_mode;
 
@@ -2912,7 +2707,7 @@ MDServerConnection::GetDatabase(std::string file, int timeState,
                    << ", path=" << path.c_str() << endl;
             for(size_t i = 0; i < fileNames.size(); ++i)
             {
-                std::string name(ExpandPathHelper(fileNames[i], path));
+                std::string name(FileFunctions::ExpandPath(fileNames[i], path));
                 char *charName = new char[name.size() + 1];
                 strcpy(charName, name.c_str());
                 names[i] = charName;

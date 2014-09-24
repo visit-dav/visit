@@ -86,7 +86,7 @@ class ExternalSurfaceGUIPluginInfo : public virtual GUIOperatorPluginInfo, publi
         QvisNotepadArea *notepad);
 };
 
-class ExternalSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ExternalSurfaceCommonPluginInfo
+class ExternalSurfaceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ExternalSurfaceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class ExternalSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo,
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class ExternalSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo,
     static ExternalSurfaceAttributes *clientAtts;
 };
 
-class ExternalSurfaceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ExternalSurfaceCommonPluginInfo
+class ExternalSurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ExternalSurfaceViewerEnginePluginInfo
+{
+  public:
+};
+
+class ExternalSurfaceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ExternalSurfaceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

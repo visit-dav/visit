@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* TriangulateRegularPoints_GetEngineInfo()
 {
+    TriangulateRegularPointsEnginePluginInfo::InitializeGlobalObjects();
     return new TriangulateRegularPointsEnginePluginInfo;
 }
 

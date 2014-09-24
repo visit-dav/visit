@@ -794,7 +794,8 @@ void  VisItCloseTraceFile(void);
  * 
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
- * Note:      A plot must have already been created.
+ * Note:      A plot must have already been created. Call this function on all
+ *            processors.
  *
  * ****************************************************************************/
 int VisItSaveWindow(const char *filename, int width, int height, int format);
@@ -817,6 +818,84 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
  *
  * ****************************************************************************/
 int VisItSetMPICommunicator(void *mpicom);
+
+/******************************************************************************
+ * Function: VisItInitializeRuntime
+ *
+ * Purpose: 
+ *   Initialize the VisIt runtime without the client being connected.
+ *
+ * Arguments:
+ *   
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      Call this function on all processors.
+ *
+ * ****************************************************************************/
+int VisItInitializeRuntime(void);
+
+/******************************************************************************
+ * Function: VisItGetMemory
+ *
+ * Purpose: 
+ *   Measure memory usage for the current processor.
+ *
+ * Arguments:
+ *   m_size : The number of MiB in use.
+ *   m_rss  : The resident set size in MiB.
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      This function can be called in individual processors.
+ *
+ * ****************************************************************************/
+int VisItGetMemory(double *m_size, double *m_rss); 
+
+/******************************************************************************
+ * Function: VisItExportDatabase
+ *
+ * Purpose: 
+ *   Export the active plots to database files.
+ *
+ * Arguments:
+ *   filename : The name of the file to save. If it does not have a path then
+ *              the current working directory will be where files are saved.
+ *              File format writers are free to append their own file extensions
+ *              to this name.
+ *   format   : The name of a database plugin for the export. This can be either
+ *              the plugin name or id (e.g. "Silo" or "Silo_1.0").
+ *   variables: A name list containing the names of the variables to be exported.
+ *              If an empty list or VISIT_INVALID_HANDLE are passed then the
+ *              "default" variables will be exported.
+ *
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      The active plots in the plot list are exported just like in
+ *            typical export usage from VisIt.
+ *
+ *            Call this function on all processors.
+ *
+ * ****************************************************************************/
+int VisItExportDatabase(const char *filename, const char *format, visit_handle variables);
+
+/******************************************************************************
+ * Function: VisItRestoreSession
+ *
+ * Purpose: 
+ *   Restores a session file to set up the visualization that will be saved
+ *   from operations such as VisItSaveWindow and VisItExportDatabase.
+ *
+ * Arguments:
+ *   filename : The path to the session file.
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      Call this function on all processors.
+ *
+ * ****************************************************************************/
+int VisItRestoreSession(const char *filename);
+
 
 /******************************************************************************
 *******************************************************************************
@@ -1186,12 +1265,6 @@ int VisItUI_valueChanged(const char *name, void (*cb)(int,void*), void *cbdata2)
 
 int VisItUI_setValueI(const char *name, int value, int enabled);
 int VisItUI_setValueS(const char *name, const char *value, int enabled);
-
-/* Initialize the VisIt runtime without the client being connected. */
-int VisItInitializeRuntime(void);
-
-/* Measuring memory usage */
-int VisItGetMemory(double *m_size, double *m_rss); 
 
 /* Include some experimental plotting functions */
 #include <VisItControlInterface_V2_plotting.h>

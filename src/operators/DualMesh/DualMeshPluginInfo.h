@@ -87,7 +87,7 @@ class DualMeshGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtu
     virtual const char **XPMIconData() const;
 };
 
-class DualMeshViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DualMeshCommonPluginInfo
+class DualMeshViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual DualMeshCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class DualMeshViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class DualMeshViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     static DualMeshAttributes *clientAtts;
 };
 
-class DualMeshEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DualMeshCommonPluginInfo
+class DualMeshViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DualMeshViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class DualMeshEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DualMeshViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

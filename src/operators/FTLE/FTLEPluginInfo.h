@@ -87,7 +87,7 @@ class FTLEGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual F
         QvisNotepadArea *notepad);
 };
 
-class FTLEViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FTLECommonPluginInfo
+class FTLEViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual FTLECommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,11 @@ class FTLEViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +108,12 @@ class FTLEViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vir
     static FTLEAttributes *clientAtts;
 };
 
-class FTLEEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FTLECommonPluginInfo
+class FTLEViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FTLEViewerEnginePluginInfo
+{
+  public:
+};
+
+class FTLEEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FTLEViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

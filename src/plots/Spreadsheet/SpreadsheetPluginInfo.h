@@ -80,20 +80,20 @@ class SpreadsheetCommonPluginInfo : public virtual CommonPlotPluginInfo, public 
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class SpreadsheetGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual SpreadsheetCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class SpreadsheetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual SpreadsheetCommonPluginInfo
+class SpreadsheetViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual SpreadsheetCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -105,12 +105,23 @@ class SpreadsheetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public 
 
     virtual bool ProvidesLegend() const;
     virtual bool Permits2DViewScaling() const;
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
+    static void InitializeGlobalObjects();
+  private:
+    static SpreadsheetAttributes *defaultAtts;
+    static SpreadsheetAttributes *clientAtts;
+    // User-defined functions
+  private:
+    void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+};
+
+class SpreadsheetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual SpreadsheetViewerEnginePluginInfo
+{
+  public:
     virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
     virtual void *AlternateDisplayCreate(ViewerPlot *plot);
     virtual void AlternateDisplayDestroy(void *dpy);
     virtual void AlternateDisplayClear(void *dpy);
@@ -119,19 +130,11 @@ class SpreadsheetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public 
     virtual void AlternateDisplayIconify(void *dpy);
     virtual void AlternateDisplayDeIconify(void *dpy);
 
-    static void InitializeGlobalObjects();
-  private:
-    static SpreadsheetAttributes *defaultAtts;
-    static SpreadsheetAttributes *clientAtts;
-    // User-defined functions
-  private:
-    void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
 };
 
-class SpreadsheetEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual SpreadsheetCommonPluginInfo
+class SpreadsheetEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual SpreadsheetViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
 };
 
 class SpreadsheetScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual SpreadsheetCommonPluginInfo

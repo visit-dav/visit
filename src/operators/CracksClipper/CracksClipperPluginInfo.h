@@ -87,7 +87,7 @@ class CracksClipperGUIPluginInfo : public virtual GUIOperatorPluginInfo, public 
         QvisNotepadArea *notepad);
 };
 
-class CracksClipperViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual CracksClipperCommonPluginInfo
+class CracksClipperViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual CracksClipperCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,13 +96,11 @@ class CracksClipperViewerPluginInfo : public virtual ViewerOperatorPluginInfo, p
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -110,7 +108,12 @@ class CracksClipperViewerPluginInfo : public virtual ViewerOperatorPluginInfo, p
     static CracksClipperAttributes *clientAtts;
 };
 
-class CracksClipperEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual CracksClipperCommonPluginInfo
+class CracksClipperViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual CracksClipperViewerEnginePluginInfo
+{
+  public:
+};
+
+class CracksClipperEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual CracksClipperViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

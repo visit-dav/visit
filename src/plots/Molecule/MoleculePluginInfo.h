@@ -80,20 +80,20 @@ class MoleculeCommonPluginInfo : public virtual CommonPlotPluginInfo, public vir
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class MoleculeGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual MoleculeCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class MoleculeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual MoleculeCommonPluginInfo
+class MoleculeViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual MoleculeCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class MoleculeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static MoleculeAttributes *defaultAtts;
     static MoleculeAttributes *clientAtts;
 };
 
-class MoleculeEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual MoleculeCommonPluginInfo
+class MoleculeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual MoleculeViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class MoleculeEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual MoleculeViewerEnginePluginInfo
+{
+  public:
 };
 
 class MoleculeScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual MoleculeCommonPluginInfo

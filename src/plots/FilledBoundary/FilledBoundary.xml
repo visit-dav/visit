@@ -94,13 +94,13 @@
       </Function>
       <Function name="PyFilledBoundaryAttributes_SetDefaults" user="false" member="true">
       </Function>
-      <Function name="FilledBoundaryViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="FilledBoundaryViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="FilledBoundaryViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      <Function name="FilledBoundaryViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="FilledBoundaryViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      <Function name="FilledBoundaryViewerEnginePluginInfo::ResetPlotAtts" user="false" member="true">
       </Function>
-      <Function name="FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
+      <Function name="FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
     </Attribute>
   </Plugin>

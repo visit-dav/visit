@@ -60,6 +60,9 @@
 #include <cstddef>
 #include <map>
 
+class ViewerWindow;
+class ViewerSubjectProxyFactory;
+
 // ****************************************************************************
 // Class: ViewerSubjectProxy
 //
@@ -164,7 +167,7 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
     virtual void LoadPlugins();
     virtual void InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir);
 
- public:
+public:
     //SIL support
     virtual avtSILRestriction_p GetPlotSILRestriction();
     virtual avtSILRestriction_p GetPlotSILRestriction() const;
@@ -191,6 +194,8 @@ public slots:
     void windowDeleted(QObject*);
     void viewerWindowCreated(ViewerWindow*);
 private:
+    static void viewerWindowCreatedCallback(ViewerWindow *, void *);
+    ViewerSubjectProxyFactory *factory;
     static vtkQtRenderWindow* renderWindow(void* data);
 };
 

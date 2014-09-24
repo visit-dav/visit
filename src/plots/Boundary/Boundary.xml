@@ -84,13 +84,13 @@
       </Function>
       <Function name="PyBoundaryAttributes_SetDefaults" user="false" member="true">
       </Function>
-      <Function name="BoundaryViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      <Function name="BoundaryViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="BoundaryViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      <Function name="BoundaryViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="BoundaryViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      <Function name="BoundaryViewerEnginePluginInfo::ResetPlotAtts" user="false" member="true">
       </Function>
-      <Function name="BoundaryViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
+      <Function name="BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
     </Attribute>
   </Plugin>

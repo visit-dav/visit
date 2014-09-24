@@ -80,20 +80,20 @@ class SubsetCommonPluginInfo : public virtual CommonPlotPluginInfo, public virtu
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class SubsetGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual SubsetCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class SubsetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual SubsetCommonPluginInfo
+class SubsetViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual SubsetCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,26 +103,29 @@ class SubsetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtu
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static SubsetAttributes *defaultAtts;
     static SubsetAttributes *clientAtts;
     // User-defined functions
   private:
-    void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 };
 
-class SubsetEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual SubsetCommonPluginInfo
+class SubsetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual SubsetViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class SubsetEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual SubsetViewerEnginePluginInfo
+{
+  public:
 };
 
 class SubsetScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual SubsetCommonPluginInfo

@@ -89,11 +89,12 @@ class PIPELINE_API avtDataObjectString
         
     void                      Append(char *, int, APPEND_ACTION_ITEM);
 
-    int                       GetNStrings(void);
+    int                       GetNStrings(void) const;
     void                      GetString(int, char *&, int &);
-    int                       GetTotalLength(void);
+    int                       GetTotalLength(void) const;
 
-    void                      GetWholeString(char *&, int &);
+    void                      GetWholeString(char *&, int &len);
+    char                     *GetWholeString(int &len) const;
 
   protected:
     std::vector<char *>       strs;

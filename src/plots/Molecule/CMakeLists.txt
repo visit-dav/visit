@@ -23,6 +23,7 @@ QvisMoleculePlotWindow.h
 )
 
 SET(LIBV_SOURCES
+MoleculeViewerEnginePluginInfo.C
 MoleculeViewerPluginInfo.C
 avtMoleculePlot.C
 avtMoleculeRenderer.C
@@ -38,6 +39,7 @@ IF(VISIT_MANTA)
 ENDIF(VISIT_MANTA)
 
 SET(LIBE_SOURCES
+MoleculeViewerEnginePluginInfo.C
 MoleculeEnginePluginInfo.C
 avtMoleculePlot.C
 avtMoleculeRenderer.C
@@ -87,7 +89,9 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/Proxies
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/Tools
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/gui
+${VISIT_INCLUDE_DIR}/viewer/core
 ${VISIT_INCLUDE_DIR}/viewer/main
+${VISIT_INCLUDE_DIR}/viewer/main/ui
 ${VISIT_INCLUDE_DIR}/viewer/proxy
 ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil

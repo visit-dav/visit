@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Box_GetEngineInfo()
 {
+    BoxEnginePluginInfo::InitializeGlobalObjects();
     return new BoxEnginePluginInfo;
 }
 

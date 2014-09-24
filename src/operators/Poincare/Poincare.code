@@ -234,11 +234,11 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
 }
 
 Target: xml2info
-Function: PoincareViewerPluginInfo::GetOperatorVarDescription
-Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const ViewerPlot *plot);
+Function: PoincareViewerEnginePluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
 // ****************************************************************************
-//  Method: PoincareViewerPluginInfo::GetOperatorVarDescription
+//  Method: PoincareViewerEnginePluginInfo::GetOperatorVarDescription
 //
 //  Purpose:
 //    Return the operator variable description.
@@ -252,11 +252,12 @@ Definition:
 //
 // ****************************************************************************
 
-#include <ViewerPlot.h>
+#include <avtPlotMetaData.h>
+#include <cstring>
 
 std::string
-PoincareViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
-                                                    const ViewerPlot *plot)
+PoincareViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                    const avtPlotMetaData &plot)
 {
     PoincareAttributes *atts_in = (PoincareAttributes *)atts;
 
@@ -268,7 +269,7 @@ PoincareViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
         "Winding Group Order", "Winding Point Order",
         "Winding Point Order Modulo" };
 
-    std::string var = plot->GetVariableName();
+    std::string var = plot.GetVariableName();
 
     if( strncmp(var.c_str(), "operators/Poincare/",
                 strlen("operators/Poincare/")) == 0)

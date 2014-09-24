@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Reflect_GetEngineInfo()
 {
+    ReflectEnginePluginInfo::InitializeGlobalObjects();
     return new ReflectEnginePluginInfo;
 }
 

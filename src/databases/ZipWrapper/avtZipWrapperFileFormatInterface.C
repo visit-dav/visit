@@ -338,12 +338,12 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
         else
         {
             // Check a few places. /usr/tmp does not exist on Mac.
-            VisItStat_t s;
+            FileFunctions::VisItStat_t s;
             static const char *possibleDirs[] = {"/usr/tmp", "/var/tmp"};
             bool foundDir = false;
             for(int i = 0; i < 2; ++i)
             {
-                if(VisItStat(possibleDirs[i], &s) == 0)
+                if(FileFunctions::VisItStat(possibleDirs[i], &s) == 0)
                 {
                     bool isDir = S_ISDIR(s.st_mode);
                     if(isDir)
@@ -498,7 +498,7 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     // Make sure the necessary real plugin is loaded.
     //
     string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(gz|bz|bz2|zip)$>");
-    const char *bname = StringHelpers::Basename(inputFileList[0][0].c_str());
+    const char *bname = FileFunctions::Basename(inputFileList[0][0].c_str());
     string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
 
     // Save the pointer to the plugin manager.
@@ -716,7 +716,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
 
     string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(gz|bz|bz2|zip)$>");
-    const char *bname = StringHelpers::Basename(compressedName.c_str());
+    const char *bname = FileFunctions::Basename(compressedName.c_str());
     string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
 
     string dcmd = decompCmd;
@@ -745,8 +745,8 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     //
     off_t tsize = 0;
     int ntries = 199; // must be odd
-    VisItStat_t statbuf;
-    int statval = VisItStat(string(dcname+".lck").c_str(), &statbuf);
+    FileFunctions::VisItStat_t statbuf;
+    int statval = FileFunctions::VisItStat(string(dcname+".lck"), &statbuf);
     if (statval == -1 && errno == ENOENT)
         ntries = 0;
 
@@ -758,7 +758,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 
         // Stat the target so we can monitor its size
         errno = 0;
-        statval = VisItStat(dcname.c_str(), &statbuf);
+        statval = FileFunctions::VisItStat(dcname, &statbuf);
         if (statval == 0)
         {
             if (statbuf.st_size > tsize)
@@ -773,7 +773,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 
         // Stat the lock. If its gone, we know the previos decomp command completed.
         errno = 0;
-        statval = VisItStat(string(dcname+".lck").c_str(), &statbuf);
+        statval = FileFunctions::VisItStat(string(dcname+".lck").c_str(), &statbuf);
         if (statval == -1 && errno == ENOENT)
             ntries = 0;
     }

@@ -86,7 +86,7 @@ class FiveFoldTetSubdivisionGUIPluginInfo : public virtual GUIOperatorPluginInfo
         QvisNotepadArea *notepad);
 };
 
-class FiveFoldTetSubdivisionViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FiveFoldTetSubdivisionCommonPluginInfo
+class FiveFoldTetSubdivisionViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual FiveFoldTetSubdivisionCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class FiveFoldTetSubdivisionViewerPluginInfo : public virtual ViewerOperatorPlug
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class FiveFoldTetSubdivisionViewerPluginInfo : public virtual ViewerOperatorPlug
     static FiveFoldTetSubdivisionAttributes *clientAtts;
 };
 
-class FiveFoldTetSubdivisionEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FiveFoldTetSubdivisionCommonPluginInfo
+class FiveFoldTetSubdivisionViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual FiveFoldTetSubdivisionViewerEnginePluginInfo
+{
+  public:
+};
+
+class FiveFoldTetSubdivisionEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual FiveFoldTetSubdivisionViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

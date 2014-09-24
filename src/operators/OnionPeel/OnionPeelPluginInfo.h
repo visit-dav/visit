@@ -87,7 +87,7 @@ class OnionPeelGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virt
     virtual const char **XPMIconData() const;
 };
 
-class OnionPeelViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual OnionPeelCommonPluginInfo
+class OnionPeelViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual OnionPeelCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class OnionPeelViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publi
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class OnionPeelViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publi
     static OnionPeelAttributes *clientAtts;
 };
 
-class OnionPeelEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual OnionPeelCommonPluginInfo
+class OnionPeelViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual OnionPeelViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class OnionPeelEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual OnionPeelViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

@@ -197,11 +197,11 @@ CurveAttributes::ProcessOldVersions(DataNode *parentNode,
 }
 
 Target: xml2info
-Function: CurveViewerPluginInfo::InitializeGlobalObjects
+Function: CurveViewerEnginePluginInfo::InitializeGlobalObjects
 Declaration: static void InitializeGlobalObjects();
 Definition:
 // ****************************************************************************
-//  Method:  CurveViewerPluginInfo::InitializeGlobalObjects
+//  Method:  CurveViewerEnginePluginInfo::InitializeGlobalObjects
 //
 //  Purpose:
 //    Initialize the plot atts.
@@ -216,18 +216,18 @@ Definition:
 // ****************************************************************************
 static int colorIndex;
 void
-CurveViewerPluginInfo::InitializeGlobalObjects()
+CurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
     colorIndex = 0;
-    CurveViewerPluginInfo::clientAtts  = new CurveAttributes;
-    CurveViewerPluginInfo::defaultAtts = new CurveAttributes;
+    CurveViewerEnginePluginInfo::clientAtts  = new CurveAttributes;
+    CurveViewerEnginePluginInfo::defaultAtts = new CurveAttributes;
 }
 
-Function: CurveViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+Function: CurveViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
 // ****************************************************************************
-//  Method: CurveViewerPluginInfo::InitializePlotAtts
+//  Method: CurveViewerEnginePluginInfo::InitializePlotAtts
 //
 //  Purpose:
 //    Initialize the plot attributes to the default attributes.
@@ -247,18 +247,18 @@ Definition:
 // ****************************************************************************
 
 void
-CurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const ViewerPlot *)
+CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &)
 {
     *(CurveAttributes*)atts = *defaultAtts;
     SetColor(atts);
 }
 
-Function: CurveViewerPluginInfo::SetColor
+Function: CurveViewerEnginePluginInfo::SetColor
 Declaration: void SetColor(AttributeSubject *);
 Definition:
 // ****************************************************************************
-//  Method: CurveViewerPluginInfo::SetColor
+//  Method: CurveViewerEnginePluginInfo::SetColor
 //
 //  Purpose:
 //    Sets the color if the CycleColors att is set to true. 
@@ -281,7 +281,7 @@ Definition:
 #include <avtColorTables.h>
 
 void
-CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
+CurveViewerEnginePluginInfo::SetColor(AttributeSubject *atts)
 {
     CurveAttributes *curveAtts = (CurveAttributes *)atts;
 
@@ -322,11 +322,11 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
     }
 }
 
-Function: CurveViewerPluginInfo::PermitsCurveViewScaling
+Function: CurveViewerEnginePluginInfo::PermitsCurveViewScaling
 Declaration: virtual bool PermitsCurveViewScaling() const;
 Definition:
 bool
-CurveViewerPluginInfo::PermitsCurveViewScaling() const
+CurveViewerEnginePluginInfo::PermitsCurveViewScaling() const
 {
     return true;
 }

@@ -80,20 +80,20 @@ class TopologyCommonPluginInfo : public virtual CommonPlotPluginInfo, public vir
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class TopologyGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual TopologyCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class TopologyViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual TopologyCommonPluginInfo
+class TopologyViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual TopologyCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class TopologyViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static TopologyAttributes *defaultAtts;
     static TopologyAttributes *clientAtts;
 };
 
-class TopologyEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual TopologyCommonPluginInfo
+class TopologyViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual TopologyViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class TopologyEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual TopologyViewerEnginePluginInfo
+{
+  public:
 };
 
 class TopologyScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual TopologyCommonPluginInfo

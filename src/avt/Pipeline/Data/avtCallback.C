@@ -57,9 +57,6 @@ void                         *avtCallback::warningCallbackArgs = NULL;
 ResetTimeoutCallback          avtCallback::resetTimeoutCallback = NULL;
 void                         *avtCallback::resetTimeoutCallbackArgs = NULL;
 
-ImageCallback                 avtCallback::imageCallback = NULL;
-void                         *avtCallback::imageCallbackArgs = NULL;
-
 WindowAttributes              avtCallback::windowAtts;
 LightList                     avtCallback::lightList;
 
@@ -69,10 +66,6 @@ bool                          avtCallback::useManta = false;
 bool                          avtCallback::safeMode = false;
 
 GlobalAttributes::BackendType avtCallback::backendType = GlobalAttributes::VTK;
-
-UpdatePlotAttributesCallback  avtCallback::updatePlotAttributesCallback = NULL;
-void                         *avtCallback::updatePlotAttributesCallbackArgs 
-                                                                        = NULL;
 
 GetDatabaseCallback           avtCallback::getDatabaseCallback = NULL;
 void                         *avtCallback::getDatabaseCallbackArgs = NULL; 
@@ -194,58 +187,6 @@ avtCallback::ResetTimeout(int secs)
 
 
 // ****************************************************************************
-//  Method: avtCallback::RegisterImageCallback
-//
-//  Purpose:
-//      Registers a callback that allows a plot to get a new image.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 20, 2001
-//
-// ****************************************************************************
-
-void
-avtCallback::RegisterImageCallback(ImageCallback ic, void *ica)
-{
-    imageCallback     = ic;
-    imageCallbackArgs = ica;
-}
-
-
-// ****************************************************************************
-//  Method: avtCallback::GetImage
-//
-//  Purpose:
-//      Goes through the image callback to get the new image.
-//
-//  Arguments:
-//      index   The plot index.
-//      dob     A place to put the data object.
-//
-//  Returns:    A void * representation of the image.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 20, 2001
-//
-// ****************************************************************************
-
-void
-avtCallback::GetImage(int index, avtDataObject_p &dob)
-{
-    if (imageCallback != NULL)
-    {
-        imageCallback(imageCallbackArgs, index, dob);
-    }
-    else
-    {
-        debug1 << "Would like to have gotten a new image, but no callback "
-               << "was registered." << endl;
-        dob = NULL;
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtCallback::SetBackendType
 //
 //  Purpose:
@@ -350,54 +291,6 @@ avtCallback::SetCurrentLightList(const LightList &l)
 {
     lightList = l;
 }
-
-
-// ****************************************************************************
-//  Method: avtCallback::RegisterUpdatePlotAttributesCallback
-//
-//  Purpose:
-//      Registers a callback that can be called to update plot attributes.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 30, 2001
-//
-// ****************************************************************************
-
-void
-avtCallback::RegisterUpdatePlotAttributesCallback(
-                             UpdatePlotAttributesCallback upac, void *upacArgs)
-{
-    updatePlotAttributesCallback     = upac;
-    updatePlotAttributesCallbackArgs = upacArgs;
-}
-
-
-// ****************************************************************************
-//  Method: avtCallback::UpdatePlotAttributes
-//
-//  Purpose:
-//      Registers a callback that can be called to update plot attributes.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 30, 2001
-//
-// ****************************************************************************
-
-void
-avtCallback::UpdatePlotAttributes(const string &str, int index,
-                                  AttributeSubject *atts)
-{
-    if (updatePlotAttributesCallback == NULL)
-    {
-        debug1 << "Unable to update plot attributes since no callback has "
-               << "been registered." << endl;
-        return;
-    }
-
-    updatePlotAttributesCallback(updatePlotAttributesCallbackArgs, str, 
-                                 index, atts);
-}
-
 
 // ****************************************************************************
 //  Method: avtCallback::RegisterGetDatabaseCallback

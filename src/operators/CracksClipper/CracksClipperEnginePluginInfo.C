@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* CracksClipper_GetEngineInfo()
 {
+    CracksClipperEnginePluginInfo::InitializeGlobalObjects();
     return new CracksClipperEnginePluginInfo;
 }
 

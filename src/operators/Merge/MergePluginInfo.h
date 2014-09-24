@@ -86,7 +86,7 @@ class MergeGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual 
         QvisNotepadArea *notepad);
 };
 
-class MergeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual MergeCommonPluginInfo
+class MergeViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual MergeCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class MergeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vi
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class MergeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vi
     static MergeOperatorAttributes *clientAtts;
 };
 
-class MergeEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual MergeCommonPluginInfo
+class MergeViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual MergeViewerEnginePluginInfo
+{
+  public:
+};
+
+class MergeEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual MergeViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

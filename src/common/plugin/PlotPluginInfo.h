@@ -58,6 +58,7 @@ class QWidget;
 class avtDatabaseMetaData;
 class ExpressionList;
 class avtPlot;
+class avtPlotMetaData;
 class ViewerPlot;
 
 // ****************************************************************************
@@ -163,13 +164,13 @@ class PLUGIN_API CommonPlotPluginInfo : public virtual GeneralPlotPluginInfo
     virtual AttributeSubject *AllocAttributes() = 0;
     virtual void CopyAttributes(AttributeSubject *to,
                                 AttributeSubject *from) = 0;
+    virtual int GetVariableTypes() const = 0;
 };
 
 class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
 {
   public:
     virtual QString *GetMenuName() const = 0;
-    virtual int GetVariableTypes() const = 0;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad) = 0;
@@ -182,9 +183,9 @@ class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual const char **XPMIconData() const { return 0; }
 };
 
-class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
+class PLUGIN_API ViewerEnginePlotPluginInfo : public virtual CommonPlotPluginInfo
 {
-  public:
+public:
     virtual AttributeSubject *GetClientAtts() = 0;
     virtual AttributeSubject *GetDefaultAtts() = 0;
     virtual void SetClientAtts(AttributeSubject *atts) = 0;
@@ -196,18 +197,23 @@ class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual bool PermitsCurveViewScaling() const { return false; }
     virtual bool Permits2DViewScaling() const { return true; }
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *) = 0;
+    virtual void InitializePlotAtts(AttributeSubject *atts,
+                                    const avtPlotMetaData &) = 0;
     virtual void ReInitializePlotAtts(AttributeSubject *atts, 
-        const ViewerPlot *) { ; }
+                                      const avtPlotMetaData &) { ; }
 
     virtual void ResetPlotAtts(AttributeSubject *atts,
-        const ViewerPlot *) { ; }
+                               const avtPlotMetaData &) { ; }
 
-    virtual QString *GetMenuName() const = 0;
+    virtual const char *GetMenuName() const = 0;
+};
+
+class PLUGIN_API ViewerPlotPluginInfo : public virtual ViewerEnginePlotPluginInfo
+{
+public:
     virtual const char **XPMIconData() const { return 0; }
-    virtual int GetVariableTypes() const = 0;
 
-    virtual void *AlternateDisplayCreate(ViewerPlot *plot) { return 0; }
+    virtual void *AlternateDisplayCreate(ViewerPlot *) { return 0; }
     virtual void AlternateDisplayDestroy(void *dpy) {; }
     virtual void AlternateDisplayClear(void *dpy) {; }
     virtual void AlternateDisplayHide(void *dpy) {; }
@@ -216,10 +222,9 @@ class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual void AlternateDisplayDeIconify(void *dpy) {; }
 };
 
-class PLUGIN_API EnginePlotPluginInfo : public virtual CommonPlotPluginInfo
+class PLUGIN_API EnginePlotPluginInfo : public virtual ViewerEnginePlotPluginInfo
 {
-  public:
-    virtual avtPlot *AllocAvtPlot() = 0;
+public:
 };
 
 class PLUGIN_API ScriptingPlotPluginInfo : public virtual CommonPlotPluginInfo

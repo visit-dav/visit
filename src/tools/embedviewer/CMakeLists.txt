@@ -87,7 +87,9 @@ ${VISIT_SOURCE_DIR}/engine/proxy
 ${VISIT_SOURCE_DIR}/engine/rpc
 ${VISIT_SOURCE_DIR}/mdserver/proxy
 ${VISIT_SOURCE_DIR}/mdserver/rpc
+${VISIT_SOURCE_DIR}/viewer/core
 ${VISIT_SOURCE_DIR}/viewer/main
+${VISIT_SOURCE_DIR}/viewer/main/ui
 ${VISIT_SOURCE_DIR}/viewer/proxy
 ${VISIT_SOURCE_DIR}/viewer/rpc
 ${VISIT_SOURCE_DIR}/vtkqt

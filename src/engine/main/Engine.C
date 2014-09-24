@@ -135,12 +135,7 @@ const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 #include <Xfer.h>
 #endif
 
-// Static data
-Engine *Engine::instance = NULL;
-
 // Static methods
-static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
-                                    avtDataObjectString &);
 static void ResetEngineTimeout(void *p, int secs);
 
 // message tag for interrupt messages used in static abort callback function
@@ -361,7 +356,7 @@ protected:
 //
 // ****************************************************************************
 
-Engine::Engine() : viewerArgs(), destinationFormat(), rpcExecutors()
+Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors()
 {
     viewer = NULL;
     viewerP = NULL;
@@ -485,25 +480,6 @@ Engine::~Engine()
     // We can't seem to do that reliably on Linux once plugins have been
     // unloaded.
     delete netmgr;
-}
-
-// ****************************************************************************
-//  Method:  Engine::Instance
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    July 10, 2003
-//
-//  Modfications:
-//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
-//    Added timer
-// ****************************************************************************
-Engine *Engine::Instance()
-{
-    int instanceTimer = visitTimer->StartTimer();
-    if (!instance)
-        instance = new Engine;
-    visitTimer->StopTimer(instanceTimer, "Instancing the engine");
-    return instance;
 }
 
 // ****************************************************************************
@@ -851,6 +827,11 @@ Engine::InitializeCompute()
 #endif
 
     //
+    // Create the plugin managers.
+    //
+    CreatePluginManagers();
+
+    //
     // Initialize the plugin managers.
     //
     int pluginsTotal = visitTimer->StartTimer();
@@ -933,6 +914,29 @@ Engine::InitializeCompute()
     avtOriginatingSource::RegisterInitializeProgressCallback(
                                        Engine::EngineInitializeProgressCallback, NULL);
     visitTimer->StopTimer(setupTimer, "Initializing compute");
+}
+
+// ****************************************************************************
+// Method: Engine::CreatePluginManagers
+//
+// Purpose:
+//   Create the plugin managers and set them into the network manager.
+//
+// Note:       This method is separated out so we can override it in subclasses.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:20:21 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+Engine::CreatePluginManagers()
+{
+    netmgr->SetPlotPluginManager(new PlotPluginManager());
+    netmgr->SetOperatorPluginManager(new OperatorPluginManager());
+    netmgr->SetDatabasePluginManager(new DatabasePluginManager());
 }
 
 // ****************************************************************************
@@ -1121,39 +1125,39 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     enginestate->SetupComponentRPCs(xfer);
 
     // Create an object to implement the RPCs
-    rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
-    rpcExecutors.push_back(new RPCExecutor<KeepAliveRPC>(keepAliveRPC));
-    rpcExecutors.push_back(new RPCExecutor<ReadRPC>(&enginestate->GetReadRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ApplyOperatorRPC>(&enginestate->GetApplyOperatorRPC()));
-    rpcExecutors.push_back(new RPCExecutor<PrepareOperatorRPC>(&enginestate->GetApplyOperatorRPC().GetPrepareOperatorRPC()));
-    rpcExecutors.push_back(new RPCExecutor<MakePlotRPC>(&enginestate->GetMakePlotRPC()));
-    rpcExecutors.push_back(new RPCExecutor<PreparePlotRPC>(&enginestate->GetMakePlotRPC().GetPreparePlotRPC()));
-    rpcExecutors.push_back(new RPCExecutor<UseNetworkRPC>(&enginestate->GetUseNetworkRPC()));
-    rpcExecutors.push_back(new RPCExecutor<UpdatePlotAttsRPC>(&enginestate->GetUpdatePlotAttsRPC()));
-    rpcExecutors.push_back(new RPCExecutor<PrepareUpdatePlotAttsRPC>(&enginestate->GetUpdatePlotAttsRPC().GetPrepareUpdatePlotAttsRPC()));
-    rpcExecutors.push_back(new RPCExecutor<PickRPC>(&enginestate->GetPickRPC()));
-    rpcExecutors.push_back(new RPCExecutor<StartPickRPC>(&enginestate->GetStartPickRPC()));
-    rpcExecutors.push_back(new RPCExecutor<StartQueryRPC>(&enginestate->GetStartQueryRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ExecuteRPC>(&enginestate->GetExecuteRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ClearCacheRPC>(&enginestate->GetClearCacheRPC()));
-    rpcExecutors.push_back(new RPCExecutor<QueryRPC>(&enginestate->GetQueryRPC()));
-    rpcExecutors.push_back(new RPCExecutor<QueryParametersRPC>(&enginestate->GetQueryParametersRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ReleaseDataRPC>(&enginestate->GetReleaseDataRPC()));
-    rpcExecutors.push_back(new RPCExecutor<OpenDatabaseRPC>(&enginestate->GetOpenDatabaseRPC()));
-    rpcExecutors.push_back(new RPCExecutor<DefineVirtualDatabaseRPC>(&enginestate->GetDefineVirtualDatabaseRPC()));
-    rpcExecutors.push_back(new RPCExecutor<RenderRPC>(&enginestate->GetRenderRPC()));
-    rpcExecutors.push_back(new RPCExecutor<SetWinAnnotAttsRPC>(&enginestate->GetSetWinAnnotAttsRPC()));
-    rpcExecutors.push_back(new RPCExecutor<CloneNetworkRPC>(&enginestate->GetCloneNetworkRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ProcInfoRPC>(&enginestate->GetProcInfoRPC()));
-    rpcExecutors.push_back(new RPCExecutor<SimulationCommandRPC>(&enginestate->GetSimulationCommandRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ExportDatabaseRPC>(&enginestate->GetExportDatabaseRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ConstructDataBinningRPC>(&enginestate->GetConstructDataBinningRPC()));
-    rpcExecutors.push_back(new RPCExecutor<NamedSelectionRPC>(&enginestate->GetNamedSelectionRPC()));
-    rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(&enginestate->GetSetEFileOpenOptionsRPC()));
-    rpcExecutors.push_back(new RPCExecutor<SetPrecisionTypeRPC>(&enginestate->GetSetPrecisionTypeRPC()));
-    rpcExecutors.push_back(new RPCExecutor<SetBackendTypeRPC>(&enginestate->GetSetBackendTypeRPC()));
-    rpcExecutors.push_back(new RPCExecutor<EnginePropertiesRPC>(&enginestate->GetEnginePropertiesRPC()));
-    rpcExecutors.push_back(new RPCExecutor<LaunchRPC>(&enginestate->GetLaunchRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<QuitRPC>(quitRPC));
+    rpcExecutors.push_back(new EngineRPCExecutor<KeepAliveRPC>(keepAliveRPC));
+    rpcExecutors.push_back(new EngineRPCExecutor<ReadRPC>(&enginestate->GetReadRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<ApplyOperatorRPC>(&enginestate->GetApplyOperatorRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<PrepareOperatorRPC>(&enginestate->GetApplyOperatorRPC().GetPrepareOperatorRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<MakePlotRPC>(&enginestate->GetMakePlotRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<PreparePlotRPC>(&enginestate->GetMakePlotRPC().GetPreparePlotRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<UseNetworkRPC>(&enginestate->GetUseNetworkRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<UpdatePlotAttsRPC>(&enginestate->GetUpdatePlotAttsRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<PrepareUpdatePlotAttsRPC>(&enginestate->GetUpdatePlotAttsRPC().GetPrepareUpdatePlotAttsRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<PickRPC>(&enginestate->GetPickRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<StartPickRPC>(&enginestate->GetStartPickRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<StartQueryRPC>(&enginestate->GetStartQueryRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<ExecuteRPC>(&enginestate->GetExecuteRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<ClearCacheRPC>(&enginestate->GetClearCacheRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<QueryRPC>(&enginestate->GetQueryRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<QueryParametersRPC>(&enginestate->GetQueryParametersRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<ReleaseDataRPC>(&enginestate->GetReleaseDataRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<OpenDatabaseRPC>(&enginestate->GetOpenDatabaseRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<DefineVirtualDatabaseRPC>(&enginestate->GetDefineVirtualDatabaseRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<RenderRPC>(&enginestate->GetRenderRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<SetWinAnnotAttsRPC>(&enginestate->GetSetWinAnnotAttsRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<CloneNetworkRPC>(&enginestate->GetCloneNetworkRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<ProcInfoRPC>(&enginestate->GetProcInfoRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<SimulationCommandRPC>(&enginestate->GetSimulationCommandRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<ExportDatabaseRPC>(&enginestate->GetExportDatabaseRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<ConstructDataBinningRPC>(&enginestate->GetConstructDataBinningRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<NamedSelectionRPC>(&enginestate->GetNamedSelectionRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<SetEFileOpenOptionsRPC>(&enginestate->GetSetEFileOpenOptionsRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<SetPrecisionTypeRPC>(&enginestate->GetSetPrecisionTypeRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<SetBackendTypeRPC>(&enginestate->GetSetBackendTypeRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<EnginePropertiesRPC>(&enginestate->GetEnginePropertiesRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<LaunchRPC>(&enginestate->GetLaunchRPC()));
   
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());
@@ -2308,7 +2312,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
 void
 Engine::AlarmHandler(int signal)
 {
-    Engine *e = Engine::Instance();
+    Engine *e = Engine::GetEngine();
     if (!e->alarmEnabled)
         return;
     
@@ -2384,14 +2388,16 @@ Engine::NewHandler(void)
 //  Programmer: Hank Childs
 //  Creation:   March 19, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Mon Sep 22 21:23:23 PDT 2014
+//    I made be a method and it only writes the data object string.
+//
 // ****************************************************************************
 
-static void
-WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
-                        avtDataObjectString &do_str)
+void
+Engine::WriteByteStreamToSocket(avtDataObjectString &do_str)
 {
     int totalSize = do_str.GetTotalLength();
-    rpc->SendReply(totalSize);
     int writeData = visitTimer->StartTimer();
     int nStrings = do_str.GetNStrings();
     if (DebugStream::Level5()) 
@@ -2653,13 +2659,18 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
 //
 //    Mark C. Miller, Tue Jun 30 18:04:18 PDT 2009
 //    Added args for reducedCellCount, scalableThreshold and sendDataAnyway.
+//
+//    Brad Whitlock, Mon Sep 22 21:24:14 PDT 2014
+//    Pass in status callback instead of an RPC.
+//
 // ****************************************************************************
 
 static void
 ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
     int lenTag, int strTag,
     int *reducedCellCount, int scalableThreshold,
-    bool sendDataAnyway, NonBlockingRPC *rpc)
+    bool sendDataAnyway, 
+    void (*statusCB)(int,const char*,void*), void *statusCBData)
 {
     int groupSize = 1;
     int myRank, commSize;
@@ -2703,12 +2714,10 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
         //
         // Only the root will have non-zero rpc.
         //
-        if (rpc)
+        if (statusCB != NULL)
         {
-            rpc->SendStatus((int) (100. * float(n)/float(ntree)),
-                rpc->GetCurStageNum(),
-                "Synchronizing",
-                rpc->GetMaxStageNum());
+            int percent = (int) (100. * float(n)/float(ntree));
+            (*statusCB)(percent, "Synchronizing", statusCBData);
         }
  
         n++;
@@ -2718,10 +2727,10 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 #endif
 
 // ****************************************************************************
-// Function: WriteData
+// Function: GatherData
 //
 // Purpose:
-//   Writes a vtkDataSet object back to the viewer
+//   Gathers vtkDataSets into a data object string to send to the viewer.
 //
 // Notes:      
 //
@@ -2899,14 +2908,41 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Brad Whitlock, Mon Sep 22 15:36:55 PDT 2014
+//    We don't want to write the data here since we may have other purposes for
+//    it besides writing. Instead, pass a data writing callback to handle the
+//    write. We don't pass back the data object string because in parallel, its
+//    source data will go out of scope and cause the write to be invalid.
+//
 // ****************************************************************************
-void
-Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
-    bool useCompression,
-    bool respondWithNull, int scalableThreshold, bool* scalableThresholdExceeded,
-    int currentTotalGlobalCellCount, float cellCountMultiplier,
-    int* currentNetworkGlobalCellCount)
+
+bool
+Engine::GatherData(avtDataObjectWriter_p &writer,
+    bool  useCompression,
+    bool  respondWithNull, 
+    int   scalableThreshold, 
+    int   currentTotalGlobalCellCount, 
+    float cellCountMultiplier,
+    void (*statusCB)(int,const char*,void*),
+    void  *statusCBData,
+    void (*writeCB)(avtDataObjectString &, void*),
+    void *writeCBData,
+    // outputs
+    std::string         &errMessage,
+    bool               *scalableThresholdExceeded,
+    int                *currentNetworkGlobalCellCount)
 {
+    bool retval = true;
+    errMessage = std::string();
+
+    debug5 << "Engine::GatherData:" << endl
+           << "  writer->MustMergeParallelStreams()=" << (writer->MustMergeParallelStreams()?"true":"false")<< endl
+           << "  useCompression=" << (useCompression?"true":"false")<< endl
+           << "  respondWithNull=" << (respondWithNull?"true":"false")<< endl
+           << "  scalableThreshold="<< scalableThreshold<< endl
+           << "  currentTotalGlobalCellCount=" << currentTotalGlobalCellCount<< endl
+           << "  cellCountMultiplier=" << cellCountMultiplier
+           << endl;
 
 #ifdef PARALLEL
 
@@ -2931,10 +2967,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
         int collectData = visitTimer->StartTimer();
 
         // Send a second stage for the RPC.
-        rpc->SendStatus(0,
-                        rpc->GetCurStageNum(),
-                        "Synchronizing",
-                        rpc->GetMaxStageNum());
+        if(statusCB != NULL)
+            (*statusCB)(0, "Synchronizing", statusCBData);
 
         avtDataObject_p ui_dob = writer->GetInput();
 
@@ -2967,7 +3001,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
             int reducedCurrentCellCount = currentCellCount;
             ParallelMergeClonedWriterOutputs(ui_dob, mpiSwapLenTag, mpiSwapStrTag,
-                &reducedCurrentCellCount, scalableThreshold, sendDataAnyway, rpc);
+                &reducedCurrentCellCount, scalableThreshold, sendDataAnyway, 
+                statusCB, statusCBData);
 
             if (currentTotalGlobalCellCount == INT_MAX ||
                 currentCellCount == INT_MAX ||
@@ -3022,19 +3057,18 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             networkwriter->SetDestinationFormat(destinationFormat);
             networkwriter->SetUseCompression(useCompression);
             networkwriter->SetInput(ui_dob);
-    
-            avtDataObjectString do_str;
+
+            avtDataObjectString do_str;    
             networkwriter->Write(do_str);
-    
-            rpc->SendStatus(100,
-                            rpc->GetCurStageNum(),
-                            "Synchronizing",
-                            rpc->GetMaxStageNum());
-    
+
+            if(statusCB != NULL)
+                (*statusCB)(100, "Synchronizing", statusCBData);
+
             visitTimer->StopTimer(serializeData, "Serializing data for writer");
 
-            WriteByteStreamToSocket(rpc, vtkConnection, do_str);
-
+            // write the data.
+            if(writeCB != NULL)
+                (*writeCB)(do_str, writeCBData);
         }
         else
         {
@@ -3042,7 +3076,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             {
                 debug1 << "Sending error: " << v.GetErrorMessage() << std::endl;
             }
-            rpc->SendError(v.GetErrorMessage());
+
+            errMessage = v.GetErrorMessage();
+            retval = false;
         }
 
         const char *descStr = "Collecting data and writing it to viewer";
@@ -3065,7 +3101,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             avtDataObject_p dob = writer->GetInput();
             dob = dob->Clone();
             ParallelMergeClonedWriterOutputs(dob, mpiSwapLenTag, mpiSwapStrTag,
-                &reducedCurrentCellCount, scalableThreshold, sendDataAnyway, 0);
+                &reducedCurrentCellCount, scalableThreshold, sendDataAnyway, 
+                NULL, NULL);
 
             if (currentTotalGlobalCellCount == INT_MAX ||
                 numCells == INT_MAX ||
@@ -3122,28 +3159,29 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
         }
 
         // Send a second stage for the RPC.
-        rpc->SendStatus(0,
-                        rpc->GetCurStageNum(),
-                        "Transferring Data Set",
-                        rpc->GetMaxStageNum());
+        if(statusCB != NULL)
+            (*statusCB)(0, "Transferring Data Set", statusCBData);
 
         writer_to_use->SetDestinationFormat(destinationFormat);
         writer_to_use->SetUseCompression(useCompression);
-        avtDataObjectString  do_str;
+        avtDataObjectString do_str;
         writer_to_use->Write(do_str);
 
-        rpc->SendStatus(100,
-                        rpc->GetCurStageNum(),
-                        "Transferring Data Set",
-                        rpc->GetMaxStageNum());
+        if(statusCB != NULL)
+            (*statusCB)(100, "Transferring Data Set", statusCBData);
 
-        WriteByteStreamToSocket(rpc, vtkConnection, do_str);
+        // write the data.
+        if(writeCB != NULL)
+            (*writeCB)(do_str, writeCBData);
     }
     else
     {
-        rpc->SendError(v.GetErrorMessage());
+        errMessage = v.GetErrorMessage();
+        retval = false;
     }
 #endif
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -3754,8 +3792,7 @@ Engine::Error(const std::string &msg)
 void
 Engine::DisconnectSimulation()
 {
-    delete instance;
-    instance = NULL;
+    Engine::DeleteEngine();
 }
 
 // ****************************************************************************
@@ -4159,38 +4196,6 @@ ResetEngineTimeout(void *p, int secs)
         }
     }
     e->ResetTimeout(secs);
-}
-
-// ****************************************************************************
-// Method: Engine::SaveWindow
-//
-// Purpose: 
-//   Tells the network manager to render and save a window.
-//
-// Arguments:
-//   ids        : The ids of the networks that we want to save.
-//   filename   : The filename in which to save an image.
-//   imageWidth : The width of the image to save.
-//   imageHeight: The height of the image to save.
-//   fmt        : The file format to use for the saved image.
-//
-// Returns:    True if the image was saved; false otherwise.
-//
-// Note:       If imageWidth and imageHeight are <=0 then they are ignored and
-//             the previous image resolution is used.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar  2 16:14:07 PST 2009
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-Engine::SaveWindow(const intVector &ids, const std::string &filename, 
-    int imageWidth, int imageHeight, SaveWindowAttributes::FileFormat fmt)
-{
-    return netmgr->SaveWindow(ids, filename, imageWidth, imageHeight, fmt);
 }
 
 // ****************************************************************************

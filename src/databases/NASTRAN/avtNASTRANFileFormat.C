@@ -372,14 +372,14 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     int nCells = 100; (void) nCells;
     if(nLines == ALL_LINES)
     {
-        VisItStat_t statbuf;
-        VisItStat(name, &statbuf);
-        VisItOff_t fileSize = statbuf.st_size;
+        FileFunctions::VisItStat_t statbuf;
+        FileFunctions::VisItStat(name, &statbuf);
+        FileFunctions::VisItOff_t fileSize = statbuf.st_size;
 
         // Make a guess about the number of cells and points based on
         // the size of the file.
-        nPoints = fileSize / (VisItOff_t) 130;
-        nCells  = fileSize / (VisItOff_t) 150;
+        nPoints = fileSize / (FileFunctions::VisItOff_t) 130;
+        nCells  = fileSize / (FileFunctions::VisItOff_t) 150;
     }
 
 #if !defined(MDSERVER)

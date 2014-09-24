@@ -144,22 +144,22 @@ IF(WIN32)
 SET(QTSSH_SOURCES
 qtssh.cpp
 qtsshmain.c
-${VISIT_SOURCE_DIR}/viewer/main/VisItChangeUsernameWindow.C
-${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.C
+${VISIT_SOURCE_DIR}/viewer/main/ui/VisItChangeUsernameWindow.C
+${VISIT_SOURCE_DIR}/viewer/main/ui/VisItPasswordWindow.C
 )
 ELSE(WIN32)
 SET(QTSSH_SOURCES
 qtssh.cpp
 uxqtsshmain.c
-${VISIT_SOURCE_DIR}/viewer/main/VisItChangeUsernameWindow.C
-${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.C
+${VISIT_SOURCE_DIR}/viewer/main/ui/VisItChangeUsernameWindow.C
+${VISIT_SOURCE_DIR}/viewer/main/ui/VisItPasswordWindow.C
 )
 ENDIF(WIN32)
 
 # The subset of the sources that have Q_OBJECT in their header.
 SET(QTSSH_MOC_SOURCES
-${VISIT_SOURCE_DIR}/viewer/main/VisItChangeUsernameWindow.h
-${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.h
+${VISIT_SOURCE_DIR}/viewer/main/ui/VisItChangeUsernameWindow.h
+${VISIT_SOURCE_DIR}/viewer/main/ui/VisItPasswordWindow.h
 )
 QT_WRAP_CPP(qtssh QTSSH_SOURCES ${QTSSH_MOC_SOURCES})
 
@@ -168,7 +168,7 @@ INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/windows
 ${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/viewer/main
+${VISIT_SOURCE_DIR}/viewer/main/ui
 ${VISIT_COMMON_INCLUDES}
 ${QT_INCLUDE_DIR}
 ${QT_QTGUI_INCLUDE_DIR}
@@ -180,7 +180,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/charset
 ${CMAKE_CURRENT_SOURCE_DIR}/unix
 ${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/viewer/main
+${VISIT_SOURCE_DIR}/viewer/main/ui
 ${VISIT_COMMON_INCLUDES}
 ${QT_INCLUDE_DIR}
 ${QT_QTGUI_INCLUDE_DIR}

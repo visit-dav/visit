@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+  <Attribute name="ViewerProperties" purpose="Contain properties about the viewer" persistent="false" keyframe="false" exportAPI="VIEWERCORE_API" exportInclude="viewercore_exports.h">
+    <Field name="MasterProcess" label="Master process" type="bool">
+      true
+    </Field>
+    <Field name="nowin" label="No window" type="bool">
+      false
+    </Field>
+    <Field name="windowBorders" label="window borders" type="string">
+    </Field>
+    <Field name="windowShift" label="window shift" type="string">
+    </Field>
+    <Field name="windowPreShift" label="Window pre shift" type="string">
+    </Field>
+    <Field name="windowGeometry" label="Window geometry" type="string">
+    </Field>
+    <Field name="windowFullScreen" label="Window full screen" type="int">
+      0
+    </Field>
+    <Field name="windowSmall" label="Small window" type="bool">
+      false
+    </Field>
+    <Field name="noConfig" label="No configuration file" type="bool">
+      false
+    </Field>
+    <Field name="defaultStereoToOn" label="Default stereo to on" type="bool">
+      false
+    </Field>
+    <Field name="useWindowMetrics" label="Use window metrics" type="bool">
+      true
+    </Field>
+    <Field name="configurationFileName" label="Configuration file name" type="string">
+    </Field>
+    <Field name="applicationLocale" label="Application locale" type="string">
+      default
+    </Field>
+    <Field name="launchedByClient" label="Launched by client" type="bool">
+      false
+    </Field>
+    <Field name="suppressMessages" label="Suppress messages" type="bool">
+      false
+    </Field>
+    <Field name="numEngineRestarts" label="Number of engine restarts" type="int">
+      2
+    </Field>
+    <Field name="engineParallelArguments" label="Engine parallel command line arguments" type="stringVector">
+    </Field>
+    <Field name="assumedFormats" label="Assumed formats from command line" type="stringVector">
+    </Field>
+    <Field name="fallbackFormats" label="Fallback formats from command line" type="stringVector">
+    </Field>
+    <Field name="debugLevel" label="Debug level" type="int">
+       0
+    </Field>
+    <Field name="bufferDebug" label="Buffer debug logs" type="bool">
+       false
+    </Field>
+    <Field name="forceSSHTunneling" label="Force ssh tunneling" type="bool">
+       false
+    </Field>
+    <Field name="inExecute" label="In Execute" type="bool">
+       false
+    </Field>
+    <Field name="inLaunch" label="In Launch" type="bool">
+       false
+    </Field>
+  </Attribute>

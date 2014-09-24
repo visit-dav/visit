@@ -87,7 +87,7 @@ class IsosurfaceGUIPluginInfo : public virtual GUIOperatorPluginInfo, public vir
     virtual const char **XPMIconData() const;
 };
 
-class IsosurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual IsosurfaceCommonPluginInfo
+class IsosurfaceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual IsosurfaceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class IsosurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publ
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class IsosurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, publ
     static IsosurfaceAttributes *clientAtts;
 };
 
-class IsosurfaceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual IsosurfaceCommonPluginInfo
+class IsosurfaceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual IsosurfaceViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class IsosurfaceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual IsosurfaceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

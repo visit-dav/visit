@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Extrude_GetEngineInfo()
 {
+    ExtrudeEnginePluginInfo::InitializeGlobalObjects();
     return new ExtrudeEnginePluginInfo;
 }
 

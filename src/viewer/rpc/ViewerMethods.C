@@ -974,7 +974,8 @@ ViewerMethods::SetNamedSelectionAutoApply(bool val)
 // ****************************************************************************
 
 void
-ViewerMethods::UpdateNamedSelection(const std::string &selName, bool updatePlots)
+ViewerMethods::UpdateNamedSelection(const std::string &selName, bool updatePlots,
+    bool allowCaching)
 {
     //
     // Set the rpc type and arguments.
@@ -983,7 +984,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName, bool updatePlots
     state->GetViewerRPC()->SetStringArg1(selName);
     state->GetViewerRPC()->SetBoolFlag(false);
     state->GetViewerRPC()->SetIntArg1(updatePlots?1:0);
-    state->GetViewerRPC()->SetIntArg2(true);
+    state->GetViewerRPC()->SetIntArg2(allowCaching?1:0);
 
     //
     // Issue the RPC.

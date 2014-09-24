@@ -80,20 +80,20 @@ class PoincareCommonPluginInfo : public virtual CommonPlotPluginInfo, public vir
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class PoincareGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual PoincareCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class PoincareViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual PoincareCommonPluginInfo
+class PoincareViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual PoincareCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -103,21 +103,24 @@ class PoincareViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static PoincareAttributes *defaultAtts;
     static PoincareAttributes *clientAtts;
 };
 
-class PoincareEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual PoincareCommonPluginInfo
+class PoincareViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual PoincareViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class PoincareEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual PoincareViewerEnginePluginInfo
+{
+  public:
 };
 
 class PoincareScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual PoincareCommonPluginInfo

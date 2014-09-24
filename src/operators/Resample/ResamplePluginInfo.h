@@ -87,7 +87,7 @@ class ResampleGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtu
     virtual const char **XPMIconData() const;
 };
 
-class ResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ResampleCommonPluginInfo
+class ResampleViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ResampleCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class ResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class ResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     static ResampleAttributes *clientAtts;
 };
 
-class ResampleEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ResampleCommonPluginInfo
+class ResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual ResampleViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class ResampleEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ResampleViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

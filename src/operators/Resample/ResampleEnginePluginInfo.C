@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Resample_GetEngineInfo()
 {
+    ResampleEnginePluginInfo::InitializeGlobalObjects();
     return new ResampleEnginePluginInfo;
 }
 

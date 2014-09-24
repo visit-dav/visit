@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Stagger_GetEngineInfo()
 {
+    StaggerEnginePluginInfo::InitializeGlobalObjects();
     return new StaggerEnginePluginInfo;
 }
 

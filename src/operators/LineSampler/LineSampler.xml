@@ -239,9 +239,9 @@
       <Field name="channelListToroidalAngle" label="Toroidal angle" type="double">
         0.000000
       </Field>
-      <Function name="LineSamplerViewerPluginInfo::GetClientAtts1" user="false" member="true">
+      <Function name="LineSamplerViewerEnginePluginInfo::GetClientAtts1" user="false" member="true">
       </Function>
-      <Function name="LineSamplerViewerPluginInfo::GetClientAtts3" user="false" member="true">
+      <Function name="LineSamplerViewerEnginePluginInfo::GetClientAtts3" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

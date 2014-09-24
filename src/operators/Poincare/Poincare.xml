@@ -363,7 +363,7 @@
       </Function>
       <Function name="PoincareAttsRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="PoincareViewerPluginInfo::GetOperatorVarDescription" user="false" member="true">
+      <Function name="PoincareViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>
       <Include file="source" quoted="false">
         PlaneAttributes.h

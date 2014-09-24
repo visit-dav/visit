@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Merge_GetEngineInfo()
 {
+    MergeEnginePluginInfo::InitializeGlobalObjects();
     return new MergeEnginePluginInfo;
 }
 

@@ -87,7 +87,7 @@ class SliceGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual 
     virtual const char **XPMIconData() const;
 };
 
-class SliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SliceCommonPluginInfo
+class SliceViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual SliceCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -96,14 +96,11 @@ class SliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vi
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -111,7 +108,13 @@ class SliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public vi
     static SliceAttributes *clientAtts;
 };
 
-class SliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SliceCommonPluginInfo
+class SliceViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual SliceViewerEnginePluginInfo
+{
+  public:
+    virtual const char **XPMIconData() const;
+};
+
+class SliceEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual SliceViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();

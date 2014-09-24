@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Poincare_GetEngineInfo()
 {
+    PoincareEnginePluginInfo::InitializeGlobalObjects();
     return new PoincareEnginePluginInfo;
 }
 

@@ -245,7 +245,7 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Rename DDF to DataBinning.
 //
 // ****************************************************************************
-NetworkManager::NetworkManager(void) : virtualDatabases()
+NetworkManager::NetworkManager(void) : EngineBase(), virtualDatabases()
 {
     workingNet = NULL;
     loadBalancer = NULL;
@@ -259,9 +259,9 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     avtExpressionEvaluatorFilter::RegisterGetDataBinningCallback(
                                                   GetDataBinningCallbackBridge, this);
 
-    databasePlugins = new DatabasePluginManager;
-    operatorPlugins = new OperatorPluginManager;
-    plotPlugins = new PlotPluginManager;
+    databasePlugins = NULL;
+    operatorPlugins = NULL;
+    plotPlugins = NULL;
 }
 
 // ****************************************************************************
@@ -309,6 +309,77 @@ NetworkManager::~NetworkManager(void)
     delete plotPlugins;
 
     avtColorTables::Instance()->DeleteInstance();
+}
+
+// ****************************************************************************
+// Method: NetworkManager::SetDatabasePluginManager
+//
+// Purpose:
+//   Set the database plugin manager we'll use.
+//
+// Arguments:
+//   mgr : The new plugin manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:23:18 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::SetDatabasePluginManager(DatabasePluginManager *mgr)
+{
+    if(databasePlugins != NULL)
+        delete databasePlugins;
+    databasePlugins = mgr;
+}
+// ****************************************************************************
+// Method: NetworkManager::SetPlotPluginManager
+//
+// Purpose:
+//   Set the plot plugin manager we'll use.
+//
+// Arguments:
+//   mgr : The new plugin manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:23:18 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::SetPlotPluginManager(PlotPluginManager *mgr)
+{
+    if(plotPlugins != NULL)
+        delete plotPlugins;
+    plotPlugins = mgr;
+}
+
+// ****************************************************************************
+// Method: NetworkManager::SetOperatorPluginManager
+//
+// Purpose:
+//   Set the operator plugin manager we'll use.
+//
+// Arguments:
+//   mgr : The new plugin manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 18:23:18 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::SetOperatorPluginManager(OperatorPluginManager *mgr)
+{
+    if(operatorPlugins != NULL)
+        delete operatorPlugins;
+    operatorPlugins = mgr;
 }
 
 // ****************************************************************************
@@ -498,7 +569,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
     // Clear out the networks before the databases.  This is because if we
     // delete the databases first, the networks will have dangling pointers.
     //
-    for (int i = 0; i < (int)networkCache.size(); i++)
+    for (size_t i = 0; i < networkCache.size(); i++)
     {
         if (networkCache[i] != NULL)
         {
@@ -525,6 +596,35 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
             }
         }
     }
+}
+
+// ****************************************************************************
+// Method: NetworkManager::GetOpenDatabases
+//
+// Purpose:
+//   Returns a list of databases that have been opened.
+//
+// Returns:    A string vector of database names.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 15 10:33:01 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+stringVector
+NetworkManager::GetOpenDatabases() const
+{
+    stringVector dbs;
+    for (size_t i = 0; i < databaseCache.size(); i++)
+    {
+        if (databaseCache[i] != NULL)
+            dbs.push_back(databaseCache[i]->GetFilename());
+    }
+    return dbs;
 }
 
 // ****************************************************************************
@@ -723,7 +823,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
                 void *cb_data[2];
                 cb_data[0] = (void *)&fileNames;
                 cb_data[1] =  (void *)&pattern;
-                ReadAndProcessDirectory(path, FileMatchesPatternCB, (void*) cb_data, false);
+                FileFunctions::ReadAndProcessDirectory(path, FileMatchesPatternCB, (void*) cb_data, false);
                 char **names = new char *[fileNames.size()];
                 for (size_t i = 0; i < fileNames.size(); ++i)
                 {
@@ -867,7 +967,7 @@ NetworkManager::StartNetwork(const std::string &format,
     const std::string &var,
     int time)
 {
-    // Arguments were we can use the defaults.
+    // Arguments where we can use the defaults.
     std::string selName;
     MaterialAttributes matopts;
     MeshManagementAttributes meshopts;
@@ -1740,6 +1840,39 @@ NetworkManager::CancelNetwork(void)
 }
 
 // ****************************************************************************
+// Method: NetworkManager::ValidNetworkId
+//
+// Purpose:
+//   Check a network id for validity.
+//
+// Arguments:
+//   id : The network id we're checking.
+//
+// Returns:    True if the network is valid; False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 23 12:01:08 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+NetworkManager::ValidNetworkId(int id) const
+{
+    bool valid = (id >= 0 && id < (int)networkCache.size());
+    if(!valid)
+    {
+        debug1 << "Internal error: asked to reuse network ID " << id
+            << ", which is not in num saved networks [0," << networkCache.size() << ")"
+            << endl;
+    }
+    return valid;
+}
+
+// ****************************************************************************
 //  Method:  NetworkManager::UseNetwork
 //
 //  Purpose:
@@ -1766,6 +1899,9 @@ NetworkManager::CancelNetwork(void)
 //    Hank Childs, Fri Jan 16 14:39:33 PST 2009
 //    Set the proper database info when calling UseNetwork.
 //
+//    Brad Whitlock, Tue Sep 23 11:47:39 PDT 2014
+//    Fix an unsigned vs signed comparison the right way.
+//
 // ****************************************************************************
 
 void
@@ -1778,11 +1914,8 @@ NetworkManager::UseNetwork(int id)
         EXCEPTION0(ImproperUseException);
     }
 
-    if ((size_t)id >= networkCache.size())
+    if (!ValidNetworkId(id))
     {
-        debug1 << "Internal error: asked to reuse network ID (" << id
-            << " >= num saved networks (" << networkCache.size() << ")"
-            << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -2092,11 +2225,8 @@ NetworkManager::GetShouldUseCompression(int windowID) const
 void
 NetworkManager::DoneWithNetwork(int id)
 {
-    if ((size_t)id >= networkCache.size())
+    if (!ValidNetworkId(id))
     {
-        debug1 << "Internal error: Done with network ID (" << id
-            << " >= num saved networks (" << networkCache.size() << ")"
-            << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -2113,9 +2243,9 @@ NetworkManager::DoneWithNetwork(int id)
         // references it
         //
         bool otherNetsUseThisWindow = false;
-        for (size_t i = 0; i < networkCache.size(); i++)
+        for (int i = 0; i < (int)networkCache.size(); i++)
         {
-            if (i == (size_t)id)
+            if (i == id)
                 continue;
             if (networkCache[i] && (thisNetworksWinID ==
                                     networkCache[i]->GetWinID()))
@@ -2171,11 +2301,8 @@ NetworkManager::DoneWithNetwork(int id)
 void
 NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 {
-    if ((size_t)id >= networkCache.size())
+    if (!ValidNetworkId(id))
     {
-        debug1 << "Internal error: asked to reuse network ID (" << id
-            << ") >= num saved networks (" << networkCache.size() << ")"
-            << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -2771,180 +2898,6 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
     ENDTRY
 
     workingNet = origWorkingNet;
-    return retval;
-}
-
-// ****************************************************************************
-// Method: NetworkManager::SaveWindow
-//
-// Purpose: 
-//   This method tries to save the plots in the first vis window to an image
-//   file.
-//
-// Arguments:
-//   ids         : The ids of the networks we want to save.
-//   filename    : The name of the file to save.
-//   imageWidth  : The image width
-//   imageHeight : The image height
-//   format      : The file format to use for saving the image.
-//
-// Returns:    True on success; false on failure.
-//
-// Note:       This method needs to be called on all processors. This method
-//             can save a picture of the last network that was executed if no
-//             SR request has been generated.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar  2 16:54:08 PST 2009
-//
-// Modifications:
-//   
-//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
-//    Change extents names.
-//
-//    Brad Whitlock, Fri Sep 28 14:47:23 PDT 2012
-//    Add the ids of the networks we want to save.
-//
-//    Brad Whitlock, Wed Oct  3 11:46:36 PDT 2012
-//    Check for valid network ids. Also copy the color tables into the new
-//    window attributes so we don't lose our color tables.
-//
-// ****************************************************************************
-
-bool
-NetworkManager::SaveWindow(const intVector &ids,
-    const std::string &filename, int imageWidth, int imageHeight,
-    SaveWindowAttributes::FileFormat format)
-{
-    const char *mName = "NetworkManager::SaveWindow: ";
-    bool retval = false;
-    debug1 << mName << "arguments(ids={";
-    for(size_t i = 0; i < ids.size(); ++i)
-        debug1 << ids[i] << ", ";
-    debug1 << "}, " 
-           << filename << ", "
-           << imageWidth << ", "
-           << imageHeight << ", "
-           << SaveWindowAttributes::FileFormat_ToString(format)
-           << ")" << endl;
-
-    TRY
-    {
-        std::map<int, EngineVisWinInfo>::iterator it = viswinMap.begin();
-        if(it != viswinMap.end())
-        {
-#if 1
-            intVector networkIds(ids);
-#else
-            // Check the network ids for validity. See that they are in
-            // [0, networkCache.size()-1].
-            intVector networkIds;
-            for(size_t i = 0; i < ids.size(); ++i)
-            {
-                if(ids[i] >= 0 && ids[i] < int(networkCache.size()-1))
-                    networkIds.push_back(ids[i]);
-            }
-#endif
-            bool getZBuffer = false;
-            int annotMode = 2; // all annotations
-            int windowID = it->first;
-            bool leftEye = true;
-
-            // If there are no plots in the window then we have not done
-            // scalable rendering yet. Let's add the most recent pipeline
-            // to the networkIds.
-            double extents[6];
-            bool extentsInit = false;
-            if(networkIds.size() > 0)
-            {
-                if(networkCache.size() > 0)
-                {
-                    DataNetwork *net = networkCache[networkIds[0]];
-
-                    // We need to update the view so we can see what we have. This is
-                    // not quite the method I wanted to use to get the data attributes
-                    // but it's the best I could find for now.
-                    avtDataObject_p obj = net->GetPlot()->GetIntermediateDataObject();
-                    if (*obj != NULL)
-                    {
-                        avtDataAttributes &atts = obj->GetInfo().GetAttributes();
-                        atts.GetThisProcsOriginalSpatialExtents()->CopyTo(extents);
-                        extentsInit = true;
-                        // Override the view so it's set to something valid.
-                        View3DAttributes newView3D; newView3D.ResetView(extents);
-                        it->second.windowAttributes.SetView3D(newView3D);
-                        View2DAttributes newView2D; newView2D.ResetView(extents);
-                        it->second.windowAttributes.SetView2D(newView2D);
-                    }
-                }
-            }
-
-            // Set the new image size into the window attributes.
-            if(imageWidth > 0 && imageHeight > 0)
-            {
-                // Get the current window attributes.
-                WindowAttributes windowAtts(it->second.windowAttributes);
-                int newSize[2];
-                newSize[0] = imageWidth;
-                newSize[1] = imageHeight;
-                windowAtts.SetSize(newSize);
-                if(!extentsInit)
-                    it->second.viswin->GetBounds(extents);
-
-                // Make sure that the new window attributes preserve the current
-                // color tables.
-                windowAtts.SetColorTables(*(avtColorTables::Instance()->GetColorTables()));
-
-                // Set the new window attributes.
-                SetWindowAttributes(windowAtts,
-                                    it->second.extentTypeString,
-                                    extents,
-                                    it->second.changedCtName,
-                                    it->first);
-            }
-
-            // Print the arguments to Render
-            debug1 << "Calling Render with: checkThreshold=false networkIds={";
-            for(size_t i = 0; i < networkIds.size(); ++i)
-                debug1 << networkIds[i] << " ";
-            debug1 << "} getZBuffer=" << (getZBuffer ? "true" : "false")
-                   << " annotMode=" << annotMode
-                   << " windowID=" << windowID
-                   << " leftEye=" << (leftEye?"true":"false") << endl;
-
-            // Do scalable rendering.
-            avtDataObject_p image = Render(false, networkIds, getZBuffer, annotMode,
-                                           windowID, leftEye);
-
-            // Save out the image.
-            if(PAR_Rank() == 0)
-            {
-                avtFileWriter *fileWriter = new avtFileWriter();
-                fileWriter->SetFormat(format);
-                int compress = 1;
-                fileWriter->Write(filename.c_str(), image, 100, false, compress, false);
-                delete fileWriter;
-            }
-
-            retval = true;
-        }
-        else
-            debug1 << mName << "No plots have been set up for scalable rendering." << endl;
-    }
-    CATCHALL
-    {
-        retval = false;
-    }
-    ENDTRY
-
-#ifdef PARALLEL
-    // See if any processors had false return values.
-    int r = retval ? 0 : 1;
-    SumIntAcrossAllProcessors(r);
-    retval = (r == 0);
-#endif
-    debug1 << mName << "returning " << (retval ? "true" : "false") << endl;
-
     return retval;
 }
 
@@ -3622,10 +3575,8 @@ NetworkManager::StopQueryMode(void)
 void
 NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 {
-    if ((size_t)id >= networkCache.size())
+    if (!ValidNetworkId(id))
     {
-        debug1 << "Internal error:  asked to use network ID (" << id << ") >= "
-               << "num saved networks (" << networkCache.size() << ")" << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -3981,11 +3932,8 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     for (size_t i = 0 ; i < ids.size() ; i++)
     {
         int id = ids[i];
-        if ((size_t)id >= networkCache.size())
+        if (!ValidNetworkId(id))
         {
-            debug1 << "Internal error:  asked to use network ID (" << id 
-                   << ") >= num saved networks ("
-                   << networkCache.size() << ")" << endl;
             EXCEPTION0(ImproperUseException);
         }
      
@@ -4127,11 +4075,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
     {
         // The selection source is a plot that has been executed.
 
-        if ((size_t)id >= networkCache.size())
+        if (!ValidNetworkId(id))
         {
-            debug1 << mName << "Internal error:  asked to use network ID (" << id 
-                   << ") >= num saved networks ("
-                   << networkCache.size() << ")" << endl;
             EXCEPTION0(ImproperUseException);
         }
  
@@ -4416,11 +4361,8 @@ NetworkManager::SaveNamedSelection(const std::string &selName)
 void
 NetworkManager::ConstructDataBinning(int id, ConstructDataBinningAttributes *atts)
 {
-    if ((size_t)id >= networkCache.size())
+    if (!ValidNetworkId(id))
     {
-        debug1 << "Internal error:  asked to use network ID (" << id 
-               << ") >= num saved networks ("
-               << networkCache.size() << ")" << endl;
         EXCEPTION0(ImproperUseException);
     }
  
@@ -4627,11 +4569,8 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
 void
 NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
 {
-    if ((size_t)id >= networkCache.size())
+    if (!ValidNetworkId(id))
     {
-        debug1 << "Internal error:  asked to use network ID (" << id 
-               << ") >= num saved networks ("
-               << networkCache.size() << ")" << endl;
         EXCEPTION1(ImproperUseException, " this condition often arises when"
            " you have tried to export a database after the engine has just been"
            " closed or crashed.  Try \"ReOpen\"ing the file and exporting "
@@ -4827,11 +4766,8 @@ NetworkManager::CloneNetwork(const int id)
         EXCEPTION1(ImproperUseException,error);
     }
 
-    if ((size_t)id >= networkCache.size())
+    if (!ValidNetworkId(id))
     {
-        debug1 << "Internal error:  asked to clone network ID (" << id 
-               << ") >= num saved networks (" << networkCache.size() << ")" 
-               << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -5606,11 +5542,8 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
     bool needRender = false;
     for (size_t i = 0; i < ids.size(); i++)
     {
-        if ((size_t)ids[i] >= networkCache.size())
+        if (!ValidNetworkId(ids[i]))
         {
-            debug1 << "Internal error:  asked to use network ID (" 
-                   << ids[i] << ") >= " << "num saved networks (" 
-                   << networkCache.size() << ")" << endl;
             continue;
         }
 

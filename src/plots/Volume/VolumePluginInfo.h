@@ -80,20 +80,20 @@ class VolumeCommonPluginInfo : public virtual CommonPlotPluginInfo, public virtu
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual int GetVariableTypes() const;
 };
 
 class VolumeGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual VolumeCommonPluginInfo
 {
   public:
     virtual QString *GetMenuName() const;
-    virtual int GetVariableTypes() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
     virtual const char **XPMIconData() const;
 };
 
-class VolumeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual VolumeCommonPluginInfo
+class VolumeViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual VolumeCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -104,21 +104,24 @@ class VolumeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtu
     virtual avtPlot *AllocAvtPlot();
 
     virtual bool Permits2DViewScaling() const;
-    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
-    virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
-    virtual int GetVariableTypes() const;
-
+    virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:
     static VolumeAttributes *defaultAtts;
     static VolumeAttributes *clientAtts;
 };
 
-class VolumeEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual VolumeCommonPluginInfo
+class VolumeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual VolumeViewerEnginePluginInfo
 {
   public:
-    virtual avtPlot *AllocAvtPlot();
+    virtual const char **XPMIconData() const;
+
+};
+
+class VolumeEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual VolumeViewerEnginePluginInfo
+{
+  public:
 };
 
 class VolumeScriptingPluginInfo : public virtual ScriptingPlotPluginInfo, public virtual VolumeCommonPluginInfo

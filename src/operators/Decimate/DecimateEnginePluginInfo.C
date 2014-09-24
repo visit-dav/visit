@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Decimate_GetEngineInfo()
 {
+    DecimateEnginePluginInfo::InitializeGlobalObjects();
     return new DecimateEnginePluginInfo;
 }
 

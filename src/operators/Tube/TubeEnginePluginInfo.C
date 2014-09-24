@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* Tube_GetEngineInfo()
 {
+    TubeEnginePluginInfo::InitializeGlobalObjects();
     return new TubeEnginePluginInfo;
 }
 

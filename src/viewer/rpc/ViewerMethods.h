@@ -251,7 +251,7 @@ public:
                             const std::string &simName);
     void SaveNamedSelection(const std::string &selName);
     void SetNamedSelectionAutoApply(bool);
-    void UpdateNamedSelection(const std::string &selName, bool updatePlots);
+    void UpdateNamedSelection(const std::string &selName, bool updatePlots, bool allowCaching=true);
     void UpdateNamedSelection(const std::string &selName, const SelectionProperties &props,
                               bool updatePlots, bool allowCaching);
     void InitializeNamedSelectionVariables(const std::string &selName);

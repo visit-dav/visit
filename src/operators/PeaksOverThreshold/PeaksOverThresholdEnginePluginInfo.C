@@ -55,6 +55,7 @@
 // ****************************************************************************
 extern "C" OP_EXPORT EngineOperatorPluginInfo* PeaksOverThreshold_GetEngineInfo()
 {
+    PeaksOverThresholdEnginePluginInfo::InitializeGlobalObjects();
     return new PeaksOverThresholdEnginePluginInfo;
 }
 

@@ -270,7 +270,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
         }
     }
     
-    ReadAndProcessDirectory(dir, CheckFileCallback, this);
+    FileFunctions::ReadAndProcessDirectory(dir, CheckFileCallback, this);
 
     setUpFiles = true;
 }

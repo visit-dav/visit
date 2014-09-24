@@ -86,7 +86,7 @@ class DecimateGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtu
         QvisNotepadArea *notepad);
 };
 
-class DecimateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DecimateCommonPluginInfo
+class DecimateViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual DecimateCommonPluginInfo
 {
   public:
     virtual AttributeSubject *GetClientAtts();
@@ -95,13 +95,11 @@ class DecimateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     virtual void GetClientAtts(AttributeSubject *atts);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot,
+                                        const avtPlotMetaData &plot,
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
-                                    const ViewerPlot *plot);
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const ViewerPlot *plot);
-    virtual QString *GetMenuName() const;
+                                    const avtPlotMetaData &plot);
+    virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:
@@ -109,7 +107,12 @@ class DecimateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     static DecimateAttributes *clientAtts;
 };
 
-class DecimateEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DecimateCommonPluginInfo
+class DecimateViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual DecimateViewerEnginePluginInfo
+{
+  public:
+};
+
+class DecimateEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual DecimateViewerEnginePluginInfo
 {
   public:
     virtual avtPluginFilter *AllocAvtPluginFilter();
