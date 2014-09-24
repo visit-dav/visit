@@ -47,6 +47,8 @@
 
 #include "JSONRoot.h"
 
+#include <StringHelpers.h>
+
 #include <iostream>
 using namespace std;
 
@@ -89,15 +91,32 @@ JSONRootPath::~JSONRootPath()
 //  Programmer:  Cyrus Harrison
 //  Creation:    Thu Jun 12 16:02:35 PDT 2014
 //
+//  Modifications:
+//   Cyrus Harrison, Tue Sep 23 14:42:52 PDT 2014
+//   Added support for simple domain expansion.
+//
 // ****************************************************************************
 std::string
 JSONRootPath::Expand(int domain) const
 {
     //
-    // TODO: handle domain id mapping (likley printf style expansion)
+    // Note: This currenlty only handles "%05d" as the format string.
     //
     
-    return path;
+    std::size_t path_pattern = path.find("%05d");
+
+    if(path_pattern != std::string::npos)
+    {
+        char buff[64];
+        SNPRINTF(buff,64,"%05d",domain);    
+        return StringHelpers::Replace(path,
+                                      "%05d",
+                                      std::string(buff));
+    }
+    else
+    {
+        return path;
+    }
 }
 
 // ****************************************************************************
@@ -444,6 +463,10 @@ JSONRoot::NumberOfDataSets() const
 //  Programmer:  Cyrus Harrison
 //  Creation:    Thu Jun 12 16:02:35 PDT 2014
 //
+//  Modifications:
+//   Cyrus Harrison, Wed Sep 24 10:47:00 PDT 2014
+//   Handle abs path logic.
+//
 // **************************************************************************** 
 void 
 JSONRoot::ParseJSON(const std::string &json_root)
@@ -451,9 +474,12 @@ JSONRoot::ParseJSON(const std::string &json_root)
     // clear existing structure
     dsets.clear();
 
+    std::string root_file = StringHelpers::Absname(".",json_root);
+    std::string root_dir =  StringHelpers::Dirname(root_file);
+
     // open root file and read its contents
     ifstream iroot;
-    iroot.open(json_root.c_str());
+    iroot.open(root_file.c_str());
     std::string json((std::istreambuf_iterator<char>(iroot)), 
                       std::istreambuf_iterator<char>());
 
@@ -479,7 +505,8 @@ JSONRoot::ParseJSON(const std::string &json_root)
                 const rapidjson::Value &json_dset = dsets_itr->value;
                 // handle # of domains, meshes w/ tags
                 curr_dset.SetNumberOfDomains(json_dset["domains"].GetInt());
-                curr_dset.Mesh().Path().Set(json_dset["mesh"]["path"].GetString());
+                std::string mesh_file_path = json_dset["mesh"]["path"].GetString();
+                curr_dset.Mesh().Path().Set(ResolveAbsolutePath(root_dir,mesh_file_path));
                 if(json_dset["mesh"].HasMember("tags"))
                 {
                     const rapidjson::Value &mesh_tags = json_dset["mesh"]["tags"];
@@ -499,7 +526,8 @@ JSONRoot::ParseJSON(const std::string &json_root)
                         const rapidjson::Value &json_field = fields_itr->value;
                         string curr_field_name = fields_itr->name.GetString();
                         JSONRootEntry &curr_field = curr_dset.Field(curr_field_name);
-                        curr_field.Path().Set(json_field["path"].GetString());
+                        std::string field_file_path = json_field["path"].GetString();
+                        curr_field.Path().Set(ResolveAbsolutePath(root_dir,field_file_path));
                         const rapidjson::Value &json_tags = json_field["tags"];
                         for (rapidjson::Value::ConstMemberIterator tags_itr = json_tags.MemberBegin(); 
                              tags_itr != json_tags.MemberEnd(); ++tags_itr)
@@ -511,6 +539,23 @@ JSONRoot::ParseJSON(const std::string &json_root)
             }
         }
     }
+}
+
+// ****************************************************************************
+//  Method: JSONRoot::ResolveAbsolutePath
+//
+//  Purpose: Helper for abs path logicl.
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Wed Sep 24 10:47:00 PDT 2014
+//
+// **************************************************************************** 
+std::string      
+JSONRoot::ResolveAbsolutePath(const std::string &root_dir,
+                              const std::string &file_path)
+{
+    return StringHelpers::Absname(root_dir,file_path);
 }
 
 // ****************************************************************************
