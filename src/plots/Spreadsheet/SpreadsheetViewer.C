@@ -293,7 +293,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
         tables[0]->setFont(spreadsheetFont);
 
-    connect(tables[0], SIGNAL(selectionChanged()),
+    connect(tables[0], SIGNAL(tableSelectionChanged()),
             this, SLOT(tableSelectionChanged()));
     zTabs->addTab(tables[0], "k=1");
     connect(zTabs, SIGNAL(currentChanged(int)),
@@ -1588,7 +1588,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
                 QFont spreadsheetFont;
                 if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
                     t[i]->setFont(spreadsheetFont);
-                connect(t[i], SIGNAL(selectionChanged()),
+                connect(t[i], SIGNAL(tableSelectionChanged()),
                         this, SLOT(tableSelectionChanged()));
                 zTabs->addTab(t[i],"");
             }
@@ -1609,7 +1609,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
             else
             {
                 zTabs->removeTab(zTabs->indexOf(tables[i]));
-                disconnect(tables[i], SIGNAL(selectionChanged()),
+                disconnect(tables[i], SIGNAL(tableSelectionChanged()),
                            this, SLOT(tableSelectionChanged()));
                 delete tables[i];
             }

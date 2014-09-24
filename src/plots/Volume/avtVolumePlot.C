@@ -371,7 +371,7 @@ avtVolumePlot::SetLegendOpacities()
 // ****************************************************************************
 
 int
-avtVolumePlot::GetNumberOfStagesForImageBasedPlot(const WindowAttributes &a)
+avtVolumePlot::GetNumberOfStagesForImageBasedPlot(const WindowAttributes &a) const
 {
     return volumeImageFilter->GetNumberOfStages(a);
 }

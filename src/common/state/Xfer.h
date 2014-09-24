@@ -99,7 +99,7 @@ public:
 
     virtual void Process();
     virtual bool ReadPendingMessages();
-    virtual void SendInterruption();
+    virtual void SendInterruption(int);
 
     int  CreateNewSpecialOpcode();
     void SendSpecialOpcode(int opcode);

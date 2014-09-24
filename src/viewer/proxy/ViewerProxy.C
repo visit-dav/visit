@@ -1027,7 +1027,7 @@ void
 ViewerProxy::InterruptComputeEngine(const std::string &hostName,
                                     const std::string &simName)
 {
-    xfer->SendInterruption();
+    xfer->SendInterruption(0);
 }
 
 // ****************************************************************************

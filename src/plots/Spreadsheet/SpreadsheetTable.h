@@ -112,7 +112,7 @@ public:
     void setFont(QFont&);
 
 signals:
-    void selectionChanged();
+    void tableSelectionChanged();
 public slots:
     void selectAll();
     void selectNone();
