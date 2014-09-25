@@ -48,6 +48,7 @@
 #include "JSONRoot.h"
 
 #include <StringHelpers.h>
+#include <FileFunctions.h>
 
 #include <iostream>
 using namespace std;
@@ -474,8 +475,8 @@ JSONRoot::ParseJSON(const std::string &json_root)
     // clear existing structure
     dsets.clear();
 
-    std::string root_file = StringHelpers::Absname(".",json_root);
-    std::string root_dir =  StringHelpers::Dirname(root_file);
+    std::string root_file = FileFunctions::Absname(".",json_root);
+    std::string root_dir =  FileFunctions::Dirname(root_file);
 
     // open root file and read its contents
     ifstream iroot;
@@ -555,7 +556,7 @@ std::string
 JSONRoot::ResolveAbsolutePath(const std::string &root_dir,
                               const std::string &file_path)
 {
-    return StringHelpers::Absname(root_dir,file_path);
+    return FileFunctions::Absname(root_dir,file_path);
 }
 
 // ****************************************************************************
