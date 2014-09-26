@@ -92,11 +92,9 @@ avtNeighborExpression::~avtNeighborExpression()
 //      Does the actual VTK code to modify the dataset.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
-//      <unused>  The label.
+//      in_dr     The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer:   Akira Haddox
 //  Creation:     June 27, 2002
@@ -106,11 +104,19 @@ avtNeighborExpression::~avtNeighborExpression()
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Eric Brugger, Wed Aug 20 16:19:07 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
  
-vtkDataSet *
-avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtDataRepresentation *
+avtNeighborExpression::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+
     // Let's get the points from the input dataset.
     vtkPoints *pts = NULL;
     switch (in_ds->GetDataObjectType())
@@ -202,9 +208,12 @@ avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
     verts->Delete();
     pts->Delete();
 
-    ManageMemory(results);
+    avtDataRepresentation *out_dr = new avtDataRepresentation(results,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
     results->Delete();
-    return results;    
+
+    return out_dr;    
 }
 
 // ****************************************************************************

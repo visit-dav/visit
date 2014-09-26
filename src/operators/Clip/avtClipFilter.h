@@ -43,10 +43,9 @@
 #ifndef AVT_CLIP_FILTER_H
 #define AVT_CLIP_FILTER_H
 
-
 #include <avtPluginStructuredChunkDataTreeIterator.h>
-#include <ClipAttributes.h>
 
+#include <ClipAttributes.h>
 
 class vtkDataSet;
 class vtkImplicitBoolean;
@@ -99,6 +98,9 @@ class vtkUnstructuredGrid;
 //    bugs.  Added pipelined clips to get accurate cell clips when
 //    multiple planes are used.
 //
+//    Eric Brugger, Wed Aug 20 16:08:13 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class vtkPlane;
@@ -122,7 +124,7 @@ class avtClipFilter : public avtSIMODataTreeIterator,
   protected:
     ClipAttributes           atts;
 
-    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual avtDataTree_p    ExecuteDataTree(avtDataRepresentation *);
     int                      ComputeAccurateClip(vtkDataSet *inDS,
                                                  vtkDataSet **outDS,
                                                  ClipAttributes &atts,

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtStructuredChunkDataTreeIterator.C                         //
+//                   avtStructuredChunkDataTreeIterator.C                    //
 // ************************************************************************* //
 
 #include <avtStructuredChunkDataTreeIterator.h>
@@ -92,12 +92,21 @@ avtStructuredChunkDataTreeIterator::~avtStructuredChunkDataTreeIterator()
 //    Hank Childs, Fri Jun  9 13:25:31 PDT 2006
 //    Comment out currently unused variable to remove compiler warning.
 //
+//    Eric Brugger, Wed Aug 20 16:33:03 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domain,
-                                            std::string label)
+avtStructuredChunkDataTreeIterator::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
     int ds_type = in_ds->GetDataObjectType();
     // bool haveStructured = (ds_type == VTK_RECTILINEAR_GRID ||
     //                        ds_type == VTK_STRUCTURED_GRID); 
@@ -123,10 +132,10 @@ avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domai
 
     if (!canChunk)
     {
-        vtkDataSet *out = ProcessOneChunk(in_ds, domain, label, false);
-        avtDataTree_p rv = new avtDataTree(1, &out, domain, label);
+        avtDataRepresentation *out = ProcessOneChunk(in_dr, false);
+        avtDataTree_p rv = new avtDataTree(1, out);
         if (out != NULL)
-            out->Delete();
+            delete out;
         return rv;
     }
 
@@ -140,6 +149,9 @@ avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domai
     GetAssignments(in_ds, dims, designation);
     visitTimer->StopTimer(t0, "Structured Chunk DataTreeIterator: Getting assignments");
     
+    //
+    // FIX_ME: ChunkStructuredMesh should return an array of avtDataReps
+    //
     vtkUnstructuredGrid *ugrid = NULL;
     std::vector<vtkDataSet *> grids;
 
@@ -149,21 +161,26 @@ avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domai
     visitTimer->StopTimer(t1, "Identifying grids");
 
     int t2 = visitTimer->StartTimer();
-    vtkDataSet *out_ugrid = ProcessOneChunk(ugrid, domain, label, true);
+
+    avtDataRepresentation ugrid_dr(ugrid, domain, label);
+
+    avtDataRepresentation *out_ugrid_dr = ProcessOneChunk(&ugrid_dr, true);
     visitTimer->StopTimer(t2, 
                       "Structured Chunk DataTreeIterator: Processing ugrid leftovers");
     //
     // Create a data tree that has all of the structured meshes, as well
     // as the single unstructured mesh.
     //
-    vtkDataSet **out_ds = new vtkDataSet*[grids.size()+1];
+    avtDataRepresentation **out_dr = new avtDataRepresentation*[grids.size()+1];
     for (size_t i = 0 ; i < grids.size() ; i++)
-        out_ds[i] = grids[i];
-    out_ds[grids.size()] = out_ugrid;
-    avtDataTree_p rv = new avtDataTree((int)grids.size()+1, out_ds, domain, label);
-    delete [] out_ds;
-    if (out_ugrid != NULL)
-        out_ugrid->Delete();
+        out_dr[i] = new avtDataRepresentation(grids[i], domain, label);
+    out_dr[grids.size()] = out_ugrid_dr;
+    avtDataTree_p rv = new avtDataTree((int)grids.size()+1, out_dr);
+    for (size_t i = 0 ; i < grids.size() ; i++)
+        delete out_dr[i];
+    delete [] out_dr;
+    if (out_ugrid_dr != NULL)
+        delete out_ugrid_dr;
     if (ugrid != NULL)
         ugrid->Delete();
     chunkedStructuredMeshes = true;
