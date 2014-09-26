@@ -63,6 +63,10 @@
 //  Programmer: Hank Childs
 //  Creation:   March 27, 2005
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 16:31:44 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtStructuredChunkDataTreeIterator : public avtSIMODataTreeIterator
@@ -77,8 +81,8 @@ class PIPELINE_API avtStructuredChunkDataTreeIterator : public avtSIMODataTreeIt
     avtGhostDataType           downstreamGhostType;
     bool                       chunkedStructuredMeshes;
 
-    virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *,int,std::string);
-    virtual vtkDataSet        *ProcessOneChunk(vtkDataSet *,int,std::string,
+    virtual avtDataTree_p      ExecuteDataTree(avtDataRepresentation *);
+    virtual avtDataRepresentation *ProcessOneChunk(avtDataRepresentation *,
                                                bool) = 0;
     virtual void               GetAssignments(vtkDataSet *, const int *,
                     std::vector<avtStructuredMeshChunker::ZoneDesignation>&)=0;

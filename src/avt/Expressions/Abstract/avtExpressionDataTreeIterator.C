@@ -94,10 +94,9 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //      Does the actual VTK code to modify the dataset.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      <unused>  The domain number.
+//      in_dr     The input data representation.
 //
-//  Returns:      The output dataset.
+//  Returns:      The output data representation.
 //
 //  Programmer:   Hank Childs
 //  Creation:     June 7, 2002
@@ -183,12 +182,20 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //    Removed the currentDomainsLabel and currentDomainsIndex variables.
 //    This was done to thread the code.
 //
+//    Eric Brugger, Wed Aug 20 16:25:34 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
-                                 std::string label)
+avtDataRepresentation *
+avtExpressionDataTreeIterator::ExecuteData(avtDataRepresentation *in_dr)
 {
+    //
+    // Get the VTK data set and domain number.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+
     //
     // Sometimes we are asked to calculate a variable twice.  The easiest way
     // to catch this is to see if we already have the requested variable and
@@ -210,7 +217,7 @@ avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
     //
     if (dat == NULL)
     {
-        dat = DeriveVariable(in_ds, index);
+        dat = DeriveVariable(in_ds, domain);
         if (dat == NULL)
         {
             EXCEPTION2(ExpressionException, outputVariableName, "an unknown error occurred while " 
@@ -256,7 +263,13 @@ avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
         debug1 << "Ncells = " << ncells << endl;
         debug1 << "Npts = " << npts << endl;
         dat->Delete();
-        return rv;
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        rv->Delete();
+
+        return out_dr;
     }
 
     if (isPoint)
@@ -284,10 +297,13 @@ avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
     // Make sure that we don't have any memory leaks.
     //
     dat->Delete();
-    ManageMemory(rv);
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
     rv->Delete();
 
-    return rv;
+    return out_dr;
 }
 
 

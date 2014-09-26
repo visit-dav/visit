@@ -45,10 +45,10 @@
 
 #include <expression_exports.h>
 
-#include <string>
-
 #include <avtExpressionFilter.h>
 #include <avtDataTreeIterator.h>
+
+#include <string>
 
 
 // ****************************************************************************
@@ -76,6 +76,9 @@
 //     std::string              currentDomainsLabel;
 //     int                      currentDomainsIndex;
 //
+//    Eric Brugger, Wed Aug 20 16:24:51 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionDataTreeIterator 
@@ -87,7 +90,7 @@ class EXPRESSION_API avtExpressionDataTreeIterator
     virtual                 ~avtExpressionDataTreeIterator();
 
   protected:
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual vtkDataArray    *DeriveVariable(vtkDataSet *, int currentDomainsIndex) = 0;
 };
 

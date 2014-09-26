@@ -127,6 +127,8 @@
 // Creation:   Fri Dec 17 14:50:16 PST 2010
 //
 // Modifications:
+//     Eric Brugger, Wed Aug 20 16:13:09 PDT 2014
+//     Modified the class to work with avtDataRepresentation.
 //   
 // ****************************************************************************
 
@@ -197,11 +199,16 @@ protected:
         cellCount = 0;
     }
 
-    virtual vtkDataSet *ExecuteData(vtkDataSet *ds, int dom, std::string)
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *dr)
     {
+        //
+        // Get the VTK data set.
+        //
+        vtkDataSet *ds = dr->GetDataVTK();
+
         cellCount += ds->GetNumberOfCells();
 
-        return ds;
+        return dr;
     }
 
     virtual void PostExecute(void)
