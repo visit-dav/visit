@@ -628,11 +628,15 @@ avtBoxFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Sun Apr 24 11:11:46 PDT 2005
 //    Add special support for rectilinear grids.
 //
-//   Dave Pugmire, Fri Aug 30 15:57:33 EDT 2013
-//   Add an inverse option for box clip.
+//    Dave Pugmire, Fri Aug 30 15:57:33 EDT 2013
+//    Add an inverse option for box clip.
 //
-//   Eric Brugger, Tue Jul 22 17:07:37 PDT 2014
-//   Modified the class to work with avtDataRepresentation.
+//    Eric Brugger, Tue Jul 22 17:07:37 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
+//    Eric Brugger, Fri Sep 26 08:47:25 PDT 2014
+//    I modified the routine to return a NULL in the case where it previously
+//    returned an avtDataRepresentation with a NULL vtkDataSet.
 //
 // ****************************************************************************
 
@@ -675,18 +679,18 @@ avtBoxFilter::ExecuteData(avtDataRepresentation *in_dr)
         outDS = GeneralExecute(in_ds);
     }
 
-    vtkDataSet *rv = outDS;
-    if (outDS != NULL)
+    if (outDS == NULL)
+        return NULL;
+    if (outDS->GetNumberOfCells() <= 0)
     {
-        if (outDS->GetNumberOfCells() <= 0)
-            rv = NULL;
+        outDS->Delete();
+        return NULL;
     }
 
-    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+    avtDataRepresentation *out_dr = new avtDataRepresentation(outDS,
         in_dr->GetDomain(), in_dr->GetLabel());
 
-    if (outDS != NULL)
-        outDS->Delete();
+    outDS->Delete();
 
     return out_dr;
 }

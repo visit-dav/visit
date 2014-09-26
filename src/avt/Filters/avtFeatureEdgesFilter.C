@@ -141,6 +141,10 @@ avtFeatureEdgesFilter::~avtFeatureEdgesFilter()
 //    Eric Brugger, Mon Jul 21 11:41:48 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Fri Sep 26 08:35:00 PDT 2014
+//    I modified the routine to return a NULL in the case where it previously
+//    returned an avtDataRepresentation with a NULL vtkDataSet.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -258,11 +262,13 @@ avtFeatureEdgesFilter::ExecuteData(avtDataRepresentation *inDR)
         featureEdgesFilter->Delete();
     }
 
+    if (outDS == NULL)
+        return NULL;
+
     avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
         inDR->GetDomain(), inDR->GetLabel());
 
-    if (outDS != NULL)
-        outDS->Delete();
+    outDS->Delete();
 
     return outDR;
 }

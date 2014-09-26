@@ -101,13 +101,13 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 
 
 // ****************************************************************************
-//  Method: avtGhostZoneFilter::ExecuteDataTree
+//  Method: avtGhostZoneFilter::ExecuteData
 //
 //  Purpose:
 //      Sends the specified input and output through the GhostZone filter.
 //
 //  Arguments:
-//      in_ds      The input data representation.
+//      in_dr      The input data representation.
 //
 //  Returns:       The output data representation.
 //
@@ -156,6 +156,10 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //
 //    Eric Brugger, Mon Jul 21 13:22:30 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//
+//    Eric Brugger, Fri Sep 26 08:41:30 PDT 2014
+//    I modified the routine to return a NULL in the case where it previously
+//    returned an avtDataRepresentation with a NULL vtkDataSet.
 //
 // ****************************************************************************
 
@@ -273,20 +277,17 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     //
     filter->Update();
     vtkDataSet *outDS = filter->GetOutput();
-    outDS->Register(NULL);
-    filter->Delete();
 
     if (outDS->GetNumberOfCells() == 0)
     {
-        outDS->Delete();
-        outDS = NULL;
+        filter->Delete();
+        return NULL;
     }
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(outDS,
         in_dr->GetDomain(), in_dr->GetLabel());
 
-    if (outDS != NULL)
-        outDS->Delete();
+    filter->Delete();
 
     return out_dr;
 }

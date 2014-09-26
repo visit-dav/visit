@@ -170,6 +170,10 @@ avtInverseGhostZoneFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Wed Jul 30 18:29:34 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Fri Sep 26 08:48:41 PDT 2014
+//    I modified the routine to return a NULL in the case where it previously
+//    returned an avtDataRepresentation with a NULL vtkDataSet.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -268,7 +272,10 @@ avtInverseGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
                                 in_ds->GetPointData()->GetScalars()->GetName());
     retainThese->Delete();
     if (out_ds->GetNumberOfCells() == 0)
-        out_ds = NULL;
+    {
+        t->Delete();
+        return NULL;
+    }
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
         in_dr->GetDomain(), in_dr->GetLabel());
