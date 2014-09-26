@@ -331,7 +331,7 @@ struct NormalEntry
     int          oldId;  // The id of this point before it was split
     int          newId;  // The new id of this node
     double       n[3];   // The accumulated normal
-    float        nn[3];  // The normalized normal
+    double      nn[3];  // The normalized normal
     NormalEntry *next;   // The next entry in the linked list for this oldId
 
     // Constructor
@@ -584,9 +584,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
         if (length == 0) continue;
 
         // Store the normalized version separately
-        float nnormal[3] = {(float)(nx/length),
-                            (float)(ny/length),
-                            (float)(nz/length)};
+        double nnormal[3] = {nx/length, ny/length, nz/length};
 
         // Loop over all points of the cell, deciding if we need
         // to split it or can merge with an old one.  Use the feature
@@ -636,12 +634,12 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 double nz = n[2];
                 double newlength = sqrt(nx*nx + ny*ny + nz*nz);
 
-                float *nn = ne->nn;
+                double *nn = ne->nn;
                 if (newlength != 0.0)
                 {
-                    nn[0] = float(double(n[0])/newlength);
-                    nn[1] = float(double(n[1])/newlength);
-                    nn[2] = float(double(n[2])/newlength);
+                    nn[0] = n[0]/newlength;
+                    nn[1] = n[1]/newlength;
+                    nn[2] = n[2]/newlength;
                 }
                 else
                 {
