@@ -1194,6 +1194,10 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    Eric Brugger, Thu Aug 14 16:37:36 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Fri Sep 26 08:49:31 PDT 2014
+//    I modified the routine to return a NULL in the case where it previously
+//    returned an avtDataRepresentation with a NULL vtkDataSet.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -1264,17 +1268,18 @@ avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
         out_ds = pd;
     }
 
-    vtkDataSet *rv = out_ds;
-    if (out_ds != NULL && out_ds->GetNumberOfCells() == 0)
+    if (out_ds == NULL)
+        return NULL;
+    if (out_ds->GetNumberOfCells() == 0)
     {
-        rv = NULL;
+        out_ds->Delete();
+        return NULL;
     }
-    
-    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
         in_dr->GetDomain(), in_dr->GetLabel());
 
-    if (out_ds != NULL)
-        out_ds->Delete();
+    out_ds->Delete();
     
     return out_dr;
 }

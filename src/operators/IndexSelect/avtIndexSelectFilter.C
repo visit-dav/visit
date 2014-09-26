@@ -411,6 +411,10 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Mon Jul 28 15:33:52 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Fri Sep 26 08:48:14 PDT 2014
+//    I modified the routine to return a NULL in the case where it previously
+//    returned an avtDataRepresentation with a NULL vtkDataSet.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -422,8 +426,6 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
     vtkDataSet *in_ds = in_dr->GetDataVTK();
 
     vtkDataSet *out_ds = NULL;
-
-    avtDataRepresentation *out_dr = NULL;
 
     int topoDim = GetInput()->GetInfo().GetAttributes().
                   GetTopologicalDimension();
@@ -441,8 +443,6 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                   "claims to have applied the selection already" << endl;
 
         out_ds = in_ds;
-
-        successfullyExecuted = true;
     }
     else if (GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
@@ -552,14 +552,13 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             removeGhostCells->Delete();
         }
 
-        if (rv->GetNumberOfPoints() > 0 && rv->GetNumberOfCells() > 0)
+        if (rv->GetNumberOfPoints() <= 0 || rv->GetNumberOfCells() <= 0)
         {
-            out_ds = (vtkDataSet *) rv->NewInstance();
-            out_ds->ShallowCopy(rv);
-            out_dr = new avtDataRepresentation(out_ds,
-                in_dr->GetDomain(), in_dr->GetLabel());
-            out_ds->Delete();
+            return NULL;
         }
+
+        out_ds = (vtkDataSet *) rv->NewInstance();
+        out_ds->ShallowCopy(rv);
     }
     else
     {
@@ -684,15 +683,15 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
 
         if (out_ds->GetNumberOfCells() <= 0)
         {
-            out_ds = NULL;
+            out_ds->Delete();
+            return NULL;
         }
 
         //
         // If we had poly data input, we want poly data output.  The VTK filter
         // only returns unstructured grids, so convert that now.
         //
-        bool shouldDelete = false;
-        if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL)
+        if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
         {
             vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
             vtkPolyData *out_pd = vtkPolyData::New();
@@ -708,15 +707,9 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 ugrid->GetCellPoints(i, npts, pts);
                 out_pd->InsertNextCell(celltype, npts, pts);
             }
-            out_ds = out_pd;
-            shouldDelete = true;
-        }
-
-        out_dr = new avtDataRepresentation(out_ds,
-            in_dr->GetDomain(), in_dr->GetLabel());
-        out_ug->Delete();
-        if (shouldDelete)
             out_ds->Delete();
+            out_ds = out_pd;
+        }
     }
 
     successfullyExecuted = true;
@@ -732,11 +725,14 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
         topoDim > 0 &&
         dstype != VTK_POLY_DATA && dstype != VTK_UNSTRUCTURED_GRID )
     {
-      out_ds = Replicate( out_ds, wrap );
-      out_dr = new avtDataRepresentation(out_ds,
-          in_dr->GetDomain(), in_dr->GetLabel());
-      out_ds->Delete();
+        out_ds = Replicate( out_ds, wrap );
     }
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+          in_dr->GetDomain(), in_dr->GetLabel());
+
+    if (out_ds != in_ds)
+        out_ds->Delete();
 
     return out_dr;
 }
