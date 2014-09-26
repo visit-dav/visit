@@ -188,7 +188,12 @@ avtDataTreeIterator::ReleaseData(void)
 //    Modified the class to work with avtDataRepresentation.
 //
 //    Brad Whitlock, Thu Sep  4 16:20:20 PDT 2014
-//    I fixed memory leak with the data representation returned from ExecuteData.
+//    I fixed memory leak with the data representation returned from
+//    ExecuteData.
+//
+//    Eric Brugger, Fri Sep 26 08:42:24 PDT 2014
+//    I modified the routine to create the same type of avtDataTree that it
+//    did previous to modifiying it to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
@@ -215,7 +220,7 @@ avtDataTreeIterator::ExecuteDataTree(avtDataRepresentation *in_dr)
     }
 
     // This code ends up creating a copy of out_dr in the data tree.
-    avtDataTree_p retval = new avtDataTree(1, out_dr);
+    avtDataTree_p retval = new avtDataTree(out_dr);
 
     // If the derived type created a new avtDataRepresentation instance then
     // it's been copied in the avtDataTree. We need to remove the instance

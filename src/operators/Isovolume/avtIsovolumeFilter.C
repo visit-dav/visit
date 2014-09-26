@@ -328,6 +328,10 @@ inline void IsovolumeMinMax(double &min, double &max, Accessor access)
 //    Brad Whitlock, Fri Sep  5 11:09:06 PDT 2014
 //    Fix reference counting.
 //
+//    Eric Brugger, Fri Sep 26 08:49:02 PDT 2014
+//    I modified the routine to return a NULL in the case where it previously
+//    returned an avtDataRepresentation with a NULL vtkDataSet.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -410,7 +414,7 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
         // Otherwise, we're deleting the reference out from under the in_ds.
         if(own)
             out_ds->Delete();
-        out_ds = NULL;
+        return NULL;
     }
 
     //
@@ -419,7 +423,7 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
     // necessarily have a ugrid, since it might be that we didn't process the
     // dataset.
     //
-    if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL &&
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA &&
         out_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
