@@ -340,11 +340,21 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
 //    avtStreamer to an avtSIMODataTreeIterator.  Added pipelined clips to get
 //    accurate cell clips when multiple planes are used.
 //
+//    Eric Brugger, Wed Aug 20 16:09:10 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
+avtClipFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 {
+    //
+    // Get the VTK data set, the domain number and the label.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+    int domain = inDR->GetDomain();
+    std::string label = inDR->GetLabel();
+
     if (inDS == NULL || inDS->GetNumberOfPoints() == 0 || inDS->GetNumberOfCells() == 0)
         return NULL;
 

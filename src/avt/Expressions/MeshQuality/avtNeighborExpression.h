@@ -66,6 +66,9 @@ class     vtkDataArray;
 //    Hank Childs, Fri Feb 20 15:51:54 PST 2004
 //    Re-define GetVariableDimension.
 //
+//    Eric Brugger, Wed Aug 20 16:18:18 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtNeighborExpression : public avtSingleInputExpressionFilter
@@ -86,7 +89,7 @@ class EXPRESSION_API avtNeighborExpression : public avtSingleInputExpressionFilt
     // ExecuteData exists for this derived class.
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex) { return NULL; }
 
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void             UpdateDataObjectInfo(void);
 
     virtual bool             IsPointVariable()     { return true; };

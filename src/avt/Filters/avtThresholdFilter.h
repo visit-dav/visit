@@ -45,13 +45,13 @@
 
 #include <filters_exports.h>
 
-#include <map>
-#include <string>
-
+#include <avtGhostData.h>
 #include <avtPluginStructuredChunkDataTreeIterator.h>
+
 #include <ThresholdOpAttributes.h>
 
-#include <avtGhostData.h>
+#include <map>
+#include <string>
 
 class     vtkDataSet;
 
@@ -91,6 +91,9 @@ class     vtkDataSet;
 //    Hank Childs, Mon Feb 23 11:54:22 PST 2009
 //    Added CreateNamedSelection.
 //
+//    Eric Brugger, Wed Aug 20 17:01:30 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtThresholdFilter : public avtPluginStructuredChunkDataTreeIterator
@@ -118,7 +121,7 @@ class AVTFILTERS_API avtThresholdFilter : public avtPluginStructuredChunkDataTre
 
     virtual avtContract_p ModifyContract(avtContract_p);
 
-    virtual vtkDataSet   *ProcessOneChunk(vtkDataSet *, int, std::string,bool);
+    virtual avtDataRepresentation *ProcessOneChunk(avtDataRepresentation *,bool);
     virtual void          GetAssignments(vtkDataSet *, const int *,
                       std::vector<avtStructuredMeshChunker::ZoneDesignation>&);
     vtkDataSet           *ThresholdToPointMesh(vtkDataSet *in_ds);
