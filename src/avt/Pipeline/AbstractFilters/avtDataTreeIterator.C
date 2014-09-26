@@ -40,8 +40,6 @@
 //                           avtDataTreeIterator.C                           //
 // ************************************************************************* //
 
-#include <vtkDataSet.h>
-
 #include <avtDataRepresentation.h>
 #include <avtDataTree.h>
 #include <avtDataTreeIterator.h>
@@ -54,11 +52,15 @@
 //  Programmer: Hank Childs
 //  Creation:   February 1, 2002
 //
+//  Modifications:
+//    Eric Bruggger, Fri Sep 26 14:15:16 PDT 2014
+//    I removed all the remaining traces of vtkDataSet since all the
+//    filters have been converted to use avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTreeIterator::avtDataTreeIterator()
 {
-    lastDataset = NULL;
 }
 
 
@@ -68,61 +70,15 @@ avtDataTreeIterator::avtDataTreeIterator()
 //  Programmer: Hank Childs
 //  Creation:   February 1, 2002
 //
+//  Modifications:
+//    Eric Bruggger, Fri Sep 26 14:15:16 PDT 2014
+//    I removed all the remaining traces of vtkDataSet since all the
+//    filters have been converted to use avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTreeIterator::~avtDataTreeIterator()
 {
-    if (lastDataset != NULL)
-    {
-        lastDataset->Delete();
-        lastDataset = NULL;
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtDataTreeIterator::ManageMemory
-//
-//  Purpose:
-//      Is a resting spot for the last dataset a filter has processed.  Many
-//      filters have a problem of what to do with their datasets when they
-//      return from ExecuteData, since they have bumped the reference count
-//      and decrementing it before returning would destruct the data before
-//      it is returned.  This is a mechanism to store it so the derived types
-//      can forget about it.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 1, 2002
-//
-//  Modifications:
-//    Jeremy Meredith, Thu May  6 11:35:15 PDT 2004
-//    Made sure not to delete the last reference to something if it was the
-//    thing we were about to add a reference to.  In other words, if the
-//    new dataset is the same as the old one, noop.
-//
-// ****************************************************************************
-
-void
-avtDataTreeIterator::ManageMemory(vtkDataSet *ds)
-{
-#ifdef VISIT_THREADS
-    if (ds != NULL)
-        ds->Register(NULL);
-#else
-    if (ds == lastDataset)
-        return;
-
-    if (lastDataset != NULL)
-    {
-        lastDataset->Delete();
-    }
-
-    lastDataset = ds;
-    if (lastDataset != NULL)
-    {
-        lastDataset->Register(NULL);
-    }
-#endif // VISIT_THREADS
 }
 
 
@@ -135,13 +91,17 @@ avtDataTreeIterator::ManageMemory(vtkDataSet *ds)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//    Eric Bruggger, Fri Sep 26 14:15:16 PDT 2014
+//    I removed all the remaining traces of vtkDataSet since all the
+//    filters have been converted to use avtDataRepresentation.
+//
 // ****************************************************************************
 
 void
 avtDataTreeIterator::ReleaseData(void)
 {
     avtSIMODataTreeIterator::ReleaseData();
-    ManageMemory(NULL);  // Cleans out any stored datasets.
 }
 
 
@@ -195,24 +155,16 @@ avtDataTreeIterator::ReleaseData(void)
 //    I modified the routine to create the same type of avtDataTree that it
 //    did previous to modifiying it to work with avtDataRepresentation.
 //
+//    Eric Bruggger, Fri Sep 26 14:15:16 PDT 2014
+//    I removed all the remaining traces of vtkDataSet since all the
+//    filters have been converted to use avtDataRepresentation.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtDataTreeIterator::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
     avtDataRepresentation *out_dr = ExecuteData(in_dr);
-    if (out_dr == (avtDataRepresentation *)-1)
-    {
-        vtkDataSet *out_ds = ExecuteData(in_dr->GetDataVTK(),
-                                         in_dr->GetDomain(),
-                                         in_dr->GetLabel());
-        if (out_ds == NULL)
-        {
-            return NULL;
-        }
-
-        return new avtDataTree(out_ds, in_dr->GetDomain(), in_dr->GetLabel());
-    }
 
     if (out_dr == NULL)
     {
@@ -231,113 +183,4 @@ avtDataTreeIterator::ExecuteDataTree(avtDataRepresentation *in_dr)
     }
 
     return retval;
-}
-
-
-// ****************************************************************************
-//  Method: avtDataTreeIterator::ExecuteDataTree
-//
-//  Purpose:
-//      Defines the pure virtual function executedomaintree.  
-//      Serves as a wrapper for the ExecuteDomain method.
-//
-//  Arguments:
-//      ds      The vtkDataSet to pass to the derived type.
-//      dom     The domain number of the input dataset.
-//      label   The label associated with this datset.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   February 9, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001
-//    Made this method return avtDataTree.
-//
-//    Kathleen Bonnell, Wed Sep 19 13:35:35 PDT 2001 
-//    Added string argument so that labels will get passed on. 
-// 
-//    Hank Childs, Fri Oct 19 10:56:55 PDT 2001
-//    Allow for derived types to return NULL.
-//
-//    Hank Childs, Wed Sep 11 09:17:46 PDT 2002
-//    Pass the label down to the derived types as well.
-//
-//    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
-//    Choose better file names when doing a "-dump" in parallel.
-//
-//    Hank Childs, Tue Jul  5 09:41:28 PDT 2005
-//    Fix cut-n-paste bug with last change.
-//
-//    Hank Childs, Wed Aug 31 09:10:11 PDT 2005
-//    Make sure that -dump in parallel increments the dump index.
-//
-//    Hank Childs, Thu Dec 21 15:38:53 PST 2006
-//    Removed -dump functionality, since it is now handled at a lower level.
-//
-// ****************************************************************************
-
-avtDataTree_p
-avtDataTreeIterator::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
-{
-    vtkDataSet *out_ds = ExecuteData(ds, dom, label);
-    if (out_ds == NULL)
-    {
-        return NULL;
-    }
-
-    return new avtDataTree(out_ds, dom, label);
-}
-
-
-// ****************************************************************************
-//  Method: avtDataTreeIterator::ExecuteData
-//
-//  Purpose:
-//      This defines a default ExecuteData method in case a filter has not
-//      been converted to use avtDataRepresentation. This method should be
-//      made pure virtual when all the filters have been converted.
-//
-//  Arguments:
-//      in_dr   Not used.
-//
-//  Programmer: Eric Brugger
-//  Creation:   Fri Jul 18 14:45:40 PDT 2014
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtDataRepresentation *
-avtDataTreeIterator::ExecuteData(avtDataRepresentation*)
-{
-    return (avtDataRepresentation*) -1;
-}
-
-
-// ****************************************************************************
-//  Method: avtDataTreeIterator::ExecuteData
-//
-//  Purpose:
-//      This defines a default ExecuteData method for filters that have been
-//      converted to use avtDataRepresentation. This method should never be
-//      called. This method should be removed when all the filters have been
-//      converted.
-//
-//  Arguments:
-//      ds      Not used.
-//      dom     Not used.
-//      label   Not used.
-//
-//  Programmer: Eric Brugger
-//  Creation:   Fri Jul 18 14:45:40 PDT 2014
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-vtkDataSet *
-avtDataTreeIterator::ExecuteData(vtkDataSet*, int, std::string)
-{
-    EXCEPTION0(ImproperUseException);
 }

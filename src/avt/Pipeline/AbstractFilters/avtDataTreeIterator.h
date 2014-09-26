@@ -94,6 +94,10 @@
 //    Eric Brugger, Fri Jul 18 14:00:24 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Fri Sep 26 14:14:36 PDT 2014
+//    I removed all the remaining traces of vtkDataSet since all the
+//    filters have been converted to use avtDataRepresentation.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDataTreeIterator : virtual public avtSIMODataTreeIterator
@@ -105,14 +109,8 @@ class PIPELINE_API avtDataTreeIterator : virtual public avtSIMODataTreeIterator
     virtual void             ReleaseData(void);
 
   protected:
-    vtkDataSet              *lastDataset;
-
     virtual avtDataTree_p    ExecuteDataTree(avtDataRepresentation *);
-    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
-    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *, int, std::string);
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
-
-    void                     ManageMemory(vtkDataSet *);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *) = 0;
 };
 
 
