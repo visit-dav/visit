@@ -121,6 +121,10 @@ typedef enum
 //    Cameron Christensen, Thursday, May 22, 2014
 //    Added support for EAVL.
 //
+//    Eric Brugger, Tue Sep 30 15:05:02 PDT 2014
+//    I modified the EAVL version of the avtDataRepresentation constructor
+//    to also have domain and label arguments.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -129,7 +133,7 @@ class PIPELINE_API avtDataRepresentation
                         avtDataRepresentation();
                         avtDataRepresentation(vtkDataSet *, int, std::string,
                                               bool dontCopyData = false);
-                        avtDataRepresentation(eavlDataSet *d, /*int dom, std::string s,*/
+                        avtDataRepresentation(eavlDataSet *, int, std::string,
                                               bool dontCopyData = false);
                         avtDataRepresentation(char *, int, int, std::string,
                                               CharStrRef &, DataSetType);
