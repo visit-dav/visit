@@ -50,6 +50,8 @@
 #include <QRadioButton>
 #include <QSpinBox>
 
+#include <visit-config.h>
+
 // ****************************************************************************
 // Method: QvisPreferencesWindow::QvisPreferencesWindow
 //
@@ -202,6 +204,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added a preference for setting the backend type.
 //
+//   Eric Brugger, Tue Sep 30 15:02:07 PDT 2014
+//   I made the code for setting the backend type depend on having EAVL.
+//
 // ****************************************************************************
 
 void
@@ -274,7 +279,7 @@ QvisPreferencesWindow::CreateWindowContents()
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
 
-#if 0
+#ifdef HAVE_LIBEAVL
     //
     // Create radio button controls to change the backend.
     //

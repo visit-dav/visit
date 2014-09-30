@@ -500,6 +500,10 @@ avtDataTree::avtDataTree(int n, avtDataRepresentation *drep)
 //    Mark C. Miller, 22Apr03
 //    Added option to create a tree without the data at the leaves
 //
+//    Eric Brugger, Tue Sep 30 15:08:12 PDT 2014
+//    I modified the EAVL version of the avtDataRepresentation constructor
+//    to also have domain and label arguments.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
@@ -529,9 +533,20 @@ avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
         if (dontCopyData)
         {
             avtDataRepresentation& oldRep = dt->GetDataRepresentation();
-            dataRep  = new avtDataRepresentation(NULL, oldRep.GetDomain(),
-                                                       oldRep.GetLabel(),
-                                                       dontCopyData);
+            if (oldRep.GetDataRepType() == DATA_REP_TYPE_VTK)
+            {
+                dataRep  = new avtDataRepresentation((vtkDataSet *)NULL,
+                                                     oldRep.GetDomain(),
+                                                     oldRep.GetLabel(),
+                                                     dontCopyData);
+            }
+            else
+            {
+                dataRep  = new avtDataRepresentation((eavlDataSet *)NULL,
+                                                     oldRep.GetDomain(),
+                                                     oldRep.GetLabel(),
+                                                     dontCopyData);
+            }
         }
         else
         {
