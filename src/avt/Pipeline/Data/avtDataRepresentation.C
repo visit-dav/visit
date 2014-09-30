@@ -211,10 +211,13 @@ avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
 //  Creation:   May 22, 2014
 //
 //  Modifications:
+//    Eric Brugger, Tue Sep 30 15:07:51 PDT 2014
+//    I modified the EAVL version of the avtDataRepresentation constructor
+//    to also have domain and label arguments.
 //
 // ****************************************************************************
 
-avtDataRepresentation::avtDataRepresentation(eavlDataSet *d, /* int dom, string s,*/
+avtDataRepresentation::avtDataRepresentation(eavlDataSet *d, int dom, string s,
                                              bool dontCopyData)
 {
     InitializeNullDatasets();
@@ -225,8 +228,8 @@ avtDataRepresentation::avtDataRepresentation(eavlDataSet *d, /* int dom, string 
     asCharLength = 0;
     datasetType  = DATASET_TYPE_UNKNOWN;
     dataRepType  = DATA_REP_TYPE_EAVL;
-    domain       = -1;
-    label        = "";
+    domain       = dom;
+    label        = s ;
     compressionRatio = -1.0;
     timeToCompress   = -1.0;
     timeToDecompress = -1.0;

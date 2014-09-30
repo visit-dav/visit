@@ -566,6 +566,9 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //  Creation:   June 10, 2014
 //
 //  Modifications:
+//    Eric Brugger, Tue Sep 30 15:09:28 PDT 2014
+//    I modified the EAVL version of the avtDataRepresentation constructor
+//    to also have domain and label arguments.
 //
 // ****************************************************************************
 
@@ -702,7 +705,16 @@ avtContourFilter::ExecuteDataTree_EAVL(avtDataRepresentation *in_dr)
         TRY
         {
             iso->Execute();
-            output[i] = new avtDataRepresentation(iso->GetOutput());
+            if (shouldCreateLabels)
+            {   
+                output[i] = new avtDataRepresentation(iso->GetOutput(),
+                    domain, isoLabels[i]);
+            }
+            else
+            {   
+                output[i] = new avtDataRepresentation(iso->GetOutput(),
+                    domain, label);
+            }
         }
         CATCH(eavlException &e)
         {
