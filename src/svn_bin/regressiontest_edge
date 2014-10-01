@@ -234,8 +234,15 @@ echo "Checkout of $branch completed at: \`date\`"
 
 # Build the code
 cd src
-module load cudatoolkit/6.0
 export PATH=\$PATH:/usr/bin/X11
+export PATH=/opt/cudatoolkit-6.0/open64/bin:/opt/cudatoolkit-6.0/bin:\$PATH
+export CUDA_INCLUDES=/opt/cudatoolkit-6.0/include
+export CUDA_INSTALL_PATH=/opt/cudatoolkit-6.0
+export CUDA_LIBS=/opt/cudatoolkit-6.0/lib64
+export CUDA_PATH=/opt/cudatoolkit-6.0
+export LD_LIBRARY_PATH=/opt/cudatoolkit-6.0/lib64:/usr/lib64/nvidia
+export NVCC=/opt/cudatoolkit-6.0/bin/nvcc
+export OPENGLLIB=-L/opt/cudatoolkit-6.0/lib64 -lcudart -lcuda
 
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/edge83.cmake
