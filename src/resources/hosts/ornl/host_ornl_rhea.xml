@@ -4,7 +4,7 @@
     <Field name="host" type="string">rhea.ccs.ornl.gov</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">rhea-login#g</Field>
-    <Field name="directory" type="string">/sw/rhea/visit</Field>
+    <Field name="directory" type="string">/sw/redhat6/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
