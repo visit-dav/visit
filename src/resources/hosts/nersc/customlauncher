@@ -125,10 +125,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
             if self.parallel.workingdir != None:
                 args = args + ["-d", self.parallel.workingdir]
             if self.parallel.nn != None:
-                if self.launcher.nersc_host == "edison":
-                    nprocpernode = 16
-                else:
-                    nprocpernode = 24
+                nprocpernode = 24
                 nwidth = nprocpernode * int(nodes)
                 # If the number of nodes is set, we need to modify mppwidth to ensure
                 # allocation of the proper number of nodes. The number of nodes allocated
@@ -181,9 +178,7 @@ class NERSCLauncher(MainLauncher):
         self.loginnodehost = None
         self.nersc_host = GETENV("NERSC_HOST")
         if not self.nersc_host:
-            if self.hostname() == "euclid.nersc.gov":
-                self.nersc_host = "euclid"
-            elif self.sectorname() == "cvrsvc":
+            if self.sectorname() == "cvrsvc":
                 self.nersc_host = "carver"
             else:
                 exit("Cannot determine NERSC host.", 1)
@@ -195,7 +190,7 @@ class NERSCLauncher(MainLauncher):
         # ----
             # Add GCC libraries to LD_LIBRARY_PATH
             ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/gcc/4.8.0/snos/lib64"]
+            added_ld_library_paths = ["/opt/gcc/4.9.0/snos/lib64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             # Set Python path
@@ -203,41 +198,37 @@ class NERSCLauncher(MainLauncher):
             added_python_paths = [self.visitlibdir + "/python/lib/python2.6/lib-dynload"]
             SETENV("PYTHONPATH", self.joinpaths(added_python_paths + python_path))
 
-            # Running the gui on Hopper or a serial engine on a login node are "verboten"
-#            if self.sectorname() == "edison":
-#                if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
-#                    msg = """
-#Do not run the VisIt GUI on Hopper. Run it on you local workstation (preferred/best performance) or Euclid!
-#
-#For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
-#
-#"""
-#                    exit(msg, 0)
-#
-#                if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
-#                    exit("The VisIt install on Hopper does not support running a serial engine!", 1)
+            # Running the gui on Edison or a serial engine on a login node are "verboten"
+            if self.sectorname() == "edison":
+                if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
+                    msg = """
+Do not run the VisIt GUI on Edison. Run it on your local workstation (preferred/best performance) or on Carver!
+
+For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
+"""
+                    exit(msg, 0)
+                if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
+                    exit("The VisIt install on Edison does not support running a serial engine on the login nodes!", 1)
        elif self.nersc_host == "grace" or self.nersc_host == "hopper":
         # ----
         # Hopper @ NERSC
         # ----
             # Add GCC libraries to LD_LIBRARY_PATH
             ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/gcc/4.7.2/snos/lib64"]
+            added_ld_library_paths = ["/opt/gcc/4.8.2/snos/lib64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             # Running the gui on Hopper or a serial engine on a login node are "verboten"
             if self.sectorname() == "grace" or self.sectorname() == "hopper":
                 if not self.generalArgs.env and self.generalArgs.exe_name == "gui" and not self.visitver[-1] =="b":
                     msg = """
-Do not run the VisIt GUI on Hopper. Run it on you local workstation (preferred/best performance) or Euclid!
+Do not run the VisIt GUI on Edison. Run it on your local workstation (preferred/best performance) or on Carver!
 
 For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
-
 """
                     exit(msg, 0)
-
                 if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
-                    exit("The VisIt install on Hopper does not support running a serial engine!", 1)
+                    exit("The VisIt install on Hopper does not support running a serial engine on the login nodes!", 1)
             else:
                 python_path = self.splitpaths(GETENV("PYTHONPATH"))
                 added_python_paths = [self.visitlibdir + "/python/lib/python2.6/lib-dynload"]
