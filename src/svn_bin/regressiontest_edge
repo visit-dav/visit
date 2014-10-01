@@ -234,6 +234,7 @@ echo "Checkout of $branch completed at: \`date\`"
 
 # Build the code
 cd src
+module load cudatoolkit/6.0
 export PATH=\$PATH:/usr/bin/X11
 
 if test "$serial" = "true" ; then
