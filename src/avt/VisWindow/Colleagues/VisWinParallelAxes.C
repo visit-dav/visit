@@ -143,6 +143,9 @@ Digits(double min, double max)
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications
+//    Mark C. Miller, Thu Oct  2 09:07:24 PDT 2014
+//    Defend against negative logs.
 // ****************************************************************************
 
 int
@@ -153,6 +156,9 @@ LabelExponent(double min, double max)
     //
     double range = (fabs(min) > fabs(max) ? fabs(min) : fabs(max));
 
+    if (range <= 0)
+        return 0;
+    
     double pow10 = log10(range);
 
     //

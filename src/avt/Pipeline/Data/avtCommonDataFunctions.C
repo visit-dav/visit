@@ -1718,6 +1718,8 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Added 'GetNodalMagnitudeRangeViaCells' to be used when data is nodal
 //    and 'onlyConnectedNodes' is requested.
 //
+//    Mark C. Miller, Wed Oct  1 19:41:32 PDT 2014
+//    Add some casts to double precision to avoid FPE issues.
 // ****************************************************************************
 
 template <class T> static void
@@ -1732,7 +1734,8 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
 
         double mag = 0.0;
         for (int j = 0; j < ncomps; j++, buf++)
-            mag += *buf * *buf;
+            mag += (double) *buf * (double) *buf;
+        
 
         if (checkFinite)
             if (! visitIsFinite(mag))
@@ -1756,8 +1759,8 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
         return GetMagnitudeRange(buf_orig, n, ncomps, exts, ghosts, true);
     }
 
-    exts[0] = sqrt(exts[0]);
-    exts[1] = sqrt(exts[1]);
+    exts[0] = exts[0]>0?sqrt(exts[0]):0;
+    exts[1] = exts[1]>0?sqrt(exts[1]):0;
 }
 
 template <class T> static void

@@ -54,32 +54,31 @@
 #include <AnnotationObjectList.h>
 #include <AttributeSubjectMap.h>
 #include <DataNode.h>
-#include <EngineList.h>
-#include <GlobalAttributes.h>
 #include <LightList.h> 
 #include <Line.h>
 #include <LineoutInfo.h>
 #include <PickAttributes.h>
+#include <GlobalAttributes.h>
 #include <PickPointInfo.h>
 #include <RenderingAttributes.h>
-
 #include <ViewerActionManager.h>
-#include <ViewerEngineManagerInterface.h>
-#include <ViewerInternalCommands.h>
-#include <ViewerMessaging.h>
+#include <ViewerEngineManager.h>
+#include <ViewerFileServer.h>
 #include <ViewerPlot.h> 
 #include <ViewerPlotList.h> 
+#include <ViewerPopupMenu.h>
 #include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
-#include <ViewerState.h>
-#include <ViewerText.h>
+#include <ViewerToolbar.h>
+#include <ViewerSubject.h>
 #include <ViewerWindowManager.h> 
 #include <VisItException.h>
-#include <VisWindow.h>
 #include <VisualCueInfo.h>
+#include <VisWindow.h>
+#include <QtVisWindow.h>
 
 #include <DebugStream.h>
-#include <LostConnectionException.h>
+
 #include <Utility.h>
 
 #include <float.h>
@@ -95,6 +94,11 @@
 //
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #define max(x,y) ((x) > (y) ? (x) : (y))
+
+//
+// Global variables.  These should be removed.
+//
+extern ViewerSubject  *viewerSubject;
 
 //
 // Function prototypes.
@@ -270,16 +274,29 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
 //    I added a multi resolution display capability for 2d.
 //
-//    Brad Whitlock, Tue Aug 19 15:32:22 PDT 2014
-//    I moved some GUI-related stuff into a subclass.
-//
 // ****************************************************************************
 
-ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(),
+ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     undoViewStack(true), redoViewStack()
 {
-    visWindow = NULL;
-    actionMgr = NULL;
+    if (GetViewerProperties()->GetNowin())
+    {
+        visWindow = new VisWindow();
+    }
+    else
+    {
+        visWindow = new QtVisWindow(GetViewerProperties()->GetWindowFullScreen());
+    }
+
+    visWindow->SetCloseCallback(CloseCallback, (void *)this);
+    visWindow->SetHideCallback(HideCallback, (void *)this);
+    visWindow->SetShowCallback(ShowCallback, (void *)this);
+    visWindow->SetExternalRenderCallback(ExternalRenderCallback, (void*)this);
+    visWindow->CreateAnnotationObjectsFromList(
+        *ViewerWindowManager::GetDefaultAnnotationObjectList());
+    SetAnnotationAttributes(ViewerWindowManager::GetAnnotationDefaultAtts(), true);
+    SetLightList(ViewerWindowManager::GetLightListDefaultAtts());
+    SetInteractorAtts(ViewerWindowManager::GetInteractorDefaultAtts());
 
     // Set some default values.
     cameraView = false;
@@ -310,11 +327,69 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(),
     isCompressingScalableImage = false;
     compressionActivationMode = RenderingAttributes::Never;
 
-    plotList = new ViewerPlotList(this);
-    plotList->SetAnimationAttributes(*GetViewerState()->GetAnimationAttributes());
+    // Create the popup menu and the toolbar.
+    popupMenu = new ViewerPopupMenu(this);
+    toolbar = new ViewerToolbar(this);
 
+    plotList = new ViewerPlotList(this);
+    plotList->SetAnimationAttributes(*ViewerWindowManager::GetAnimationClientAtts());
+
+    //
+    // Callbacks to show the menu when the right mouse button is
+    // clicked in the VisWindow.
+    //
+    visWindow->SetShowMenu(ShowMenuCallback, this);
+    visWindow->SetHideMenu(HideMenuCallback, this);
+
+    //
+    // Callback for render information.
+    //
+    visWindow->SetRenderInfoCallback(ViewerWindowManager::RenderInformationCallback,
+        &windowId);
+
+    //
+    // Callback for pick.
+    //
+    PICK_POINT_INFO *pdata = new PICK_POINT_INFO;
+    pdata->callbackData = this;
+    visWindow->SetPickCB(ViewerWindow::PerformPickCallback, pdata);
     pickFunction = 0;
     pickFunctionData = 0;
+
+    //
+    // Callback for lineout.
+    //
+    LINE_OUT_INFO *ldata = new LINE_OUT_INFO;
+    ldata->callbackData = this;
+    visWindow->SetLineoutCB(ViewerWindow::PerformLineoutCallback, ldata);
+
+    //
+    // Initialize the view information.
+    //
+    avtView2D view2D;
+
+    view2D.viewport[0] = 0.2;
+    view2D.viewport[1] = 0.95;
+    view2D.viewport[2] = 0.15;
+    view2D.viewport[3] = 0.95;
+    visWindow->SetView2D(view2D);
+
+    //
+    // Initialize the curve view information.
+    //
+    avtViewCurve viewCurve;
+
+    viewCurve.viewport[0] = 0.2;
+    viewCurve.viewport[1] = 0.95;
+    viewCurve.viewport[2] = 0.15;
+    viewCurve.viewport[3] = 0.95;
+    visWindow->SetViewCurve(viewCurve);
+
+    //
+    // Initialize the axis array view information.
+    //
+    avtViewAxisArray viewAxisArray;
+    visWindow->SetViewAxisArray(viewAxisArray);
 
     curViewCurve     = new ViewCurveAttributes;
     curView2D        = new View2DAttributes;
@@ -325,6 +400,11 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(),
     view3DAtts       = new AttributeSubjectMap;
     viewAxisArrayAtts= new AttributeSubjectMap;
 
+    //
+    // Create the window's action manager.
+    //
+    actionMgr = new ViewerActionManager(this);
+
     doShading = false;
     shadingStrength = 0.5;
 
@@ -333,8 +413,13 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(),
     startCuePoint[0] = -10;  startCuePoint[0] = 0;  startCuePoint[0] = 0;
     endCuePoint[0]   =  10;  endCuePoint[0]   = 0;  endCuePoint[0]   = 0;
 
+    //
+    // Multiresolution control information.
+    //
     // At end so that plot list can be initialized.
     processingViewChanged = false;
+    if (visWindow->GetMultiresolutionMode())
+        visWindow->SetViewChangedCB(ViewChangedCallback, (void*)this);
 }
 
 // ****************************************************************************
@@ -373,7 +458,9 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(),
 ViewerWindow::~ViewerWindow()
 {
     delete plotList;
+    delete popupMenu;
     delete visWindow;
+    delete toolbar;
 
     delete curViewCurve;
     delete curView2D;
@@ -387,120 +474,41 @@ ViewerWindow::~ViewerWindow()
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetVisWindow
+//  Method: ViewerWindow::GetPopupMenu
 //
-// Purpose:
-//   Set the vis window that the ViewerWindow will use.
+//  Purpose: 
+//    Return a pointer to the window's popup menu.
 //
-// Arguments:
-//   vw : The vis window that we'll use for this viewer window.
+//  Returns:    A pointer to the popup menu.
 //
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Aug 19 15:25:28 PDT 2014
-//
-// Modifications:
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 7 11:19:01 PDT 2000
 //
 // ****************************************************************************
 
-void
-ViewerWindow::SetVisWindow(VisWindow *vw)
+ViewerPopupMenu *
+ViewerWindow::GetPopupMenu() const
 {
-    visWindow = vw;
-
-    SetAnnotationAttributes(ViewerWindowManager::GetAnnotationDefaultAtts(), true);
-    SetLightList(ViewerWindowManager::GetLightListDefaultAtts());
-    SetInteractorAtts(ViewerWindowManager::GetInteractorDefaultAtts());
-
-    // Now, set up callbacks on the vis window.
-    visWindow->SetExternalRenderCallback(ExternalRenderCallback, (void*)this);
-    visWindow->CreateAnnotationObjectsFromList(
-        *ViewerWindowManager::GetDefaultAnnotationObjectList());
-
-    //
-    // Callback for render information.
-    //
-    visWindow->SetRenderInfoCallback(ViewerWindowManager::RenderInformationCallback,
-        &windowId);
-
-    //
-    // Callback for pick.
-    //
-    PICK_POINT_INFO *pdata = new PICK_POINT_INFO;
-    pdata->callbackData = this;
-    visWindow->SetPickCB(ViewerWindow::PerformPickCallback, pdata);
-
-    //
-    // Callback for lineout.
-    //
-    LINE_OUT_INFO *ldata = new LINE_OUT_INFO;
-    ldata->callbackData = this;
-    visWindow->SetLineoutCB(ViewerWindow::PerformLineoutCallback, ldata);
-
-    //
-    // Initialize the view information.
-    //
-    avtView2D view2D;
-
-    view2D.viewport[0] = 0.2;
-    view2D.viewport[1] = 0.95;
-    view2D.viewport[2] = 0.15;
-    view2D.viewport[3] = 0.95;
-    visWindow->SetView2D(view2D);
-
-    //
-    // Initialize the curve view information.
-    //
-    avtViewCurve viewCurve;
-
-    viewCurve.viewport[0] = 0.2;
-    viewCurve.viewport[1] = 0.95;
-    viewCurve.viewport[2] = 0.15;
-    viewCurve.viewport[3] = 0.95;
-    visWindow->SetViewCurve(viewCurve);
-
-    //
-    // Initialize the axis array view information.
-    //
-    avtViewAxisArray viewAxisArray;
-    visWindow->SetViewAxisArray(viewAxisArray);
-
-    //
-    // Multiresolution control information.
-    //
-    // At end so that plot list can be initialized.
-    processingViewChanged = false;
-    if (visWindow->GetMultiresolutionMode())
-        visWindow->SetViewChangedCB(ViewChangedCallback, (void*)this);
+    return popupMenu;
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetActionManager
+//  Method: ViewerWindow::GetToolbar
 //
-// Purpose:
-//   Set the action manager that the viewer window will use.
+//  Purpose: 
+//    Return a pointer to the window's toolbar.
 //
-// Arguments:
-//   mgr : The action manager.
+//  Returns:    A pointer to the toolbar.
 //
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Aug 19 15:27:28 PDT 2014
-//
-// Modifications:
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jan 29 11:26:04 PDT 2003
 //
 // ****************************************************************************
 
-void
-ViewerWindow::SetActionManager(ViewerActionManager *mgr)
+ViewerToolbar *
+ViewerWindow::GetToolbar() const
 {
-    actionMgr = mgr;
+    return toolbar;
 }
 
 // ****************************************************************************
@@ -1013,8 +1021,7 @@ ViewerWindow::UpdateTools()
                 // same position.  The call below is what makes this
                 // happen.  This is the mechanism where the attributes are 
                 // sent to (for example) the clip operator.
-                bool applyOps = GetViewerState()->GetGlobalAttributes()->
-                                GetApplyOperator();
+                bool applyOps = ViewerWindowManager::Instance()->GetClientAtts()->GetApplyOperator();
                 HandleTool(visWindow->GetToolInterface(toolId), applyOps);
             }
             if(ViewerQueryManager::Instance()->
@@ -1276,9 +1283,8 @@ ViewerWindow::DeleteViewKeyframe(const int index)
 {
     if(!GetPlotList()->GetKeyframeMode())
     {
-        GetViewerMessaging()->Error(
-            TR("VisIt does not allow view keyframes to be deleted when the "
-               "active window is not in keyframe mode."));
+        Error(tr("VisIt does not allow view keyframes to be deleted when the "
+                 "active window is not in keyframe mode."));
     }
     else
     {
@@ -1352,9 +1358,8 @@ ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
 {
     if(!GetPlotList()->GetKeyframeMode())
     {
-        GetViewerMessaging()->Error(
-            TR("VisIt does not allow view keyframes to be moved when the "
-               "active window is not in keyframe mode."));
+        Error(tr("VisIt does not allow view keyframes to be moved when the "
+                 "active window is not in keyframe mode."));
     }
     else
     {
@@ -1445,9 +1450,8 @@ ViewerWindow::SetViewKeyframe()
 {
     if(!GetPlotList()->GetKeyframeMode())
     {
-        GetViewerMessaging()->Error(
-           TR("VisIt does not allow view keyframes to be added when the "
-              "active window is not in keyframe mode."));
+        Error(tr("VisIt does not allow view keyframes to be added when the "
+                 "active window is not in keyframe mode."));
     }
     else
     {
@@ -2111,7 +2115,7 @@ ViewerWindow::GetPerspectiveProjection() const
 // ****************************************************************************
 
 void
-ViewerWindow::UpdateColorTable(const std::string &ctName)
+ViewerWindow::UpdateColorTable(const char *ctName)
 {
     // If any plots in the plot list had to be updated, redraw the window.
     if(GetPlotList()->UpdateColorTable(ctName))
@@ -2536,7 +2540,10 @@ ViewerWindow::GetFrameAndState(int& nFrames,
 void
 ViewerWindow::SendRedrawMessage()
 {
-    GetViewerMessaging()->QueueCommand(new ViewerCommandRedrawWindow(this));
+    char msg[256];
+
+    SNPRINTF(msg, 256, "redrawWindow 0x%p;", this);
+    viewerSubject->MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -2556,7 +2563,10 @@ ViewerWindow::SendRedrawMessage()
 void
 ViewerWindow::SendUpdateMessage()
 {
-    GetViewerMessaging()->QueueCommand(new ViewerCommandUpdateWindow(this));
+    char msg[256];
+
+    SNPRINTF(msg, 256, "updateWindow 0x%p;", this);
+    viewerSubject->MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -2576,7 +2586,10 @@ ViewerWindow::SendUpdateMessage()
 void
 ViewerWindow::SendDeleteMessage()
 {
-    GetViewerMessaging()->QueueCommand(new ViewerCommandDeleteWindow(this));
+    char msg[256];
+
+    SNPRINTF(msg, 256, "deleteWindow 0x%p;", this);
+    viewerSubject->MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -3541,7 +3554,7 @@ ViewerWindow::AddAnnotationObject(int annotType, const std::string &annotName)
         SendUpdateFrameMessage();
     else
     {
-        GetViewerMessaging()->Warning(TR("The annotation object could not be added."));
+        Warning(tr("The annotation object could not be added."));
     }
 
     return ret;
@@ -3801,6 +3814,53 @@ void
 ViewerWindow::CopyLightList(const ViewerWindow *source)
 {
     SetLightList(source->GetLightList());
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::ShowMenu
+//
+//  Purpose: 
+//    Activates the window's popup menu.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 7 11:22:05 PDT 2000
+//
+//  Modifications:
+//    Brad Whitlock, Tue Feb 4 15:41:51 PST 2003
+//    I removed UpdateMenu.
+//
+//    Brad Whitlock, Thu Sep 11 08:55:25 PDT 2003
+//    I added code to suspend spin mode.
+//
+// ****************************************************************************
+
+void
+ViewerWindow::ShowMenu()
+{
+    visWindow->SetSpinModeSuspended(true);
+    popupMenu->ShowMenu();
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::HideMenu
+//
+//  Purpose: 
+//    Hide the window's popup menu.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 7 11:22:30 PDT 2000
+//
+//  Modifications:
+//    Brad Whitlock, Thu Sep 11 08:55:45 PDT 2003
+//    I added code to turn of spin mode suspend.
+//
+// ****************************************************************************
+
+void
+ViewerWindow::HideMenu()
+{
+    popupMenu->HideMenu();
+    visWindow->SetSpinModeSuspended(false);
 }
 
 // ****************************************************************************
@@ -4170,7 +4230,7 @@ ViewerWindow::RecenterViewCurve(const double *limits)
             viewCurve.rangeScale = LINEAR;
             viewCurve.havePerformedLogDomain = false;
             viewCurve.havePerformedLogRange = false;
-            GetViewerMessaging()->Warning(TR("There are plots in the window that do not\n"
+            Warning(tr("There are plots in the window that do not\n"
                        "support log-scaling.  It will not be done."));
         }
     }
@@ -4298,7 +4358,7 @@ ViewerWindow::RecenterView2d(const double *limits)
             view2D.yScale = LINEAR;
             view2D.havePerformedLogX = false;
             view2D.havePerformedLogY = false;
-            GetViewerMessaging()->Warning(TR("There are plots in the window that do not\n"
+            Warning(tr("There are plots in the window that do not\n"
                        "support log-scaling.  It will not be done."));
         }
     }
@@ -4659,7 +4719,7 @@ ViewerWindow::ResetViewCurve()
             viewCurve.rangeScale = LINEAR;
             viewCurve.havePerformedLogDomain = false;
             viewCurve.havePerformedLogRange = false;
-            GetViewerMessaging()->Warning(TR("There are plots in the window that do not\n"
+            Warning(tr("There are plots in the window that do not\n"
                        "support log-scaling.  It will not be done."));
  
         }
@@ -4799,7 +4859,7 @@ ViewerWindow::ResetView2d()
             view2D.yScale = LINEAR;
             view2D.havePerformedLogX = false;
             view2D.havePerformedLogY = false;
-            GetViewerMessaging()->Warning(TR("There are plots in the window that do not\n"
+            Warning(tr("There are plots in the window that do not\n"
                        "support log-scaling.  It will not be done."));
         }
     }
@@ -5952,7 +6012,7 @@ ViewerWindow::ChooseCenterOfRotation(double sx, double sy)
     }
     else
     {
-        GetViewerMessaging()->Warning(TR("VisIt could not pick the center of rotation. "
+        Warning(tr("VisIt could not pick the center of rotation. "
                    "You might not have clicked on a plot."));
     }
 }
@@ -6155,6 +6215,196 @@ RotateAroundY(const avtView3D &curView, double angle,
     newView.viewUp[0] = viewUp[0];
     newView.viewUp[1] = viewUp[1];
     newView.viewUp[2] = viewUp[2];
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::ShowMenuCallback
+//
+//  Purpose: 
+//    This is a static method that is passed to VisWindow as a callback
+//    function. When the right mouse button is pressed, this method is
+//    called by the VisWindow's interactor.
+//
+//  Arguments:
+//    data      A pointer to the ViewerWindow that owns the VisWindow that
+//              invoked this call.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 7 11:22:48 PDT 2000
+//
+// ****************************************************************************
+
+void ViewerWindow::ShowMenuCallback(void *data)
+{
+    if(data == 0)
+        return;
+
+    ViewerWindow *win = (ViewerWindow *)data;
+    win->ShowMenu();
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::HideMenuCallback
+//
+//  Purpose: 
+//    This is a static method that is passed to VisWindow as a callback
+//    function. When the right mouse button is released, this method is
+//    called by the VisWindow's interactor.
+//
+//  Arguments:
+//    data      A pointer to the ViewerWindow that owns the VisWindow that
+//              invoked this call.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Nov 7 11:22:48 PDT 2000
+//
+// ****************************************************************************
+
+void
+ViewerWindow::HideMenuCallback(void *data)
+{
+    if(data == 0)
+        return;
+
+    ViewerWindow *win = (ViewerWindow *)data;
+    win->HideMenu();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::CloseCallback
+//
+// Purpose: 
+//   This is a static method that is passed to the VisWindow as a callback
+//   function to be called when the VisWindow is destroyed from the window
+//   manager. It sends a message to the rendering thread to delay when the
+//   window is actually destroyed.
+//
+// Arguments:
+//   data : A pointer to the ViewerWindow.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:53:53 PDT 2001
+//
+// Modifications:
+//   Brad Whitlock, Wed Jul 24 15:21:06 PST 2002
+//   I made animation stop for the window being deleted so that the
+//   ViewerWindowManager does not try to animate the window before its
+//   delete message can be processed.
+//
+// ****************************************************************************
+
+void
+ViewerWindow::CloseCallback(void *data)
+{
+    if(data == 0)
+        return;
+
+    //
+    // Send a message to the rendering thread to delete this window.
+    //
+    ViewerWindow *win = (ViewerWindow *)data;
+    ViewerWindowManager::Instance()->StopTimer();
+    win->SendDeleteMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::HideCallback
+//
+// Purpose: 
+//   This callback function is called when the window is hidden.
+//
+// Arguments:
+//   data : A pointer to the ViewerWindow.
+//
+// Note:       We set the visible flag to false and then update the animation
+//             timer so that the window will not be considered for animation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 12 10:23:39 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::HideCallback(void *data)
+{
+    ViewerWindow *win = (ViewerWindow *)data;
+    win->SetVisible(false);
+    ViewerWindowManager::Instance()->UpdateAnimationTimer();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::ShowCallback
+//
+// Purpose: 
+//   This callback function is called when the window is shown.
+//
+// Arguments:
+//   data : A pointer to the ViewerWindow.
+//
+// Note:       We set the visible flag to true and then update the animation
+//             timer so that the window will be considered for animation if
+//             its animation is playing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 12 10:23:39 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::ShowCallback(void *data)
+{
+    ViewerWindow *win = (ViewerWindow *)data;
+    win->SetVisible(true);
+    ViewerWindowManager::Instance()->UpdateAnimationTimer();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::CreateToolbar
+//
+// Purpose: 
+//   Tells the vis window to create a new toolbar widget and return a pointer
+//   to it so that we can use it.
+//
+// Arguments:
+//   name : The name of the new toolbar to create.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 29 11:56:23 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void *
+ViewerWindow::CreateToolbar(const std::string &name)
+{
+    return visWindow->CreateToolbar(name.c_str());
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetLargeIcons
+//
+// Purpose: 
+//   Sets whether the window should use large icons.
+//
+// Arguments:
+//   val : Whether the window should use large icons.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:35:59 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetLargeIcons(bool val)
+{
+    visWindow->SetLargeIcons(val);
 }
 
 // ****************************************************************************
@@ -6398,7 +6648,7 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
     double vexts[6]={0,0,0,0,0,0};
     GetExtents(visWindow->GetWindowMode()==WINMODE_3D?3:2, vexts);
 
-    return GetViewerEngineManager()->SetWinAnnotAtts(ek,
+    return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
                &winAtts, &annotAtts, &annotObjs, extStr, &visCues,
                fns, vexts,"", GetWindowId());
 }
@@ -6491,7 +6741,7 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
         intVector plotIds;
         plist->GetActivePlotIDs(plotIds);
         EngineKey key = plist->GetPlot(plotIds[0])->GetEngineKey();
-        if (GetViewerEngineManager()->EngineExists(key))
+        if (ViewerEngineManager::Instance()->EngineExists(key))
         {
             intVector netIds;
             for (size_t i = 0; i < plotIds.size(); i++)
@@ -6505,22 +6755,22 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
             sc[1] = sy;
             sc[2] = 0.; 
             pick.SetRayPoint1(sc);
-            GetViewerEngineManager()->Pick(key, -1, GetWindowId(),
-                                           &pick, pick);
+            ViewerEngineManager::Instance()->Pick(key, -1, GetWindowId(),
+                                                  &pick, pick);
             pa = pick;
             retval = pick.GetFulfilled();
         }
     }
     CATCH2(VisItException, e)
     {
-        ViewerText msg(TR("An error occurred while trying to take a pick."
+        QString msg = tr("An error occurred while trying to take a pick."
                  "\nThis happens most often when trying to do a choose center"
                  " while the engine times out or otherwise has problems."
                  "\n\nThe type of exception was: %1"
                  "\nThe error message was: %2").
-                 arg(e.GetExceptionType()).
-                 arg(e.Message()));
-        GetViewerMessaging()->Error(msg);
+                 arg(e.GetExceptionType().c_str()).
+                 arg(e.Message().c_str());
+        Error(msg);
     }
     ENDTRY
 
@@ -6837,7 +7087,7 @@ ViewerWindow::PerformLineoutCallback(void *data)
 
     ViewerWindow *win = (ViewerWindow *)loData->callbackData;
     ViewerQueryManager::Instance()->StartLineout(win, &loData->atts);
-    GetViewerMessaging()->QueueCommand(new ViewerCommandFinishLineout());
+    viewerSubject->MessageRendererThread("finishLineout;");
 }
 
 
@@ -8870,9 +9120,12 @@ ViewerWindow::SessionContainsErrors(DataNode *parentNode)
 // ****************************************************************************
 
 void
-ViewerWindow::SendUpdateFrameMessage()
+ViewerWindow::SendUpdateFrameMessage() const
 {
-    GetViewerMessaging()->QueueCommand(new ViewerCommandUpdateFrame(this));
+    char msg[256];
+
+    SNPRINTF(msg, 256, "updateFrame 0x%p;", this);
+    viewerSubject->MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -8893,9 +9146,12 @@ ViewerWindow::SendUpdateFrameMessage()
 // ****************************************************************************
 
 void
-ViewerWindow::SendInteractionModeMessage(const INTERACTION_MODE m)
+ViewerWindow::SendInteractionModeMessage(const INTERACTION_MODE m) const
 {
-    GetViewerMessaging()->QueueCommand(new ViewerCommandSetInteractionMode(this,m));
+    char msg[256];
+
+    SNPRINTF(msg, 256, "setInteractionMode 0x%p %d;", this, int(m));
+    viewerSubject->MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -8916,9 +9172,12 @@ ViewerWindow::SendInteractionModeMessage(const INTERACTION_MODE m)
 // ****************************************************************************
 
 void
-ViewerWindow::SendToolUpdateModeMessage(const TOOLUPDATE_MODE m)
+ViewerWindow::SendToolUpdateModeMessage(const TOOLUPDATE_MODE m) const
 {
-    GetViewerMessaging()->QueueCommand(new ViewerCommandSetToolUpdateMode(this,m));
+    char msg[256];
+
+    SNPRINTF(msg, 256, "setToolUpdateMode 0x%p %d;", this, int(m));
+    viewerSubject->MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -8939,9 +9198,12 @@ ViewerWindow::SendToolUpdateModeMessage(const TOOLUPDATE_MODE m)
 // ****************************************************************************
 
 void
-ViewerWindow::SendActivateToolMessage(const int toolId)
+ViewerWindow::SendActivateToolMessage(const int toolId) const
 {
-    GetViewerMessaging()->QueueCommand(new ViewerCommandActivateTool(this,toolId));
+    char msg[256];
+
+    SNPRINTF(msg, 256, "activateTool 0x%p %d;", this, toolId);
+    viewerSubject->MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -8977,12 +9239,16 @@ ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 
     if (GetScalableRendering() != newMode)
     {
+        char msg[256];
+
         // we set these flags here so that everywhere else, we can ask if
         // we're about to change modes
         isChangingScalableRenderingMode = true;
         targetScalableRenderingMode = newMode;
 
-        GetViewerMessaging()->QueueCommand(new ViewerCommandSetScalableRenderingMode(this,newMode));
+        SNPRINTF(msg, 256, "setScalableRenderingMode 0x%p %d;", this,
+            (newMode?1:0));
+        viewerSubject->MessageRendererThread(msg);
     }
 }
 
@@ -9503,40 +9769,40 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //    Modified the routine to no longer return a NULL image if there were
 //    no plots.
 //
-//    Brad Whitlock, Wed Sep 10 11:42:57 PDT 2014
-//    Call IssueExternalRenderRequests, which was transplanted from the engine
-//    manager.
-//
 // ****************************************************************************
-
 bool
 ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
     bool& shouldTurnOffScalableRendering, bool doAllAnnotations,
     avtDataObject_p& dob)
 {
+    ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
     bool success = false;
     std::vector<avtImage_p> imgList;
 
     TRY
     {
-        // Issue the render requests.
-        success = IssueExternalRenderRequests(thisRequest,
-                      shouldTurnOffScalableRendering,
-                      doAllAnnotations,
-                      imgList,
-                      GetWindowId());
+        // let the engine manager do the render
+        success = eMgr->ExternalRender(thisRequest,
+                                       shouldTurnOffScalableRendering,
+                                       doAllAnnotations,
+                                       imgList, GetWindowId());
+
+
     }
     CATCH2(VisItException, e)
     {
+        char message[2048];
         //
         // Add as much information to the message as we can,
         // including plot name, exception type and exception 
         // message.
         // 
-        GetViewerMessaging()->Error(
-            TR("Scalable Render Request Failed (%1)\n%2.").
-            arg(e.GetExceptionType()).
-            arg(e.Message())); 
+        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", 
+            "Scalable Render Request Failed",
+            e.GetExceptionType().c_str(),
+            e.Message().c_str());
+
+        Error(message, false);
 
         // finally, make sure we return a "blank" image
         dob = NULL;
@@ -9585,286 +9851,6 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
         isCompressingScalableImage = false;
 
     return true;
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::IssueExternalRenderRequests
-//
-// Purpose: 
-//   Sends various RPC's to engine(s) necessary to perform an external render
-//   request.
-//
-// Arguments:
-//   For each plot to be externally rendered, we have the following...
-//
-//   pluginIDsList: the pluginID for the plot
-//   hostLists:     the host of the engine where the plot will be computed
-//   plotIdsList:   the network (or plot) id of the plot on the assoc. engine
-//   attsList:      the attributes of the plot
-//
-//   winAtts:       window attributes for the window servicing the external
-//                  render request.
-//   annotAtts:     annotation attributes for the window servicing the external
-//                  render request.
-//
-//   shouldTurnOffScalableRendering: set to true if the engine has sent results
-//                  back to the viewer indicating that scalable rendering is
-//                  no longer required for this window.
-//   imgList:       the list of images, one for each engine's render, returned
-//                  to the caller.
-//
-// Programmer: Mark C. Miller 
-// Creation:   November 11, 2003 
-//
-// Modifications:
-//   Brad Whitlock, Thu Dec 11 08:27:14 PDT 2003
-//   Fixed a small coding error related to the declaration of engineIndex.
-//
-//   Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
-//   Added setting of engineIndex to the loop over plots. Added use of
-//   RealHostName in computing the engineIndex
-//
-//   Jeremy Meredith, Mon Mar 22 17:57:32 PST 2004
-//   Added a check to make sure the engine actually existed before clearing
-//   its status inside the exception handler.  It is possible the engine died
-//   or was closed when it gets to that piece of code.
-//
-//   Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
-//   Added bool to control annotations on engine
-//
-//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
-//   Use a map of engines based on a key, and be aware of simulations.
-//
-//   Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
-//   Added argument for extents type string.
-//   Passed extents type string in call to SetWinAnnotAtts
-//
-//   Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
-//   I added a pre-check overall all engines to make sure all exist
-//   I used engine proxy directly instead of calling other methods in VEM
-//
-//   Mark C. Miller, Tue May 25 16:42:09 PDT 2004
-//   Re-arranged so that window and annotation att RPCs are sent to engine
-//   before the plot attribute rpcs.
-//
-//   Mark C. Miller, Tue May 25 20:44:10 PDT 2004
-//   Compressed args relating to ExternalRenderRequest info to a single
-//   struct arg. Added support for passing annotation object list
-//
-//   Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
-//   Added VisualCueInfo to external render request info and call to
-//   SetWinAnnotAtts
-//
-//   Mark C. Miller, Tue Jun 15 19:49:22 PDT 2004
-//   Added call to BeginEngineRender just inside TRY block
-//   Replaced bogus calls to EndEngineExecute with calls to EndEngineRender
-//
-//   Brad Whitlock, Tue Jun 29 11:09:50 PDT 2004
-//   Made it work with the Windows compiler again.
-//
-//   Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
-//   Removed call back arguments in call to EngineProxy::Render
-//
-//   Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
-//   Added code to deal with frame and state in window/annotation atts
-//
-//   Brad Whitlock, Wed Aug 4 17:24:46 PST 2004
-//   Changed EngineMap.
-//
-//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
-//    Added view extents to externa render request info
-//    Added code to push explicit view extents to the engine(s)
-//    Made it so only the last engine will render annotations
-//
-//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
-//    Added code to pass along name of last color table to change
-//
-//    Mark C. Miller, Mon Dec 13 15:52:20 PST 2004
-//    Replaced Begin/EndEngineRender with Begin/EndEngineExecute
-//
-//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
-//    Added windowID to support multiwindow SR
-//    
-//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
-//    Added leftEye to Render rpc to support stereo SR
-//
-//    Eric Brugger, Fri Mar 23 12:24:30 PDT 2007
-//    Modified the routine to render an image even if there are no plots.
-//
-//    Brad Whitlock, Fri Aug 29 16:54:42 PDT 2014
-//    Change how event processing callbacks work. Transplanted from engine
-//    manager.
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::IssueExternalRenderRequests(
-    const ExternalRenderRequestInfo &reqInfo,
-    bool &shouldTurnOffScalableRendering,
-    bool doAllAnnotations,
-    std::vector<avtImage_p> &imgList,
-    int windowID)
-{
-    // break-out individual members of the request info
-    const std::vector<const char*> &pluginIDsList         = reqInfo.pluginIDsList;
-    const std::vector<EngineKey> &engineKeysList          = reqInfo.engineKeysList;
-    const std::vector<int> &plotIdsList                   = reqInfo.plotIdsList;
-    const std::vector<const AttributeSubject *> &attsList = reqInfo.attsList;
-    const WindowAttributes &winAtts                  = reqInfo.winAtts;
-    const AnnotationAttributes &annotAtts            = reqInfo.annotAtts;
-    const AnnotationObjectList &annotObjs            = reqInfo.annotObjs;
-    std::string extStr                               = std::string(reqInfo.extStr);
-    const VisualCueList &visCues                     = reqInfo.visCues;
-    const int *frameAndState                         = reqInfo.frameAndState;
-    const double *viewExtents                        = reqInfo.viewExtents;
-    std::string ctName                               = reqInfo.lastChangedCtName;
-    bool leftEye                                     = reqInfo.leftEye;
-
-    bool retval = true;
-    EngineKey ek;
-    std::vector<int> NullPlotIds;
-    std::map<EngineKey,std::vector<int> > perEnginePlotIds;
-
-    // make a pass over list of plots to make sure all associated engines exist
-    for (size_t i = 0; i < engineKeysList.size(); i++)
-    {
-        if (!GetViewerEngineManager()->EngineExists(engineKeysList[i]))
-            return false;
-    }
-
-    TRY
-    {
-
-#ifndef VIEWER_MT
-        ViewerWindowManager::Instance()->BeginEngineExecute();
-#endif
-
-        // build list of per-engine plot ids
-        for (size_t i = 0; i < plotIdsList.size(); i++)
-        {
-            ek = engineKeysList[i];
-            perEnginePlotIds[ek].push_back(plotIdsList[i]);
-        }
-
-        // use the first engine if there are no plots
-        if (perEnginePlotIds.size() == 0 &&
-            !GetViewerState()->GetEngineList()->GetEngineName().empty())
-        {
-            EngineKey ek(GetViewerState()->GetEngineList()->GetEngineName()[0],
-                         GetViewerState()->GetEngineList()->GetSimulationName()[0]);
-            perEnginePlotIds[ek] = NullPlotIds;
-        }
-
-        size_t numEnginesToRender = perEnginePlotIds.size();
-        bool sendZBuffer = numEnginesToRender > 1 ? true : false;
-
-        //
-        // we have to force extents when we have more than one engine
-        // to get them to all agree
-        //
-        if (numEnginesToRender > 1)
-            extStr = avtExtentType_ToString(AVT_SPECIFIED_EXTENTS);
-
-        // send RPCs to set window and annotation attributes
-        std::map<EngineKey, intVector>::iterator pos;
-        for (pos = perEnginePlotIds.begin();
-             pos != perEnginePlotIds.end(); pos++)
-        {
-            ek = pos->first;
-            GetViewerEngineManager()->SetWinAnnotAtts(ek,
-                 &winAtts, &annotAtts, &annotObjs, extStr, &visCues, 
-                 frameAndState, viewExtents, ctName, windowID);
-        }
-
-        // send per-plot RPCs
-        for (size_t i = 0; i < plotIdsList.size(); i++)
-        {
-            ek = engineKeysList[i];
-            GetViewerEngineManager()->UpdatePlotAttributes(ek,
-                pluginIDsList[i], plotIdsList[i], attsList[i]);
-        }
-
-        // send per-engine render RPCs 
-        for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
-        {
-            ek = pos->first;
-
-            //
-            // 0=no annotations; 1=3D annotations only; 2=all annotations
-            // We make the last engine do annotations because the order
-            // of successive z-buffer composites in the viewer matters
-            // when annotations are involved
-            //
-            int annotMode = doAllAnnotations ? 2 : 0;
-            std::map<EngineKey, intVector>::iterator pos1 = pos;
-            if (++pos1 == perEnginePlotIds.end())
-                annotMode = doAllAnnotations ? 2 : 1;
-
-            // Send the render RPC.
-            avtDataObjectReader_p rdr;
-            GetViewerEngineManager()->Render(ek, rdr,
-                sendZBuffer, pos->second, annotMode, windowID, leftEye,
-                this->ProcessEventsCB, this->ProcessEventsCBData);
-
-            if (*rdr == NULL)
-            {
-                retval = false;
-                ViewerText msg(TR("Obtained null data reader for rendered image "
-                                  "for engine %1").
-                               arg(ek.HostName()));
-                EXCEPTION1(VisItException, msg.toStdString()); 
-            }
-
-            // check to see if engine decided that SR mode is no longer necessary
-            if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
-            {
-                shouldTurnOffScalableRendering = true;
-                break;
-            }
-
-            // do some magic to update the network so we don't need the reader anymore
-            avtDataObject_p tmpDob = rdr->GetOutput();
-            avtContract_p spec = 
-                tmpDob->GetOriginatingSource()->GetGeneralContract();
-            tmpDob->Update(spec);
-
-            // put the resultant image in the returned list
-            avtImage_p img;
-            CopyTo(img,tmpDob);
-            imgList.push_back(img);
-        }
-
-#ifndef VIEWER_MT
-        ViewerWindowManager::Instance()->EndEngineExecute();
-#endif
-
-    }
-    CATCH(LostConnectionException)
-    {
-#ifndef VIEWER_MT
-        ViewerWindowManager::Instance()->EndEngineExecute();
-#endif
-        GetViewerEngineManager()->UpdateEngineList();
-        retval = false;
-    }
-    CATCH(VisItException)
-    {
-#ifndef VIEWER_MT
-        ViewerWindowManager::Instance()->EndEngineExecute();
-#endif
-        // Send a message to the client to clear the status for the
-        // engine that had troubles.
-        if (GetViewerEngineManager()->EngineExists(ek))
-            GetViewerMessaging()->ClearStatus(ek.ID());
-
-        //
-        //  Let calling method handle this exception. 
-        //
-        RETHROW;
-    }
-    ENDTRY
-
-    return retval;
 }
 
 // ****************************************************************************
@@ -9932,7 +9918,7 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
             debug4 << mName << "ExternalRender method returned false so"
                    << "let's clear the actors in the plot list and "
                    << "try to render again." << endl;
-            GetViewerMessaging()->ErrorClear();
+            ErrorClear();
             GetPlotList()->ClearActors();
             GetPlotList()->UpdateFrame();
         }
@@ -9941,7 +9927,7 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
     } while(!success && tries < 2);
 
     if(!success)
-        GetViewerMessaging()->Warning(TR("Unable to obtain rendered image from engine."));
+        Warning("Unable to obtain rendered image from engine");
 
     debug4 << mName << "end" << endl;
 }
@@ -10017,7 +10003,7 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob, bool leftEye)
     // return nothing if the request failed
     if (!success)
     {
-        GetViewerMessaging()->Warning(TR("Unable to update view with new image from engine"));
+        Warning(tr("Unable to update view with new image from engine"));
         GetPlotList()->SetErrorFlagAllPlots(true);
         GetPlotList()->ClearActors();
         GetPlotList()->UpdateFrame();
@@ -10142,7 +10128,7 @@ ViewerWindow::Lineout(const bool fromDefault)
 {
     ViewerQueryManager::Instance()->StartLineout(this, fromDefault);
 
-    GetViewerMessaging()->QueueCommand(new ViewerCommandFinishLineout());
+    viewerSubject->MessageRendererThread("finishLineout;");
 }
 
 

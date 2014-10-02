@@ -59,8 +59,8 @@ public:
 
         union {
             struct {
-                float lm;
-                float rm;
+                double lm;
+                double rm;
             };
 
             struct {
@@ -69,7 +69,7 @@ public:
             };
         };
 
-        void make_node( unsigned int left, unsigned int d, float b[2] )
+        void make_node( unsigned int left, unsigned int d, double b[2] )
         {
             index = (d & 3) | (left << 2);
             lm = b[0];
@@ -101,12 +101,12 @@ public:
             return index & 3;
         }
 
-        const float& lmax() const
+        const double& lmax() const
         {
             return lm;
         }
 
-        const float& rmin() const
+        const double& rmin() const
         {
             return rm;
         }
@@ -145,9 +145,9 @@ public:
         const celltree& m_ct;
         unsigned int    m_stack[32];
         unsigned int*   m_sp;
-        const float*    m_pos;
+        const double*    m_pos;
 
-        point_traversal( const celltree& ct, const float* pos ) :
+        point_traversal( const celltree& ct, const double* pos ) :
             m_ct(ct), m_pos(pos)
         {
             m_stack[0] = 0;
@@ -166,7 +166,7 @@ public:
                 if( n->is_leaf() )
                     return n;
 
-                const float p = m_pos[n->dim()];
+                const double p = m_pos[n->dim()];
                 const unsigned int left = n->left();
 
                 bool l = p <= n->lmax();
@@ -202,18 +202,18 @@ private:
     
     struct bucket
     {
-        float        min;
-        float        max;
+        double        min;
+        double        max;
         unsigned int cnt;
     
         bucket()
         {
             cnt = 0;
-            min =  std::numeric_limits<float>::max();
-            max = -std::numeric_limits<float>::max();
+            min =  std::numeric_limits<double>::max();
+            max = -std::numeric_limits<double>::max();
         }
     
-        void add( const float _min, const float _max )
+        void add( const double _min, const double _max )
         {
             ++cnt;
         
@@ -227,8 +227,8 @@ private:
 
     struct per_cell 
     {
-        float        min[3];
-        float        max[3];
+        double        min[3];
+        double        max[3];
         unsigned int ind;
     };
 
@@ -250,9 +250,9 @@ private:
     struct left_predicate
     {
         unsigned int       d;
-        float              p;
+        double              p;
     
-        left_predicate( unsigned int _d, float _p ) : 
+        left_predicate( unsigned int _d, double _p ) : 
             d(_d), p(2.0f*_p)
         {
         }
@@ -267,7 +267,7 @@ private:
     // -------------------------------------------------------------------------
 
     void find_min_max( const per_cell* begin, const per_cell* end,  
-                       float* min, float* max )
+                       double* min, double* max )
     {
         if( begin == end )
             return;
@@ -291,7 +291,7 @@ private:
     // -------------------------------------------------------------------------
     
     void find_min_d( const per_cell* begin, const per_cell* end,  
-                     unsigned int d, float& min )
+                     unsigned int d, double& min )
     {
         min = begin->min[d];
         
@@ -301,7 +301,7 @@ private:
     }
 
     void find_max_d( const per_cell* begin, const per_cell* end,  
-                     unsigned int d, float& max )
+                     unsigned int d, double& max )
     {
         max = begin->max[d];
         
@@ -312,7 +312,7 @@ private:
 
     // -------------------------------------------------------------------------
 
-    void split( unsigned int index, float min[3], float max[3] )
+    void split( unsigned int index, double min[3], double max[3] )
     {
         unsigned int start = m_nodes[index].start();
         unsigned int size  = m_nodes[index].size();
@@ -326,16 +326,17 @@ private:
 
         const int nbuckets = 6;
 
-        const float ext[3] = { max[0]-min[0], max[1]-min[1], max[2]-min[2] };
-        const float iext[3] = { nbuckets/ext[0], nbuckets/ext[1], nbuckets/ext[2] };
-
+        const double ext[3] = { max[0]-min[0], max[1]-min[1], max[2]-min[2] };
+        const double iext[3] = { ext[0]!=0 ? nbuckets/ext[0] : -1,
+                                ext[1]!=0 ? nbuckets/ext[1] : -1,
+                                ext[2]!=0 ? nbuckets/ext[2] : -1};
         bucket b[3][nbuckets];
             
         for( const per_cell* pc=begin; pc!=end; ++pc )
         {
             for( unsigned int d=0; d<3; ++d )
             {
-                float cen = (pc->min[d] + pc->max[d])/2.0f;
+                double cen = (pc->min[d] + pc->max[d])/2.0f;
                 int   ind = (int)( (cen-min[d])*iext[d] );
 
                 if( ind<0 )
@@ -348,8 +349,8 @@ private:
             }
         }
         
-        float cost = std::numeric_limits<float>::max();
-        float plane = 0;
+        double cost = std::numeric_limits<double>::max();
+        double plane = 0;
         unsigned int dim = 0;
 
         for( unsigned int d=0; d<3; ++d )    
@@ -358,8 +359,8 @@ private:
             
             for( unsigned int n=0; n<nbuckets-1; ++n )
             {
-                float lmax = -std::numeric_limits<float>::max();
-                float rmin =  std::numeric_limits<float>::max();
+                double lmax = -std::numeric_limits<double>::max();
+                double rmin =  std::numeric_limits<double>::max();
 
                 for( unsigned int m=0; m<=n; ++m )
                     if( b[d][m].max > lmax )
@@ -371,21 +372,27 @@ private:
                 
                 sum += b[d][n].cnt;
                 
-                float lvol = (lmax-min[d])/ext[d];
-                float rvol = (max[d]-rmin)/ext[d];
-                
-                float c = lvol*sum + rvol*(size-sum);
-                
-                if( sum > 0 && sum < size && c < cost )
+                if (ext[d] != 0 && 
+                    lmax != -std::numeric_limits<double>::max() && 
+                    rmin !=  std::numeric_limits<double>::max())
                 {
-                    cost    = c;
-                    dim     = d;
-                    plane   = min[d] + (n+1)/iext[d];
+                    double lvol = (lmax-min[d])/ext[d];
+                    double rvol = (max[d]-rmin)/ext[d];
+                
+                    double c = lvol*sum + rvol*(size-sum);
+                
+                    if( sum > 0 && sum < size && c < cost )
+                    {
+                        cost    = c;
+                        dim     = d;
+                        if (iext[d] > 0)
+                            plane = min[d] + (n+1)/iext[d];
+                    }
                 }
             }
         }
 
-        if( cost != std::numeric_limits<float>::max() )
+        if( cost != std::numeric_limits<double>::max() )
             mid = std::partition( begin, end, left_predicate( dim, plane ) );
 
         // fallback
@@ -397,12 +404,12 @@ private:
             std::nth_element( begin, mid, end, center_order( dim ) );
         }
 
-        float lmin[3], lmax[3], rmin[3], rmax[3];
+        double lmin[3], lmax[3], rmin[3], rmax[3];
 
         find_min_max( begin, mid, lmin, lmax );
         find_min_max( mid,   end, rmin, rmax );
 
-        float clip[2] = { lmax[dim], rmin[dim] };
+        double clip[2] = { lmax[dim], rmin[dim] };
 
         celltree::node child[2];
         child[0].make_leaf( begin - m_pc, mid-begin );
@@ -430,16 +437,16 @@ public:
 
         m_pc = new per_cell[size];
 
-        float min[3] = { 
-            std::numeric_limits<float>::max(),
-            std::numeric_limits<float>::max(),
-            std::numeric_limits<float>::max()
+        double min[3] = { 
+            std::numeric_limits<double>::max(),
+            std::numeric_limits<double>::max(),
+            std::numeric_limits<double>::max()
         };
 
-        float max[3] = { 
-            -std::numeric_limits<float>::max(),
-            -std::numeric_limits<float>::max(),
-            -std::numeric_limits<float>::max(),
+        double max[3] = { 
+            -std::numeric_limits<double>::max(),
+            -std::numeric_limits<double>::max(),
+            -std::numeric_limits<double>::max(),
         };
         
         for( unsigned int i=0; i<size; ++i )
@@ -608,7 +615,7 @@ void avtCellLocatorBIH::FindCellRecursive( const double pos[3],
     else
     {
         // else descend the tree
-        const float p = pos[n.dim()];
+        const double p = pos[n.dim()];
         const unsigned int left = n.left();
 
         bool l = p <= n.lmax();

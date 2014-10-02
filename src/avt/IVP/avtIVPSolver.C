@@ -55,8 +55,10 @@
 //
 // ****************************************************************************
 
-avtIVPSolver::avtIVPSolver() : convertToCartesian(0), convertToCylindrical(0),
-                               order(1), h(1e-5), tol(1e-8), t(0.0), period(0)
+avtIVPSolver::avtIVPSolver() : convertToCartesian(false), convertToCylindrical(false),
+                               order(1), yCur(avtVector()), h(1e-5), h_max(1e-5),
+                               tol(1e-8), t(0.0), period(0), baseTime(0), maxTime(1),
+                               direction(DIRECTION_BACKWARD)
 {
 }
 

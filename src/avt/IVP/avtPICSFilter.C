@@ -163,6 +163,7 @@ avtPICSFilter::avtPICSFilter()
     pathlineOverrideTime = false;
     seedTimeStep0 = 0;
     seedTime0 = 0.0;
+    baseTime = 0.0;
 
     period = 0;
     rollover = false;

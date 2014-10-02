@@ -130,6 +130,8 @@
 //    Hank Childs, Fri Jan  9 14:10:25 PST 2009
 //    Initialize jitter.
 //
+//    Mark C. Miller, Thu Oct  2 09:41:37 PDT 2014
+//    Initialize lightDirection.
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -175,6 +177,7 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     rayCastingSLIVR = false;
     lighting = false;
     lightPosition[0] = lightPosition[1] = lightPosition[2] = 0.0;   lightPosition[3] = 1.0;
+    lightDirection[0] = 0; lightDirection[1] = 0; lightDirection[2] = -1;
     materialProperties[0] = 0.4; materialProperties[1] = 0.75; materialProperties[3] = 0.0; materialProperties[3] = 15.0;
 }
 

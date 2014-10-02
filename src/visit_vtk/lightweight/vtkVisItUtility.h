@@ -74,6 +74,8 @@ class vtkRectilinearGrid;
 //    Added option to allow negaitve inddices (false by default) to
 //    GetLogicalIndices.
 //
+//    Mark C. Miller, Wed Oct  1 19:44:34 PDT 2014
+//    Add SafeDoubleToFloat
 // ****************************************************************************
 
 namespace vtkVisItUtility
@@ -121,5 +123,6 @@ namespace vtkVisItUtility
                                                const double *_eps = 0);
     VISIT_VTK_LIGHT_API void       RegisterStaticVTKObject(vtkObject*);
     VISIT_VTK_LIGHT_API void       CleanupStaticVTKObjects();
+    VISIT_VTK_LIGHT_API float      SafeDoubleToFloat(double);
 }
 #endif
