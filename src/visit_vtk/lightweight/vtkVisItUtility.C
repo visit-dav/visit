@@ -41,7 +41,9 @@
 // ************************************************************************* //
 
 #include <algorithm>
+#include <cmath>
 #include <float.h>
+#include <limits>
 #include <list>
 
 #include <vtkVisItUtility.h>
@@ -1313,4 +1315,24 @@ void vtkVisItUtility::CleanupStaticVTKObjects()
 #endif
   std::for_each(vtkobjects.begin(), vtkobjects.end(), DeleteVTK<vtkObject>);
   vtkobjects.clear();
+}
+
+// ****************************************************************************
+//  Function: SafeDoubleToFloat
+//
+//  Purpose: Safely convert a double precision value to float precision
+//  without triggering an FPE issue.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 1, 2014
+// ****************************************************************************
+float vtkVisItUtility::SafeDoubleToFloat(double v)
+{
+    if (std::abs(v) < (double) std::numeric_limits<float>::min()) return 0;
+    if (std::abs(v) > (double) std::numeric_limits<float>::max())
+    {
+        if (v < 0) return -std::numeric_limits<float>::max();
+        if (v > 0) return  std::numeric_limits<float>::min();
+    }
+    return (float) v;
 }

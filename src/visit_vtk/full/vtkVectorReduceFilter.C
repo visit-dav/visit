@@ -117,6 +117,9 @@ vtkVectorReduceFilter::SetLimitToOriginal(bool lto)
 //    Eric Brugger, Thu Jan 10 10:13:10 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Mark C. Miller, Wed Oct  1 19:42:14 PDT 2014
+//    Add logic to selectively InsertNextValue(double|float[3]) as well as
+//    safely down-cast from double to float to avoid FPE issues.
 // ****************************************************************************
 
 int
@@ -244,7 +247,18 @@ vtkVectorReduceFilter::RequestData(
             input->GetPoint(i, pt);
             outpts->InsertNextPoint(pt);
     
-            outVecs->InsertNextTuple(v);
+            if (inctype == VTK_DOUBLE || inptype == VTK_DOUBLE)
+            {
+                outVecs->InsertNextTuple(v);
+            }
+            else
+            {
+                float fv[3];
+                fv[0] = vtkVisItUtility::SafeDoubleToFloat(v[0]);
+                fv[1] = vtkVisItUtility::SafeDoubleToFloat(v[1]);
+                fv[2] = vtkVisItUtility::SafeDoubleToFloat(v[2]);
+                outVecs->InsertNextTuple(fv);
+            }
             outPd->CopyData(inPd, i, count++);
           }
         }

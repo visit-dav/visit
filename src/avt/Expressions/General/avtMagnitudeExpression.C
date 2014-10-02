@@ -163,7 +163,9 @@ avtMagnitudeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInde
     dtype *r   = (dtype*)results->GetVoidPointer(0); \
     for (int i = 0, idx = 0 ; i < ntuples ; i++, idx += 3) \
     { \
-        r[i] = sqrt(x[idx+0]*x[idx+0]+x[idx+1]*x[idx+1]+x[idx+2]*x[idx+2]); \
+        r[i] = sqrt((double)x[idx+0]*(double)x[idx+0]+\
+                    (double)x[idx+1]*(double)x[idx+1]+\
+                    (double)x[idx+2]*(double)x[idx+2]); \
     } \
 } 
 

@@ -662,19 +662,28 @@ avtICAlgorithm::ComputeStatistic(ICStatistics &stats)
             nVals++;
         }
     }
-    stats.mean = stats.total / (float)nVals;
+    if (nVals != 0)
+        stats.mean = stats.total / (float)nVals;
+    else
+        stats.mean = stats.value;
 
-    float sum = 0.0;
+    double sum = 0.0;
     for (int i = 0; i < nProcs; i++)
     {
         if (output[i] >= 0.0)
         {
-            float x = output[i] - stats.mean;
+            double x = output[i] - stats.mean;
             sum += (x*x);
         }
     }
-    sum /= (float)nVals;
-    stats.sigma = sqrt(sum);
+    if (nVals != 0)
+    {
+        sum /= (float)nVals;
+        if (sum > 0)
+            stats.sigma = sqrt(sum);
+        else
+            stats.sigma = 0.0;
+    }
 
     stats.histogram.resize(nVals);
     int i, j;
@@ -1002,6 +1011,8 @@ avtICAlgorithm::ReportCounters(ostream &os, bool totals)
 //    Dave Pugmire, Thu Feb 12 08:47:29 EST 2009
 //    Better formatting for stats output.
 //
+//    Mark C. Miller, Thu Oct  2 09:23:56 PDT 2014
+//    Defend against FPE div by zero
 // ****************************************************************************
 void
 avtICAlgorithm::PrintTiming(ostream &os, 
@@ -1018,7 +1029,10 @@ avtICAlgorithm::PrintTiming(ostream &os,
     if (total)
     {
         os<<s.total;
-        os<<" ["<<100.0*(s.total/t.total)<<"%] ";
+        if (t.total != 0)
+            os<<" ["<<100.0*(s.total/t.total)<<"%] ";
+        else
+            os<<" ["<<0<<"%] ";
         os<<" ["<<s.min<<", "<<s.max<<", "<<s.mean<<" : "<<s.sigma<<"]";
 
         if (s.mean != 0.0)
@@ -1035,7 +1049,10 @@ avtICAlgorithm::PrintTiming(ostream &os,
             v = 0.0;
         
         os<<v;
-        os<<" ["<<100.0*(v/t.value)<<"%] ";
+        if (t.value != 0)
+            os<<" ["<<100.0*(v/t.value)<<"%] ";
+        else
+            os<<" ["<<0<<"%] ";
         os<<endl;
     }
 }
