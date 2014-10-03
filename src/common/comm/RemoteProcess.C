@@ -124,7 +124,7 @@ Connection* (*RemoteProcess::customConnectionCallback)(int,void*) = NULL;
 void* RemoteProcess::customConnectionCallbackData = NULL;
 
 using std::map;
-static map<int, bool> childDied;
+static map<int, bool> childDied=std::map<int, bool>();
 
 #if !defined(_WIN32)
 
