@@ -128,8 +128,10 @@ avtPolarCoordinatesExpression::DeriveVariable(vtkDataSet *in_ds, int currentDoma
         rv->SetComponent(i, 1, theta);
 
         double phi = 0.;
-        if (in3D)
+        if (in3D && r != 0)
             phi = acos(pt[2] / r);
+        else
+            phi = 0;
         rv->SetComponent(i, 2, phi);
     }
     
