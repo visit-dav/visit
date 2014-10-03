@@ -772,6 +772,8 @@ avtSurfaceFilter::PreExecute(void)
 //    Hank Childs, Tue Feb  1 11:26:46 PST 2005
 //    Allow for mode where scaling is based solely on variable.
 //
+//    Mark C. Miller, Fri Oct  3 01:02:03 PDT 2014
+//    Defend against possible FPE (OVERFLOW) due to possible DBL_MAX values.
 // ****************************************************************************
 
 void
@@ -801,9 +803,18 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
         max = log10(max);
     }
 
-    dX = se[1] - se[0];
-    dY = se[3] - se[2];
-    dZ = max - min;
+    if (se[1] == -DBL_MAX || se[0] == DBL_MAX)
+        dX = DBL_MAX;
+    else
+        dX = se[1] - se[0];
+    if (se[3] == -DBL_MAX || se[2] == DBL_MAX)
+        dY = DBL_MAX;
+    else
+        dY = se[3] - se[2];
+    if (max == -DBL_MAX || min == DBL_MAX)
+        dZ = DBL_MAX;
+    else
+        dZ = max - min;
     dXY = (dX > dY ? dX : dY);
 
     if (atts.GetUseXYLimits() == false || 0. == dZ)
@@ -814,7 +825,7 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
     else
     {
         Ms = dXY / dZ;
-        Bs = - (min * dXY) / dZ;
+        Bs = - (min / dZ) * dXY;
     }
 }
 
