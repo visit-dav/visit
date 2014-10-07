@@ -304,7 +304,6 @@ SimGetMetaData(void *cbdata)
         int i;
         visit_handle m1 = VISIT_INVALID_HANDLE, m2 = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?

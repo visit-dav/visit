@@ -843,7 +843,6 @@ MeshCache_add_mesh(parsim_map_t *mesh_cache, const char *name, int domain,
         {
             /* Copy over the value in the map with the new mesh. */
             int i;
-            parsim_map_t *mr = &mesh_entry->domain_meshes;
             for(i = 0; i < mesh_entry->domain_meshes.nelems; ++i)
             {
                 if(mesh_entry->domain_meshes.elems[i].value == domain_mesh)
@@ -1136,10 +1135,6 @@ SimGetMetaData(void *cbdata)
     if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
     {
         int i, n;
-        visit_handle mmd = VISIT_INVALID_HANDLE;
-        visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
-        visit_handle emd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?

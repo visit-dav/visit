@@ -47,7 +47,7 @@ write_point2d(DBfile *dbfile)
 #define NPTS 100
     int i;
     float x[NPTS], y[NPTS];
-    int dims[] = {NPTS, NPTS}, ndims = 2;
+    int ndims = 2;
     float *coords[] = {(float*)x, (float*)y};
     for(i = 0; i < NPTS; ++i)
     {

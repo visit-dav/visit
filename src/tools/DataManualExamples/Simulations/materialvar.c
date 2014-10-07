@@ -825,7 +825,7 @@ SimGetMaterial(int domain, const char *name, void *cbdata)
     /* Allocate a VisIt_MaterialData */
     if(VisIt_MaterialData_alloc(&h) == VISIT_OKAY)
     {
-        int i, j, m, cell = 0, arrlen = 0;
+        int i, j, m, cell = 0;
         int nmats, cellmat[10], matnos[3]={0,0,0};
         float cellmatvf[10];
 
@@ -938,7 +938,7 @@ SimGetVariable(int domain, const char *name, void *cbdata)
         else if(strcmp(name, "zonal_vector_on_mats12") == 0)
         {
             int mats[] = {1,2};
-            int i, *vec = NULL;
+            int *vec = NULL;
             int nTuples = 0, nComps = 2;
             int *data = mat_number_for_cells_with_mats(mats, 2, &nTuples);
             vec = makevector(data, nTuples, nComps);

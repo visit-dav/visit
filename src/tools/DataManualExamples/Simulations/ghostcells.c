@@ -715,7 +715,7 @@ read_input_deck(simulation_data *sim)
 
 void simulate_one_timestep(simulation_data *sim)
 {
-    int i, ncells;
+    int i;
     ++sim->cycle;
     sim->time += (M_PI / 10.);
 
@@ -1080,8 +1080,6 @@ SimGetMetaData(void *cbdata)
 
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
-        visit_handle emd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
