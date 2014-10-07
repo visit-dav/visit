@@ -569,7 +569,7 @@ SimGetMaterial(int domain, const char *name, void *cbdata)
     VisIt_MaterialData_alloc(&h);
     if(strcmp(name, "Material") == 0)
     {
-        int i, j, m, cell = 0, arrlen = 0;
+        int i, j, m, cell = 0;
         int nmats, cellmat[10], matnos[3]={1,2,3};
         float cellmatvf[10];
 

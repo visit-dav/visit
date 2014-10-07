@@ -9,7 +9,7 @@
  */    
     
 #ifndef DIVIDEBYZEROEXCEPTION_H    
-#define DIVIDEBYZEROEXCEPTION_CPP    
+#define DIVIDEBYZEROEXCEPTION_H
     
 #include "ExpressionException.h"    
 

@@ -660,8 +660,6 @@ SimGetMetaData(void *cbdata)
         int i;
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
-        visit_handle emd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -769,7 +767,6 @@ visit_handle
 SimGetVariable(int domain, const char *name, void *cbdata)
 {
     visit_handle h = VISIT_INVALID_HANDLE;
-    simulation_data *sim = (simulation_data *)cbdata;
 
     if(strcmp(name, "domainID") == 0)
     {
@@ -840,7 +837,6 @@ visit_handle
 SimGetDomainBoundaries(const char *name, void *cbdata)
 {
     visit_handle h = VISIT_INVALID_HANDLE;
-    simulation_data *sim = (simulation_data *)cbdata;
 
     /* Note: VisIt currently relies on domain boundaries objects that hold the
      *       information for all domains in the problem, even ones not held

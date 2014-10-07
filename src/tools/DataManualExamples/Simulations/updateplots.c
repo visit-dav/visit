@@ -178,7 +178,7 @@ void simulate_one_timestep(simulation_data *sim)
         VisIt_NameList_addName(vars, "default");
         
         sprintf(filename, "updateplots_export%04d", sim->saveCounter);
-        if(VisItExportDatabase(filename, "Silo_1.0", vars) &&
+        if(VisItExportDatabase(filename, "FieldViewXDB_1.0", vars) &&
            sim->par_rank == 0)
         {
             printf("Exported %s\n", filename);

@@ -360,7 +360,6 @@ SimGetMetaData(void *cbdata)
         int i;
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -482,7 +481,6 @@ visit_handle
 SimGetVariable(int domain, const char *name, void *cbdata)
 {
     visit_handle h = VISIT_INVALID_HANDLE;
-    simulation_data *sim = (simulation_data *)cbdata;
 
     if(strcmp(name, "zonal") == 0)
     {

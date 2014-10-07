@@ -49,7 +49,6 @@ visit_handle
 SimGetMetaData(void *cbdata)
 {
     visit_handle md = VISIT_INVALID_HANDLE;
-    simulation_data *sim = (simulation_data *)cbdata;
 
     /* Create metadata with no variables. */
     if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
