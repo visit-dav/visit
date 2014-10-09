@@ -2,7 +2,7 @@
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <lastchanged><![CDATA[October 13, 2014]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -35,6 +35,7 @@
   <li> <a href="mailto:visit-help-gnep@ornl.gov">visit-help-gnep@ornl.gov</a> </li>
   <li> <a href="mailto:visit-help-asc@ornl.gov">visit-help-asc@ornl.gov</a> </li>
 </ul>
+<p>For ASC VisIt users, a customer support phone line is available. Dial <strong>42-VIS</strong> to talk to a VisIt developer Monday through Friday 8-12, 1-5 Pacific Time.</p>
 
 </div>
 </div>	
