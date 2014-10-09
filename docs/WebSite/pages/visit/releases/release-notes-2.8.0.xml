@@ -3,7 +3,7 @@
   <title><![CDATA[Release Notes for VisIt 2.8]]></title>
   <IM>LLNL-WEB-659427</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[September 2, 2014]]></lastchanged>
+  <lastchanged><![CDATA[October 13, 2014]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,7 +22,7 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<p>Welcome to VisIt's release notes page. This page describes the important bug-fixes that were made to this release.</p>
+<p>Welcome to VisIt's release notes page. This page describes the important changes that were made to this release.</p>
 
 <h2>General features added in version 2.8</h2>
 <ul>
