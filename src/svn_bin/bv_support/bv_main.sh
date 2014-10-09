@@ -1031,10 +1031,23 @@ fi
 info "[build_visit invocation arguments] $@"
 
 
-#write a unified file
+#
+# Write a unified file
+#
 if [[ $WRITE_UNIFIED_FILE != "" ]] ; then
     bv_write_unified_file $WRITE_UNIFIED_FILE
     exit 0
+fi
+
+#
+# If we doing a trunk build then make sure we are using SVN
+#
+if [[ "$TRUNK_BUILD" == "yes" ]]; then
+    if [[ "$DO_SVN" == "no" ]]; then
+        DO_SVN="yes"
+        DO_SVN_ANON="yes"
+        export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH
+    fi
 fi
 
 #
