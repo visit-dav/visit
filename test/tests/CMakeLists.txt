@@ -83,17 +83,12 @@ MARK_AS_ADVANCED(TESTSUITE_MODE_FLAGS TESTSUITE_OPTIONS)
 SET(TESTSUITE_PLATFORM_ARGS)
 SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/bin/visit")
 IF(WIN32)
-    # windows needs skiplist to various prevent crashes
-    # and msvc needs configuration specific paths
+    # msvc needs configuration specific paths
     IF(MSVC_IDE)
         SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/$<CONFIGURATION>/visit.exe")
     ELSE()
         SET(TESTSUITE_VISIT_EXEC "${CMAKE_BINARY_DIR}/exe/visit.exe")
     ENDIF()
-ELSE()
-    # TODO -- verify we get it right with the skiplist on.
-    # run all tests on unix like systems
-    LIST(APPEND TESTSUITE_PLATFORM_ARGS "--no-skiplist")
 ENDIF()
 
 # macro that takes a module name and list of tests and creates
