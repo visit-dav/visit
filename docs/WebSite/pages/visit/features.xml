@@ -2,7 +2,7 @@
 <page>
   <title><![CDATA[Key Features of VisIt]]></title>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[July 2, 2014]]></lastchanged>
+  <lastchanged><![CDATA[October 13, 2014]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -81,7 +81,7 @@
     </tr>
     <tr valign="top">
       <td ><p>Customer support </p></td>
-      <td ><p>The <a href="mailto:visit-users@ornl.gov">visit-users@ornl.gov</a> mailing list offers responsive customer support. For users associated with SciDAC, GNEP or ASC, e-mail support is available from <a href="mailto:visit-help-scidac@ornl.gov">visit-help-scidac@ornl.gov</a>, <a href="mailto:visit-help-gnep@ornl.gov">visit-help-gnep@ornl.gov</a>, and <a href="mailto:visit-help-asc@ornl.gov">visit-help-asc@ornl.gov</a>. For ASC and GNEP VisIt users, a customer support phone line is available. Dial <strong>42-VIS</strong> to talk to a VisIt developer Monday through Friday 8-12, 1-5 Pacific Time.</p></td>
+      <td ><p>The <a href="mailto:visit-users@ornl.gov">visit-users@ornl.gov</a> mailing list offers responsive customer support. For users associated with SciDAC, GNEP or ASC, e-mail support is available from <a href="mailto:visit-help-scidac@ornl.gov">visit-help-scidac@ornl.gov</a>, <a href="mailto:visit-help-gnep@ornl.gov">visit-help-gnep@ornl.gov</a>, and <a href="mailto:visit-help-asc@ornl.gov">visit-help-asc@ornl.gov</a>. For ASC VisIt users, a customer support phone line is available. Dial <strong>42-VIS</strong> to talk to a VisIt developer Monday through Friday 8-12, 1-5 Pacific Time.</p></td>
     </tr>
   </tbody>
 </table>
