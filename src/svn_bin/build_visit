@@ -57,12 +57,14 @@ export VISIT_VERSION=${VISIT_VERSION:-"2.8.1"}
 ####
 # Trunk:
 ####
+export TRUNK_BUILD="yes"
 export SVN_SOURCE_PATH=${SVN_SOURCE_PATH-"trunk/src"}
 export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
 
 ###
 # Release:
 ###
+#export TRUNK_BUILD="no"
 #export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
 #export SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/third_party"
 
@@ -482,6 +484,8 @@ function bv_write_unified_file
 
     echo "#!/bin/bash" > $OUTPUT_bv_FILE
     echo "export VISIT_VERSION=\${VISIT_VERSION:-\"$VISIT_VERSION\"}" >> $OUTPUT_bv_FILE
+
+    echo "export TRUNK_BUILD=\"$TRUNK_BUILD\"" >> $OUTPUT_bv_FILE
 
     echo "export SVN_SOURCE_PATH=\${SVN_SOURCE_PATH-\"$SVN_SOURCE_PATH\"}" >> $OUTPUT_bv_FILE
     echo "export SVN_THIRDPARTY_PATH=\${SVN_THIRDPARTY_PATH-\"$SVN_THIRDPARTY_PATH\"}" >> $OUTPUT_bv_FILE
