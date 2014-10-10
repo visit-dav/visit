@@ -37,6 +37,11 @@ import os, string, sys, subprocess
 #   Kathleen Biagas, Mon Jul 15 11:32:00 PDT 2013
 #   Added UNSETENV.
 #
+#   Eric Brugger, Fri Oct 10 10:40:52 PDT 2014
+#   I modified the script so that if the user specifies a version number
+#   with a minor version number then it uses that specific version for all
+#   the components.
+#
 ###############################################################################
 
 # -----------------------------------------------------------------------------
@@ -122,6 +127,7 @@ if visitdir[-1] != os.path.sep:
 # -----------------------------------------------------------------------------
 
 # Set some defaults.
+add_forceversion = 0
 want_version = 0
 ver          = ""
 ver_set      = 0
@@ -288,7 +294,10 @@ else:
     # We don't want to attempt this trick with beta versions.
     # This behavior is new for 1.7.
     version = ParseVersion(ver)
+    if ver_set:
+        add_forceversion = 1
     if (not (version[0] == 1 and version[1] < 7)) and version[2] == -1 and version[3] == -1:
+        add_forceversion = 0
         unsorted_matches = []
         for v in exeversions:
             try:
@@ -354,6 +363,14 @@ SETENV("VISITDIR",           visitdir[:-1])
 # appbundle, which is confusing to users.
 if GETENV("VISIT_STARTED_FROM_APPBUNDLE") == "TRUE":
     os.chdir(GETENV("HOME"))
+
+# -----------------------------------------------------------------------------
+#     If the user specified the minor version then add a -forceversion with
+#     the minor version
+# -----------------------------------------------------------------------------
+if forceversion_set == 0 and add_forceversion == 1:
+    visitargs.append("-forceversion")
+    visitargs.append(ver)
 
 # -----------------------------------------------------------------------------
 #                       Run the internal launcher!
