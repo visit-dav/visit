@@ -368,7 +368,7 @@ if GETENV("VISIT_STARTED_FROM_APPBUNDLE") == "TRUE":
 #     If the user specified the minor version then add a -forceversion with
 #     the minor version
 # -----------------------------------------------------------------------------
-if forceversion_set == 0 and add_forceversion == 1:
+if progname != "mpeg2encode" and forceversion_set == 0 and add_forceversion == 1:
     visitargs.append("-forceversion")
     visitargs.append(ver)
 
