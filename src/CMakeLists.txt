@@ -491,19 +491,6 @@ FUNCTION(SETUP_VTK_VERSION  ver)
   SET(VTK_MINOR_VERSION   "${vmin}" CACHE INTERNAL "")
 ENDFUNCTION()
 
-# Setup a default VTK version of 6.1.0.  Config-site files can override this
-IF(NOT VTK_VERSION)
-  IF(VISIT_VTK_VERSION)
-      IF(${VISIT_VTK_VERSION} VERSION_LESS ${VTK_MINIMUM_VERSION})
-          MESSAGE(FATAL_ERROR "VTK version must be at least ${VTK_MINIMUM_VERSION}")
-      ENDIF()
-      SETUP_VTK_VERSION(${VISIT_VTK_VERSION})
-  ELSE()
-      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming 6.1.0")
-      SETUP_VTK_VERSION(6.1.0)
-  ENDIF()
-ENDIF()
-
 #-----------------------------------------------------------------------------
 # Include this computer's config-site if one exists
 #-----------------------------------------------------------------------------
@@ -523,6 +510,23 @@ IF (NOT WIN32)
   ENDIF("${VISIT_CONFIG_SITE_FILE_FOUND}" STREQUAL  "NOTFOUND")
 
 ENDIF (NOT WIN32)
+
+#-----------------------------------------------------------------------------
+# If the config-site file above has not set a VTK version set a
+# default VTK version of 6.1.0.  
+#-----------------------------------------------------------------------------
+IF(NOT VTK_VERSION)
+  IF(VISIT_VTK_VERSION)
+      IF(${VISIT_VTK_VERSION} VERSION_LESS ${VTK_MINIMUM_VERSION})
+          MESSAGE(FATAL_ERROR "VTK version must be at least ${VTK_MINIMUM_VERSION}")
+      ENDIF()
+      SETUP_VTK_VERSION(${VISIT_VTK_VERSION})
+  ELSE()
+      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming 6.1.0")
+      SETUP_VTK_VERSION(6.1.0)
+  ENDIF()
+ENDIF()
+
 
 #-----------------------------------------------------------------------------
 # If not already set, we use a default build type of Release
