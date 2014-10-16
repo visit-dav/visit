@@ -114,7 +114,7 @@ avtBoundaryPlot::avtBoundaryPlot()
 
 
 // ****************************************************************************
-//  Method: avtLevelsMapper destructor
+//  Method: avtBoundaryPlot destructor
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   June 12, 2003
@@ -596,6 +596,9 @@ avtBoundaryPlot::SetPointGlyphSize()
 //    Kathleen Bonnell, Mon Jan 17 17:49:48 MST 2011
 //    Retrieve invertColorTableToggle and pass it to the ColorTable.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void 
@@ -626,14 +629,13 @@ avtBoundaryPlot::SetColors()
         cal.AddColors(ca);
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         // 
         //  Send an empty color map, rather than one where all
         //  entries map to same value. 
         //
         levelsLegend->SetLabelColorMap(levelColorMap);
         levelsLegend->SetLevels(labels);
-        return;
     }
     else if (atts.GetColorType() == BoundaryAttributes::ColorByMultipleColors)
     {
@@ -661,7 +663,7 @@ avtBoundaryPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);
@@ -739,7 +741,7 @@ avtBoundaryPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);

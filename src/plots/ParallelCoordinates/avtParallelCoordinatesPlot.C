@@ -227,6 +227,9 @@ avtParallelCoordinatesPlot::SetAtts(const AttributeGroup *a)
 //    Removed the time case since I couldn't test any changes this would
 //    have caused.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void
@@ -278,7 +281,7 @@ avtParallelCoordinatesPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(plotColors, 2*PCP_CTX_BRIGHTNESS_LEVELS);
-        levelsMapper->SetColors(colorAttList);
+        levelsMapper->SetColors(colorAttList, needsRecalculation);
         delete [] plotColors;
     }
     else

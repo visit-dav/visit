@@ -694,6 +694,9 @@ avtFilledBoundaryPlot::SetPointGlyphSize()
 //    Kathleen Bonnell, Mon Jan 17 18:07:08 MST 2011
 //    Retrieve invertColorTable flag and pass it to ColorTable.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void 
@@ -724,14 +727,13 @@ avtFilledBoundaryPlot::SetColors()
         cal.AddColors(ca);
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         // 
         //  Send an empty color map, rather than one where all
         //  entries map to same value. 
         //
         levelsLegend->SetLabelColorMap(levelColorMap);
         levelsLegend->SetLevels(labels);
-        return;
     }
     else if (atts.GetColorType() == FilledBoundaryAttributes::ColorByMultipleColors)
     {
@@ -766,7 +768,7 @@ avtFilledBoundaryPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);
@@ -862,7 +864,7 @@ avtFilledBoundaryPlot::SetColors()
         *cptr++ = (unsigned char)cal[numColors].Alpha();
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColorsFull);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);

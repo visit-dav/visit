@@ -399,6 +399,9 @@ avtContourPlot::NeedZBufferToCompositeEvenIn2D(void)
 //   Kathleen Bonnell, Mon Jan 17 17:57:45 MST 2011
 //   Retrieve invertcolorTable toggle and send it to the color table.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void
@@ -410,7 +413,7 @@ avtContourPlot::SetColors()
         ColorAttributeList cal; 
         cal.AddColors(atts.GetSingleColor());
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
     }
     else if (atts.GetColorType() == ContourAttributes::ColorByMultipleColors)
     {
@@ -425,7 +428,7 @@ avtContourPlot::SetColors()
             *cptr++ = (char)cal[i].Alpha();
         }
         avtLUT->SetLUTColorsWithOpacity(colors, numLevels);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
 
         // Delete the temp color array.
         delete [] colors;
@@ -491,7 +494,7 @@ avtContourPlot::SetColors()
             }
         }
         avtLUT->SetLUTColorsWithOpacity(colors, numLevels);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
 
         delete [] colors;
     }

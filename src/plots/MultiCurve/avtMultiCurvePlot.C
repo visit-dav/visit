@@ -359,6 +359,9 @@ avtMultiCurvePlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    I added the ability to set a scale factor and the line width for the
 //    markers.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void
@@ -379,7 +382,7 @@ avtMultiCurvePlot::SetAtts(const AttributeGroup *a)
         ColorAttributeList cal;
         cal.AddColors(atts.GetSingleColor());
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         decoMapper->SetColors(cal);
     }
     else // ColorByMultipleColors
@@ -396,7 +399,7 @@ avtMultiCurvePlot::SetAtts(const AttributeGroup *a)
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, cal.GetNumColors());
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         decoMapper->SetColors(cal);
 
         delete [] colors;

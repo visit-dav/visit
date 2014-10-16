@@ -830,6 +830,9 @@ avtSubsetPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    Kathleen Bonnell, Mon Jan 17 18:16:41 MST 2011
 //    Retrieve invertColorTable flag and send to color table.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void 
@@ -860,7 +863,7 @@ avtSubsetPlot::SetColors()
         cal.AddColors(ca);
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
 
         // 
         //  Send an empty color map, rather than one where all
@@ -868,8 +871,6 @@ avtSubsetPlot::SetColors()
         //
         levelsLegend->SetLabelColorMap(levelColorMap);
         levelsLegend->SetLevels(labels);
-
-        return;
     }
     else if (atts.GetColorType() == SubsetAttributes::ColorByMultipleColors)
     {
@@ -897,7 +898,7 @@ avtSubsetPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);
@@ -974,7 +975,7 @@ avtSubsetPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);

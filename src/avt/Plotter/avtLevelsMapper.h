@@ -103,6 +103,9 @@
 //    Brad Whitlock, Fri Nov 15 10:05:38 PDT 2002
 //    I changed the map type to LevelColorMap.
 //
+//    Kathleen Biagas, Thu Oct  9 12:36:47 PDT 2014
+//    Added meethod UpdateMapperColors, and bool arg to SetColors.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLevelsMapper : public avtMapper
@@ -116,7 +119,7 @@ class PLOTTER_API avtLevelsMapper : public avtMapper
     void                      SetPointSize(double);
     void                      GetOriginalDataRange(double &, double &);
 
-    void                      SetColors(const ColorAttributeList &c);
+    void                      SetColors(const ColorAttributeList &c, bool);
     void                      GetLevelColor(const int, double[4]);
     void                      GetLevelColor(const std::string &, double[4]);
 
@@ -133,6 +136,7 @@ class PLOTTER_API avtLevelsMapper : public avtMapper
  
     virtual void              CustomizeMappers(void);
     virtual void              SetLabels(std::vector<std::string> &, bool);
+    void                      UpdateMapperColors();
 };
 
 #endif

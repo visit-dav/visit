@@ -45,7 +45,6 @@
 #include <avtColorTables.h>
 #include <avtLevelsLegend.h>
 #include <avtVariableLegend.h>
-#include <avtLevelsMapper.h>
 #include <avtLookupTable.h>
 #include <MoleculeAttributes.h>
 #include <avtFeatureEdgesFilter.h>

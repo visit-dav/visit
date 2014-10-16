@@ -191,12 +191,15 @@ avtLevelsMapper::~avtLevelsMapper()
 //    Hank Childs, Thu Jul 24 09:52:33 PDT 2008
 //    Prevent dereference and add exception. ['8690]
 //
+//    Kathleen Biagas, Thu Oct  9 12:36:47 PDT 2014
+//    Moved color-setting code to UpdateMapperColors.
+//
 // ****************************************************************************
 
 void
 avtLevelsMapper::CustomizeMappers(void)
 {
-    double col[4];
+    UpdateMapperColors();
     for (int i = 0 ; i < nMappers ; i++)
     {
         if (mappers[i] != NULL)
@@ -209,32 +212,9 @@ avtLevelsMapper::CustomizeMappers(void)
                 m->SetSceneIs3D(GetInput()->GetInfo().GetAttributes().
                                                     GetSpatialDimension() == 3);
             }
-
-            //
-            //  Use labels for mapping to a color.
-            //
-            if (labelsForColorMapping.size() <= (size_t)i)
-            {
-                EXCEPTION1(VisItException, "An internal error occurred.  One common "
-                           "way to get to this state is if you are resampling a "
-                           "filled boundary plot, which is not allowed.");
-            }
-            GetLevelColor(labelsForColorMapping[i], col);
             vtkProperty* prop = actors[i]->GetProperty();
-            double spec_color[4];
-            if (prop->GetSpecular() > 0.)
-                prop->GetSpecularColor(spec_color);
-            prop->SetColor(col[0], col[1], col[2]);
-            if (prop->GetSpecular() > 0.)
-                prop->SetSpecularColor(spec_color);
-            prop->SetOpacity(col[3]);
             prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
             prop->SetLineWidth(LineWidth2Int(lineWidth));
- 
-            if (transparencyActor != NULL)
-            {
-                transparencyActor->InputWasModified(transparencyIndex, col[3]);
-            }
         }
     }
 }
@@ -481,6 +461,55 @@ avtLevelsMapper::SetLabels(vector<string> &labels, bool fromTree)
 //
 // Arguments:
 //   c         The new color attribute list. 
+//   mappersWillBeModified
+//             Flag specifying whether or not the underlying vtk mappers will
+//             undergo modification before rendering.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   September 24, 2001 
+//
+// Modifications:
+//
+//    Hank Childs, Tue Jul  9 08:44:00 PDT 2002
+//    Add support for transparency.
+//
+//    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
+//    Passed opacity to InputWasModified
+//
+//    Hank Childs, Thu Dec  8 18:23:50 PST 2005
+//    Reset the specular color when we're done, since the SetColor call
+//    clobbers the specular light color, which in turn greatly diminishes
+//    the specular effect.  ['5636] ['5580]
+//
+//    Hank Childs, Thu Jul 24 09:52:33 PDT 2008
+//    Prevent dereference and add exception. ['8690]
+//
+//    Kathleen Biagas, Thu Oct  9 12:35:06 PDT 2014
+//    Moved setting of mappers colors to UpdateMapperColors. Added bool
+//    argument.
+//
+// ****************************************************************************
+
+void
+avtLevelsMapper::SetColors(const ColorAttributeList &c, bool mappersWillBeModified)
+{
+    cal = c;
+    // If the underlying vtk mappers will be modified, we don't want to be
+    // mucking with their colors now as it can cause indexing issues if the
+    // number of mappers changes.
+    if (!mappersWillBeModified)
+        UpdateMapperColors();
+}
+
+
+// ****************************************************************************
+// Method: avtLevelsMapper::UpdateMapperColors
+//
+// Purpose: 
+//   Updates the colors used by the vtkDataSetMappers. 
+//
+// Notes:
+//   Moved from SetColors.
 //
 // Programmer: Kathleen Bonnell 
 // Creation:   September 24, 2001 
@@ -504,9 +533,8 @@ avtLevelsMapper::SetLabels(vector<string> &labels, bool fromTree)
 // ****************************************************************************
 
 void
-avtLevelsMapper::SetColors(const ColorAttributeList &c)
+avtLevelsMapper::UpdateMapperColors()
 {
-    cal = c;
     double col[4];
     for (int i = 0; i < nMappers; i++)
     {
