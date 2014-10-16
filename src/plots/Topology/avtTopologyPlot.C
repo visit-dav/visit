@@ -353,6 +353,9 @@ avtTopologyPlot::SetAtts(const AttributeGroup *a)
 //    Hank Childs, Fri Jun 15 11:57:07 PDT 2007
 //    Was using a deprecated method ... changed to a valid one.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void 
@@ -390,7 +393,7 @@ avtTopologyPlot::SetColors()
     }
 
     avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-    levelsMapper->SetColors(cal);
+    levelsMapper->SetColors(cal, needsRecalculation);
     levelsLegend->SetLevels(labels);
 
     levelsMapper->SetLabelColorMap(levelColorMap);

@@ -351,6 +351,9 @@ avtWellBorePlot::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Jan 17 18:19:07 MST 2011
 //    Retrieve invertColorTable flag and send to color table.
 //
+//    Kathleen Biagas, Thu Oct 16 09:12:03 PDT 2014
+//    Send 'needsRecalculation' flag to levelsMapper when setting colors.
+//
 // ****************************************************************************
 
 void
@@ -362,7 +365,7 @@ avtWellBorePlot::SetColors()
         ColorAttributeList cal;
         cal.AddColors(atts.GetSingleColor());
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
     }
     else if (atts.GetColorType() == WellBoreAttributes::ColorByMultipleColors)
     {
@@ -378,7 +381,7 @@ avtWellBorePlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, atts.GetNWellBores());
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
 
         delete [] colors;
     }
@@ -447,7 +450,7 @@ avtWellBorePlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, atts.GetNWellBores());
-        levelsMapper->SetColors(cal);
+        levelsMapper->SetColors(cal, needsRecalculation);
 
         delete [] colors;
     }
