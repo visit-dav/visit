@@ -29,29 +29,6 @@ class JobSubmitter_aprun_NERSC(JobSubmitter_aprun):
             return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
 
 ###############################################################################
-# Class: JobSubmitter_mpirun_NERSC
-#
-# Purpose:    Custom "mpirun" job submitter for NERSC.
-#
-# Programmer: Gunther H. Weber
-# Date:       Fri Oct  5 16:48:52 PDT 2012
-#
-# Modifications:
-#
-###############################################################################
-
-class JobSubmitter_mpirun_NERSC(JobSubmitter_mpirun):
-    def __init__(self, launcher):
-        super(JobSubmitter_mpirun_NERSC, self).__init__(launcher)
-
-    #
-    # Use fully qualified path to mpirun executable
-    #
-    def Executable(self):
-        # Currently, this submitter will only be called on Euclid
-        return ["/usr/common/usg/openmpi/1.4.4/gnu/bin/mpirun"]
-
-###############################################################################
 # Class: JobSubmitter_qsub_NERSC
 #
 # Purpose:    Custom "qsub" job submitter for NERSC.
@@ -105,7 +82,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
 
     def mpirun(self):
         # Currently, this method will only be called on Carver.
-        return ["/usr/common/usg/openmpi/1.4.5/gcc/bin/mpirun"]
+        return ["/usr/common/usg/openmpi/1.8.1/gcc/bin/mpirun"]
    
     def TFileSetup(self, tfile):
         tfile.write("cd %s\n" % os.path.abspath(os.curdir))
@@ -118,6 +95,37 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
             tfile.write("MOM_PORT=$(cat %s.port)\n" % self.tfilename)
             tfile.write("rm %s.port\n" % self.tfilename)
             tfile.write("eval $(modulecmd sh unload xt-shmem)\n")
+
+    def AddEnvironment(self):
+        if self.launcher.nersc_host == "carver":
+            env = ""
+            env = env + "HOME=" + GETENV("HOME")
+            env = env + ",LIBPATH=" + GETENV("LIBPATH")
+            env = env + ",LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+            env = env + ",VISITHOME=" + GETENV("VISITHOME")
+            env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
+            env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+            env = env + ",CHOS=sl6carver"
+            return ["-v", env]
+        else:
+            return super(JobSubmitter_qsub_NERSC, self).AddEnvironment()
+
+    def mpirun_args(self, args):
+        mpicmd = self.mpirun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-np", self.parallel.np]
+            nodes = self.parallel.nn
+            if nodes != None:
+                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+                mpicmd = mpicmd + ["-npernode", ppn]
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable()
+        mpicmd = mpicmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        mpicmd = mpicmd + args
+        return mpicmd
 
     def SetupPPN(self, nodes, procs, ppn, use_vis):
         if self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "grace" or self.launcher.nersc_host == "hopper":
@@ -241,8 +249,6 @@ For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/r
     def JobSubmitterFactory(self, launch):
         if launch == "aprun":
             return JobSubmitter_aprun_NERSC(self)
-        if launch == "mpirun":
-            return JobSubmitter_mpirun_NERSC(self)
         elif launch[:4] == "qsub" or launch[:4] == "msub":
             return JobSubmitter_qsub_NERSC(self)
         return super(NERSCLauncher, self).JobSubmitterFactory(launch)
