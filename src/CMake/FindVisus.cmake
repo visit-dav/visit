@@ -28,6 +28,14 @@
 #
 
 
+MESSAGE(STATUS "Looking for VISUS")
+
+IF(NOT VISIT_VISUS_DIR )
+    MESSAGE(STATUS "  VISUS library not requested")
+    RETURN()
+ENDIF()
+
+
 FIND_PATH(VISUS_INCLUDE_DIR  visuscpp    libs 
                                          ${VISUS_DIR}/include)
 
@@ -198,7 +206,10 @@ IF (VISUS_INCLUDE_DIR)
    ENDIF (CMAKE_VERBOSE_MAKEFILE)
 
 ELSE ()
-   # change this to an error when logic is added such that we know if Visus was requested.
-   MESSAGE(STATUS "Visus library not found on the system")
+   IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+       MESSAGE(STATUS "\n** \n** \n** Visus library requested but not found on the system.\n**\n**")
+   ELSE()
+       MESSAGE(FATAL_ERROR "Visus library requested but not found on the system.")
+   ENDIF()
 ENDIF ()
                          
