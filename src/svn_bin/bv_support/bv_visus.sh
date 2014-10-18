@@ -38,7 +38,6 @@ function bv_visus_initialize_vars
 {
     if [[ "$USE_SYSTEM_VISUS" == "no" ]]; then
         VISUS_INSTALL_DIR="${VISITDIR}/visus/$VISUS_VERSION/${VISITARCH}"
-        VISUS_INSTALL_DIR_cmake="\${VISITDIR}/visus/$VISUS_VERSION/\${VISITARCH}"
     fi
 }
 
