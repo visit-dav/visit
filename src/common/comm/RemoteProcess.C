@@ -124,12 +124,9 @@ Connection* (*RemoteProcess::customConnectionCallback)(int,void*) = NULL;
 void* RemoteProcess::customConnectionCallbackData = NULL;
 
 using std::map;
-static map<int, bool> childDied;
+static map<int, bool> childDied=std::map<int, bool>();
 
 #if !defined(_WIN32)
-
-static struct sigaction old_action = { 0 }; 
-
 // ****************************************************************************
 //  Function:  catch_dead_child
 //
@@ -141,50 +138,19 @@ static struct sigaction old_action = { 0 };
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 10, 2002
 //
-// Modifications:
-//    Allen Sanderson (via Boulder Labs for TX Corp) Thursday September 4 2014
-//    Changed to check all children rather just one. 
-//
 // ****************************************************************************
 static void
 catch_dead_child(int sig)
 {
-    void (*oldAction)(int) = ((volatile struct sigaction *)&old_action)->sa_handler;
-    if (oldAction && oldAction != SIG_IGN) {
-        oldAction(sig);
-    }
+    // assert (sig == SIGCHLD); HOOKS_IGNORE
     int status;
+    int pid;
+    pid = wait(&status);
 
-    for(map<int, bool>::iterator i = childDied.begin(); i != childDied.end(); ++i){
-        if (!i->second && i->first != -1) {
-            if( waitpid(i->first, &status, WNOHANG) > 0) {
-                i->second = true;
-            }
-        }
-    }
+    childDied[pid] = (status == 0 ? false : true);
+
+    signal(SIGCHLD, catch_dead_child);
 }
-
-
-// ****************************************************************************
-//  Function:  RemoteProcess::attachSIGCHLDHandler()
-//
-//  Purpose:
-//    now modified to call other sigchld hanlders (used by QProcess in qt)
-//
-//  Programmer:  Allen Sanderson (via Boulder Labs for TX Corp)
-//  Creation:    September 4 2014
-//
-// ****************************************************************************
-void RemoteProcess::attachSIGCHLDHandler() {
-    if(old_action.sa_handler == NULL || old_action.sa_handler == SIG_IGN) {
-        struct sigaction new_action;
-        memset(&new_action, 0, sizeof(new_action));
-        new_action.sa_handler = catch_dead_child;
-        sigemptyset(&new_action.sa_mask);
-        sigaction(SIGCHLD, &new_action, &old_action);
-    }
-}
-
 #endif
 
 
@@ -1231,7 +1197,7 @@ RemoteProcess::Open(const MachineProfile &profile, int numRead, int numWrite,
 
 #if !defined(_WIN32)
     // Stop watching for dead children
-    //signal(SIGCHLD, SIG_DFL);
+    signal(SIGCHLD, SIG_DFL);
 #endif
 
     debug5 << mName << "Returning true" << endl;
@@ -2337,19 +2303,20 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &password
 #ifdef VISIT_USE_PTY
     debug5 << mName << "Starting child process using pty_fork" << endl;
     int ptyFileDescriptor;
-    attachSIGCHLDHandler();
     if (!disablePTY)
     {
         // we will tell pty_fork to set up the signal handler for us, because
         // this call must come after the grantpt call inside pty_fork()
-        remoteProgramPid = pty_fork(ptyFileDescriptor);
+        remoteProgramPid = pty_fork(ptyFileDescriptor, catch_dead_child);
     }
     else
     {
+        signal(SIGCHLD, catch_dead_child);
         remoteProgramPid = fork();
     }
 #else
     debug5 << mName << "Starting child process using fork" << endl;
+    signal(SIGCHLD, catch_dead_child);
     remoteProgramPid = fork();
 #endif
     switch (remoteProgramPid)
@@ -2371,7 +2338,6 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &password
         exit(-1); // HOOKS_IGNORE
         break;   // OCD
     default:
-        childDied[remoteProgramPid] = false;
         break;
     }
 
@@ -2514,7 +2480,7 @@ RemoteProcess::KillProcess()
 #if !defined(_WIN32)
         // Stop watching for dead children so we don't get a signal when we
         // intentionally kill it.
-        //signal(SIGCHLD, SIG_DFL);
+        signal(SIGCHLD, SIG_DFL);
 
         // Kill the process
         kill(remoteProgramPid, SIGTERM);
@@ -2620,7 +2586,8 @@ RemoteProcess::LaunchLocal(const stringVector &args)
     remoteProgramPid = _spawnvp(_P_NOWAIT, argv[0], argv);
 #else
     // Watch for a remote process who died
-    attachSIGCHLDHandler();
+    signal(SIGCHLD, catch_dead_child);
+
     debug5 << mName << "Starting child process using fork" << endl;
     int rv, i;
     switch (remoteProgramPid = fork())
@@ -2649,7 +2616,6 @@ RemoteProcess::LaunchLocal(const stringVector &args)
         exit(-1); // HOOKS_IGNORE
         break;   // OCD
     default:
-        childDied[remoteProgramPid] = false;
         break;
     }
 #endif
