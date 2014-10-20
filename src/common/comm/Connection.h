@@ -65,7 +65,7 @@
 //    I added convenience methods for reading/writing string.
 //
 // ****************************************************************************
-class AttributeSubject;
+
 class COMM_API Connection
 {
 public:
@@ -78,7 +78,7 @@ public:
     virtual int  Fill() = 0;
     virtual void Flush() = 0;
     virtual long Size() = 0;
-    virtual void Flush(AttributeSubject*);
+
     // These read or write a byte to whatever we're using
     // as the connection.
     virtual void Write(unsigned char value) = 0;
@@ -124,6 +124,7 @@ public:
     // Set the destination format.
     void  SetDestinationFormat(const TypeRepresentation &);
     const TypeRepresentation &GetDestinationFormat() const;
+    const TypeRepresentation &GetSourceFormat() const;
     void  EnableConversion(bool val);
 protected:
     // Conversion related stuff.

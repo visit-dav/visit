@@ -609,9 +609,10 @@ LauncherApplication::MainLoop()
                 if(completeOutput.size() > 0)
                 {
                     debug1 << "Sending " << completeOutput.size() << " bytes" << endl;
-                    parent.GetReadConnection(1)->DirectWrite(
+                    parent.GetReadConnection(1)->Append(
                         (const unsigned char *)completeOutput.c_str(), 
                         completeOutput.size());
+                    parent.GetReadConnection(1)->Flush();
                 }
             }
 #endif

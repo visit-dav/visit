@@ -1669,7 +1669,9 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
 // Static
     retval = fake_dlsym(symbolName);
     if (retval == NULL)
+    {
         debug1 << "fake_dlsym was not able to return " << symbolName << endl;
+    }
 #else 
 // Dynamic
 #if defined(_WIN32)

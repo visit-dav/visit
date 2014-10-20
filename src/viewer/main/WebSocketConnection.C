@@ -40,6 +40,7 @@
 #include <visit-config.h>
 
 #include <AttributeSubject.h>
+#include <AttributeSubjectSerialize.h>
 #include <MapNode.h>
 #include <cstdlib>
 
@@ -1076,7 +1077,9 @@ WebSocketConnection::Fill()
         //std::cout << mapnode.ToXML(false) << std::endl;
         //std::cout << mapnode.ToJSON(false) << std::endl;
 
-        res += SocketConnection::Write(guido, contents, metadata); //Write(guido,&mapnode);
+        AttributeSubjectSerialize ser;
+        ser.SetConnection(this);
+        res += ser.Write(guido, contents, metadata); //Write(guido,&mapnode);
     }
 
     messages.clear();

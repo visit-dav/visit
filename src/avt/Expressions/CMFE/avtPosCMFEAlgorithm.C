@@ -1856,7 +1856,7 @@ avtPosCMFEAlgorithm::SpatialPartition::~SpatialPartition()
 
 
 // ****************************************************************************
-//  Class: Boundary
+//  Class: SPBoundary
 //
 //  Purpose:
 //      This class is for setting up a spatial partition.  It contains methods
@@ -1880,14 +1880,14 @@ typedef enum
 } Axis;
 
 const int npivots = 5;
-class Boundary
+class SPBoundary
 {
    public:
-                      Boundary(const double *, int, Axis);
-     virtual         ~Boundary() {;};
+                      SPBoundary(const double *, int, Axis);
+                     ~SPBoundary() {;};
 
      const double    *GetBoundary() { return bounds; };
-     bool             AttemptSplit(Boundary *&, Boundary *&);
+     bool             AttemptSplit(SPBoundary *&, SPBoundary *&);
      bool             IsDone(void) { return isDone; };
      bool             IsLeaf(void) { return (numProcs == 1); };
      void             AddCell(const double *);
@@ -1895,7 +1895,7 @@ class Boundary
      void             AddRGrid(const double *, const double *, const double *,
                                int, int, int);
      static void      SetIs2D(bool b) { is2D = b; };
-     static void      PrepareSplitQuery(Boundary **, int);
+     static void      PrepareSplitQuery(SPBoundary **, int);
      
    protected:
      double           bounds[6];
@@ -1908,18 +1908,18 @@ class Boundary
      static bool      is2D;
 };
 
-bool Boundary::is2D = false;
+bool SPBoundary::is2D = false;
 
 
 // ****************************************************************************
-//  Method: Boundary constructor
+//  Method: SPBoundary constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   January 9, 2006
 // 
 // ****************************************************************************
 
-Boundary::Boundary(const double *b, int n, Axis a)
+SPBoundary::SPBoundary(const double *b, int n, Axis a)
 {
     int  i;
 
@@ -1951,10 +1951,10 @@ Boundary::Boundary(const double *b, int n, Axis a)
 
 
 // ****************************************************************************
-//  Method: Boundary::PrepareSplitQuery
+//  Method: SPBoundary::PrepareSplitQuery
 //
 //  Purpose:
-//      Each Boundary is operating only with the information on this processor.
+//      Each SPBoundary is operating only with the information on this processor.
 //      When it comes time to determine if we can split a boundary, the info
 //      from each processor needs to be unified.  That is the purpose of this
 //      method.  It unifies the information so that Boundaries can later make
@@ -1966,7 +1966,7 @@ Boundary::Boundary(const double *b, int n, Axis a)
 // ****************************************************************************
 
 void
-Boundary::PrepareSplitQuery(Boundary **b_list, int listSize)
+SPBoundary::PrepareSplitQuery(SPBoundary **b_list, int listSize)
 {
     int   i, j;
     int   idx;
@@ -1992,7 +1992,7 @@ Boundary::PrepareSplitQuery(Boundary **b_list, int listSize)
 
 
 // ****************************************************************************
-//  Method: Boundary::AddPoint
+//  Method: SPBoundary::AddPoint
 //
 //  Purpose:
 //      Adds a point to the boundary.
@@ -2003,7 +2003,7 @@ Boundary::PrepareSplitQuery(Boundary **b_list, int listSize)
 // ****************************************************************************
 
 void
-Boundary::AddPoint(const double *pt)
+SPBoundary::AddPoint(const double *pt)
 {
     double p = (axis == X_AXIS ? pt[0] : axis == Y_AXIS ? pt[1] : pt[2]);
     for (int i = 0 ; i < npivots ; i++)
@@ -2017,7 +2017,7 @@ Boundary::AddPoint(const double *pt)
 
 
 // ****************************************************************************
-//  Method: Boundary::AddRGrid
+//  Method: SPBoundary::AddRGrid
 //
 //  Purpose:
 //      Adds an rgrid to the boundary.
@@ -2028,7 +2028,7 @@ Boundary::AddPoint(const double *pt)
 // ****************************************************************************
 
 void
-Boundary::AddRGrid(const double *x, const double *y, const double *z, int nX,
+SPBoundary::AddRGrid(const double *x, const double *y, const double *z, int nX,
                    int nY, int nZ)
 {
     //
@@ -2097,7 +2097,7 @@ Boundary::AddRGrid(const double *x, const double *y, const double *z, int nX,
 
 
 // ****************************************************************************
-//  Method: Boundary::AttemptSplit
+//  Method: SPBoundary::AttemptSplit
 //
 //  Purpose:
 //      Sees if the boundary has found an acceptable pivot to split around.
@@ -2108,7 +2108,7 @@ Boundary::AddRGrid(const double *x, const double *y, const double *z, int nX,
 // ****************************************************************************
 
 bool
-Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
+SPBoundary::AttemptSplit(SPBoundary *&b1, SPBoundary *&b2)
 {
     int  i;
 
@@ -2157,27 +2157,27 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
         if (axis == X_AXIS)
         {
             b_tmp[1] = pivots[closestI];
-            b1 = new Boundary(b_tmp, numProcs1, Y_AXIS);
+            b1 = new SPBoundary(b_tmp, numProcs1, Y_AXIS);
             b_tmp[0] = pivots[closestI];
             b_tmp[1] = bounds[1];
-            b2 = new Boundary(b_tmp, numProcs2, Y_AXIS);
+            b2 = new SPBoundary(b_tmp, numProcs2, Y_AXIS);
         }
         else if (axis == Y_AXIS)
         {
             Axis next_axis = (is2D ? X_AXIS : Z_AXIS);
             b_tmp[3] = pivots[closestI];
-            b1 = new Boundary(b_tmp, numProcs1, next_axis);
+            b1 = new SPBoundary(b_tmp, numProcs1, next_axis);
             b_tmp[2] = pivots[closestI];
             b_tmp[3] = bounds[3];
-            b2 = new Boundary(b_tmp, numProcs2, next_axis);
+            b2 = new SPBoundary(b_tmp, numProcs2, next_axis);
         }
         else
         {
             b_tmp[5] = pivots[closestI];
-            b1 = new Boundary(b_tmp, numProcs1, X_AXIS);
+            b1 = new SPBoundary(b_tmp, numProcs1, X_AXIS);
             b_tmp[4] = pivots[closestI];
             b_tmp[5] = bounds[5];
-            b2 = new Boundary(b_tmp, numProcs2, X_AXIS);
+            b2 = new SPBoundary(b_tmp, numProcs2, X_AXIS);
         }
         isDone = true;
     }
@@ -2285,9 +2285,9 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
     // which represents our spatial partitioning.
     //
     bool is2D = (bounds[4] == bounds[5]);
-    Boundary::SetIs2D(is2D);
+    SPBoundary::SetIs2D(is2D);
     int nProcs = PAR_Size();
-    Boundary **b_list = new Boundary*[2*nProcs];
+    SPBoundary **b_list = new SPBoundary*[2*nProcs];
     double dbounds[6];
     dbounds[0] = bounds[0];
     dbounds[1] = bounds[1];
@@ -2300,7 +2300,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         dbounds[4] -= 1.;
         dbounds[5] += 1.;
     }
-    b_list[0] = new Boundary(dbounds, nProcs, X_AXIS);
+    b_list[0] = new SPBoundary(dbounds, nProcs, X_AXIS);
     int listSize = 1;
     int *bin_lookup = new int[2*nProcs];
     bool keepGoing = (nProcs > 1);
@@ -2340,7 +2340,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             it.GetElementsListFromRange(pt, pt, list);
             for (int j = 0 ; j < (int) list.size() ; j++)
             {
-                Boundary *b = b_list[bin_lookup[list[j]]];
+                SPBoundary *b = b_list[bin_lookup[list[j]]];
                 b->AddPoint(pt);
             }
         }
@@ -2363,7 +2363,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             it.GetElementsListFromRange(min, max, list);
             for (int j = 0 ; j < (int) list.size() ; j++)
             {
-                Boundary *b = b_list[bin_lookup[list[j]]];
+                SPBoundary *b = b_list[bin_lookup[list[j]]];
                 b->AddRGrid(x, y, z, nX, nY, nZ);
             }
         }
@@ -2386,20 +2386,20 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
                 it.GetElementsListFromRange(pt, pt, list);
                 for (int k = 0 ; k < (int) list.size() ; k++)
                 {
-                    Boundary *b = b_list[bin_lookup[list[k]]];
+                    SPBoundary *b = b_list[bin_lookup[list[k]]];
                     b->AddPoint(pt);
                 }
             }
         }
 
         // See which boundaries found a suitable pivot and can now split.
-        Boundary::PrepareSplitQuery(b_list, listSize);
+        SPBoundary::PrepareSplitQuery(b_list, listSize);
         int numAtStartOfLoop = listSize;
         for (int i = 0 ; i < numAtStartOfLoop ; i++)
         {
             if (b_list[i]->IsDone())
                 continue;
-            Boundary *b1, *b2;
+            SPBoundary *b1, *b2;
             if (b_list[i]->AttemptSplit(b1, b2))
             {
                 b_list[listSize++] = b1;
@@ -2439,7 +2439,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             {
                 const double *b = b_list[i]->GetBoundary();
                 if (DebugStream::Level1()) {
-                    debug1 << "Boundary " << count++ << " = " << b[0] << "-" <<b[1]
+                    debug1 << "SPBoundary " << count++ << " = " << b[0] << "-" <<b[1]
                        << ", " << b[2] << "-" << b[3] << ", " << b[4] << "-"
                        << b[5] << endl;
                 }

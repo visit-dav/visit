@@ -116,7 +116,6 @@ MultiresControl
 OnionPeel
 PDF
 PersistentParticles
-Poincare
 Project
 RectilinearProject2D
 Reflect
@@ -138,6 +137,13 @@ TriangulateRegularPoints
 Tube
 ZoneDump
 )
+
+# Do not include Poincare on BlueGene/Q because it has a std::map symbol
+# that prevents static linking of libpami.a which is needed by MPI on 
+# that system.
+IF(NOT BLUEGENEQ)
+   SET(REQUIRED_OPERATOR_PLUGINS ${REQUIRED_OPERATOR_PLUGINS} Poincare)
+ENDIF(NOT BLUEGENEQ)
 
 #adding programmable operator only if Python is available.
 #IF(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)

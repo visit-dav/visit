@@ -278,7 +278,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
 {
     const char *mName = "ParentProcess::Connect: ";
     char **argv2 = *argv;
-    bool rhostSpecified = false;
+    bool rhostSpecified = false, fixedBufferMode = false;
     int  i, deleteCount = 0, port = 0;
 
     // Log the arguments.
@@ -347,6 +347,10 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
             createSockets = false;
             deleteCount = 1;
         }
+        else if(std::string(argv2[i]) == std::string("-fixed-buffer-sockets"))
+        {
+            fixedBufferMode = true;
+        }
 
         //
         // Delete some arguments.
@@ -379,7 +383,10 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
                 int desc = GetClientSocketDescriptor(port);
                 if(desc != -1)
                 {
-                    writeConnections[nWriteConnections] = new SocketConnection(desc);
+                    SocketConnection *s = new SocketConnection(desc);
+                    s->SetFixedBufferMode(fixedBufferMode);
+                    writeConnections[nWriteConnections] = s;
+                    
                     ++nWriteConnections;
                 }
             }
@@ -393,8 +400,10 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
             {
                 int desc = GetClientSocketDescriptor(port);
                 if(desc != -1)
-                {
-                    readConnections[nReadConnections] = new SocketConnection(desc);
+                { 
+                    SocketConnection *s = new SocketConnection(desc);
+                    s->SetFixedBufferMode(fixedBufferMode);
+                    readConnections[nReadConnections] = s;
                     ++nReadConnections;
                 }
             }

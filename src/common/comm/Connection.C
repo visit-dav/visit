@@ -39,7 +39,7 @@
 #include <visit-config.h>
 #include <convert.h>
 #include <Connection.h>
-#include <AttributeSubject.h>
+
 const bool Connection::SRC = false;
 const bool Connection::DEST = true;
 
@@ -53,16 +53,6 @@ long Connection::WriteHeader(const unsigned char *buf, long len)
     return DirectWrite(buf,len);
 }
 
-void Connection::Flush(AttributeSubject *subject)
-{
-    // Write out the subject's guido and message size.
-    WriteInt(subject->GetGuido());
-    int sz = subject->CalculateMessageSize(*this);
-    WriteInt(sz);
-
-    subject->Write(*this);
-    Flush();
-}
 // *******************************************************************
 // Method: Connection::Connection
 //
@@ -454,6 +444,25 @@ const TypeRepresentation &
 Connection::GetDestinationFormat() const
 {
     return destFormat;
+}
+
+// *******************************************************************
+// Method: Connection::GetSourceFormat
+//
+// Purpose: 
+//   Returns a reference to the source machine's type representation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 5 13:17:56 PST 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const TypeRepresentation &
+Connection::GetSourceFormat() const
+{
+    return srcFormat;
 }
 
 // *******************************************************************

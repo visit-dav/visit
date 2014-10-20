@@ -236,6 +236,8 @@ RemoteProcess::RemoteProcess(const std::string &rProgram) : localHost("notset"),
     // Set the callback information.
     progressCallback = 0;
     progressCallbackData = 0;
+
+    fixedBufferMode = false;
 }
 
 // ****************************************************************************
@@ -1520,6 +1522,10 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Brad Whitlock, Tue Oct 14 15:59:18 PDT 2014
+//   Added code to enable fixed buffer socket mode.
+//
 // ****************************************************************************
 
 void
@@ -1553,7 +1559,10 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
                 else
                 {
                     int descriptor = AcceptSocket();
-                    readConnections[nReadConnections] = new SocketConnection(descriptor);
+                    SocketConnection *s = new SocketConnection(descriptor);
+                    debug1 << mName << "fixedBufferMode=" << fixedBufferMode << endl;
+                    s->SetFixedBufferMode(fixedBufferMode);
+                    readConnections[nReadConnections] = s;
                 }
                 ++nReadConnections;
             }
@@ -1573,7 +1582,10 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
                 else
                 {
                     int descriptor = AcceptSocket();
-                    writeConnections[nWriteConnections] = new SocketConnection(descriptor);
+                    SocketConnection *s = new SocketConnection(descriptor);
+                    debug1 << mName << "fixedBufferMode=" << fixedBufferMode << endl;
+                    s->SetFixedBufferMode(fixedBufferMode);
+                    writeConnections[nWriteConnections] = s;
                 }
                 ++nWriteConnections;
             }
@@ -2201,6 +2213,14 @@ RemoteProcess::CreateCommandLine(stringVector &args, const MachineProfile &profi
     //
     args.push_back("-key");
     args.push_back(securityKey);
+
+
+    // See if we need to enable fixed buffer mode.
+    for(size_t i = 0; i < args.size(); ++i)
+    {
+        if(args[i] == "-fixed-buffer-sockets")
+            fixedBufferMode = true;
+    }
 }
 
 // ****************************************************************************
@@ -2422,7 +2442,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &password
 
                 //recursively call connection..
                 LaunchRemote(host, password, newUserName, args2);
-                return; //unnecessary
+                CATCH_RETURN(1); //unnecessary
             }
             else
             {

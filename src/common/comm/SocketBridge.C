@@ -53,16 +53,30 @@
 #include <unistd.h>
 #endif
 
+#include <snprintf.h>
+#include <DebugStream.h>
 #include <CouldNotConnectException.h>
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_BUFFER_SIZE 10000
+
+//#define VISIT_DEBUG_SOCKETS
+#ifdef VISIT_DEBUG_SOCKETS
+#define DEBUG_SOCKETS(CODE) if(log != NULL){CODE ; fflush(log); }
+#define DEBUG_SOCKETS_CODE(CODE) CODE
+#else
+#define DEBUG_SOCKETS(CODE)
+#define DEBUG_SOCKETS_CODE(CODE)
+#endif
+
 static int  Listen(int port, struct sockaddr_in &sin);
 static int  Accept(int listenSock, struct sockaddr_in sin);
 static int  Connect(const char *host, int port);
-static bool ForwardData(int read_fd, int write_fd);
+static bool ForwardData(FILE *log, int read_fd, int write_fd, char *buff, int buffSize);
 static void CloseSocket(int fd);
 
 
@@ -87,6 +101,9 @@ static void CloseSocket(int fd);
 //    Gunther H. Weber, Thu Jan 14 11:38:27 PST 2010
 //    Added ability to connect bridge to other host than localhost.
 //
+//    Brad Whitlock, Thu Oct 16 10:28:10 PDT 2014
+//    Added log, logging.
+//
 // ****************************************************************************
 SocketBridge::SocketBridge(int from, int to, const char* toHost)
 {
@@ -94,6 +111,11 @@ SocketBridge::SocketBridge(int from, int to, const char* toHost)
     from_port = from;
     to_port = to;
     to_host = toHost;
+    buff = new char[MAX_BUFFER_SIZE];
+    buffSize = MAX_BUFFER_SIZE;
+
+    log = NULL;
+    logging = false;
 
     listen_fd = Listen(from_port, listen_sock);
     if (listen_fd<0)
@@ -115,8 +137,89 @@ SocketBridge::~SocketBridge()
         CloseSocket(originating_fd[i]);
         CloseSocket(terminating_fd[i]);
     }
+    delete [] buff;
+    if(log != NULL)
+        fclose(log);
 }
 
+// ****************************************************************************
+// Method: SocketBridge::SetLogging
+//
+// Purpose:
+//   Set whether we're doing logging or not. If we are, start a log.
+//
+// Arguments:
+//   val : True if we're logging; false otherwise.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 16 10:27:15 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+SocketBridge::SetLogging(bool val)
+{
+    if(val)
+    {
+        DEBUG_SOCKETS_CODE(
+        if(log == NULL)
+        {
+            char filename[100];
+            SNPRINTF(filename, 100, "SocketBridge_%d_%d.vlog", from_port, to_port);
+            log = fopen(filename, "wt");
+        }
+        )
+    }
+    else
+    {
+        if(log != NULL)
+        {
+            fclose(NULL);
+            log = NULL;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: SocketBridge::SetBufferSize
+//
+// Purpose:
+//   Set the buffer size.
+//
+// Arguments:
+//   sz : The new buffer size.
+//
+// Returns:    
+//
+// Note:       This can come in handy for fixed buffer socket mode so we can
+//             set the buffer size to the same as 
+//             SocketConnection::FIXED_BUFFER_SIZE.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 14 17:04:36 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+SocketBridge::SetBufferSize(int sz)
+{
+    if(sz > buffSize)
+    {
+        delete [] buff;
+        buff = new char[sz];
+    }
+    buffSize = sz;
+
+    DEBUG_SOCKETS(fprintf(log, "SocketBridge setting buffer size: %d.\n", sz);)
+}
 
 // ****************************************************************************
 //  Method:  SocketBridge::NumActiveBridges
@@ -263,6 +366,8 @@ SocketBridge::StartNewBridge()
         EXCEPTION0(CouldNotConnectException);
     terminating_fd[num_bridges] = tfd;
 
+    DEBUG_SOCKETS(fprintf(log, "SocketBridge started new bridge.\n");)
+
     num_bridges++;
 }
 
@@ -309,12 +414,20 @@ SocketBridge::CloseBridge(int index)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Tue Oct 14 17:00:10 PDT 2014
+//    Pass in the buffer and size we'll use.
+//
 // ****************************************************************************
 void
 SocketBridge::ForwardOrigToTerm(int index)
 {
-    bool success = ForwardData(originating_fd[index],
-                               terminating_fd[index]);
+    DEBUG_SOCKETS(fprintf(log, "SocketBridge::ForwardOrigToTerm\n");)
+    bool success = ForwardData(log, 
+                               originating_fd[index],
+                               terminating_fd[index],
+                               buff,
+                               buffSize);
     if (!success)
         CloseBridge(index);
 }
@@ -332,12 +445,20 @@ SocketBridge::ForwardOrigToTerm(int index)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Tue Oct 14 17:00:10 PDT 2014
+//    Pass in the buffer and size we'll use.
+//
 // ****************************************************************************
 void
 SocketBridge::ForwardTermToOrig(int index)
 {
-    bool success = ForwardData(terminating_fd[index],
-                               originating_fd[index]);
+    DEBUG_SOCKETS(fprintf(log, "SocketBridge::ForwardTermToOrig\n");)
+    bool success = ForwardData(log,
+                               terminating_fd[index],
+                               originating_fd[index],
+                               buff,
+                               buffSize);
     if (!success)
         CloseBridge(index);
 }
@@ -559,19 +680,36 @@ Connect(const char *host, int port)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modification:
+//    Brad Whitlock, Tue Oct 14 16:56:21 PDT 2014
+//    Pass in the buffer to use and its size. Added logging.
+//
 // ****************************************************************************
 static bool
-ForwardData(int read_fd, int write_fd)
+ForwardData(FILE *log, int read_fd, int write_fd, char *buff, int buffSize)
 {
-    char buff[10000];
+    DEBUG_SOCKETS_CODE(const char *mName = "ForwardData: ";)
+    DEBUG_SOCKETS(fprintf(log, "%s begin\n", mName);
+            fprintf(log, "%sread(%d): buffSize=%d\n", mName, read_fd, buffSize);)
 #ifndef WIN32
-    int nread = read(read_fd, buff, 10000);
+    int nread = read(read_fd, buff, buffSize);
 #else
-    int nread = _read(read_fd, buff, 10000);
+    int nread = _read(read_fd, buff, buffSize);
 #endif
-
+    DEBUG_SOCKETS(fprintf(log, "%sread(%d) returned %d bytes ", mName, read_fd, nread);)
+    
     if (nread <= 0)
         return false;
+
+    DEBUG_SOCKETS(
+        int n = std::min(nread, 10);
+        fprintf(log, "{");
+        for(int i = 0; i < n; ++i)
+            fprintf(log, "%d, ", int(buff[i]));
+        if(n < nread)
+            fprintf(log, "...");
+        fprintf(log, "}\n");
+    )
 
     size_t          nleft, nwritten;
     const char      *ptr;
@@ -579,15 +717,24 @@ ForwardData(int read_fd, int write_fd)
     nleft = nread;
     while (nleft > 0)
     {
+        DEBUG_SOCKETS(fprintf(log, "%ssend(%d) buffSize=%d\n", mName, write_fd, buffSize);)
+
         if ((nwritten = send(write_fd, ptr, nleft, 0)) <= 0)
             break;
+
+        DEBUG_SOCKETS(fprintf(log, "%ssend(%d) sent %d bytes\n", mName, write_fd, (int)nwritten);)
 
         nleft -= nwritten;
         ptr   += nwritten;
     }
 
     if (nleft > 0)
+    {
+        DEBUG_SOCKETS(fprintf(log, "%serror\n", mName);)
         return false;
+    }
+
+    DEBUG_SOCKETS(fprintf(log, "%send\n", mName);)
 
     return true;
 }

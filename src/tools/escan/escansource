@@ -13,7 +13,7 @@
 #
 # ****************************************************************************
 
-set VISITDIR = "/data_vobs/VisIt"
+set VISITDIR = "../.."
 
 echo ""
 echo "escansource will issue warnings for the following known spots:"

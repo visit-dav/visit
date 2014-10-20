@@ -326,6 +326,7 @@ export DO_THREAD_BUILD="no"
 export USE_VISIBILITY_HIDDEN="no"
 export VISIT_INSTALL_PREFIX=""
 export VISIT_BUILD_MODE="Release"
+export VISIT_SELECTED_DATABASE_PLUGINS=""
 DOWNLOAD_ONLY="no"
 
 
@@ -833,6 +834,7 @@ for arg in "${arguments[@]}" ; do
             cxxflags) CXX_OPT_FLAGS="${arg}";;
             cc) C_COMPILER="${arg}";;
             cxx) CXX_COMPILER="${arg}";;
+            database-plugins) VISIT_SELECTED_DATABASE_PLUGINS="${arg}";;
             log-file) LOG_FILE="${arg}";;
             makeflags) MAKE_OPT_FLAGS="${arg}";;
             prefix) VISIT_INSTALL_PREFIX="${arg}";;
@@ -928,6 +930,7 @@ for arg in "${arguments[@]}" ; do
         --log-file) next_arg="log-file";;
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
         --gui) GRAPHICAL="yes"; ON_GRAPHICAL="on";;
+        --database-plugins) next_arg="database-plugins";;
         --debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
         --bv-debug) set -vx;;
         --download-only) DOWNLOAD_ONLY="yes";;
@@ -947,7 +950,11 @@ for arg in "${arguments[@]}" ; do
         --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --paradis) DO_PARADIS="yes"; ON_PARADIS="on";;
-        --static) DO_STATIC_BUILD="yes"; USE_VISIBILIITY_HIDDEN="no";;
+        --static) DO_STATIC_BUILD="yes"
+                  export USE_VISIBILITY_HIDDEN="no"
+                  CXXFLAGS=$(echo $CXXFLAGS | sed "s/-fPIC//g")
+                  CFLAGS=$(echo $CFLAGS | sed "s/-fPIC//g")
+                  ;;
         --thread) DO_THREAD_BUILD="yes";;
         --stdout) LOG_FILE="/dev/tty";;
         --svn) DO_SVN="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;

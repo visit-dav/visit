@@ -248,6 +248,10 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //    I removed one of the calls to slaveprocesscallback since it was incorrect
 //    to have it.
 //
+//    Brad Whitlock, Wed Oct 15 17:59:03 PDT 2014
+//    Turn msgLength back to an int. We're communicating it to MPI after all 
+//    as an int.
+//
 // ****************************************************************************
 
 void
@@ -268,7 +272,7 @@ MPIXfer::Process()
             if(PAR_UIProcess())
             {
                 size_t i = 0;
-                size_t msgLength = curLength + sizeof(int)*2;
+                int msgLength = curLength + int(sizeof(int)*2);
 
 #ifdef VISIT_BLUE_GENE_P
                 // Make the buffer be 32-byte aligned
@@ -311,6 +315,7 @@ MPIXfer::Process()
                 // using a spin-wait bcast.
                 if (slaveProcessInstruction)
                     slaveProcessInstruction();
+
                 VisIt_MPI_Bcast((void *)&msgLength, 1, MPI_INT,
                               0, VISIT_MPI_COMM);
 
@@ -471,6 +476,7 @@ MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
             debug5 << "Using MPI's Bcast; not VisIt_MPI_Bcast" << endl;
         }
         first = false;
+
         MPI_Bcast(buf, count, datatype, root, comm);
         return 2;
     }
