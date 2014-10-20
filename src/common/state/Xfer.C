@@ -38,6 +38,7 @@
 
 #include <Xfer.h>
 #include <AttributeSubject.h>
+#include <AttributeSubjectSerialize.h>
 #include <VisItRPC.h>
 #include <Connection.h>
 #include <visitstream.h>
@@ -217,6 +218,9 @@ Xfer::Remove(AttributeSubject *subject)
 //   Brad Whitlock, Fri Jul 25 12:16:17 PDT 2003
 //   Added debug coding.
 //
+//   Brad Whitlock, Tue Oct 14 13:35:40 PDT 2014
+//   I replaced some code with AttributeSubjectSerialize.
+//
 // ****************************************************************************
 
 void
@@ -226,23 +230,12 @@ Xfer::Update(Subject *TheChangedSubject)
         return;
 
     AttributeSubject *subject = (AttributeSubject *)TheChangedSubject;
-
-    // Write out the subject's guido and message size.
-//    output->WriteGroupStart(subject->TypeName().c_str());
-//    output->WriteInt(subject->GetGuido());
-//    int sz = subject->CalculateMessageSize(*output);
-//    output->WriteInt(sz);
-
     debug5 << "Xfer::Update: Sending: opcode=" << subject->GetGuido()
-//           << ", len=" << sz
            << ", name=" << subject->TypeName().c_str() << endl;
 
-//    // Write the things about the subject that have changed onto the
-//    // output connection and flush it out to make sure it's sent.
-//    subject->Write(*output);
-//    output->WriteGroupEnd(subject->TypeName().c_str());
-//    output->Flush();
-    output->Flush(subject);
+    AttributeSubjectSerialize ser;
+    ser.SetConnection(output);
+    ser.Flush(subject);
 }
 
 // ****************************************************************************

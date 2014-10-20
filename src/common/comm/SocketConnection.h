@@ -64,9 +64,12 @@
 //   Brad Whitlock, Wed Mar 20 17:23:43 PST 2002
 //   Added Fill, DirectRead, DirectWrite, NeedsRead methods.
 //
+//   Brad Whitlock, Tue Oct 14 14:43:59 PDT 2014
+//   I removed some json/mapnode code and added code to send variable length
+//   data in a set of fixed size buffers.
+//
 // ****************************************************************************
-class MapNode;
-class JSONNode;
+
 class COMM_API SocketConnection : public Connection
 {
 public:
@@ -75,7 +78,6 @@ public:
 
     virtual int  Fill();
     virtual void Flush();
-    virtual void Flush(AttributeSubject*);
     virtual long Size();
     virtual void Write(unsigned char value);
     virtual void Read(unsigned char *address);
@@ -86,25 +88,19 @@ public:
     virtual long WriteHeader(const unsigned char *buf, long len);
     virtual bool NeedsRead(bool blocking = false) const;
     virtual int  GetDescriptor() const;
+
+    void SetFixedBufferMode(bool val);
+
+    static const int FIXED_BUFFER_SIZE;
 protected:
-    int Write(int id,MapNode *mapnode);
-    void WriteToBuffer(MapNode *mapnode,
-                       bool write,
-                       int id,
-                       int& totalLen,
-                       int &totalSize);
-    int Write(int id,
-              JSONNode& node,
-              JSONNode& metadata);
-    void WriteToBuffer(const JSONNode& node,
-                       const JSONNode& metadata,
-                       bool write,
-                       int id,
-                       int& totalLen,
-                       int &totalSize);
+    int  DecodeSize(const unsigned char *buf, int &offset) const;
+    void EncodeSize(int sz, unsigned char *buf, int &offset) const;
+    void WaitForDescriptor(bool input);
+
     std::deque<unsigned char> buffer;
     DESCRIPTOR                descriptor;
     int                       zeroesRead;
+    bool                      fixedBufferMode;
 };
 
 #endif

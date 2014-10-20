@@ -70,6 +70,15 @@
 //
 std::map<int, bool> LaunchService::childDied;
 
+// Pass this information to the thread to set up the bridge.
+struct BridgeInfo
+{
+    int  newlocalport;
+    int  oldlocalport;
+    int  bufferSize;
+    bool logging;
+};
+
 // ****************************************************************************
 //  Function:  CreateSocketBridge
 //
@@ -88,13 +97,17 @@ std::map<int, bool> LaunchService::childDied;
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Brad Whitlock, Tue Oct 14 17:12:46 PDT 2014
+//    Pass the bridge set up information in a struct. Set the buffer size.
+//
 // ****************************************************************************
-static void CreateSocketBridge(void *ports)
+static void CreateSocketBridge(void *ptr)
 {
-    int newlocalport = ((int*)ports)[0];
-    int oldlocalport = ((int*)ports)[1];
-
-    SocketBridge bridge(newlocalport,oldlocalport);
+    BridgeInfo *info = (BridgeInfo *)ptr;
+    SocketBridge bridge(info->newlocalport, info->oldlocalport);
+    bridge.SetLogging(info->logging);
+    if(info->bufferSize > 0)
+        bridge.SetBufferSize(info->bufferSize);
     bridge.Bridge();
 }
 
@@ -189,6 +202,9 @@ LaunchService::DeadChildHandler(int)
 //    I changed the routine so the check for setting up the bridge is passed
 //    in rather than calculated in here from launch arguments.
 //
+//    Brad Whitlock, Tue Oct 14 17:16:31 PDT 2014
+//    Allow the buffer size to be passed in to the thread that makes the bridge.
+//
 // ****************************************************************************
 
 bool
@@ -200,6 +216,7 @@ LaunchService::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
     int  oldlocalport       = -1;
     int  portargument       = -1;
     int  hostargument       = -1;
+    int  bufferSize         = -1;
     for (size_t i=0; i<launchArgs.size(); i++)
     {
         if (i<launchArgs.size()-1 && launchArgs[i] == "-port")
@@ -210,6 +227,10 @@ LaunchService::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
         else if (i<launchArgs.size()-1 && launchArgs[i] == "-host")
         {
             hostargument = i+1;
+        }
+        else if (launchArgs[i] == "-fixed-buffer-sockets")
+        {
+            bufferSize = SocketConnection::FIXED_BUFFER_SIZE;
         }
     }
 
@@ -243,11 +264,13 @@ LaunchService::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
         launchArgs[portargument] = newportstr;
 
         // fork and start the socket bridge
-        int *ports = new int[2];
-        ports[0] = newlocalport;
-        ports[1] = oldlocalport;
+        BridgeInfo *info = new BridgeInfo;
+        info->newlocalport = newlocalport;
+        info->oldlocalport = oldlocalport;
+        info->bufferSize   = bufferSize;
+        info->logging      = DebugStream::Level1();
 #ifdef _WIN32
-        _beginthread(CreateSocketBridge, 0, (void*)ports);
+        _beginthread(CreateSocketBridge, 0, (void*)info);
 #else
         switch (fork())
         {
@@ -264,7 +287,7 @@ LaunchService::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
                   {
                       close(k);
                   }
-                  CreateSocketBridge((void*)ports);
+                  CreateSocketBridge((void*)info);
                   exit(0); // HOOKS_IGNORE
                   break;
               }

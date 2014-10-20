@@ -238,6 +238,12 @@ IF(VISIT_PARALLEL)
             # We need to link with OpenGL on Mac when we have IceT.
             SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
         ENDIF(APPLE)
+
+        IF(VISIT_STATIC)
+            SET(ICET_STATIC_LIB ${ICET_LIB} ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
+        ELSE(VISIT_STATIC)
+            SET(ICET_DYNAMIC_LIB ${ICET_LIB} ${ICET_OPENGL})
+        ENDIF(VISIT_STATIC)
     ENDIF(ICET_FOUND)
 
     TARGET_LINK_LIBRARIES(engine_par
@@ -250,7 +256,7 @@ IF(VISIT_PARALLEL)
         avtviswindow_par
         avtpipeline_par
         cognomen
-        ${ICET_LIB} ${ICET_OPENGL}
+        ${ICET_DYNAMIC_LIB}
     )
 
     IF(MESA_FOUND)
@@ -262,7 +268,19 @@ IF(VISIT_PARALLEL)
         TARGET_LINK_LIBRARIES(link_mpi_libs ${VISIT_PARALLEL_LIBS})
     ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
 
+    # For static builds with icet, don't add the parallel libs automatically. We
+    # try to control it explicitly so icet comes before mpi on the link line.
+    IF(ICET_FOUND AND VISIT_STATIC)
+        SET(tmpval ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
+        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES OFF)
+    ENDIF(ICET_FOUND AND VISIT_STATIC)
+
     ADD_PARALLEL_EXECUTABLE(engine_par_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_PAR_RESOURCE_FILE})
+
+    IF(ICET_FOUND AND VISIT_STATIC)
+        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
+    ENDIF(ICET_FOUND AND VISIT_STATIC)
+
     SET_TARGET_PROPERTIES(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
 
     PARALLEL_EXECUTABLE_LINK_LIBRARIES(engine_par_exe
@@ -280,6 +298,7 @@ IF(VISIT_PARALLEL)
         ${VTK_FREETYPE_LIBRARIES}
         vtkftgl
         ${ALL_THIRDPARTY_IO_LIB}
+        ${ICET_STATIC_LIB}
         ${TCMALLOC_LIB}
         ${CMAKE_THREAD_LIBS} 
         ${ZLIB_LIB}

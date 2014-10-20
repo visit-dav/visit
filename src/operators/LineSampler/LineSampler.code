@@ -28,7 +28,7 @@ Function: LineSamplerViewerEnginePluginInfo::GetClientAtts3
 Declaration: virtual void GetClientAtts(AttributeSubject *atts, const bool activeOperator, const bool applyToAll);
 Definition:
 // Just do this stuff in the viewer version.
-#if !defined(ELineSamplerOperator_ser_EXPORTS) && !defined(ELineSamplerOperator_par_EXPORTS)
+#if !defined(ELineSamplerOperator_ser_EXPORTS) && !defined(ELineSamplerOperator_par_EXPORTS) && !defined(VISIT_STATIC)
 #include <ViewerBase.h>
 #include <ViewerMessaging.h>
 #include <ViewerText.h>
@@ -73,7 +73,7 @@ LineSamplerViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts,
         (*(LineSamplerAttributes *)atts).GetViewGeometry();
 
 // Just do this stuff in the viewer version.
-#if !defined(ELineSamplerOperator_ser_EXPORTS) && !defined(ELineSamplerOperator_par_EXPORTS)
+#if !defined(ELineSamplerOperator_ser_EXPORTS) && !defined(ELineSamplerOperator_par_EXPORTS) && !defined(VISIT_STATIC)
       LineSamplerAttributes::ViewDimension newViewDim =
         (*clientAtts).GetViewDimension();
       LineSamplerAttributes::ViewGeometry newViewGeom =

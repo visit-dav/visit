@@ -620,13 +620,13 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 dbmgr->ReportWarning(warning);                
             }
         }
-        CATCH(NonCompliantException &e)
+        CATCH2(NonCompliantException, e)
         {
             rv = NULL;
             noncompliantPlugins.push_back(info ? info->GetName(): "");
             noncompliantErrors.push_back(e.Message());
         }
-        CATCH(NonCompliantFileException &e)
+        CATCH2(NonCompliantFileException, e)
         {
             rv = NULL;
             noncompliantPlugins.push_back(info ? info->GetName(): "");
@@ -704,13 +704,13 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                         delete dbtmp;
                 }
             }
-            CATCH(NonCompliantException &e)
+            CATCH2(NonCompliantException, e)
             {
                 rv = NULL;
                 noncompliantPlugins.push_back(info ? info->GetName(): "");
                 noncompliantErrors.push_back(e.Message());
             }
-            CATCH(NonCompliantFileException &e)
+            CATCH2(NonCompliantFileException, e)
             {
                 rv = NULL;
                 noncompliantPlugins.push_back(info ? info->GetName(): "");
@@ -848,13 +848,13 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 dbmgr->ReportWarning(warning);                
             }
         }
-        CATCH(NonCompliantException &e)
+        CATCH2(NonCompliantException, e)
         {
             rv = NULL;
             noncompliantPlugins.push_back(info ? info->GetName(): "");
             noncompliantErrors.push_back(e.Message());
         }
-        CATCH(NonCompliantFileException &e)
+        CATCH2(NonCompliantFileException, e)
         {
             rv = NULL;
             noncompliantPlugins.push_back(info ? info->GetName(): "");

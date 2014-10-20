@@ -765,6 +765,8 @@ public:
 void
 Engine::InitializeCompute()
 {
+    const char *mName = "Engine::InitializeCompute: ";
+
     if(xfer == NULL)
     {
         EXCEPTION1(ImproperUseException, "InitializeCompute must be called after Initialize.");
@@ -777,16 +779,19 @@ Engine::InitializeCompute()
     {
         // Install factory for  VisIt's OSMesa Render Windnow
 #ifdef HAVE_OSMESA
+        debug1 << mName << "Offscreen rendering will use Mesa factory." << endl;
         vtkVisItOSMesaRenderingFactory::ForceMesa();
+#else
+        debug1 << mName << "Offscreen rendering will use GL." << endl;
 #endif
     }
     else
     {
         std::ostringstream s;
-        s << "Setting up " << this->nDisplays << " GPUs for HW rendering";
+        s << mName << "Setting up " << this->nDisplays << " GPUs for HW rendering";
         if (DebugStream::Level3()) 
         {
-            debug3 << "Setting up X displays for " << this->nDisplays << " GPUs."
+            debug1 << mName << "Setting up X displays for " << this->nDisplays << " GPUs."
                << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
         }
         TimedCodeBlock(s.str(), this->SetupDisplay());
@@ -800,17 +805,17 @@ Engine::InitializeCompute()
 #if defined(PARALLEL) && defined(HAVE_ICET)
     if(this->useIceT)
     {
-        if (DebugStream::Level2())
+        if (DebugStream::Level1())
         {
-            debug2 << "Using IceT network manager." << std::endl;
+            debug1 << mName << "Using IceT network manager." << std::endl;
         }
         netmgr = new IceTNetworkManager;
     }
     else
     {
-        if (DebugStream::Level2())
+        if (DebugStream::Level1())
         {
-            debug2 << "Using standard network manager." << std::endl;
+            debug1 << mName << "Using standard network manager." << std::endl;
         }
         netmgr = new NetworkManager;
     }
@@ -819,7 +824,7 @@ Engine::InitializeCompute()
     {
         if(this->useIceT)
         {
-            debug1 << "Error; IceT not enabled at compile time. "
+            debug1 << mName << "Error; IceT not enabled at compile time. "
                << "Ignoring ..." << std::endl;
         }
     }
@@ -1618,6 +1623,7 @@ Engine::PAR_EventLoop()
 #else
             unsigned char *buf = (unsigned char*)malloc(msgLength * sizeof(unsigned char));
 #endif
+
             MPI_Bcast((void *)buf, msgLength, MPI_UNSIGNED_CHAR, 0, VISIT_MPI_COMM);
             par_conn.Append(buf, msgLength);
             free(buf);

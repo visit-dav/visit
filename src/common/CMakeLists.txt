@@ -197,6 +197,7 @@ state/AppearanceAttributes.C
 state/AttributeGroup.C
 state/AttributeSubject.C
 state/AttributeSubjectMap.C
+state/AttributeSubjectSerialize.C
 state/Axes2D.C
 state/Axes3D.C
 state/AxesArray.C
@@ -350,19 +351,22 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(visitcommon ws2_32 shlwapi userenv)
 ELSE(WIN32)
     TARGET_LINK_LIBRARIES(visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(StringHelpers_test utility/StringHelpers_test.C)
-    TARGET_LINK_LIBRARIES(StringHelpers_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(Namescheme_test utility/Namescheme_test.C)
-    TARGET_LINK_LIBRARIES(Namescheme_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(MRUCache_test utility/MRUCache_test.C)
-    ADD_EXECUTABLE(exprconfig expr/ExprConfig.C)
-    TARGET_LINK_LIBRARIES(exprconfig visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_EXECUTABLE(exprtest expr/test.C)
-    TARGET_LINK_LIBRARIES(exprtest visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
-    ADD_CUSTOM_TARGET(init)
-    ADD_DEPENDENCIES(init exprconfig)
-    ADD_CUSTOM_COMMAND(TARGET init POST_BUILD COMMAND exprconfig ExprInit.C
-        WORKING_DIRECTORY ${VISIT_SOURCE_DIR}/common/expr)
+
+    IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+        ADD_EXECUTABLE(StringHelpers_test utility/StringHelpers_test.C)
+        TARGET_LINK_LIBRARIES(StringHelpers_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+        ADD_EXECUTABLE(Namescheme_test utility/Namescheme_test.C)
+        TARGET_LINK_LIBRARIES(Namescheme_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+        ADD_EXECUTABLE(MRUCache_test utility/MRUCache_test.C)
+        ADD_EXECUTABLE(exprconfig expr/ExprConfig.C)
+        TARGET_LINK_LIBRARIES(exprconfig visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+        ADD_EXECUTABLE(exprtest expr/test.C)
+        TARGET_LINK_LIBRARIES(exprtest visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+        ADD_CUSTOM_TARGET(init)
+        ADD_DEPENDENCIES(init exprconfig)
+        ADD_CUSTOM_COMMAND(TARGET init POST_BUILD COMMAND exprconfig ExprInit.C
+                           WORKING_DIRECTORY ${VISIT_SOURCE_DIR}/common/expr)
+    ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 ENDIF(WIN32)
 
 VISIT_INSTALL_TARGETS(visitcommon)

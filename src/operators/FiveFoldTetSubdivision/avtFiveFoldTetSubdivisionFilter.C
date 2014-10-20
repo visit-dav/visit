@@ -468,7 +468,7 @@ avtFiveFoldTetSubdivisionFilter::ExecuteData(avtDataRepresentation *in_dr)
         double range[2] = { FLT_MAX, -FLT_MAX };
         GetDataRange(ugrid, range, "SurfaceID", false);
         avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-        try {
+        TRY {
             dataAtts.GetThisProcsOriginalDataExtents("SurfaceID")->Set(range);
             dataAtts.GetThisProcsActualDataExtents("SurfaceID")->Set(range);
             range[0] = 0;
@@ -476,9 +476,10 @@ avtFiveFoldTetSubdivisionFilter::ExecuteData(avtDataRepresentation *in_dr)
             dataAtts.GetThisProcsOriginalDataExtents("Selected")->Set(range);
             dataAtts.GetThisProcsActualDataExtents("Highlighted")->Set(range);
         }
-        catch (...)
+        CATCHALL
         {
         }
+        ENDTRY
     }
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(ugrid,

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              WebSocketConnection.h                           //
+//                              WebSocketConnection.h                        //
 // ************************************************************************* //
 
 #ifndef WEBSOCKET_CONNECTION_H
@@ -152,6 +152,7 @@ public:
 //
 // ****************************************************************************
 
+class AttributeSubject;
 class MapNode;
 class JSONNode;
 class VIEWER_API WebSocketConnection : public QObject, public SocketConnection

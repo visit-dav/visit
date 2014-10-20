@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VISIT_VERSION="2.7.0"
+VISIT_VERSION="2.9.0"
 
 ################################################################################
 ## DEFAULT VALUES FOR VARIABLES
@@ -8,11 +8,13 @@ VISIT_VERSION="2.7.0"
 
 # Global variables
 ARCH=linux-ppc64_gcc-4.4
+PREFIXARCH=linux-ppc64-BGQ
+PREFIX="$PWD/$PREFIXARCH"
 
-BG_CC=bgxlc
+BG_CC=bgxlc_r
 BG_C_OPT_FLAGS=""
 BG_CXX_OPT_FLAGS=""
-BG_CXX=bgxlC
+BG_CXX=bgxlC_r
 
 # Compiler used for Mesa.
 BG_GNU_CC=powerpc64-bgq-linux-gcc
@@ -32,9 +34,10 @@ C_OPT_FLAGS=""
 CXX=g++
 CXX_OPT_FLAGS=""
 EXTRA_ARGS=""
-GROUP="visit"
+GROUP="bdiv"
 INSTALLATION_BUILD_DIR="builds_static"
-IO_PACKAGES="--szip --hdf5 --silo --mili"
+IO_PACKAGES="--szip --hdf5 --silo"
+VISIT_SELECTED_DATABASE_PLUGINS="BOV;Cale;CaleHDF5;Curve2D;EnSight;Miranda;PDB;PlainText;SAMRAI;Silo;VTK"
 MAKE=make
 MAKE_OPT_FLAGS=""
 NO_VISIT=""
@@ -43,21 +46,22 @@ DO_SVN_ANON=""
 SVN=""
 TAR=tar
 THIRD_PARTY_PATH="`pwd`/thirdparty_static"
+TARBALL="--tarball visit${VISIT_VERSION}.tar.gz"
 
-export CMAKE_VERSION=2.8.10.2
-export CMAKE_SHORT_VERSION=2.8
+export CMAKE_VERSION=3.0.2
+export CMAKE_SHORT_VERSION=3.0
 
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
-export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2/"
+export MESA_URL="http://portal.nersc.gov/svn/visit/trunk/third_party"
 
-export ZLIB_FILE=${ZLIB_FILE:-"zlib-1.2.7.tar.gz"}
-export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.7"}
-export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-1.2.7"}
+export ZLIB_FILE=${ZLIB_FILE:-"zlib-1.2.8.tar.gz"}
+export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.8"}
+export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-1.2.8"}
 export ZLIB_URL="http://zlib.net/"
 
-export VTK_VERSION=5e3c539
+export VTK_VERSION="6.1.0"
 
 ################################################################################
 ## CODE BORROWED FROM build_visit
@@ -143,6 +147,15 @@ configure_support_files
 #import helper functions..
 . $bv_PREFIX/helper_funcs.sh
 
+function banner
+{
+    echo "===================================================================================="
+    echo "$1"
+    echo "===================================================================================="
+
+    return 0
+}
+
 ################################################################################
 ## build_mesa_BGQ
 ################################################################################
@@ -192,7 +205,7 @@ function build_mesa_BGQ
     #
     # Build bluegene-visit-osmesa config.
     #
-    info "Building Mesa . . . (~2 minutes)"
+    banner "Building Mesa (Compute Node)"
     cd $MESA_BUILD_DIR || error "Couldn't cd to mesa build dir."
     if test -e configs/bluegene-visit-osmesa ; then
         rm -f configs/bluegene-visit-osmesa
@@ -203,8 +216,8 @@ CONFIG_NAME = bluegene-visit-osmesa
 # Compiler and flags
 APP_CC = gcc
 APP_CXX = g++
-CFLAGS = -O3 -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
-CXXFLAGS = -O3 -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
+CFLAGS = -O3 -DNDEBUG -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
+CXXFLAGS = -O3 -DNDEBUG -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
 MKLIB_OPTIONS = -static
 GL_LIB_NAME = libUsedToBeCalledGL.a
 GLU_LIB_NAME = libGLU.a
@@ -412,18 +425,20 @@ function build_cmake
         CXXFLAGSARGS="--cxxflags \"$CXX_OPT_FLAGS\""
     fi
 
-    echo "***Building CMake"
-    $bv_PATH/build_visit --console --static $NO_VISIT $SVN \
+    banner "Building CMake"
+    env BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
+        --version ${VISIT_VERSION} \
+        --console --static --no-visit $SVN $TARBALL\
         --no-thirdparty --cmake\
         --log-file building_cmake.txt \
         --arch "${ARCH}" \
-        --prefix $ARCH \
+        --prefix "${PREFIX}" \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}" \
         --cc $CC $CFLAGSARGS \
         --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
-        --group $GROUP
+        --group $GROUP || error "Cannot build cmake for login node."
 
    # Create a symlink to make a "BGQ" version of the login node cmake.
    STARTDIR=`pwd`
@@ -459,12 +474,13 @@ function build_zlib_BGQ
     fi
 
     # Build some packages that require GNU compilers.
-    echo "***Building zlib"
+    banner "Building zlib (Compute Node)"
     $bv_PATH/build_visit \
-        --console --static --no-visit $SVN --engine-only \
+        --version ${VISIT_VERSION} \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
-        --prefix $ARCH \
+        --prefix "${PREFIX}" \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
@@ -533,9 +549,10 @@ function build_vtk_BGQ
     fi
 
     # Call build_visit.
-    echo "***Building VTK"
+    banner "Building VTK (Compute Node)"
     env VTK_EXTRA_OPTIONS="${vopts}" C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
-        --console --static --no-visit $SVN --engine-only \
+        --version ${VISIT_VERSION} \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
         --no-thirdparty --cmake --vtk \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
@@ -569,13 +586,14 @@ function build_icet_BGQ
 
     # Call build_visit just to build Ice-T. Use the gnu compilers to build
     # it but use the XL/MPI compilers to detect MPI.
-    echo "***Building Ice-T"
-    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC  $bv_PATH/build_visit \
-        --console --static --no-visit $SVN --engine-only \
-        --no-thirdparty --icet \
+    banner "Building Ice-T (Compute Node)"
+    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC $bv_PATH/build_visit \
+        --version ${VISIT_VERSION} \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
+        --no-thirdparty --cmake --icet \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
-        --prefix $ARCH \
+        --prefix "${PREFIX}" \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
@@ -591,9 +609,7 @@ function build_icet_BGQ
 # 0 on success, Non-zero on failure.
 function build_for_compute_node
 {
-    info "********************************************************************"
-    info "                   BUILDING FOR COMPUTE NODE "
-    info "********************************************************************"
+    banner "BUILDING FOR COMPUTE NODE"
 
     # We need to build Mesa with a special config file.
     STARTDIR=`pwd`
@@ -644,12 +660,13 @@ function build_for_compute_node
     fi
 
     # Build some packages that require GNU compilers.
-    echo "***Building I/O libraries"
-    env SILO_EXTRA_OPTIONS="--disable-browser --disable-hzip --disable-fpzip" $bv_PATH/build_visit \
-        --console --static --no-visit $SVN --engine-only \
+    banner "Building I/O libraries (Compute Node)"
+    env SILO_EXTRA_OPTIONS="--disable-browser --disable-hzip --disable-fpzip" BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
+        --version ${VISIT_VERSION} \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
-        --prefix $ARCH \
+        --prefix "${PREFIX}" \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
@@ -664,20 +681,27 @@ function build_for_compute_node
 
     # Call build_visit to build VisIt itself. Note that we set PAR_COMPILER, 
     # C_COMPILER, BUILD_VISIT_BGQ to trigger special behaviors in build_visit.
-    echo "***Building VisIt"
+    #
+    # NOTE: We do not build with Mesa support because we're already using Mesa
+    #       as our GL library. This way, we use the VTK rendering classes since
+    #       they are working better than the VisIt Mesa-based ones.
+    #
+    banner "Building VisIt (Compute Node)"
     env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
-        --console --static $NO_VISIT $SVN --engine-only\
+        --version ${VISIT_VERSION} \
+        --console --static $NO_VISIT $SVN $TARBALL --engine-only\
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
-        --prefix $ARCH \
+        --prefix "${PREFIX}" \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --zlib $IO_PACKAGES \
-        --parallel --icet --mesa\
-        --group $GROUP
+        --no-thirdparty --no-boost --zlib $IO_PACKAGES \
+        --parallel --cmake --icet \
+        --group $GROUP \
+        --database-plugins $VISIT_SELECTED_DATABASE_PLUGINS
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
@@ -688,9 +712,7 @@ function build_for_compute_node
 
 function build_for_login_node
 {
-    info "********************************************************************"
-    info "                   BUILDING FOR LOGIN NODE "
-    info "********************************************************************"
+    banner "BUILDING FOR LOGIN NODE"
 
     MAKEARGS=""
     if test -n "$MAKE_OPT_FLAGS" ; then
@@ -709,10 +731,13 @@ function build_for_login_node
     # Build cmake, python, VTK. We pass BUILD_VISIT_BGQ in the environment so
     # VTK will be configured using a script. This works around a glitch in
     # identifying the compiler.
-    env BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit --console --static --no-visit $SVN --server-components-only \
+    banner "Building Dependencies (Login Node)"
+    $bv_PATH/build_visit \
+        --version ${VISIT_VERSION} \
+        --console --static --no-visit $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
         --arch $ARCH \
-        --prefix $ARCH \
+        --prefix "${PREFIX}" \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir $INSTALLATION_BUILD_DIR \
@@ -727,27 +752,35 @@ function build_for_login_node
 
     # Do another build_visit pass with no BUILD_VISIT_BGQ since we don't want what
     # it would do to the resulting config-site file.
-    $bv_PATH/build_visit --console --static $NO_VISIT $SVN --server-components-only \
+    banner "Building VisIt (Login Node)"
+    $bv_PATH/build_visit \
+        --version ${VISIT_VERSION} \
+        --console --static $NO_VISIT $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
         --arch $ARCH \
-        --prefix $ARCH \
+        --prefix "${PREFIX}" \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir $INSTALLATION_BUILD_DIR \
         --cc $CC $CFLAGSARGS \
         --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --cmake --vtk $IO_PACKAGES --python \
-        --group $GROUP
+        --no-thirdparty --no-boost --cmake --vtk $IO_PACKAGES --python \
+        --group $GROUP \
+        --database-plugins $VISIT_SELECTED_DATABASE_PLUGINS
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
     fi
 
-    # Install into the $ARCH directory.
+    # If we built VisIt then move the libsim lib directory because otherwise 
+    # we'll clobber it with the login node version later.
     if test "$NO_VISIT" = "" ; then
-        cd visit${VISIT_VERSION}/src
-        make install
-        cd ../..
+        if test -d $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/lib ; then
+            mv $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/lib $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/libBGQ
+        fi
+        if test -d $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/lib ; then
+            mv $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/lib $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/libBGQ
+        fi
     fi
 
     return 0
@@ -765,12 +798,14 @@ function printvars
     echo "BUILD_MODE=$BUILD_MODE"
     echo "THIRD_PARTY_PATH=$THIRD_PARTY_PATH"
     echo "INSTALLATION_BUILD_DIR=$INSTALLATION_BUILD_DIR"
+    echo "PREFIX=$PREFIX"
     echo "EXTRA_ARGS=$EXTRA_ARGS"
     echo "GROUP=$GROUP"
     echo "IO_PACKAGES=$IO_PACKAGES"
     echo "MAKE_OPT_FLAGS=$MAKE_OPT_FLAGS"
     echo "NO_VISIT=$NO_VISIT"
     echo "SVN=$SVN"
+    echo "VISIT_SELECTED_DATABASE_PLUGINS=$VISIT_SELECTED_DATABASE_PLUGINS"
     echo ""
     echo "Login Node"
     echo "==========="
@@ -808,6 +843,7 @@ function usage
     echo ""
     echo "Argument                      Description"
     echo "============================= =========================================================="
+    echo "--database-plugins list       A list of database plugins to build (e.g. Curve2D;Silo)"
     echo "--installation-build-dir dir  The build directory to be used to build the code."
     echo "--thirdparty-path path        The directory where 3rd party libraries will be installed."
     echo "--build-mode mode             The build mode: Debug or Release"
@@ -815,6 +851,8 @@ function usage
     echo "-h/--help                     Print the help and exit."
     echo "--print                       Print the variables that will be used for the build."
     echo "--makeflags flags             Build the code, passing flags to make."
+    echo "--no-compute                  Do not build the compute node version."
+    echo "--no-login                    Do not build the login node version."
     echo "--no-visit                    Do not build the VisIt sources."
     echo "--svn                         Download sources from svn."
     echo "--svn-anonymous               Download sources from anonymous svn."
@@ -857,6 +895,8 @@ function usage
 
 function main
 {
+    DO_COMPUTE="yes"
+    DO_LOGIN="yes"
     next_action=""
     next_arg=""
     for arg in "$@" ; do
@@ -890,6 +930,7 @@ function main
                 bgmpicc) BG_MPI_CC="${arg}";;
                 bgmpicxx) BG_MPI_CXX="${arg}";;
 
+                database-plugins) VISIT_SELECTED_DATABASE_PLUGINS="${arg}";;
                 group) GROUP="${arg}";;
                 makeflags) MAKE_OPT_FLAGS="${arg}";;
                 thirdparty-path) THIRD_PARTY_PATH="${arg}";;
@@ -927,13 +968,16 @@ function main
             --bgmpicc) next_arg="bgmpicc";;
             --bgmpicxx) next_arg="bgmpicxx";;
 
+            --database-plugins) next_arg="database-plugins";;
             --group) next_arg="group";;
             -h|--help) next_action="help";;
             --print) next_action="printvars";;
             --makeflags) next_arg="makeflags";;
+            --no-compute) DO_COMPUTE="";;
+            --no-login) DO_LOGIN="";;
             --no-visit) NO_VISIT="--no-visit";;
-            --svn) SVN="--svn" ; DO_SVN="yes";;
-            --svn-anonymous) SVN="--svn-anonymous"; DO_SVN_ANON="yes";;
+            --svn) SVN="--svn" ; DO_SVN="yes" ; TARBALL="";;
+            --svn-anonymous) SVN="--svn-anonymous"; DO_SVN_ANON="yes" ; TARBALL="";;
             --thirdparty-path) next_arg="thirdparty-path";;
         esac
     done
@@ -951,6 +995,7 @@ function main
     # Make build directories.
     if ! test -d $INSTALLATION_BUILD_DIR ; then
         mkdir $INSTALLATION_BUILD_DIR
+
     fi
     if ! test -d ${INSTALLATION_BUILD_DIR}_BGQ ; then
         mkdir ${INSTALLATION_BUILD_DIR}_BGQ
@@ -963,30 +1008,53 @@ function main
         echo "$THIRD_PARTY_PATH already exists."
     fi
 
+    if test "${SVN}" == "" && test "${NO_VISIT}" == "" ; then
+        # We're building VisIt from a local source file (not svn) so check that
+        # the file is present at the level of the build_visit_BGQ script.
+        # If we find it then we'll copy it into the installation build dirs so
+        # the build_visit scripts will locate it.
+        if ! test -e visit${VISIT_VERSION}.tar.gz ; then
+            error "VisIt source file visit${VISIT_VERSION}.tar.gz not found in $PWD. Exiting."
+            exit 3
+        fi
+
+        # Copy local source file into installation build dirs if it's not there.
+        if ! test -e $INSTALLATION_BUILD_DIR/visit${VISIT_VERSION}.tar.gz ; then
+            cp visit${VISIT_VERSION}.tar.gz $INSTALLATION_BUILD_DIR
+        fi
+        if ! test -e ${INSTALLATION_BUILD_DIR}_BGQ/visit${VISIT_VERSION}.tar.gz ; then
+            cp visit${VISIT_VERSION}.tar.gz ${INSTALLATION_BUILD_DIR}_BGQ
+        fi
+    fi
+
     # We build cmake specially so we can share the build between the login
     # node and compute node build stages.
     build_cmake
 
-    # We build the compute node version first so the engine_ser will be 
-    # overwritten by the login node version during installation.
-    build_for_compute_node
-    if [[ $? != 0 ]] ; then
-        warn "Compute node build failed.  Giving up"
-        return 1
+    # We build the compute node version first.
+    if test -n "${DO_COMPUTE}" ; then
+        build_for_compute_node
+        if [[ $? != 0 ]] ; then
+            warn "Compute node build failed.  Giving up"
+            exit 4
+        fi
     fi
 
-    build_for_login_node
-    if [[ $? != 0 ]] ; then
-        warn "Login node build failed.  Giving up"
-        return 1
+    # Now build for the login node so the engine_ser for the login node will
+    # overwrite the compute node's version that was previously installed.
+    if test -n "${DO_LOGIN}" ; then
+        build_for_login_node
+        if [[ $? != 0 ]] ; then
+            warn "Login node build failed.  Giving up"
+            exit 5
+        fi
     fi
 
     # We installed VisIt so tar up the binary distribution since it contains
     # binaries for both the login nodes and the compute nodes.
     if test "$NO_VISIT" = "" ; then
-        cd visit${VISIT_VERSION}/src
-        make install
-        cd ../..
+        VV=$(echo ${VISIT_VERSION} | tr "." "_")
+        tar zcf visit${VV}.${PREFIXARCH}.tar.gz ${PREFIXARCH}
     fi
 
     return 0

@@ -154,13 +154,20 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 // Modifications:
 //   Eric Brugger, Fri May 10 14:39:42 PDT 2013
 //   I removed support for mangled mesa.
-//   
+//
+//   Brad Whitlock, Fri Oct 17 20:02:39 PDT 2014
+//   Check to see if we have X11 before looking for the DISPLAY variable. If 
+//   have built VisIt or VTK without X11 support then we won't get an X11-based
+//   render window. In that case, we'd like to try and render what VTK provides
+//   since it is likely a vtkOSOpenGLRenderWindow, on offscreen window. I also
+//   improved the warning message.
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
-#if defined(__unix__) && !defined(__APPLE__) && !defined(HAVE_OSMESA)
+#if defined(__unix__) && !defined(__APPLE__) && defined(HAVE_LIBX11) && !defined(HAVE_OSMESA)
     if(displayStatus == DS_NOT_CHECKED)
     {
         // On X11 systems not using mangled mesa, make sure that the DISPLAY is set.
@@ -177,10 +184,14 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
     else
     {
         avtCallback::IssueWarning("VisIt was not built with support for "
-            "software-based offscreen rendering. This means that the DISPLAY "
-            "variable must be set to a valid X-server display in order to render "
-            "an image. If you are running client/server, consider adding -X to "
-            "your SSH arguments.");
+            "software-based offscreen rendering. This is often the case when "
+            "the --mesa flag was not passed to the build_visit script.\n\n"
+            "This means that the DISPLAY environment variable must be set to a "
+            "valid X-server display in order to render an image. If you are running "
+            "client/server, you may be able to work around this issue by -X to the "
+            "SSH arguments in the host profile for the remote computer. The best"
+            "alternative is to rebuild VisIt with --mesa support on the remote "
+            "computer.");
     }
 #else
     GetRenderWindow()->Render();

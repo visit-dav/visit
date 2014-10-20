@@ -307,20 +307,27 @@ EngineMain(int argc, char *argv[])
 
     // Do some pre-connect initialization
     engine->Initialize(&argc, &argv, true);
+    debug1 << "Engine::Initialize completed." << endl;
 
     // Try to connect to the viewer
     if (engine->ConnectViewer(&argc, &argv))
     {
+        debug1 << "Engine::ConnectViewer completed." << endl;
+
         // Do the post-connect initialization
         engine->SetUpViewerInterface(&argc, &argv);
+        debug1 << "Engine::SetupViewerInterface completed." << endl;
 
         // Do the rest of the engine initialization.
         engine->InitializeCompute();
+        debug1 << "Engine::InitializeCompute completed." << endl;
 
         // Begin the engine's event processing loop.
 #ifdef PARALLEL
+        debug1 << "Entering PAR_EventLoop" << endl;
         engine->PAR_EventLoop();
 #else
+        debug1 << "Entering EventLoop" << endl;
         engine->EventLoop();
 #endif
     }

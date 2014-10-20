@@ -222,38 +222,38 @@ TypeRepresentation::operator == (const TypeRepresentation &obj)
 //
 
 int
-TypeRepresentation::CharSize()
+TypeRepresentation::CharSize() const
 {
     return 1;
 }
 
 int
-TypeRepresentation::IntSize()
+TypeRepresentation::IntSize() const
 {
     return (IntFormat == B32 || IntFormat == L32) ? 4 : 8;
 }
 
 int
-TypeRepresentation::LongSize()
+TypeRepresentation::LongSize() const
 {
     return (LongFormat == B32 || LongFormat == L32) ? 4 : 8;
 }
 
 int
-TypeRepresentation::FloatSize()
+TypeRepresentation::FloatSize() const
 {
     return (FloatFormat == B32 || FloatFormat == L32) ? 4 : 8;
 }
 
 int   
-TypeRepresentation::DoubleSize()
+TypeRepresentation::DoubleSize() const
 {
     return (DoubleFormat == B32 || DoubleFormat == L32) ? 4 : 8;
 }
 
 
 TypeRepresentation::SupportedFormat
-TypeRepresentation::GetSupportedFormat()
+TypeRepresentation::GetSupportedFormat() const
 {
     return static_cast<SupportedFormat>(Format);
 }

@@ -137,7 +137,7 @@ class PIPELINE_API avtDataSelection
 
     virtual const char *    GetType() const = 0;
     virtual bool            operator==(const avtDataSelection &) const
-                                { EXCEPTION0(ImproperUseException); };
+                                { EXCEPTION0(ImproperUseException); return false; };
     virtual std::string     DescriptionString(void) = 0;
 
   private:

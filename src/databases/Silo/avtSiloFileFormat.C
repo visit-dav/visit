@@ -1702,7 +1702,12 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 }
 
                 if (valid_var)
-                    silo_mt = GetMeshtype(dbfile, mb_meshname.c_str());
+                {
+                    if(!GetMeshtype(dbfile, mb_meshname.c_str(), silo_mt))
+                    {
+                        InvalidateMultiMesh(mm, dirname, multimesh_names[i], name_w_dir, md);
+                    }
+                }
             }
             else
             {
@@ -1983,26 +1988,33 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
         }
         CATCHALL
         {
-            // We explicitly free the multimesh here in the catch block and NOT at
-            // the exit from this function because in 'normal' operation, the multimesh
-            // objects are actually cached by the plugin and free'd later.
-            if (mm)
-            {
-                // Make sure its removed from the plugin's cache, too.
-                multimeshCache.RemoveEntry(dirname, multimesh_names[i]);
-            }
-
-            debug1 << "Invalidating multi-mesh \"" << multimesh_names[i] << "\"" << endl;
-            avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
-                0, 0, 0, 0, 0, 0, AVT_UNKNOWN_MESH);
-            mmd->validVariable = false;
-            md->Add(mmd);
+            InvalidateMultiMesh(mm, dirname, multimesh_names[i], name_w_dir, md);
         }
         ENDTRY
 
 
         if (name_w_dir) delete [] name_w_dir;
     }
+}
+
+void
+avtSiloFileFormat::InvalidateMultiMesh(DBmultimesh *mm, const char *dirname, 
+    const char *multimesh_name, const char *name_w_dir, avtDatabaseMetaData *md)
+{
+            // We explicitly free the multimesh here in the catch block and NOT at
+            // the exit from this function because in 'normal' operation, the multimesh
+            // objects are actually cached by the plugin and free'd later.
+            if (mm)
+            {
+                // Make sure its removed from the plugin's cache, too.
+                multimeshCache.RemoveEntry(dirname, multimesh_name);
+            }
+
+            debug1 << "Invalidating multi-mesh \"" << multimesh_name << "\"" << endl;
+            avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
+                0, 0, 0, 0, 0, 0, AVT_UNKNOWN_MESH);
+            mmd->validVariable = false;
+            md->Add(mmd);
 }
 
 // ****************************************************************************
@@ -13131,20 +13143,14 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
 //
 // ****************************************************************************
 
-int
-avtSiloFileFormat::GetMeshtype(DBfile *dbfile, const char *mesh)
+bool
+avtSiloFileFormat::GetMeshtype(DBfile *dbfile, const char *mesh, int &rv)
 {
     string dirvar;
     DBfile *correctFile = dbfile;
     DetermineFileAndDirectory(mesh, "", correctFile, dirvar);
-    int rv = DBInqMeshtype(correctFile, dirvar.c_str());
-    if (rv < 0)
-    {
-        char str[1024];
-        sprintf(str, "Unable to determine mesh type for \"%s\".", mesh);
-        EXCEPTION1(SiloException, str);
-    }
-    return rv;
+    rv = DBInqMeshtype(correctFile, dirvar.c_str());
+    return rv >= 0;
 }
 
 

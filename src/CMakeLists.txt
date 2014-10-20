@@ -1072,13 +1072,12 @@ IF(NOT VISIT_DBIO_ONLY)
         SET(OPENGL_FOUND ON)
         SET(OPENGL_GLU_FOUND ON)
         SET(OPENGL_INCLUDE_DIR ${VISIT_OPENGL_DIR}/include)
-        # Hack for BG/Q. Assume if Mesa has been set and we're telling
-        # VisIt where to look for GL that we're using Mesa for GL.
-        IF(HAVE_OSMESA)
+        # Hack for BG/Q.
+        IF(BLUEGENEQ)
             SET(LIBGL OSMesa)
-        ELSE(HAVE_OSMESA)
+        ELSE(BLUEGENEQ)
             SET(LIBGL GL)
-        ENDIF(HAVE_OSMESA)
+        ENDIF(BLUEGENEQ)
         IF(VISIT_STATIC)
             SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/lib${LIBGL}.a)
             SET(OPENGL_glu_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGLU.a)
@@ -2310,20 +2309,18 @@ ADD_SUBDIRECTORY(third_party_builtin)
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(visit_vtk)
 ADD_SUBDIRECTORY(avt)
-ADD_SUBDIRECTORY(sim)
-IF(VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(tools)
-ELSE(VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(engine)
-ENDIF(VISIT_DBIO_ONLY)
-IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(launcher)
-    ADD_SUBDIRECTORY(mdserver)
-ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+
+IF(NOT VISIT_DBIO_ONLY)
+    ADD_SUBDIRECTORY(sim)
+    ADD_SUBDIRECTORY(viewer)   # sim depends on viewercore
+    ADD_SUBDIRECTORY(engine)   # viewercore depends on rpc and proxy libs.
+    ADD_SUBDIRECTORY(launcher) # viewercore depends on rpc and proxy libs.
+    ADD_SUBDIRECTORY(mdserver) # viewercore depends on rpc and proxy libs.
+ENDIF(NOT VISIT_DBIO_ONLY)
+
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_SUBDIRECTORY(vtkqt)
     ADD_SUBDIRECTORY(winutil)
-    ADD_SUBDIRECTORY(viewer)
     ADD_SUBDIRECTORY(gui)
     IF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
         IF(NOT VISIT_STATIC)
@@ -2377,10 +2374,8 @@ IF(NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_DBIO_ONLY)
 ADD_SUBDIRECTORY(databases)
 
-IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    # Must come after plugins in case we're doing a static build
-    ADD_SUBDIRECTORY(tools)
-ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+# Must come after plugins in case we're doing a static build
+ADD_SUBDIRECTORY(tools)
 
 # Now that plugins have been added, do the mains last if we're creating static
 # binaries. This is needed to link the plugins into the exe.
