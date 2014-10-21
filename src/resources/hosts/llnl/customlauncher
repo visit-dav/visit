@@ -70,7 +70,7 @@ class LLNLLauncher(MainLauncher):
         if self.parallelArgs.parallel and \
            (string.find(self.generalArgs.exe_name, "_par") != -1 or \
             string.find(self.generalArgs.exe_name, "_ser") != -1):
-            if self.sectorname() == "vulcanlac":
+            if self.sectorname() == "vulcanlac" or self.sectorname() == "rzuseqlac":
                 self.generalArgs.host = self.GetIPAddress()
                 self.generalArgs.guesshost = 0
                 self.generalArgs.sshtunneling = 0
