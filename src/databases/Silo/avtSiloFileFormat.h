@@ -489,7 +489,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                                            const char *name,
                                                            avtSiloMBObjectCacheEntry *obj,
                                                            const char *curdir);
-    bool                  GetMeshtype(DBfile *, const char *, int &mt);
+    int                   GetMeshtype(DBfile *, const char *);
     void                  GetMeshname(DBfile *, const char *, char *);
     void                 *GetComponent(DBfile *, char *, const char *);
 
@@ -529,10 +529,6 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     bool                  PopulateIOInformationEx(const std::string &meshname,
                                                   avtIOInformation &ioInfo);
-
-    void                  InvalidateMultiMesh(DBmultimesh *mm, const char *dirname, 
-                                              const char *multimesh_name, 
-                                              const char *name_w_dir, avtDatabaseMetaData *md);
 };
 
 
