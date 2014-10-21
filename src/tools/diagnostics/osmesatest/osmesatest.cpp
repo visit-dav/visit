@@ -182,7 +182,7 @@ main(int argc, char *argv[])
    char filename[1000];
    int Width = 400;
    int Height = 400;
-   int par_rank = 0, par_size = 1;
+   int par_rank = 0;
 
    if (argc < 2)
    {
@@ -193,6 +193,7 @@ main(int argc, char *argv[])
 
 #ifdef PARALLEL
     /* Init MPI */
+    int par_size = 1;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &par_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &par_size);
@@ -201,13 +202,11 @@ main(int argc, char *argv[])
     strcpy(filename, argv[1]);
 #endif
 
-#if 1
    if(par_rank == 0)
    {
        for(int i = 0; i < argc; ++i)
            printf("argv[%d] = %s\n", i, argv[i]);
    }
-#endif
 
    if (argc == 4)
    {
