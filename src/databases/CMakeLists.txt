@@ -312,11 +312,13 @@ IF(VISIT_STATIC)
     SET(ALL_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} CACHE INTERNAL "List of all I/O libs")
 ENDIF(VISIT_STATIC)
 
+# If we're not building statically, add SimV2.
 # If we're not building statically, add XDB -- if we enabled it.
 IF(NOT VISIT_STATIC)
     IF(VISIT_ENABLE_XDB)
         SET(XDBPLUGIN FieldViewXDB)
     ENDIF(VISIT_ENABLE_XDB)
+    SET(SIMV2_PLUGIN SimV2)
 ENDIF(NOT VISIT_STATIC)
 
 # These are our required plugins (no external dependencies)
@@ -365,7 +367,7 @@ SAR
 SAS
 STL
 Shapefile
-SimV2
+${SIMV2_PLUGIN}
 Spheral
 TFT
 TSurf
