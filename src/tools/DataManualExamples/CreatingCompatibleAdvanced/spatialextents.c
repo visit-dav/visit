@@ -73,7 +73,7 @@ write_domains(DBfile *dbfile, double *spatial_extents, double *data_extents)
         float *coords[3];
         int index = 0;
         float xstart, xend, ystart, yend, zstart, zend;
-        int xzones, yzones, zzones, nzones;
+        int xzones, yzones, zzones;
         int xnodes, ynodes, znodes;
 
         double *sdomextents = spatial_extents + 6 * dom;
@@ -105,7 +105,6 @@ write_domains(DBfile *dbfile, double *spatial_extents, double *data_extents)
         ynodes = yzones + 1;
         znodes = zzones + 1;
 
-        nzones = xzones*yzones*zzones;
         dims[0] = xnodes;
         dims[1] = ynodes;
         dims[2] = znodes;
