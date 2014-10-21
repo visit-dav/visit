@@ -80,7 +80,7 @@ function bv_visus_host_profile
         if [[ "$USE_SYSTEM_VISUS" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISUS_INSTALL_DIR_cmake})" >> $HOSTCONF
         else
-            echo "VISIT_OPTION_DEFUALT(VISIT_VISUS_DIR \${VISITHOME}/visus/$VISUS_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR \${VISITHOME}/visus/$VISUS_VERSION/\${VISITARCH})" >> $HOSTCONF
         fi
     fi
 }
