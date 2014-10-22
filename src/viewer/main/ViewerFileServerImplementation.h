@@ -38,7 +38,7 @@
 
 #ifndef VIEWER_FILE_SERVER_IMPLEMENTATION_H
 #define VIEWER_FILE_SERVER_IMPLEMENTATION_H
-#include <viewercore_exports.h>
+#include <viewer_exports.h>
 #include <ViewerServerManager.h>
 #include <map>
 #include <string>
@@ -195,7 +195,7 @@ class SILAttributes;
 //
 // ****************************************************************************
 
-class VIEWERCORE_API ViewerFileServerImplementation : public ViewerServerManager
+class VIEWER_API ViewerFileServerImplementation : public ViewerServerManager
 {
     typedef std::map<std::string, avtDatabaseMetaData *> FileMetaDataMap;
     typedef std::map<std::string, avtSIL *> FileSILMap;

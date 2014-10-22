@@ -61,8 +61,6 @@
 #include <ViewerActionManager.h>
 #include <ViewerChangeUsername.h>
 #include <ViewerConnectionPrinter.h>
-#include <ViewerFileServer.h>
-#include <ViewerEngineManager.h>
 #include <ViewerHostProfileSelectorNoWin.h>
 #include <ViewerMessaging.h>
 #include <ViewerWindow.h>
@@ -471,13 +469,15 @@ ViewerFactory::CreateConnectionPrinter()
 // Creation:   Mon Sep  8 17:43:58 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Tue Oct 21 15:03:47 PDT 2014
+//   I made it return NULL.
 //
 // ****************************************************************************
 
 ViewerFileServerInterface *
 ViewerFactory::CreateFileServerInterface()
 {
-    return new ViewerFileServer();
+    return NULL;
 }
 
 // ****************************************************************************
@@ -492,13 +492,15 @@ ViewerFactory::CreateFileServerInterface()
 // Creation:   Mon Sep  8 17:43:58 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Tue Oct 21 15:03:47 PDT 2014
+//   I made it return NULL.
 //
 // ****************************************************************************
 
 ViewerEngineManagerInterface *
 ViewerFactory::CreateEngineManagerInterface()
 {
-    return new ViewerEngineManager();
+    return NULL;
 }
 
 // ****************************************************************************

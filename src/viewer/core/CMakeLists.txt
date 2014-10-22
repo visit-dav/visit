@@ -56,12 +56,8 @@ ViewerConfigManager.C
 ViewerConnectionPrinter.C
 ViewerConnectionProgress.C
 ViewerDatabaseCorrelationMethods.C
-ViewerEngineManager.C
-ViewerEngineManagerImplementation.C
 ViewerEngineManagerInterface.C
 ViewerFactory.C
-ViewerFileServer.C
-ViewerFileServerImplementation.C
 ViewerFileServerInterface.C
 ViewerHostProfileSelector.C
 ViewerHostProfileSelectorNoWin.C
@@ -76,7 +72,6 @@ ViewerProperties.C
 ViewerQuery.C
 ViewerQueryManager.C
 ViewerRemoteProcessChooser.C
-ViewerServerManager.C
 ViewerStateManager.C
 ViewerText.C
 ViewerVariableMethods.C
@@ -128,12 +123,6 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Interactors
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/engine/proxy
-${VISIT_SOURCE_DIR}/engine/rpc
-${VISIT_SOURCE_DIR}/launcher/proxy
-${VISIT_SOURCE_DIR}/launcher/rpc
-${VISIT_SOURCE_DIR}/mdserver/proxy
-${VISIT_SOURCE_DIR}/mdserver/rpc
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VTK_INCLUDE_DIRS}
@@ -142,19 +131,13 @@ ${VTK_INCLUDE_DIRS}
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${GLEW_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
 
 
-#*************************** The viewercore library ******************************
-ADD_LIBRARY(viewercore ${VIEWERCORE_SOURCES})
-SET_TARGET_PROPERTIES(viewercore PROPERTIES HAS_CXX ON)
+#*************************** The viewercore_ser library ******************************
+ADD_LIBRARY(viewercore_ser ${VIEWERCORE_SOURCES})
+SET_TARGET_PROPERTIES(viewercore_ser PROPERTIES HAS_CXX ON)
 
-TARGET_LINK_LIBRARIES(viewercore
+TARGET_LINK_LIBRARIES(viewercore_ser
 viewerrpc
 visitcommon
-mdserverrpc
-mdserverproxy
-vclrpc
-vclproxy
-enginerpc
-engineproxy
 avtdbatts
 avtview
 avtmath
@@ -167,7 +150,34 @@ ${CMAKE_THREAD_LIBS}
 )
 
 IF(MESA_FOUND)
-    TARGET_LINK_LIBRARIES(viewercore visit_vtk_osmesa)
+    TARGET_LINK_LIBRARIES(viewercore_ser visit_vtk_osmesa)
 ENDIF(MESA_FOUND)
 
-VISIT_INSTALL_TARGETS(viewercore)
+#*************************** The viewercore_par library ******************************
+# We build a _par version of viewercore because we can't allow it to have any _ser
+# library dependencies when we use it in the simV2 parallel runtime.
+IF(VISIT_PARALLEL)
+ADD_LIBRARY(viewercore_par ${VIEWERCORE_SOURCES})
+SET_TARGET_PROPERTIES(viewercore_par PROPERTIES HAS_CXX ON)
+
+TARGET_LINK_LIBRARIES(viewercore_par
+viewerrpc
+visitcommon
+avtdbatts
+avtview
+avtmath
+avtpipeline_par
+avtplotter_par
+avtfilters_par
+avtviswindow_par
+avtwriter_par
+${CMAKE_THREAD_LIBS}
+)
+
+IF(MESA_FOUND)
+    TARGET_LINK_LIBRARIES(viewercore_par visit_vtk_osmesa)
+ENDIF(MESA_FOUND)
+SET(VIEWERCORE_PAR viewercore_par)
+ENDIF(VISIT_PARALLEL)
+
+VISIT_INSTALL_TARGETS(viewercore_ser ${VIEWERCORE_PAR})

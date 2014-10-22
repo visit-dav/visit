@@ -68,7 +68,6 @@
 #include <SILRestrictionAttributes.h>
 #include <GlobalAttributes.h>
 
-#include <ViewerEngineManager.h>
 #include <ParsingExprList.h>
 #include <ViewerDatabaseCorrelationMethods.h>
 #include <ViewerFileServerInterface.h>

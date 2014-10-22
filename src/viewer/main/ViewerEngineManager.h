@@ -42,7 +42,7 @@
 
 #ifndef VIEWER_ENGINE_MANAGER_H
 #define VIEWER_ENGINE_MANAGER_H
-#include <viewercore_exports.h>
+#include <viewer_exports.h>
 #include <ViewerEngineManagerInterface.h>
 
 // ****************************************************************************
@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class VIEWERCORE_API ViewerEngineManager : public ViewerEngineManagerInterface
+class VIEWER_API ViewerEngineManager : public ViewerEngineManagerInterface
 {
 public:
     ViewerEngineManager();

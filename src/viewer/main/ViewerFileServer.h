@@ -38,7 +38,7 @@
 
 #ifndef VIEWER_FILE_SERVER_H
 #define VIEWER_FILE_SERVER_H
-#include <viewercore_exports.h>
+#include <viewer_exports.h>
 #include <ViewerFileServerInterface.h>
 
 // ****************************************************************************
@@ -58,7 +58,7 @@
 //
 // ****************************************************************************
 
-class VIEWERCORE_API ViewerFileServer : public ViewerFileServerInterface
+class VIEWER_API ViewerFileServer : public ViewerFileServerInterface
 {
 public:
     ViewerFileServer();

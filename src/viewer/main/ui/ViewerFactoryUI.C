@@ -58,6 +58,8 @@
 #include <ViewerChangeUsernameUI.h>
 #include <ViewerConnectionPrinterUI.h>
 #include <ViewerConnectionProgressDialog.h>
+#include <ViewerFileServer.h>
+#include <ViewerEngineManager.h>
 #include <ViewerHostProfileSelectorNoWin.h>
 #include <ViewerHostProfileSelectorWithWin.h>
 #include <ViewerMessagingUI.h>
@@ -450,4 +452,46 @@ ViewerFactoryUI::CreateChangeUsername()
     else
         obj = new ViewerChangeUsernameUI;
     return obj;
+}
+
+// ****************************************************************************
+// Method: ViewerFactoryUI::CreateFileServerInterface
+//
+// Purpose:
+//   Creates the file server interface we'll use.
+//
+// Returns:    A pointer to the new file server interface.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 21 15:02:52 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+ViewerFileServerInterface *
+ViewerFactoryUI::CreateFileServerInterface()
+{
+    return new ViewerFileServer;
+}
+
+// ****************************************************************************
+// Method: ViewerFactoryUI::CreateEngineManagerInterface
+//
+// Purpose:
+//   Creates the engine manager interface we'll use.
+//
+// Returns:    A pointer to the new engine manager interface.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 21 15:02:52 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+ViewerEngineManagerInterface *
+ViewerFactoryUI::CreateEngineManagerInterface()
+{
+    return new ViewerEngineManager;
 }

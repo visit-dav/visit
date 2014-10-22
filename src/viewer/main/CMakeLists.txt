@@ -117,10 +117,16 @@ SharedDaemon.C
 ViewerBaseUI.C
 ViewerClientConnection.C
 ViewerCommandFromSimObserver.C
+ViewerEngineManager.C
+ViewerEngineManagerImplementation.C
+ViewerFactoryMain.C
+ViewerFileServer.C
+ViewerFileServerImplementation.C
 ViewerMasterXfer.C
 ViewerMetaDataObserver.C
 ViewerObserverToSignal.C
 ViewerSILAttsObserver.C
+ViewerServerManager.C
 ViewerStateBuffered.C
 ViewerSubject.C
 VisItViewer.C
@@ -228,7 +234,7 @@ ENDIF(VISIT_STATIC)
 
 TARGET_LINK_LIBRARIES(viewer 
 viewerrpc
-viewercore
+viewercore_ser
 visitcommon
 mdserverrpc
 mdserverproxy

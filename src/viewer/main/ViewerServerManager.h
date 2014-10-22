@@ -39,7 +39,7 @@
 #ifndef VIEWER_SERVER_MANAGER_H
 #define VIEWER_SERVER_MANAGER_H
 #include <visit-config.h>
-#include <viewercore_exports.h>
+#include <viewer_exports.h>
 #include <ViewerBase.h>
 #include <vectortypes.h>
 #include <map>
@@ -103,7 +103,7 @@ class ViewerConnectionProgress;
 //
 // ****************************************************************************
 
-class VIEWERCORE_API ViewerServerManager : public ViewerBase
+class VIEWER_API ViewerServerManager : public ViewerBase
 {
     struct LauncherData
     {

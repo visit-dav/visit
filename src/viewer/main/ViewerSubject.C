@@ -127,6 +127,7 @@
 #include <ViewerConfigManager.h>
 #include <ViewerConnectionPrinterUI.h>
 #include <ViewerEngineManagerInterface.h>
+#include <ViewerFactoryMain.h>
 #include <ViewerFactoryUI.h>
 #include <ViewerFileServerInterface.h>
 #include <ViewerInternalCommands.h>
@@ -610,6 +611,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //   Brad Whitlock, Tue May  1 10:06:12 PDT 2012
 //   Call GetVisItResourcesDirectory to get the translations directory.
 //
+//   Brad Whitlock, Tue Oct 21 15:09:53 PDT 2014
+//   Use ViewerFactoryMain for non-ui case.
+//
 // ****************************************************************************
 
 void
@@ -619,7 +623,9 @@ ViewerSubject::Initialize()
 
     // If we're not in -nowin mode then use the UI factory. The default is to use
     // the non-UI factory.
-    if(!GetViewerProperties()->GetNowin())
+    if(GetViewerProperties()->GetNowin())
+        SetViewerFactory(new ViewerFactoryMain());
+    else
         SetViewerFactory(new ViewerFactoryUI());
 
     // Make VisIt translation aware.
