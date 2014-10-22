@@ -357,6 +357,10 @@
 #
 #    Cyrus Harrison, Fri May 30 10:42:10 PDT 2014
 #    Added option for Swiss National Supercomputing Center (CSCS). 
+#
+#    Eric Brugger, Wed Oct 22 11:33:35 PDT 2014
+#    I added a host profile for surface.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1053,6 +1057,7 @@ elif [ "$config" = "llnl_open_cz" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_hera.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_sierra.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_surface.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_slac_red.xml      "$dir"/$version+/.visit/hosts/
 
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
