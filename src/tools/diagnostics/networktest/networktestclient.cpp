@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
+#include <algorithm>
 
 #ifdef _WIN32
 #include <process.h>
@@ -118,7 +119,7 @@ public:
                     char buffer[1000];
                     if(fgets(buffer, 1000, stdin) != NULL)
                     {
-                        int len = strlen(buffer);
+                        int len = (int)strlen(buffer);
                         if(len > 0 && buffer[len-1] == '\n')
                         {
                             buffer[len-1] = '\0';
@@ -255,7 +256,7 @@ public:
 #if defined(_WIN32)
         // Do it the WIN32 way where we use the _spawnvp system call.
         debug5 << mName << "Starting child process using _spawnvp" << endl;
-        remoteProgramPid = _spawnvp(_P_NOWAIT, argv[0], argv);
+        _spawnvp(_P_NOWAIT, argv[0], argv);
 #else
         debug5 << mName << "Starting child process using fork" << endl;
         int rv, i;
