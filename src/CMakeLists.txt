@@ -377,6 +377,9 @@
 #    Kathleen Biagas, Mon May 12 12:58:02 PDT 2014
 #    Add VISIT_SELECTED_PLUGIN_ERROR macro.
 #
+#    Kathleen Biagas, Wed Oct 22 16:31:49 MST 2014
+#    Always use -DNOMINMAX on Windows.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1774,10 +1777,7 @@ SET(VISIT_COMMON_INCLUDES
 
 # Windows-specific settings
 IF (WIN32)
-  ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
-  IF(VISIT_QT5)
-    ADD_DEFINITIONS(-DNOMINMAX)
-  ENDIF()
+  ADD_DEFINITIONS(-D_USE_MATH_DEFINES -DNOMINMAX)
   # we want GTE 1400
   IF (MSVC_VERSION GREATER 1399)
       ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
