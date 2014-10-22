@@ -11,8 +11,13 @@
 #
 #
 
-import pyrmine,sys,os,datetime,logging
+
+import sys
+import os
+import datetime
+import logging
 import ho.pisa as pisa
+import pyrmine
 
 
 class VisItIssue(pyrmine.Issue):
@@ -54,7 +59,7 @@ class VisItIssue(pyrmine.Issue):
                 res += "<blockquote>\n<b>%s</b> (%s)<br>" % (u["author"],u["date"])
                 res += "%s\n</blockquote>\n" % u["content"]
         res += "</p><hr>\n"
-        return res
+        return res.encode('utf-8')
     def __format_blank(self,txt):
         """
         Returns (unset) to indicate a blank field value.
