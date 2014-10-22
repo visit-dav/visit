@@ -35,55 +35,83 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef VIEWER_FACTORY_UI_H
-#define VIEWER_FACTORY_UI_H
-#include <viewer_exports.h>
-#include <ViewerFactory.h>
+#include <ViewerFactoryMain.h>
+
+#include <ViewerFileServer.h>
+#include <ViewerEngineManager.h>
 
 // ****************************************************************************
-// Class: ViewerFactoryUI
+// Method: ViewerFactoryMain::ViewerFactoryMain
 //
 // Purpose:
-//   Creates various viewer objects.
-//
-// Notes:    The UI versions get created.
+//   Constructor.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Aug 21 23:56:40 PDT 2014
+// Creation:   Fri Aug 22 00:18:38 PDT 2014
 //
 // Modifications:
 //
 // ****************************************************************************
 
-class VIEWER_API ViewerFactoryUI : public ViewerFactory
+ViewerFactoryMain::ViewerFactoryMain() : ViewerFactory()
 {
-public:
-    ViewerFactoryUI();
-    virtual ~ViewerFactoryUI();
+}
 
-    virtual ViewerWindow        *CreateViewerWindow(int windowIndex);
+// ****************************************************************************
+// Method: ViewerFactoryMain::~ViewerFactoryMain
+//
+// Purpose:
+//   Destructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 22 00:18:38 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    virtual VisWindow           *CreateVisWindow();
+ViewerFactoryMain::~ViewerFactoryMain()
+{
+}
 
-    virtual ViewerActionManager *CreateActionManager(ViewerWindow *win);
+// ****************************************************************************
+// Method: ViewerFactoryMain::CreateFileServerInterface
+//
+// Purpose:
+//   Creates the file server interface we'll use.
+//
+// Returns:    A pointer to the new file server interface.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 21 15:02:52 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    virtual ViewerMessaging     *CreateViewerMessaging();
+ViewerFileServerInterface *
+ViewerFactoryMain::CreateFileServerInterface()
+{
+    return new ViewerFileServer;
+}
 
-    virtual ViewerConnectionProgress *CreateConnectionProgress();
+// ****************************************************************************
+// Method: ViewerFactoryMain::CreateEngineManagerInterface
+//
+// Purpose:
+//   Creates the engine manager interface we'll use.
+//
+// Returns:    A pointer to the new engine manager interface.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 21 15:02:52 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    virtual ViewerConnectionPrinter  *CreateConnectionPrinter();
-
-    virtual ViewerHostProfileSelector *CreateHostProfileSelector();
-
-    virtual ViewerChangeUsername *CreateChangeUsername();
-
-    virtual ViewerFileServerInterface *CreateFileServerInterface();
-
-    virtual ViewerEngineManagerInterface *CreateEngineManagerInterface();
-
-protected:
-    void SetActionManagerUI(ViewerActionManager *, ViewerWindow *);
-    void SetActionManagerLogicUI(ViewerActionManager *, ViewerWindow *);
-};
-
-#endif
+ViewerEngineManagerInterface *
+ViewerFactoryMain::CreateEngineManagerInterface()
+{
+    return new ViewerEngineManager;
+}

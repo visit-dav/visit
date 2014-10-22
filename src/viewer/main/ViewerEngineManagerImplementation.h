@@ -42,7 +42,7 @@
 
 #ifndef VIEWER_ENGINE_MANAGER_IMPLEMENTATION_H
 #define VIEWER_ENGINE_MANAGER_IMPLEMENTATION_H
-#include <viewercore_exports.h>
+#include <viewer_exports.h>
 #include <ViewerServerManager.h>
 #include <SimpleObserver.h>
 #include <avtDataObjectReader.h>
@@ -334,7 +334,7 @@ class SelectionSummary;
 //
 // ****************************************************************************
 
-class VIEWERCORE_API ViewerEngineManagerImplementation : public ViewerServerManager,
+class VIEWER_API ViewerEngineManagerImplementation : public ViewerServerManager,
     public SimpleObserver
 {
 public:

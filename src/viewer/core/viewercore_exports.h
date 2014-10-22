@@ -40,7 +40,7 @@
 #define VIEWERCORE_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VIEWERCORE_EXPORTS) || defined(viewercore_EXPORTS)
+#if defined(VIEWERCORE_EXPORTS) || defined(viewercore_ser_EXPORTS) || defined(viewercore_par_EXPORTS)
 #define VIEWERCORE_API __declspec(dllexport)
 #else
 #define VIEWERCORE_API __declspec(dllimport)
@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && (defined(VIEWERCORE_EXPORTS) || defined(viewercore_EXPORTS))
+# if __GNUC__ >= 4 && (defined(VIEWERCORE_EXPORTS) || defined(viewercore_ser_EXPORTS) || defined(viewercore_par_EXPORTS))
 #   define VIEWERCORE_API __attribute__ ((visibility("default")))
 # else
 #   define VIEWERCORE_API /* hidden by default */

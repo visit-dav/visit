@@ -35,55 +35,35 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef VIEWER_FACTORY_UI_H
-#define VIEWER_FACTORY_UI_H
+#ifndef VIEWER_FACTORY_MAIN_H
+#define VIEWER_FACTORY_MAIN_H
 #include <viewer_exports.h>
 #include <ViewerFactory.h>
 
 // ****************************************************************************
-// Class: ViewerFactoryUI
+// Class: ViewerFactoryMain
 //
 // Purpose:
 //   Creates various viewer objects.
 //
-// Notes:    The UI versions get created.
+// Notes:    
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Aug 21 23:56:40 PDT 2014
+// Creation:   Tue Oct 21 15:07:15 PDT 2014
 //
 // Modifications:
 //
 // ****************************************************************************
 
-class VIEWER_API ViewerFactoryUI : public ViewerFactory
+class VIEWER_API ViewerFactoryMain : public ViewerFactory
 {
 public:
-    ViewerFactoryUI();
-    virtual ~ViewerFactoryUI();
-
-    virtual ViewerWindow        *CreateViewerWindow(int windowIndex);
-
-    virtual VisWindow           *CreateVisWindow();
-
-    virtual ViewerActionManager *CreateActionManager(ViewerWindow *win);
-
-    virtual ViewerMessaging     *CreateViewerMessaging();
-
-    virtual ViewerConnectionProgress *CreateConnectionProgress();
-
-    virtual ViewerConnectionPrinter  *CreateConnectionPrinter();
-
-    virtual ViewerHostProfileSelector *CreateHostProfileSelector();
-
-    virtual ViewerChangeUsername *CreateChangeUsername();
+    ViewerFactoryMain();
+    virtual ~ViewerFactoryMain();
 
     virtual ViewerFileServerInterface *CreateFileServerInterface();
 
     virtual ViewerEngineManagerInterface *CreateEngineManagerInterface();
-
-protected:
-    void SetActionManagerUI(ViewerActionManager *, ViewerWindow *);
-    void SetActionManagerLogicUI(ViewerActionManager *, ViewerWindow *);
 };
 
 #endif
