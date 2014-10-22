@@ -35,7 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
-#
+#   Kathleen Biagas, Wed Oct 22 14:20:27 MST 2014
+#   Send 'diagnostics/networktest' type argument to VISIT_TOOLS_ADD_FOLDER.
 #
 #****************************************************************************/
 
@@ -63,4 +64,4 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_TARGETS(${TARGETS})
-VISIT_TOOLS_ADD_FOLDER(${TARGETS})
+VISIT_TOOLS_ADD_FOLDER(diagnostics/networktest ${TARGETS})
