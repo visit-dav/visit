@@ -2401,6 +2401,7 @@ ADD_SUBDIRECTORY(resources)
 #-----------------------------------------------------------------------------
 # Add the "data" directory if it exists
 #-----------------------------------------------------------------------------
+IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
     IF(WIN32)
         # Don't want the data dir files to be added to the main VISIT
@@ -2418,6 +2419,7 @@ IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
                          ${V_EX})
     ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
 ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 
 #-----------------------------------------------------------------------------
@@ -2426,6 +2428,7 @@ ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 # I'm trying to make the new tetsing work hramoniously with the old testing
 # while it's evaluated. if the new testing were ever made permanent then
 # this code would be removed.
+IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 IF (NOT BUILD_TESTING)
     IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
         IF(VISIT_OUT_OF_SOURCE_BUILD)
@@ -2437,6 +2440,7 @@ IF (NOT BUILD_TESTING)
         ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
     ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
 ENDIF()
+ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 
 #-----------------------------------------------------------------------------
