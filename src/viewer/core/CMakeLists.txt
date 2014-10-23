@@ -157,7 +157,7 @@ ENDIF(MESA_FOUND)
 # We build a _par version of viewercore because we can't allow it to have any _ser
 # library dependencies when we use it in the simV2 parallel runtime.
 IF(VISIT_PARALLEL)
-ADD_LIBRARY(viewercore_par ${VIEWERCORE_SOURCES})
+ADD_PARALLEL_LIBRARY(viewercore_par ${VIEWERCORE_SOURCES})
 SET_TARGET_PROPERTIES(viewercore_par PROPERTIES HAS_CXX ON)
 
 TARGET_LINK_LIBRARIES(viewercore_par
