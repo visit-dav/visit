@@ -79,12 +79,17 @@ class JobSubmitter(object):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed Oct 22 16:11:57 PDT 2014
+#   Make adding of -ppn to mpirun dependent on useppnmpirun being set to 1.
+#   By default it is set to 0, so it would need to be overridden in a custom
+#   launcher to be added.
 #
 ###############################################################################
 
 class JobSubmitter_mpirun(JobSubmitter):
     def __init__(self, launcher):
         super(JobSubmitter_mpirun,self).__init__(launcher)
+        self.useppnmpirun = 0
 
     def Executable(self):
         return ["mpirun"]
@@ -96,7 +101,7 @@ class JobSubmitter_mpirun(JobSubmitter):
         if self.parallel.np != None:
             parcmd = parcmd + ["-np", self.parallel.np]
             nodes = self.parallel.nn
-            if nodes != None:
+            if self.useppnmpirun == 1 and nodes != None:
                 ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
                 parcmd = parcmd + ["-ppn", ppn]
         if self.parallel.partition != None:
@@ -129,11 +134,17 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   David Camp, Tue Mar 11 10:17:48 PDT 2014
 #   Added the -ppn (process per node) option to the mpiexec.
 #
+#   Eric Brugger, Wed Oct 22 16:11:57 PDT 2014
+#   Make adding of -ppn to mpiexec dependent on useppnmpiexec being set to 1.
+#   By default it is set to 0, so it would need to be overridden in a custom
+#   launcher to be added.
+#
 ################################################################################
 
 class JobSubmitter_mpiexec(JobSubmitter):
     def __init__(self, launcher):
         super(JobSubmitter_mpiexec,self).__init__(launcher)
+        self.useppnmpiexec = 0
 
     def Executable(self):
         # If we're running on MacOS X 10.7 or later, use our own mpich
@@ -153,7 +164,7 @@ class JobSubmitter_mpiexec(JobSubmitter):
         if self.parallel.np != None:
             parcmd = parcmd + ["-n", self.parallel.np]
             nodes = self.parallel.nn
-            if nodes != None:
+            if self.useppnmpiexec == 1 and nodes != None:
                 ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
                 parcmd = parcmd + ["-ppn", ppn]
         if self.parallel.partition != None:
@@ -661,11 +672,16 @@ class JobSubmitter_yod(JobSubmitter):
 #
 # Modifications:
 #   David Camp, Tue Mar 11 10:17:48 PDT 2014
-#   Added the -ppn (process per node) option to the mpirun and mpiexec.
+#   Added the -ppn (process per node) option to the mpiexec command.
 #
 #   Eric Brugger, Fri Aug 15 11:06:59 PDT 2014
 #   I modified AddEnvironment to pass the HOST environment variable to the
 #   parallel runtime environment.
+#
+#   Eric Brugger, Wed Oct 22 16:11:57 PDT 2014
+#   Make adding of -ppn to mpiexec and mpirun dependent on useppnmpiexec or
+#   useppnmpirun being set to 1. By default they are set to 0, so they would
+#   need to be overridden in a custom launcher to be added.
 #
 ###############################################################################
 
@@ -675,6 +691,8 @@ class JobSubmitter_qsub(JobSubmitter):
         self.tfilename = ""
         self.useppn = 1
         self.usettc = 0
+        self.useppnmpiexec = 0
+        self.useppnmpirun = 0
 
     def Executable(self):
         plauncher,sublauncher = self.LauncherAndSubLauncher()
@@ -708,7 +726,7 @@ class JobSubmitter_qsub(JobSubmitter):
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-n", self.parallel.np]
             nodes = self.parallel.nn
-            if nodes != None:
+            if self.useppnmpiexec == 1 and nodes != None:
                 ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
                 mpicmd = mpicmd + ["-ppn", ppn]
         if self.parallel.machinefile != None:
@@ -726,7 +744,7 @@ class JobSubmitter_qsub(JobSubmitter):
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-np", self.parallel.np]
             nodes = self.parallel.nn
-            if nodes != None:
+            if self.useppnmpirun == 1 and nodes != None:
                 ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
                 mpicmd = mpicmd + ["-ppn", ppn]
         if self.parallel.machinefile != None:
