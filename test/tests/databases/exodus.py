@@ -113,6 +113,20 @@ SetView2D(v)
 Test("exodus_08")
 
 CloseDatabase(data_path("exodus_test_data/porflow5_2_1_r1.exo"))
+DeleteAllPlots()
+OpenDatabase(data_path("exodus_test_data/kassbohm1.exo"))
+AddPlot("Mesh","Mesh")
+DrawPlots()
+v = View3DAttributes()
+v.viewNormal = (-0.664463, 0.34202, 0.664463)
+v.focus = (1, 1, 0.75)
+v.viewUp = (0.241845, 0.939693, -0.241845)
+v.parallelScale = 3.25
+v.nearPlane = -6.5
+v.farPlane = 6.5
+v.imageZoom = 1.5
+SetView3D(v)
+Test("exodus_09")
 
 Exit()
 
