@@ -60,6 +60,7 @@
 #include <vtkDataArrayTemplate.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkLongLongArray.h>
 #include <vtkShortArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
@@ -262,6 +263,57 @@ static int SizeOfNCType(int type)
             return sizeof(double);
     }
     return 0;
+}
+
+#define SWAP_NODES(A,B) {vtkIdType tmp=verts[A]; verts[A]=verts[B]; verts[B]=tmp;}
+
+static bool
+InsertExodusCellInVTKUnstructuredGrid(vtkUnstructuredGrid *ugrid, int vtk_celltype, int nnodes, vtkIdType *verts)
+{
+    bool contains_nonlinear_elems = false;
+    switch (vtk_celltype)
+    {
+        case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
+        case VTK_QUADRATIC_WEDGE:
+        {
+            SWAP_NODES(9,12);
+            SWAP_NODES(10,13);
+            SWAP_NODES(11,14);
+            contains_nonlinear_elems = true;
+            break;
+        }
+        case VTK_BIQUADRATIC_QUADRATIC_HEXAHEDRON:
+        case VTK_QUADRATIC_HEXAHEDRON:
+        {
+            SWAP_NODES(12,16);
+            SWAP_NODES(13,17);
+            SWAP_NODES(14,18);
+            SWAP_NODES(15,19);
+            contains_nonlinear_elems = true;
+            break;
+        }
+        case VTK_TRIQUADRATIC_HEXAHEDRON:
+        {
+            // mid-edge nodes
+            SWAP_NODES(12,16);
+            SWAP_NODES(13,17);
+            SWAP_NODES(14,18);
+            SWAP_NODES(15,19);
+            // face nodes
+            SWAP_NODES(21,24);
+            SWAP_NODES(22,25);
+            SWAP_NODES(23,20);
+            SWAP_NODES(24,21);
+            SWAP_NODES(25,22);
+            SWAP_NODES(26,23);
+            // volume node
+            SWAP_NODES(20,26);
+            contains_nonlinear_elems = true;
+            break;
+        }
+    }
+    ugrid->InsertNextCell(vtk_celltype, nnodes, verts);
+    return contains_nonlinear_elems;
 }
 
 static void
@@ -1222,10 +1274,10 @@ static vtkDataArray * ExtendCoords(vtkDataArray *rhs)
 }
 
 template <class T, typename N>
-static T* ComposeCoordsTemplate(T *rhsx, T *rhsy, T* rhsz)
+static T* ComposeUpTo3ArraysTemplate(int narrs, T *rhsx, T *rhsy, T* rhsz)
 {
     T* retval = T::New();
-    retval->SetNumberOfComponents(3);
+    retval->SetNumberOfComponents(narrs);
     retval->SetNumberOfTuples(rhsx->GetNumberOfTuples());
 
     for (int t = 0; t < retval->GetNumberOfTuples(); t++)
@@ -1244,19 +1296,20 @@ static T* ComposeCoordsTemplate(T *rhsx, T *rhsy, T* rhsz)
     return retval;
 }
 
-#define CCT(T,t) ComposeCoordsTemplate<vtk ## T ## Array, t>((vtk ## T ## Array *)rhsx,(vtk ## T ## Array *)rhsy,(vtk ## T ## Array *)rhsz)
+#define CCT(N,T,t) ComposeUpTo3ArraysTemplate<vtk ## T ## Array, t>(N,(vtk ## T ## Array *)rhsx,(vtk ## T ## Array *)rhsy,(vtk ## T ## Array *)rhsz)
 static vtkDataArray * ComposeCoords(vtkDataArray *rhsx, vtkDataArray *rhsy, vtkDataArray *rhsz)
 {
     switch (rhsx->GetDataType())
     {
-        case VTK_CHAR:           return CCT(Char,char);
-        case VTK_UNSIGNED_CHAR:  return CCT(UnsignedChar,unsigned char);
-        case VTK_SHORT:          return CCT(Short,short);
-        case VTK_UNSIGNED_SHORT: return CCT(UnsignedShort,unsigned short);
-        case VTK_INT:            return CCT(Int,int);
-        case VTK_UNSIGNED_INT:   return CCT(UnsignedInt,unsigned int);
-        case VTK_FLOAT:          return CCT(Float,float);
-        case VTK_DOUBLE:         return CCT(Double,double);
+        case VTK_CHAR:           return CCT(3,Char,char);
+        case VTK_UNSIGNED_CHAR:  return CCT(3,UnsignedChar,unsigned char);
+        case VTK_SHORT:          return CCT(3,Short,short);
+        case VTK_UNSIGNED_SHORT: return CCT(3,UnsignedShort,unsigned short);
+        case VTK_INT:            return CCT(3,Int,int);
+        case VTK_UNSIGNED_INT:   return CCT(3,UnsignedInt,unsigned int);
+        case VTK_LONG_LONG:      return CCT(3,LongLong,long long);
+        case VTK_FLOAT:          return CCT(3,Float,float);
+        case VTK_DOUBLE:         return CCT(3,Double,double);
     }
     return NULL;
 }
@@ -2110,6 +2163,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         blockIdToMatMap[i+1] = num_elems_in_blk;
 
         // Note: for poly-case, num_nodes_per_elem should be size of entire connect array
+        bool contains_nonlinear_elems = false;
         vtkIdType *verts = new vtkIdType[num_nodes_per_elem];
         switch (connect_vartype)
         {
@@ -2130,7 +2184,8 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
                     int nnodes = ebepecnt_buf?ebepecnt_buf[j]:num_nodes_per_elem;
                     for (int k = 0; k < nnodes; k++, p++)
                         verts[k] = (vtkIdType) *p-1; // Exodus is 1-origin
-                    ugrid->InsertNextCell(vtk_celltype, nnodes, verts);
+                    if (InsertExodusCellInVTKUnstructuredGrid(ugrid, vtk_celltype, nnodes, verts))
+                        contains_nonlinear_elems = true;
                 }
                 delete [] conn_buf;
                 break;
@@ -2152,7 +2207,8 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
                     int nnodes = ebepecnt_buf?ebepecnt_buf[j]:num_nodes_per_elem;
                     for (int k = 0; k < nnodes; k++, p++)
                         verts[k] = (vtkIdType) *p-1; // Exodus is 1-origin
-                    ugrid->InsertNextCell(vtk_celltype, nnodes, verts);
+                    if (InsertExodusCellInVTKUnstructuredGrid(ugrid, vtk_celltype, nnodes, verts))
+                        contains_nonlinear_elems = true;
                 }
                 delete [] conn_buf;
                 break;
@@ -2164,6 +2220,45 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         }
         if (ebepecnt_buf) delete [] ebepecnt_buf;
         delete [] verts;
+
+        // Add zone numbers if we have non-linear elements so when split, VisIt will
+        // track element edges correctly
+        if (contains_nonlinear_elems)
+        {
+            vtkDataArray *gzoneIds = GetVar(ts, "elem_num_map");
+            if (gzoneIds)
+            {
+                vtkDataArray *domNums;
+                int sz = 0;
+                if (gzoneIds->GetDataType() == VTK_INT)
+                {
+                    domNums = vtkIntArray::New();
+                    sz = sizeof(int);
+                }
+                else if (gzoneIds->GetDataType() == VTK_LONG_LONG)
+                {
+                    domNums = vtkLongLongArray::New();
+                    sz = sizeof(long long);
+                }
+
+                domNums->SetNumberOfComponents(1);
+                domNums->SetNumberOfTuples(gzoneIds->GetNumberOfTuples());
+                memset(domNums->GetVoidPointer(0), 0, sz*gzoneIds->GetNumberOfTuples());
+
+                vtkDataArray *oca;
+                if (gzoneIds->GetDataType() == VTK_INT)
+                    oca = ComposeUpTo3ArraysTemplate<vtkIntArray,int>(2, (vtkIntArray*)gzoneIds,
+                              (vtkIntArray*)domNums, (vtkIntArray*)0);
+                else if (gzoneIds->GetDataType() == VTK_LONG_LONG)
+                    oca = ComposeUpTo3ArraysTemplate<vtkLongLongArray,long long>(2, (vtkLongLongArray*)gzoneIds,
+                              (vtkLongLongArray*)domNums, (vtkLongLongArray*)0);
+                gzoneIds->Delete();
+                domNums->Delete();
+                oca->SetName("avtOriginalCellNumbers");
+                ugrid->GetCellData()->AddArray(oca);
+                oca->Delete();
+            }
+        }
     }
 
     return ugrid;
@@ -2390,85 +2485,18 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
     }
     else if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        // Unfortunately, without making broad changes to vtkVisItExodusIIReader
-        // the only way to obtain global node ids is by first asking
-        // the reader for the mesh and then taking them from that if
-        // they are present. Fortunately, in most situations, the
-        // mesh will have already been read and the global node ids
-        // cached and we'll never wind up here having to read global
-        // node ids for the first time without having already read
-        // the mesh
-#if 0
-
-        //
-        // If we happend to find that there exists also global zone Ids,
-        // we'll remove them from from the vtkDataSet object and stick
-        // them in the AVT cache now.
-        //
-        vtkDataArray *gzoneIds =ds->GetCellData()->GetArray(rdr->GetGlobalElementIdArrayName());
-        if (gzoneIds != NULL)
-        {
-            gzoneIds->Register(NULL);
-            void_ref_ptr vr = void_ref_ptr(gzoneIds,
-                                          avtVariableCache::DestructVTKObject);
-            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_ZONE_IDS, 
-                                -1, myDomain, vr);
-        }
-
-        //
-        // Remove the global node ids from the vtkDataSet object but DO NOT
-        // cache them as avtGenericDatabase will do that for us upon return
-        // from this call
-        //
-        vtkDataArray *gnodeIds=ds->GetPointData()->GetArray(rdr->GetGlobalNodeIdArrayName());
-
-        //
-        // Return what we came here for
-        //
+        vtkDataArray *gnodeIds=GetVar(ts, "node_num_map");
         if (gnodeIds != NULL)
             gnodeIds->Register(NULL);
         df = avtVariableCache::DestructVTKObject;
         return (void*) gnodeIds;
-#endif
     }
     else if (strcmp(type, AUXILIARY_DATA_GLOBAL_ZONE_IDS) == 0)
     {
-#if 0
-        //
-        // See long note, above, for AUXILIARY_DATA_GLOBAL_NODE_IDS query
-        //
-        bool okToRemoveAndCacheGlobalIds = false;
-        vtkDataSet *ds = ReadMesh(ts, "Mesh", okToRemoveAndCacheGlobalIds);
-
-        //
-        // If we happend to find that there exists also global node Ids,
-        // we'll remove them from from the vtkDataSet object and stick
-        // them in the AVT cache now.
-        //
-        vtkDataArray *gnodeIds=ds->GetPointData()->GetArray(rdr->GetGlobalNodeIdArrayName());
-        if (gnodeIds != NULL)
-        {
-            gnodeIds->Register(NULL);
-            void_ref_ptr vr = void_ref_ptr(gnodeIds,
-                                          avtVariableCache::DestructVTKObject);
-            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_NODE_IDS,
-                                -1, myDomain, vr);
-        }
-
-        //
-        // Remove the global zone ids from the vtkDataSet object but DO NOT
-        // cache them as avtGenericDatabase will do that for us upon return
-        // from this call
-        //
-        vtkDataArray *gzoneIds =ds->GetCellData()->GetArray(rdr->GetGlobalElementIdArrayName());
-
-        //
-        // Return what we came here for
-        //
+        vtkDataArray *gzoneIds =GetVar(ts, "elem_num_map");
         gzoneIds->Register(NULL);
         df = avtVariableCache::DestructVTKObject;
         return (void*) gzoneIds;
-#endif
     }
 
     return NULL;
