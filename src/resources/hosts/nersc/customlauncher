@@ -29,6 +29,40 @@ class JobSubmitter_aprun_NERSC(JobSubmitter_aprun):
             return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
 
 ###############################################################################
+# Class: JobSubmitter_mpiexec_NERSC
+#
+# Purpose:    Custom "mpiexec" job submitter for NERSC.
+#
+# Programmer: Eric Brugger
+# Date:       Wed Oct 22 16:26:54 PDT 2014
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_mpiexec_NERSC(JobSubmitter_mpiexec):
+    def __init__(self, launcher):
+        super(JobSubmitter_mpiexec_NERSC, self).__init__(launcher)
+        self.useppnmpiexec = 1
+
+###############################################################################
+# Class: JobSubmitter_mpirun_NERSC
+#
+# Purpose:    Custom "mpirun" job submitter for NERSC.
+#
+# Programmer: Eric Brugger
+# Date:       Wed Oct 22 16:26:54 PDT 2014
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_mpirun_NERSC(JobSubmitter_mpirun):
+    def __init__(self, launcher):
+        super(JobSubmitter_mpirun_NERSC, self).__init__(launcher)
+        self.useppnmpirun = 1
+
+###############################################################################
 # Class: JobSubmitter_qsub_NERSC
 #
 # Purpose:    Custom "qsub" job submitter for NERSC.
@@ -37,12 +71,16 @@ class JobSubmitter_aprun_NERSC(JobSubmitter_aprun):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed Oct 22 16:26:54 PDT 2014
+#   Modify the launcher so that -ppn gets passed to mpiexec and mpirun.
 #
 ###############################################################################
 
 class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_NERSC, self).__init__(launcher)
+        self.useppnmpiexec = 1
+        self.useppnmpirun = 1
         # FIXME: HACK: Set up VisIt socket relay on MOM node for parallel engine by overriding settings in launcher class
         if self.launcher.nersc_host != "carver":
             launcher.loginnodeport = launcher.generalArgs.port
@@ -176,6 +214,8 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed Oct 22 16:26:54 PDT 2014
+#   Modify the launcher so that -ppn gets passed to mpiexec and mpirun.
 #
 ###############################################################################
 
@@ -249,6 +289,10 @@ For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/r
     def JobSubmitterFactory(self, launch):
         if launch == "aprun":
             return JobSubmitter_aprun_NERSC(self)
+        elif launch == "mpiexec":
+            return JobSubmitter_mpiexec_NERSC(self)
+        elif launch == "mpirun":
+            return JobSubmitter_mpirun_NERSC(self)
         elif launch[:4] == "qsub" or launch[:4] == "msub":
             return JobSubmitter_qsub_NERSC(self)
         return super(NERSCLauncher, self).JobSubmitterFactory(launch)
