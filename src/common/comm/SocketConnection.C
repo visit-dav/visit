@@ -345,60 +345,75 @@ SocketConnection::Fill()
     DEBUG_SOCKETS_CODE(const char *mName = "SocketConnection::Fill: ";)
     DEBUG_SOCKETS(debug5 << mName << "begin" << endl;)
 
-    if(fixedBufferMode)
-    {
-        WaitForDescriptor(true);
-    }
-
     unsigned char tmp[BUFFER_SIZE];
-    DEBUG_SOCKETS(debug5 << mName << "recv(bufferSize="
-                         << BUFFER_SIZE << ")" << endl;)
+
+    // If we're in fixed buffer mode, make sure we get BUFFER_SIZE bytes
+    // before we process the message coming through. Most of the time, we
+    // should get the buffer size amount but, just in case, we loop until
+    // we get the right message size.
+    int totalRead = 0;
+    int amountRead = 0;
+    do
+    {
+        unsigned char *ptr = tmp + totalRead;
+
+        if(fixedBufferMode)
+        {
+            WaitForDescriptor(true);
+        }
+
+        DEBUG_SOCKETS(debug5 << mName << "recv(bufferSize="
+                             << BUFFER_SIZE << ")" << endl;)
 
 #if defined(_WIN32)
-    int amountRead = recv(descriptor, (char FAR *)tmp, BUFFER_SIZE, 0);
-    if(amountRead == SOCKET_ERROR)
-    {
-        LogWindowsSocketError("SocketConnection", "Fill");
-        if(WSAGetLastError() == WSAEWOULDBLOCK)
-            return -1;
-    }
+        amountRead = recv(descriptor, (char FAR *)ptr, BUFFER_SIZE-totalRead, 0);
+        if(amountRead == SOCKET_ERROR)
+        {
+            LogWindowsSocketError("SocketConnection", "Fill");
+            if(WSAGetLastError() == WSAEWOULDBLOCK)
+                return -1;
+        }
 #else
-    int amountRead = recv(descriptor, (void *)tmp, BUFFER_SIZE, 0);
+        amountRead = recv(descriptor, (void *)ptr, BUFFER_SIZE-totalRead, 0);
 #endif
 
-    if(amountRead > 0)
+        totalRead += amountRead;
+    }
+    while(fixedBufferMode && totalRead < BUFFER_SIZE);
+
+    if(totalRead > 0)
     {
         zeroesRead = 0;
 
         DEBUG_SOCKETS(
             debug5 << mName << " recv {";
-            int n = std::min(10, amountRead);
+            int n = std::min(10, totalRead);
             for(int i = 0; i < n; ++i)
                 debug5 << int(tmp[i]) << ", ";
-            if(n < amountRead)
+            if(n < totalRead)
                 debug5 << "...";
             debug5 << "}" << endl;
         )
 
         if(fixedBufferMode)
         {
-            DEBUG_SOCKETS(debug5 << mName << "from socket, amountRead="
-                                 << amountRead << endl;)
+            DEBUG_SOCKETS(debug5 << mName << "from socket, totalRead="
+                                 << totalRead << endl;)
 
             // Get the real number of bytes from the header.
             int offset = 0;
-            amountRead = DecodeSize(tmp, offset);
+            int msgLen = DecodeSize(tmp, offset);
 
-            DEBUG_SOCKETS(debug5 << mName << "amountRead=" << amountRead << endl;)
+            DEBUG_SOCKETS(debug5 << mName << "msgLen=" << msgLen << endl;)
 
             // Add the new bytes to the buffer.
-            for(int i = 0; i < amountRead; ++i)
+            for(int i = 0; i < msgLen; ++i)
                 buffer.push_back(tmp[i + offset]);
         }
         else
         {
             // Add the new bytes to the buffer.
-            for(int i = 0; i < amountRead; ++i)
+            for(int i = 0; i < totalRead; ++i)
                 buffer.push_back(tmp[i]);
         }
     }
@@ -492,7 +507,7 @@ SocketConnection::Flush()
 
             // Send this fixed size chunk.
 #if defined(_WIN32)
-            DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const char FAR *)buf, BUFFER_SIZE, 0);
+            DEBUG_SOCKETS_CODE(int sz = ) send(descriptor, (const char FAR *)buf, BUFFER_SIZE, 0);
 #else
 #ifdef MSG_NOSIGNAL
             DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const void *)buf, BUFFER_SIZE, MSG_NOSIGNAL);
@@ -532,7 +547,7 @@ SocketConnection::Flush()
                     debug5 << "}" << endl;
                 )
 #if defined(_WIN32)
-                DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const char FAR *)buf, count, 0);
+                DEBUG_SOCKETS_CODE(int sz = ) send(descriptor, (const char FAR *)buf, count, 0);
 #else
 #ifdef MSG_NOSIGNAL
                 DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const void *)buf, count, MSG_NOSIGNAL);
