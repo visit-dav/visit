@@ -363,7 +363,6 @@ const char *expr_mesh[] = {
     "revolved_volume",
     "volume",
     "zoneid",
-    "zonetype",
     "zonetype_label",
     "zonetype_rank",
     NULL
