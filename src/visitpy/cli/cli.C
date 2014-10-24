@@ -324,13 +324,6 @@ main(int argc, char *argv[])
         {
             verbose = true;
         }
-        else if(strcmp(argv[i], "-output") == 0)
-        {
-            // Skip the argument that comes along with -output. Note that
-            // the -output argument will be accessible in sys.argv but it
-            // is not passed along in the args that are sent to the viewer.
-            ++i;
-        }
         else if(strcmp(argv[i], "-forceinteractivecli") == 0)
         {
             // Force the python interpreter to behave interactively
@@ -347,26 +340,38 @@ main(int argc, char *argv[])
             Py_InspectFlag=0;
             
         }
-        else if(strcmp(argv[i], "-format") == 0)
-        {
-            // Skip the argument that comes along with -format.
-            ++i;
-        }
-        else if(strcmp(argv[i], "-framestep") == 0)
-        {
-            // Skip the argument that comes along with -framestep.
-            ++i;
-        }
-        else if(strcmp(argv[i], "-sessionfile") == 0)
-        {
-            // Skip the argument that comes along with -sessionfile.
-            ++i;
-        }
-        else if(strcmp(argv[i], "-fps") == 0)
-        {
-            // Skip the rate that comes along with -fps.
-            ++i;
-        }
+        // These are all movie commands and should go into the
+        // argv_after_s array rather that being skipped over. Also
+        // there additional movie args so the CLI should just ignore
+        // them.
+
+        // else if(strcmp(argv[i], "-output") == 0)
+        // {
+        //     // Skip the argument that comes along with -output. Note that
+        //     // the -output argument will be accessible in sys.argv but it
+        //     // is not passed along in the args that are sent to the viewer.
+        //     ++i;
+        // }
+        // else if(strcmp(argv[i], "-format") == 0)
+        // {
+        //     // Skip the argument that comes along with -format.
+        //     ++i;
+        // }
+        // else if(strcmp(argv[i], "-framestep") == 0)
+        // {
+        //     // Skip the argument that comes along with -framestep.
+        //     ++i;
+        // }
+        // else if(strcmp(argv[i], "-sessionfile") == 0)
+        // {
+        //     // Skip the argument that comes along with -sessionfile.
+        //     ++i;
+        // }
+        // else if(strcmp(argv[i], "-fps") == 0)
+        // {
+        //     // Skip the rate that comes along with -fps.
+        //     ++i;
+        // }
         else if(strcmp(argv[i], "-pyside") == 0)
         {
             pyside = true;
@@ -466,8 +471,7 @@ main(int argc, char *argv[])
             argv_py_style[argc_py_style] = argv_after_s[i];
             argc_py_style++;
         }
-        
-    
+
         PySys_SetArgv(argc_py_style, argv_py_style);
                 
         PyRun_SimpleString((char*)"import sys");
@@ -621,7 +625,6 @@ main(int argc, char *argv[])
 #endif
         }
 
-
         // If there was a file to execute, do it.
         if(runFile !=0)
         {
@@ -642,7 +645,6 @@ main(int argc, char *argv[])
 #endif
         }
 
-
         if(!scriptOnly)
         {
             PyObject *rl_module = PyImport_ImportModule("readline");
@@ -653,10 +655,10 @@ main(int argc, char *argv[])
             retval = PyRun_InteractiveLoop(stdin,"<stdin>");
         }
 
-
         Py_Finalize();
 
     }
+
     CATCH(VisItException &e)
     {
         cerr << "A fatal exception occurred when trying to launch the CLI." << endl;
@@ -683,7 +685,6 @@ main(int argc, char *argv[])
     delete [] argv2;
     delete [] argv_after_s;
     delete [] argv_py_style;
-
 
     return retval;
 }

@@ -1443,7 +1443,7 @@ class GeneralArguments(object):
                 args = args + ["-nowin"]
             args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "makemoviemain.py")]
 
-        args = self.arguments + args + self.scriptarguments
+        args = args + self.arguments + self.scriptarguments
 
         return args
 
