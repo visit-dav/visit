@@ -37,18 +37,18 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtZoneTypeExpression.h                            //
+//                       avtZoneTypeRankExpression.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_ZONETYPE_FILTER_H
-#define AVT_ZONETYPE_FILTER_H
+#ifndef AVT_ZONETYPERANK_FILTER_H
+#define AVT_ZONETYPERANK_FILTER_H
 
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
 
 // ****************************************************************************
-//  Class: avtZoneTypeExpression
+//  Class: avtZoneTypeRankExpression
 //
 //  Purpose:
 //      Determines the number of materials in a zone.
@@ -62,15 +62,15 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtZoneTypeExpression : public avtSingleInputExpressionFilter
+class EXPRESSION_API avtZoneTypeRankExpression : public avtSingleInputExpressionFilter
 {
   public:
-                              avtZoneTypeExpression();
-    virtual                  ~avtZoneTypeExpression();
+                              avtZoneTypeRankExpression();
+    virtual                  ~avtZoneTypeRankExpression();
 
-    virtual const char       *GetType(void) { return "avtZoneTypeExpression"; };
+    virtual const char       *GetType(void) { return "avtZoneTypeRankExpression"; };
     virtual const char       *GetDescription(void)
-                                           {return "Finding ZoneType";};
+                                           {return "Finding ZoneTypeRank";};
   protected:
     virtual void              UpdateDataObjectInfo(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);

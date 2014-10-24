@@ -192,7 +192,8 @@ General/avtVariableSkewExpression.C
 General/avtVectorComposeExpression.C
 General/avtVectorDecomposeExpression.C
 General/avtViscousStressExpression.C
-General/avtZoneTypeExpression.C
+General/avtZoneTypeLabelExpression.C
+General/avtZoneTypeRankExpression.C
 )
 
 IF(VISIT_PYTHON_FILTERS)

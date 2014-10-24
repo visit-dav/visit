@@ -364,6 +364,8 @@ const char *expr_mesh[] = {
     "volume",
     "zoneid",
     "zonetype",
+    "zonetype_label",
+    "zonetype_rank",
     NULL
 };
 
