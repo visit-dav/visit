@@ -45,7 +45,8 @@
 #include <avtNeighborEvaluatorExpression.h>
 #include <avtSurfaceNormalExpression.h>
 #include <avtEdgeNormalExpression.h>
-#include <avtZoneTypeExpression.h>
+#include <avtZoneTypeLabelExpression.h>
+#include <avtZoneTypeRankExpression.h>
 
 #include <string>
 
@@ -184,9 +185,13 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
         ecm->SetMacro("polar", 2);
         return ecm;
     }
-    else if (functionName == "zonetype")
+    else if (functionName == "zonetype" || functionName == "zonetype_label")
     {
-        return new avtZoneTypeExpression();
+        return new avtZoneTypeLabelExpression();
+    }
+    else if (functionName == "zonetype_rank")
+    {
+        return new avtZoneTypeRankExpression();
     }
     else if (functionName == "min_coord")
     {

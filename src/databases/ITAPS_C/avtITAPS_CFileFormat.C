@@ -418,8 +418,8 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // variable on the mesh
         //
         Expression expr;
-        expr.SetName("zonetype");
-        expr.SetDefinition("zonetype(mesh)");
+        expr.SetName("zonetype_rank");
+        expr.SetDefinition("zonetype_rank(mesh)");
         expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&expr);
 
