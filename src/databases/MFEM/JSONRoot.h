@@ -120,7 +120,16 @@ class JSONRootDataSet
         virtual        ~JSONRootDataSet();
         
         int             NumberOfDomains() const;
-        void            SetNumberOfDomains(int ndomains);            
+        void            SetNumberOfDomains(int ndomains);    
+        
+        int             Cycle() const;
+        void            SetCycle(int value);
+        bool            HasCycle() const;        
+
+        double          Time() const;
+        void            SetTime(double value);
+        bool            HasTime() const;        
+        
 
         JSONRootEntry  &Mesh();          
         
@@ -131,6 +140,11 @@ class JSONRootDataSet
     private:
         // TODO: uint64 ...
         int                                 ndomains;
+        bool                                validCycle;
+        int                                 cycle;
+        bool                                validTime;
+        double                              timev;
+        
         JSONRootEntry                       mesh;
         std::map<std::string,JSONRootEntry> fields;
 };
