@@ -702,7 +702,6 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
   
   if (!strstr(varname, "paraDIS_Tecplot_") || !strstr(varname, "_var_")) {
     string err = string("GetTecplotVar: rejected varname ") + varname +" because it does not begin with 'paraDIS_Tecplot_' or does not contain '_var_'";
-    cerr << err << endl; 
     EXCEPTION1(VisItException, err.c_str()); 
   }
   /*  Get the variable number. 
@@ -714,14 +713,14 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
     string::size_type pos = string(varname).rfind(mVariableNames[varnum]);
     if (pos != string::npos) {      
       if (pos != strlen(varname)-mVariableNames[varnum].size()) {
-        cerr << "Warning in GetVar: Found variable name " << mVariableNames[varnum] << " at unexpected position " << pos << " in string " << varname << ".  Expected to find it at end of string, at position " << strlen(varname)-mVariableNames[varnum].size() << ".  I will assume this is the right variable, but something funny might be happening."  << endl; 
+        debug4 << "Warning in GetVar: Found variable name " << mVariableNames[varnum] << " at unexpected position " << pos << " in string " << varname << ".  Expected to find it at end of string, at position " << strlen(varname)-mVariableNames[varnum].size() << ".  I will assume this is the right variable, but something funny might be happening."  << endl; 
       }
       break; 
     }
     ++varnum;
   }
   if (varnum == mNumVars) {
-    cerr << "Warning: possible malformed tecplot variable: Could not determine varnum from apparently valid tecplot variable name: " << varname <<endl;
+    debug4 << "Warning: possible malformed tecplot variable: Could not determine varnum from apparently valid tecplot variable name: " << varname <<endl;
     return NULL; 
   }
   debug4 << "Looking for varnum " << varnum << endl; 
