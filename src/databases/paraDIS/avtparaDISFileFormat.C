@@ -146,7 +146,11 @@ avtparaDISFileFormat::FreeUpResources(void)
 void
 avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-  cerr << "using avtparaDISFileFormat::avtparaDISFileFormat version 2.3.4" << endl; 
+  static bool haveIssuedVersionInfo = false;
+
+  if (!haveIssuedVersionInfo)
+      cerr << "using avtparaDISFileFormat::avtparaDISFileFormat version 2.3.4" << endl; 
+  haveIssuedVersionInfo = true;
   debug1 << "using avtparaDISFileFormat::avtparaDISFileFormat version 2.3.4" << endl; 
   debug1 << "starting populateDatabaseMetaData" << endl; 
   debug1 << "avtparaDISFileFormat version " << PARADIS_READER_VERSION_NUMBER << ", " << PARADIS_READER_VERSION_DATE << endl;
