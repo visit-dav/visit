@@ -78,10 +78,10 @@ GetparaDISReadOptions(void)
     char *cp = getenv("PARADIS_USE_MN_MATERIALS"); 
     if (cp) {
       useMNType = atoi(cp); 
-      //cerr << "PARADIS_USE_MN_MATERIALS is " << cp << " and useMNType is " << useMNType << endl; 
+      debug1 << "PARADIS_USE_MN_MATERIALS is " << cp << " and useMNType is " << useMNType << endl; 
     }/*
        else {
-      cerr << "PARADIS_USE_MN_MATERIALS not found" << endl; 
+      debug1 << "PARADIS_USE_MN_MATERIALS not found" << endl; 
     }
      */
     if (useMNType < 0) useMNType = 0; 
