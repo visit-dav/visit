@@ -312,6 +312,7 @@ avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
     //Add pot0....
     AddMeshToMetaData(md, "mesh2D", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
     AddScalarVarToMetaData(md, "pot0", "mesh2D", AVT_NODECENT);
+    AddScalarVarToMetaData(md, "psi", "mesh2D", AVT_NODECENT);
 
     map<string, ADIOS_VARINFO*>::const_iterator it;
     for (it = file->variables.begin(); it != file->variables.end(); it++)
@@ -616,6 +617,8 @@ avtXGCFileFormat::GetVar(int timestate, int domain, const char *varname)
         return GetTurbulence(timestate, domain);
     if (!strcmp(varname, "sep"))
         return GetSep();
+    if (!strcmp(varname, "psi"))
+        return GetPsi();
 
     vtkDataArray *var = NULL;
     file->ReadScalarData(varname, timestate, &var);
@@ -652,6 +655,29 @@ avtXGCFileFormat::GetSep()
     return var;
 }
 
+
+//****************************************************************************
+// Method:  avtXGCFileFormat::GetPsi
+//
+// Purpose:
+//   Read PSI from the mesh file.
+//
+// Programmer:  Dave Pugmire
+// Creation:    October 29, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkDataArray *
+avtXGCFileFormat::GetPsi()
+{
+    vtkDataArray *psi;
+    meshFile->ReadScalarData("/psi", 0, &psi);
+
+    return psi;
+}
+
 //****************************************************************************
 // Method:  avtXGCFileFormat::GetTurbulence
 //
@@ -664,7 +690,6 @@ avtXGCFileFormat::GetSep()
 // Modifications:
 //
 //****************************************************************************
-
 
 vtkDataArray *
 avtXGCFileFormat::GetTurbulence(int ts, int dom)
