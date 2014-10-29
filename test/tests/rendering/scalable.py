@@ -33,6 +33,10 @@
 #    Eric Brugger, Fri Aug 15 10:19:33 PDT 2014
 #    Modified the script to use srun to launch the parallel engine on edge.
 #
+#    Eric Brugger, Wed Oct 29 12:08:54 PDT 2014
+#    Changed the parallel job launching logic to use srun on surface instead
+#    of edge.
+#
 # ----------------------------------------------------------------------------
 
 # sleep is needed to allow viewer to complete update of window information
@@ -52,7 +56,7 @@ CloseComputeEngine()
 # explicitly open a parallel engine, if possible
 # if it fails, the OpenDatabase will start a serial engine
 import socket
-if "edge" in socket.gethostname():
+if "surface" in socket.gethostname():
     haveParallelEngine = OpenComputeEngine("localhost", ("-l", "srun", "-np", "2"))
 else:
     haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
