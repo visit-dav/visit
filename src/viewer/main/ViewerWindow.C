@@ -42,6 +42,7 @@
 
 #include <ViewerWindow.h> 
 #include <snprintf.h>
+#include <avtCallback.h>
 #include <avtColorTables.h>
 #include <avtDataObjectReader.h>
 #include <avtWholeImageCompositerWithZ.h>
@@ -76,6 +77,7 @@
 #include <VisualCueInfo.h>
 #include <VisWindow.h>
 #include <QtVisWindow.h>
+#include <VisWindowWithInteractions.h>
 
 #include <DebugStream.h>
 
@@ -281,7 +283,11 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
 {
     if (GetViewerProperties()->GetNowin())
     {
-        visWindow = new VisWindow();
+        if(!avtCallback::GetNowinInteractionMode()) {
+            visWindow = new VisWindow();
+        } else {
+            visWindow = new VisWindowWithInteractions();
+        }
     }
     else
     {
@@ -346,6 +352,13 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     //
     visWindow->SetRenderInfoCallback(ViewerWindowManager::RenderInformationCallback,
         &windowId);
+
+    //
+    // Callback for render information.
+    //
+    visWindow->SetRenderEventCallback(ViewerWindowManager::RenderEventCallback,
+        &windowId);
+
 
     //
     // Callback for pick.
@@ -10310,4 +10323,13 @@ ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
         ds = LINEAR;
         rs = LINEAR; 
     }
+}
+
+void
+ViewerWindow::UpdateMouseActions(std::string action,
+                                 double start_dx, double start_dy,
+                                 double end_dx, double end_dy,
+                                 bool ctrl, bool shift)
+{
+    visWindow->UpdateMouseActions(action, start_dx, start_dy, end_dx, end_dy, ctrl, shift);
 }

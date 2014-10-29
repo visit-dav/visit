@@ -633,6 +633,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     static void                          ViewCallback(VisWindow *);
     static RenderingAttributes           *GetRenderingAttributes();
     static void                          RenderInformationCallback(void *data);
+    static void                          RenderEventCallback(void *data, bool inMotion);
     static AnnotationObjectList          *GetAnnotationObjectList();
     static AnnotationObjectList          *GetDefaultAnnotationObjectList();
     static void                          SetDefaultAnnotationObjectListFromClient();

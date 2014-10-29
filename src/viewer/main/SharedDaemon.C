@@ -40,7 +40,7 @@
 
 #include <ViewerClientConnection.h>
 #include <ViewerSubject.h>
-
+#include <ViewerState.h>
 #include <QMap>
 #include <QTcpSocket>
 #include <QTcpServer>
@@ -57,6 +57,8 @@
 
 #include <iostream>
 #include <string>
+
+#include <ViewerRPC.h>
 
 #ifdef _WIN32
 #include <win32commhelpers.h>
@@ -260,7 +262,7 @@ void SharedDaemon::handleConnection()
         socket->close();
         return;
     }
-    std::cout << "user: " 
+    std::cout << "user: "
               << socket->peerAddress().toString().toStdString()
               << " is attempting to connect" << std::endl;
 
@@ -424,9 +426,10 @@ void SharedDaemon::handleConnection()
 
     TRY
     {
-        void* data[2];
+        void* data[3];
         data[0] = &typeOfConnection;
         data[1] = (void*)finalSocket;
+        data[2] = (void*)subject->GetViewerState();
 
         newClient->LaunchClient(program,args,AddNewClient,data,0,0);
 
@@ -473,6 +476,7 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
     void** data = (void**)cbdata;
     ConnectionType typeOfConnection = *((ConnectionType*)(data[0]));
     QAbstractSocket* socket = static_cast<QAbstractSocket*>(data[1]);
+    ViewerState* viewerState = static_cast<ViewerState*>(data[2]);
 
     JSONNode node;
 
@@ -485,6 +489,14 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
     node["port"]  = args[7]; //port
     node["version"] = args[2]; //version
     node["securityKey"] = args[9]; //key
+    node["numStates"] = viewerState->GetNumStateObjects(); //number of states
+
+    JSONNode::JSONArray rpc_array = JSONNode::JSONArray();
+
+    for(size_t i = 0; i < ViewerRPC::MaxRPC; ++i) {
+        rpc_array.push_back(ViewerRPC::ViewerRPCType_ToString((ViewerRPC::ViewerRPCType)i));
+    }
+    node["rpc_array"] = rpc_array;
 
     if(typeOfConnection == TcpConnection)
     {

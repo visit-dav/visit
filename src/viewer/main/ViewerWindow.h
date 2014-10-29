@@ -739,6 +739,10 @@ public:
     bool GetProcessingViewChanged() {return processingViewChanged;}
     void SetProcessingViewChanged(bool flag) {processingViewChanged = flag;}
 
+    void UpdateMouseActions(std::string action,
+                            double start_dx, double start_dy,
+                            double end_dx, double end_dy,
+                            bool ctrl, bool shift);
 private:
     void RecenterViewCurve(const double *limits);
     void RecenterView2d(const double *limits);

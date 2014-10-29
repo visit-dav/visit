@@ -194,32 +194,32 @@ SocketConnection::Fill()
                  EXCEPTION0(LostConnectionException);
             }
         }while(amountRead == 1000); //if it gets entire list..
-        if(xmlString.size() > 0)
+
+        //std::cout << "raw string: " << xmlString << std::endl;
+
+        buffer.clear();
+
+        size_t bytes = 0;
+        while(xmlString.size() > 0)
         {
             JSONNode node;
-            node.Parse(xmlString);
+            size_t amt = node.Parse(xmlString);
 
-            //std::cout << node.ToString() << std::endl;
+            //std::cout << "message processing: " << node.ToString() << " " << amt << " " << xmlString.size() << std::endl;
 
             int guido = node["id"].GetInt();
 
             JSONNode contents = node["contents"];
             JSONNode metadata = node["metadata"];
 
-            /// With the information I have I could probably
-            /// just use JSONNode to convert completely..
-            /// but that would leave MapNode incomplete..
+            bytes += Write(guido, contents, metadata); //Write(guido,&mapnode); //,&metadata["data"]
 
-            //MapNode mapnode(contents, metadata, false);
+            if(amt >= xmlString.size())
+                break;
 
-            //std::cout << mapnode.ToXML(false) << std::endl;
-            //std::cout << metadata["data"] << std::endl;
-
-            buffer.clear();
-            return Write(guido, contents, metadata); //Write(guido,&mapnode); //,&metadata["data"]
+            xmlString = xmlString.substr(amt);
         }
-
-        return 0;
+        return bytes;
     }
 
     unsigned char tmp[1000];

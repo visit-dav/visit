@@ -553,6 +553,7 @@ public:
                                const stringVector &args, void *data);
 
     void AddNewViewerClientConnection(ViewerClientConnection* newClient);
+    void BroadcastAdvanced(int windowId, bool inMotion);
 
 public slots:
     void ProcessFromParent();
@@ -723,7 +724,7 @@ private:
 
     void SetDefaultFileOpenOptions();
     void SetSuppressMessages();
-    void BroadcastAdvanced(AttributeSubject *subj);
+    //void BroadcastAdvanced(AttributeSubject *subj);
 
     void DDTFocus();
     void DDTConnect();
@@ -830,7 +831,7 @@ private:
     std::vector<std::string> unknownArguments;
     std::vector<std::string> clientArguments;
     SharedDaemon             *shared_viewer_daemon;
-    size_t                   clientIds;
+    //size_t                   clientIds;
 };
 
 #endif
