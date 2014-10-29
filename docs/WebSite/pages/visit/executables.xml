@@ -3,7 +3,7 @@
   <title><![CDATA[VisIt Executables]]></title>
   <IM>LLNL-WEB-662419</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[October 15, 2014]]></lastchanged>
+  <lastchanged><![CDATA[October 30, 2014]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -67,13 +67,13 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
-            Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
+            Darwin 10.8.5, Darwin Kernel Version 12.5.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/VisIt-2.8.1.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-            Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
+            Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-431.29.2.el6.x86_64 #1 SMP gcc 4.4.7<br />
           Will work on many Linux x86_64 systems.</td>
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit2_8_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
