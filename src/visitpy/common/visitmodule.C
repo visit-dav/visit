@@ -16036,6 +16036,37 @@ visit_UserActionFinished(PyObject *self, PyObject *args)
     return PyLong_FromLong(long(!callbackMgr->IsWorking()));
 }
 
+
+STATIC PyObject *
+visit_UpdateMouseActions(PyObject *self, PyObject *args)
+{
+    (void) self;
+
+    ENSURE_VIEWER_EXISTS();
+
+    int windowId;
+    char* button;
+    double start_dx, start_dy;
+    double end_dx, end_dy;
+    if(!PyArg_ParseTuple(args, "isdddd", &windowId, &button, &start_dx, &start_dy, &end_dx, &end_dy)) {
+        return NULL;
+    }
+
+    //
+    // Set the active plots using the indices in the vector.
+    //
+    MUTEX_LOCK();
+    GetViewerMethods()->UpdateMouseActions(windowId, button,
+                                           start_dx, start_dy,
+                                           end_dx, end_dy,
+                                           false, false);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+
 // ****************************************************************************
 // Function: visit_exec_client_method
 //
@@ -16106,9 +16137,86 @@ visit_exec_client_method(void *data)
             /// hktodo: remove this raw input abstraction,
             /// currently I want this separated from regular interpret logic
             if(code[i].find("raw:") == 0) {
+                std::string command = code[i].substr(4);
+
                 std::ostringstream c;
-                c << "exec(\"" << code[i].substr(4) << "\")"; /// remove the prefix
-                PyRun_SimpleString(c.str().c_str());
+                c << "from cStringIO import StringIO\n";
+                c << "import sys\n";
+                c << "my_stdout = StringIO()\n";
+                c << "sys.stdout = my_stdout\n";
+                c << "sys.stderr = my_stdout\n";
+                c << "exec(u'" << command << "')\n"; /// remove the prefix
+                c << "sys.stdout = sys.__stdout__\n";
+                c << "sys.stderr = sys.__stderr__\n";
+                c << "my_stdout_res = my_stdout.getvalue()\n";
+
+                PyObject *mod, *dict, *v;
+
+                mod = PyImport_AddModule("__main__");
+
+                std::string result = "None";
+                std::string ret_result = "";
+                int retval = -1;
+                if (mod == NULL) {
+                    retval = -1;
+                } else {
+                    dict = PyModule_GetDict(mod);
+
+                    v = PyRun_StringFlags(c.str().c_str(), Py_file_input, dict, dict, NULL);
+
+                    if (v == NULL) {
+                        PyObject* err = PyErr_Occurred();
+                        if(err != NULL) {
+                            result = PyString_AsString(PyObject_Str(err));
+                        }
+                        PyErr_Print();
+                        retval = -1;
+                    } else {
+                        ret_result = PyString_AsString(PyObject_Str(v));
+                        Py_DECREF(v);
+                        if (Py_FlushLine())
+                            PyErr_Clear();
+                        retval = 0;
+                    }
+                }
+                //int retval = PyRun_SimpleString(c.str().c_str());
+
+                if(retval >= 0) {
+                    PyObject* key = PyString_FromString("my_stdout_res");
+                    PyObject* res = PyDict_GetItem(dict, key);
+                    result = PyString_AsString(res);
+
+                    /// if empty string then include return value..
+                    if(result.size() == 0) {
+                        result = ret_result;
+                    }
+                }
+
+                //std::cout << "x: " << result << " " << result.size() << std::endl;
+
+                if(result.size() > 0)
+                {
+                    //if(onNewThread)
+                    GetViewerProxy()->SetXferUpdate(true);
+
+                    // We don't want to get here re-entrantly so disable the client
+                    // method observer temporarily.
+                    clientMethodObserver->SetUpdate(false);
+
+                    stringVector args;
+                    args.push_back(result);
+
+                    ClientMethod *newM = GetViewerState()->GetClientMethod();
+                    newM->ClearArgs();
+                    newM->SetMethodName("AcceptRecordedMacro");
+                    newM->SetStringArgs(args);
+                    newM->Notify();
+
+                    //if(onNewThread)
+                    GetViewerProxy()->SetXferUpdate(false);
+
+                }
+
             }
             else {
                 // Handle ClientMethod specially if we're not in a local namespace.
@@ -17299,6 +17407,7 @@ AddProxyMethods()
                                                 visit_GetActiveColorTable_doc);
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
+    AddMethod("UpdateMouseActions", visit_UpdateMouseActions, NULL);
 }
 
 // ****************************************************************************

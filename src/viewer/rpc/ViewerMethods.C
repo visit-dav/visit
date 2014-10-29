@@ -5551,3 +5551,55 @@ ViewerMethods::ExportHostProfile(const std::string& profile, const std::string& 
     state->GetViewerRPC()->SetStringArg1(node.ToString());
     state->GetViewerRPC()->Notify();
 }
+
+void
+ViewerMethods::UpdateMouseActions(const int& windowId, const std::string& button,
+                                  const double& start_dx, const double& start_dy,
+                                  const double& end_dx, const double& end_dy,
+                                  const bool& ctrl, const bool& shift) {
+
+    JSONNode node;
+    node["action"] = "UpdateMouseActions";
+    node["mouseButton"] = button;
+    node["windowId"] = windowId;
+    node["start_dx"] = start_dx;
+    node["start_dy"] = start_dy;
+    node["end_dx"] = end_dx;
+    node["end_dy"] = end_dy;
+    node["ctrl"] = ctrl;
+    node["shift"] = shift;
+
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
+    state->GetViewerRPC()->SetStringArg1(node.ToString());
+    state->GetViewerRPC()->Notify();
+}
+
+void
+ViewerMethods::GetFileList(const std::string &path) {
+    JSONNode node;
+    node["action"] = "GetFileList";
+    node["path"] = path;
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
+    state->GetViewerRPC()->SetStringArg1(node.ToString());
+    state->GetViewerRPC()->Notify();
+}
+
+void
+ViewerMethods::ForceRedraw(int windowId) {
+    JSONNode node;
+    node["action"] = "ForceRedraw";
+    node["windowId"] = windowId;
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
+    state->GetViewerRPC()->SetStringArg1(node.ToString());
+    state->GetViewerRPC()->Notify();
+}
+
+void
+ViewerMethods::RegisterNewWindow(int windowId) {
+    JSONNode node;
+    node["action"] = "RegisterNewWindow";
+    node["windowId"] = windowId;
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
+    state->GetViewerRPC()->SetStringArg1(node.ToString());
+    state->GetViewerRPC()->Notify();
+}

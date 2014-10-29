@@ -632,6 +632,7 @@ public:
 
     // Rendering options.
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);
+    void                 SetRenderEventCallback(void (*cb)(void *, bool), void *data);
     void                 SetAntialiasing(bool enabled);
     bool                 GetAntialiasing() const;
     void                 SetMultiresolutionMode(bool enabled);
@@ -690,6 +691,10 @@ public:
                                    bool&, double &, const bool = false);
 
 
+    virtual void UpdateMouseActions(std::string action,
+                            double start_dx, double start_dy,
+                            double end_dx, double end_dy,
+                            bool ctrl, bool shift);
 protected:
     VisWindowColleagueProxy            colleagueProxy;
     VisWindowInteractorProxy           interactorProxy;

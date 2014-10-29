@@ -40,6 +40,8 @@
 
 SET(AVTQTVISWINDOW_SOURCES
 VisWinRenderingWithWindow.C
+VisWindowWithInteractions.C
+VisWinRenderingWithoutWindowWithInteractions.C
 QtVisWindow.C
 vtk/vtkDashedXorGridMapper2D.C
 vtk/vtkRubberBandMapper2D.C
