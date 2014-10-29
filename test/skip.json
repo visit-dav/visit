@@ -75,7 +75,10 @@
                     {"category":"simulation","file":"life.py","platform":"win"},
                     {"category":"simulation","file":"mandelbrot.py","platform":"win"},
                     {"category":"simulation","file":"ucdcurve.py","platform":"win"},
-                    {"category":"simulation","file":"updateplots.py","platform":"win"}
+                    {"category":"simulation","file":"updateplots.py","platform":"win"},
+                    {"category":"queries","file":"conncomp.py","cases":
+                        ["conncomp_3d_t2", "conncomp_3d_count_t2", "conncomp_3d_centroid_t2", "conncomp_3d_volume_t2", "conncomp_3d_summary_t2",
+                        "conncomp_3d_t3", "conncomp_3d_count_t3", "conncomp_3d_centroid_t3", "conncomp_3d_volume_t3", "conncomp_3d_summary_t3"]}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
@@ -99,6 +102,9 @@
                     {"category":"simulation","file":"life.py","platform":"win"},
                     {"category":"simulation","file":"mandelbrot.py","platform":"win"},
                     {"category":"simulation","file":"ucdcurve.py","platform":"win"},
-                    {"category":"simulation","file":"updateplots.py","platform":"win"}
+                    {"category":"simulation","file":"updateplots.py","platform":"win"},
+                    {"category":"queries","file":"conncomp.py","cases":
+                        ["conncomp_3d_t2", "conncomp_3d_count_t2", "conncomp_3d_centroid_t2", "conncomp_3d_volume_t2", "conncomp_3d_summary_t2",
+                        "conncomp_3d_t3", "conncomp_3d_count_t3", "conncomp_3d_centroid_t3", "conncomp_3d_volume_t3", "conncomp_3d_summary_t3"]}
                     ]}
 ]}

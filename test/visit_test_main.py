@@ -953,7 +953,7 @@ def HTMLImageTestResult(case_name,status,
     elif (diffState == 'Skipped'):
         testcase.write("    <td>Skipped</td>\n")
     else:
-        testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.png'" onMouseOut="document.c.src='c_%s.png'"><img name="c" border=0 src="c_%s.png"></img></a></td>\n"""%(case_name,case_name,case_name))
+        testcase.write("""    <td><a href="c_%s.png"><img name="c" border=0 src="c_%s.png"></img></a></td>\n"""%(case_name,case_name))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center rowspan=7>Diff Map:</td>\n")
