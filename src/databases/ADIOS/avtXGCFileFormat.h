@@ -113,6 +113,7 @@ class avtXGCFileFormat : public avtMTMDFileFormat
     void                   Initialize();
     vtkDataArray          *GetTurbulence(int ts, int dom);
     vtkDataArray          *GetSep();
+    vtkDataArray          *GetPsi();
     vtkDataSet            *GetSepMesh();
     vtkDataSet            *GetMesh2D(int ts, int dom);
 
