@@ -162,6 +162,44 @@ function bv_cmake_dry_run
 #                          Function 5, build_cmake                            #
 # *************************************************************************** #
 
+function apply_cmake_patch_3
+{
+   patch -p0 <<\EOF
+*** cmake-2.8.12.2/Modules/Platform/Darwin.cmake
+--- cmake-2.8.12.2/Modules/Platform/Darwin.cmake.patched
+***************
+*** 201,208 ****
+    endif()
+  endif()
+  
+  # Make sure the combination of SDK and Deployment Target are allowed
+! if(CMAKE_OSX_DEPLOYMENT_TARGET)
+    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
+      set(_sdk_ver "${CMAKE_MATCH_1}")
+    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
+--- 201,213 ----
+    endif()
+  endif()
+  
++ #
++ # This sanity check fails on OS X 10.8 regardless of how values are
++ # set. It has been disabled for this installation of VisIt by using
++ # 'FALSE' as the triggering condition.
++ #
+  # Make sure the combination of SDK and Deployment Target are allowed
+! if(FALSE)
+    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
+      set(_sdk_ver "${CMAKE_MATCH_1}")
+    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
+EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 3 to cmake."
+        return 1
+   else
+        return 0
+   fi
+}
+
 function apply_cmake_patch_2
 {
    patch -p0 <<\EOF
@@ -253,6 +291,13 @@ function apply_cmake_patch
 
    if [[ "${CMAKE_VERSION}" == "2.8.10.2" ]]; then
        apply_cmake_patch_2
+       if [[ $? != 0 ]] ; then
+          return 1
+       fi
+   fi
+
+   if [[ "${CMAKE_VERSION}" == "2.8.12.2" ]]; then
+       apply_cmake_patch_3
        if [[ $? != 0 ]] ; then
           return 1
        fi

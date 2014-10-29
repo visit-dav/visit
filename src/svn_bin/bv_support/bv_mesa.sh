@@ -26,7 +26,6 @@ function bv_mesa_info
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
-export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2/"
 export MESA_MD5_CHECKSUM=""
 export MESA_SHA256_CHECKSUM=""
 }
@@ -78,7 +77,7 @@ function bv_mesa_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_MESA" == "yes" ]] ; then
-            ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE $MESA_URL
+            ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE
             if [[ $? != 0 ]] ; then
                 return 1
             fi
