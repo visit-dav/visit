@@ -51,6 +51,9 @@
 #   Eric Brugger, Fri Aug 15 12:54:39 PDT 2014
 #   I modified the script to use cmake 2.8.12.2 to configure visit.
 #
+#   Eric Brugger, Wed Oct 29 08:04:01 PDT 2014
+#   I modified the script to use surface.
+#
 
 
 #
@@ -119,7 +122,7 @@ debug="false"
 branch="trunk"
 revision="latest"
 serial="false"
-testHost="edge"
+testHost="surface"
 testDir="/nfs/tmp2/"
 post="true"
 nerscHost="hopper.nersc.gov"
@@ -245,10 +248,10 @@ export NVCC=/opt/cudatoolkit-6.0/bin/nvcc
 export OPENGLLIB=-L/opt/cudatoolkit-6.0/lib64 -lcudart -lcuda
 
 if test "$serial" = "true" ; then
-    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/edge83.cmake
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/surface86.cmake
 fi
 /usr/gapps/visit/thirdparty_shared/2.8.0/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake \
-    -DVISIT_CONFIG_SITE=config-site/edge83.cmake \
+    -DVISIT_CONFIG_SITE=config-site/surface86.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DVISIT_BUILD_ALL_PLUGINS=1 \
     -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -258,8 +261,7 @@ fi
     -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
-echo "DAY_OF_WEEK="`date +"%A"` >>../make.err
-/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make --output-sync=line -k -j 12 1>>../make.out 2>>../make.err
+/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make --output-sync=line -k -j 12 1>../make.out 2>../make.err
 if test $? -ne 0; then
     echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
     exit 1
@@ -381,8 +383,8 @@ EOF
 chmod 750 $testHost
 
 # Run the test suite.
-if test "$testHost" = "edge" ; then
-    scp edge edge:edge_testit
+if test "$testHost" = "surface" ; then
+    scp surface surface:surface_testit
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh edge "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -o edge_testit_$subTag.out -q pbatch -A bdivp -z ./edge_testit"
+    ssh surface "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -o surface_testit_$subTag.out -q pbatch -A bdivp -z ./surface_testit"
 fi
