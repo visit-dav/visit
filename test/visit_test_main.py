@@ -1959,6 +1959,10 @@ def TestParallelSimulation(sim, sim2, np):
 #    Kathleen Biagas, Thu Sep 4 16:43:27 MST 2014
 #    Set close_fds to False for windows.
 #
+#    Eric Brugger, Wed Oct 29 12:18:07 PDT 2014
+#    Changed the parallel job launching logic to use srun on surface instead
+#    of edge.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1):
@@ -1993,7 +1997,7 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "edge" in socket.gethostname():
+            if "surface" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
                     msubscript = os.path.join(os.path.abspath(os.curdir), string.replace(self.sim2, "sim2", "msub"))
