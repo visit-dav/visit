@@ -8,4 +8,4 @@ rm -rf svn_bin
 svn co svn+ssh://brugger@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src/svn_bin
 
 # Run the test suite.
-svn_bin/regressiontest_edge
+svn_bin/regressiontest_surface

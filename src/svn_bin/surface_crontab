@@ -4,4 +4,4 @@ SHELL=/bin/sh
 MAILTO=brugger1@llnl.gov
 #
 # run at 10:00 PM, every day
-0 22 * * * $HOME/visit_run_tests/edge_cron_script >> $HOME/visit_run_tests/out 2>&1
+0 22 * * * $HOME/visit_run_tests/surface_cron_script >> $HOME/visit_run_tests/out 2>&1
