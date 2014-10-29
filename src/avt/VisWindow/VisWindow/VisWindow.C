@@ -5670,6 +5670,12 @@ VisWindow::SetRenderInfoCallback(VisCallback *cb, void *data)
     rendering->SetRenderInfoCallback(cb, data);
 }
 
+void
+VisWindow::SetRenderEventCallback(void (*cb)(void *, bool), void *data)
+{
+    rendering->SetRenderEventCallback(cb, data);
+}
+
 // ****************************************************************************
 // Method: VisWindow::SetAntialiasing
 //
@@ -7216,4 +7222,12 @@ FontAttributes_To_VisWinTextAttributes(const FontAttributes &f)
     atts.italic = f.GetItalic();
 
     return atts;
+}
+
+void
+VisWindow::UpdateMouseActions(std::string action,
+                                   double start_dx, double start_dy,
+                                   double end_dx, double end_dy,
+                                   bool ctrl, bool shift) {
+    rendering->UpdateMouseActions(action, start_dx, start_dy, end_dx, end_dy, ctrl, shift);
 }

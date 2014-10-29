@@ -296,6 +296,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     double                    ComputeVectorTextScaleFactor(const double *pos, const double *vp = NULL);
 
     void                     SetRenderInfoCallback(void(*callback)(void *), void *);
+    void                     SetRenderEventCallback(void(*callback)(void *,bool), void *);
     void                     SetAntialiasing(bool enabled);
     bool                     GetAntialiasing() const
                                  { return antialiasing; };
@@ -360,6 +361,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual vtkPolyDataMapper2D *CreateRubberbandMapper() { return 0; }
     virtual vtkPolyDataMapper2D *CreateXorGridMapper() { return 0; }
 
+
+    void                          InvokeRenderCallback();
+
+    void UpdateMouseActions(std::string action,
+                            double start_dx, double start_dy,
+                            double end_dx, double end_dy,
+                            bool ctrl, bool shift);
   protected:
     vtkRenderer                  *canvas;
     vtkRenderer                  *background;
@@ -378,6 +386,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          colorTexturingFlag;
     void(*renderInfo)(void *);
     void                         *renderInfoData;
+    void                          (*renderEvent)(void *,bool);
+    void                         *renderEventData;
     bool                          notifyForEachRender;
     bool                          inMotion;
 
@@ -400,6 +410,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                           compactDomainsActivationMode;
     int                           compactDomainsAutoThreshold;
 
+    // render options
+    bool                          setRenderUpdate;
     void                          InitializeRenderWindow(vtkRenderWindow *);
     void                          ResetCounters();
 
@@ -409,5 +421,10 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     virtual void                  RealizeRenderWindow(void) = 0;
     virtual void                  RenderRenderWindow(void);
+
+private:
+    void                          SetRenderUpdate(bool _setRenderUpdate) { setRenderUpdate = _setRenderUpdate; }
+    bool                          GetRenderUpdate() { return setRenderUpdate; }
+
 };
 #endif

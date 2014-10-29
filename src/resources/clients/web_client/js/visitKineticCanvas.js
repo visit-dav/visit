@@ -172,10 +172,11 @@ function VisItCanvas(container_div_id, screenWidth, screenHeight)
     this.setVisItConnection = function(conn) {
         vp = conn;
         vp.GetViewerState().registerCallback("ViewerClientInformation",
-                                             updateViewer);
+                                             [this.updateViewer, this] );
+        vp.GetViewerMethods().RegisterNewWindow(1);
     }
 
-    function updateViewer(obj) 
+    this.updateViewer = function(obj) 
     {
         var vars = obj.get("vars");
         var supportedFormats = obj.get("supportedFormats");
