@@ -65,6 +65,8 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <vtkCallbackCommand.h>
+#include <vtkSmartPointer.h>
 static void RemoveCullers(vtkRenderer *);
 
 bool VisWinRendering::stereoEnabled = false;
@@ -162,6 +164,8 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     colorTexturingFlag             = true;
     renderInfo                     = 0;
     renderInfoData                 = 0;
+    renderEvent                    = 0;
+    renderEventData                = 0;
     notifyForEachRender            = false;
     inMotion                       = false;
     scalableRendering              = false;
@@ -246,7 +250,12 @@ VisWinRendering::~VisWinRendering()
 //    Remove GLEW initialization from here, move it elsewhere.
 //
 // ****************************************************************************
- 
+
+static void renderEventCallback(vtkObject*, unsigned long, void* clientdata, void* calldata) {
+    VisWinRendering* renWin = (VisWinRendering*)clientdata;
+    renWin->InvokeRenderCallback();
+}
+
 void
 VisWinRendering::InitializeRenderWindow(vtkRenderWindow *renWin)
 {
@@ -260,6 +269,13 @@ VisWinRendering::InitializeRenderWindow(vtkRenderWindow *renWin)
     {
         renWin->SetStereoCapableWindow(1);
     }
+
+    vtkSmartPointer<vtkCallbackCommand> command = vtkCallbackCommand::New();
+    command->SetCallback(renderEventCallback);
+    command->SetClientData(this);
+
+    renWin->AddObserver(vtkCommand::EndEvent, command);
+
 }
 
 
@@ -716,12 +732,14 @@ VisWinRendering::Render()
 
     if (realized)
     {
-        if (mediator.UpdatesEnabled() && !avtCallback::GetNowinMode())
+        if (mediator.UpdatesEnabled() && (!avtCallback::GetNowinMode() ||
+                                           avtCallback::GetNowinInteractionMode()))
         {
             // Do an extra render for 'in progress' visual queue if
             // average time to ender is more than 2 seconds
             if (mediator.IsMakingExternalRenderRequests() &&
-                mediator.GetAverageExternalRenderingTime() > 2.0)
+                mediator.GetAverageExternalRenderingTime() > 2.0 &&
+                !avtCallback::GetNowinMode())
             {
                 int w, h;
                 double color[3];
@@ -841,6 +859,9 @@ VisWinRendering::MotionEnd(void)
         (*renderInfo)(renderInfoData);
         ResetCounters();
     }
+
+    /// call end to render event..
+    InvokeRenderCallback();
 }
 
 // ****************************************************************************
@@ -1041,6 +1062,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
                               bool doOpaque, bool doTranslucent,
                               avtImage_p input)
 {
+    SetRenderUpdate(false);
     int t1 = visitTimer->StartTimer();
     bool second_pass = (*input != NULL);
 
@@ -1114,6 +1136,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
     std::string errorMsg = avtCallback::GetRenderingException();
     if (errorMsg != "")
     {
+        SetRenderUpdate(true);
         EXCEPTION1(VisItException, errorMsg.c_str());
     }
 
@@ -1132,6 +1155,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
     if(!doTranslucent)
         mediator.ResumeTranslucentGeometry();
     visitTimer->StopTimer(t1, "Time spent in VisWinRendering::ScreenRender");
+    SetRenderUpdate(true);
 }
 
 // ****************************************************************************
@@ -1756,6 +1780,12 @@ VisWinRendering::SetRenderInfoCallback(void(*callback)(void *), void *data)
     renderInfoData = data;
 }
 
+void
+VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data)
+{
+    renderEvent = callback;
+    renderEventData = data;
+}
 // ****************************************************************************
 // Method: VisWinRendering::SetAntialiasing
 //
@@ -2153,4 +2183,79 @@ VisWinRendering::SetCompactDomainsAutoThreshold(int val)
     int oldVal = compactDomainsAutoThreshold;
     compactDomainsAutoThreshold = val;
     return oldVal;
+}
+
+void
+VisWinRendering::InvokeRenderCallback() {
+    if(renderEvent && GetRenderUpdate() == true) {
+        renderEvent(renderEventData,inMotion);
+    }
+}
+
+void
+VisWinRendering::UpdateMouseActions(std::string action, double start_dx, double start_dy,
+                                    double end_dx, double end_dy,
+                                    bool ctrl, bool shift) {
+
+    vtkRenderWindow* win = GetRenderWindow();
+    vtkRenderWindowInteractor* iren = GetRenderWindowInteractor();
+
+    if(win == NULL || iren == NULL) {
+        return;
+    }
+
+    enum MouseButton { LeftButton, MiddleButton, RightButton };
+
+    MouseButton mb = LeftButton;
+
+    if(action.find("Middle") != std::string::npos)
+        mb = MiddleButton;
+    else if(action.find("Right") != std::string::npos)
+        mb = RightButton;
+
+    double width, height;
+    int* size = win->GetSize();
+
+    width = (double)size[0];
+    height = (double)size[1];
+
+    /// Handle wheel events.
+    if(action == "WheelUp") {
+        iren->MouseWheelForwardEvent();
+    }
+
+    if(action == "WheelDown") {
+        iren->MouseWheelBackwardEvent();
+    }
+
+    if(action.find("Press") != std::string::npos) {
+
+        iren->SetEventInformationFlipY(width*start_dx, height*start_dy,
+                                       ctrl ? 1 : 0, shift ? 1 : 0);
+
+        switch(mb) {
+            case MiddleButton: iren->MiddleButtonPressEvent(); break;
+            case RightButton: iren->RightButtonPressEvent(); break;
+            default: iren->LeftButtonPressEvent();
+        };
+    }
+
+    if(action.find("Move") != std::string::npos) {
+
+        iren->SetEventInformationFlipY(width*end_dx, height*end_dy,
+                                       ctrl ? 1 : 0, shift ? 1 : 0);
+        iren->MouseMoveEvent();
+    }
+
+    if(action.find("Release") != std::string::npos) {
+
+        iren->SetEventInformationFlipY(width*end_dx, height*end_dy,
+                                       ctrl ? 1 : 0, shift ? 1 : 0);
+
+        switch(mb) {
+            case MiddleButton: iren->MiddleButtonReleaseEvent(); break;
+            case RightButton: iren->RightButtonReleaseEvent(); break;
+            default: iren->LeftButtonReleaseEvent();
+        };
+    }
 }

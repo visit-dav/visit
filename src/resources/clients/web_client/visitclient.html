@@ -66,7 +66,6 @@
                 </td>
                 <td valign="top">
                     <div id="container"></div><br>
-                    <img src="" id="visitImage" />
                 </td>
             </tr>
         </table>
@@ -120,15 +119,21 @@
 
         </script>
         <script src="js/visit.js"> </script>
+        <script src="js/visitKineticCanvas.js"> </script>
+
+<!--
         <script src="js/sylvester.js"> </script>
         <script src="js/trackball.js"> </script>
+-->
         <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.4.0.min.js"></script>
      
         <script>
 
-        var stage, layer, imageObj, kineticImage;
+        //var stage, layer, imageObj, kineticImage;
 
-        vp = new VisItProxy();
+        
+        var canvas = null;
+        var vp = new VisItProxy();
 
         function connect()
         {
@@ -140,6 +145,7 @@
             var windowWidth = document.getElementById("windowWidth").value;
             var windowHeight = document.getElementById("windowHeight").value;
 
+/*
             stage = new Kinetic.Stage({
                     container: 'container',
                     width: windowWidth,
@@ -165,14 +171,21 @@
                 };
 
                 trackball.init(stage); 
+*/
+                canvas = new VisItCanvas('container', windowWidth, windowHeight);
                 vp.connect(hostname, port, password,
                            userName, windowId, windowWidth, 
                            windowHeight, visitInitialized);
             }
 
             function visitInitialized(){
-                vp.GetViewerState().registerCallback("ViewerClientInformation",
-                                                      updateViewerClientInformation);
+                /// only register when visit has initialized..
+                /// todo: fix this by letting viewerState handle 
+                /// this situation gracefully.
+
+                canvas.setVisItConnection(vp);
+                //vp.GetViewerState().registerCallback("ViewerClientInformation",
+                //                                      updateViewerClientInformation);
                 vp.GetViewerState().registerCallback("ClientMethod",
                                                       updateClientMethod);
             }
@@ -221,21 +234,6 @@
                     debug("loading filename: " + filename);
                     //viewerMethods.SetActiveWindow(windowId);
                     vp.GetViewerMethods().OpenDatabase(filename);
-                }
-            }
-
-            function updateViewerClientInformation(obj) 
-            {
-                var vars = obj.get("vars");
-                var supportedFormats = obj.get("supportedFormats");
-
-                for(var i = 0; i < 1 /*vars.length*/; ++i) {
-                    if(vars[i].get("format") === supportedFormats.indexOf("Image")) 
-                    {
-                        var image  = "data:image/jpeg;base64,";
-                        image += vars[i].get("data");
-                        imageObj.src = image;
-                    }
                 }
             }
 

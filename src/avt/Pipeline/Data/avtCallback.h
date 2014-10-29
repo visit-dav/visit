@@ -136,9 +136,15 @@ class PIPELINE_API avtCallback
                                                       AttributeSubject *);
 
     static void                  SetNowinMode(bool b)
-                                     { nowinMode = b; };
+                                     { nowinMode = b; }
     static bool                  GetNowinMode(void)
-                                     { return nowinMode; };
+                                     { return nowinMode; }
+
+    static void                    SetNowinInteractionMode(bool b)
+                                     { nowinInteractionMode = b; }
+
+    static bool                  GetNowinInteractionMode()
+                                     { return nowinInteractionMode; }
 
     static void                  SetSoftwareRendering(bool b)
                                      { swRendering = b; };
@@ -191,6 +197,7 @@ class PIPELINE_API avtCallback
     static LightList             lightList;
 
     static bool                  nowinMode;
+    static bool                  nowinInteractionMode;
     static bool                  swRendering;
     static bool                  useManta;
     static bool                  safeMode;

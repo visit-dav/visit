@@ -334,15 +334,14 @@ JSONNode::ToString(const std::string &indent) const
 //
 // ****************************************************************************
 
-void 
-JSONNode::Parse(const std::string &JSON_data)
+size_t JSONNode::Parse(const std::string &JSON_data)
 {
     if(JSON_data == "")
-        return;
+        return 0;
     std::istringstream iss;
     iss >> std::noskipws; /// don't skip white spaces..
     iss.str(JSON_data);
-    Parse(iss);
+    return Parse(iss);
 }
 
 // ****************************************************************************
@@ -356,7 +355,7 @@ JSONNode::Parse(const std::string &JSON_data)
 //
 // ****************************************************************************
 
-void 
+size_t
 JSONNode::Parse(std::istream &iss)
 {
     iss >> std::ws;
@@ -369,6 +368,9 @@ JSONNode::Parse(std::istream &iss)
         ParseArray(iss);
     else
         ParseVariant(iss);
+
+    //std::cout << iss.tellg() << std::endl;
+    return (size_t)iss.tellg();
 }
 
 void

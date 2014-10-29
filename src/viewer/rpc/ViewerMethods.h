@@ -447,8 +447,13 @@ public:
     void DDTConnect(bool connect);
     void DDTFocus(int domain, const std::string &variable, int element, const std::string &value);
 
+    /// Experimental features (that are not official yet)
     void ExportWindows(const intVector &windowIds, const std::string& format);
     void ExportHostProfile(const std::string& profile, const std::string &filename, const bool& saveInUserDir = false);
+    void UpdateMouseActions(const int& windowId, const std::string& mouseButton, const double &start_dx, const double& start_dy, const double& end_dx, const double &end_dy, const bool &ctrl, const bool &shift);
+    void GetFileList(const std::string& path);
+    void ForceRedraw(int windowId);
+    void RegisterNewWindow(int windowId);
 private:
     ViewerState *state;
 };

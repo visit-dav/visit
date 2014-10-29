@@ -136,6 +136,7 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     virtual void             NoPlots();
     virtual void             HasPlots();
 
+    VisitHotPointInteractor* GetHotPointInteractor() { return hotPointInteractor; }
   protected:
     INTERACTION_MODE         mode;
     TOOLUPDATE_MODE          toolUpdateMode;

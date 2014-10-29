@@ -4,6 +4,9 @@
     "name" : { (req) "attrId" : attribute, "type" : attribute_type,
                (opt) "api" : API, possibly ToolTips, etc..}}
 */
+
+var visitRPC = {};
+
 function AttributeSubject()
 {
     var callbackList = [];
@@ -11,6 +14,16 @@ function AttributeSubject()
     var data = null;
     var id = -1;
     var typename = "";
+
+    this.getEntireState = function() 
+    {
+        return data;
+    }
+
+    this.setEntireState = function(_data)
+    {
+        data = _data;
+    }
 
     this.update = function(rawData)
     {
@@ -23,7 +36,13 @@ function AttributeSubject()
         {
             data = rawData;
             for(var i = 0; i < callbackList.length; ++i) {
-                callbackList[i](this);
+                var callbackObj = callbackList[i];
+                if(callbackObj instanceof  Array){
+                    callbackObj[0].apply(callbackObj[1], [this]);
+                }
+                else {
+                    callbackObj(this);
+                }
             }
         }
     }
@@ -96,15 +115,18 @@ function ViewerState()
     var states = [];
     var typenameToState = {};
     var output = null;
+    var syncTag = -1;
+    var sync_queue = [];
+    var initialized = false;
 
-    this.update = function(rawData) 
+    this.update = function(rawData, forceUpdate) 
     {
-        
+        forceUpdate = typeof forceUpdate !== 'undefined' ? forceUpdate : false;
         //if it does not have id, then class is not updated properly.
         if(!rawData.hasOwnProperty("id")) return false;
 
         var id = rawData["id"];
-        
+
         if(id < states.length)
             states[id].update(rawData);
         else
@@ -149,13 +171,25 @@ function ViewerState()
 
     this.notify = function(index)
     {
-        if(index >= 0 && index < states.length)
-            states[index].notify(output);
+        if(index >= 0 && index < states.length) {
+            /// waiting on a previous call...
+            if(syncTag >= 0) {
+                sync_queue.push([index,JSON.stringify(states[index].getEntireState())]);
+            } else {
+                states[index].notify(output);
+                this.synchronize();
+            }
+        }
     }
         
     this.setConnection = function(conn)
     {
         output = conn;
+    }
+
+    this.registerCallbacks = function() {
+        this.registerCallback("SyncAttributes", [this.syncCallback, this]);
+        initialized = true;
     }
 
     this.getAttributeSubject = function(index) {
@@ -168,6 +202,37 @@ function ViewerState()
     this.getStates = function() {
         return states;
     }
+
+    this.syncCallback = function(arg) {
+        
+        var tag = arg.get("syncTag"); 
+
+        if(syncTag != tag) return;
+
+        //console.log("handling: " + tag);
+        syncTag = -1;
+        if(sync_queue.length > 0) {
+            var obj = sync_queue[0];
+            sync_queue.shift();
+
+            var index = obj[0];
+            var data = jQuery.parseJSON(obj[1]);
+
+            states[index].setEntireState(data);
+            this.notify(index);
+        }
+    }
+
+    this.synchronize = function(arg) {
+        var tag = Math.floor((Math.random() * 10000) + 1);
+        var sync_index = this.getIndexFromTypename("SyncAttributes");
+        var syncAtts = this.getAttributeSubject(sync_index);
+
+        //console.log("creating: " + tag);
+        syncTag = tag;
+        syncAtts.set("syncTag", tag);
+        syncAtts.notify(output);
+    }
 }
 
 function ViewerMethods(state) 
@@ -178,13 +243,13 @@ function ViewerMethods(state)
     this.InvertBackgroundColor = function ()
     {
         this.SetActiveWindow(windowId);
-        viewerState.set(0,"RPCType",RPCType.InvertBackgroundRPC);
+        viewerState.set(0,"RPCType",visitRPC["InvertBackgroundRPC"]);
         viewerState.notify(0);
     }
 
     this.SetActiveWindow = function(id)
     {
-        viewerState.set(0,"RPCType",RPCType.SetActiveWindowRPC);
+        viewerState.set(0,"RPCType",visitRPC["SetActiveWindowRPC"]);
         viewerState.set(0,"windowId", id);
         viewerState.set(0,"boolFlag", false);
         viewerState.notify(0);
@@ -192,7 +257,7 @@ function ViewerMethods(state)
 
     this.OpenDatabase = function(str)
     {
-        viewerState.set(0,"RPCType",RPCType.OpenDatabaseRPC);
+        viewerState.set(0,"RPCType",visitRPC["OpenDatabaseRPC"]);
         viewerState.set(0,"intArg1",0);
         viewerState.set(0,"boolFlag",true);
         viewerState.set(0,"stringArg1","");
@@ -202,32 +267,96 @@ function ViewerMethods(state)
 
     this.DrawPlots = function ()
     {
-        viewerState.set(0,"RPCType",RPCType.DrawPlotsRPC);
+        viewerState.set(0,"RPCType",visitRPC["DrawPlotsRPC"]);
+        viewerState.notify(0);
+    }
+
+    getEnabledId = function(plot_type, name) {
+        var names = viewerState.get(14, "name");
+        var types = viewerState.get(14, "type");
+        var enabled = viewerState.get(14, "enabled");
+
+        // alert(names);
+        // alert(types);
+        // alert(enabled);
+
+        var mapper = [];
+
+        for (i = 0; i < names.length; ++i) {
+            if (enabled[i] == 1 && plot_type == types[i])
+                mapper.push(names[i]);
+        }
+
+        mapper.sort();
+
+        for (i = 0; i < mapper.length; ++i) {
+            //alert(name + " " + mapper[i]);
+            if (name == mapper[i])
+                return i;
+        }
+
+        return -1;
+    }
+
+
+    this.AddPlot = function(name, variable) {
+        var id = getEnabledId("plot",name);
+
+        if(id < 0) return;
+
+        this.SetActiveWindow(windowId);
+        viewerState.set(0,"RPCType",visitRPC["AddPlotRPC"]);
+        viewerState.set(0,"plotType",id);
+        viewerState.set(0,"variable",variable);
         viewerState.notify(0);
     }
 
     this.AddPseudocolorPlot = function (variable)
     {
-        this.SetActiveWindow(windowId);
-        viewerState.set(0,"RPCType",RPCType.AddPlotRPC);
-        viewerState.set(0,"plotType",11);
-        viewerState.set(0,"variable",variable);
-        viewerState.notify(0);
+        this.AddPlot("Pseudocolor", variable);
     }
 
     this.AddContourPlot = function (variable)
     {
-        this.SetActiveWindow(windowId);
-        viewerState.set(0,"RPCType",RPCType.AddPlotRPC);
-        viewerState.set(0,"plotType",1);
-        viewerState.set(0,"variable",variable);
-        viewerState.notify(0);
+        this.AddPlot("Contour", variable);
     }
 
     this.DeleteActivePlots = function ()
     {
         this.SetActiveWindow(windowId);
-        viewerState.set(0,"RPCType",RPCType.DeleteActivePlotsRPC); //DeleteActivePlots
+        viewerState.set(0,"RPCType",visitRPC["DeleteActivePlotsRPC"]); //DeleteActivePlots
+        viewerState.notify(0);
+    }
+
+    this.RegisterNewWindow = function(windowId) {
+
+        var node = {};
+        node["action"] = "RegisterNewWindow";
+        node["windowId"] = windowId;
+
+        viewerState.set(0,"RPCType",visitRPC["ExportRPC"]);
+        viewerState.set(0,"stringArg1", JSON.stringify(node));
+        viewerState.notify(0);
+    }
+
+    this.UpdateMouseActions = function(windowId, button,   
+                                       start_dx, start_dy,
+                                       end_dx, end_dy, 
+                                       isCtrlPressed, isShiftPressed) {
+
+        var node = {};
+        node["action"] = "UpdateMouseActions";
+        node["mouseButton"] = button;
+        node["windowId"] = windowId;
+        node["start_dx"] = start_dx;
+        node["start_dy"] = start_dy;
+        node["end_dx"] = end_dx;
+        node["end_dy"] = end_dy;
+        node["ctrl"] = isCtrlPressed;
+        node["shift"] = isShiftPressed;
+
+        viewerState.set(0,"RPCType",visitRPC["ExportRPC"]);
+        viewerState.set(0,"stringArg1", JSON.stringify(node));
         viewerState.notify(0);
     }
 
@@ -266,13 +395,13 @@ function ViewerMethods(state)
 
     this.SetView3D = function()
     {
-       viewerState.set(0,"RPCType",RPCType.SetView3DRPC);
+       viewerState.set(0,"RPCType",visitRPC["SetView3DRPC"]);
        viewerState.notify(0);
     }
 
     this.DisconnectClient = function ()
     {
-        viewerState.set(0,"RPCType",RPCType.DetachRPC);
+        viewerState.set(0,"RPCType",visitRPC["DetachRPC"]);
         viewerState.notify(0);
     }
 }
@@ -306,6 +435,7 @@ function VisItProxy()
     var inputConnection = null;
     var outputConnection = null;
     var visitState = null;
+    var numberOfVisItStates = 140;
 
     var viewerState = new ViewerState();
     var viewerMethods = new ViewerMethods(viewerState);
@@ -314,7 +444,6 @@ function VisItProxy()
     var viewerClientInformation = 52;
 
     var hasInitialized = false;
-    var lastInitializedId = 140; //TODO: Get this information from header..    
     var initializedCallback = null;
 
     this.connect = function(host, prt, passwd, uname, wid, width, height, iCallback)
@@ -351,7 +480,7 @@ function VisItProxy()
                 /// once connected send password
                 var handshake = {};
                 handshake["password"] = password;
-                handshake["canRender"] = true;
+                handshake["canRender"] = "image";
                 handshake["geometry"] = windowWidth + "x" + windowHeight;
                 handshake["name"] = userName;
                 handshake["windowIds"] = new Array();
@@ -486,9 +615,19 @@ function VisItProxy()
 
     function initializeVisIt(data)
     {
-        debug("Initializing VisIt: " + data);
+        debug("Initializing VisIt: ");
+
         visitState = jQuery.parseJSON(data);
         var uri = "ws://" + visitState.host + ":" + visitState.port;
+
+        var rpc_array = visitState["rpc_array"];
+
+        /// create dictionary
+        for(i = 0; i < rpc_array.length; ++i) {
+            visitRPC[rpc_array[i]] = i;
+        }
+
+        numberOfVisItStates = visitState["numStates"];
         debug(uri);
         //websocket.close();
         connectToVisIt(uri);
@@ -518,11 +657,12 @@ function VisItProxy()
     {
         var obj = null;
         try{
+            data = data.replace(/\\\\/g,"\\");
             obj = jQuery.parseJSON(data)
         }
         catch(err)
         {
-           //alert(data);
+           debug("failed to parse: " + data);
            return;
         }
 
@@ -536,8 +676,10 @@ function VisItProxy()
         viewerState.update(obj);
 
         /// TODO: have a robust mechanism for initialization..
-        if(hasInitialized == false && viewerState.getStates().length == lastInitializedId) {
+        if(hasInitialized == false && 
+           viewerState.getStates().length == numberOfVisItStates) {
             initializedCallback();
+            viewerState.registerCallbacks();
             hasInitialized = true;
         }
 
@@ -578,207 +720,3 @@ function VisItProxy()
     }
 */
 }
-
-
-var RPCType = {
-        CloseRPC : 0,
-        DetachRPC : 1,
-        AddWindowRPC : 2,
-        DeleteWindowRPC : 3,
-        SetWindowLayoutRPC : 4,
-        SetActiveWindowRPC : 5,
-        ClearWindowRPC : 6,
-        ClearAllWindowsRPC : 7,
-        OpenDatabaseRPC : 8,
-        CloseDatabaseRPC : 9,
-        ActivateDatabaseRPC : 10,
-        CheckForNewStatesRPC : 11,
-        CreateDatabaseCorrelationRPC : 12,
-        AlterDatabaseCorrelationRPC : 13,
-        DeleteDatabaseCorrelationRPC : 14,
-        ReOpenDatabaseRPC : 15,
-        ReplaceDatabaseRPC : 16,
-        OverlayDatabaseRPC : 17,
-        OpenComputeEngineRPC : 18,
-        CloseComputeEngineRPC : 19,
-        AnimationSetNFramesRPC : 20,
-        AnimationPlayRPC : 21,
-        AnimationReversePlayRPC : 22,
-        AnimationStopRPC : 23,
-        TimeSliderNextStateRPC : 24,
-        TimeSliderPreviousStateRPC : 25,
-        SetTimeSliderStateRPC : 26,
-        SetActiveTimeSliderRPC : 27,
-        AddPlotRPC : 28,
-        SetPlotFrameRangeRPC : 29,
-        DeletePlotKeyframeRPC : 30,
-        MovePlotKeyframeRPC : 31,
-        DeleteActivePlotsRPC : 32,
-        HideActivePlotsRPC : 33,
-        DrawPlotsRPC : 34,
-        DisableRedrawRPC : 35,
-        RedrawRPC : 36,
-        SetActivePlotsRPC : 37,
-        ChangeActivePlotsVarRPC : 38,
-        AddOperatorRPC : 39,
-        AddInitializedOperatorRPC : 40,
-        PromoteOperatorRPC : 41,
-        DemoteOperatorRPC : 42,
-        RemoveOperatorRPC : 43,
-        RemoveLastOperatorRPC : 44,
-        RemoveAllOperatorsRPC : 45,
-        SaveWindowRPC : 46,
-        SetDefaultPlotOptionsRPC : 47,
-        SetPlotOptionsRPC : 48,
-        SetDefaultOperatorOptionsRPC : 49,
-        SetOperatorOptionsRPC : 50,
-        WriteConfigFileRPC : 51,
-        ConnectToMetaDataServerRPC : 52,
-        IconifyAllWindowsRPC : 53,
-        DeIconifyAllWindowsRPC : 54,
-        ShowAllWindowsRPC : 55,
-        HideAllWindowsRPC : 56,
-        UpdateColorTableRPC : 57,
-        SetAnnotationAttributesRPC : 58,
-        SetDefaultAnnotationAttributesRPC : 59,
-        ResetAnnotationAttributesRPC : 60,
-        SetKeyframeAttributesRPC : 61,
-        SetPlotSILRestrictionRPC : 62,
-        SetViewAxisArrayRPC : 63,
-        SetViewCurveRPC : 64,
-        SetView2DRPC : 65,
-        SetView3DRPC : 66,
-        ResetPlotOptionsRPC : 67,
-        ResetOperatorOptionsRPC : 68,
-        SetAppearanceRPC : 69,
-        ProcessExpressionsRPC : 70,
-        SetLightListRPC : 71,
-        SetDefaultLightListRPC : 72,
-        ResetLightListRPC : 73,
-        SetAnimationAttributesRPC : 74,
-        SetWindowAreaRPC : 75,
-        PrintWindowRPC : 76,
-        ResetViewRPC : 77,
-        RecenterViewRPC : 78,
-        ToggleAllowPopupRPC : 79,
-        ToggleMaintainViewModeRPC : 80,
-        ToggleBoundingBoxModeRPC : 81,
-        ToggleCameraViewModeRPC : 82,
-        TogglePerspectiveViewRPC : 83,
-        ToggleSpinModeRPC : 84,
-        ToggleLockTimeRPC : 85,
-        ToggleLockToolsRPC : 86,
-        ToggleLockViewModeRPC : 87,
-        ToggleFullFrameRPC : 88,
-        UndoViewRPC : 89,
-        RedoViewRPC : 90,
-        InvertBackgroundRPC : 91,
-        ClearPickPointsRPC : 92,
-        SetWindowModeRPC : 93,
-        EnableToolRPC  : 94,
-        SetToolUpdateModeRPC : 95,
-        CopyViewToWindowRPC : 96,
-        CopyLightingToWindowRPC : 97,
-        CopyAnnotationsToWindowRPC : 98,
-        CopyPlotsToWindowRPC : 99,
-        ClearCacheRPC : 100,
-        ClearCacheForAllEnginesRPC : 101,
-        SetViewExtentsTypeRPC : 102,
-        ClearRefLinesRPC : 103,
-        SetRenderingAttributesRPC : 104,
-        QueryRPC : 105,
-        CloneWindowRPC : 106,
-        SetMaterialAttributesRPC : 107,
-        SetDefaultMaterialAttributesRPC : 108,
-        ResetMaterialAttributesRPC : 109,
-        SetPlotDatabaseStateRPC : 110,
-        DeletePlotDatabaseKeyframeRPC : 111,
-        MovePlotDatabaseKeyframeRPC : 112,
-        ClearViewKeyframesRPC : 113,
-        DeleteViewKeyframeRPC : 114,
-        MoveViewKeyframeRPC : 115,
-        SetViewKeyframeRPC : 116,
-        OpenMDServerRPC : 117,
-        EnableToolbarRPC : 118,
-        HideToolbarsRPC : 119,
-        HideToolbarsForAllWindowsRPC : 120,
-        ShowToolbarsRPC : 121,
-        ShowToolbarsForAllWindowsRPC : 122,
-        SetToolbarIconSizeRPC : 123,
-        SaveViewRPC : 124,
-        SetGlobalLineoutAttributesRPC : 125,
-        SetPickAttributesRPC : 126,
-        ExportColorTableRPC : 127,
-        ExportEntireStateRPC : 128,
-        ImportEntireStateRPC : 129,
-        ImportEntireStateWithDifferentSourcesRPC : 130,
-        ResetPickAttributesRPC : 131,
-        AddAnnotationObjectRPC : 132,
-        HideActiveAnnotationObjectsRPC : 133,
-        DeleteActiveAnnotationObjectsRPC : 134,
-        RaiseActiveAnnotationObjectsRPC : 135,
-        LowerActiveAnnotationObjectsRPC : 136,
-        SetAnnotationObjectOptionsRPC : 137,
-        SetDefaultAnnotationObjectListRPC : 138,
-        ResetAnnotationObjectListRPC : 139,
-        ResetPickLetterRPC : 140,
-        SetDefaultPickAttributesRPC : 141,
-        ChooseCenterOfRotationRPC : 142,
-        SetCenterOfRotationRPC : 143,
-        SetQueryOverTimeAttributesRPC : 144,
-        SetDefaultQueryOverTimeAttributesRPC : 145,
-        ResetQueryOverTimeAttributesRPC : 146,
-        ResetLineoutColorRPC : 147,
-        SetInteractorAttributesRPC : 148,
-        SetDefaultInteractorAttributesRPC : 149,
-        ResetInteractorAttributesRPC : 150,
-        GetProcInfoRPC : 151,
-        SendSimulationCommandRPC : 152,
-        UpdateDBPluginInfoRPC : 153,
-        ExportDBRPC : 154,
-        SetTryHarderCyclesTimesRPC : 155,
-        OpenClientRPC : 156,
-        OpenGUIClientRPC : 157,
-        OpenCLIClientRPC : 158,
-        SuppressQueryOutputRPC : 159,
-        SetQueryFloatFormatRPC : 160,
-        SetMeshManagementAttributesRPC : 161,
-        SetDefaultMeshManagementAttributesRPC : 162,
-        ResetMeshManagementAttributesRPC : 163,
-        ResizeWindowRPC : 164,
-        MoveWindowRPC : 165,
-        MoveAndResizeWindowRPC : 166,
-        SetStateLoggingRPC : 167,
-        ConstructDataBinningRPC : 168,
-        RequestMetaDataRPC : 169,
-        SetTreatAllDBsAsTimeVaryingRPC : 170,
-        SetCreateMeshQualityExpressionsRPC : 171,
-        SetCreateTimeDerivativeExpressionsRPC : 172,
-        SetCreateVectorMagnitudeExpressionsRPC : 173,
-        CopyActivePlotsRPC : 174,
-        SetPlotFollowsTimeRPC : 175,
-        TurnOffAllLocksRPC : 176,
-        SetDefaultFileOpenOptionsRPC : 177,
-        SetSuppressMessagesRPC : 178,
-        ApplyNamedSelectionRPC : 179,
-        CreateNamedSelectionRPC : 180,
-        DeleteNamedSelectionRPC : 181,
-        LoadNamedSelectionRPC : 182,
-        SaveNamedSelectionRPC : 183,
-        SetNamedSelectionAutoApplyRPC : 184,
-        UpdateNamedSelectionRPC : 185,
-        InitializeNamedSelectionVariablesRPC : 186,
-        MenuQuitRPC : 187,
-        SetPlotDescriptionRPC : 188,
-        MovePlotOrderTowardFirstRPC : 189,
-        MovePlotOrderTowardLastRPC : 190,
-        SetPlotOrderToFirstRPC : 191,
-        SetPlotOrderToLastRPC : 192,
-        RenamePickLabelRPC : 193,
-        GetQueryParametersRPC : 194,
-        DDTConnectRPC : 195,
-        DDTFocusRPC : 196,
-        ReleaseToDDTRPC : 197,
-        ExportRPC : 198,
-        MaxRPC : 199
-    }

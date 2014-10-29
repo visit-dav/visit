@@ -210,8 +210,8 @@ class STATE_API JSONNode
     bool HasKey(std::string key);
 
     // JSON parsing methods
-    void    Parse(istream &);
-    void    Parse(const std::string &);
+    size_t Parse(istream &);
+    size_t Parse(const std::string &);
 
 private:
     std::string EscapeString(const std::string &val) const;
