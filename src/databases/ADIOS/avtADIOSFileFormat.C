@@ -49,7 +49,8 @@
 #include "avtXGCFileFormat.h"
 //#include "avtPixieFileFormat.h"
 #include "avtSpecFEMFileFormat.h"
-#include <avtADIOSSchemaFileFormat.h>
+#include "avtADIOSSchemaFileFormat.h"
+#include "avtLAMMPSFileFormat.h"
 
 // ****************************************************************************
 // Method: ADIOS_CreateFileFormatInterface
@@ -77,6 +78,8 @@
 //   Dave Pugmire, Wed Apr  9 13:39:04 EDT 2014
 //   Added specFM and schema readers.
 //
+//   Dave Pugmire, Thu Oct 30 11:59:40 EDT 2014
+//   Added a LAMMPS reader. Modified the flavor flag to an enum for clarity.
 //
 // ****************************************************************************
 
@@ -84,39 +87,45 @@ avtFileFormatInterface *
 ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
+    enum Flavor {XGC, PIXIE, SPECFEM, SCHEMA, BASIC, LAMMPS, FAIL};
     
+    Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
         // Determine the type of reader that we want to use.
-        int flavor = -1;
         TRY
         {
             if (avtXGCFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtXGCFileFormat"<<endl;
-                flavor = 1;
+                flavor = XGC;
             }
             /*
             else if (avtPixieFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtPixieFileFormat"<<endl;
-                flavor = 2;
+                flavor = PIXIE;
             }
             */
             else if (avtSpecFEMFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtSpecFEMFileFormat"<<endl;
-                flavor = 3;
+                flavor = SPECFEM;
             }
             else if (avtADIOSSchemaFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtADIOSSchemaFileFormat"<<endl;
-                flavor = 4;
+                flavor = SCHEMA;
+            }
+            else if (avtLAMMPSFileFormat::Identify(list[0]))
+            {
+                debug5<<"Database is avtLAMMPSFileFormat"<<endl;
+                flavor = LAMMPS;
             }
             else if (avtADIOSBasicFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtADIOSBasicFileFormat"<<endl;
-                flavor = 0;
+                flavor = BASIC;
             }
         }
         CATCH(VisItException)
@@ -128,21 +137,24 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
         switch(flavor)
         {
 
-          case 1:
+          case XGC:
             ffi = avtXGCFileFormat::CreateInterface(list, nList, nBlock);
             break;
             /*
-          case 2:
+          case PIXIE:
             ffi = avtPixieFileFormat::CreateInterface(list, nList, nBlock);
             break;
             */
-          case 3:
+          case SPECFEM:
             ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock);
             break;
-          case 4:
+          case SCHEMA:
             ffi = avtADIOSSchemaFileFormat::CreateInterface(list, nList, nBlock);
             break;
-          case 0:
+          case LAMMPS:
+            ffi = avtLAMMPSFileFormat::CreateInterface(list, nList, nBlock);
+            break;
+          case BASIC:
             ffi = avtADIOSBasicFileFormat::CreateInterface(list, nList, nBlock);
             break;
             
