@@ -1,0 +1,334 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                            avtLAMMPSFileFormat.C                           //
+// ************************************************************************* //
+
+#include <avtMTMDFileFormatInterface.h>
+#include <avtLAMMPSFileFormat.h>
+#include <ADIOSFileObject.h>
+
+#include <vtkFloatArray.h>
+#include <vtkPolyData.h>
+#include <vtkCellArray.h>
+#include <avtDatabaseMetaData.h>
+#include <DBOptionsAttributes.h>
+#include <Expression.h>
+#include <InvalidVariableException.h>
+
+#include <string>
+using std::string;
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat::Identify
+//
+//  Purpose:
+//      Determine if this file is of this flavor.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+bool
+avtLAMMPSFileFormat::Identify(const char *fname)
+{
+    ADIOSFileObject *f = new ADIOSFileObject(fname);
+    f->Open();
+
+    std::map<std::string, ADIOS_VARINFO*>::const_iterator si;
+    int scalarCount = 0;
+    for (si = f->scalars.begin(); si != f->scalars.end(); si++)
+    {
+        if (si->first.find("boxxlo") != string::npos) scalarCount++;
+        else if (si->first.find("boxxhi") != string::npos) scalarCount++;
+        else if (si->first.find("boxylo") != string::npos) scalarCount++;
+        else if (si->first.find("boxyhi") != string::npos) scalarCount++;
+        else if (si->first.find("boxzlo") != string::npos) scalarCount++;
+        else if (si->first.find("boxzhi") != string::npos) scalarCount++;
+        else if (si->first.find("natoms") != string::npos) scalarCount++;
+    }
+    delete f;
+    
+    return (scalarCount == 7);
+}
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat::CreateInterface
+//
+//  Purpose:
+//      Create an interface for this reader.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+avtFileFormatInterface *
+avtLAMMPSFileFormat::CreateInterface(const char *const *list,
+                                  int nList,
+                                  int nBlock)
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
+        ffl[i] = new avtLAMMPSFileFormat(list[i*nBlock]);
+    
+    return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
+}
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat constructor
+//
+//  Programmer: pugmire -- generated by xml2avt
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+avtLAMMPSFileFormat::avtLAMMPSFileFormat(const char *filename)
+    : avtMTMDFileFormat(filename)
+{
+    file = new ADIOSFileObject(filename);
+}
+
+
+// ****************************************************************************
+//  Method: avtEMSTDFileFormat::GetNTimesteps
+//
+//  Purpose:
+//      Tells the rest of the code how many timesteps there are in this file.
+//
+//  Programmer: pugmire -- generated by xml2avt
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+int
+avtLAMMPSFileFormat::GetNTimesteps(void)
+{
+    return file->NumTimeSteps();
+}
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat::FreeUpResources
+//
+//  Purpose:
+//      When VisIt is done focusing on a particular timestep, it asks that
+//      timestep to free up any resources (memory, file descriptors) that
+//      it has associated with it.  This method is the mechanism for doing
+//      that.
+//
+//  Programmer: pugmire -- generated by xml2avt
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+void
+avtLAMMPSFileFormat::FreeUpResources(void)
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat::PopulateDatabaseMetaData
+//
+//  Purpose:
+//      This database meta-data object is like a table of contents for the
+//      file.  By populating it, you are telling the rest of VisIt what
+//      information it can request from you.
+//
+//  Programmer: pugmire -- generated by xml2avt
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+void
+avtLAMMPSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+{
+    file->Open();
+
+    avtMeshMetaData *mmd = new avtMeshMetaData("mesh", 1, 0,0,0,
+                                               3, 1,
+                                               AVT_POINT_MESH);
+    md->Add(mmd);
+    
+    AddScalarVarToMetaData(md, "species", "mesh", AVT_NODECENT);
+    AddScalarVarToMetaData(md, "id", "mesh", AVT_NODECENT);
+}
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat::GetMesh
+//
+//  Purpose:
+//      Gets the mesh associated with this file.  The mesh is returned as a
+//      derived type of vtkDataSet (ie vtkRectilinearGrid, vtkStructuredGrid,
+//      vtkUnstructuredGrid, etc).
+//
+//  Arguments:
+//      timestate   The index of the timestate.  If GetNTimesteps returned
+//                  'N' time steps, this is guaranteed to be between 0 and N-1.
+//      domain      The index of the domain.  If there are NDomains, this
+//                  value is guaranteed to be between 0 and NDomains-1,
+//                  regardless of block origin.
+//      meshname    The name of the mesh of interest.  This can be ignored if
+//                  there is only one mesh.
+//
+//  Programmer: pugmire -- generated by xml2avt
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtLAMMPSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
+{
+    vtkPolyData *pd  = vtkPolyData::New();
+    vtkPoints *pts = vtkPoints::New();
+
+    pd->SetPoints(pts);
+    pts->Delete();
+
+    vtkDataArray *ptData = NULL;
+    file->ReadScalarData("atoms", timestate, &ptData);
+    int nPts = ptData->GetNumberOfTuples() / 5;
+
+    pts->SetNumberOfPoints(nPts);
+    double x, y, z;
+    for (int i = 0; i < nPts; i++)
+    {
+        x = ptData->GetTuple1(i*5 + 2);
+        y = ptData->GetTuple1(i*5 + 3);
+        z = ptData->GetTuple1(i*5 + 4);
+        pts->SetPoint(i, x,y,z);
+    }
+    ptData->Delete();
+
+    vtkCellArray *verts = vtkCellArray::New();
+    pd->SetVerts(verts);
+    verts->Delete();
+    
+    for (int i = 0; i < nPts; i++)
+    {
+        verts->InsertNextCell(1);
+        verts->InsertCellPoint(i);
+    }
+
+    return pd;
+}
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat::GetVar
+//
+//  Purpose:
+//      Gets a scalar variable associated with this file.  Although VTK has
+//      support for many different types, the best bet is vtkFloatArray, since
+//      that is supported everywhere through VisIt.
+//
+//  Arguments:
+//      timestate  The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//      domain     The index of the domain.  If there are NDomains, this
+//                 value is guaranteed to be between 0 and NDomains-1,
+//                 regardless of block origin.
+//      varname    The name of the variable requested.
+//
+//  Programmer: pugmire -- generated by xml2avt
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtLAMMPSFileFormat::GetVar(int timestate, int domain, const char *varname)
+{
+    string vnm(varname);
+    
+    int offset = -1;
+    if (vnm == "id")
+        offset = 0;
+    else if (vnm == "species")
+        offset = 1;
+    else
+        EXCEPTION1(InvalidVariableException, varname);
+
+    vtkDataArray *ptData = NULL;
+    file->ReadScalarData("atoms", timestate, &ptData);
+    int nPts = ptData->GetNumberOfTuples() / 5;
+
+    vtkFloatArray *var = vtkFloatArray::New();
+    var->SetNumberOfTuples(nPts);
+    for (int i = 0; i < nPts; i++)
+        var->SetTuple1(i, ptData->GetTuple1(i*5 + offset));
+    
+    ptData->Delete();
+    
+    return var;
+}
+
+
+// ****************************************************************************
+//  Method: avtLAMMPSFileFormat::GetVectorVar
+//
+//  Purpose:
+//      Gets a vector variable associated with this file.  Although VTK has
+//      support for many different types, the best bet is vtkFloatArray, since
+//      that is supported everywhere through VisIt.
+//
+//  Arguments:
+//      timestate  The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//      domain     The index of the domain.  If there are NDomains, this
+//                 value is guaranteed to be between 0 and NDomains-1,
+//                 regardless of block origin.
+//      varname    The name of the variable requested.
+//
+//  Programmer: pugmire -- generated by xml2avt
+//  Creation:   Wed Oct 29 14:12:25 PST 2014
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtLAMMPSFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
+{
+    EXCEPTION1(InvalidVariableException, varname);
+}
