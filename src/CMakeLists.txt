@@ -1587,37 +1587,6 @@ ELSE(VISIT_PARALLEL)
     MESSAGE(STATUS "Serial version of VisIt")
 ENDIF(VISIT_PARALLEL)
 
-FUNCTION(ADD_TARGET_INCLUDE target)
-    # Setting include_directories via set_target_properties overrides
-    # the current settings, but we want to append, so first retrieve
-    # the current values, then append the desired include.
-    GET_TARGET_PROPERTY(currentInc ${target} INCLUDE_DIRECTORIES)
-    LIST(APPEND currentInc ${ARGN})
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-                          INCLUDE_DIRECTORIES "${currentInc}")
-    UNSET(currentInc)
-ENDFUNCTION(ADD_TARGET_INCLUDE)
-
-FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
-    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
-    # if there truly are current definitions, and more than 1 in the list, then
-    # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.
-    # Grab the first item in the list for comparison instead.
-    if (currentDefs)
-        LIST(GET currentDefs 0 firstItem )
-        IF(${firstItem} MATCHES NOTFOUND)
-            SET(allDefs ${newDefs})
-        ELSE(${firstItem} MATCHES NOTFOUND)
-            SET(allDefs ${currentDefs} ${newDefs})
-        ENDIF(${firstItem} MATCHES NOTFOUND)
-    else()
-        SET(allDefs ${newDefs})
-    endif()
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_DEFINITIONS "${allDefs}"
-        )
-ENDFUNCTION(ADD_TARGET_DEFINITIONS)
-
 FUNCTION(ADD_PARALLEL_EXECUTABLE target)
     ADD_EXECUTABLE(${target} ${ARGN})
 
@@ -1712,50 +1681,6 @@ FUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
     ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
 ENDFUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES)
 
-FUNCTION(ADD_PARALLEL_LIBRARY target)
-    ADD_LIBRARY(${target} ${ARGN})
-
-    IF(UNIX)
-      IF(VISIT_PARALLEL_CXXFLAGS)
-        SET(PAR_COMPILE_FLAGS "")
-        FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
-            SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        ENDFOREACH(X)
-        SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
-        )
-        IF(VISIT_PARALLEL_LINKER_FLAGS)
-            SET(PAR_LINK_FLAGS "")
-            FOREACH(X ${VISIT_PARALLEL_LINKER_FLAGS})
-                SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                LINK_FLAGS ${PAR_LINK_FLAGS}
-            )
-        ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-
-        IF(VISIT_PARALLEL_RPATH)
-            SET(PAR_RPATHS "")
-            FOREACH(X ${CMAKE_INSTALL_RPATH})
-                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            ENDFOREACH(X)
-            FOREACH(X ${VISIT_PARALLEL_RPATH})
-                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                INSTALL_RPATH ${PAR_RPATHS}
-            )
-        ENDIF(VISIT_PARALLEL_RPATH)
-      ENDIF(VISIT_PARALLEL_CXXFLAGS)
-
-    ELSE(UNIX)
-      ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
-    ENDIF(UNIX)
-    IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
-    ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
-ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 
 # Set up easy to use includes for the common directory
 SET(VISIT_COMMON_INCLUDES
@@ -1775,55 +1700,8 @@ SET(VISIT_COMMON_INCLUDES
     ${VISIT_SOURCE_DIR}/common/utility
     )
 
-# Windows-specific settings
-IF (WIN32)
-  ADD_DEFINITIONS(-D_USE_MATH_DEFINES -DNOMINMAX)
-  # we want GTE 1400
-  IF (MSVC_VERSION GREATER 1399)
-      ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
-      ADD_DEFINITIONS(-D_SCL_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE)
-      ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-  ENDIF (MSVC_VERSION GREATER 1399)
-
-  # cmake automatically uses _DEBUG and MDd for Debug flags, but our
-  # third-party libs are NOT debug versions, so we won't be able to
-  # link against them if those defines are used.  Replace those flags:
-  # When we allow users to supply their own third-party libs, then
-  # this will have to be rethought -- they may want to be able to c
-  # change them and this currently forces.
-
-  MACRO(REPLACE_FLAG OLD_FLAG NEW_FLAG FLAG_TYPE FLAG_STRING)
-      STRING(REPLACE "${OLD_FLAG}" "${NEW_FLAG}" TMP "${${FLAG_TYPE}}")
-      SET(${FLAG_TYPE} "${TMP}" CACHE STRING "${FLAG_STRING}" FORCE)
-  ENDMACRO(REPLACE_FLAG)
-
-  # Remove /_DEBUG From debug builds
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_CXX_FLAGS_DEBUG
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_C_FLAGS_DEBUG
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_EXE_LINKER_FLAGS_DEBUG
-               "Flags used by the linker during debug builds")
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_MODULE_LINKER_FLAGS_DEBUG
-               "Flags used by the linker during debug builds")
-  # Change /MDd to /MD for debug builds
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_C_FLAGS_DEBUG
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_EXE_LINKER_FLAGS_DEBUG
-               "Flags used by the linker during debug builds")
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_MODULE_LINKER_FLAGS_DEBUG
-               "Flags used by the linker during debug builds")
-
-  # Remove /machine:I386 from linker flags
-  REPLACE_FLAG("/machine:I386" "" CMAKE_EXE_LINKER_FLAGS
-               "Flags used by the linker")
-  REPLACE_FLAG("/machine:I386" "" CMAKE_MODULE_LINKER_FLAGS
-               "Flags used by the linker during creation of modules.")
-  REPLACE_FLAG("/machine:I386" "" CMAKE_SHARED_LINKER_FLAGS
-               "Flags used by the linker during creation of dll's.")
-ENDIF (WIN32)
+# macros/defines also needed by PluginVsInstall.cmake.in
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 # Mac-specific function
 FUNCTION(MAC_NIB_INSTALL exename)
@@ -2699,3 +2577,10 @@ IF (NOT WIN32)
 ELSE (NOT WIN32)
     MESSAGE(STATUS "\n\nSearch for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
 ENDIF (NOT WIN32)
+
+INSTALL(FILES ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+        PERMISSIONS OWNER_READ OWNER_WRITE
+                    GROUP_READ GROUP_WRITE
+                    WORLD_READ
+        )

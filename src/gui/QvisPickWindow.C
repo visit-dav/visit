@@ -2025,6 +2025,9 @@ QvisPickWindow::ResizeTabs()
 //   to getSaveFileName (eg don't present user with a place to save a file if 
 //   they cannot save there!)
 //
+//   Kathleen Biagas, Wed Oct 29 11:59:46 PDT 2014
+//   Add PickLetter (tab text) to output, add newlines between picks.
+//
 // ****************************************************************************
 
 void
@@ -2067,12 +2070,12 @@ QvisPickWindow::savePickText()
         if ( file.open(QIODevice::WriteOnly) )
         {
             QTextStream stream( &file );
-            int i;
-            for ( i = 0; i < resultsTabWidget->count(); i++ )
+            for ( int i = 0; i < resultsTabWidget->count(); ++i )
             {
                 QString txt( infoLists[i]->toPlainText() );
                 if ( txt.length() > 0 )
-                    stream << txt;
+                    stream << resultsTabWidget->tabText(i).simplified()
+                           << "\n" << txt << "\n";
             }
    
             file.close();

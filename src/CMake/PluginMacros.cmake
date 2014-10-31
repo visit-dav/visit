@@ -48,6 +48,10 @@
 #   Kathleen Biagas, Wed Jan 8 16:05:27 PST 2014
 #   Fix non-msvc-ide filename path. Patch provided by John Cary.
 #
+#   Kathleen Biagas, Fri Oct 31 11:18:54 PDT 2014
+#   Move VISIT_PLUGIN_TARGET_RTOD to VisItMacros.cmake, so it can be used
+#   by PluginVsInstall.cmake (since it needs no re-write).
+#
 #****************************************************************************/
 
 
@@ -107,21 +111,6 @@ ENDMACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
 MACRO(VISIT_INSTALL_PLOT_PLUGINS)
     VISIT_INSTALL_PLUGINS(plots ${ARGN})
 ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
-
-MACRO(VISIT_PLUGIN_TARGET_RTOD type) 
-    IF(WIN32)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES 
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE
-                "${VISIT_EXECUTABLE_DIR}/${type}"
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG
-                "${VISIT_EXECUTABLE_DIR}/${type}"
-            RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
-                "${VISIT_EXECUTABLE_DIR}/${type}"
-            RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL
-                "${VISIT_EXECUTABLE_DIR}/${type}"
-        )
-    ENDIF(WIN32)
-ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
 
 MACRO(VISIT_PLUGIN_TARGET_FOLDER type pname) 
     SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER "plugins/${type}/${pname}")
