@@ -76,6 +76,15 @@
 #   Kathleen Biagas, Tue Oct 29 12:24:32 MST 2013
 #   Fixed typos in Functions that prevented caused problems on Windows.
 #
+#   Kathleen Biagas, Fri Oct 31 11:22:25 PDT 2014
+#   Compare visual studio versions on windows (if using MSVC) instead of
+#   comparing compiler paths.  Enclose @CMAKE_C_COMPILER@ in quotes to 
+#   handle spaces-in-paths on windows that causes warnings for this script.
+#   Remove setting of Windows Definitions, VISIT_PLUGIN_TARGET_RTOD,
+#   ADD_TARGET_INCLUDE, ADD_TARGET_DEFINITIONS, ADD_PARALLEL_LIBRARY, as
+#   these are now available in VisItMacros.cmake, and can be used without
+#   re-write.  Include VisItMacros.cmake.
+#
 #****************************************************************************/
 
 ##
@@ -88,19 +97,22 @@
 SET(BUILD_SHARED_LIBS 1)
 
 # Warn if compilers might be incompatible.
-IF(EXISTS @CMAKE_C_COMPILER@ AND
-   NOT ${CMAKE_C_COMPILER} STREQUAL @CMAKE_C_COMPILER@)
-  MESSAGE(WARNING "C compiler used for VisIt differs from the one used for
-                   the current project!  They may incompatible.")
-ENDIF(EXISTS @CMAKE_C_COMPILER@ AND
-      NOT ${CMAKE_C_COMPILER} STREQUAL @CMAKE_C_COMPILER@)
-
-IF(EXISTS @CMAKE_CXX_COMPILER@ AND
-   NOT ${CMAKE_CXX_COMPILER} STREQUAL @CMAKE_CXX_COMPILER@)
-  MESSAGE(WARNING "C++ compiler used for VisIt differs from the one used for
-                   the current project!  They may incompatible.")
-ENDIF(EXISTS @CMAKE_CXX_COMPILER@ AND
-      NOT ${CMAKE_CXX_COMPILER} STREQUAL @CMAKE_CXX_COMPILER@)
+IF(WIN32 AND MSVC)
+    IF(@MSVC_VERSION@ NOT STREQUAL ${MSVC_VERSION})
+      MESSAGE(WARNING "MSVC version used for VisIt (@MSVC_VERSION@) differs from the one used for the current project ${MSVC_VERSION}!  They may incompatible.")
+    ENDIF()
+ELSE()
+    IF(EXISTS "@CMAKE_C_COMPILER@" AND
+       NOT ${CMAKE_C_COMPILER} STREQUAL "@CMAKE_C_COMPILER@")
+      MESSAGE(WARNING "C compiler used for VisIt differs from the one used for
+                       the current project!  They may incompatible.")
+    ENDIF()
+    IF(EXISTS "@CMAKE_CXX_COMPILER@" AND
+       NOT ${CMAKE_CXX_COMPILER} STREQUAL "@CMAKE_CXX_COMPILER@")
+      MESSAGE(WARNING "C++ compiler used for VisIt differs from the one used for
+                       the current project!  They may incompatible.")
+    ENDIF()
+ENDIF()
 
 
 # The comment below is intended to capture version information
@@ -160,6 +172,10 @@ SET(OPENGL_glu_LIBRARY  @OPENGL_glu_LIBRARY@)
 
 # Set up the tessellation library
 SET(TESSELLATION_LIBRARY @TESSELLATION_LIBRARY@)
+
+# EAVL
+SET(EAVL_INCLUDE_DIR @EAVL_INCLUDE_DIR@)
+SET(EAVL_LIBRARY_DIR @EAVL_LIBRARY_DIR@)
 
 # Set up BOOST
 SET(BOOST_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/bilib/boost_1_42_0)
@@ -300,44 +316,7 @@ IF(VISIT_TUVOK)
     SET(TUVOK_LIB         tuvok)
 ENDIF(VISIT_TUVOK)
 
-# Windows specific defines
-IF(WIN32)
-  ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
-  ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
-  ADD_DEFINITIONS(-D_SCL_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE)
-  ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-
-  # cmake automatically uses _DEBUG and MDd for Debug flags, but our
-  # third-party libs are NOT debug versions, so we won't be able to
-  # link against them if those defines are used.  Replace those flags:
-  # When we allow users to supply their own third-party libs, then
-  # this will have to be rethought -- they may want to be able to c
-  # change them and this currently forces.
-
-  MACRO(REPLACE_FLAG OLD_FLAG NEW_FLAG FLAG_TYPE FLAG_STRING)
-      STRING(REPLACE "${OLD_FLAG}" "${NEW_FLAG}" TMP "${${FLAG_TYPE}}")
-      SET(${FLAG_TYPE} "${TMP}" CACHE STRING "${FLAG_STRING}" FORCE)
-  ENDMACRO(REPLACE_FLAG)
-
-  # Remove /_DEBUG From debug builds
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_CXX_FLAGS_DEBUG 
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_C_FLAGS_DEBUG 
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_EXE_LINKER_FLAGS_DEBUG 
-               "Flags used by the linker during debug builds")
-  REPLACE_FLAG("/D_DEBUG" "" CMAKE_MODULE_LINKER_FLAGS_DEBUG 
-               "Flags used by the linker during debug builds")
-  # Change /MDd to /MD for debug builds
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG 
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_C_FLAGS_DEBUG 
-               "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_EXE_LINKER_FLAGS_DEBUG 
-               "Flags used by the linker during debug builds")
-  REPLACE_FLAG("/MDd" "/MD" CMAKE_MODULE_LINKER_FLAGS_DEBUG 
-               "Flags used by the linker during debug builds")
-ENDIF(WIN32)
+INCLUDE(${VISIT_INCLUDE_DIR}/VisItMacros.cmake)
 
 # Installation macros
 MACRO(VISIT_INSTALL_DATABASE_PLUGINS)
@@ -367,10 +346,6 @@ MACRO(VISIT_INSTALL_PLOT_PLUGINS)
     ENDFOREACH(target)
 ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
 
-MACRO(VISIT_PLUGIN_TARGET_RTOD type) 
-    MESSAGE(STATUS "Skipping VISIT_PLUGIN_TARGET_RTOD macro")
-ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
-
 MACRO(VISIT_PLUGIN_TARGET_FOLDER type pname)
     MESSAGE(STATUS "Skipping VISIT_PLUGIN_TARGET_FOLDER macro")
 ENDMACRO(VISIT_PLUGIN_TARGET_FOLDER)
@@ -385,81 +360,8 @@ ELSE(UNIX)
 ENDIF(UNIX)
 SET(VISIT_PARALLEL_INCLUDE      "@filtered_VISIT_PARALLEL_INCLUDE@")
 SET(VISIT_PARALLEL_DEFS         @filtered_VISIT_PARALLEL_DEFS@)
+SET(VISIT_NOLINK_MPI_WITH_LIBRARIES @VISIT_NOLINK_MPI_WITH_LIBRARIES@)
 
 
-FUNCTION(ADD_TARGET_INCLUDE target inc)
-    # Setting include_directories via set_target_properties overrides
-    # the current settings, but we want to append, so first retrieve
-    # the current values, then append the desired include.
-    GET_TARGET_PROPERTY(currentInc ${target} INCLUDE_DIRECTORIES)
-    LIST(APPEND currentInc ${inc})
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-                          INCLUDE_DIRECTORIES "${currentInc}")
-    UNSET(currentInc)
-ENDFUNCTION(ADD_TARGET_INCLUDE)
-
-FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
-    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
-    # if there truly are current definitions, and more than 1 in the list, then
-    # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.  
-    # Grab the first item in the list for comparison instead.
-    if (currentDefs)
-        LIST(GET currentDefs 0 firstItem )
-        IF(${firstItem} MATCHES NOTFOUND)
-            SET(allDefs ${newDefs})
-        ELSE(${firstItem} MATCHES NOTFOUND)
-            SET(allDefs ${currentDefs} ${newDefs})
-        ENDIF(${firstItem} MATCHES NOTFOUND)
-    endif()
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-        COMPILE_DEFINITIONS "${allDefs}"
-    )
-ENDFUNCTION(ADD_TARGET_DEFINITIONS)
-
-
-FUNCTION(ADD_PARALLEL_LIBRARY target)
-    ADD_LIBRARY(${target} ${ARGN})
-    IF(UNIX)
-      IF(VISIT_PARALLEL_CXXFLAGS)
-        SET(PAR_COMPILE_FLAGS "")
-        FOREACH(X ${VISIT_PARALLEL_CXXFLAGS})
-            SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        ENDFOREACH(X)
-        SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
-        )
-        IF(VISIT_PARALLEL_LINKER_FLAGS)
-            SET(PAR_LINK_FLAGS "")
-            FOREACH(X ${VISIT_PARALLEL_LINKER_FLAGS})
-                SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                LINK_FLAGS ${PAR_LINK_FLAGS}
-            )
-        ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-      ENDIF(VISIT_PARALLEL_CXXFLAGS)
-      TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
-    ELSE(UNIX)
-      ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
-      TARGET_LINK_LIBRARIES(${target} "${VISIT_PARALLEL_LIBS}")
-    ENDIF(UNIX)
-ENDFUNCTION(ADD_PARALLEL_LIBRARY)
-
-
-MACRO(VISIT_PLUGIN_TARGET_RTOD type) 
-    IF(WIN32)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES 
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE
-                "${VISIT_PLUGIN_DIR}/${type}"
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG
-                "${VISIT_PLUGIN_DIR}/${type}"
-            RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
-                "${VISIT_PLUGIN_DIR}/${type}"
-            RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL
-                "${VISIT_PLUGIN_DIR}/${type}"
-        )
-    ENDIF(WIN32)
-ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
 
 

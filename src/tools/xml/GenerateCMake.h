@@ -153,6 +153,10 @@
 //    Eric Brugger, Wed May 21 14:48:11 PDT 2014
 //    I added support for EAVL.
 //
+//    Kathleen Biagas, Thu Oct 30 16:37:37 MST 2014
+//    Added status message for plugins-against-a-public install on Windows,
+//    to inform user the location of the plugin once complete.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -737,6 +741,13 @@ class CMakeGeneratorPlugin : public Plugin
           out << "VISIT_PLUGIN_TARGET_FOLDER(plots " << name  
               << " ${INSTALLTARGETS})" << endl;
         out << endl;
+#ifdef _WIN32
+        if (!using_dev)
+        {
+          out << "MESSAGE(STATUS \"Plugin will be installed to: ${VISIT_PLUGIN_DIR}\")" << endl;
+          
+        }
+#endif
     }
 
     void WriteCMake_Operator(QTextStream &out, 
