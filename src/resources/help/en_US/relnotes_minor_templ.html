@@ -28,8 +28,8 @@
       var prevVersion = String.fromCharCode(preMajDigitCode) + "." + String.fromCharCode(preMinDigitCode);
       if (prePatDigitCode > zeroDigitCode)
            prevVersion = prevVersion + "." + String.fromCharCode(prePatDigitCode);
+      document.write('<title>VisIt ' + visitVersion + ' Release Notes</title>');
   </script>
-  <title>VisIt <script>document.write(visitVersion);</script> Release Notes</title>
 </head>
 <body>
 
@@ -37,7 +37,7 @@
 Instructions for starting a new Release Notes file.
 
     1. Copy this file to a new release notes file with the name "relnotesA.B.C.html" or
-       The script logic in the above header will glean the version
+       "relnotesA.B.html". The script logic in the above header will glean the version
        number from the filename and then re-use the 'visitVersion' variable everywhere
        in this file.
 
