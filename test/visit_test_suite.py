@@ -461,6 +461,9 @@ def finalize_options(opts):
 #    Eric Brugger, Fri Aug 15 10:04:27 PDT 2014
 #    I added the ability to specify the parallel launch method.
 #
+#    Kathleen Biagas, Wed Nov 5 14:32:21 PST 2014 
+#    On windows, glob any '*.py' tests names.
+#
 # ----------------------------------------------------------------------------
 def parse_args():
     """
@@ -647,6 +650,17 @@ def parse_args():
     opts, tests = parser.parse_args()
     # note: we want a dict b/c the values could be passed without using optparse
     opts = vars(opts)
+    if sys.platform.startswith("win"):
+        # use glob to match any *.py
+        expandedtests = []
+        for t in tests:
+           if not '*' in t:
+              expandedtests.append(t)
+           else:
+              for match in glob.iglob(t):
+                 expandedtests.append(match)
+        if len(expandedtests) > 0:
+            tests = expandedtests
     return opts, tests
 
 # ----------------------------------------------------------------------------
