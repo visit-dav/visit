@@ -498,6 +498,8 @@ ADIOSFileObject::ReadScalarData(const std::string &nm, int ts, int block, vtkDat
     
     ADIOS_SELECTION *s = CreateSelection(it->second, block);
     ReadScalarData(nm, ts, s, arr);
+    delete [] s->u.bb.start;
+    delete [] s->u.bb.count;
     adios_selection_delete(s);
     return true;
 }
@@ -538,7 +540,11 @@ ADIOSFileObject::ReadScalarData(const std::string &nm, int ts, ADIOS_SELECTION *
     bool val = ReadScalarData(avi, ts, s, arr);
     
     if (sel == NULL)
+    {
+        delete [] s->u.bb.start;
+        delete [] s->u.bb.count;
         adios_selection_delete(s);
+    }
     return val;
 }
 
@@ -737,7 +743,9 @@ ADIOSFileObject::CreateSelection(ADIOS_VARINFO *avi, int block)
     if (block > avi->sum_nblocks)
         EXCEPTION1(ImproperUseException, "Block index out of range.");
     
-    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
+    uint64_t *start = new uint64_t[4], *count = new uint64_t[4];
+    for (int i = 0; i < 4; i++)
+        start[i] = count[i] = 0;
     if (block < 0)
     {
         for (int i = 0; i < avi->ndim; i++)
