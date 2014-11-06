@@ -137,15 +137,15 @@ avtRAGEFileFormat::Initialize()
     for (int i = 0; i < numDS; i++)
     {
         int32 vi = SDselect(hdfFile, i);
-        char dsName[MAX_VAR_DIMS];
-        int32 rank, dataType, numAttrs, dimSizes[MAX_VAR_DIMS];
+        char dsName[H4_MAX_VAR_DIMS];
+        int32 rank, dataType, numAttrs, dimSizes[H4_MAX_VAR_DIMS];
         if (SDgetinfo(vi, dsName, &rank, dimSizes, &dataType, &numAttrs) == FAIL)
             EXCEPTION1(InvalidFilesException, GetFilename());
         
         if (rank == 1)
         {
-            int sz, n, attrType;
-            char nm[MAX_VAR_DIMS], attr[1024];
+            int32 n, attrType;
+            char nm[H4_MAX_VAR_DIMS], attr[1024];
             
             //Get the dimension attributes.
             for (int a = 0; a < numAttrs; a++)
