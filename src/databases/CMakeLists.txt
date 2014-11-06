@@ -176,6 +176,9 @@
 #    Kathleen Biagas, Tue Aug 19 23:02:45 PDT 2014
 #    Removed PLOT2D, as the PLOT3D reader can read 2D data.
 #
+#    Dave Pugmire, Thu Nov  6 11:42:22 EST 2014
+#    Removed TCGA from Windows builds.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -370,7 +373,6 @@ STL
 Shapefile
 ${SIMV2_PLUGIN}
 Spheral
-TCGA
 TFT
 TSurf
 Tecplot
@@ -415,6 +417,7 @@ IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
         Claw
         STAR
+	TCGA
         Vis5D
         ZipWrapper
     )
@@ -429,7 +432,7 @@ IF (NOT WIN32)
         VLI
     )
 ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI" "not currently buildable on Windows")
+    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "Claw;STAR;TCGA;Vis5D;ZipWrapper;Hex;MRTest;PICS_Tester;Rect;VLI" "not currently buildable on Windows")
 ENDIF (NOT WIN32)
 
 
