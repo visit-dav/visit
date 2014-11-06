@@ -264,7 +264,6 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename)
     //position_only (default)
     query->getInputPort("position_only")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
 
-    VisusInfo()<<"querying the bounds...";
     bounds[0] = dataset->logic_box.to.x-dataset->logic_box.from.x+1;
     bounds[1] = dataset->logic_box.to.y-dataset->logic_box.from.y+1;
     bounds[2] = dataset->logic_box.to.z-dataset->logic_box.from.z+1;
@@ -277,20 +276,12 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename)
     fullextents[4] = extents[4] = physic_box.p1.z;
     fullextents[5] = extents[5] = physic_box.p2.z;
     
-    NdPoint dims(bounds[0],bounds[1],bounds[2],1,1);
-    NdBox   exts(NdPoint(extents[0],extents[2],extents[4]),NdPoint(extents[1],extents[3],extents[5]));
-    VisusInfo()<<"bounds:  "<<dims.toString();
-    VisusInfo()<<"extents: "<<exts.toString();
-
-    VisusInfo()<<"attaching a dummy node (to force processing, otherwise no output is produced)";
     DummyNode *dummy=new DummyNode;
     this->dataflow->addNode(dummy);
     this->dataflow->connectNodes(query,"data","data",dummy);
 
     //must dispatch once to propagate dataflow_dataset->query connection
     this->dataflow->dispatchPublishedMessages();
-
-    VisusInfo()<<"end of constructor!";
 }
 
 
@@ -345,11 +336,8 @@ void avtIDXFileFormat::onDataflowInput(DataflowNode *dnode)
 int
 avtIDXFileFormat::GetNTimesteps(void)
 {
-    //VisusInfo()<<"avtIDXFileFormat::GetNTimesteps...";
     int NTimesteps = dataset->time_range.delta()/dataset->time_range.step;
-    //VisusInfo()<<"range: "<<dataset->time_range.delta()<<",step: "<<dataset->time_range.step;
-    //VisusInfo()<<"\tnum_timesteps="<<NTimesteps;
-    return std::max(1,NTimesteps); //<ctc> needs to return at least 1!!
+    return std::max(1,NTimesteps); // Needs to return at least 1!!
 }
 
 
@@ -375,85 +363,9 @@ avtIDXFileFormat::FreeUpResources(void)
 }
 
 
-///////////////////////////////////////////////////////////
-Frustum* calcFrustum(double tileXmin, double tileXmax,
-                     double tileYmin, double tileYmax,int dim)
-{
-    VisusInfo()<<"Calculating local frustum based on world frustum of <L,R,B,T>=<"<<tileXmin<<","<<tileXmax<<","<<tileYmin<<","<<tileYmax<<">";
-
-    UniquePtr<Frustum> frustum(new Frustum);
-    if (dim==2)
-    {
-        GLOrthoCamera camera;
-        const int *sz=avtCallback::GetCurrentWindowAtts().GetSize();    
-        camera.setViewport(Viewport(0,0,sz[0],sz[1]));
-        GLOrthoParams params(tileXmin,tileXmax,tileYmin,tileYmax,-10,10);
-        camera.setOrthoParams(params);
-        frustum.reset(new Frustum(camera.getFrustum()));
-
-        const GLOrthoParams& orthoParams(camera.getOrthoParams());
-        VisusInfo()<<"local (ortho) frustum is <L,R,B,T>=<"<<orthoParams.left<<","<<orthoParams.right<<","<<orthoParams.bottom<<","<<orthoParams.top<<">";
-    }
-    else if (dim==3)
-    {
-        //<ctc> todo: handle 3d
-    }
-
-#if 0
-    //get window attributes, then use avtViewInfo because it's a more direct mapping
-    const View3DAttributes &atts3d=avtCallback::GetCurrentWindowAtts().GetView3D();
-    //<fixme> avtView3D v3d;  v3d.SetFromView3DAttributes(&atts3d);
-    //<fixme> avtViewInfo vi; v3d.SetViewInfoFromView(vi);
-    //ViewInfo vi; vi.SetFromView3D(atts3d);
-
-    double scale[3] = {1,1,1};
-    const int *sz=avtCallback::GetCurrentWindowAtts().GetSize();    
-    float aspect=(float)sz[0]/(float)sz[1];
-    vtkMatrix4x4 *transform = vtkMatrix4x4::New();
-    //<fixme> avtWorldSpaceToImageSpaceTransform::CalculateTransform(vi, transform, scale, aspect);
-
-    frustum->setViewport(Viewport(0,0,sz[0],sz[1]));
-    frustum->loadProjection(Matrix((double*)(&transform->Element[0])));
-    frustum->loadModelview(Matrix::identity());
-
-#if 0 //<fixme>
-    Point3d pan(vi.imagePan[0]*sz[0],vi.imagePan[1]*sz[1],0);
-    Point3d pos(vi.camera[0],vi.camera[2],vi.camera[2]);
-    Point3d la(vi.focus[0],vi.focus[1],vi.focus[2]);
-    Point3d vup(vi.viewUp[0],vi.viewUp[1],vi.viewUp[2]);
-#if 0
-    frustum->loadModelview(Matrix::lookAt(pos,la,vup));
-    frustum->loadProjection(Matrix::perspective(vi.viewAngle,aspect,vi.nearPlane,vi.farPlane));
-#endif
- 
-    VisusInfo()<<"viewport:   "<<frustum->getViewport().toString();
-    VisusInfo()<<"modelview:  "<<frustum->getModelview().toString();
-    VisusInfo()<<"projection: "<<frustum->getProjection().toString();
-
-    VisusInfo()<<"created from...";
-    VisusInfo()<<"\tcamera.pos: "<<pos;
-    VisusInfo()<<"\tcamera.la:  "<<la;
-    VisusInfo()<<"\tcamera.vup: "<<vup;
-    VisusInfo()<<"\tpan*window: "<<pan;
-    VisusInfo()<<"\tcamera.fov  "<<vi.viewAngle;
-    VisusInfo()<<"\taspect      "<<aspect;
-    VisusInfo()<<"\tcamera.pan: "<<vi.imagePan[0]<<","<<vi.imagePan[1];
-    VisusInfo()<<"\tcamera.zoom:"<<vi.imageZoom;
-    VisusInfo()<<"\twindow.w:   "<<sz[0];
-    VisusInfo()<<"\twindow.h:   "<<sz[1];
-    VisusInfo()<<"\tnearPlane:  "<<vi.nearPlane;
-    VisusInfo()<<"\tfarPlane:   "<<vi.farPlane;
-#endif
-#endif
-    
-    return frustum.release();
-}
-
 bool avtIDXFileFormat::CanCacheVariable(const char *var)
 {
-    //VisusInfo()<<"avtIDXFileFormat::CanCacheVariable("<<var<<")";
     return false;
-    //return std::string(var)!="CC_Mesh";
 }
 
 // ****************************************************************************
@@ -473,8 +385,6 @@ void
 avtIDXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timestate) 
 {
-    VisusInfo()<<"avtIDXFileFormat::PopulateDatabaseMetaData(timestate("<<timestate<<"))";
-
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "Mesh";
     mesh->meshType = AVT_RECTILINEAR_MESH;
@@ -484,20 +394,7 @@ avtIDXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     mesh->spatialDimension = dim;     
     mesh->topologicalDimension = dim;
 
-    {
-        NdPoint dims(bounds[0],bounds[1],bounds[2],1,1);
-        //NdBox   exts(NdPoint(extents[0],extents[2],extents[4]),NdPoint(extents[1],extents[3],extents[5]));
-        NdBox   exts(NdPoint(fullextents[0],fullextents[2],fullextents[4]),NdPoint(fullextents[1],fullextents[3],fullextents[5]));
-        VisusInfo()<<"PopulateDatabaseMetaData: bounds:  "<<dims.toString();
-        VisusInfo()<<"PopulateDatabaseMetaData: extents: "<<exts.toString();
-    }
-
-    //<ctc> maybe these are tripping things up for panning...
-    // mesh->SetBounds(bounds);
-    // mesh->hasLogicalBounds = true;
-
-    mesh->SetExtents(fullextents);  //mrtest always sets full extents, so let's try it...
-    //mesh->SetExtents(extents);
+    mesh->SetExtents(fullextents);
     mesh->hasSpatialExtents = true;
 
     md->Add(mesh);
@@ -551,19 +448,10 @@ avtIDXFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
     NdBox slice_box = dataset->logic_box;
 
-    //resolution=avtCallback::idx_get_resolution_hack();
-    //cerr<<"resolution is at "<<resolution<<endl;
-
-    VisusInfo() << "avtIDXFileFormat::GetMesh(timestate("<<timestate<<") domain("<<domain<<") meshname("<<meshname<<") resolution("<<resolution<<"))";
-
     //
     // Determine the mesh starting location and size of each cell.
     //
-    // double tileXmin, tileXmax, tileYmin, tileYmax;
-    // int nx, ny;
-
-    CalculateMesh(timestate);//tileXmin, tileXmax, tileYmin, tileYmax,timestate);
-
+    CalculateMesh(timestate);
 
     //
     // Create the grid.
@@ -577,49 +465,35 @@ avtIDXFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     vtkFloatArray *coordsY;
     vtkFloatArray *coordsZ;
     
-    dims[0] = bounds[0]+1; //visit is so weird... if I have a x by y array, it wants me to say it's x+1 by y+1 :P
-    dims[1] = bounds[1]+1;
-    dims[2] = bounds[2]+1;
+    dims[0] = bounds[0] + 1;
+    dims[1] = bounds[1] + 1;
+    dims[2] = bounds[2] + 1;
 
-    {
-        NdPoint dims(bounds[0],bounds[1],bounds[2],1,1);
-        NdBox   exts(NdPoint(extents[0],extents[2],extents[4]),NdPoint(extents[1],extents[3],extents[5]));
-        VisusInfo()<<"GetMesh: bounds:  "<<dims.toString();
-        VisusInfo()<<"GetMesh: extents: "<<exts.toString();
-    }
-
-    // Point3d spacing((fullextents[1]-fullextents[0]+1)/bounds[0],(fullextents[3]-fullextents[2]+1)/bounds[1],(fullextents[5]-fullextents[4]+1)/bounds[2]);
-    // if (resolution==1) //see note in publish above
-    Point3d spacing((extents[1]-extents[0]+1)/bounds[0],(extents[3]-extents[2]+1)/bounds[1],(extents[5]-extents[4]+1)/bounds[2]);
+    Point3d spacing((extents[1] - extents[0] + 1) / bounds[0],
+                    (extents[3] - extents[2] + 1) / bounds[1],
+                    (extents[5] - extents[4] + 1) / bounds[2]);
 
     rgrid->SetDimensions(dims[0], dims[1], dims[2]);
-    VisusInfo()<<"avtIDXFileFormat::GetMesh() returning <"<<dims[0]<<"x"<<dims[1]<<"x"<<dims[2]<<"> mesh";//for resolution "<<resolution<<" (resReduction="<<resReduction<<")";
 
     coordsX = vtkFloatArray::New();
     coordsX->SetNumberOfTuples(dims[0]);
     arrayX = (float *) coordsX->GetVoidPointer(0);
     for (int i = 0; i < dims[0]; i++)
-        //arrayX[i] = i * resReduction;
-        arrayX[i] = extents[0]+i*spacing.x;
-    //arrayX[dims[0]-1] = slice_box.to[0] + 1.; //<ctc> maybe still need something like this
+        arrayX[i] = extents[0] + i * spacing.x;
     rgrid->SetXCoordinates(coordsX);
 
     coordsY = vtkFloatArray::New();
     coordsY->SetNumberOfTuples(dims[1]);
     arrayY = (float *) coordsY->GetVoidPointer(0);
     for (int i = 0; i < dims[1]; i++)
-        //arrayY[i] = i * resReduction;
-        arrayY[i] = extents[2]+i*spacing.y;
-    //arrayY[dims[1]-1] = slice_box.to[1] + 1.; //<ctc> maybe still need something like this
+        arrayY[i] = extents[2] + i * spacing.y;
     rgrid->SetYCoordinates(coordsY);
 
     coordsZ = vtkFloatArray::New();
     coordsZ->SetNumberOfTuples(dims[2]);
     arrayZ = (float *) coordsZ->GetVoidPointer(0);
     for (int i = 0; i < dims[2]; i++)
-        //arrayZ[i] = slice_box.from[2] + i * resReduction;
-        arrayZ[i] = extents[4]+i*spacing.z;
-    //arrayZ[dims[2]-1] = slice_box.to[2] + 1.; //<ctc> maybe still need something like this
+        arrayZ[i] = extents[4] + i * spacing.z;
     rgrid->SetZCoordinates(coordsZ);
 
     return rgrid;
@@ -650,17 +524,10 @@ avtIDXFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 vtkDataArray *
 avtIDXFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    //resolution=avtCallback::idx_get_resolution_hack();
-    //VisusInfo()<<"resolution is at "<<resolution<<endl;
-    VisusInfo() << "avtIDXFileFormat::GetVar(timestate("<<timestate<<") domain("<<domain<<") varname("<<varname<<") resolution("<<resolution<<"))";
-
     //
     // Determine the mesh starting location and size of each cell.
     //
-    // double tileXmin, tileXmax, tileYmin, tileYmax;
-    // int nx, ny;
-
-    CalculateMesh(timestate);//tileXmin, tileXmax, tileYmin, tileYmax, timestate);
+    CalculateMesh(timestate);
 
     string name(varname);
     NdBox slice_box = dataset->logic_box;
@@ -685,7 +552,7 @@ avtIDXFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (!haveData)
     {
       VisusInfo()<<msec<<"ms passed without getting any data. Returning NULL";
-      return NULL;//vtkUnsignedShortArray *rv = vtkUnsignedShortArray::New();
+      return NULL;
     }
 
     VisusInfo()<<msec<<"ms to fetch data, now send it to VisIt.";
@@ -803,15 +670,10 @@ avtIDXFileFormat::GetVar(int timestate, int domain, const char *varname)
 vtkDataArray *
 avtIDXFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
-    VisusInfo()<<"avtIDXFileFormat::GetVectorVar(timestate("<<timestate<<") domain("<<domain<<") varname("<<varname<<"))";
-
     //
     // Determine the mesh starting location and size of each cell.
     //
-    // double tileXmin, tileXmax, tileYmin, tileYmax;
-    // int nx, ny;
-
-    CalculateMesh(timestate);//tileXmin, tileXmax, tileYmin, tileYmax, timestate);
+    CalculateMesh(timestate);
 
     string name(varname);
     NdBox slice_box = dataset->logic_box;
@@ -836,7 +698,7 @@ avtIDXFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     if (!haveData)
     {
       VisusInfo()<<msec<<"ms passed without getting any data. Returning NULL";
-      return NULL;//vtkUnsignedShortArray *rv = vtkUnsignedShortArray::New();
+      return NULL;
     }
 
     VisusInfo()<<msec<<"ms to fetch data, now send it to VisIt.";
@@ -947,26 +809,20 @@ void
 avtIDXFileFormat::RegisterDataSelections(
     const std::vector<avtDataSelection_p>& sels, std::vector<bool>* applied)
 {
-    VisusInfo()<<"avtIDXFileFormat::RegisterDataSelections";
     this->selectionsList    = sels;
     this->selectionsApplied = applied;
 }
 
 
 // ****************************************************************************
-//  Method: avtMRTestFileFormat::CalculateMesh
+//  Method: avtIDXFileFormat::CalculateMesh
 //
 //  Purpose:
 //    Calculates the parameters defining the mesh for the current multi
 //    resolution data selection.
 //
 //  Arguments:
-//    tileXmin  The tile aligned minimum X value of the mesh.
-//    tileXmax  The tile aligned maximum X value of the mesh.
-//    tileYmin  The tile aligned minimum Y value of the mesh.
-//    tileYmax  The tile aligned maximum Y value of the mesh.
-//    nx        The number of zones in the X direction.
-//    ny        The number of zones in the Y direction.
+//    timestate The time state.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Dec 20 12:20:07 PDT 2013
@@ -976,56 +832,36 @@ avtIDXFileFormat::RegisterDataSelections(
 // ****************************************************************************
 
 void
-avtIDXFileFormat::CalculateMesh(/*double &tileXmin, double &tileXmax,
-                                  double &tileYmin, double &tileYmax, */
-                                int timestate)
+avtIDXFileFormat::CalculateMesh(int timestate)
 {
-    VisusInfo()<<"avtIDXFileFormat::CalculateMesh(timestep="<<timestate<<")";
     //
-    // Get the multi resolution data selection.
+    // Get the multi resolution data selection. Set default values for the
+    // transform matrix and cell area in case there isn't a multi resolution
+    // data selection.
     //
-    double transformMatrix[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
-    double viewArea = (fullextents[1]-fullextents[0]) * (fullextents[3]-fullextents[2]);
-    double desired_extents[6] = {this->fullextents[0],this->fullextents[1],this->fullextents[2],this->fullextents[3],this->fullextents[4],this->fullextents[5]};
-    double cellArea = .002;
-
-    double viewport[6] = {this->fullextents[0],this->fullextents[1],this->fullextents[2],this->fullextents[3],this->fullextents[4],this->fullextents[5]};
-    int windowSize[2] = {0,0};
+    double transformMatrix[16] = {DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                  DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX};
+    double cellArea = 0.002;
+    int windowSize[2] = {1024, 1024};
 
     avtMultiresSelection *selection = NULL;
     for (int i = 0; i < selectionsList.size(); i++)
     {
-        VisusInfo()<<"avtIDXFileFormat: selection type: "<<selectionsList[i]->GetType();
         if (string(selectionsList[i]->GetType()) == "Multi Resolution Data Selection")
         {
             selection = (avtMultiresSelection *) *(selectionsList[i]);
 
             selection->GetCompositeProjectionTransformMatrix(transformMatrix);
             cellArea = selection->GetDesiredCellArea();
-
-            viewArea = selection->GetViewArea();
-            selection->GetDesiredExtents(desired_extents);
-            selection->GetViewport(viewport);
             selection->GetSize(windowSize);
-
-            VisusInfo()<<"\n\tcellArea: "<<cellArea
-                       <<"\n\tviewArea: "<<viewArea
-                       <<"\n\twindowSize: "<<windowSize[0]<<","<<windowSize[1]
-                       <<"\n\tviewport: "<<viewport[0]<<","<<viewport[1]<<","<<viewport[2]<<","<<viewport[3]<<","<<viewport[4]<<","<<viewport[5]
-                       <<"\n\tdesired_extents: "<<desired_extents[0]<<","<<desired_extents[1]<<","<<desired_extents[2]<<","<<desired_extents[3]<<","<<desired_extents[4]<<","<<desired_extents[5]
-                       <<"\n\tMVP matrix\n\t\t: "<<transformMatrix[0]<<","<<transformMatrix[1]<<","<<transformMatrix[2]<<","<<transformMatrix[3]<<"\n\t\t"<<transformMatrix[4]<<","<<transformMatrix[5]<<","<<transformMatrix[6]<<","<<transformMatrix[7]<<"\n\t\t"<<transformMatrix[8]<<","<<transformMatrix[9]<<","<<transformMatrix[10]<<transformMatrix[11]<<"\n\t\t"<<transformMatrix[12]<<","<<transformMatrix[13]<<","<<transformMatrix[14]<<","<<transformMatrix[15]
-                       <<"\n";
 
             (*selectionsApplied)[i] = true;
         }
         else if (string(selectionsList[i]->GetType()) == "avtResolutionSelection")
         {
             const avtResolutionSelection* sel = static_cast<const avtResolutionSelection*>(*selectionsList[i]);
-            VisusInfo()<<"\tnew resolution: "<<sel->resolution()<<", (old resolution: "<<resolution<<")\n";
-            if (resolution!=sel->resolution())
-            {
-                ;//ClearCache();
-            }
             resolution = sel->resolution();
 
             (*selectionsApplied)[i] = true;
@@ -1034,62 +870,71 @@ avtIDXFileFormat::CalculateMesh(/*double &tileXmin, double &tileXmax,
         {
             ;//ignore
         }
-        else
-        {
-            VisusInfo()<<"avtIDXFileFormat: unhandled selection "<<selectionsList[i]->GetType()<<"!\n";
-        }
     }
 
-    //if no valid transformation matrix set extents and dims to full dataset
+    //
+    // Set the time.
+    //
+    query->getInputPort("time")->writeValue(SharedPtr<IntObject>(new IntObject(timestate)));
+
+    //
+    // If there isn't a selection then read at a resolution of 20.
+    //
     if (transformMatrix[0] == DBL_MAX && transformMatrix[1] == DBL_MAX &&
         transformMatrix[2] == DBL_MAX && transformMatrix[3] == DBL_MAX)
     {
-        NdPoint dims(bounds[0],bounds[1],bounds[2],1,1);
-        double xDelta = (extents[1]-extents[0])/(float)dims.x;
-        double yDelta = (extents[3]-extents[2])/(float)dims.y;
-        double zDelta = (extents[5]-extents[4])/(float)dims.z;
-        cellArea = sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
-        VisusInfo()<<"CalculateMesh (default, invalid transformMatrix): bounds:  "<<dims.toString();
-        VisusInfo()<<"CalculateMesh (default, invalid transformMatrix): cellArea: "<<cellArea;
-        NdBox   exts(NdPoint(extents[0],extents[2],extents[4]),NdPoint(extents[1],extents[3],extents[5]));
-        VisusInfo()<<"CalculateMesh (default, invalid transformMatrix): extents: "<<exts.toString();
-        selection->SetActualExtents(extents);
-        selection->SetActualCellArea(cellArea);
+        query->getInputPort("enable_viewdep")->writeValue(SharedPtr<BoolObject>(new BoolObject(false)));
+        query->getInputPort("resolution")->writeValue(SharedPtr<IntObject>(new IntObject(20)));
+        query->getInputPort("position_only")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
+        this->dataflow->oninput.emitSignal(query);
+
         return;
     }
 
-    //set frustum for view dependent read
-    VisusInfo()<<"setting frustum for view-dependent read";
+    //
+    // Set the frustum for doing a view dependent read.
+    //
     Visus::Matrix mvp(transformMatrix);
     Visus::Viewport visus_viewport(0,0,windowSize[0],windowSize[1]);
     SharedPtr<Frustum> visus_frustum(new Frustum);
     visus_frustum->loadProjection(mvp);
     visus_frustum->setViewport(visus_viewport);
 
-    //set time
-    query->getInputPort("time")->writeValue(SharedPtr<IntObject>(new IntObject(timestate)));
-
     //
-    //view-dependent resolution selection (if resolution is not set using MultiresControl)
+    // Set up the view selection.
     //
-    query->getInputPort("enable_viewdep")->writeValue(SharedPtr<BoolObject>(new BoolObject(this->resolution<0)));
-    query->getInputPort("resolution")->writeValue(SharedPtr<IntObject>(new IntObject(this->resolution)));
-    query->getInputPort("viewdep")->writeValue(visus_frustum);
-    Int64 max_size = 128*128*128; // 2gb but visit always casts to double --> 16gb!
-    bool fits      = false;
-    int count      = 0; //just in case query->processInput returns 0 (it shouldn't, but it still happens and I'm not sure why. bad viewport?)
-    int quality    = 0;
-    while (!fits && count<10)
+    if (this->resolution >= 0)
     {
-        count++;
-        query->getInputPort("quality")->writeValue(SharedPtr<IntObject>(new IntObject(quality--)));
-            
-        //get the size of the target but don't fetch data (we don't know the varname yet)
+        //
+        // Go with the fixed resolution from the MultiresControl.
+        //
+        query->getInputPort("enable_viewdep")->writeValue(SharedPtr<BoolObject>(new BoolObject(false)));
+        query->getInputPort("resolution")->writeValue(SharedPtr<IntObject>(new IntObject(this->resolution)));
         query->getInputPort("position_only")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
         this->dataflow->oninput.emitSignal(query);
+    }
+    else
+    {
+        //
+        // Go with view dependent selections.
+        //
+        query->getInputPort("enable_viewdep")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
+        query->getInputPort("viewdep")->writeValue(visus_frustum);
 
-        NdPoint dims(bounds[0],bounds[1],bounds[2],1,1);
-        fits = this->resolution>0 ? true : dims.innerProduct()<=max_size;
+        //
+        // Convert the cellArea to a quality for doing a view dependent read.
+        //
+        int max_size = (1. / cellArea) * (1. / cellArea);
+        bool fits    = false;
+        int quality  = 1;
+        while (!fits && quality > -10)
+        {
+            quality--;
+            query->getInputPort("quality")->writeValue(SharedPtr<IntObject>(new IntObject(quality)));
+            query->getInputPort("position_only")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
+            this->dataflow->oninput.emitSignal(query);
+            fits = bounds[0] * bounds[1] * bounds[2] < max_size ? true : false;
+        }
     }
 
     //
@@ -1108,35 +953,12 @@ avtIDXFileFormat::CalculateMesh(/*double &tileXmin, double &tileXmax,
         extents[4] = std::max(extents[4],fullextents[4]);
         extents[5] = std::min(extents[5],fullextents[5]);
 
-        {
-            //VisusInfo()<<"now we should have the bounds and extents of the data!";
-            NdBox   exts(NdPoint(extents[0],extents[2],extents[4]),NdPoint(extents[1],extents[3],extents[5]));
-            VisusInfo()<<"CalculateMesh: extents: "<<exts.toString();
-        }
-
-        NdPoint dims(bounds[0],bounds[1],bounds[2],1,1);
-        double xDelta = (extents[1]-extents[0]+1)/(float)dims.x;
-        double yDelta = (extents[3]-extents[2]+1)/(float)dims.y;
-        double zDelta = (extents[5]-extents[4]+1)/(float)dims.z;
+        double xDelta = (extents[1]-extents[0]+1)/(float)bounds[0];
+        double yDelta = (extents[3]-extents[2]+1)/(float)bounds[1];
+        double zDelta = (extents[5]-extents[4]+1)/(float)bounds[2];
         cellArea = sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
-        VisusInfo()<<"CalculateMesh: bounds:  "<<dims.toString();
-        VisusInfo()<<"CalculateMesh: cellArea: "<<cellArea;
+
         selection->SetActualExtents(extents);
         selection->SetActualCellArea(cellArea);
-        //selection->SetViewArea(dims.innerProduct());
-        double viewArea=(extents[1]-extents[0]+1)*(extents[3]-extents[2]+1)*(extents[5]-extents[4]+1);
-        //selection->SetViewArea(viewArea);
-        VisusInfo()<<"CalculateMesh: viewArea: "<<viewArea;
-
-        {
-            double                  extents2[6];
-            double area;
-            avtView2D::CalculateExtentsAndArea(extents2, area, transformMatrix);
-            NdBox   exts(NdPoint(extents2[0],extents2[2],extents2[4]),NdPoint(extents2[1],extents2[3],extents2[5]));
-            VisusInfo()<<"\navtView2D::CalculateExtentsAndArea: area:  "<<area;
-            VisusInfo()<<"avtView2D::CalculateExtentsAndArea: extents: "<<exts.toString();
-            //selection->SetActualExtents(extents2);
-        }
     }
 }
-
