@@ -19,8 +19,8 @@ avtADIOSFileFormat.C
 avtADIOSBasicFileFormat.C
 avtXGCFileFormat.C
 avtSpecFEMFileFormat.C
-avtLAMMPSFileFormat.C
 avtADIOSSchemaFileFormat.C
+avtLAMMPSFileFormat.C
 ADIOSFileObject.C
 )
 
@@ -30,9 +30,9 @@ ${COMMON_SOURCES}
 avtADIOSFileFormat.C
 avtADIOSBasicFileFormat.C
 avtXGCFileFormat.C
-avtLAMMPSFileFormat.C
 avtSpecFEMFileFormat.C
 avtADIOSSchemaFileFormat.C
+avtLAMMPSFileFormat.C
 ADIOSFileObject.C
 )
 

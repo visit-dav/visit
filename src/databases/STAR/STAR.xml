@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="STAR" type="database" label="STAR" version="1.0" enabled="true" mdspecificcode="true" enginespecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
-    <CXXFLAGS>
+    <DEFINES>
       -DSTAR_VISIT
-    </CXXFLAGS>
+    </DEFINES>
     <FilePatterns>
       *.mrd
       *.mrm

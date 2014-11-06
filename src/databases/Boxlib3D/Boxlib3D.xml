@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="Boxlib3D" type="database" label="Boxlib3D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="true">
     <CXXFLAGS>
-      -DBL_SPACEDIM=3
       ${BOXLIB_INCLUDE_DIR}
     </CXXFLAGS>
+    <DEFINES>
+      -DBL_SPACEDIM=3
+    </DEFINES>
     <LDFLAGS>
       ${BOXLIB_LIBRARY_DIR}
     </LDFLAGS>

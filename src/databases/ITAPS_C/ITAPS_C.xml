@@ -4,9 +4,11 @@
        *.cub 
     </FilePatterns>
     <CXXFLAGS>
-       -DITAPS_C
        ${ITAPS_C_INCLUDE_DIR}
     </CXXFLAGS>
+    <DEFINES>
+       -DITAPS_C
+    </DEFINES>
     <LDFLAGS>
        ${ITAPS_C_LIBRARY_DIR}
     </LDFLAGS>

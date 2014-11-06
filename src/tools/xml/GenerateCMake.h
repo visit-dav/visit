@@ -157,6 +157,9 @@
 //    Added status message for plugins-against-a-public install on Windows,
 //    to inform user the location of the plugin once complete.
 //
+//    Kathleen Biagas, Thu Nov  6 11:21:13 PST 2014
+//    Added support for DEFINES tag.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -622,6 +625,13 @@ class CMakeGeneratorPlugin : public Plugin
         }
         out << endl;
 
+        // Pass DEFINITIONS
+        for (size_t i=0; i<defs.size(); i++)
+        {
+            out << "ADD_DEFINITIONS(\"" << defs[i] << "\")" << endl;
+        }
+        out << endl;
+
         WriteCMake_ConditionalDefinitions(out);
 
 #if 0
@@ -855,6 +865,13 @@ class CMakeGeneratorPlugin : public Plugin
         {
             if(!cxxflags[i].startsWith("${") && !cxxflags[i].startsWith("$("))
                  out << "ADD_DEFINITIONS(\"" << cxxflags[i] << "\")" << endl;
+        }
+        out << endl;
+
+        // Pass Defines
+        for (size_t i=0; i<defs.size(); i++)
+        {
+            out << "ADD_DEFINITIONS(\"" << defs[i] << "\")" << endl;
         }
         out << endl;
 
@@ -1124,6 +1141,13 @@ class CMakeGeneratorPlugin : public Plugin
                !cxxflags[i].startsWith("-I"))
                  out << "ADD_DEFINITIONS(\"" << cxxflags[i] << "\")" << endl;
         }
+
+        // Pass defines
+        for (size_t i=0; i<defs.size(); i++)
+        {
+            out << "ADD_DEFINITIONS(\"" << defs[i] << "\")" << endl;
+        }
+
         bool needWindowsDefines = false;
         for (size_t i=0; i<libs.size() && !needWindowsDefines; i++)
         {

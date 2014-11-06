@@ -90,6 +90,9 @@
 //    Hank Childs, Thu Dec 30 13:33:19 PST 2010
 //    Add support for expression-creating operators.
 //
+//    Kathleen Biagas, Thu Nov  6 11:24:21 PST 2014
+//    Add support for DEFINES tag.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -119,6 +122,7 @@ public:
     std::vector<QString> cxxflags;
     std::vector<QString> ldflags;
     std::vector<QString> libs;
+    std::vector<QString> defs;
     std::vector<QString> filePatterns;        // for DB plugins
     bool                 filePatternsStrict;  // for DB plugins
     bool                 opensWholeDirectory; // for DB plugins
@@ -174,6 +178,7 @@ public:
           cxxflags(),
           ldflags(),
           libs(),
+          defs(),
           filePatterns(),
           filePatternsStrict(false),
           opensWholeDirectory(false),

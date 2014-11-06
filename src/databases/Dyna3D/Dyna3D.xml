@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="Dyna3D" type="database" label="Dyna3D input data" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
+    <DEFINES>
       -DVISIT_DYNA
-    </CXXFLAGS>
+    </DEFINES>
     <FilePatterns>
       *.dyn
     </FilePatterns>
