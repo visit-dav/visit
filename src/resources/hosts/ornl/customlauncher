@@ -54,6 +54,7 @@ class JobSubmitter_aprun_ORNL(JobSubmitter_aprun):
 
 class JobSubmitter_qsub_ORNL(JobSubmitter_qsub):
     def __init__(self, launcher):
+        #raise "qsub_ORNL"
         super(JobSubmitter_qsub_ORNL, self).__init__(launcher)
 
     def TFileSetup(self, tfile):
@@ -78,6 +79,19 @@ internallauncher to load the module you need."""
             tfile.write("eval $(modulecmd sh load PE-gnu)\n")
         elif self.launcher.IsRunningOnJaguar():
             tfile.write("eval $(modulecmd sh load PrgEnv-gnu)\n")
+        elif self.launcher.IsRunningOnRhea():
+            # Rhea loads modules by default that are not compatible with our
+            # build. Turn them off.
+            msg = """
+NOTE: We're forcing a specific MPI implementation 
+which release versions of VisIt are known to be  
+compiled against.  If you are a *developer*, it's 
+very likely I've chosen the wrong MPI 
+implementation; you might have to hack 
+internallauncher to load the module you need."""
+            tfile.write("eval $(modulecmd sh unload PE-pgi)\n")
+            tfile.write("eval $(modulecmd sh unload PE-intel)\n")
+            tfile.write("eval $(modulecmd sh load PE-gnu)\n")
 
     def aprun_args(self):
         mpicmd = self.aprun()
@@ -99,9 +113,27 @@ internallauncher to load the module you need."""
 
         return mpicmd
 
+    def mpirun_args(self, args):
+        if not self.launcher.IsRunningOnRhea():
+            return super(JobSubmitter_qsub_ORNL, self).mpirun_args(args)
+        else:
+            mpicmd = self.mpirun()
+            if self.parallel.sublaunchargs != None:
+                mpicmd = mpicmd + self.parallel.sublaunchargs
+            if self.parallel.nn != None:
+                mpicmd = mpicmd + ["--npernode", self.PPN()]
+            if self.parallel.machinefile != None:
+                mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+            mpicmd = mpicmd + self.VisItExecutable()
+            mpicmd = mpicmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+            mpicmd = mpicmd + args
+            return mpicmd
+
     def SetupPPN(self, nodes, procs, ppn, use_vis):
         if self.launcher.IsRunningOnJaguar():
             args = ["-l", "size=%s" % procs]
+        elif self.launcher.IsRunningOnRhea():
+            args = ["-l", "nodes=%s" % nodes]
         else:
             args = super(JobSubmitter_qsub_ORNL, self).SetupPPN(nodes, procs, ppn, use_vis)
         return args
@@ -123,6 +155,16 @@ class ORNLLauncher(MainLauncher):
         super(ORNLLauncher, self).__init__()
         self.lens = -1
         self.jaguar = -1
+        self.rhea = -1
+
+    def IsRunningOnRhea(self):
+        if self.rhea == -1:
+           self.rhea = 0
+           if self.parallelArgs.parallel and \
+              self.sectorname().startswith("rhea-") and \
+              self.domainname() == "ccs.ornl.gov":
+              self.rhea = 1
+        return self.rhea
 
     def IsRunningOnLens(self):
         if self.lens == -1:
