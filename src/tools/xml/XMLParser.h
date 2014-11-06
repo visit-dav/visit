@@ -220,6 +220,9 @@ ParseCharacters(const QString &buff_input)
 //    Kathleen Biagas, Thu Aug 25 13:23:07 MST 2011 
 //    Added persistent flag for fields.
 //
+//    Kathleen Biagas, Thu Nov  6 11:24:21 PST 2014
+//    Add support for DEFINES tag.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -303,6 +306,10 @@ class XMLParser : public QXmlDefaultHandler
             else if (currentTag == "CXXFLAGS")
             {
                 currentPlugin->cxxflags.push_back(strings[i]);
+            }
+            else if (currentTag == "DEFINES")
+            {
+                currentPlugin->defs.push_back(strings[i]);
             }
             else if (currentTag == "LDFLAGS")
             {
@@ -517,6 +524,9 @@ class XMLParser : public QXmlDefaultHandler
             currentFunctions[targets.size()] = NULL;
         }
         else if (tag == "CXXFLAGS")
+        {
+        }
+        else if (tag == "DEFINES")
         {
         }
         else if (tag == "LDFLAGS")
@@ -803,6 +813,9 @@ class XMLParser : public QXmlDefaultHandler
             currentFunctions = NULL;
         }
         else if (tag == "CXXFLAGS")
+        {
+        }
+        else if (tag == "DEFINES")
         {
         }
         else if (tag == "LDFLAGS")

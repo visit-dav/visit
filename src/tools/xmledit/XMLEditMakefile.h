@@ -75,6 +75,9 @@ class QCheckBox;
 //    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
 //    Split custom engine libs into serial and parallel versions.
 //
+//    Kathleen Biagas, Thu Nov  6 11:18:22 PST 2014
+//    Added DEFINES.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
@@ -89,6 +92,7 @@ class XMLEditMakefile : public QFrame
     void cxxflagsTextChanged(const QString&);
     void ldflagsTextChanged(const QString&);
     void libsTextChanged(const QString&);
+    void defsTextChanged(const QString&);
     void gfilesTextChanged(const QString&);
     void glibsTextChanged(const QString&);
     void sfilesTextChanged(const QString&);
@@ -121,6 +125,7 @@ class XMLEditMakefile : public QFrame
     QLineEdit       *CXXFLAGS;
     QLineEdit       *LDFLAGS;
     QLineEdit       *LIBS;
+    QLineEdit       *DEFINES;
     QCheckBox       *customGFiles;
     QLineEdit       *GFiles;
     QCheckBox       *customSFiles;

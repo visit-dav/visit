@@ -77,6 +77,9 @@
 //    Cyrus Harrison, Fri Sep 19 13:58:39 PDT 2008
 //    Added support for custom libs for gui,engine,mdserver, and viewer libs
 //
+//    Kathleen Biagas, Thu Nov  6 11:16:20 PST 2014
+//    Added support for DEFINES tag.
+//
 // ****************************************************************************
 
 XMLEditMakefile::XMLEditMakefile(QWidget *p)
@@ -99,6 +102,11 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(new QLabel(tr("LIBS"), this), row, 0);
     LIBS = new QLineEdit(this);
     topLayout->addWidget(LIBS, row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("DEFINES"), this), row, 0);
+    DEFINES = new QLineEdit(this);
+    topLayout->addWidget(DEFINES, row, 1);
     row++;
 
     customGFiles = new QCheckBox(tr("GUI Files"), this);
@@ -192,6 +200,8 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
             this, SLOT(ldflagsTextChanged(const QString&)));
     connect(LIBS, SIGNAL(textChanged(const QString&)),
             this, SLOT(libsTextChanged(const QString&)));
+    connect(DEFINES, SIGNAL(textChanged(const QString&)),
+            this, SLOT(defsTextChanged(const QString&)));
     connect(GFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(gfilesTextChanged(const QString&)));
     connect(GLibs, SIGNAL(textChanged(const QString&)),
@@ -272,6 +282,9 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
 //    Cyrus Harrison, Fri Sep 19 13:58:39 PDT 2008
 //    Added support for custom libs for gui,engine,mdserver, and viewer libs.
 //
+//    Kathleen Biagas, Thu Nov  6 11:16:59 PST 2014
+//    Added support for DEFINES tag.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::UpdateWindowContents()
@@ -284,6 +297,7 @@ XMLEditMakefile::UpdateWindowContents()
         CXXFLAGS->setText(JoinValues(p->cxxflags, ' '));
         LDFLAGS->setText(JoinValues(p->ldflags, ' '));
         LIBS->setText(JoinValues(p->libs, ' '));
+        DEFINES->setText(JoinValues(p->libs, ' '));
         // gui
         if (p->customgfiles)
             GFiles->setText(JoinValues(p->gfiles, ' '));
@@ -385,6 +399,9 @@ XMLEditMakefile::UpdateWindowContents()
 //    Cyrus Harrison, Fri Sep 19 13:58:39 PDT 2008
 //    Added support for custom libs for gui,engine,mdserver, and viewer libs.
 //
+//    Kathleen Biagas, Thu Nov  6 11:16:59 PST 2014
+//    Added support for DEFINES tag.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::UpdateWindowSensitivity()
@@ -394,6 +411,7 @@ XMLEditMakefile::UpdateWindowSensitivity()
     CXXFLAGS->setEnabled(plugin);
     LDFLAGS->setEnabled(plugin);
     LIBS->setEnabled(plugin);
+    DEFINES->setEnabled(plugin);
     GFiles->setEnabled(plugin && xmldoc->plugin->customgfiles);
     customGFiles->setEnabled(plugin);
     GLibs->setEnabled(plugin && xmldoc->plugin->customglibs);
@@ -452,6 +470,9 @@ XMLEditMakefile::UpdateWindowSensitivity()
 //    Cyrus Harrison, Fri Sep 19 13:58:39 PDT 2008
 //    Added support for custom libs for gui,engine,mdserver, and viewer libs.
 //
+//    Kathleen Biagas, Thu Nov  6 11:16:59 PST 2014
+//    Added support for DEFINES tag.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::BlockAllSignals(bool block)
@@ -459,6 +480,7 @@ XMLEditMakefile::BlockAllSignals(bool block)
     CXXFLAGS->blockSignals(block);
     LDFLAGS->blockSignals(block);
     LIBS->blockSignals(block);
+    DEFINES->blockSignals(block);
     GFiles->blockSignals(block);
     customGFiles->blockSignals(block);
     GLibs->blockSignals(block);
@@ -529,6 +551,19 @@ void
 XMLEditMakefile::libsTextChanged(const QString &text)
 {
     xmldoc->plugin->libs = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::defsTextChanged
+//
+//  Programmer:  Kathleen Biagas 
+//  Creation:    November 6, 2014
+//
+// ****************************************************************************
+void
+XMLEditMakefile::defsTextChanged(const QString &text)
+{
+    xmldoc->plugin->defs = SplitValues(text);
 }
 
 // ****************************************************************************

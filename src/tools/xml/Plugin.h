@@ -122,6 +122,9 @@
 //    Hank Childs, Thu Dec 30 13:33:19 PST 2010
 //    Add support for operators that write their own expressions.
 //
+//    Kathleen Biagas, Thu Nov  6 11:24:21 PST 2014
+//    Add support for DEFINES tag.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -238,6 +241,13 @@ class Plugin : public PluginBase
             WriteOpenTag(out, "LIBS", indent);
             WriteValues(out, libs, indent);
             WriteCloseTag(out, "LIBS", indent);
+        }
+
+        if (defs.size() > 0)
+        {
+            WriteOpenTag(out, "DEFINES", indent);
+            WriteValues(out, defs, indent);
+            WriteCloseTag(out, "DEFINES", indent);
         }
 
         if (type == "database" && filePatterns.size() > 0)

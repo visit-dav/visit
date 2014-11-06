@@ -11,6 +11,7 @@
     <LIBS>
       ${XDMF_LIB}
       ${HDF5_LIB}
+      vtksys
     </LIBS>
     <FilePatterns>
       *.xmf

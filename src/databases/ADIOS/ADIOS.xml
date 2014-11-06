@@ -15,6 +15,7 @@
       avtXGCFileFormat.C
       avtSpecFEMFileFormat.C
       avtADIOSSchemaFileFormat.C
+      avtLAMMPSFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="M">
@@ -26,6 +27,7 @@
       avtXGCFileFormat.C
       avtSpecFEMFileFormat.C
       avtADIOSSchemaFileFormat.C
+      avtLAMMPSFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="ESer">
