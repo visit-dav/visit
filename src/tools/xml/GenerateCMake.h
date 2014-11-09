@@ -621,14 +621,14 @@ class CMakeGeneratorPlugin : public Plugin
         for (size_t i=0; i<cxxflags.size(); i++)
         {
             if(!cxxflags[i].startsWith("${") && !cxxflags[i].startsWith("$("))
-                 out << "ADD_DEFINITIONS(\"" << cxxflags[i] << "\")" << endl;
+                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
         }
         out << endl;
 
         // Pass DEFINITIONS
         for (size_t i=0; i<defs.size(); i++)
         {
-            out << "ADD_DEFINITIONS(\"" << defs[i] << "\")" << endl;
+            out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
         }
         out << endl;
 
@@ -864,14 +864,14 @@ class CMakeGeneratorPlugin : public Plugin
         for (size_t i=0; i<cxxflags.size(); i++)
         {
             if(!cxxflags[i].startsWith("${") && !cxxflags[i].startsWith("$("))
-                 out << "ADD_DEFINITIONS(\"" << cxxflags[i] << "\")" << endl;
+                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
         }
         out << endl;
 
         // Pass Defines
         for (size_t i=0; i<defs.size(); i++)
         {
-            out << "ADD_DEFINITIONS(\"" << defs[i] << "\")" << endl;
+            out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
         }
         out << endl;
 
@@ -1139,13 +1139,13 @@ class CMakeGeneratorPlugin : public Plugin
             if(!cxxflags[i].startsWith("${") &&
                !cxxflags[i].startsWith("$(") &&
                !cxxflags[i].startsWith("-I"))
-                 out << "ADD_DEFINITIONS(\"" << cxxflags[i] << "\")" << endl;
+                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
         }
 
         // Pass defines
         for (size_t i=0; i<defs.size(); i++)
         {
-            out << "ADD_DEFINITIONS(\"" << defs[i] << "\")" << endl;
+            out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
         }
 
         bool needWindowsDefines = false;
