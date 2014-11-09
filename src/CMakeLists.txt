@@ -483,15 +483,17 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
 SET(VTK_MINIMUM_VERSION "6.0.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
-FUNCTION(SETUP_VTK_VERSION  ver)
-  IF(${ver} VERSION_LESS ${VTK_MINIMUM_VERSION})
-      MESSAGE(FATAL_ERROR "VTK version must be at least ${VTK_MINIMUM_VERSION}")
+SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
+
+FUNCTION(SETUP_APP_VERSION name ver )
+  IF(${ver} VERSION_LESS ${${name}_MINIMUM_VERSION}})
+      MESSAGE(FATAL_ERROR "${name} version must be at least ${${name}_MINIMUM_VERSION}}")
   ENDIF()
   STRING( REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+" "\\1" vmaj ${ver} )
   STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" vmin ${ver} )
-  SET(VTK_VERSION "${ver}"  CACHE INTERNAL "")
-  SET(VTK_MAJOR_VERSION   "${vmaj}" CACHE INTERNAL "")
-  SET(VTK_MINOR_VERSION   "${vmin}" CACHE INTERNAL "")
+  SET(${name}_VERSION "${ver}"  CACHE INTERNAL "")
+  SET(${name}_MAJOR_VERSION   "${vmaj}" CACHE INTERNAL "")
+  SET(${name}_MINOR_VERSION   "${vmin}" CACHE INTERNAL "")
 ENDFUNCTION()
 
 #-----------------------------------------------------------------------------
@@ -527,6 +529,23 @@ IF(NOT VTK_VERSION)
   ELSE()
       MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming 6.1.0")
       SETUP_VTK_VERSION(6.1.0)
+  ENDIF()
+ENDIF()
+
+
+#-----------------------------------------------------------------------------
+# If the config-site file above has not set a NEKTAR++ version set a
+# default NEKTAR++ version of 4.0.0.  
+#-----------------------------------------------------------------------------
+IF(NOT NEKTAR++_VERSION)
+  IF(VISIT_NEKTAR++_VERSION)
+      IF(${VISIT_NEKTAR++_VERSION} VERSION_LESS ${NEKTAR++_MINIMUM_VERSION})
+          MESSAGE(FATAL_ERROR "NEKTAR++ version must be at least ${NEKTAR++_MINIMUM_VERSION}")
+      ENDIF()
+      SETUP_NEKTARPP_VERSION(${VISIT_NEKTAR++_VERSION})
+  ELSE()
+      MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming 4.0.0")
+      SETUP_NEKTARPP_VERSION(4.0.0)
   ENDIF()
 ENDIF()
 
@@ -759,6 +778,8 @@ VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include a
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
+VISIT_3RDPARTY_VAR(NEKTAR++_DIR      "Path containing the Nektar++ library's include and lib")
+VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP   "Nektar++ library dependencies")
 VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
@@ -1340,6 +1361,13 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     IF(MILI_FOUND)
         SET(HAVE_LIBMILI 1)
     ENDIF(MILI_FOUND)
+
+    # Configure Nektar++ support. 
+    # Do it before the other libraries since many can depend on it.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
+    IF(NEKTAR++_FOUND)
+        SET(HAVE_LIBNEKTAR++ 1)
+    ENDIF(NEKTAR++_FOUND)
 
     # Configure netcdf support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)

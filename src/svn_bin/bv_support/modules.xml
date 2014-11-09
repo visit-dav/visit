@@ -32,6 +32,7 @@
             <lib name="manta"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
+            <lib name="nektar++"/>
             <lib name="netcdf"/>
             <lib name="pyside"/>
             <lib name="uintah"/>
@@ -65,6 +66,7 @@
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
+            <lib name="nektar++"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
@@ -85,7 +87,7 @@
         <!-- all io libraries -->
         <group name="all-io" comment="Build all available I/O libraries">
             <lib name="adios"/>
-            <lib name="advio"/>
+<!--        <lib name="advio"/>    Removed by Allen Sanderson-->
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
@@ -96,6 +98,7 @@
             <lib name="hdf5"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
+            <lib name="nektar++"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="visus"/>
@@ -117,6 +120,7 @@
             <lib name="hdf5"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
+            <lib name="nektar++"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="visus"/>

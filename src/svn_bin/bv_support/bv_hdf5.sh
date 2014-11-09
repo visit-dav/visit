@@ -167,7 +167,7 @@ EOF
       return 1
     fi
 
-    return 0;
+    return 0
 }
 
 function apply_hdf5_187_thread_patch
