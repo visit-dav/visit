@@ -3606,6 +3606,10 @@ ViewerPlot::CreateActor(bool createNew,
 //    Brad Whitlock, Fri Aug 29 16:56:19 PDT 2014
 //    Change how callbacks for event processing work.
 //
+//    David Camp, Mon Nov 10 12:37:21 PST 2014
+//    Added a check of the retval to make sure the pointer is not NULL.
+//    The engine could crash and the viewer received NULL.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -3718,7 +3722,7 @@ ViewerPlot::GetDataObjectReader()
 
             // deal with possibility that engine may decide to scalable render
             //  this output
-            if (!replyWithNullData && retval->InputIs(AVT_NULL_DATASET_MSG))
+            if (!replyWithNullData && *retval && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
                // ask for the engine's output as null data 'cause the 
                // avtDataObject in the current reader is just the message that 
@@ -3737,7 +3741,7 @@ ViewerPlot::GetDataObjectReader()
 
             // deal with possibility that engine may decide to scalable render 
             // this output
-            if (!replyWithNullData && retval->InputIs(AVT_NULL_DATASET_MSG))
+            if (!replyWithNullData && *retval && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
                // ask for the engine's output as null data 'cause the 
                // avtDataObject in the current reader is just the message that 

@@ -594,6 +594,9 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Wed Mar 27 15:33:20 EDT 2013
 //    iMesh_getDescription no longer needs an error output argument.
 //
+//    David Camp, Mon Nov 10 12:37:21 PST 2014
+//    Added support for the hex9, hex10, hex27 formats.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -879,22 +882,11 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
             }
             vtkIdType vertIds[8];
             int jj = 0;
-            bool valid = true;
-            for (int idx = offs[i];
-                 idx < ((i+1) < offs_size ? offs[i+1] : offs_size); idx++)
+            for (int idx = offs[i]; idx < offs[i+1]; ++idx)
             {
-                if (jj >= sizeof(vertIds) / sizeof(vertIds[0]))
-                    valid = false;
-                if (valid)
-                    vertIds[jj++] = adjInds[idx];
-                else
-                   jj++;
-            }
-            if (!valid)
-            {
-                debug3 << "Unsupported vert count " << jj
-                       << " for iMesh entity " << i << endl;
-                continue;
+                vertIds[jj++] = adjInds[idx];
+                if( jj == 8 )
+                    break;
             }
             ugrid->InsertNextCell(vtkZoneType, jj, vertIds);
         }
