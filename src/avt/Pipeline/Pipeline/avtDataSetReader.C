@@ -234,8 +234,11 @@ avtDataSetReader::ReadDataTree(char * &input, int &size, CharStrRef &csr)
         }
 
         avtDataRepresentation child(input, len, chunk, label, csr, dst);
-        debug5 << "Chunk " << chunk << " contributed " << len
-               << " bytes to the serialized string." << endl;
+        if(len > 0)
+        {
+            debug5 << "Chunk " << chunk << " contributed " << len
+                   << " bytes." << endl;
+        }
         input += len; size += len;
 
         result = new avtDataTree(child);

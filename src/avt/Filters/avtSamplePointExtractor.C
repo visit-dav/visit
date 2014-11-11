@@ -64,6 +64,7 @@
 #include <avtHexahedronExtractor.h>
 #include <avtHexahedron20Extractor.h>
 #include <avtMassVoxelExtractor.h>
+#include <avtMemory.h>
 #include <avtParallel.h>
 #include <avtPointExtractor.h>
 #include <avtPyramidExtractor.h>
@@ -697,7 +698,7 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
 
     //check memory
     unsigned long m_size, m_rss;
-    GetMemorySize(m_size, m_rss);
+    avtMemory::GetMemorySize(m_size, m_rss);
     debug5 << PAR_Rank() << " ~ avtSamplePointExtractor::ExecuteTree  .. .  " 
            << "    Memory use before: " << m_size << "  rss (MB): " << m_rss/(1024*1024) << endl;
 
@@ -766,7 +767,7 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
 
 
     //check memory after
-    GetMemorySize(m_size, m_rss);
+    avtMemory::GetMemorySize(m_size, m_rss);
     debug5 << PAR_Rank() << " ~ Memory use after: " << m_size << "  rss (MB): " << m_rss/(1024*1024)
            <<  "   ... avtSamplePointExtractor::ExecuteTree done@!!!" << endl;
 

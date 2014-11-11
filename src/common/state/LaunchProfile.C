@@ -80,6 +80,7 @@ void LaunchProfile::Init()
     launchXServers = false;
     XDisplay = ":%l";
     numThreads = 0;
+    constrainNodeProcs = false;
 
     LaunchProfile::SelectAll();
 }
@@ -136,6 +137,9 @@ void LaunchProfile::Copy(const LaunchProfile &obj)
     launchXServers = obj.launchXServers;
     XDisplay = obj.XDisplay;
     numThreads = obj.numThreads;
+    constrainNodeProcs = obj.constrainNodeProcs;
+    allowableNodes = obj.allowableNodes;
+    allowableProcs = obj.allowableProcs;
 
     LaunchProfile::SelectAll();
 }
@@ -327,7 +331,10 @@ LaunchProfile::operator == (const LaunchProfile &obj) const
             (XArguments == obj.XArguments) &&
             (launchXServers == obj.launchXServers) &&
             (XDisplay == obj.XDisplay) &&
-            (numThreads == obj.numThreads));
+            (numThreads == obj.numThreads) &&
+            (constrainNodeProcs == obj.constrainNodeProcs) &&
+            (allowableNodes == obj.allowableNodes) &&
+            (allowableProcs == obj.allowableProcs));
 }
 
 // ****************************************************************************
@@ -506,6 +513,9 @@ LaunchProfile::SelectAll()
     Select(ID_launchXServers,      (void *)&launchXServers);
     Select(ID_XDisplay,            (void *)&XDisplay);
     Select(ID_numThreads,          (void *)&numThreads);
+    Select(ID_constrainNodeProcs,  (void *)&constrainNodeProcs);
+    Select(ID_allowableNodes,      (void *)&allowableNodes);
+    Select(ID_allowableProcs,      (void *)&allowableProcs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -534,7 +544,10 @@ LaunchProfile::SelectAll()
 //
 //   Tom Fogal, Fri May  6 18:37:57 MDT 2011
 //   Adjust for new X launching options.
-//   
+//
+//   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
+//   I added code for node/proc constraints.
+//
 // ****************************************************************************
 bool
 LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
@@ -751,6 +764,24 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("numThreads", numThreads));
     }
 
+    if(completeSave || IsSelected(ID_constrainNodeProcs))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("constrainNodeProcs", constrainNodeProcs));
+    }
+
+    if(completeSave || IsSelected(ID_allowableNodes))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("allowableNodes", allowableNodes));
+    }
+
+    if(completeSave || IsSelected(ID_allowableProcs))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("allowableProcs", allowableProcs));
+    }
+
     if (addToParent)
     {
         node->AddNode(new DataNode("profileName", profileName));
@@ -860,6 +891,12 @@ LaunchProfile::SetFromNode(DataNode *parentNode)
         SetXDisplay(node->AsString());
     if((node = searchNode->GetNode("numThreads")) != 0)
         SetNumThreads(node->AsInt());
+    if((node = searchNode->GetNode("constrainNodeProcs")) != 0)
+        SetConstrainNodeProcs(node->AsBool());
+    if((node = searchNode->GetNode("allowableNodes")) != 0)
+        SetAllowableNodes(node->AsIntVector());
+    if((node = searchNode->GetNode("allowableProcs")) != 0)
+        SetAllowableProcs(node->AsIntVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1109,6 +1146,27 @@ LaunchProfile::SetNumThreads(int numThreads_)
 {
     numThreads = numThreads_;
     Select(ID_numThreads, (void *)&numThreads);
+}
+
+void
+LaunchProfile::SetConstrainNodeProcs(bool constrainNodeProcs_)
+{
+    constrainNodeProcs = constrainNodeProcs_;
+    Select(ID_constrainNodeProcs, (void *)&constrainNodeProcs);
+}
+
+void
+LaunchProfile::SetAllowableNodes(const intVector &allowableNodes_)
+{
+    allowableNodes = allowableNodes_;
+    Select(ID_allowableNodes, (void *)&allowableNodes);
+}
+
+void
+LaunchProfile::SetAllowableProcs(const intVector &allowableProcs_)
+{
+    allowableProcs = allowableProcs_;
+    Select(ID_allowableProcs, (void *)&allowableProcs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1403,6 +1461,36 @@ LaunchProfile::GetNumThreads() const
     return numThreads;
 }
 
+bool
+LaunchProfile::GetConstrainNodeProcs() const
+{
+    return constrainNodeProcs;
+}
+
+const intVector &
+LaunchProfile::GetAllowableNodes() const
+{
+    return allowableNodes;
+}
+
+intVector &
+LaunchProfile::GetAllowableNodes()
+{
+    return allowableNodes;
+}
+
+const intVector &
+LaunchProfile::GetAllowableProcs() const
+{
+    return allowableProcs;
+}
+
+intVector &
+LaunchProfile::GetAllowableProcs()
+{
+    return allowableProcs;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1485,6 +1573,18 @@ LaunchProfile::SelectXDisplay()
     Select(ID_XDisplay, (void *)&XDisplay);
 }
 
+void
+LaunchProfile::SelectAllowableNodes()
+{
+    Select(ID_allowableNodes, (void *)&allowableNodes);
+}
+
+void
+LaunchProfile::SelectAllowableProcs()
+{
+    Select(ID_allowableProcs, (void *)&allowableProcs);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1544,6 +1644,9 @@ LaunchProfile::GetFieldName(int index) const
     case ID_launchXServers:      return "launchXServers";
     case ID_XDisplay:            return "XDisplay";
     case ID_numThreads:          return "numThreads";
+    case ID_constrainNodeProcs:  return "constrainNodeProcs";
+    case ID_allowableNodes:      return "allowableNodes";
+    case ID_allowableProcs:      return "allowableProcs";
     default:  return "invalid index";
     }
 }
@@ -1603,6 +1706,9 @@ LaunchProfile::GetFieldType(int index) const
     case ID_launchXServers:      return FieldType_bool;
     case ID_XDisplay:            return FieldType_string;
     case ID_numThreads:          return FieldType_int;
+    case ID_constrainNodeProcs:  return FieldType_bool;
+    case ID_allowableNodes:      return FieldType_intVector;
+    case ID_allowableProcs:      return FieldType_intVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1662,6 +1768,9 @@ LaunchProfile::GetFieldTypeName(int index) const
     case ID_launchXServers:      return "bool";
     case ID_XDisplay:            return "string";
     case ID_numThreads:          return "int";
+    case ID_constrainNodeProcs:  return "bool";
+    case ID_allowableNodes:      return "intVector";
+    case ID_allowableProcs:      return "intVector";
     default:  return "invalid index";
     }
 }
@@ -1863,6 +1972,21 @@ LaunchProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (numThreads == obj.numThreads);
         }
         break;
+    case ID_constrainNodeProcs:
+        {  // new scope
+        retval = (constrainNodeProcs == obj.constrainNodeProcs);
+        }
+        break;
+    case ID_allowableNodes:
+        {  // new scope
+        retval = (allowableNodes == obj.allowableNodes);
+        }
+        break;
+    case ID_allowableProcs:
+        {  // new scope
+        retval = (allowableProcs == obj.allowableProcs);
+        }
+        break;
     default: retval = false;
     }
 
@@ -1889,6 +2013,9 @@ LaunchProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //
 //   Tom Fogal, Fri May  6 18:40:39 MDT 2011
 //   Adjust for new X launching options.
+//
+//   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
+//   I added code for node/proc constraints.
 //
 // ****************************************************************************
 void
@@ -1966,5 +2093,11 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_XDisplay,        (void *)&XDisplay);
     if(numThreads != other.GetNumThreads())
         Select(ID_numThreads,      (void *)&numThreads);
+    if(constrainNodeProcs != other.GetConstrainNodeProcs())
+        Select(ID_constrainNodeProcs, (void *)&constrainNodeProcs);
+    if(allowableNodes != other.GetAllowableNodes())
+        Select(ID_allowableNodes, (void *)&allowableNodes);
+    if(allowableProcs != other.GetAllowableProcs())
+        Select(ID_allowableProcs, (void *)&allowableProcs);
 }
 

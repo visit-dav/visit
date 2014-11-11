@@ -59,7 +59,6 @@ int  UTILITY_API  LongestCommonPrefixLength(const char * const *, int);
 int  UTILITY_API  LongestCommonSuffixLength(const char * const *, int);
 
 // LINUX ONLY
-void UTILITY_API  GetMemorySize(unsigned long &, unsigned long &);
 void UTILITY_API  PrintCallStack(ostream &out, const char *file, int line);
 
 void UTILITY_API  WaitUntilFile(const char *);

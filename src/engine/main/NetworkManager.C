@@ -2715,6 +2715,11 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    Tom Fogal, Wed May 18 12:31:48 MDT 2011
 //    Adjust for new debug image dumping interface.
 //
+//    Brad Whitlock, Wed Oct 29 09:57:16 PDT 2014
+//    Don't call RenderBalance. It was doing collective communication and 
+//    causing a hang when not all ranks are writing debugging logs. It did not
+//    provide much information anyway.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -2752,8 +2757,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         }
 
         debug5 << "Rendering " << viswin->GetNumPrimitives()
-               << " primitives.  Balanced speedup = "
-               << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
+               << " primitives." << endl;
 
         CallInitializeProgressCallback(this->RenderingStages(windowID));
 

@@ -54,6 +54,8 @@
 #include <vtkInformationStringKey.h>
 
 class   avtCachableItem;
+class   vtkDataSet;
+class   vtkDataArray;
 class   vtkObject;
 class   vtkInformationDoubleVectorKey;
 
@@ -202,6 +204,10 @@ class DATABASE_API avtVariableCache
                                                 vtkObject *o2, int domain);
     bool                   RemoveObjectPointerPair(vtkObject *o1);
     vtkObject             *FindObjectPointerPair(vtkObject *o1) const;
+
+    static unsigned long   EstimateSize(vtkDataArray *, bool);
+    static unsigned long   EstimateSize(vtkDataSet *);
+    unsigned long          EstimateCacheSize() const;
     
     static void            SetVTKDebugMode(bool on){vtkDebugMode = on;}
 
@@ -219,6 +225,7 @@ class DATABASE_API avtVariableCache
         bool              GetItem(avtCachableItem *) const;
     
         void              Print(ostream &, int);
+        unsigned long     EstimateSize(const char *) const;
 
       protected:
         int               domain;
@@ -237,6 +244,7 @@ class DATABASE_API avtVariableCache
         int                         GetTimestep(void) const { return timestep; };
     
         void                        Print(ostream &, int);
+        unsigned long               EstimateSize(const char *) const;
 
       protected:
         int                         timestep;
@@ -261,6 +269,7 @@ class DATABASE_API avtVariableCache
         void                        ClearTimestep(int);
     
         void                        Print(ostream &, int);
+        unsigned long               EstimateSize(const char *) const;
 
       protected:
         char                       *material;
@@ -285,6 +294,7 @@ class DATABASE_API avtVariableCache
         void                         ClearVariablesWithString(const std::string &);
     
         void                         Print(ostream &, int);
+        unsigned long                EstimateSize(const char *) const;
 
       protected:
         char                        *var;

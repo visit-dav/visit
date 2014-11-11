@@ -71,6 +71,7 @@
 #   ifdef HAVE_ICET
 #      include <IceTNetworkManager.h>
 #   endif
+#else
 #endif
 #include <IncompatibleVersionException.h>
 #include <VisItInit.h>
@@ -105,6 +106,7 @@
 #include <avtDataset.h>
 #include <avtExprNodeFactory.h>
 #include <avtFilter.h>
+#include <avtMemory.h>
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
 #include <avtTypes.h>
@@ -759,7 +761,9 @@ public:
 // Creation:   Fri Sep 28 09:54:32 PDT 2012
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 22 11:46:24 PDT 2014
+//   Skip plugin broadcasters for parallel when we build statically.
+//
 // ****************************************************************************
 
 void
@@ -849,6 +853,11 @@ Engine::InitializeCompute()
     PluginManager::PluginCategory pCat = simulationPluginsEnabled ? 
         PluginManager::Simulation : PluginManager::Engine;
 #ifdef PARALLEL
+#ifdef VISIT_STATIC
+    netmgr->GetPlotPluginManager()->Initialize(pCat, true);
+    netmgr->GetOperatorPluginManager()->Initialize(pCat, true);
+    netmgr->GetDatabasePluginManager()->Initialize(pCat, true);
+#else
     bool readInfo = PAR_UIProcess();
     PAR_PluginBroadcaster broadcaster;
     int pluginInit = visitTimer->StartTimer();
@@ -868,6 +877,7 @@ Engine::InitializeCompute()
                                                readInfo, 
                                                &broadcaster);
     visitTimer->StopTimer(pluginInit, "Loading database plugin info");
+#endif
 #else
     netmgr->GetPlotPluginManager()->Initialize(pCat, false);
     netmgr->GetOperatorPluginManager()->Initialize(pCat, false);
@@ -3879,6 +3889,9 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 //    Satheesh Maheswaran, Mon Oct 01 11:48:10 PST 2012
 //    Added code to get memory information from each processor
 //
+//    Brad Whitlock, Tue Oct 28 15:19:25 PDT 2014
+//    Added BGQ implementation for getting the memory size.
+//
 // ****************************************************************************
 
 ProcessAttributes *
@@ -3908,16 +3921,14 @@ Engine::GetProcessAttributes()
 #endif
 
 #ifdef PARALLEL
-
         char myHost[2*MPI_MAX_PROCESSOR_NAME];
         int strLen;
         MPI_Get_processor_name(myHost, &strLen); 
 
         bool isParallel = true;
 
-        // Collect memory infomation
         //Get the memory size from current proc
-        GetMemorySize(m_size, m_rss);
+        avtMemory::GetMemorySize(m_size, m_rss);
 
         //Convert to megabytes
         m_size_mb = ( (double)m_size / 1048576.0);
@@ -3970,7 +3981,7 @@ Engine::GetProcessAttributes()
         hosts.push_back(myHost);
         // Collect memory infomation
         //Get the memory size from current proc
-        GetMemorySize(m_size, m_rss);
+        avtMemory::GetMemorySize(m_size, m_rss);
 
         //Convert to megabytes
         m_size_mb = ( (double)m_size / 1048576.0);

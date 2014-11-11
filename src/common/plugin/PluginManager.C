@@ -514,9 +514,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 {
 #ifdef VISIT_STATIC
     StaticGetSupportedLibs(libs, managerName);
-    return;
-#endif
-
+#else
     // Read the files in the plugin directory.
     vector< vector<pair<string,string> > > files;
     ReadPluginDir(files);
@@ -564,6 +562,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
         for (size_t f = 0 ; f < tmp[dir].size() ; f++)
             libs.push_back(tmp[dir][f]);
     }
+#endif
 }
 
 
@@ -1540,11 +1539,16 @@ PluginManager::ReadPluginDir(vector< vector<pair<string,string> > > &files)
 //    Hank Childs, Thu Nov 12 11:28:10 PST 2009
 //    Add support for static "plugins".
 //
+//    Brad Whitlock, Wed Oct 22 12:16:41 PDT 2014
+//    Change logic for static builds. Eliminate printing message because it
+//    so slows down the creation of engine debug logs.
+//
 // ****************************************************************************
 
 void
 PluginManager::PluginOpen(const string &pluginFile)
 {
+#if !defined(VISIT_STATIC)
 #if defined(_WIN32)
     HINSTANCE lib = LoadLibrary(pluginFile.c_str());
     if(!lib)
@@ -1557,8 +1561,6 @@ PluginManager::PluginOpen(const string &pluginFile)
     }
 
     handle = (void *)lib;
-#elif defined(VISIT_STATIC)
-    debug1 << "Not opening " << pluginFile << " because this is a static build." << endl;
 #else
     // dlopen the plugin
     handle = dlopen(pluginFile.c_str(), RTLD_LAZY);
@@ -1575,6 +1577,7 @@ PluginManager::PluginOpen(const string &pluginFile)
     void (*init)(void) = (void(*)(void))PluginSymbol("_GLOBAL__DI", true);
     if (init)
         init();
+#endif
 #endif
 
     openPlugin = pluginFile;

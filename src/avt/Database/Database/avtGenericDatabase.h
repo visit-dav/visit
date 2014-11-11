@@ -349,6 +349,9 @@ class     vtkUnstructuredGrid;
 //    Brad Whitlock, Thu Jun 19 11:12:19 PDT 2014
 //    Pass mesh name to PopulateIOInformation.
 //
+//    Brad Whitlock, Wed Oct 29 17:53:51 PDT 2014
+//    Added CachingRecommended methods.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -648,6 +651,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     void                       ManageMemoryForNonCachableVar(vtkDataArray *);
     void                       ManageMemoryForNonCachableMesh(vtkDataSet *);
+
+    bool                       CachingRecommended(vtkDataArray *) const;
+    bool                       CachingRecommended(vtkDataSet *) const;
+    static const float         maxCachePercent;
 };
 
 

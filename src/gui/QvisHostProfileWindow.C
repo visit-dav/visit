@@ -38,33 +38,34 @@
 
 #include <QvisHostProfileWindow.h>
 
-#include <QMimeData>
+#include <QAbstractTableModel>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QEvent>
+#include <QFileInfo>
 #include <QGroupBox>
+#include <QHeaderView>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
 #include <QStringList>
 #include <QTabWidget>
-#include <QWidget>
+#include <QTableWidget>
 #include <QTreeWidget>
-#include <QDropEvent>
 #include <QUrl>
-#include <QHeaderView>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QNetworkAccessManager>
-#include <QAbstractTableModel>
-#include <QFileInfo>
-#include <QEvent>
-#include <QDragEnterEvent>
-#include <QMessageBox>
+#include <QWidget>
 
 #include <snprintf.h>
 
@@ -370,6 +371,9 @@ QvisHostProfileWindow::ListWidgetDropEvent(QDropEvent *event)
 //   Rename New/Copy/Delete to New Host/Copy Host/Delete Host.
 //   This removes ambiguity with profile controls.
 //
+//   Brad Whitlock, Wed Oct 22 15:46:11 PDT 2014
+//   Rearrange some buttons so the window is less wide.
+//
 // ****************************************************************************
 
 void
@@ -379,10 +383,10 @@ QvisHostProfileWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
     topLayout->setStretchFactor(mainLayout, 100);
 
-    mainLayout->addWidget(new QLabel(tr("Hosts")), 0,0, 1,4);
+    mainLayout->addWidget(new QLabel(tr("Hosts")), 0,0, 1,2);
     hostList = new DropListWidget(central);
     hostList->setSortingEnabled(true);
-    mainLayout->addWidget(hostList, 1,0, 1,4);
+    mainLayout->addWidget(hostList, 1,0, 1,2);
     connect(hostList, SIGNAL(itemSelectionChanged()),
             this, SLOT(currentHostChanged()));
 
@@ -390,8 +394,6 @@ QvisHostProfileWindow::CreateWindowContents()
     hostList->setDragDropMode(QAbstractItemView::DropOnly);
     hostList->setDefaultDropAction(Qt::CopyAction);
     hostList->setAcceptDrops(true);
-    //hostList->installEventFilter(this);
-    //hostList->setMouseTracking(true);
 
     addHost = new QPushButton(tr("New Host"), central);
     mainLayout->addWidget(addHost, 2,0);
@@ -402,16 +404,16 @@ QvisHostProfileWindow::CreateWindowContents()
     connect(delHost, SIGNAL(clicked()), this, SLOT(delMachineProfile()));
 
     copyHost = new QPushButton(tr("Copy Host"), central);
-    mainLayout->addWidget(copyHost, 2,2);
+    mainLayout->addWidget(copyHost, 3,0);
     connect(copyHost, SIGNAL(clicked()), this, SLOT(copyMachineProfile()));
 
     exportHost = new QPushButton(tr("Export Host"), central);
-    mainLayout->addWidget(exportHost, 2,3);
+    mainLayout->addWidget(exportHost, 3,1);
     connect(exportHost, SIGNAL(clicked()), this, SLOT(exportMachineProfile()));
 
     QTabWidget* masterWidget = new QTabWidget(central);
     masterWidget->setTabPosition(QTabWidget::West);
-    mainLayout->addWidget(masterWidget, 0,4, 3,1);
+    mainLayout->addWidget(masterWidget, 0,2, 4,1);
 
     machineTabs = new QTabWidget();
     masterWidget->addTab(machineTabs, tr("Machines"));
@@ -488,7 +490,7 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
 
     gridLayout->addWidget(remoteTree, 1, 0, 1, 3);
 
-    connect(pushButton, SIGNAL(clicked()), this, SLOT(retriveLatestProfiles()));
+    connect(pushButton, SIGNAL(clicked()), this, SLOT(retrieveLatestProfiles()));
     connect(importButton, SIGNAL(clicked()), this, SLOT(selectProfiles()));
 
     return currentGroup;
@@ -508,7 +510,7 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::retriveLatestProfiles()
+QvisHostProfileWindow::retrieveLatestProfiles()
 {
     ///get content from url..
     QUrl url(remoteUrl->currentText());
@@ -1123,7 +1125,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     QGridLayout *layout = new QGridLayout();
     tmpLayout->addLayout(layout);
     layout->setMargin(0);
-    layout->setSpacing(HOST_PROFILE_SPACING);
+    layout->setSpacing(HOST_PROFILE_SPACING+2);
     tmpLayout->addStretch(5);
     
     launchMethod = new QComboBox(currentGroup);
@@ -1175,57 +1177,107 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     layout->addWidget(partitionName, row, 1);
     row++;
 
-    numProcessors = new QSpinBox(currentGroup);
-    numProcessors->setRange(1,99999);
+    QWidget *h = new QWidget(currentGroup);
+    layout->addWidget(h, row, 0, 1, 2);
+    QHBoxLayout *hLayout = new QHBoxLayout(h);
+    hLayout->setMargin(0);
+    hLayout->setSpacing(HOST_PROFILE_SPACING);
+
+    // Create the default value widgets.
+    QGroupBox *defaultGroup = new QGroupBox(tr("Defaults"), h);
+    hLayout->addWidget(defaultGroup);
+    QGridLayout *dLayout = new QGridLayout(defaultGroup);
+    dLayout->setMargin(5);
+    dLayout->setSpacing(HOST_PROFILE_SPACING+2);
+    row = 0;
+
+    numProcessors = new QSpinBox(defaultGroup);
+    numProcessors->setRange(1,999999);
     numProcessors->setSingleStep(1);
     connect(numProcessors, SIGNAL(valueChanged(int)),
             this, SLOT(numProcessorsChanged(int)));
-    numProcLabel = new QLabel(tr("Default number of processors"), currentGroup);
-    layout->addWidget(numProcLabel, row, 0);
-    layout->addWidget(numProcessors, row, 1);
+    numProcLabel = new QLabel(tr("Number of processors"), defaultGroup);
+    dLayout->addWidget(numProcLabel, row, 0);
+    dLayout->addWidget(numProcessors, row, 1);
     row++;
 
-    numNodes = new QSpinBox(currentGroup);
-    numNodes->setRange(1,99999);
+    numNodes = new QSpinBox(defaultGroup);
+    numNodes->setRange(1,999999);
     numNodes->setSingleStep(1);
     
     connect(numNodes, SIGNAL(valueChanged(int)),
             this, SLOT(numNodesChanged(int)));
-    numNodesCheckBox = new QCheckBox(tr("Default number of nodes"), currentGroup);
+    numNodesCheckBox = new QCheckBox(tr("Number of nodes"), defaultGroup);
     connect(numNodesCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleNumNodes(bool)));
-    layout->addWidget(numNodesCheckBox, row, 0);
-    layout->addWidget(numNodes, row, 1);
+    dLayout->addWidget(numNodesCheckBox, row, 0);
+    dLayout->addWidget(numNodes, row, 1);
     row++;
 
-    bankName = new QLineEdit(currentGroup);
+    bankName = new QLineEdit(defaultGroup);
     connect(bankName, SIGNAL(textChanged(const QString &)),
             this, SLOT(processBankNameText(const QString &)));
-    bankCheckBox = new QCheckBox(tr("Default Bank / Account"),currentGroup);
+    bankCheckBox = new QCheckBox(tr("Bank / Account"),defaultGroup);
     connect(bankCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleBankName(bool)));
-    layout->addWidget(bankCheckBox, row, 0);
-    layout->addWidget(bankName, row, 1);
+    dLayout->addWidget(bankCheckBox, row, 0);
+    dLayout->addWidget(bankName, row, 1);
     row++;
 
-    timeLimit = new QLineEdit(currentGroup);
+    timeLimit = new QLineEdit(defaultGroup);
     connect(timeLimit, SIGNAL(textChanged(const QString &)),
             this, SLOT(processTimeLimitText(const QString &)));
-    timeLimitCheckBox = new QCheckBox(tr("Default Time Limit"), currentGroup);
+    timeLimitCheckBox = new QCheckBox(tr("Time Limit"), defaultGroup);
     connect(timeLimitCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleTimeLimit(bool)));
-    layout->addWidget(timeLimitCheckBox, row, 0);
-    layout->addWidget(timeLimit, row, 1);
+    dLayout->addWidget(timeLimitCheckBox, row, 0);
+    dLayout->addWidget(timeLimit, row, 1);
     row++;
 
-    machinefile = new QLineEdit(currentGroup);
+    machinefile = new QLineEdit(defaultGroup);
     connect(machinefile, SIGNAL(textChanged(const QString &)),
             this, SLOT(processMachinefileText(const QString &)));
-    machinefileCheckBox = new QCheckBox(tr("Default Machine File"), currentGroup);
+    machinefileCheckBox = new QCheckBox(tr("Machine File"), defaultGroup);
     connect(machinefileCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleMachinefile(bool)));
-    layout->addWidget(machinefileCheckBox, row, 0);
-    layout->addWidget(machinefile, row, 1);
+    dLayout->addWidget(machinefileCheckBox, row, 0);
+    dLayout->addWidget(machinefile, row, 1);
+    row++;
+
+    // Create the constraint widgets.
+    constraintGroup = new QGroupBox(tr("Constraints"), h);
+    constraintGroup->setCheckable(true);
+    hLayout->addWidget(constraintGroup);
+    connect(constraintGroup, SIGNAL(toggled(bool)),
+            this, SLOT(toggleAllowableNodeProcs(bool)));
+    QGridLayout *cLayout = new QGridLayout(constraintGroup);
+    cLayout->setMargin(5);
+    row = 0;
+
+    QPushButton *addRow = new QPushButton(tr("Add row"), constraintGroup);
+    cLayout->addWidget(addRow, row,0);
+    connect(addRow, SIGNAL(clicked()),
+            this, SLOT(allowableNodeProcsAddRow()));
+    QPushButton *deleteRow = new QPushButton(tr("Delete row"), constraintGroup);
+    cLayout->addWidget(deleteRow, row,1);
+    connect(deleteRow, SIGNAL(clicked()),
+            this, SLOT(allowableNodeProcsDeleteRow()));
+    row++;
+
+    allowableNodeProcs = new QTableWidget(constraintGroup);
+    allowableNodeProcs->setSelectionMode(QAbstractItemView::SingleSelection);
+    allowableNodeProcs->setColumnCount(2);
+    QStringList headerLabels;
+    headerLabels << tr("Nodes")
+                 << tr("Processors");
+    allowableNodeProcs->setHorizontalHeaderLabels(headerLabels);
+    allowableNodeProcs->verticalHeader()->hide();
+    allowableNodeProcs->horizontalHeader()->setStretchLastSection(true);
+    cLayout->addWidget(allowableNodeProcs, row,0, 3,2);
+    allowableNodeProcs->setRowCount(1);
+    allowableNodeProcs->setItem(0, 0, new QTableWidgetItem(""));
+    allowableNodeProcs->setItem(0, 1, new QTableWidgetItem(""));
+
     row++;
 
     return currentGroup;
@@ -1706,7 +1758,11 @@ QvisHostProfileWindow::UpdateMachineProfile()
 //   David Camp, Mon Aug  4 10:46:09 PDT 2014
 //   Added the threads option. Removed duplicate set value calls on timeout.
 //
+//   Brad Whitlock, Wed Oct 22 17:07:49 PDT 2014
+//   Added node/proc constraints.
+//
 // ****************************************************************************
+
 void
 QvisHostProfileWindow::UpdateLaunchProfile()
 {
@@ -1724,6 +1780,8 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     timeLimit->blockSignals(true);
     machinefileCheckBox->blockSignals(true);
     machinefile->blockSignals(true);
+    constraintGroup->blockSignals(true);
+    allowableNodeProcs->blockSignals(true);
     launchArgsCheckBox->blockSignals(true);
     launchArgs->blockSignals(true);
     sublaunchArgsCheckBox->blockSignals(true);
@@ -1763,6 +1821,8 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         timeLimit->setText("");
         machinefileCheckBox->setChecked(false);
         machinefile->setText("");
+        constraintGroup->setChecked(false);
+        ResizeNodeProcs(1, false);
         launchArgsCheckBox->setChecked(false);
         launchArgs->setText("");
         sublaunchArgsCheckBox->setChecked(false);
@@ -1887,6 +1947,27 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         txtXArgs->setText(currentLaunch->GetXArguments().c_str());
         cbXArgs->setChecked(!currentLaunch->GetXArguments().empty());
         txtXDisplay->setText(currentLaunch->GetXDisplay().c_str());
+
+        // Update the node/proc constraints.
+        constraintGroup->setChecked(currentLaunch->GetConstrainNodeProcs());
+        int nnodes = (int)currentLaunch->GetAllowableNodes().size();
+        int nprocs = (int)currentLaunch->GetAllowableProcs().size();
+        int n = std::min(nnodes, nprocs);
+        ResizeNodeProcs(n, true);
+        for(int i = 0; i < n; ++i)
+        {
+            QString nn, np;
+            nn.setNum(currentLaunch->GetAllowableNodes()[i]);
+            np.setNum(currentLaunch->GetAllowableProcs()[i]);
+
+            allowableNodeProcs->item(i, 0)->setText(nn);
+            allowableNodeProcs->item(i, 0)->setFlags(
+                     Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsEnabled);
+
+            allowableNodeProcs->item(i, 1)->setText(np);
+            allowableNodeProcs->item(i, 1)->setFlags(
+                     Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsEnabled);
+        }
     }
 
     // Restore signals.
@@ -1903,6 +1984,8 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     timeLimit->blockSignals(false);
     machinefileCheckBox->blockSignals(false);
     machinefile->blockSignals(false);
+    constraintGroup->blockSignals(false);
+    allowableNodeProcs->blockSignals(false);
     launchArgsCheckBox->blockSignals(false);
     launchArgs->blockSignals(false);
     sublaunchArgsCheckBox->blockSignals(false);
@@ -2141,6 +2224,8 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     timeLimit->setEnabled(parEnabled && currentLaunch->GetTimeLimitSet());
     machinefileCheckBox->setEnabled(parEnabled);
     machinefile->setEnabled(parEnabled && currentLaunch->GetMachinefileSet());
+    constraintGroup->setEnabled(parEnabled);
+
 #if 0 // disabling dynamic load balancing for now
     loadBalancingLabel->setEnabled(parEnabled);
     loadBalancing->setEnabled(parEnabled);
@@ -2632,6 +2717,27 @@ QvisHostProfileWindow::GetCurrentValues()
         // Mark the active profile so it will force the active profile
         // area to be updated.
         profiles->SelectMachines();
+    }
+
+    // Do the allowable nodes/procs
+    if (currentLaunch && currentLaunch->GetParallel())
+    {
+        intVector nnodes, nprocs;
+        for(int i = 0; i < allowableNodeProcs->rowCount(); ++i)
+        {
+            bool okay1 = false, okay2 = false;
+            int nn = allowableNodeProcs->item(i, 0)->text().toInt(&okay1);
+            int np = allowableNodeProcs->item(i, 1)->text().toInt(&okay2);
+            if(nn < 0) nn = 1;
+            if(np < 0) np = 1;
+            if(okay1 && okay2)
+            {
+                nnodes.push_back(nn);
+                nprocs.push_back(np);
+            }
+        }
+        currentLaunch->SetAllowableNodes(nnodes);
+        currentLaunch->SetAllowableProcs(nprocs);
     }
 
     return needNotify;
@@ -4393,6 +4499,7 @@ QvisHostProfileWindow::delMachineProfile()
         }
     }
     currentMachine = NULL;
+    currentLaunch = NULL;
     Apply();
 }
 
@@ -4730,5 +4837,140 @@ QvisHostProfileWindow::maxProcessorsChanged(int val)
         return;
 
     currentMachine->SetMaximumProcessors(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::ResizeNodeProcs
+//
+// Purpose:
+//   Sets the number of rows in the allowableNodeProcs table.
+//
+// Arguments:
+//   newsize : the new size.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 22 16:43:01 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::ResizeNodeProcs(int newSize, bool blank)
+{
+    int nRows = allowableNodeProcs->rowCount();
+    if (nRows < newSize)
+    {
+        allowableNodeProcs->setRowCount(newSize);
+        // Try and get the last row if it exists and we'll double
+        QString nnodes, nprocs;
+        if(!blank)
+        {
+            nnodes = QString("1");
+            nprocs = QString("16");
+
+            if(nRows > 0)
+            {
+                nnodes = allowableNodeProcs->item(nRows-1, 0)->text();
+                nprocs = allowableNodeProcs->item(nRows-1, 1)->text();
+                bool okay = false;
+                int innodes = nnodes.toInt(&okay);
+                if(okay)
+                {
+                    innodes *= 2;
+                    nnodes.setNum(innodes);
+                }
+                int inprocs = nprocs.toInt(&okay);
+                if(okay)
+                {
+                    inprocs *= 2;
+                     nprocs.setNum(inprocs);
+                }
+            }
+        }
+
+        for (int i = nRows; i < newSize; ++i)
+        {
+            allowableNodeProcs->setItem(i, 0, new QTableWidgetItem(nnodes));
+            allowableNodeProcs->setItem(i, 1, new QTableWidgetItem(nprocs));
+        }
+    }
+    else if (nRows > newSize)
+    {
+        for (int i = nRows-1; i >= newSize; --i)
+        {
+            allowableNodeProcs->removeRow(i);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::allowableNodeProcsAddRow
+//
+// Purpose:
+//   This is a Qt slot function called when we want to add a row to the 
+//   allowableNodeProcs table.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 22 16:43:46 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::allowableNodeProcsAddRow()
+{
+    ResizeNodeProcs(allowableNodeProcs->rowCount() + 1, false);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::allowableNodeProcsDeleteRow
+//
+// Purpose:
+//   This is a Qt slot function called when we want to delete a row from the 
+//   allowableNodeProcs table.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 22 16:43:46 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::allowableNodeProcsDeleteRow()
+{
+    allowableNodeProcs->removeRow(allowableNodeProcs->currentRow());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleAllowableNodeProcs
+//
+// Purpose:
+//   This is a Qt slot function called when we want to toggle whether allowable
+//   node/proc constraints are to be used.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 22 16:43:46 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleAllowableNodeProcs(bool val)
+{
+    currentLaunch->SetConstrainNodeProcs(val);
+    SetUpdate(false);
     Apply();
 }
