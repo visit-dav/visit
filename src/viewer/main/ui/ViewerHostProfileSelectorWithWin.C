@@ -43,8 +43,7 @@
 #include <ViewerBase.h>
 #include <ViewerMessaging.h>
 
-#include <stdio.h>
-
+#include <QComboBox>
 #include <QLayout>
 #include <QLineEdit>
 #include <QPushButton>
@@ -53,11 +52,16 @@
 #include <QSpinBox>
 
 #include <DebugStream.h>
+#include <stdio.h>
 
 #include <string>
-using std::string;
 #include <vector>
+
+using std::string;
 using std::vector;
+
+#define MAX_NUM_PROCESSORS 1000000
+#define MAX_NUM_NODES      300000
 
 // ****************************************************************************
 //  Constructor:  ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin
@@ -80,6 +84,9 @@ using std::vector;
 //
 //   Brad Whitlock, Fri May 23 11:36:45 PDT 2008
 //   Qt 4.
+//
+//   Brad Whitlock, Thu Oct 23 10:50:31 PDT 2014
+//   Add fixed node/proc controls.
 //
 // ****************************************************************************
 
@@ -113,19 +120,45 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
             this,     SLOT(newProfileSelected()));
     connect(profiles, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(accept()));
 
+    // Processor controls
     numProcsLabel = new QLabel(tr("Num procs"), this);
-    numProcs = new QSpinBox(this);
-    numProcs->setMinimum(1);
-    numProcs->setMaximum(99999);
     layout->addWidget(numProcsLabel, 1,0);
-    layout->addWidget(numProcs,      1,1);
+    QWidget *np = new QWidget(this);
+    layout->addWidget(np,            1,1);
+    QHBoxLayout *npLayout = new QHBoxLayout(np);
+    npLayout->setMargin(1);
+    npLayout->setSpacing(1);
 
+    numProcs = new QSpinBox(np);
+    numProcs->setMinimum(1);
+    numProcs->setMaximum(MAX_NUM_PROCESSORS);
+    npLayout->addWidget(numProcs);
+
+    numProcsFixed = new QComboBox(np);
+    npLayout->addWidget(numProcsFixed);
+    connect(numProcsFixed, SIGNAL(activated(int)),
+            this, SLOT(numProcsFixedActivated(int)));
+    numProcsFixed->setVisible(false);
+
+    // Node controls
     numNodesLabel = new QLabel(tr("Num nodes"), this);
-    numNodes = new QSpinBox(this);
-    numNodes->setMinimum(1);
-    numNodes->setMaximum(99999);
     layout->addWidget(numNodesLabel, 1,2);
-    layout->addWidget(numNodes,      1,3);
+    QWidget *nn = new QWidget(this);
+    layout->addWidget(nn,            1,3);
+    QHBoxLayout *nnLayout = new QHBoxLayout(nn);
+    nnLayout->setMargin(1);
+    nnLayout->setSpacing(1);
+
+    numNodes = new QSpinBox(nn);
+    numNodes->setMinimum(1);
+    numNodes->setMaximum(MAX_NUM_NODES);
+    nnLayout->addWidget(numNodes);
+
+    numNodesFixed = new QComboBox(nn);
+    nnLayout->addWidget(numNodesFixed);
+    connect(numNodesFixed, SIGNAL(activated(int)),
+            this, SLOT(numNodesFixedActivated(int)));
+    numNodesFixed->setVisible(false);
 
     bankNameLabel = new QLabel(tr("Bank"), this);
     bankName = new QLineEdit(this);
@@ -241,6 +274,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Brad Whitlock, Thu Oct  6 16:16:10 PDT 2011
 //    Constrain the number of processors and nodes.
 //
+//    Brad Whitlock, Thu Oct 23 11:29:00 PDT 2014
+//    Add controls for constrained nodes/procs.
+//
 // ****************************************************************************
 
 bool 
@@ -309,9 +345,9 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 
             // Constrain the max nodes and processors.
             int maxP = profile.GetMaximumProcessorsValid() ? 
-                profile.GetMaximumProcessors() : 99999;
+                profile.GetMaximumProcessors() : MAX_NUM_PROCESSORS;
             int maxN = profile.GetMaximumNodesValid() ? 
-                profile.GetMaximumNodes() : 99999;
+                profile.GetMaximumNodes() : MAX_NUM_NODES;
             numProcs->setMaximum(maxP);
             numNodes->setMaximum(maxN);
 
@@ -345,8 +381,21 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
                 return false;
             }
 
-            profile.GetActiveLaunchProfile()->SetNumProcessors(numProcs->value());
-            profile.GetActiveLaunchProfile()->SetNumNodes(numNodes->value());
+            if(!profile.GetActiveLaunchProfile()->GetConstrainNodeProcs())
+            {
+                profile.GetActiveLaunchProfile()->SetNumProcessors(numProcs->value());
+                profile.GetActiveLaunchProfile()->SetNumNodes(numNodes->value());
+            }
+            else
+            {
+                bool okay = false;
+                int np = numProcsFixed->currentText().toInt(&okay);
+                if(okay && np > 0)
+                    profile.GetActiveLaunchProfile()->SetNumProcessors(np);
+                int nn = numNodesFixed->currentText().toInt(&okay);
+                if(okay && nn > 0)
+                    profile.GetActiveLaunchProfile()->SetNumNodes(nn);
+            }
             profile.GetActiveLaunchProfile()->SetBank(bankName->text().toStdString());
             profile.GetActiveLaunchProfile()->SetTimeLimit(timeLimit->text().toStdString());
             profile.GetActiveLaunchProfile()->SetMachinefile(machinefile->text().toStdString());
@@ -400,6 +449,9 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 //    Make sure that the number of nodes and processors is never more than
 //    the maximum allowable.
 //
+//    Brad Whitlock, Thu Oct 23 11:29:00 PDT 2014
+//    Add controls for constrained nodes/procs.
+//
 // ****************************************************************************
 
 void
@@ -422,6 +474,7 @@ ViewerHostProfileSelectorWithWin::newProfileSelected()
     numProcsLabel->setEnabled(parallel);
     numProcs->setEnabled(parallel);
     numProcs->setValue(np);
+    numProcsFixed->setEnabled(parallel && lp.GetConstrainNodeProcs());
 
     int nn = lp.GetNumNodesSet() ? lp.GetNumNodes() : 1;
     if(profile.GetMaximumNodesValid() && 
@@ -432,6 +485,49 @@ ViewerHostProfileSelectorWithWin::newProfileSelected()
     numNodesLabel->setEnabled(parallel && lp.GetNumNodesSet());
     numNodes->setEnabled(parallel && lp.GetNumNodesSet());
     numNodes->setValue(nn);
+    numNodesFixed->setEnabled(parallel && lp.GetConstrainNodeProcs());
+
+    // Show the node/proc constraints.
+    if(parallel && lp.GetConstrainNodeProcs())
+    {
+        int nnodes = (int)lp.GetAllowableNodes().size();
+        int nprocs = (int)lp.GetAllowableProcs().size();
+        int n = std::min(nnodes, nprocs);
+        numNodesFixed->blockSignals(true);
+        numProcsFixed->blockSignals(true);
+        numNodesFixed->clear();
+        numProcsFixed->clear();
+        int idx = 0;
+        for(int i = 0; i < n; ++i)
+        {
+            numNodesFixed->addItem(QString().setNum(lp.GetAllowableNodes()[i]));
+            numProcsFixed->addItem(QString().setNum(lp.GetAllowableProcs()[i]));
+
+            if(lp.GetNumNodesSet() && lp.GetAllowableNodes()[i] == nn)
+                idx = i;
+            if(lp.GetAllowableProcs()[i] == np)
+                idx = i;
+        }
+        numNodesFixed->setCurrentIndex(idx);
+        numProcsFixed->setCurrentIndex(idx);
+
+        numNodesFixed->blockSignals(false);
+        numProcsFixed->blockSignals(false);
+
+        numNodes->setVisible(false);
+        numProcs->setVisible(false);
+        numNodesFixed->setVisible(true);
+        numProcsFixed->setVisible(true);
+
+        numNodesLabel->setEnabled(true);
+    }
+    else
+    {
+        numNodes->setVisible(true);
+        numProcs->setVisible(true);
+        numNodesFixed->setVisible(false);
+        numProcsFixed->setVisible(false);
+    }
 
     bankNameLabel->setEnabled(parallel && lp.GetBankSet());
     bankName->setEnabled(parallel && lp.GetBankSet());
@@ -446,4 +542,63 @@ ViewerHostProfileSelectorWithWin::newProfileSelected()
     machinefile->setText(lp.GetMachinefile().c_str());
 }
 
+// ****************************************************************************
+// Method: ViewerHostProfileSelectorWithWin::numNodesFixedActivated
+//
+// Purpose:
+//   This Qt slot function makes sure we show the right number of procs for the
+//   selected number of nodes.
+//
+// Arguments:
+//   index : The index of the new #nodes in the list.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 23 11:21:23 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerHostProfileSelectorWithWin::numNodesFixedActivated(int index)
+{
+    // Make sure that we also show the right #procs for this #nodes.
+    numProcsFixed->blockSignals(true);
+    numProcsFixed->setCurrentIndex(index);
+    numProcsFixed->blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: ViewerHostProfileSelectorWithWin::numProcsFixedActivated
+//
+// Purpose:
+//   This Qt slot function makes sure we show the right number of procs for the
+//   selected number of nodes.
+//
+// Arguments:
+//   index : The index of the new #nodes in the list.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 23 11:21:23 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerHostProfileSelectorWithWin::numProcsFixedActivated(int index)
+{
+    // Make sure that we also show the right #nodes for this #procs.
+    numNodesFixed->blockSignals(true);
+    numNodesFixed->setCurrentIndex(index);
+    numNodesFixed->blockSignals(false);
+}
 

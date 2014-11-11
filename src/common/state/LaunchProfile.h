@@ -99,6 +99,8 @@ public:
     void SelectMachinefile();
     void SelectXArguments();
     void SelectXDisplay();
+    void SelectAllowableNodes();
+    void SelectAllowableProcs();
 
     // Property setting methods
     void SetProfileName(const std::string &profileName_);
@@ -136,6 +138,9 @@ public:
     void SetLaunchXServers(bool launchXServers_);
     void SetXDisplay(const std::string &XDisplay_);
     void SetNumThreads(int numThreads_);
+    void SetConstrainNodeProcs(bool constrainNodeProcs_);
+    void SetAllowableNodes(const intVector &allowableNodes_);
+    void SetAllowableProcs(const intVector &allowableProcs_);
 
     // Property getting methods
     const std::string  &GetProfileName() const;
@@ -186,6 +191,11 @@ public:
     const std::string  &GetXDisplay() const;
           std::string  &GetXDisplay();
     int                GetNumThreads() const;
+    bool               GetConstrainNodeProcs() const;
+    const intVector    &GetAllowableNodes() const;
+          intVector    &GetAllowableNodes();
+    const intVector    &GetAllowableProcs() const;
+          intVector    &GetAllowableProcs();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -238,6 +248,9 @@ public:
         ID_launchXServers,
         ID_XDisplay,
         ID_numThreads,
+        ID_constrainNodeProcs,
+        ID_allowableNodes,
+        ID_allowableProcs,
         ID__LAST
     };
 
@@ -277,11 +290,14 @@ private:
     bool         launchXServers;
     std::string  XDisplay;
     int          numThreads;
+    bool         constrainNodeProcs;
+    intVector    allowableNodes;
+    intVector    allowableProcs;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbbisbsi"
+#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbbisbsibi*i*"
 
 #endif

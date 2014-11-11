@@ -140,6 +140,7 @@ Pipeline/avtDebugDumpOptions.C
 Pipeline/avtImageReader.C
 Pipeline/avtImageTiler.C
 Pipeline/avtImageWriter.C
+Pipeline/avtMemory.C
 Pipeline/avtMultiWindowSaver.C
 Pipeline/avtNamedSelection.C
 Pipeline/avtNamedSelectionExtension.C

@@ -39,6 +39,7 @@
 package llnl.visit;
 
 import java.util.Vector;
+import java.lang.Integer;
 
 // ****************************************************************************
 // Class: LaunchProfile
@@ -57,7 +58,7 @@ import java.util.Vector;
 
 public class LaunchProfile extends AttributeSubject
 {
-    private static int LaunchProfile_numAdditionalAtts = 35;
+    private static int LaunchProfile_numAdditionalAtts = 38;
 
     public LaunchProfile()
     {
@@ -98,6 +99,9 @@ public class LaunchProfile extends AttributeSubject
         launchXServers = false;
         XDisplay = new String(":%l");
         numThreads = 0;
+        constrainNodeProcs = false;
+        allowableNodes = new Vector();
+        allowableProcs = new Vector();
     }
 
     public LaunchProfile(int nMoreFields)
@@ -139,6 +143,9 @@ public class LaunchProfile extends AttributeSubject
         launchXServers = false;
         XDisplay = new String(":%l");
         numThreads = 0;
+        constrainNodeProcs = false;
+        allowableNodes = new Vector();
+        allowableProcs = new Vector();
     }
 
     public LaunchProfile(LaunchProfile obj)
@@ -185,6 +192,19 @@ public class LaunchProfile extends AttributeSubject
         launchXServers = obj.launchXServers;
         XDisplay = new String(obj.XDisplay);
         numThreads = obj.numThreads;
+        constrainNodeProcs = obj.constrainNodeProcs;
+        allowableNodes = new Vector();
+        for(i = 0; i < obj.allowableNodes.size(); ++i)
+        {
+            Integer iv = (Integer)obj.allowableNodes.elementAt(i);
+            allowableNodes.addElement(new Integer(iv.intValue()));
+        }
+        allowableProcs = new Vector();
+        for(i = 0; i < obj.allowableProcs.size(); ++i)
+        {
+            Integer iv = (Integer)obj.allowableProcs.elementAt(i);
+            allowableProcs.addElement(new Integer(iv.intValue()));
+        }
 
         SelectAll();
     }
@@ -211,6 +231,24 @@ public class LaunchProfile extends AttributeSubject
             String arguments1 = (String)arguments.elementAt(i);
             String arguments2 = (String)obj.arguments.elementAt(i);
             arguments_equal = arguments1.equals(arguments2);
+        }
+        // Compare the elements in the allowableNodes vector.
+        boolean allowableNodes_equal = (obj.allowableNodes.size() == allowableNodes.size());
+        for(i = 0; (i < allowableNodes.size()) && allowableNodes_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer allowableNodes1 = (Integer)allowableNodes.elementAt(i);
+            Integer allowableNodes2 = (Integer)obj.allowableNodes.elementAt(i);
+            allowableNodes_equal = allowableNodes1.equals(allowableNodes2);
+        }
+        // Compare the elements in the allowableProcs vector.
+        boolean allowableProcs_equal = (obj.allowableProcs.size() == allowableProcs.size());
+        for(i = 0; (i < allowableProcs.size()) && allowableProcs_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer allowableProcs1 = (Integer)allowableProcs.elementAt(i);
+            Integer allowableProcs2 = (Integer)obj.allowableProcs.elementAt(i);
+            allowableProcs_equal = allowableProcs1.equals(allowableProcs2);
         }
         // Create the return value
         return ((profileName.equals(obj.profileName)) &&
@@ -247,7 +285,10 @@ public class LaunchProfile extends AttributeSubject
                 (XArguments.equals(obj.XArguments)) &&
                 (launchXServers == obj.launchXServers) &&
                 (XDisplay.equals(obj.XDisplay)) &&
-                (numThreads == obj.numThreads));
+                (numThreads == obj.numThreads) &&
+                (constrainNodeProcs == obj.constrainNodeProcs) &&
+                allowableNodes_equal &&
+                allowableProcs_equal);
     }
 
     // Property setting methods
@@ -461,6 +502,24 @@ public class LaunchProfile extends AttributeSubject
         Select(34);
     }
 
+    public void SetConstrainNodeProcs(boolean constrainNodeProcs_)
+    {
+        constrainNodeProcs = constrainNodeProcs_;
+        Select(35);
+    }
+
+    public void SetAllowableNodes(Vector allowableNodes_)
+    {
+        allowableNodes = allowableNodes_;
+        Select(36);
+    }
+
+    public void SetAllowableProcs(Vector allowableProcs_)
+    {
+        allowableProcs = allowableProcs_;
+        Select(37);
+    }
+
     // Property getting methods
     public String  GetProfileName() { return profileName; }
     public int     GetTimeout() { return timeout; }
@@ -497,6 +556,9 @@ public class LaunchProfile extends AttributeSubject
     public boolean GetLaunchXServers() { return launchXServers; }
     public String  GetXDisplay() { return XDisplay; }
     public int     GetNumThreads() { return numThreads; }
+    public boolean GetConstrainNodeProcs() { return constrainNodeProcs; }
+    public Vector  GetAllowableNodes() { return allowableNodes; }
+    public Vector  GetAllowableProcs() { return allowableProcs; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -571,6 +633,12 @@ public class LaunchProfile extends AttributeSubject
             buf.WriteString(XDisplay);
         if(WriteSelect(34, buf))
             buf.WriteInt(numThreads);
+        if(WriteSelect(35, buf))
+            buf.WriteBool(constrainNodeProcs);
+        if(WriteSelect(36, buf))
+            buf.WriteIntVector(allowableNodes);
+        if(WriteSelect(37, buf))
+            buf.WriteIntVector(allowableProcs);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -682,6 +750,15 @@ public class LaunchProfile extends AttributeSubject
         case 34:
             SetNumThreads(buf.ReadInt());
             break;
+        case 35:
+            SetConstrainNodeProcs(buf.ReadBool());
+            break;
+        case 36:
+            SetAllowableNodes(buf.ReadIntVector());
+            break;
+        case 37:
+            SetAllowableProcs(buf.ReadIntVector());
+            break;
         }
     }
 
@@ -723,6 +800,9 @@ public class LaunchProfile extends AttributeSubject
         str = str + boolToString("launchXServers", launchXServers, indent) + "\n";
         str = str + stringToString("XDisplay", XDisplay, indent) + "\n";
         str = str + intToString("numThreads", numThreads, indent) + "\n";
+        str = str + boolToString("constrainNodeProcs", constrainNodeProcs, indent) + "\n";
+        str = str + intVectorToString("allowableNodes", allowableNodes, indent) + "\n";
+        str = str + intVectorToString("allowableProcs", allowableProcs, indent) + "\n";
         return str;
     }
 
@@ -763,5 +843,8 @@ public class LaunchProfile extends AttributeSubject
     private boolean launchXServers;
     private String  XDisplay;
     private int     numThreads;
+    private boolean constrainNodeProcs;
+    private Vector  allowableNodes; // vector of Integer objects
+    private Vector  allowableProcs; // vector of Integer objects
 }
 

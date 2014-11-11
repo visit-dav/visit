@@ -46,8 +46,7 @@
 #include <snprintf.h>
 #include <QueryAttributes.h>
 
-#include <Utility.h>
-
+#include <avtMemory.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -110,7 +109,7 @@ avtMemoryUsageQuery::PerformQuery(QueryAttributes *atts)
     // grab memory usage per engine process
     unsigned long m_size, m_rss;
     
-    GetMemorySize(m_size, m_rss);
+    avtMemory::GetMemorySize(m_size, m_rss);
     
     if(m_size == 0 || m_rss == 0)
     {

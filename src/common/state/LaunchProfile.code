@@ -23,7 +23,10 @@ Definition:
 //
 //   Tom Fogal, Fri May  6 18:37:57 MDT 2011
 //   Adjust for new X launching options.
-//   
+//
+//   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
+//   I added code for node/proc constraints.
+//
 // ****************************************************************************
 bool
 LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
@@ -240,6 +243,24 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("numThreads", numThreads));
     }
 
+    if(completeSave || IsSelected(ID_constrainNodeProcs))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("constrainNodeProcs", constrainNodeProcs));
+    }
+
+    if(completeSave || IsSelected(ID_allowableNodes))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("allowableNodes", allowableNodes));
+    }
+
+    if(completeSave || IsSelected(ID_allowableProcs))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("allowableProcs", allowableProcs));
+    }
+
     if (addToParent)
     {
         node->AddNode(new DataNode("profileName", profileName));
@@ -273,6 +294,9 @@ Definition:
 //
 //   Tom Fogal, Fri May  6 18:40:39 MDT 2011
 //   Adjust for new X launching options.
+//
+//   Brad Whitlock, Wed Oct 22 17:38:43 PDT 2014
+//   I added code for node/proc constraints.
 //
 // ****************************************************************************
 void
@@ -350,5 +374,11 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_XDisplay,        (void *)&XDisplay);
     if(numThreads != other.GetNumThreads())
         Select(ID_numThreads,      (void *)&numThreads);
+    if(constrainNodeProcs != other.GetConstrainNodeProcs())
+        Select(ID_constrainNodeProcs, (void *)&constrainNodeProcs);
+    if(allowableNodes != other.GetAllowableNodes())
+        Select(ID_allowableNodes, (void *)&allowableNodes);
+    if(allowableProcs != other.GetAllowableProcs())
+        Select(ID_allowableProcs, (void *)&allowableProcs);
 }
 

@@ -61,6 +61,7 @@ class QCheckBox;
 class QButtonGroup;
 class QRadioButton;
 class QNetworkReply;
+class QTableWidget;
 class QTreeWidget;
 class QNetworkAccessManager;
 
@@ -197,6 +198,7 @@ private:
     void ListWidgetDropEvent(QDropEvent * event);
     void addChildren(const QModelIndex& list, QStringList& suffixList, QStringList& globalList);
     void selectProfiles(const QModelIndex& index);
+    void ResizeNodeProcs(int newSize, bool blank);
 private slots:
     void apply();
 
@@ -213,7 +215,7 @@ private slots:
     void copyLaunchProfile();
     void makeDefaultLaunchProfile();
     void selectProfiles();
-    void retriveLatestProfiles();
+    void retrieveLatestProfiles();
     void downloadHosts(QNetworkReply* reply);
 
     void processProfileNameText(const QString &);
@@ -269,6 +271,9 @@ private slots:
     void maxNodesChanged(int);
     void toggleUseMaxProcessors(bool);
     void maxProcessorsChanged(int);
+    void allowableNodeProcsAddRow();
+    void allowableNodeProcsDeleteRow();
+    void toggleAllowableNodeProcs(bool);
 private:
     // Main Window
     QListWidget *hostList;
@@ -322,6 +327,8 @@ private:
     QLineEdit    *timeLimit;
     QCheckBox    *machinefileCheckBox;
     QLineEdit    *machinefile;
+    QGroupBox    *constraintGroup;
+    QTableWidget *allowableNodeProcs;
 
     // Parallel Advanced Settings
     QCheckBox    *useVisItScriptForEnvCheckBox;

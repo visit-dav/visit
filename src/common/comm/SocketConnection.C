@@ -337,6 +337,10 @@ SocketConnection::WaitForDescriptor(bool input)
 //   but the data encoded therein uses the first bytes of the buffer to encode
 //   the length of the data payload.
 //
+//   Brad Whitlock, Wed Oct 29 10:08:14 PDT 2014
+//   Add lost connection exception coding for fixed buffer mode so we don't
+//   have programs hanging when there's no way they'll get more input.
+//
 // ****************************************************************************
 
 int
@@ -345,6 +349,7 @@ SocketConnection::Fill()
     DEBUG_SOCKETS_CODE(const char *mName = "SocketConnection::Fill: ";)
     DEBUG_SOCKETS(debug5 << mName << "begin" << endl;)
 
+    const int iteration_limit = 100;
     unsigned char tmp[BUFFER_SIZE];
 
     // If we're in fixed buffer mode, make sure we get BUFFER_SIZE bytes
@@ -376,6 +381,20 @@ SocketConnection::Fill()
 #else
         amountRead = recv(descriptor, (void *)ptr, BUFFER_SIZE-totalRead, 0);
 #endif
+
+        if(fixedBufferMode)
+        {
+            if(amountRead == 0)
+            {
+                ++zeroesRead;
+                if(zeroesRead > iteration_limit)
+                {
+                    EXCEPTION0(LostConnectionException);
+                }
+            }
+            else
+                zeroesRead = 0; 
+        }
 
         totalRead += amountRead;
     }
@@ -422,7 +441,7 @@ SocketConnection::Fill()
 
     // If we have had a certain number of zero length reads in a row,
     // assume the connection died.
-    if(zeroesRead > 100)
+    if(zeroesRead > iteration_limit)
     {
          EXCEPTION0(LostConnectionException);
     }

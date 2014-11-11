@@ -60,6 +60,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
 #include <avtNekDomainBoundaries.h>
+#include <avtMemory.h>
 #include <avtParallel.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtIsenburgSGG.h>
@@ -1576,7 +1577,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (!avtDatabase::OnlyServeUpMetaData() && nbricks > 1)
     {
         unsigned long size, rss;
-        GetMemorySize(size, rss);
+        avtMemory::GetMemorySize(size, rss);
         debug5 << "Memory size before creating domain boundaries object: "
                << size << ", rss=" << rss << endl;
         if(nodalCentering)
@@ -1628,7 +1629,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
         }
 
-        GetMemorySize(size, rss);
+        avtMemory::GetMemorySize(size, rss);
         debug5 << "Memory size after creating domain boundaries object: "
                << size << ", rss=" << rss << endl;
     }

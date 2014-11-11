@@ -84,6 +84,7 @@
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
+#include <avtMemory.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
 #include <avtSILGenerator.h>
@@ -127,6 +128,9 @@ void                 AddGhostNodesForSimplifiedNesting(bool *hasNeighbor,
 
 // used to track if the matvf/specmv ghost zones warning has been issued.
 bool avtGenericDatabase::issuedOriginalConnectivityWarning = false;
+
+// Percent of memory allowed for the cache.
+const float avtGenericDatabase::maxCachePercent = 0.1f;
 
 // ****************************************************************************
 //  Method: avtGenericDatabase constructor
@@ -2259,7 +2263,7 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
             //
             // Cache the variable if we can
             //
-            if (Interface->CanCacheVariable(real_varname))
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
             {
                 std::string cache_varname =
                         Interface->CreateCacheNameIncludingSelections(varname, 
@@ -2380,7 +2384,7 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
         var = Interface->GetVectorVar(ts, domain, real_varname);
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(real_varname))
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
             {
                 std::string cache_varname =
                        Interface->CreateCacheNameIncludingSelections(varname, 
@@ -2492,7 +2496,7 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
         var = Interface->GetVectorVar(ts, domain, real_varname);
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(real_varname))
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
             {
                 std::string cache_varname =
                        Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
@@ -2607,7 +2611,7 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
             //
             // Cache the variable if we can
             //
-            if (Interface->CanCacheVariable(real_varname))
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
             {
                 std::string cache_varname =
                        Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
@@ -2708,7 +2712,7 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
         var = Interface->GetVectorVar(ts, domain, real_varname);
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(real_varname))
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
             {
                 std::string cache_varname =
                        Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
@@ -2803,7 +2807,7 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
         var = Interface->GetVar(ts, domain, real_varname);
         if (var != NULL)
         {
-            if (Interface->CanCacheVariable(real_varname))
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
             {
                 std::string cache_varname =
                        Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
@@ -3024,7 +3028,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 
         AssociateBounds(mesh);
 
-        if (Interface->CanCacheVariable(real_meshname))
+        if (CachingRecommended(mesh) && Interface->CanCacheVariable(real_meshname))
         {
             std::string cache_meshname =
                    Interface->CreateCacheNameIncludingSelections(meshname, ts, domain);
@@ -3094,6 +3098,103 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     return rv;
 }
 
+// ****************************************************************************
+// Method: avtGenericDatabase::CachingRecommended
+//
+// Purpose:
+//   Determines whether the array plus the current cache size will still be
+//   under a given threshold, in which case, we allow the array to be cached.
+//
+// Arguments:
+//   arr : The array we're checking to see if it fits.
+//
+// Returns:    True if we can cache and still fit.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 17:54:55 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CachingRecommended(vtkDataArray *arr) const
+{
+    bool retval = true;
+
+#ifdef VISIT_BLUE_GENE_Q
+    // We need to be more frugal with what we cache. Let's limit the cache size
+    // to some percentage of the total memory size for this process.
+    unsigned long nBytes = cache.EstimateSize(arr, true);
+    unsigned long cacheSize = cache.EstimateCacheSize();
+    unsigned long mtotal = 0;
+    avtMemory::GetTotalMemorySize(mtotal);
+    if(mtotal > 0)
+    {
+        double newPercent = double(cacheSize + nBytes) / double(mtotal);
+        retval = newPercent < maxCachePercent;
+        if(!retval)
+        {
+            debug1 << "Caching data array not recommended. Cache would "
+                      "increase to " << newPercent << "% of " << mtotal
+                   << " bytes." << endl;
+        }
+    }
+#endif
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtGenericDatabase::CachingRecommended
+//
+// Purpose:
+//   Determines whether the dataset plus the current cache size will still be
+//   under a given threshold, in which case, we allow the dataset to be cached.
+//
+// Arguments:
+//   ds : The dataset we're checking to see if it fits.
+//
+// Returns:    True if we can cache and still fit.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 17:54:55 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CachingRecommended(vtkDataSet *ds) const
+{
+    bool retval = true;
+
+#ifdef VISIT_BLUE_GENE_Q
+    // We need to be more frugal with what we cache. Let's limit the cache size
+    // to some percentage of the total memory size for this process.
+    unsigned long nBytes = cache.EstimateSize(ds);
+    unsigned long cacheSize = cache.EstimateCacheSize();
+    unsigned long mtotal = 0;
+    avtMemory::GetTotalMemorySize(mtotal);
+    if(mtotal > 0)
+    {
+        double newPercent = double(cacheSize + nBytes) / double(mtotal);
+        retval = newPercent < maxCachePercent;
+        if(!retval)
+        {
+            debug1 << "Caching dataset not recommended. Cache would "
+                      "increase to " << newPercent << "% of " << mtotal
+                   << " bytes." << endl;
+        }
+    }
+#endif
+
+    return retval;
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::GetAuxiliaryData

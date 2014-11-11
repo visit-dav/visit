@@ -1,5 +1,5 @@
 #include <DebugStream.h>
-#include <Utility.h>
+#include <avtMemory.h>
 
 #include <statm.h>
 
@@ -11,7 +11,7 @@ void OutputMemoryInfo( const char* str )
   debug1 << str << " TOT(" << totsize << ")  RSS(" << rss << ").\n";
 #else
   unsigned long size, rss2;
-  GetMemorySize(size, rss2);
+  avtMemory::GetMemorySize(size, rss2);
   debug1 << str << " [VISIT] SIZE(" << size << ")  RSS(" << rss2 << ").\n";
 #endif
 }

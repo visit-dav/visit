@@ -46,6 +46,15 @@
 #include <vtkInformationDoubleVectorKey.h>
 #include <vtkInformationStringKey.h>
 
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkCellArray.h>
+
 #include <avtFacelist.h>
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
@@ -820,6 +829,151 @@ avtVariableCache::ClearVariablesWithString(const std::string &str)
 }
 
 // ****************************************************************************
+// Method: avtVariableCache::EstimateSize
+//
+// Purpose:
+//   Estimate the size of a VTK data array.
+//
+// Arguments:
+//   arr : The array for which we're estimating.
+//
+// Returns:    
+//
+// Note:       We can calculate the array size directly but we fuzz it a little
+//             to account for possible transforms to float that are likely
+//             to occur.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 17:46:54 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+unsigned long
+avtVariableCache::EstimateSize(vtkDataArray *arr, bool allowConvert)
+{
+    unsigned long elemSize = (unsigned long)(arr->GetElementComponentSize());
+    // The transform manager is likely going to have to convert the array if
+    // it is not float or double. Take that into account when making the size.
+    if(allowConvert && 
+       arr->GetDataType() != VTK_FLOAT && arr->GetDataType() != VTK_DOUBLE)
+    {
+        elemSize = (int)sizeof(float);
+    }
+    unsigned long nBytes = (unsigned long)(arr->GetNumberOfComponents()) * 
+                           (unsigned long)(arr->GetNumberOfTuples()) *
+                           elemSize;
+    return nBytes;
+}
+
+// ****************************************************************************
+// Method: avtVariableCache::EstimateSize
+//
+// Purpose:
+//   Estimate the size of a dataset.
+//
+// Arguments:
+//   ds : The dataset for which we're estimating the size.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 17:48:18 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+unsigned long
+avtVariableCache::EstimateSize(vtkDataSet *ds)
+{
+    unsigned long size = 0;
+
+    vtkRectilinearGrid  *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
+    vtkStructuredGrid   *sgrid = vtkStructuredGrid::SafeDownCast(ds);
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::SafeDownCast(ds);
+    vtkPolyData         *pd    = vtkPolyData::SafeDownCast(ds);
+    unsigned long sizeint = (unsigned long)sizeof(int);
+    if(rgrid != NULL)
+    {
+        if(rgrid->GetXCoordinates() != NULL)
+            size += EstimateSize(rgrid->GetXCoordinates(), false);
+        if(rgrid->GetYCoordinates() != NULL)
+            size += EstimateSize(rgrid->GetYCoordinates(), false);
+        if(rgrid->GetZCoordinates() != NULL)
+            size += EstimateSize(rgrid->GetZCoordinates(), false);
+    }
+    else if(sgrid != NULL)
+    {
+        size += EstimateSize(sgrid->GetPoints()->GetData(), false);
+    }
+    else if(ugrid != NULL)
+    {
+        size += EstimateSize(ugrid->GetPoints()->GetData(), false);
+        size += ugrid->GetCells()->GetSize() * sizeint;
+    }
+    else if(pd != NULL)
+    {
+        size += EstimateSize(pd->GetPoints()->GetData(), false);
+        if(pd->GetVerts() != NULL)
+            size += pd->GetVerts()->GetSize() * sizeint;
+        if(pd->GetLines() != NULL)
+            size += pd->GetLines()->GetSize() * sizeint;
+        if(pd->GetPolys() != NULL)
+            size += pd->GetPolys()->GetSize() * sizeint;
+        if(pd->GetStrips() != NULL)
+            size += pd->GetStrips()->GetSize() * sizeint;
+    }
+
+    for(int i = 0; i < ds->GetCellData()->GetNumberOfArrays(); ++i)
+    {
+        vtkDataArray *arr = ds->GetCellData()->GetArray(i);
+        if(arr != NULL)
+            size += EstimateSize(arr, false);
+    }
+    for(int i = 0; i < ds->GetPointData()->GetNumberOfArrays(); ++i)
+    {
+        vtkDataArray *arr = ds->GetPointData()->GetArray(i);
+        if(arr != NULL)
+            size += EstimateSize(arr, false);
+    }
+
+    return size;
+}
+ 
+// ****************************************************************************
+// Method: avtVariableCache::EstimateCacheSize
+//
+// Purpose:
+//   Estimates the size of the stored VTK objects.
+//
+// Returns:    An estimate of the cache size.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 17:23:07 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+unsigned long
+avtVariableCache::EstimateCacheSize() const
+{
+    unsigned long size = 0;
+    std::vector<OneVar *>::const_iterator it;
+    for (it = vtkVars.begin() ; it != vtkVars.end() ; it++)
+    {
+        size += (*it)->EstimateSize((*it)->GetType());
+    }
+    return size;
+}
+
+// ****************************************************************************
 //  Method: OneDomain constructor
 //
 //  Arguments:
@@ -1527,6 +1681,18 @@ avtVariableCache::OneVar::Print(ostream &out, int indent)
     }
 }
 
+unsigned long
+avtVariableCache::OneVar::EstimateSize(const char *type) const
+{
+    unsigned long size = 0;
+    std::vector<OneMat *>::const_iterator it;
+    for (it = materials.begin() ; it != materials.end() ; it++)
+    {
+        size += (*it)->EstimateSize(type);
+    }
+    return size;
+}
+
 
 // ****************************************************************************
 //  Method: OneMat::Print
@@ -1553,6 +1719,18 @@ avtVariableCache::OneMat::Print(ostream &out, int indent)
     {
         (*it)->Print(out, indent+1);
     }
+}
+
+unsigned long
+avtVariableCache::OneMat::EstimateSize(const char *type) const
+{
+    unsigned long size = 0;
+    std::vector<OneTimestep *>::const_iterator it;
+    for (it = timesteps.begin() ; it != timesteps.end() ; it++)
+    {
+        size += (*it)->EstimateSize(type);
+    }
+    return size;
 }
 
 
@@ -1608,6 +1786,34 @@ avtVariableCache::OneTimestep::Print(ostream &out, int indent)
     }
 }
 
+unsigned long
+avtVariableCache::OneTimestep::EstimateSize(const char *type) const
+{
+    unsigned long size = 0;
+    for (int i = 0 ; i < HASH_SIZE ; i++)
+    {
+        if (domains[i] == NULL)
+            continue;
+        for (int j = 0 ; j < HASH_SIZE ; j++)
+        {
+            if (domains[i][j] == NULL)
+                continue;
+            for (int k = 0 ; k < HASH_SIZE ; k++)
+            {
+                if (domains[i][j][k] == NULL)
+                    continue;
+
+                std::vector<OneDomain *>::const_iterator it;
+                for (it = domains[i][j][k]->begin() ;
+                     it != domains[i][j][k]->end() ; it++)
+                {
+                    size += (*it)->EstimateSize(type);
+                }
+            }
+        }
+    }
+    return size;
+}
 
 // ****************************************************************************
 //  Method: OneDomain::Print
@@ -1631,6 +1837,46 @@ avtVariableCache::OneDomain::Print(ostream &out, int indent)
     out << "Domain = " << domain << endl;
     Indent(out, indent);
     out << "Item = " << item << endl;
+}
+
+unsigned long
+avtVariableCache::OneDomain::EstimateSize(const char *type) const
+{
+    unsigned long size = 0;
+
+    if(item->GetItemType() == avtCachableItem::VTKObject)
+    {
+        vtkObject *obj = ((avtCachedVTKObject *)item)->GetVTKObject();
+
+        if(strcmp(type, avtVariableCache::SCALARS_NAME) == 0 ||
+           strcmp(type, avtVariableCache::VECTORS_NAME) == 0 ||
+           strcmp(type, avtVariableCache::TENSORS_NAME) == 0 ||
+           strcmp(type, avtVariableCache::SYMMETRIC_TENSORS_NAME) == 0 ||
+           strcmp(type, avtVariableCache::LABELS_NAME) == 0 ||
+           strcmp(type, avtVariableCache::ARRAYS_NAME) == 0)
+        {
+            vtkDataArray *arr = vtkDataArray::SafeDownCast(obj);
+            size += avtVariableCache::EstimateSize(arr, false);
+        }        
+        else if(strcmp(type, avtVariableCache::DATASET_NAME) == 0)
+        {
+            vtkDataSet *ds = vtkDataSet::SafeDownCast(obj);
+            if(ds != NULL)
+                size += avtVariableCache::EstimateSize(ds);
+        }
+    }
+#if 0
+    else
+    {
+        // The cacheable item class needs to provide a method to calculate
+        // the size of the thing it contains. That would let us implement
+        // containers for materials, etc that can estimate the size.
+
+        // As-is we only estimate the size of cached VTK items.
+    }
+#endif
+
+    return size;
 }
 
 // ****************************************************************************
@@ -1800,3 +2046,4 @@ avtCachedVTKObject::~avtCachedVTKObject()
         obj = NULL;
     }
 }
+

@@ -46,6 +46,9 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector">"-fixed-buffer-sockets" </Field>
         <Field name="parallel" type="bool">true</Field>
+        <Field name="constrainNodeProcs" type="bool">true</Field>
+        <Field name="allowableNodes" type="intVector">1 2 4 8 16 32 64 128 </Field>
+        <Field name="allowableProcs" type="intVector">16 32 64 128 256 512 1024 2048 </Field>
     </Object>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">parallel 1024 cores</Field>
@@ -66,6 +69,9 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector">"-fixed-buffer-sockets" </Field>
         <Field name="parallel" type="bool">true</Field>
+        <Field name="constrainNodeProcs" type="bool">true</Field>
+        <Field name="allowableNodes" type="intVector">1 2 4 8 16 32 64 128 </Field>
+        <Field name="allowableProcs" type="intVector">16 32 64 128 256 512 1024 2048 </Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>
 </Object>

@@ -94,6 +94,13 @@
     <Field name="numThreads" label="numThreads" type="int">
       0
     </Field>
+    <Field name="constrainNodeProcs" label="Use allowable nodes/procs" type="bool">
+      false
+    </Field>
+    <Field name="allowableNodes" label="Allowable nodes" type="intVector">
+    </Field>
+    <Field name="allowableProcs" label="Allowable processors" type="intVector">
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SelectOnlyDifferingFields" user="true" member="true">

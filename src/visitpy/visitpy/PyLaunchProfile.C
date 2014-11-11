@@ -211,6 +211,43 @@ PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%snumThreads = %d\n", prefix, atts->GetNumThreads());
     str += tmpStr;
+    if(atts->GetConstrainNodeProcs())
+        SNPRINTF(tmpStr, 1000, "%sconstrainNodeProcs = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sconstrainNodeProcs = 0\n", prefix);
+    str += tmpStr;
+    {   const intVector &allowableNodes = atts->GetAllowableNodes();
+        SNPRINTF(tmpStr, 1000, "%sallowableNodes = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < allowableNodes.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", allowableNodes[i]);
+            str += tmpStr;
+            if(i < allowableNodes.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &allowableProcs = atts->GetAllowableProcs();
+        SNPRINTF(tmpStr, 1000, "%sallowableProcs = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < allowableProcs.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", allowableProcs[i]);
+            str += tmpStr;
+            if(i < allowableProcs.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -1088,6 +1125,156 @@ LaunchProfile_GetNumThreads(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+LaunchProfile_SetConstrainNodeProcs(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the constrainNodeProcs in the object.
+    obj->data->SetConstrainNodeProcs(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LaunchProfile_GetConstrainNodeProcs(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetConstrainNodeProcs()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+LaunchProfile_SetAllowableNodes(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+
+    intVector  &vec = obj->data->GetAllowableNodes();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the allowableNodes in the object as modified.
+    obj->data->SelectAllowableNodes();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LaunchProfile_GetAllowableNodes(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    // Allocate a tuple the with enough entries to hold the allowableNodes.
+    const intVector &allowableNodes = obj->data->GetAllowableNodes();
+    PyObject *retval = PyTuple_New(allowableNodes.size());
+    for(size_t i = 0; i < allowableNodes.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(allowableNodes[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+LaunchProfile_SetAllowableProcs(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+
+    intVector  &vec = obj->data->GetAllowableProcs();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the allowableProcs in the object as modified.
+    obj->data->SelectAllowableProcs();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LaunchProfile_GetAllowableProcs(PyObject *self, PyObject *args)
+{
+    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    // Allocate a tuple the with enough entries to hold the allowableProcs.
+    const intVector &allowableProcs = obj->data->GetAllowableProcs();
+    PyObject *retval = PyTuple_New(allowableProcs.size());
+    for(size_t i = 0; i < allowableProcs.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(allowableProcs[i])));
+    return retval;
+}
+
 
 
 PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH] = {
@@ -1162,6 +1349,12 @@ PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH] = {
     {"GetXDisplay", LaunchProfile_GetXDisplay, METH_VARARGS},
     {"SetNumThreads", LaunchProfile_SetNumThreads, METH_VARARGS},
     {"GetNumThreads", LaunchProfile_GetNumThreads, METH_VARARGS},
+    {"SetConstrainNodeProcs", LaunchProfile_SetConstrainNodeProcs, METH_VARARGS},
+    {"GetConstrainNodeProcs", LaunchProfile_GetConstrainNodeProcs, METH_VARARGS},
+    {"SetAllowableNodes", LaunchProfile_SetAllowableNodes, METH_VARARGS},
+    {"GetAllowableNodes", LaunchProfile_GetAllowableNodes, METH_VARARGS},
+    {"SetAllowableProcs", LaunchProfile_SetAllowableProcs, METH_VARARGS},
+    {"GetAllowableProcs", LaunchProfile_GetAllowableProcs, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1260,6 +1453,12 @@ PyLaunchProfile_getattr(PyObject *self, char *name)
         return LaunchProfile_GetXDisplay(self, NULL);
     if(strcmp(name, "numThreads") == 0)
         return LaunchProfile_GetNumThreads(self, NULL);
+    if(strcmp(name, "constrainNodeProcs") == 0)
+        return LaunchProfile_GetConstrainNodeProcs(self, NULL);
+    if(strcmp(name, "allowableNodes") == 0)
+        return LaunchProfile_GetAllowableNodes(self, NULL);
+    if(strcmp(name, "allowableProcs") == 0)
+        return LaunchProfile_GetAllowableProcs(self, NULL);
 
     return Py_FindMethod(PyLaunchProfile_methods, self, name);
 }
@@ -1344,6 +1543,12 @@ PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = LaunchProfile_SetXDisplay(self, tuple);
     else if(strcmp(name, "numThreads") == 0)
         obj = LaunchProfile_SetNumThreads(self, tuple);
+    else if(strcmp(name, "constrainNodeProcs") == 0)
+        obj = LaunchProfile_SetConstrainNodeProcs(self, tuple);
+    else if(strcmp(name, "allowableNodes") == 0)
+        obj = LaunchProfile_SetAllowableNodes(self, tuple);
+    else if(strcmp(name, "allowableProcs") == 0)
+        obj = LaunchProfile_SetAllowableProcs(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

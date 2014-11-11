@@ -3721,8 +3721,8 @@ ViewerPlot::GetDataObjectReader()
             GetViewerEngineManager()->Execute(ek, retval, replyWithNullData, 0, 0);
 
             // deal with possibility that engine may decide to scalable render
-            //  this output
-            if (!replyWithNullData && *retval && retval->InputIs(AVT_NULL_DATASET_MSG))
+            // this output
+            if (!replyWithNullData && *retval != NULL && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
                // ask for the engine's output as null data 'cause the 
                // avtDataObject in the current reader is just the message that 
@@ -3740,8 +3740,9 @@ ViewerPlot::GetDataObjectReader()
                                               this->ProcessEventsCBData);
 
             // deal with possibility that engine may decide to scalable render 
-            // this output
-            if (!replyWithNullData && *retval && retval->InputIs(AVT_NULL_DATASET_MSG))
+            // this output. Check that the data object is valid first since the
+            // compute engine may have died in the interim.
+            if (!replyWithNullData && *retval != NULL && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
                // ask for the engine's output as null data 'cause the 
                // avtDataObject in the current reader is just the message that 

@@ -65,18 +65,18 @@ set(AVT_LIBS avtdbatts avtmath avtqtviswindow avtshapelets avtview)
 set(AVT_SER_LIBS avtdatabase_ser avtdbin_ser avtexpressions_ser avtfilters_ser
                  avtivp_ser avtmir_ser avtpipeline_ser avtplotter_ser
                  avtquery_ser avtviswindow_ser avtwriter_ser)
-set(ENGINE_SER_LIBS simV2runtime_ser engine_ser)
+set(SIMV2_SER_LIBS simV2runtime_ser engine_ser viewercore_ser viewerrpc)
 set(AVT_PAR_LIBS cognomen avtdatabase_par avtdbin_par avtexpressions_par
                  avtfilters_par avtivp_par avtmir_par avtpipeline_par
                  avtplotter_par avtquery_par avtviswindow_par avtwriter_par)
 set(TP_LIBS visitGLEW tess2 nek5000_interp)
-set(ENGINE_PAR_LIBS simV2runtime_par engine_par)
+set(SIMV2_PAR_LIBS simV2runtime_par engine_par viewercore_par viewerrpc)
 set(DDTSIM_LIBS ddtsim_static)
 
-list(APPEND visit_libs_ser ${ENGINE_SER_LIBS} ${AVT_LIBS} ${AVT_SER_LIBS}
+list(APPEND visit_libs_ser ${SIMV2_SER_LIBS} ${AVT_LIBS} ${AVT_SER_LIBS}
                            ${VISIT_LIBS} ${TP_LIBS} ${SLIVR_LIBS})
 if(VISIT_PARALLEL)
-    list(APPEND visit_libs_par ${ENGINE_PAR_LIBS} ${AVT_LIBS} ${AVT_PAR_LIBS}
+    list(APPEND visit_libs_par ${SIMV2_PAR_LIBS} ${AVT_LIBS} ${AVT_PAR_LIBS}
                                ${VISIT_LIBS} ${TP_LIBS} ${DDTSIM_LIBS}
                                ${VISIT_SLIVR})
 endif()

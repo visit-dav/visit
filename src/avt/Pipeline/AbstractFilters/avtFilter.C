@@ -45,6 +45,7 @@
 #include <avtDebugDumpOptions.h>
 #include <avtDynamicAttribute.h>
 #include <avtExtents.h>
+#include <avtMemory.h>
 #include <avtMetaData.h>
 #include <avtTerminatingSink.h>
 #include <avtParallel.h>
@@ -214,6 +215,10 @@ avtFilter::UpdateProgress(int current, int total)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Brad Whitlock, Wed Oct 29 14:48:33 PDT 2014
+//    Take memory measurements on BGQ so we can get an idea of how much 
+//    memory is used/left.
+//
 // ****************************************************************************
 
 bool
@@ -266,7 +271,17 @@ avtFilter::Update(avtContract_p contract)
             //
             PassOnDataObjectInfo();
     
+#ifdef VISIT_BLUE_GENE_Q
+            unsigned long mused = 0, rss = 0, mavail = 0;
+            avtMemory::GetMemorySize(mused, rss);
+            avtMemory::GetAvailableMemorySize(mavail);
+            debug1 << "Executing " << GetType()
+                   << ", memory(used=" << mused
+                   << ", avail=" << mavail << ")" << endl;
+#else
             debug1 << "Executing " << GetType() << endl;
+#endif
+
             UpdateProgress(0, 0);
             ResolveDynamicAttributes();
             if (debug_dump)
@@ -279,7 +294,17 @@ avtFilter::Update(avtContract_p contract)
             if (debug_dump)
                 DumpDataObject(GetOutput(), "output");
             UpdateProgress(1, 0);
+
+#ifdef VISIT_BLUE_GENE_Q
+            mused = 0; rss = 0; mavail = 0;
+            avtMemory::GetMemorySize(mused, rss);
+            avtMemory::GetAvailableMemorySize(mavail);
+            debug1 << "Done executing " << GetType()
+                   << ", memory(used=" << mused
+                   << ", avail=" << mavail << ")" << endl;
+#else
             debug1 << "Done executing " << GetType() << endl;
+#endif
             modified = false;
 
             visitTimer->StopTimer(timerHandle, GetType());
