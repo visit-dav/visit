@@ -128,7 +128,7 @@ MESSAGE(STATUS "Configuring VisIt Data Targets")
 #  Otherwise: ${target_name}.C is used.
 #
 #-----------------------------------------------------------------------------
-FUNCTION(BUILD_DATA_TARGET target_name)
+FUNCTION(BUILD_DATA_TARGET_IMPL target_name do_parallel)
     SET(target_SOURCES "")
     SET(target_INCLUDE_DIRS "")
     SET(target_LIB_DIRS "")
@@ -165,15 +165,32 @@ FUNCTION(BUILD_DATA_TARGET target_name)
         SET(target_SOURCES ${target_name}.C)
     ENDIF(DEFINED ${target_name}_SOURCES)
 
-    ADD_EXECUTABLE(${target_name} ${target_SOURCES})
+    SET(tname ${target_name})
+    IF("${do_parallel}" STREQUAL "ON")
+        IF(VISIT_PARALLEL)
+            SET(tname "${target_name}_par")
+            ADD_PARALLEL_EXECUTABLE(${tname} ${target_SOURCES})
+        ENDIF(VISIT_PARALLEL)
+    ELSE("${do_parallel}" STREQUAL "ON")
+        ADD_EXECUTABLE(${tname} ${target_SOURCES})
+    ENDIF("${do_parallel}" STREQUAL "ON")
+
     ADD_DEFINITIONS(${target_DEFS})
-    TARGET_LINK_LIBRARIES(${target_name} ${target_LIBS})
-    SET_TARGET_PROPERTIES(${target_name}
+    TARGET_LINK_LIBRARIES(${tname} ${target_LIBS})
+    SET_TARGET_PROPERTIES(${tname}
                            PROPERTIES
                         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
                           )
 
+ENDFUNCTION(BUILD_DATA_TARGET_IMPL target_name)
+
+FUNCTION(BUILD_DATA_TARGET target_name)
+    BUILD_DATA_TARGET_IMPL(${target_name} "OFF" ${ARGN})
 ENDFUNCTION(BUILD_DATA_TARGET target_name)
+
+FUNCTION(BUILD_PARALLEL_DATA_TARGET target_name)
+    BUILD_DATA_TARGET_IMPL(${target_name} "ON" ${ARGN})
+ENDFUNCTION(BUILD_PARALLEL_DATA_TARGET target_name)
 
 #-----------------------------------------------------------------------------
 # Data Generation Program Targets
@@ -188,7 +205,12 @@ SET(BASIC_TARGETS
 bov
 curve_builder
 distribution_curves
+mandelbulb
 xdmf_binary
+)
+
+SET(BASIC_TARGETS_PAR
+mandelbulb
 )
 
 #-----------------------------------------------------------------------------
@@ -270,6 +292,14 @@ FOREACH(BASIC_TARGET ${BASIC_TARGETS})
                      ${VISIT_BINARY_DIR}/include
                      ${VISIT_SOURCE_DIR}/include)
 ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS})
+
+FOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
+   BUILD_PARALLEL_DATA_TARGET(${BASIC_TARGET}
+                     INCLUDE_DIRS
+                     ${CMAKE_CURRENT_SOURCE_DIR}
+                     ${VISIT_BINARY_DIR}/include
+                     ${VISIT_SOURCE_DIR}/include)
+ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
 
 #-----------------------------------------------------------------------------
 # Build all VTK Targets
