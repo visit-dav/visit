@@ -101,9 +101,10 @@ class avtSpecFEMFileFormat : public avtMTMDFileFormat
 
     void             Initialize();
     virtual void     PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
-    vtkDataSet *     GetWholeMesh(int ts, int dom);
-    vtkDataSet *     GetRegionMesh(int ts, int dom, int region);
-    void             AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds, int ptOffset=0);
+    vtkDataSet *     GetWholeMesh(int ts, int dom, bool xyzMesh);
+    vtkDataSet *     GetRegionMesh(int ts, int dom, int region, bool xyzMesh);
+    void             AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
+                                   bool xyzMesh, int ptOffset=0);
 
     vtkDataArray *   GetVarRegion(std::string &nm, int ts, int dom);
 
