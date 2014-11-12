@@ -59,7 +59,8 @@ class VisItIssue(pyrmine.Issue):
                 res += "<blockquote>\n<b>%s</b> (%s)<br>" % (u["author"],u["date"])
                 res += "%s\n</blockquote>\n" % u["content"]
         res += "</p><hr>\n"
-        return res.encode('utf-8')
+        res = ''.join([i if ord(i) < 128 else ' ' for i in res])
+        return res 
     def __format_blank(self,txt):
         """
         Returns (unset) to indicate a blank field value.
