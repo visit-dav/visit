@@ -165,6 +165,9 @@ avtLineoutFilter::avtLineoutFilter()
 //    Eric Brugger, Mon Jul 21 14:09:11 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Wed Nov 12 08:38:55 PST 2014
+//    Account for NULL out_ds, don't create out_dr in that case.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -182,11 +185,13 @@ avtLineoutFilter::ExecuteData(avtDataRepresentation *in_dr)
     else 
         out_ds = Sampling(in_ds, domain);
 
-    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
-        in_dr->GetDomain(), in_dr->GetLabel());
-
+    avtDataRepresentation *out_dr = NULL;
     if (out_ds != NULL)
+    {
+        out_dr = new avtDataRepresentation(out_ds, in_dr->GetDomain(), 
+                                           in_dr->GetLabel());
         out_ds->Delete();
+    }
 
     return out_dr;
 }
