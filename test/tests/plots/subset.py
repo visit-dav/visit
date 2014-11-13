@@ -26,6 +26,9 @@
 #    Hank Childs, Mon Mar 26 12:00:23 PDT 2012
 #    Add test for Subset plot + material selection
 #
+#    Kevin Griffin, Wed Nov 12 19:02:56 PST 2014
+#    Add test for block Subset plot + wireframe + multiple domains + 
+#    multiple blocks.
 # ----------------------------------------------------------------------------
 
 
@@ -106,5 +109,17 @@ Test("subset_08")
 
 ChangeActivePlotsVar("patches")
 Test("subset_09")
+
+DeleteAllPlots()
+OpenDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
+
+AddPlot("Subset", "blocks(amr_mesh)")
+DrawPlots() 
+
+s = SubsetAttributes()
+s.wireframe = 1
+SetPlotOptions(s)
+
+Test("subset_10")
 
 Exit()
