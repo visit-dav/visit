@@ -54,6 +54,7 @@
 #include <avtSubsetFilter.h>
 #include <avtFeatureEdgesFilter.h>
 #include <avtSmoothPolyDataFilter.h>
+#include <avtSubsetBlockMergeFilter.h>
 
 #include <DebugStream.h>
 #include <InvalidColortableException.h>
@@ -142,6 +143,7 @@ avtSubsetPlot::avtSubsetPlot()
     fl->SetMustCreatePolyData(true);
     sub   = new avtSubsetFilter();
     smooth= new avtSmoothPolyDataFilter();
+    sbmf = new avtSubsetBlockMergeFilter();
 }
 
 
@@ -211,6 +213,11 @@ avtSubsetPlot::~avtSubsetPlot()
     {
         delete smooth;
         smooth = NULL;
+    }
+    if (sbmf != NULL) 
+    {
+        delete sbmf;
+        sbmf = NULL;
     }
  
     //
@@ -548,6 +555,10 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
 //    Add a second ghost zone filter in the case of wireframe rendering.
 //    This addresses the coarse-fine boundary issues for AMR meshes.
+//   
+//    Kevin Griffin, Mon Nov 3 13:05:42 PDT 2014
+//    Added the block merge filter to the pipeline for the block wireframe
+//    option.
 //
 // ****************************************************************************
 
@@ -646,7 +657,17 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             {
                 sub->SetInput(fl->GetOutput());
             }
-            wf->SetInput(sub->GetOutput());
+
+            if (type == SubsetAttributes::Group)
+            {
+                sbmf->SetInput(sub->GetOutput());
+                wf->SetInput(sbmf->GetOutput());
+            }
+            else 
+            {
+                wf->SetInput(sub->GetOutput());
+            }
+
             gz2->SetInput(wf->GetOutput());
             unsigned char nodeType = 0;
             nodeType |= (1 << NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
