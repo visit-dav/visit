@@ -27,7 +27,7 @@ VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-m64 -fPIC -fvisibility=hidden -DVIZSCHEMA_D
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fPIC -fvisibility=hidden -DVIZSCHEMA_DECOMPOSE_DOMAINS" TYPE STRING)
 # Get these via CC -v
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-I/opt/cray/mpt/default/gni/mpich2-gnu/49/include" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/default/gni/mpich2-gnu/48/include" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/default/gni/mpich2-gnu/49/include" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/default/gni/mpich2-gnu/49/lib -L/opt/cray/pmi/default/lib64 -L/opt/cray/alps/default/lib64" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/cray/mpt/default/gni/mpich2-gnu/49/lib;/opt/cray/pmi/default/lib64;/opt/cray/alps/default/lib64" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich pmi alpslli alpsutil pthread rt)
