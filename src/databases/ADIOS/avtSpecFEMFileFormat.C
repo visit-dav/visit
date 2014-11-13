@@ -66,6 +66,9 @@ using namespace std;
 
 int avtSpecFEMFileFormat::NUM_REGIONS = 3;
 
+static inline void
+convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz);
+
 //#define POINT_MESH
 #define USE_IBOOL
 
@@ -282,9 +285,11 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
     //Add the entire mesh.
 #ifdef USE_IBOOL
     AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, numBlocks, 0, 3, 3);
+    AddMeshToMetaData(md, "LatLon_mesh", AVT_UNSTRUCTURED_MESH, NULL, numBlocks, 0, 3, 3);
 #endif
 #ifdef POINT_MESH
     AddMeshToMetaData(md, "mesh", AVT_POINT_MESH, NULL, numBlocks, 0, 3, 1);
+    AddMeshToMetaData(md, "LatLon_mesh", AVT_POINT_MESH, NULL, numBlocks, 0, 3, 1);
 #endif
     
     for (int i = 0; i < regions.size(); i++)
@@ -292,13 +297,16 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
         if (regions[i])
         {
             avtMeshMetaData *mmd = new avtMeshMetaData;
-            char nm[128];
+            char nm[128], nm2[128];
             sprintf(nm, "reg%d/mesh", i+1);
+            sprintf(nm2, "reg%d/LatLon_mesh", i+1);
 #ifdef USE_IBOOL
             AddMeshToMetaData(md, nm, AVT_UNSTRUCTURED_MESH, NULL, numBlocks, 0, 3, 3);
+            AddMeshToMetaData(md, nm2, AVT_UNSTRUCTURED_MESH, NULL, numBlocks, 0, 3, 3);
 #endif
 #ifdef POINT_MESH
             AddMeshToMetaData(md, nm, AVT_POINT_MESH, NULL, numBlocks, 0, 3, 1);
+            AddMeshToMetaData(md, nm2, AVT_POINT_MESH, NULL, numBlocks, 0, 3, 1);
 #endif
         }
     }
@@ -314,16 +322,22 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
         string vname = GetVariable(it->first);
         //Add var only if all regions present.
         if (allRegionsPresent)
+        {
             AddScalarVarToMetaData(md, vname, "mesh", AVT_NODECENT);
+            AddScalarVarToMetaData(md, vname, "LatLon_mesh", AVT_NODECENT);
+        }
         
         for (int i = 0; i < regions.size(); i++)
         {
             if (regions[i])
             {
-                char mesh[128], var[128];
+                char mesh[128], mesh2[128], var[128], var2[128];
                 sprintf(mesh, "reg%d/mesh", i+1);
+                sprintf(mesh2, "reg%d/LatLon_mesh", i+1);
                 sprintf(var, "reg%d/%s", i+1, vname.c_str());
+                sprintf(var2, "reg%d/LatLon/%s", i+1, vname.c_str());
                 AddScalarVarToMetaData(md, var, mesh, AVT_NODECENT);
+                AddScalarVarToMetaData(md, var2, mesh2, AVT_NODECENT);
             }
         }
     }
@@ -344,7 +358,7 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
 
 
 vtkDataSet *
-avtSpecFEMFileFormat::GetWholeMesh(int ts, int dom)
+avtSpecFEMFileFormat::GetWholeMesh(int ts, int dom, bool xyzMesh)
 {
     vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();
     vtkPoints *pts = vtkPoints::New();
@@ -354,7 +368,7 @@ avtSpecFEMFileFormat::GetWholeMesh(int ts, int dom)
     char nP[128];
     for (int i = 0; i < avtSpecFEMFileFormat::NUM_REGIONS; i++)
     {
-        AddRegionMesh(ts, dom, i+1, mesh, ptOffset);
+        AddRegionMesh(ts, dom, i+1, mesh, xyzMesh, ptOffset);
 
         sprintf(nP, "reg%d/nglob", i+1);
         meshFile->GetScalar(nP, nPts);
@@ -379,7 +393,8 @@ avtSpecFEMFileFormat::GetWholeMesh(int ts, int dom)
 //****************************************************************************
 
 void
-avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds, int ptOffset)
+avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
+                                    bool xyzMesh, int ptOffset)
 {
     vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)ds;
     vtkPoints *pts = mesh->GetPoints();
@@ -427,9 +442,18 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
         int idx = ibl[i];
         if (!ptMask[idx])
         {
-            vid = pts->InsertNextPoint(x->GetTuple1(i),
-                                       y->GetTuple1(i),
-                                       z->GetTuple1(i));
+            double ptX = x->GetTuple1(i);
+            double ptY = y->GetTuple1(i);
+            double ptZ = z->GetTuple1(i);
+
+            if (xyzMesh)
+                vid = pts->InsertNextPoint(ptX, ptY, ptZ);
+            else
+            {
+                double newX, newY, newZ;
+                convertToLatLon(ptX, ptY, ptZ, newX, newY, newZ);
+                vid = pts->InsertNextPoint(newX, newY, newZ);
+            }
             ptMask[idx] = true;
 #ifdef POINT_MESH
             mesh->InsertNextCell(VTK_VERTEX, 1, &vid);
@@ -438,9 +462,8 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
     }
 
 #ifdef USE_IBOOL
-    int di=1, dj=1, dk=1;
+    int di=1, dj=1, dk=1, eCnt = 0;
     vtkIdType v[8];
-    int eCnt = 0;
     
     #define INDEX(x,i,j,k,e) x[(i)+(j)*ngllx + (k)*ngllx*nglly + (e)*ngllx*nglly*ngllz] - 1;
     for (int e = 0; e < nElem; e++)
@@ -459,8 +482,57 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                     v[7] = INDEX(ibl,i,j+dj,k+dk,e);
                     for (int vi = 0; vi < 8; vi++)
                         v[vi] += ptOffset;
-                    mesh->InsertNextCell(VTK_HEXAHEDRON, 8, v);
-                    eCnt++;
+
+                    if (xyzMesh)
+                    {
+                        mesh->InsertNextCell(VTK_HEXAHEDRON, 8, v);
+                        /*
+                        if (eCnt == 43011 || eCnt == 43010)
+                        {
+                            double verts[8][3];
+                            for (int p = 0; p < 8; p++)
+                                pts->GetPoint(v[p], verts[p]);
+                            cout<<eCnt<<": "<<endl;
+                            for (int p = 0; p < 8; p++)
+                            {
+                                double px = verts[p][0];
+                                double py = verts[p][1];
+                                double pz = verts[p][2];
+                                double RR = px*px+py*py;
+                                double R = sqrt(RR + pz*pz);
+                                double nx = R;
+                                double ny = (R==0.0 ? 0.0 : acos(pz/R));
+                                double nz = (RR==0.0 ? 0.0 : M_PI + atan2(-py, -px));
+                                             
+                                cout<<p<<" ["<<verts[p][0]<<" "<<verts[p][1]<<" "<<verts[p][2]<<"] ["<<nx<<" "<<ny<<" "<<nz<<"] 2pi= "<<2.0*M_PI<<endl;
+                            }
+                        }
+                        */
+                        eCnt++;
+                    }
+                    else
+                    {
+                        //Check for wrap-around cells, and toss them.
+                        double verts[8][3];
+                        for (int p = 0; p < 8; p++)
+                            pts->GetPoint(v[p], verts[p]);
+
+                        bool cellGood = true;
+                        for (int p = 0; cellGood && p < 8; p++)
+                            for (int q = 0; cellGood && q < 8; q++)
+                                if (p != q)
+                                {
+                                    double dy = fabs(verts[p][1]-verts[q][1]);
+                                    double dz = fabs(verts[p][2]-verts[q][2]);
+                                    if (dy > M_PI) cellGood = false;
+                                    if (dz > M_PI) cellGood = false;
+                                }
+                        if (cellGood)
+                        {
+                            mesh->InsertNextCell(VTK_HEXAHEDRON, 8, v);
+                            eCnt++;
+                        }
+                    }
                 }
 #endif
 
@@ -469,15 +541,29 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
     z->Delete();
     ib->Delete();
 }
+
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetRegionMesh
+//
+// Purpose:
+//   Get the mesh for a particular region.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
  
 vtkDataSet *
-avtSpecFEMFileFormat::GetRegionMesh(int ts, int dom, int region)
+avtSpecFEMFileFormat::GetRegionMesh(int ts, int dom, int region, bool xyzMesh)
 {
     vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();
     vtkPoints *pts = vtkPoints::New();
     mesh->SetPoints(pts);
 
-    AddRegionMesh(ts, dom, region, mesh);
+    AddRegionMesh(ts, dom, region, mesh, xyzMesh);
     
     pts->Delete();
     return mesh;
@@ -513,10 +599,12 @@ avtSpecFEMFileFormat::GetMesh(int ts, int domain, const char *meshname)
     debug1 << "avtSpecFEMFileFormat::GetMesh " << meshname << endl;
     Initialize();
 
-    if (strcmp(meshname, "mesh") == 0)
-        return GetWholeMesh(ts, domain);
+    bool xyzMesh = string(meshname).find("LatLon") == string::npos;
+    bool wholeMesh = string(meshname).find("reg") == string::npos;
+    if (wholeMesh)
+        return GetWholeMesh(ts, domain, xyzMesh);
     else
-        return GetRegionMesh(ts, domain, GetRegion(meshname));
+        return GetRegionMesh(ts, domain, GetRegion(meshname), xyzMesh);
 }
 
 //****************************************************************************
@@ -531,7 +619,6 @@ avtSpecFEMFileFormat::GetMesh(int ts, int domain, const char *meshname)
 // Modifications:
 //
 //****************************************************************************
-
 
 vtkDataArray *
 avtSpecFEMFileFormat::GetVarRegion(std::string &nm, int ts, int dom)
@@ -562,7 +649,8 @@ avtSpecFEMFileFormat::GetVarRegion(std::string &nm, int ts, int dom)
     for (int i = 0; i < N; i++)
         ptMask[i] = false;
 
-    dataFile->ReadScalarData(nm+string("/array"), ts, dom, &arr);
+    string vname = nm+"/array";
+    dataFile->ReadScalarData(vname, ts, dom, &arr);
     vtkFloatArray *var = vtkFloatArray::New();
     var->SetNumberOfTuples(ptCnt);
     for (int i = 0; i < N; i++)
@@ -606,17 +694,23 @@ avtSpecFEMFileFormat::GetVarRegion(std::string &nm, int ts, int dom)
 vtkDataArray *
 avtSpecFEMFileFormat::GetVar(int ts, int domain, const char *varname)
 {
-    string vNm = varname;
-    if (strncmp("reg", varname, 3) == 0)
-        return GetVarRegion(vNm, ts, domain);
+    string vName = varname;
+    size_t i;
+    if ((i = vName.find("LatLon")) != string::npos)
+        vName = vName.substr(0, i) + vName.substr((i+7), string::npos);
+    
+    if (vName.find("reg") != string::npos)
+        return GetVarRegion(vName, ts, domain);
 
     //Determine how many total values.
     int n = 0, nPts;
     char tmp[128];
+    vector<int> regNPts;
     for (int i = 0; i < avtSpecFEMFileFormat::NUM_REGIONS; i++)
     {
         sprintf(tmp, "reg%d/nglob", i+1);
         meshFile->GetScalar(tmp, nPts);
+        regNPts.push_back(nPts);
         n += nPts;
     }
     vtkFloatArray *arr = vtkFloatArray::New();
@@ -627,16 +721,14 @@ avtSpecFEMFileFormat::GetVar(int ts, int domain, const char *varname)
     for (int i = 0; i < avtSpecFEMFileFormat::NUM_REGIONS; i++)
     {
         sprintf(tmp, "reg%d/%s", i+1, varname);
-        vNm = tmp;
+        string vNm = tmp;
         vtkDataArray *v = GetVarRegion(vNm, ts, domain);
         
         float *ptr = &((float *)arr->GetVoidPointer(0))[offset];
         for (int j = 0; j < v->GetNumberOfTuples(); j++)
             ptr[j] = v->GetTuple1(j);
         
-        sprintf(tmp, "reg%d/nglob", i+1);
-        meshFile->GetScalar(tmp, nPts);
-        offset += nPts;
+        offset += regNPts[i];
         v->Delete();
     }
     
@@ -796,7 +888,7 @@ avtSpecFEMFileFormat::GetRegion(const string &str)
     
     n = sscanf(str.c_str(), "reg%d/%s", &region, t1);
     if (n != 2 || region < 1 || region > avtSpecFEMFileFormat::NUM_REGIONS)
-        EXCEPTION1(ImproperUseException, "Invalide region");
+        EXCEPTION1(ImproperUseException, "Invalid region");
     
     return region;
 }
@@ -824,4 +916,28 @@ avtSpecFEMFileFormat::GetVariable(const string &str)
         EXCEPTION1(ImproperUseException, "Invalid variable");
 
     return str.substr(i0+1, i1-i0-1);
+}
+
+//****************************************************************************
+// Function:  convertToLatLon
+//
+// Purpose:
+//   Convert XYZ to Lat Lon Rad.
+//
+// Programmer:  Dave Pugmire
+// Creation:    November 12, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+static inline void
+convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz)
+{
+    double RR = x*x + y*y;
+    double R = sqrt(RR + z*z);
+
+    nx = R;
+    ny = (R==0.0 ? 0.0 : acos(z/R));
+    nz = (RR==0.0 ? 0.0 : M_PI + atan2(-y, -x));
 }
