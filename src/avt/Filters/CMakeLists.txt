@@ -64,6 +64,9 @@
 #   Move avtTimeLoopFilter and avtTimeLoopCollectorFilter from 
 #   Pipeline/AbstractFilters directory.
 #
+#   Kevin Griffin, Mon Nov 3 12:41:11 PDT 2014
+#   Add avtSubsetBlockMergeFilter.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -102,6 +105,7 @@ avtShiftCenteringFilter.C
 avtSimilarityTransformFilter.C
 avtSmoothPolyDataFilter.C
 avtStaggeringFilter.C
+avtSubsetBlockMergeFilter.C
 avtSummationFilter.C
 avtSurfaceFilter.C
 avtThresholdFilter.C

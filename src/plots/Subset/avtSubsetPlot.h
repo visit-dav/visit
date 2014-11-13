@@ -57,7 +57,7 @@ class     avtGhostZoneFilter;
 class     avtFacelistFilter;
 class     avtSubsetFilter;
 class     avtSmoothPolyDataFilter;
-
+class     avtSubsetBlockMergeFilter;
 
 // ****************************************************************************
 //  Method: avtSubsetPlot
@@ -108,6 +108,12 @@ class     avtSmoothPolyDataFilter;
 //    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
 //    other processor's portion of image space.
 //
+//    Kevin Griffin, Mon Nov 3 12:47:05 PDT 2014
+//    Added the avtSubsetBlockMergeFilter to merge the datasets of a block
+//    into one dataset so the avtFeaturedEdgesFilter can properly outline
+//    the block when the wireframe option is selected from the Subset plot
+//    attributes dialog. 
+// 
 // ****************************************************************************
 
 class
@@ -142,6 +148,7 @@ avtSubsetPlot : public avtVolumeDataPlot
     avtFacelistFilter               *fl;
     avtSubsetFilter                 *sub;
     avtSmoothPolyDataFilter         *smooth;
+    avtSubsetBlockMergeFilter       *sbmf; 
 
     SubsetAttributes          atts;
     avtLevelsPointGlyphMapper *levelsMapper;
