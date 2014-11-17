@@ -3346,6 +3346,10 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    regression test failure when selection the new ghost zone generation
 //    mechanism for crack free isosurfaces).
 //
+//    Eric Brugger, Mon Nov 17 14:57:56 PST 2014
+//    I corrected an out of bounds memory reference when the boundary extents
+//    for a domain didn't start at zero.
+//
 // ****************************************************************************
 
 void
@@ -3398,8 +3402,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
 
             if (it->type == Boundary::IMIN)
             {
-                for (int k = it->nextents[4] - 1 ; k < it->nextents[5] ; k++)
-                    for (int j = it->nextents[2] - 1; j < it->nextents[3]; j++)
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
                     {
                         int idx = 0 + j*dims[0] + k*dims[0]*dims[1];
                         avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
@@ -3407,8 +3411,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
             }
             else if (it->type == Boundary::IMAX)
             {
-                for (int k = it->nextents[4] - 1 ; k < it->nextents[5] ; k++)
-                    for (int j = it->nextents[2] - 1 ; j < it->nextents[3] ; j++)
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
                     {
                         int idx = dims[0]-1 + j*dims[0] + k*dims[0]*dims[1];
                         avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
@@ -3416,8 +3420,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
             }
             else if (it->type == Boundary::JMIN)
             {
-                for (int k = it->nextents[4] - 1 ; k < it->nextents[5] ; k++)
-                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
                     {
                         int idx = i + 0*dims[0] + k*dims[0]*dims[1];
                         avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
@@ -3425,8 +3429,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
             }
             else if (it->type == Boundary::JMAX)
             {
-                for (int k = it->nextents[4]-1 ; k < it->nextents[5] ; k++)
-                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
                     {
                         int idx = i + (dims[1]-1)*dims[0] + k*dims[0]*dims[1];
                         avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
@@ -3434,8 +3438,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
             }
             else if (it->type == Boundary::KMIN)
             {
-                for (int j = it->nextents[2] - 1; j < it->nextents[3]; j++)
-                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
                     {
                         int idx = i + j*dims[0] + 0*dims[0]*dims[1];
                         avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
@@ -3443,8 +3447,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
             }
             else if (it->type == Boundary::KMAX)
             {
-                for (int j = it->nextents[2] - 1; j < it->nextents[3]; j++)
-                    for (int i = it->nextents[0] - 1 ; i < it->nextents[1] ; i++)
+                for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
                     {
                         int idx = i + j*dims[0] + (dims[2]-1)*dims[0]*dims[1];
                         avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);

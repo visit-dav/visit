@@ -75,8 +75,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
 <li>A node ordering issue for quadratic elements in Exodus files was corrected.</li>
 <li>The internal launcher was modified so that by default it does not pass -ppn to mpiexec and mpirun when launching a parallel job. If the user needs to have the internal launcher pass -ppn to those commands then they will need to override that behavior in a custom launcher.</li>
-<li>Lineouts that do not intersect the plot no longer issues a 'No input' error message for each successive lineout.  Previous behavior of 'yielded no data' status message for only the lineouts that do not intersect a plot has been restored.</li>
-<li>Fixed the issue with blocks in subset plots not being correctly outlined when the wireframe option is selected.</li> 
+<li>Lineouts that do not intersect the plot no longer issue a 'No input' error message for each successive lineout. The previous behavior of issuing a 'yielded no data' status message for only the lineouts that do not intersect a plot has been restored.</li>
+<li>Corrected an issue with blocks in subset plots not being correctly outlined when the wireframe option is selected.</li> 
+<li>Corrected an issue where pseudocolor plots of nodal variables defined on structured multi block meshes sometimes crashed the compute engine.</li>
 </ul>
 
 <a name="Enhancements"></a>
