@@ -29,6 +29,8 @@ is suspected during the download process.</p>
 
 <p>All the executables listed on this page only contain serial versions of VisIt unless the platform description indicates that it contains parallel support. If you need a parallel version for a platform not already provided you will need to build visit from source using the <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/build_visit2_8_1">build_visit</a> script.</p>
 
+<p>If you encounter problems downloading files from this page, NERSC's <code>/project</code> filesystem may be down. You can go <a href="https://www.nersc.gov/users/live-status">here</a> to check for yourself. There, you should find a page that looks something like <a href="content/assets/images/nersc_live_status3.png" target="_blank">this one</a>. If it shows that <code>/project</code> is down, please try again later.</p>
+
 <p>If you use VisIt to generate images and/or movies please cite VisIt in your paper and the credits of your movie. Doing so helps us sustain funding for future improvements and on going maintenance. Please use the following acknowledgement and send us references to any publications, presentations, or successful funding applications that make use of DOE software.</p>
 
 <ul>
