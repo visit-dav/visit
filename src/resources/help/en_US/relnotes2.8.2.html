@@ -78,6 +78,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Lineouts that do not intersect the plot no longer issue a 'No input' error message for each successive lineout. The previous behavior of issuing a 'yielded no data' status message for only the lineouts that do not intersect a plot has been restored.</li>
 <li>Corrected an issue with blocks in subset plots not being correctly outlined when the wireframe option is selected.</li> 
 <li>Corrected an issue where pseudocolor plots of nodal variables defined on structured multi block meshes sometimes crashed the compute engine.</li>
+<li>Corrected an issue generating structured ghost data which could cause Filled Boundary plot of AMR mesh to crash compute engine.</li>
 </ul>
 
 <a name="Enhancements"></a>
