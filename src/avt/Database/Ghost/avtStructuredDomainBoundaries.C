@@ -1032,6 +1032,10 @@ BoundaryHelperFunctions<T>::CopyOldMixedValues(avtMaterial *oldmat,
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 21, 2001
 //
+//  Modifications:
+//    Paul Selby, Tue 18 Nov 12:48:36 GMT 2014
+//    Added skip for RECIPENT_NEIGHBOR to match SetNewBoundaryData.
+//
 // ****************************************************************************
 bool*
 avtStructuredDomainBoundaries::SetExistence(int      d1,
@@ -1062,9 +1066,17 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
     }
 
     // set any available boundary to exist
+    //  - must match SetNewBoundaryData
     for (size_t n=0; n<bi->neighbors.size(); n++)
     {
         Neighbor *n1 = &bi->neighbors[n];
+        if (n1->neighbor_rel == RECIPIENT_NEIGHBOR)
+        {
+            // d2 is a recipient from d1.  Hence we don't need to copy
+            // anything, since we are setting up ghost data for d1.
+            continue;
+        }
+
         int *n1extents = (isPointData ? n1->nextents : n1->zextents);
         for (int k=n1extents[4]; k<=n1extents[5]; k++)
         {
