@@ -81,6 +81,7 @@ class AVTFILTERS_API avtSubsetBlockMergeFilter : public avtDatasetToDatasetFilte
 
   protected:
     virtual void            Execute();
+    virtual void            PostExecute();
     
   private:
     void                    AddDatasetToMap(std::map<int, std::vector<BlockIdDatasetPair> > &, vtkDataSet *, const std::string);
