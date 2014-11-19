@@ -107,6 +107,13 @@ class avtSourceFromDatabase;
 //    Kathleen Biagas, Wed Aug  7 15:42:57 PDT 2013
 //    Add methods that test for insufficient precision.
 //
+//    Eric Brugger, Wed Nov 19 08:45:34 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -146,7 +153,8 @@ class DATABASE_API avtTransformManager
                                    const avtDatabaseMetaData *const md,
                                    const avtDataRequest_p &dataRequest,
                                    const char *vname, const char *type,
-                                   int ts, int dom, const char *mat);
+                                   int ts, int csgdom, int dom,
+                                   const char *mat);
     vtkDataSet                *CSGToDiscrete(avtDatabaseMetaData *md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int);

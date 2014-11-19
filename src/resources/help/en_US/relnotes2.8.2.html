@@ -85,6 +85,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Enhancements in version <script>document.write(visitVersion);</script></font></b></p>
 <ul>
   <li>The zonetype expression now produces labels that are 3 characters long. It also supports most of VTK element types.</li>
+<li>VisIt now uses significantly less memory when processing CSG meshes with many regions. In one instance, a subset plot of a CSG mesh consisting of about 36000 spheres that was using over 250 gigabytes is now using about half a gigabyte.</li>
 </ul>
 
 <a name="Dev_changes"></a>
