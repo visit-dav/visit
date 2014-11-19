@@ -272,7 +272,7 @@ avtSubsetBlockMergeFilter::CreateOutputDataTree(map<string, vtkAppendPolyData *>
         ++i;
     }
     
-    avtDataTree_p tree = new avtDataTree(1, outDataSets, 0, labels);
+    avtDataTree_p tree = new avtDataTree(numChildren, outDataSets, 0, labels);
     
     // Cleanup
     delete [] outDataSets;
@@ -570,3 +570,24 @@ avtSubsetBlockMergeFilter::GetIndexFromBlockId(const std::string blockId, const 
     return -1;
 }
 
+// ****************************************************************************
+//  Method: avtSubsetBlockMergeFilter::PostExecute
+//
+//  Purpose:    Once the new avtDataTree is created with new labels, this 
+//              is needed so everything works correctly in parallel.
+//
+//
+//  Programmer: Kevin Griffin
+//  Creation:   November 18, 2014
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+void
+avtSubsetBlockMergeFilter::PostExecute()
+{
+   vector<string> treeLabels;
+   GetDataTree()->GetAllUniqueLabels(treeLabels);
+   GetOutput()->GetInfo().GetAttributes().SetLabels(treeLabels);
+}
