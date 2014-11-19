@@ -44,6 +44,7 @@
 #include <math.h>
 
 #include <vector>
+#include <string>
 #include <iostream>
 using std::cout;
 using std::cerr;
