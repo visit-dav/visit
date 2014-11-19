@@ -384,7 +384,7 @@ avtSubsetBlockMergeFilter::Receive(map<string, vtkAppendPolyData *> &outMap)
             int blockId;
             MPI_Recv(&blockId, 1, MPI_INT, source, BLOCKID_TAG, VISIT_MPI_COMM, &mpiStatus);
                     
-            int blockIdLen = snprintf(buffer, CHAR_BUFFER_SIZE, "%d", blockId);
+            int blockIdLen = SNPRINTF(buffer, CHAR_BUFFER_SIZE, "%d", blockId);
             string blockIdStr = string(buffer, blockIdLen);
             
             // Get Dataset
