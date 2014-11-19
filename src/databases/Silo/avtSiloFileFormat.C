@@ -6725,6 +6725,14 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
 //    Mark C. Miller, Thu Apr 12 23:12:08 PDT 2012
 //    Replaced vtkFloatArray with vtkBitArray to support arbitrary number
 //    of nodelists.
+//
+//    Eric Brugger, Wed Nov 19 08:39:15 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -6766,7 +6774,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
     //
     DBfile *domain_file = GetFile(tocIndex);
     string domain_mesh;
-    GetMeshHelper(&domain, meshName.c_str(), 0, 0, &domain_file, domain_mesh);
+    GetMeshHelper(domain, meshName.c_str(), 0, 0, &domain_file, domain_mesh);
     DBcompoundarray *ai = DBGetCompoundarray(domain_file, "ANNOTATION_INT");
     if (ai == 0)
         return nlvar;
@@ -6845,7 +6853,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
         DBmultimesh *mm;
         DBfile *dbfile = GetFile(tocIndex);
         DBfile *domain_file = dbfile;
-        GetMeshHelper(&domain, meshName.c_str(), &mm, &type, &domain_file, directory_mesh);
+        GetMeshHelper(domain, meshName.c_str(), &mm, &type, &domain_file, directory_mesh);
 
         //
         // Read the mesh header and just the zonelist for it.
@@ -6888,6 +6896,14 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
 //           is implemented only for UCD meshes and only for NODEsets.
 //
 //  Creation: Mark C. Miller, Tue Jul 10 19:56:44 PDT 2012
+//
+//  Modifications:
+//    Eric Brugger, Wed Nov 19 08:39:15 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
 //
 // ****************************************************************************
 
@@ -6938,7 +6954,7 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
     //
     DBfile *domain_file = GetFile(tocIndex);
     string domain_mesh;
-    GetMeshHelper(&domain, meshName.c_str(), 0, 0, &domain_file, domain_mesh);
+    GetMeshHelper(domain, meshName.c_str(), 0, 0, &domain_file, domain_mesh);
 
     // Only get the mesh header information, none of the problem sized data.
     unsigned long long oldMask = DBSetDataReadMask2(0x0);
@@ -7054,15 +7070,18 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
 //    Cyrus Harrison, Fri Aug 16 10:07:47 PDT 2013
 //    Added support for nodelists placed @ /Nodelists/
 //
+//    Eric Brugger, Wed Nov 19 08:39:15 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetVar(int domain, const char *v)
 {
-    // for CSG meshes, each domain is a csgregion and a group of regions
-    // forms a visit "domain". So, we need to re-map the domain id
-    metadata->ConvertCSGDomainToBlockAndRegion(v, &domain, 0);
-
     // Use knowledge from MD to check if this is a label var because in that
     // case we'll actually want to use the GetXxxVectorVar routines
     bool isLabelVar = metadata->DetermineVarType(v, false) == AVT_LABEL_VAR;
@@ -7267,15 +7286,18 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Eric Brugger, Wed Nov 19 08:39:15 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 {
-    // for CSG meshes, each domain is a csgregion and a group of regions
-    // forms a visit "domain". So, we need to re-map the domain id
-    metadata->ConvertCSGDomainToBlockAndRegion(v, &domain, 0);
-
     debug5 << "Reading in vector variable " << v << ", domain " << domain
            << endl;
 
@@ -7961,17 +7983,18 @@ avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Eric Brugger, Wed Nov 19 08:39:15 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 void
-avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
+avtSiloFileFormat::GetMeshHelper(int domain, const char *m, DBmultimesh **_mm,
     int *_type, DBfile **_domain_file, string &directory_mesh_out)
 {
-    // for CSG meshes, each domain is a csgregion and a group of regions
-    // forms a visit "domain". So, we need to re-map the domain id
-    int domain = *_domain;
-    metadata->ConvertCSGDomainToBlockAndRegion(m, &domain, 0);
-    *_domain = domain;
-
     debug5 << "Reading in domain " << domain << ", mesh " << m << endl;
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
@@ -8115,6 +8138,13 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
 //    Brad Whitlock, Thu Sep 13 16:15:43 PDT 2012
 //    Pass domain to GetPointMesh.
 //
+//    Eric Brugger, Wed Nov 19 08:39:15 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -8126,7 +8156,7 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     DBfile *dbfile = GetFile(tocIndex);
     DBfile *domain_file = dbfile;
 
-    GetMeshHelper(&domain, m, &mm, &type, &domain_file, directory_mesh);
+    GetMeshHelper(domain, m, &mm, &type, &domain_file, directory_mesh);
 
     //
     // We only need to worry about quadmeshes, ucdmeshes, and pointmeshes,
@@ -13285,16 +13315,20 @@ avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var,
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added logic to ignore extents
+//
+//    Eric Brugger, Wed Nov 19 08:39:15 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 void *
 avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
                               const char *type, void *, DestructorFunction &df)
 {
-    // for CSG meshes, each domain is a csgregion and a group of regions
-    // forms a visit "domain". So, we need to re-map the domain id
-    metadata->ConvertCSGDomainToBlockAndRegion(var, &domain, 0);
-
     void *rv = NULL;
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {

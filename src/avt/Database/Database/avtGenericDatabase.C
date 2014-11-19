@@ -1064,6 +1064,14 @@ avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Passed data spec down Get function call tree 
+//
+//    Eric Brugger, Wed Nov 19 08:49:48 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1071,6 +1079,9 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
                         const char *matname, const vector<CharStrRef> &vars2nd, 
                         avtDataRequest_p spec,avtSourceFromDatabase *src)
 {
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    md->ConvertCSGDomainToBlockAndRegion(varname, &domain, 0);
+
     vtkDataSet *rv = NULL;
     avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
 
@@ -3249,6 +3260,13 @@ avtGenericDatabase::CachingRecommended(vtkDataSet *ds) const
 //    Eduard Deines, Wed Apr 21 2010
 //    Add support for "any_mesh" (Hank Childs).
 //
+//    Eric Brugger, Wed Nov 19 08:49:48 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 void
@@ -3305,6 +3323,10 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
 
     for (size_t i = 0 ; i < domains.size() ; i++)
     {
+        int domain = domains[i];
+        avtDatabaseMetaData *md = GetMetaData(ts);
+        md->ConvertCSGDomainToBlockAndRegion(real_var, &domain, 0);
+
         //
         // See if we already have the data lying around for this timestep or
         // for "all" (= -1) timesteps.  Examples of "all" timesteps entities
@@ -3312,23 +3334,23 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
         //
         void_ref_ptr vr;
         if (strcmp(type, AUXILIARY_DATA_IDENTIFIERS) != 0)
-            vr = cache.GetVoidRef(var, type, ts, domains[i]);
+            vr = cache.GetVoidRef(var, type, ts, domain);
         if (*vr == NULL)
         {
-            vr = cache.GetVoidRef(var, type, -1, domains[i]);
+            vr = cache.GetVoidRef(var, type, -1, domain);
         }
 
         if (*vr == NULL)
         {
             if ((strcmp(type, AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION) == 0) ||
                 (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0))
-                vr = cache.GetVoidRef("any_mesh", type, ts, domains[i]);
+                vr = cache.GetVoidRef("any_mesh", type, ts, domain);
         }
         if (*vr == NULL)
         {
             if ((strcmp(type, AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION) == 0) ||
                 (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0))
-                vr = cache.GetVoidRef("any_mesh", type, -1, domains[i]);
+                vr = cache.GetVoidRef("any_mesh", type, -1, domain);
         }
 
         if (*vr != NULL)
@@ -3344,7 +3366,7 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
             // We did not have it, so calculate it and then store it.
             //
             DestructorFunction df;
-            void *d = Interface->GetAuxiliaryData(real_var, ts, domains[i],
+            void *d = Interface->GetAuxiliaryData(real_var, ts, domain,
                                                   type, args, df);
             if (d != NULL)
             {
@@ -3353,7 +3375,7 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
                 // headaches.
                 //
                 void_ref_ptr vr = void_ref_ptr(d, df);
-                cache.CacheVoidRef(var, type, ts, domains[i], vr);
+                cache.CacheVoidRef(var, type, ts, domain, vr);
                 rv.list[i] = vr;
             }
         }

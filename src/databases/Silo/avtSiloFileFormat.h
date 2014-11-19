@@ -281,6 +281,13 @@ typedef struct _GroupInfo
 //    Brad Whitlock, Thu Jun 19 11:24:21 PDT 2014
 //    Pass meshname to PopulateIOInformation.
 //
+//    Eric Brugger, Wed Nov 19 08:28:22 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -504,7 +511,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
                               std::string meshname);
 
-    void                  GetMeshHelper(int *domain, const char *m, DBmultimesh **mm, int *type,
+    void                  GetMeshHelper(int domain, const char *m, DBmultimesh **mm, int *type,
                               DBfile **_domain_file, std::string &directory_mesh_out);
     void                  AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
                               std::string meshname, avtSiloMultiMeshCacheEntry *obj);
