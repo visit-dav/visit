@@ -42,6 +42,11 @@ import os, string, sys, subprocess
 #   with a minor version number then it uses that specific version for all
 #   the components.
 #
+#   Eric Brugger, Wed Nov 19 11:56:17 PST 2014
+#   I modified the script so that arguments that it adds to the argument
+#   list are added at the beginning of the list instead of the end of the
+#   list so that argument passing for scripts works properly.
+#
 ###############################################################################
 
 # -----------------------------------------------------------------------------
@@ -211,7 +216,7 @@ if forceversion_set:
     ver_set = 1
     ver = forceversion
     if progname == "visit":
-        visitargs = visitargs + ["-forceversion", forceversion]
+        visitargs = ["-forceversion", forceversion] + visitargs
 
 # -----------------------------------------------------------------------------
 #                          Find the right version
@@ -331,7 +336,7 @@ else:
         print >> sys.stderr, "WARNING: You are launching a public version of VisIt";
         print >> sys.stderr, "         from within a development version!";
         print >> sys.stderr, "";
-        visitargs.append("-dv")
+        visitargs = ["-dv"] + visitargs
 
     # The actual visit directory is now version-specific
     visitdir = visitdir + ver
@@ -369,8 +374,7 @@ if GETENV("VISIT_STARTED_FROM_APPBUNDLE") == "TRUE":
 #     the minor version
 # -----------------------------------------------------------------------------
 if progname != "mpeg2encode" and forceversion_set == 0 and add_forceversion == 1:
-    visitargs.append("-forceversion")
-    visitargs.append(ver)
+    visitargs = ["-forceversion", ver] + visitargs
 
 # -----------------------------------------------------------------------------
 #                       Run the internal launcher!
