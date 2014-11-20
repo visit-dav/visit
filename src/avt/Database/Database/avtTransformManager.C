@@ -1630,15 +1630,19 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         return ds;
 
     //
-    // Set some values used for caching.
+    // look up this vtk object's "key" in GenericDb's cache
     //
-    const char *vname = dataRequest->GetVariable();
-    const char *type = avtVariableCache::DATASET_NAME;
-    const char *mat = "_all";
-    int ts = dataRequest->GetTimestep();
+    const char *vname, *type, *mat;
+    int ts;
 
+    vname = dataRequest->GetVariable();
     int csgdom = dom, csgreg;
     md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
+
+    if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, csgdom, &mat, ds))
+    {
+        EXCEPTION1(PointerNotInCacheException, ds);
+    }
 
     debug1 << "Preparing to obtain CSG discretized grid for "
            << ", dom=" << dom
@@ -1863,7 +1867,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
     {
         vtkDataArray *da = cd->GetArray(i);
         // look up this vtk object's "key" in GenericDb's cache
-        if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, da))
+        if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, csgdom, &mat, da))
         {
             EXCEPTION1(PointerNotInCacheException, da);
         }
@@ -1930,6 +1934,13 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
 //    Burlen Loring, Mon Jul 14 15:52:49 PDT 2014
 //    fix alloc-dealloc-mismatch (operator new [] vs free) of matnames
 //
+//    Eric Brugger, Wed Nov 19 08:46:49 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
 // ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
@@ -1941,14 +1952,7 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
     if (mat == 0 || *mat == 0)
         return false;
 
-    // find the given material object in Generic DB's cache
-    int refCount = 1;
-    void_ref_ptr vr = void_ref_ptr(*mat, avtMaterial::Destruct, &refCount);
-    if (!gdbCache->GetVoidRefKey(&vname, &type, &ts, dom, vr))
-    {
-        EXCEPTION1(PointerNotInCacheException, *vr);
-    }
-    
+    vname = dataRequest->GetVariable();
     std::string meshname = md->MeshForVar(vname);
     const avtMeshMetaData *mmd = md->GetMesh(meshname);
     if (mmd->meshType == AVT_CSG_MESH)
@@ -1956,6 +1960,14 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
         int csgdom = dom, csgreg;
         md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
 
+        // find the given material object in Generic DB's cache
+        int refCount = 1;
+        void_ref_ptr vr = void_ref_ptr(*mat, avtMaterial::Destruct, &refCount);
+        if (!gdbCache->GetVoidRefKey(&vname, &type, &ts, csgdom, vr))
+        {
+            EXCEPTION1(PointerNotInCacheException, *vr);
+        }
+    
         // Determine if the cache is valid based on whether or not the
         // discretization parameters have changed.
         bool cache_valid = true;
@@ -1983,7 +1995,7 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
             // is defined has not yet been discretized. So, do it now.
             //
             ds = (vtkDataSet *) gdbCache->GetVTKObject(meshname.c_str(),
-                     avtVariableCache::DATASET_NAME, ts, dom, "_all");
+                     avtVariableCache::DATASET_NAME, ts, csgdom, "_all");
             if (!ds)
             {
                 EXCEPTION1(PointerNotInCacheException, ds);
