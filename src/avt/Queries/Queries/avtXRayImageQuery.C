@@ -97,12 +97,48 @@
 //    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
 //    Added support for specifying background intensity entering volume.
 //
+//    Eric Brugger, Thu Nov 20 16:57:20 PST 2014
+//    Added a new way to specify the view that matches the way the view is
+//    specified for plots.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
     absVarName("absorbtivity"),
     emisVarName("emissivity")
 {
+    divideEmisByAbsorb = false;
+    backgroundIntensity = 0.0;
+    outputType = 2; // png
+    useSpecifiedUpVector = true;
+    useOldView = true;
+
+    //
+    // The new view specification
+    //
+    normal[0] = 0.0;
+    normal[1] = 0.0;
+    normal[2] = 1.0;
+    focus[0] = 0.0;
+    focus[1] = 0.0;
+    focus[2] = 0.0;
+    viewUp[0] = 0.0;
+    viewUp[1] = 1.0;
+    viewUp[2] = 0.0;
+    viewAngle = 30.;
+    parallelScale = 0.5;
+    nearPlane = -0.5;
+    farPlane = 0.5;
+    imagePan[0] = 0.0;
+    imagePan[1] = 0.0;
+    imageZoom = 1.0;
+    perspective = true;
+    imageSize[0] = 200;
+    imageSize[1] = 200;
+
+    //
+    // The old view specification
+    //
     origin[0] = 0.0;
     origin[1] = 0.0;
     origin[2] = 0.0;
@@ -116,12 +152,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     nx     = 200;
     ny     = 200;
     numPixels = nx * ny;
-    divideEmisByAbsorb = false;
-    backgroundIntensity = 0.0;
-    outputType = 2; // png
-    useSpecifiedUpVector = true;
 }
-
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::~avtXRayImageQuery
@@ -160,6 +191,10 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
 //    Added support for specifying background intensity entering volume.
 //
+//    Eric Brugger, Thu Nov 20 16:57:20 PST 2014
+//    Added a new way to specify the view that matches the way the view is
+//    specified for plots.
+//
 // ****************************************************************************
 
 void
@@ -174,53 +209,6 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
     }
     else
         EXCEPTION1(QueryArgumentException, "vars");
-
-    if (params.HasNumericVectorEntry("origin"))
-    {
-        doubleVector v;
-        params.GetEntry("origin")->ToDoubleVector(v);
-        if (v.size() != 3)
-            EXCEPTION2(QueryArgumentException, "origin", 3);
-        SetOrigin(v);
-    }
-
-    if (params.HasNumericVectorEntry("up_vector"))
-    {
-        doubleVector v;
-        params.GetEntry("up_vector")->ToDoubleVector(v);
-        if (v.size() != 3)
-            EXCEPTION2(QueryArgumentException, "up_vector", 3);
-        SetUpVector(v);
-    }
-
-    if (params.HasNumericEntry("theta"))
-    {
-        SetTheta(params.GetEntry("theta")->ToDouble());
-    }
-
-    if (params.HasNumericEntry("phi"))
-    {
-        SetPhi(params.GetEntry("phi")->ToDouble());
-    }
-
-    if (params.HasNumericEntry("width"))
-    {
-        SetWidth(params.GetEntry("width")->ToDouble());
-    }
-
-    if (params.HasNumericEntry("height"))
-    {
-        SetHeight(params.GetEntry("height")->ToDouble());
-    }
-
-    if (params.HasNumericVectorEntry("image_size"))
-    {
-        intVector v;
-        params.GetEntry("image_size")->ToIntVector(v);
-        if (v.size() != 2)
-            EXCEPTION2(QueryArgumentException, "image_size", 2);
-        SetImageSize(v);
-    }
 
     if (params.HasNumericEntry("divide_emis_by_absorb"))
         SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->ToBool());
@@ -241,6 +229,134 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
     if (params.HasNumericEntry("useUpVector"))
     {
         useSpecifiedUpVector = params.GetEntry("useUpVector")->ToBool();
+    }
+
+    useOldView = false;
+
+    //
+    // The new view parameters.
+    //
+    if (params.HasNumericVectorEntry("normal"))
+    {
+        doubleVector v;
+        params.GetEntry("normal")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "normal", 3);
+        normal[0] = v[0]; normal[1] = v[1]; normal[2] = v[2];
+    }
+
+    if (params.HasNumericVectorEntry("focus"))
+    {
+        doubleVector v;
+        params.GetEntry("focus")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "focus", 3);
+        focus[0] = v[0]; focus[1] = v[1]; focus[2] = v[2];
+    }
+
+    if (params.HasNumericVectorEntry("view_up"))
+    {
+        doubleVector v;
+        params.GetEntry("view_up")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "view_up", 3);
+        viewUp[0] = v[0]; viewUp[1] = v[1]; viewUp[2] = v[2];
+    }
+
+    if (params.HasNumericEntry("view_angle"))
+    {
+        viewAngle = params.GetEntry("view_angle")->ToDouble();
+    }
+
+    if (params.HasNumericEntry("parallel_scale"))
+    {
+        parallelScale = params.GetEntry("parallel_scale")->ToDouble();
+    }
+
+    if (params.HasNumericEntry("near_plane"))
+    {
+        nearPlane = params.GetEntry("near_plane")->ToDouble();
+    }
+
+    if (params.HasNumericEntry("far_plane"))
+    {
+        farPlane = params.GetEntry("far_plane")->ToDouble();
+    }
+
+    if (params.HasNumericVectorEntry("image_pan"))
+    {
+        intVector v;
+        params.GetEntry("image_pan")->ToIntVector(v);
+        if (v.size() != 2)
+            EXCEPTION2(QueryArgumentException, "image_pan", 2);
+        imagePan[0] = v[0]; imagePan[1] = v[1];
+    }
+
+    if (params.HasNumericEntry("image_zoom"))
+    {
+        imageZoom = params.GetEntry("image_zoom")->ToDouble();
+    }
+
+    if (params.HasNumericEntry("perspective"))
+    {
+        perspective = params.GetEntry("perspective")->ToBool();
+    }
+
+    if (params.HasNumericVectorEntry("image_size"))
+    {
+        intVector v;
+        params.GetEntry("image_size")->ToIntVector(v);
+        if (v.size() != 2)
+            EXCEPTION2(QueryArgumentException, "image_size", 2);
+        imageSize[0] = v[0]; imageSize[1] = v[1];
+        SetImageSize(v);
+    }
+
+    //
+    // The old view parameters.
+    //
+    if (params.HasNumericVectorEntry("origin"))
+    {
+        doubleVector v;
+        params.GetEntry("origin")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "origin", 3);
+        SetOrigin(v);
+        useOldView = true;
+    }
+
+    if (params.HasNumericVectorEntry("up_vector"))
+    {
+        doubleVector v;
+        params.GetEntry("up_vector")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "up_vector", 3);
+        SetUpVector(v);
+        useOldView = true;
+    }
+
+    if (params.HasNumericEntry("theta"))
+    {
+        SetTheta(params.GetEntry("theta")->ToDouble());
+        useOldView = true;
+    }
+
+    if (params.HasNumericEntry("phi"))
+    {
+        SetPhi(params.GetEntry("phi")->ToDouble());
+        useOldView = true;
+    }
+
+    if (params.HasNumericEntry("width"))
+    {
+        SetWidth(params.GetEntry("width")->ToDouble());
+        useOldView = true;
+    }
+
+    if (params.HasNumericEntry("height"))
+    {
+        SetHeight(params.GetEntry("height")->ToDouble());
+        useOldView = true;
     }
 }
 
@@ -268,7 +384,6 @@ avtXRayImageQuery::SetVariableNames(const stringVector &names)
         // They put in the same name twice.
         emisVarName = names[0];
 }
-
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetOrigin
@@ -305,7 +420,6 @@ avtXRayImageQuery::SetOrigin(const intVector &_origin)
     origin[2] = (double)_origin[2];
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetUpVector
 //
@@ -339,7 +453,6 @@ avtXRayImageQuery::SetUpVector(const intVector &_upvector)
     upVector[2] = (double)_upvector[2];
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetTheta
 //
@@ -369,7 +482,6 @@ avtXRayImageQuery::SetPhi(const double &phiInDegrees)
     phi   = phiInDegrees * M_PI / 180.0;
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetWidth
 //
@@ -389,7 +501,6 @@ avtXRayImageQuery::SetWidth(const double &size)
     width  = size;
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetHeight
 //
@@ -408,7 +519,6 @@ avtXRayImageQuery::SetHeight(const double &size)
 {
     height = size;
 }
-
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetImageSize
@@ -435,7 +545,6 @@ avtXRayImageQuery::SetImageSize(const intVector &size)
     numPixels = nx * ny;
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetDivideEmisByAbsorb
 //
@@ -454,7 +563,6 @@ avtXRayImageQuery::SetDivideEmisByAbsorb(bool flag)
     divideEmisByAbsorb = flag;
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetBackgroundIntensity
 //
@@ -472,7 +580,6 @@ avtXRayImageQuery::SetBackgroundIntensity(double intensity)
     backgroundIntensity = intensity;
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetOutputType
 //
@@ -489,7 +596,6 @@ avtXRayImageQuery::SetOutputType(int type)
 {
     outputType = type;
 }
-
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetOutputType
@@ -544,7 +650,6 @@ avtXRayImageQuery::Execute(vtkDataSet *ds, const int chunk)
 {
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::GetSecondaryVars
 //
@@ -564,7 +669,6 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
     outVars.push_back(absVarName);
     outVars.push_back(emisVarName);
 }
-
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::Execute
@@ -598,6 +702,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //
 //    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
 //    Added support for specifying background intensity entering volume.
+//
+//    Eric Brugger, Thu Nov 20 16:57:20 PST 2014
+//    Added a new way to specify the view that matches the way the view is
+//    specified for plots.
 //
 // ****************************************************************************
 
@@ -647,10 +755,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     avtDataObject_p dob = termsrc.GetOutput();
 
     avtXRayFilter *filt = new avtXRayFilter;
-    if (useSpecifiedUpVector)
-        filt->SetImageProperties(origin,upVector,theta,phi,width,height,nx,ny);
-    else 
-        filt->SetImageProperties(origin,NULL,theta,phi,width,height,nx,ny);
+
+    if (useOldView)
+        ConvertOldImagePropertiesToNew();
+    filt->SetImageProperties(normal, focus, viewUp, viewAngle, parallelScale,
+        nearPlane, farPlane, imagePan, imageZoom, perspective, imageSize);
 
     filt->SetDivideEmisByAbsorb(divideEmisByAbsorb);
     filt->SetBackgroundIntensity(backgroundIntensity);
@@ -778,7 +887,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     delete filt;
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteImage
 //
@@ -877,7 +985,6 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteFloats
 //
@@ -904,7 +1011,6 @@ avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
     fwrite(fbuf, sizeof(T), nPixels, file);
     fclose(file);
 }
-
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBOVHeader
@@ -953,14 +1059,66 @@ avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, const char *type)
 //    Kathleen Biagas, Wed Oct 17 12:10:25 PDT 2012
 //    Added up_vector.
 //
+//    Eric Brugger, Thu Nov 20 16:57:20 PST 2014
+//    Added a new way to specify the view that matches the way the view is
+//    specified for plots.
+//
 // ****************************************************************************
 
 void
 avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 {
-    params["output_type"] = std::string("png");
+    stringVector v;
+    v.push_back("absorbtivity");
+    v.push_back("emissivity");
+    params["vars"] = v;
+
     params["divide_emis_by_absorb"] = 0;
     params["background_intensity"] = 0.0;
+    params["output_type"] = std::string("png");
+
+    //
+    // The new view parameters.
+    //
+    doubleVector n;
+    n.push_back(0.0);
+    n.push_back(0.0);
+    n.push_back(1.0);
+    params["normal"] = n;
+
+    doubleVector f;
+    f.push_back(0.0);
+    f.push_back(0.0);
+    f.push_back(0.0);
+    params["focus"] = f;
+
+    doubleVector vu;
+    vu.push_back(0.0);
+    vu.push_back(1.0);
+    vu.push_back(0.0);
+    params["view_up"] = vu;
+
+    params["view_angle"] = 30.;
+    params["parallel_scale"] = 0.5;
+    params["near_plane"] = -0.5;
+    params["far_plane"] = 0.5;
+
+    doubleVector ip;
+    ip.push_back(0.0);
+    ip.push_back(0.0);
+    params["image_pan"] = ip;
+
+    params["image_zoom"] = 1.;
+    params["perspective"] = 1;
+
+    intVector is;
+    is.push_back(200);
+    is.push_back(200);
+    params["image_size"] = is;
+
+    //
+    // The old view parameters.
+    //
     doubleVector o;
     o.push_back(0.0);
     o.push_back(0.0);
@@ -978,14 +1136,59 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 
     params["width"] = 1.0;
     params["height"] = 1.0;
+}
 
-    intVector is;
-    is.push_back(200);
-    is.push_back(200);
-    params["ImageSize"] = is;
+// ****************************************************************************
+//  Method: avtXRayImageQuery::ConvertOldImagePropertiesToNew
+//
+//  Purpose:
+//    Convert the old image specification to the new image specification.
+//
+//  Programmer: Eric Brugger
+//  Creation:   November 20, 2014
+//
+// ****************************************************************************
 
-    stringVector v;
-    v.push_back("absorbtivity");
-    v.push_back("emissivity");
-    params["vars"] = v;
+void
+avtXRayImageQuery::ConvertOldImagePropertiesToNew()
+{
+    double cosT = cos(theta);
+    double sinT = sin(theta);
+    double cosP = cos(phi);
+    double sinP = sin(phi);
+
+    normal[0] = sinT*cosP;
+    normal[1] = sinT*sinP;
+    normal[2] = cosT;
+    focus[0] = origin[0];
+    focus[1] = origin[1];
+    focus[2] = origin[2];
+    if (useSpecifiedUpVector)
+    {
+        viewUp[0] = upVector[0];
+        viewUp[1] = upVector[1];
+        viewUp[2] = upVector[2];
+    }
+    else
+    {
+        viewUp[0] = -sinP;
+        viewUp[1] = cosP;
+        viewUp[2] = 0;
+    }
+    viewAngle = 30;
+    parallelScale = height / 2.;
+
+    //
+    // The 10 below is to get the results to match previous results more
+    // closely. In theory this constant multiplier shouldn't matter, but
+    // it matters along zone boundaries.
+    //
+    nearPlane = -10 * height;
+    farPlane = 10 * height;
+    imagePan[0] = 0;
+    imagePan[1] = 0;
+    imageZoom = 1;
+    perspective = false;
+    imageSize[0] = nx;
+    imageSize[1] = ny;
 }

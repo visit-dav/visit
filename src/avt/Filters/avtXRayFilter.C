@@ -399,50 +399,39 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 //    Added 'up' argument.  Allow it to be NULL, to preserve old behavior
 //    of avtXRayImageQuery, which did not have an 'up_vector' argument.
 //
+//    Eric Brugger, Wed Nov 19 15:48:18 PST 2014
+//    I modified the arguments so that they map one for one with the actual
+//    image properties stored in the class.
+//
 // ****************************************************************************
 
 void
-avtXRayFilter::SetImageProperties(double *pos, double *up, double theta, 
-    double phi, double dx, double dy, int nx, int ny)
+avtXRayFilter::SetImageProperties(double *_normal, double *_focus, 
+    double *_viewUp, double _viewAngle, double _parallelScale,
+    double _nearPlane, double _farPlane, double *_imagePan,
+    double _imageZoom, bool _perspective, int *_imageSize)
 {
-    double cosT = cos(theta);
-    double sinT = sin(theta);
-    double cosP = cos(phi);
-    double sinP = sin(phi);
+    normal[0]     = _normal[0];
+    normal[1]     = _normal[1];
+    normal[2]     = _normal[2];
+    focus[0]      = _focus[0];
+    focus[1]      = _focus[1];
+    focus[2]      = _focus[2];
+    viewUp[0]     = _viewUp[0];
+    viewUp[1]     = _viewUp[1];
+    viewUp[2]     = _viewUp[2];
+    viewAngle     = _viewAngle;
+    parallelScale = _parallelScale;
+    nearPlane     = _nearPlane;
+    farPlane      = _farPlane;
+    imagePan[0]   = _imagePan[0];
+    imagePan[1]   = _imagePan[1];
+    imageZoom     = _imageZoom;
+    perspective   = _perspective;
+    imageSize[0]  = _imageSize[0];
+    imageSize[1]  = _imageSize[1];
 
-    normal[0] = sinT*cosP;
-    normal[1] = sinT*sinP;
-    normal[2] = cosT;
-    focus[0] = pos[0];
-    focus[1] = pos[1];
-    focus[2] = pos[2];
-    if (up != NULL)
-    {
-        viewUp[0] = up[0];
-        viewUp[1] = up[1];
-        viewUp[2] = up[2];
-    }
-    else
-    {
-        viewUp[0] = -sinP;
-        viewUp[1] = cosP;
-        viewUp[2] = 0;
-    }
-    viewAngle = 30;
-    parallelScale = dy / 2.;
-    // The 10 below is to get the results to match previous results more
-    // closely. In theory this constant multiplier shouldn't matter, but
-    // it matters along zone boundaries.
-    nearPlane = -10 * dy;
-    farPlane = 10 * dy;
-    imagePan[0] = 0;
-    imagePan[1] = 0;
-    imageZoom = 1;
-    perspective = false;
-    imageSize[0] = nx;
-    imageSize[1] = ny;
-
-    numPixels = nx * ny;
+    numPixels = imageSize[0] * imageSize[1];
 }
 
 
