@@ -220,4 +220,24 @@ Test("xrayimage23", 0, 1)
 s = GetQueryOutputString()
 TestText("xrayimage24", s)
 
+#
+# Test with perspective.
+#
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("multi_curv3d.silo"))
+
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+params = dict(output_type="png", divide_emis_by_absorb=1, focus=(0.0, 2.5, 15.0), view_up=(0., 1., 0.), normal=(0., 0., 1.), view_angle=30., parallel_scale = 16.0078, near_plane = -32.0156, far_plane = 32.0156, image_pan=(0., 0.), image_zoom = 2.4, perspective = 1, image_size=(300, 300), vars=("d", "p"))
+Query("XRay Image", params)
+
+os.rename("output00.png", out_path(out_base,"xrayimage25.png"))
+
+Test("xrayimage25", 0, 1)
+
+s = GetQueryOutputString()
+TestText("xrayimage26", s)
+
 Exit()
