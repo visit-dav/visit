@@ -2468,6 +2468,10 @@ vtkCSGGrid::SplitGrid(vtkRectilinearGrid *rgrid, const int nBounds,
 //   discretization where it would do the wrong thing if a region
 //   referenced the same boundary multiple times.
 //
+//   Eric Brugger, Fri Nov 21 14:55:51 PST 2014
+//   I added a test to return NULL if the the number of boundaries in a
+//   single region exceeded the internal limit.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -2537,6 +2541,17 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
         }
         bounds.resize(nRegionBounds);
 
+        if (bounds.size() > VTK_CSG_MAX_BITS)
+        {
+            debug1 << "Warning: The multi pass discretization can't handle "
+                   << "more than " << VTK_CSG_MAX_BITS << " boundaries per "
+                   << "region. Region " << specificZone << " had "
+                   << bounds.size() << " boundaries. Ignoring the region."
+                   << endl;
+            delete [] zoneMap;
+            return NULL;
+        }
+
         //
         // Create the boundaries.
         //
@@ -2554,7 +2569,10 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
 
     vtkUnstructuredGrid *rv = multipassProcessedGrid;
     if (rv == NULL)
+    {
+        delete [] zoneMap;
         return NULL;
+    }
 
     // Evaluate the cell tags against this region
     vtkIntArray *in = vtkIntArray::New();
