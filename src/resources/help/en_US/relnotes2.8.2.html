@@ -81,6 +81,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Corrected an issue generating structured ghost data which could cause Filled Boundary plot of AMR mesh to crash compute engine.</li>
 <li>The VisIt launching script was modified so that arguments that it adds to the argument list are added at the beginning of the list instead of the end of the list so that argument passing for scripts works properly.</li>
 <li>VisIt now uses significantly less memory when processing CSG meshes with many regions. In one instance, a subset plot of a CSG mesh consisting of about 36000 spheres that was using over 250 gigabytes is now using about half a gigabyte.</li>
+<li>VisIt no longer crashes discretizing CSG meshes with the multi pass method when the number of boundaries in a region exceeds an internal limit. It now issues a warning message and tries the uniform discretization method.</li>
 </ul>
 
 <a name="Enhancements"></a>
