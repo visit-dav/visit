@@ -94,6 +94,10 @@
 //    Gunther H. Weber, Wed Jan 23 15:23:55 PST 2013
 //    Added support for specifying background intensity entering the volume 
 //
+//    Eric Brugger, Wed Nov 19 15:46:09 PST 2014
+//    I modified SetImageProperties so that its arguments map one for one
+//    with the actual image properties stored in the class.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -113,14 +117,17 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                        { absVarName = abs;
                                          emisVarName = emis; };
 
-    void                            SetImageProperties(double *pos,
-                                                       double *up,
-                                                       double  theta,
-                                                       double  phi,
-                                                       double  dx,
-                                                       double  dy,
-                                                       int    nx,
-                                                       int    ny);
+    void                            SetImageProperties(double *_normal,
+                                                       double *_focus,
+                                                       double *_viewUp,
+                                                       double  _viewAngle,
+                                                       double  _parallelScale,
+                                                       double  _nearPlane,
+                                                       double  _farPlane,
+                                                       double *_imagePan,
+                                                       double  _imageZoom,
+                                                       bool    _perspective,
+                                                       int    *_imageSize);
     void                            SetDivideEmisByAbsorb(bool);
     void                            SetBackgroundIntensity(double);
 

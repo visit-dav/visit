@@ -89,6 +89,10 @@
 //    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
 //    Added support for specifying background intensity entering volume.
 //
+//    Eric Brugger, Thu Nov 20 16:54:28 PST 2014
+//    Added a new way to specify the view that matches the way the view is
+//    specified for plots.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -121,15 +125,29 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetOutputType(const std::string &type);
 
   protected:
+    bool                      divideEmisByAbsorb;
+    double                    backgroundIntensity;
+    int                       outputType;
+    bool                      useSpecifiedUpVector;
+    bool                      useOldView;
+    // The new view specification
+    double                    normal[3];
+    double                    focus[3];
+    double                    viewUp[3];
+    double                    viewAngle;
+    double                    parallelScale;
+    double                    nearPlane;
+    double                    farPlane;
+    double                    imagePan[2];
+    double                    imageZoom;
+    bool                      perspective;
+    int                       imageSize[2];
+    // The old view specification
     double                    origin[3];
     double                    upVector[3];
     double                    theta, phi;
     double                    width, height;
     int                       nx, ny;
-    bool                      divideEmisByAbsorb;
-    double                    backgroundIntensity;
-    int                       outputType;
-    bool                      useSpecifiedUpVector;
 
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
@@ -148,6 +166,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     template <typename T>
     void                      WriteFloats(int, int, T*);
     void                      WriteBOVHeader(int, int, int, const char *);
+
+    void                      ConvertOldImagePropertiesToNew();
 };
 
 
