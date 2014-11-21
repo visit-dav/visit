@@ -69,6 +69,7 @@
 
 #include <vtkVisItUtility.h>
 
+#include <avtCallback.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <avtDatabaseMetaData.h>
@@ -1613,6 +1614,11 @@ double ComputeCellSize(double tol,
 //    regions, so this is a significant saving. CSG meshes with thousands
 //    of regions were exhausting memory in the previous scheme.
 //
+//    Eric Brugger, Fri Nov 21 15:36:42 PST 2014
+//    I added code to try the uniform discretization method if the multi
+//    pass method failed. I also added code to return an empty mesh if we
+//    were unable to discretize the mesh.
+//
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
@@ -1808,11 +1814,33 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
             dgrid = csgmesh->DiscretizeSpaceMultiPass(csgreg,
                 bnds, dims, subRegion);
 
+            if (dgrid == NULL)
+            {
+                std::ostringstream oss;
+                oss << "Unable to discretize domain " << dom << " with "
+                    << "the multi pass method, trying the uniform method.";
+                std::string msg(oss.str());
+                avtCallback::IssueWarning(msg.c_str());
+
+                dgrid = csgmesh->DiscretizeSpace(csgreg,
+                                             dataRequest->DiscTol(),
+                                             bnds[0], bnds[1], bnds[2],
+                                             bnds[3], bnds[4], bnds[5]);
+            }
             cache.CacheVTKObject(vname, type, -1, -1, mat, csgmesh);
             avtDataRequest *newdataRequest = new avtDataRequest(dataRequest);
             const void_ref_ptr vr = void_ref_ptr(newdataRequest, DestructDspec);
             cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
                                -1, -1, vr);
+        }
+
+        if (dgrid == NULL)
+        {
+            std::ostringstream oss;
+            oss << "Unable to discretize domain " << dom << ". Ignoring it.";
+            std::string msg(oss.str());
+            avtCallback::IssueWarning(msg.c_str());
+            dgrid = vtkUnstructuredGrid::New();
         }
 
         //
