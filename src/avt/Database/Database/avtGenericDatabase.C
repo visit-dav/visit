@@ -3325,7 +3325,7 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
     {
         int domain = domains[i];
         avtDatabaseMetaData *md = GetMetaData(ts);
-        md->ConvertCSGDomainToBlockAndRegion(real_var, &domain, 0);
+        md->ConvertCSGDomainToBlockAndRegion(var, &domain, 0);
 
         //
         // See if we already have the data lying around for this timestep or
