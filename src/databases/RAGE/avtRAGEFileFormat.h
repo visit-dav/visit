@@ -65,8 +65,8 @@
 class avtRAGEFileFormat : public avtSTSDFileFormat
 {
   public:
-                       avtRAGEFileFormat(const char *filename);
-    virtual           ~avtRAGEFileFormat() {;};
+    avtRAGEFileFormat(const char *filename);
+    virtual ~avtRAGEFileFormat() {}
 
     //
     // This is used to return unconvention data -- ranging from material
@@ -76,19 +76,13 @@ class avtRAGEFileFormat : public avtSTSDFileFormat
     //                                  void *args, DestructorFunction &);
     //
 
-    //
-    // These are used to declare what the current time and cycle are for the
-    // file.  These should only be defined if the file format knows what the
-    // time and/or cycle is.
-    //
-    // virtual bool      ReturnsValidCycle() const { return true; };
-    // virtual int       GetCycle(void);
-    // virtual bool      ReturnsValidTime() const { return true; };
-    // virtual double    GetTime(void);
-    //
+    virtual bool      ReturnsValidCycle() const {return true;}
+    virtual int       GetCycle() {Initialize(); return cycle;}
+    virtual bool      ReturnsValidTime() const {return true;}
+    virtual double    GetTime() {Initialize(); return time;}
 
-    virtual const char    *GetType(void)   { return "RAGE"; };
-    virtual void           FreeUpResources(void); 
+    virtual const char    *GetType() {return "RAGE";}
+    virtual void           FreeUpResources();
 
     virtual vtkDataSet    *GetMesh(const char *);
     virtual vtkDataArray  *GetVar(const char *);
@@ -99,36 +93,20 @@ class avtRAGEFileFormat : public avtSTSDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     void                   Initialize();
 
-    int32 hdfFile;
-    //std::map<std::string, std::vector<int> > meshes;
+    bool initialized;
+    double time;
+    int cycle;
     
     struct meshInfo
     {
-        std::vector<std::string> units, labels;
-        std::vector<int> dimIDs, dimSz, dimType;
-        
-        void clear()
-        {
-            units.clear();
-            labels.clear();
-            dimIDs.clear();
-            dimSz.clear();
-            dimType.clear();
-        }
-        void reverse()
-        {
-            std::reverse(units.begin(), units.end());
-            std::reverse(labels.begin(), labels.end());
-            std::reverse(dimIDs.begin(), dimIDs.end());
-            std::reverse(dimSz.begin(), dimSz.end());
-            std::reverse(dimType.begin(), dimType.end());
-        }
+        std::vector<double> dimMin, dimMax;
+        std::vector<int> dimNum;
     };
     std::map<std::string, meshInfo> meshes;
 
     struct varInfo
     {
-        int varID, varIdx, dataType;
+        int dataType;
         std::string meshNm;
     };
     std::map<std::string, varInfo> vars;
