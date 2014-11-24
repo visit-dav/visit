@@ -128,9 +128,13 @@ function bv_uintah_dry_run
   fi
 }
 
-# *************************************************************************** #
-#                          Function 8.1, build_uintah                           #
-# *************************************************************************** #
+# **************************************************************************** #
+#                          Function 8.1, build_uintah                          #
+#                                                                              #
+# Kevin Griffin, Mon Nov 24 12:33:02 PST 2014                                  #
+# Changed the -showme:compile to -show for OS X Mavericks. The -showme:compile #
+# was being reported as an invalid option.                                     #
+# **************************************************************************** #
 
 function build_uintah
 {
@@ -146,9 +150,13 @@ function build_uintah
             PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
         else
             if [[ -z "$PAR_INCLUDE_STRING" ]]; then
-                PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`
-                if [[ $? != 0 ]] ; then
-                    PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
+                if [[ "$OPSYS" == "Darwin" && `sw_vers -productVersion` == 10.9.[0-9]* ]] ; then
+                   PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
+                else
+                    PAR_INCLUDE_STRING=`$PAR_COMPILER -showme:compile`
+                    if [[ $? != 0 ]] ; then
+                       PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
+                    fi
                 fi
             fi
         fi
