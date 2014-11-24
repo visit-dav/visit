@@ -127,13 +127,38 @@ function bv_netcdf_dry_run
   fi
 }
 
-# *************************************************************************** #
-#                         Function 8.4, build_netcdf                          #
-#                                                                             #
-# Mark C. Miller, Wed Oct 27 19:25:09 PDT 2010                                #
-# Added patch for exodusII. This way, a single netcdf installation should     #
-# work for 'normal' netcdf operations as well as for ExodusII.                #
-# *************************************************************************** #
+function apply_netcdf_411_darwin_patch
+{
+   patch -p0 << \EOF
+diff -c netcdf-4.1.1/ncgen3/genlib.h.orig netcdf-4.1.1/ncgen3/genlib.h
+*** netcdf-4.1.1/ncgen3/genlib.h.orig	2014-11-13 17:16:23.000000000 -0800
+--- netcdf-4.1.1/ncgen3/genlib.h	2014-11-13 16:27:08.000000000 -0800
+***************
+*** 81,87 ****
+  
+  /* In case we are missing strlcat */
+  #ifndef HAVE_STRLCAT
+! extern size_t strlcat(char *dst, const char *src, size_t siz);
+  #endif
+  
+  #ifdef __cplusplus
+--- 81,87 ----
+  
+  /* In case we are missing strlcat */
+  #ifndef HAVE_STRLCAT
+! /* extern size_t strlcat(char *dst, const char *src, size_t siz); */
+  #endif
+  
+  #ifdef __cplusplus
+EOF
+
+   if [[ $? == 0 ]] ; then
+      return 0;
+   fi
+
+   return 1;
+}
+
 function apply_netcdf_patch_for_exodusii
 {
     local retval=0
@@ -239,9 +264,31 @@ EOF
 function apply_netcdf_patch
 {
    apply_netcdf_patch_for_exodusii
+
+   if [[ ${NETCDF_VERSION} == 4.1.1 ]] ; then
+      if [[ "$OPSYS" == "Darwin" ]] ; then
+         if [[ `sw_vers -productVersion` == 10.9.[0-9]* ]] ; then
+            info "Applying OS X 10.9 Mavericks patch . . ."
+            apply_netcdf_411_darwin_patch
+         fi
+      fi
+   fi
+
    return $?
 }
 
+# *************************************************************************** #
+#                         Function 8.4, build_netcdf                          #
+#                                                                             #
+# Mark C. Miller, Wed Oct 27 19:25:09 PDT 2010                                #
+# Added patch for exodusII. This way, a single netcdf installation should     #
+# work for 'normal' netcdf operations as well as for ExodusII.                #
+#                                                                             #
+# Kevin Griffin, Mon Nov 17 11:31:52 PST 2014                                 #
+# Added patch for OS X 10.9 Mavericks. HAVE_STRLCAT is not getting defined    #
+# in this version so its trying to add a duplicate strlcat definition. This   #
+# patch comments out the duplicate strlcat definition.                        #
+# *************************************************************************** #
 function build_netcdf
 {
     # Prepare build dir

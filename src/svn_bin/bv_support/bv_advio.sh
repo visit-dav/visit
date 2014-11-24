@@ -82,8 +82,78 @@ function bv_advio_dry_run
     echo "Dry run option not set for advio."
   fi
 }
+
+function apply_advio_12_mavericks_patch
+{
+   patch -p0 << \EOF
+diff -c AdvIO-1.2/Base/AdvTypes.h.orig AdvIO-1.2/Base/AdvTypes.h
+*** AdvIO-1.2/Base/AdvTypes.h.orig	2014-11-19 17:29:43.000000000 -0800
+--- AdvIO-1.2/Base/AdvTypes.h	2014-11-19 17:30:32.000000000 -0800
+***************
+*** 30,53 ****
+  #error  c++ support is disabled. Please recompile AdvIO!!
+  #endif
+  
+- #if SIZEOF_BOOL != 0
+- 
+- /* use C++-builtin boolean (do nothing) */
+- 
+- #elif USE_STL
+- 
+- /* use stl's boolean */
+- #include <stl.h>
+- 
+- #else
+- 
+- /* use own boolean */
+- typedef int bool;
+- const bool false = 0;
+- const bool true = !false;
+- 
+- #endif
+- 
+  #else
+  /*---------- C ----------*/
+  
+--- 30,35 ----
+
+EOF
+   if [[ $? != 0 ]] ; then
+      return 1
+   fi
+
+   return 0 
+}
+
+function apply_advio_12_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]] ; then
+      if [[ `sw_vers -productVersion` == 10.9.[0-9]* ]] ; then
+         info "Applying OS X 10.9 Mavericks patch . . ."
+         apply_advio_12_mavericks_patch
+      fi
+   fi
+
+   return $?
+}
+
+function apply_advio_patch
+{
+   if [[ ${ADVIO_VERSION} == 1.2 ]] ; then
+      apply_advio_12_patch
+      if [[ $? != 0 ]] ; then
+         return 1
+      fi
+   fi
+
+   return 0
+}
+
 # *************************************************************************** #
 #                         Function 8.18, build_advio                          #
+#                                                                             #
+# Kevin Griffin, Tue Nov 18 18:25:38 PST 2014                                 #
+# Added patch for OS X 10.9 Mavericks.                                        #
 # *************************************************************************** #
 
 function build_advio
@@ -96,6 +166,23 @@ function build_advio
     if [[ $untarred_ADVIO == -1 ]] ; then
        warn "Unable to prepare AdvIO Build Directory. Giving up"
        return 1
+    fi
+
+    #
+    # Apply patches
+    #
+    info "Patching AdvIO . . ."
+    apply_advio_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_ADVIO == 1 ]] ; then
+          warn "Giving up on AdvIO build because the patch failed."
+          return 1
+       else 
+          warn "Patch failed, but continuing.  I believe that this script\n" \
+          warn "tried to apply a patch to an existing directory which had\n" \
+          warn "already been patched ... that is, that the patch is\n" \
+          warn "failing harmlessly on a second application."
+       fi
     fi
 
     # Configure AdvIO
