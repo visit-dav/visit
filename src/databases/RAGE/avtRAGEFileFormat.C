@@ -53,19 +53,27 @@
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 
+#include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <hdf.h>
-#include <mfhdf.h>
+
+#include <df.h>
 #include <VisItStreamUtil.h>
 
 using std::string;
 using std::vector;
 using std::map;
 using std::pair;
+using std::locale;
 
 template <class T> static void
 swapXY(vtkDataArray *arr, int nx, int ny, T *vals);
+
+static bool
+extractStr(const string &str, const string &key, string &val);
+
+static bool
+extractNum(const string &str, const string &key, double &val);
 
 
 // ****************************************************************************
@@ -79,7 +87,9 @@ swapXY(vtkDataArray *arr, int nx, int ny, T *vals);
 avtRAGEFileFormat::avtRAGEFileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
-    hdfFile = -1;
+    initialized = false;
+    time = 0.0;
+    cycle = 0;
 }
 
 
@@ -100,11 +110,7 @@ avtRAGEFileFormat::avtRAGEFileFormat(const char *filename)
 void
 avtRAGEFileFormat::FreeUpResources()
 {
-    if (hdfFile != -1)
-        SDend(hdfFile);
-    hdfFile = -1;
 }
-
 
 //****************************************************************************
 // Method:  avtRAGEFileFormat::Initialize()
@@ -122,69 +128,69 @@ avtRAGEFileFormat::FreeUpResources()
 void
 avtRAGEFileFormat::Initialize()
 {
-    if (hdfFile != -1)
+    if (initialized)
         return;
 
-    hdfFile = SDstart(GetFilename(), DFACC_READ);
-    if(hdfFile < 0)
-        EXCEPTION1(InvalidFilesException, GetFilename());
+    DFSDrestart();
+    int nDims, dimSizes[3], tag=700;
     
-    int32 numDS = 0, numAttrs = 0;
-    if (SDfileinfo(hdfFile, &numDS, &numAttrs) == FAIL)
-        EXCEPTION1(InvalidFilesException, GetFilename());
-
-    meshInfo mi;
-    for (int i = 0; i < numDS; i++)
+    while (DFSDgetdims(GetFilename(), &nDims, dimSizes, 3) != -1)
     {
-        int32 vi = SDselect(hdfFile, i);
-        char dsName[H4_MAX_VAR_DIMS];
-        int32 rank, dataType, numAttrs, dimSizes[H4_MAX_VAR_DIMS];
-        if (SDgetinfo(vi, dsName, &rank, dimSizes, &dataType, &numAttrs) == FAIL)
+        meshInfo mi;
+        varInfo vi;
+        for (int i = 0; i < nDims; i++)
+            mi.dimNum.push_back(dimSizes[i]);
+
+        DFSDgetNT(&vi.dataType);
+        
+        int lastRef = DFSDlastref();
+        int dLen = DFANgetdesclen(GetFilename(), tag, lastRef);
+        char *str = new char[dLen+1];
+        if (DFANgetdesc(GetFilename(), tag, lastRef, str, dLen) == -1)
             EXCEPTION1(InvalidFilesException, GetFilename());
         
-        if (rank == 1)
+        str[dLen] = '\0';
+        string descr(str);
+        double xmin, xmax, ymin, ymax, zmin=0.0, zmax=0.0;
+        string var;
+        
+        extractNum(descr, "time", time);
+        extractNum(descr, "xmin", xmin);
+        extractNum(descr, "xmax", xmax);
+        extractNum(descr, "ymin", ymin);
+        extractNum(descr, "ymax", ymax);
+        mi.dimMin.push_back(xmin);
+        mi.dimMax.push_back(xmax);
+        mi.dimMin.push_back(ymin);
+        mi.dimMax.push_back(ymax);
+        if (nDims == 3)
         {
-            int32 n, attrType;
-            char nm[H4_MAX_VAR_DIMS], attr[1024];
-            
-            //Get the dimension attributes.
-            for (int a = 0; a < numAttrs; a++)
-            {
-                if (SDattrinfo(vi, a, nm, &attrType, &n) == FAIL)
-                    EXCEPTION1(InvalidFilesException, GetFilename());
-                if (SDreadattr(vi, a, attr) == FAIL)
-                    EXCEPTION1(InvalidFilesException, GetFilename());
-                
-                attr[n] = '\0';
-                if (string(nm) == "units")
-                    mi.units.push_back(attr);
-                else if (string(nm) == "long_name")
-                    mi.labels.push_back(attr);
-            }
+            extractNum(descr, "zmin", zmin);
+            extractNum(descr, "zmax", zmax);
+            mi.dimMin.push_back(zmin);
+            mi.dimMax.push_back(zmax);
+        }
+        extractStr(descr, "pioName", var);
 
-            //Add info on dimension to the mesh.
-            mi.dimIDs.push_back(vi);
-            mi.dimSz.push_back(dimSizes[0]);
-            mi.dimType.push_back(dataType);
-        }
-        else if (rank > 1)
-        {
-            string meshNm = "mesh_" + string(dsName);
-            
-            // dims are reversed wrt to VTK.
-            mi.reverse();
-            meshes[meshNm] = mi;
-            
-            varInfo v;
-            v.varID = vi;
-            v.varIdx = i;
-            v.meshNm = meshNm;
-            v.dataType = dataType;
-            vars[dsName] = v;
-            
-            mi.clear();
-        }
+        string meshNm = "mesh_" + var;
+        meshes[meshNm] = mi;
+        vi.meshNm = meshNm;
+        vars[var] = vi;
+        
+        delete [] str;
     }
+
+    //parse out the cycle
+    string f = GetFilename();
+    locale loc;
+    size_t i;
+    for (i = f.size()-1; i > 0; i--)
+        if (!isdigit(f[i], loc))
+            break;
+    string meow = f.substr(i+1, string::npos);
+    cycle = atoi(f.substr(i+1, string::npos).c_str());
+    
+    initialized = true;
 }
 
 
@@ -205,32 +211,27 @@ void
 avtRAGEFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     Initialize();
-
+    
     map<string, meshInfo>::iterator mit;
     for (mit = meshes.begin(); mit != meshes.end(); mit++)
     {
-        int nDims = mit->second.dimIDs.size();
+        int nDims = mit->second.dimNum.size();
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = mit->first;
         mesh->meshType = AVT_RECTILINEAR_MESH;
         mesh->spatialDimension = nDims;
         mesh->topologicalDimension = nDims;
 
-        int nU = mit->second.units.size();
-        int nL = mit->second.labels.size();
-        if (nU > 0) mesh->xUnits = mit->second.units[0];
-        if (nL > 0) mesh->xLabel = mit->second.labels[0];
-        if (nU > 1) mesh->yUnits = mit->second.units[1];
-        if (nL > 1) mesh->yLabel = mit->second.labels[1];
-        if (nU > 2) mesh->zUnits = mit->second.units[2];
-        if (nL > 2) mesh->zLabel = mit->second.labels[2];
+        mesh->xUnits = "cm";
+        mesh->yUnits = "cm";
+        mesh->zUnits = "cm";
 
         md->Add(mesh);
     }
 
     map<string, varInfo>::iterator vit;
     for (vit = vars.begin(); vit != vars.end(); vit++)
-        AddScalarVarToMetaData(md, vit->first, vit->second.meshNm, AVT_NODECENT);
+        AddScalarVarToMetaData(md, vit->first, vit->second.meshNm, AVT_ZONECENT);
 }
 
 
@@ -255,8 +256,9 @@ vtkDataSet *
 avtRAGEFileFormat::GetMesh(const char *meshname)
 {
     Initialize();
-    map<string, meshInfo>::iterator mit = meshes.find(meshname);
-    if (mit == meshes.end())
+
+    map<string, meshInfo>::iterator mi = meshes.find(meshname);
+    if (mi == meshes.end())
         return NULL;
 
     vtkFloatArray *coords[3] = {vtkFloatArray::New(),
@@ -264,46 +266,29 @@ avtRAGEFileFormat::GetMesh(const char *meshname)
                                 vtkFloatArray::New()};
 
     int dims[3] = {1,1,1};
-    for (int i = 0; i < mit->second.dimIDs.size(); i++)
+    int nDims = mi->second.dimNum.size();
+    for (int i = 0; i < nDims; i++)
     {
-        int dimID = mit->second.dimIDs[i];
-        int sz = mit->second.dimSz[i];
-        int dimType = mit->second.dimType[i];
-        
-        dims[i] = sz;
+        int sz = mi->second.dimNum[i] + 1;
+        float x0 = mi->second.dimMin[i], x1 = mi->second.dimMax[i];
+        float dx = (x1-x0)/float(sz-1);
         coords[i]->SetNumberOfTuples(sz);
-
-        int32 start[1] = {0}, end[1] = {sz};
-        if (dimType == DFNT_FLOAT32)
-        {
-            float *vals = new float[sz];
-            SDreaddata(dimID, start, NULL, end, vals);
-            for (int j = 0; j < sz; j++)
-                coords[i]->SetTuple1(j, vals[j]);
-            delete [] vals;
-        }
-        else if (dimType == DFNT_FLOAT64)
-        {
-            double *vals = new double[sz];
-            SDreaddata(dimID, start, NULL, end, vals);
-            for (int j = 0; j < sz; j++)
-                coords[i]->SetTuple1(j, vals[j]);
-            delete [] vals;
-        }
-        else
-            EXCEPTION1(InvalidVariableException, meshname);
+        dims[i] = sz;
+       
+        float x = x0;
+        for (int j = 0; j < sz; j++, x+=dx)
+            coords[i]->SetTuple1(j, x);
     }
     
-    if (mit->second.dimIDs.size() < 3)
+    if (nDims < 3)
     {
         coords[2]->SetNumberOfTuples(1);
-        coords[2]->SetTuple1(0, 0.0f);
+        coords[2]->SetTuple1(0,0);
     }
-
-    if (mit->second.dimIDs.size() < 2)
+    if (nDims < 2)
     {
         coords[1]->SetNumberOfTuples(1);
-        coords[1]->SetTuple1(0, 0.0f);
+        coords[1]->SetTuple1(0,0);
     }
 
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
@@ -343,17 +328,16 @@ avtRAGEFileFormat::GetVar(const char *varname)
     map<string, varInfo>::iterator vit = vars.find(varname);
     if (vit == vars.end())
         EXCEPTION1(InvalidVariableException, varname);
-    
     map<string, meshInfo>::iterator mit = meshes.find(vit->second.meshNm);
     if (mit == meshes.end())
         EXCEPTION1(InvalidVariableException, varname);
 
-    int nDims = mit->second.dimSz.size();
-    int numTuples = 1;
+    int nDims = mit->second.dimNum.size(), dims[3] = {1,1,1};
     
-    for (int i = 0; i < mit->second.dimSz.size(); i++)
-        numTuples *= mit->second.dimSz[i];
-
+    for (int i = 0; i < nDims; i++)
+        dims[i] = mit->second.dimNum[i];
+    
+    int numTuples = dims[0]*dims[1]*dims[2];
     vtkDataArray *arr = NULL;
     if (vit->second.dataType == DFNT_FLOAT32)
         arr = vtkFloatArray::New();
@@ -363,44 +347,10 @@ avtRAGEFileFormat::GetVar(const char *varname)
         EXCEPTION1(InvalidVariableException, varname);
     
     arr->SetNumberOfTuples(numTuples);
-
-    int varID = vit->second.varID;
-    int32 start[3] = {0, 0, 0};
-    int32 end[3] = {0, 0, 0};
-    for (int i = 0; i < mit->second.dimSz.size(); i++)
-        end[i] = mit->second.dimSz[i];
-
-    if (vit->second.dataType == DFNT_FLOAT32)
-    {
-        float *vals = new float[numTuples];
-        SDreaddata(varID, start, NULL, end, vals);
-        
-        //For 2D, we need to swap the data.
-        if (nDims == 2)
-            swapXY(arr, mit->second.dimSz[0], mit->second.dimSz[1], vals);
-        else
-        {
-            for (int i = 0; i < numTuples; i++)
-                arr->SetTuple1(i, vals[i]);
-        }
-        delete [] vals;
-    }
-    else if (vit->second.dataType == DFNT_FLOAT64)
-    {
-        double *vals = new double[numTuples];
-        SDreaddata(varID, start, NULL, end, vals);
-        
-        //For 2D, we need to swap the data.
-        if (nDims == 2)
-            swapXY(arr, mit->second.dimSz[0], mit->second.dimSz[1], vals);
-        else
-        {
-            for (int i = 0; i < numTuples; i++)
-                arr->SetTuple1(i, vals[i]);
-        }
-        delete [] vals;
-    }
-
+    
+    if (DFSDgetdata(GetFilename(), nDims, dims, arr->GetVoidPointer(0)) == -1)
+        EXCEPTION1(InvalidVariableException, varname);
+    
     return arr;
 }
 
@@ -448,5 +398,64 @@ swapXY(vtkDataArray *arr, int nx, int ny, T *vals)
     for (int i = 0; i < nx; i++)
         for (int j = 0; j < ny; j++)
             arr->SetTuple1(idx++, vals[i*ny+j]);
+}
+
+//****************************************************************************
+// Method:  extractStr
+//
+// Purpose:
+//   Swap the XY order of the data.
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  24, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+static bool
+extractStr(const string &str, const string &key, string &val)
+{
+    size_t i = str.find(key);
+    if (i == string::npos)
+        return false;
+    
+    string sub = str.substr(i+key.size(), string::npos);
+    char a[128], b[128];
+    sscanf(sub.c_str(), "%s %s", a, b);
+    val.resize(strlen(a)-2);
+    for (int i = 1; i < strlen(a)-1; i++)
+        val[i-1] = a[i];
+
+    //cout<<key<<" --> "<<val<<endl;
+    return true;
+}
+
+//****************************************************************************
+// Method:  extractNum
+//
+// Purpose:
+//   Swap the XY order of the data.
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  24, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+static bool
+extractNum(const string &str, const string &key, double &val)
+{
+    size_t i = str.find(key);
+    if (i == string::npos)
+        return false;
+    
+    string sub = str.substr(i+key.size(), string::npos);
+    char a[128];
+    sscanf(sub.c_str(), "%lf %s", &val, a);
+    
+    //cout<<key<<" --> "<<val<<endl;
+    return true;
 }
 
