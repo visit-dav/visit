@@ -1619,6 +1619,12 @@ double ComputeCellSize(double tol,
 //    pass method failed. I also added code to return an empty mesh if we
 //    were unable to discretize the mesh.
 //
+//    Eric Brugger, Mon Nov 24 16:04:47 PST 2014
+//    I added an argument to vtkCSGGrid::DoDiscretizationMultiPass that
+//    specifies if all the regions should be discretized at once. I am
+//    passing a hard coded false since it gives better performance for
+//    complex CSG meshes. In the future this will be user controllable.
+//
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
@@ -1811,7 +1817,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
             if (processed)
                 csgmesh = vtkCSGGrid::SafeDownCast(processed);
 
-            dgrid = csgmesh->DiscretizeSpaceMultiPass(csgreg,
+            dgrid = csgmesh->DiscretizeSpaceMultiPass(csgreg, false,
                 bnds, dims, subRegion);
 
             if (dgrid == NULL)
