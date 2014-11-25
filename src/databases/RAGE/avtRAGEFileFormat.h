@@ -106,7 +106,7 @@ class avtRAGEFileFormat : public avtSTSDFileFormat
 
     struct varInfo
     {
-        int dataType;
+        int32 dataType;
         std::string meshNm;
     };
     std::map<std::string, varInfo> vars;

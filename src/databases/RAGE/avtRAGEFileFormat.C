@@ -60,6 +60,8 @@
 #include <df.h>
 #include <VisItStreamUtil.h>
 
+#include <locale>
+
 using std::string;
 using std::vector;
 using std::map;
@@ -132,8 +134,9 @@ avtRAGEFileFormat::Initialize()
         return;
 
     DFSDrestart();
-    int nDims, dimSizes[3], tag=700;
-    
+    int nDims, tag=700;
+    int32 dimSizes[3];
+
     while (DFSDgetdims(GetFilename(), &nDims, dimSizes, 3) != -1)
     {
         meshInfo mi;
@@ -332,7 +335,8 @@ avtRAGEFileFormat::GetVar(const char *varname)
     if (mit == meshes.end())
         EXCEPTION1(InvalidVariableException, varname);
 
-    int nDims = mit->second.dimNum.size(), dims[3] = {1,1,1};
+    int nDims = mit->second.dimNum.size();
+    int32 dims[3] = {1,1,1};
     
     for (int i = 0; i < nDims; i++)
         dims[i] = mit->second.dimNum[i];
