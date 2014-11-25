@@ -2264,6 +2264,72 @@ vtkCSGGrid::GetRegionBounds(int reg, std::vector<int> &bounds)
 }
 
 // ****************************************************************************
+// Method:  vtkCSGGrid::PrintRegionTree
+//
+// Purpose:
+//   Print the boundary tree for the specified region.
+//
+// Arguments:
+//   reg        The region we're printing
+//   indent     The indentation level
+//
+// Programmer:  Eric Brugger
+// Creation:    November 24, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkCSGGrid::PrintRegionTree(int reg, int indent)
+{
+    int leftID  = leftIds[reg];
+    int rightID = rightIds[reg];
+
+    for (int i = 0; i < indent; i++)
+        cerr << "  ";
+    cerr << indent << ":" << reg << ":";
+
+    switch (regTypeFlags[reg])
+    {
+      case DBCSG_INNER:
+        cerr << "Inner:" << leftID << endl;
+        break;
+      case DBCSG_OUTER:
+        cerr << "Outer:" << leftID << endl;
+        break;
+      case DBCSG_COMPLIMENT:
+        cerr << "Compliment:" << endl;
+        PrintRegionTree(leftID, indent+1);
+        break;
+      case DBCSG_UNION:
+        cerr << "Union:" << endl;
+        PrintRegionTree(leftID, indent+1);
+        PrintRegionTree(rightID, indent+1);
+        break;
+      case DBCSG_INTERSECT:
+        cerr << "Intersect:" << endl;
+        PrintRegionTree(leftID, indent+1);
+        PrintRegionTree(rightID, indent+1);
+        break;
+      case DBCSG_DIFF:
+        cerr << "Diff:" << endl;
+        PrintRegionTree(leftID, indent+1);
+        PrintRegionTree(rightID, indent+1);
+        break;
+      case DBCSG_XFORM:
+        cerr << "Xform:" << endl;
+        break;
+      case DBCSG_SWEEP:
+        cerr << "Sweep:" << endl;
+        break;
+      default:
+        cerr << "Unknown:" << endl;
+        break;
+    }
+}
+
+// ****************************************************************************
 // Method:  vtkCSGGrid::CreateRectilinearGrid
 //
 // Purpose:
@@ -2431,14 +2497,17 @@ vtkCSGGrid::SplitGrid(vtkRectilinearGrid *rgrid, const int nBounds,
 //
 // Purpose:
 //   Extract out a single zone from the pre-process mesh for the mutli-pass
-//   algorithm. If the total number of boundaries is less than the limit in
-//   vtkCSGFixedLengthBitField then the discretization is shared for all
-//   regions and cached. Otherwise it is done individually for each region.
-//   It stores the in/out boundary flags as a bitfield for each cell, letting
-//   us simply threshold the pieces we want later.
+//   algorithm. If doAllBoundariesAtOnce is true and the total number of
+//   boundaries is less than the limit in vtkCSGFixedLengthBitField then the 
+//   discretization is shared for all regions and cached. Otherwise it is
+//   done individually for each region. It stores the in/out boundary flags
+//   as a bitfield for each cell, letting us simply threshold the pieces we
+//   want later.
 //
 // Arguments:
 //   specificZone    The region of interest.
+//   discretizeAllRegionsAtOnce A flag that controls if all the regions are
+//                   discretized at once.
 //   bnds            The bounds of the mesh.
 //   dims            The dimensions of the mesh.
 //   subRegion       The region we are processing.
@@ -2472,14 +2541,22 @@ vtkCSGGrid::SplitGrid(vtkRectilinearGrid *rgrid, const int nBounds,
 //   I added a test to return NULL if the the number of boundaries in a
 //   single region exceeded the internal limit.
 //
+//   Eric Brugger, Mon Nov 24 15:48:38 PST 2014
+//   I added a control that specifies if all the regions should be discretized
+//   at once. I added code to print the region tree if the debug level is 5.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
 vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
-    const double bnds[6], const int dims[3], const int subRegion[6])
+    bool discretizeAllRegionsAtOnce, const double bnds[6], const int dims[3],
+    const int subRegion[6])
 {
+    if (DebugStream::Level5())
+        PrintRegionTree(gridZones[specificZone], 0);
+
     zoneMap = new int[numBoundaries];
-    if (numBoundaries <= VTK_CSG_MAX_BITS)
+    if (discretizeAllRegionsAtOnce && numBoundaries <= VTK_CSG_MAX_BITS)
     {
         //
         // Do all the grid boundaries at once. If we have the already
