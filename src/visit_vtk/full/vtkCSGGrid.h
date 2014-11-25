@@ -105,6 +105,10 @@
 //    discretization where it would do the wrong thing if a region 
 //    referenced the same boundary multiple times.
 //
+//    Eric Brugger, Mon Nov 24 15:37:13 PST 2014
+//    I added an argument to DiscretizeSpaceMultiPass to control if all the
+//    regions are discretized at once. I added PrintRegionTree. 
+//
 
 // .SECTION See Also
 // vtkImplicitFunction, vtkQuadric, vtkUnstructuredGrid, vtkDataSet
@@ -208,24 +212,25 @@ public:
   // sampled to a specific number of samples in x, y and z
   //
   vtkUnstructuredGrid *DiscretizeSpaceMultiPass(int specificZone,
-                                   const double bnds[6], const int dims[3],
-                                   const int subRegion[6]);
+                          bool DiscretizeAllRegionsAtOnce, const double bnds[6],
+                          const int dims[3], const int subRegion[6]);
 
   vtkUnstructuredGrid *DiscretizeSpace(int specificZone = -1, double tol = 0.01,
-                                   double minX = -10.0, double maxX = 10.0,
-                                   double minY = -10.0, double maxY = 10.0,
-                                   double minZ = -10.0, double maxZ = 10.0);
+                          double minX = -10.0, double maxX = 10.0,
+                          double minY = -10.0, double maxY = 10.0,
+                          double minZ = -10.0, double maxZ = 10.0);
 
   //
   // A discretize method that returns the entire spatial bounding
   // box, meshed adaptively, though discontinuously to a specified
   // tolerance (smallest edge length)
   //
-  vtkUnstructuredGrid *DiscretizeSpace3(int specificZone = -1, int rank=0, int nprocs=1,
-                                       double discTol = 0.01, double flatTol = 0.01,
-                                       double minX = -10.0, double maxX = 10.0,
-                                       double minY = -10.0, double maxY = 10.0,
-                                       double minZ = -10.0, double maxZ = 10.0);
+  vtkUnstructuredGrid *DiscretizeSpace3(int specificZone = -1,
+                          int rank=0, int nprocs=1,
+                          double discTol = 0.01, double flatTol = 0.01,
+                          double minX = -10.0, double maxX = 10.0,
+                          double minY = -10.0, double maxY = 10.0,
+                          double minZ = -10.0, double maxZ = 10.0);
 
   // Description:
   // Return the actual size of the data in kilobytes. This number
@@ -322,6 +327,7 @@ protected:
 
   bool EvaluateRegionBits(int region, vtkCSGFixedLengthBitField &bits);
   void GetRegionBounds(int reg, std::vector<int> &bounds);
+  void PrintRegionTree(int reg, int indent);
 
   //
   // We put this in the protected part of the interface because
