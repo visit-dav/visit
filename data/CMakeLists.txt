@@ -84,6 +84,11 @@
 #   I changed the name of the test target to testdata, since test no longer
 #   works with cmake 2.8.10.2.
 #
+#   Kathleen Biagas, Tue Nov 25 18:06:23 MST 2014
+#   Add /STACK Link flag to multi_test target on Windows so it will run
+#   properly.  Reworked the create_data_examples targets so things work
+#   correctly on Windows.
+#
 #****************************************************************************/
 
 cmake_minimum_required(VERSION 2.8)
@@ -362,12 +367,15 @@ IF(SILO_FOUND)
                             ${SILO_LIB}
                         )
     ENDFOREACH(SILO_TARGET ${SILO_TARGETS})
+    if(WIN32)
+      set_target_properties(multi_test PROPERTIES LINK_FLAGS "/STACK:8000000")
+    endif()
 ENDIF(SILO_FOUND)
 
 #-----------------------------------------------------------------------------
 # Setup the Data Generation Target.
 #-----------------------------------------------------------------------------
-# We have a single target "data" that generates all of our test data.
+# We have a single target "testdata" that generates all of our test data.
 # This untars all archived datasets.
 #-----------------------------------------------------------------------------
 
@@ -498,94 +506,94 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
               FOREACH(SL ${SILO_LIB})
                 IF(EXISTS ${SD}/${SL})
                   GET_FILENAME_COMPONENT(SL_WE ${SL} NAME_WE)
-                  FILE(COPY        ${SD}/${SL_WE}.dll
-                       DESTINATION ${DATA_OUT_DIR})
-                  SET(CMDS ${CMDS} " COMMAND ${CMAKE_COMMAND} -E copy ${SD}/${SL_WE}.dll ${DATA_OUT_DIR}")
+                  FOREACH(CFG ${CMAKE_CONFIGURATION_TYPES})
+                      FILE(COPY        ${SD}/${SL_WE}.dll
+                           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CFG})
+                  ENDFOREACH()
                 ENDIF(EXISTS ${SD}/${SL})
               ENDFOREACH(SL ${SILO_LIB})
             ENDFOREACH(SD ${SILO_LIBRARY_DIR})
         ENDIF(WIN32)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/curv2d.silo
-                                   ${DATA_OUT_DIR}/curv2d_colmajor.silo
-                                   ${DATA_OUT_DIR}/curv3d.silo
-                                   ${DATA_OUT_DIR}/curv3d_colmajor.silo
-                                   ${DATA_OUT_DIR}/poly3d.silo
-                                   ${DATA_OUT_DIR}/rect2d.silo
-                                   ${DATA_OUT_DIR}/rect3d.silo
-                                   ${DATA_OUT_DIR}/ucd2d.silo
-                                   ${DATA_OUT_DIR}/ucd3d.silo
-                           COMMAND ${DATA_OUT_DIR}/testall${EXE_EXT}
-                           DEPENDS ${DATA_OUT_DIR}/testall${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/globe.silo
-                                   ${DATA_OUT_DIR}/globe_mat0.silo
-                           COMMAND ${DATA_OUT_DIR}/globe${EXE_EXT}
-                           DEPENDS ${DATA_OUT_DIR}/globe${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/dbA00.pdb
-                                   ${DATA_OUT_DIR}/dbB00.pdb
-                                   ${DATA_OUT_DIR}/dbC00.pdb
-                           COMMAND ${DATA_OUT_DIR}/correlationtest${EXE_EXT}
-                           DEPENDS ${DATA_OUT_DIR}/correlationtest${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/multi_curv2d.silo
-                                   ${DATA_OUT_DIR}/multi_curv3d.silo
-                                   ${DATA_OUT_DIR}/multi_point2d.silo
-                                   ${DATA_OUT_DIR}/multi_rect2d.silo
-                                   ${DATA_OUT_DIR}/multi_rect3d.silo
-                                   ${DATA_OUT_DIR}/multi_ucd3d.silo
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0000
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0001
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0002
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0003
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0004
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0005
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0006
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0007
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0008
-                                   ${DATA_OUT_DIR}/hist_ucd3d_0009
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0000
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0001
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0002
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0003
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0004
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0005
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0006
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0007
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0008
-                                   ${DATA_OUT_DIR}/histne_ucd3d_0009
-                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_0001
-                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_0002
-                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_0003
-                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_base
-                           COMMAND ${DATA_OUT_DIR}/multi_test${EXE_EXT}
-                           DEPENDS ${DATA_OUT_DIR}/multi_test${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/noise.silo
-                           COMMAND ${DATA_OUT_DIR}/noise${EXE_EXT}
-                           DEPENDS ${DATA_OUT_DIR}/noise${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/tire.silo
-                           COMMAND ${DATA_OUT_DIR}/tire${EXE_EXT}
-                           DEPENDS ${DATA_OUT_DIR}/tire${EXE_EXT})
+
+        SET(testall_output  curv2d_colmajor.silo
+                            curv3d.silo
+                            curv3d_colmajor.silo
+                            poly3d.silo
+                            rect2d.silo
+                            rect3d.silo
+                            ucd2d.silo
+                            ucd3d.silo)
+        ADD_CUSTOM_COMMAND(OUTPUT  ${testall_output}
+                           COMMAND "$<TARGET_FILE:testall>"
+                           DEPENDS testall
+                           WORKING_DIRECTORY ${DATA_OUT_DIR}
+                           COMMENT "Running testall")
+        set(globe_output globe.silo globe_mat0.silo)
+        ADD_CUSTOM_COMMAND(OUTPUT  ${globe_output}
+                           COMMAND "$<TARGET_FILE:globe>"
+                           DEPENDS globe
+                           WORKING_DIRECTORY ${DATA_OUT_DIR}
+                           COMMENT "Running globe")
+        set(correlationtest_output dbA00.pdb dbB00.pdb dbC00.pdb)
+        ADD_CUSTOM_COMMAND(OUTPUT  ${correlationtest_output}
+                           COMMAND "$<TARGET_FILE:correlationtest>"
+                           DEPENDS correlationtest
+                           WORKING_DIRECTORY ${DATA_OUT_DIR}
+                           COMMENT "Running correlationtest")
+        set(multi_test_output  multi_curv2d.silo
+                               multi_curv3d.silo
+                               multi_point2d.silo
+                               multi_rect2d.silo
+                               multi_rect3d.silo
+                               multi_ucd3d.silo
+                               hist_ucd3d_0000
+                               hist_ucd3d_0001
+                               hist_ucd3d_0002
+                               hist_ucd3d_0003
+                               hist_ucd3d_0004
+                               hist_ucd3d_0005
+                               hist_ucd3d_0006
+                               hist_ucd3d_0007
+                               hist_ucd3d_0008
+                               hist_ucd3d_0009
+                               histne_ucd3d_0000
+                               histne_ucd3d_0001
+                               histne_ucd3d_0002
+                               histne_ucd3d_0003
+                               histne_ucd3d_0004
+                               histne_ucd3d_0005
+                               histne_ucd3d_0006
+                               histne_ucd3d_0007
+                               histne_ucd3d_0008
+                               histne_ucd3d_0009
+                               multi_ucd3d_ti_0001
+                               multi_ucd3d_ti_0002
+                               multi_ucd3d_ti_0003
+                               multi_ucd3d_ti_base)
+        ADD_CUSTOM_COMMAND(OUTPUT  ${multi_test_output}
+                           COMMAND "$<TARGET_FILE:multi_test>"
+                           DEPENDS multi_test
+                           WORKING_DIRECTORY ${DATA_OUT_DIR}
+                           COMMENT "Running multi_test")
+        ADD_CUSTOM_COMMAND(OUTPUT  noise.silo
+                           COMMAND "$<TARGET_FILE:noise>"
+                           DEPENDS noise
+                           WORKING_DIRECTORY ${DATA_OUT_DIR}
+                           COMMENT "Running noise")
+        ADD_CUSTOM_COMMAND(OUTPUT  tire.silo
+                           COMMAND "$<TARGET_FILE:tire>"
+                           DEPENDS tire
+                           WORKING_DIRECTORY ${DATA_OUT_DIR}
+                           COMMENT "Running tire")
 
         ADD_CUSTOM_TARGET(create_data_examples ALL
-                          DEPENDS
-                              ${DATA_OUT_DIR}/curv2d.silo
-                              ${DATA_OUT_DIR}/curv3d.silo
-                              ${DATA_OUT_DIR}/dbA00.pdb
-                              ${DATA_OUT_DIR}/dbB00.pdb
-                              ${DATA_OUT_DIR}/globe.silo
-                              ${DATA_OUT_DIR}/globe_mat0.silo
-                              ${DATA_OUT_DIR}/multi_rect2d.silo
-                              ${DATA_OUT_DIR}/multi_rect3d.silo
-                              ${DATA_OUT_DIR}/multi_ucd3d.silo
-                              ${DATA_OUT_DIR}/noise.silo
-                              ${DATA_OUT_DIR}/poly3d.silo
-                              ${DATA_OUT_DIR}/rect2d.silo
-                              ${DATA_OUT_DIR}/rect3d.silo
-                              ${DATA_OUT_DIR}/tire.silo
-                              ${DATA_OUT_DIR}/ucd2d.silo
-                              ${DATA_OUT_DIR}/ucd3d.silo
+                          DEPENDS noise.silo
+                                  tire.silo
+                                  ${globe_output}
+                                  ${correlationtest_output}
+                                  ${multi_test_output}
+                                  ${testall_output}
                          )
-        IF(WIN32)
-            ADD_CUSTOM_COMMAND(TARGET create_data_examples PRE_BUILD ${CMDS})
-        ENDIF(WIN32) 
 
         INSTALL(FILES
                     ${DATA_OUT_DIR}/curv2d.silo
