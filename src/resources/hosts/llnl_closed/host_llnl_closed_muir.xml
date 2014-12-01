@@ -40,7 +40,7 @@
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">msub/srun</Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">bbronze</Field>
+        <Field name="bank" type="string">wbronze</Field>
         <Field name="arguments" type="stringVector"> </Field>
         <Field name="parallel" type="bool">true</Field>
     </Object>
