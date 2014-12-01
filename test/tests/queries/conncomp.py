@@ -125,7 +125,7 @@ TestText("conncomp_2d_summary",json.dumps(res,indent=2))
 
 DeleteAllPlots()
 
-DefineScalarExpression("_ccl_test_3d", "conn_components(Mesh,0)")
+DefineScalarExpression("_ccl_test_3d", "conn_components(Mesh,1)")
 # exodus test
 OpenDatabase(data_path("exodus_test_data/balls.exodus"))
 
