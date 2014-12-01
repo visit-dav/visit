@@ -1130,6 +1130,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem(tr("(default)"));
     launchMethod->addItem("aprun");
     launchMethod->addItem("bsub");
+    launchMethod->addItem("bsub/mpirun");
     launchMethod->addItem("dmpirun");
     launchMethod->addItem("ibrun");
     launchMethod->addItem("mpiexec");
