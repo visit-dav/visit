@@ -432,7 +432,8 @@ def default_suite_options():
                       "timeout":3600,
                       "nprocs":nprocs_def,
                       "ctest":False,
-                      "parallel_launch":"mpirun"}
+                      "parallel_launch":"mpirun",
+                      "rsync_post":None}
     return opts_full_defs
 
 def finalize_options(opts):
@@ -645,6 +646,9 @@ def parse_args():
                       default=defs["parallel_launch"],
                       help="specify the parallel launch method. "
                            "Options are mpirun and srun.")
+    parser.add_option("--rsync-post",
+                      default=defs["rsync_post"],
+                      help="Post results via rsync")
 
     # parse args
     opts, tests = parser.parse_args()
@@ -867,6 +871,24 @@ def launch_tests(opts,tests):
     return error, results
 
 # ----------------------------------------------------------------------------
+#  Method: rsync_post
+#
+#  Programmer: Cyrus Harrison
+#  Date:       ue Nov 25 11:23:12 PST 2014
+#
+#  Modifications:
+# ----------------------------------------------------------------------------
+def rsync_post(src_dir,rsync_dest):
+    rsync_dest = pjoin(rsync_dest,timestamp(sep="_"))
+    rsync_cmd =  "rsync -vur %s/ %s" % (src_dir,rsync_dest)
+    Log("[rsyncing results to %s]" % rsync_dest)
+    exe_res = sexe(rsync_cmd,
+                   suppress_output=(not (opts["verbose"] or opts["less_verbose"])),
+                    echo=opts["verbose"])
+
+
+
+# ----------------------------------------------------------------------------
 #  Method: main
 #
 #  Programmer: Cyrus Harrison
@@ -926,6 +948,8 @@ def main(opts,tests):
             Log("!! Test suite run finished with %d errors." % nerrors)
     if opts["cleanup"]:
         cleanup(opts["result_dir"],opts["cleanup_delay"])
+    if opts["rsync_post"] is not None:
+        rsync_post(opts["result_dir"],opts["rsync_post"])
     if opts['ctest']:
         if not error:
             sys.exit(0)
