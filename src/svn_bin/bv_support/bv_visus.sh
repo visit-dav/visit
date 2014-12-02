@@ -45,7 +45,7 @@ function bv_visus_info
 {
     #todo: add query system info to be used here to determine which file to download, and change build_dir to install_dir or something
     export VISUS_OS=`uname`
-    export VISUS_VERSION=${VISUS_VERSION:-"27d3d79"}
+    export VISUS_VERSION=${VISUS_VERSION:-"ad09cb8"}
     export VISUS_FILE=${VISUS_FILE:-"ViSUS-${VISUS_VERSION}-${VISUS_OS}.tgz"}
     export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"ViSUS"}
     export VISUS_URL=${VISUS_URL:-"http://atlantis.sci.utah.edu/builds/visit-plugin"}
