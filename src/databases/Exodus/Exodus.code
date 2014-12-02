@@ -43,76 +43,34 @@ Definition:
 #include <string>
 
 avtDatabase *
-ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
-                                   int nList, int nBlock)
+ExodusCommonPluginInfo::SetupDatabase(const char *const *list, int nList, int nBlock)
 {
-    std::string file1 = list[0];
+    char  **reallist  = NULL;
+    bool    read_list_from_text_file = false;
+    int     listcount = 0;
+    int     bang_nBlocks = -1;
+    int     fileListId = -1;
+    int     nTimestepGroups = 1;
 
-    bool containsManyFiles = false;
-    if (nList == 1 &&
-        file1.length() > 7 && file1.substr(file1.length()-7,7)==".exodus")
-        containsManyFiles = true;
-    if (nList == 1 &&
-        file1.length() > 7 && file1.substr(file1.length()-7,7)==".EXODUS")
-        containsManyFiles = true;
-    if (nList == 1 &&
-        file1.length() > 8 && file1.substr(file1.length()-8,8)==".nemesis")
-        containsManyFiles = true;
-    if (nList == 1 &&
-        file1.length() > 8 && file1.substr(file1.length()-8,8)==".NEMESIS")
-        containsManyFiles = true;
+    if (nList == 1)
+        read_list_from_text_file = avtDatabase::GetFileListFromTextFile(list[0],
+            reallist, listcount, &bang_nBlocks);
 
-    //
-    // Note that in the context of Exodus, the !NBLOCKS directive and 'nBlocks' here
-    // is *not* equivalent to Exodus' notion of 'Element Blocks'. Instead, it is really
-    // the number of independent files (or series of files for cases where the output is
-    // broken into multiple timestep groups).
-    //
-
-    if (containsManyFiles)
+    if (read_list_from_text_file)
     {
-        const char *filename = list[0];
-        char  **reallist  = NULL;
-        int     listcount = 0;
-        int     bang_nBlocks=-1;
-        avtDatabase::GetFileListFromTextFile(filename, reallist, listcount, &bang_nBlocks);
-
-        avtDatabase *rv = ExodusCommonPluginInfo::SetupDatabase(reallist,
-                              listcount, bang_nBlocks);
-
-        //
-        // Clean up memory
-        //
-        for (int i = 0 ; i < listcount ; i++)
-        {
-            delete [] reallist[i];
-        }
-        delete [] reallist;
-
-        return rv;
+        if (bang_nBlocks > 0)
+            nBlock = bang_nBlocks;
+        else
+            nBlock = listcount;
+        list = reallist;
+        nList = listcount;
     }
-
-    //
-    // We don't want to register the file list with every Exodus file format,
-    // because that list can get big.  Instead, register a list statically
-    // with the format.  It will return an index and then tell each new
-    // instance that it should use this index.
-    //
-    int fileListId = -1;
-    if (!containsManyFiles)
+    else
     {
-        fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
         nBlock = nList;
     }
 
-    int nTimestepGroups = 1;
-    if(nBlock == -1)
-    {
-        // If nBlock == -1 then we're in here recursively and we're dealing
-        // with a list of domains.
-        nBlock = nList;
-    }
-
+    fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
     nTimestepGroups = nList / nBlock;
 
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
@@ -122,12 +80,20 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         for (int j = 0 ; j < nBlock ; j++)
         {
             avtExodusFileFormat *exo = new avtExodusFileFormat(list[i*nBlock+j]);
-            if (!containsManyFiles)
-                exo->SetFileList(fileListId);
+            exo->SetFileList(fileListId);
             ffl[i][j] = exo; 
         }
     }
+
     avtMTSDFileFormatInterface *inter 
         = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+
+    if (reallist)
+    {
+        for (int i = 0 ; i < listcount ; i++)
+            delete [] reallist[i];
+        delete [] reallist;
+    }
+
     return new avtGenericDatabase(inter);
 }
