@@ -18,7 +18,7 @@ import datetime
 import logging
 import ho.pisa as pisa
 import pyrmine
-
+from xml.sax.saxutils import escape
 
 class VisItIssue(pyrmine.Issue):
     """
@@ -31,6 +31,8 @@ class VisItIssue(pyrmine.Issue):
         Creates an html representation of a VisIt issue.
         """
         i = self.data._asdict()
+        for k,v in i.items():
+            i[k] = escape(v)
         res = "<h1># %s (%s) %s</h1>\n" % (i["id"],i["tracker"],i["subject"])
         res += "<table><tr><td>\n"
         for key in ["status","author","created","updated","priority","assigned_to","target_version"]:
