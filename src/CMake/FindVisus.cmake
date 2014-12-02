@@ -58,6 +58,9 @@ IF(NOT VISIT_VISUS_DIR )
     RETURN()
 ENDIF()
 
+IF(NOT VISUS_DIR )
+    SET(VISUS_DIR ${VISIT_VISUS_DIR})
+ENDIF()
 
 FIND_PATH(VISUS_INCLUDE_DIR  visuscpp    libs 
                                          ${VISUS_DIR}/include)
