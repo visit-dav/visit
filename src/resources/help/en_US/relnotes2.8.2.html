@@ -49,6 +49,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
 <li>The zonetype expression now produces labels that are 3 characters long. It also supports most of VTK element types.</li>
 <li>The XRay Image query now supports specifying the image view with the full generality of the 3d view for plots. The new view parameters currently can only be specified through the Python scripting interface. An example of their usage is:<pre>params = dict(output_type="png", divide_emis_by_absorb=1,<pre>focus=(0., 0., 0.), view_up=(0., 1., 0.), normal=(0., 0., 1.),<pre>view_angle=30., parallel_scale = 10.,<pre>near_plane = -20., far_plane = 20.,<pre>image_pan=(0., 0.), image_zoom = 1.,<pre>perspective = 1, image_size=(300, 300),<pre>vars=("abs", "emis"))<pre>Query("XRay Image", params)</li>
+<li>Multi-file Exodus files were broken in 2.8.1 and are fixed again in 2.8.2.</li>
+<li>Automatic format detection of Exodus files was improved by adding *.ex.#.# and variants as extension patterns for Exodus files.</li>
+<li>Exodus plugin was enhanced to support meshes with arbitrary polyhedral elements.</li>
+<li>Exodus plugin was enhanced to support global node and element numbers.</li>
 </ul>
 
 <a name="Dev_changes"></a>
