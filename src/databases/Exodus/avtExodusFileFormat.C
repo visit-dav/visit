@@ -1358,7 +1358,7 @@ static void PlusEqual(vtkDataArray *lhs, vtkDataArray *rhs)
 // ****************************************************************************
 
 static void 
-DecodeExodusElemTypeAttText(const char *ex_elem_type_att, int *tdim, int *vtk_celltype, int num_nodes)
+DecodeExodusElemTypeAttText(const char *ex_elem_type_att, int *tdim, int *vtk_celltype, int num_nodes, int num_spatial_dims)
 {
     std::string elemType(ex_elem_type_att);
     std::transform(elemType.begin(), elemType.end(), elemType.begin(), ::tolower);    
@@ -1402,8 +1402,16 @@ DecodeExodusElemTypeAttText(const char *ex_elem_type_att, int *tdim, int *vtk_ce
     }
     else if (elemType.substr(0, 4) == "nsid")
     {
-        if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_POLYGON;
+        if (num_spatial_dims == 2)
+        {
+            if (tdim) *tdim = 2;
+            if (vtk_celltype) *vtk_celltype = VTK_POLYGON;
+        }
+        else if (num_spatial_dims == 3)
+        {
+            if (tdim) *tdim = 3;
+            if (vtk_celltype) *vtk_celltype = VTK_POLYHEDRON;
+        }
         return;
     }
     else if (elemType.substr(0, 3) == "she")
@@ -1563,10 +1571,10 @@ DecodeExodusElemTypeAttText(const char *ex_elem_type_att, int *tdim, int *vtk_ce
 }
 
 static int
-ExodusElemTypeAtt2TopoDim(const char *ex_elem_type_att)
+ExodusElemTypeAtt2TopoDim(const char *ex_elem_type_att, int spatial_dim)
 {
     int tdim;
-    DecodeExodusElemTypeAttText(ex_elem_type_att, &tdim, 0, 0);
+    DecodeExodusElemTypeAttText(ex_elem_type_att, &tdim, 0, 0, spatial_dim);
     debug5 << "For element type attribute text \"" << ex_elem_type_att << "\""
            << ", got topo dim = " << tdim << endl;
     return tdim;
@@ -1580,10 +1588,10 @@ ExodusElemTypeAtt2TopoDim(const char *ex_elem_type_att)
 // ****************************************************************************
 
 static int
-ExodusElemTypeAtt2VTKCellType(const char *ex_elem_type_att, int num_nodes)
+ExodusElemTypeAtt2VTKCellType(const char *ex_elem_type_att, int num_nodes, int num_spatial_dims)
 {
     int ctype = -1;
-    DecodeExodusElemTypeAttText(ex_elem_type_att, 0, &ctype, num_nodes);
+    DecodeExodusElemTypeAttText(ex_elem_type_att, 0, &ctype, num_nodes, num_spatial_dims);
     debug5 << "For element type attribute text \"" << ex_elem_type_att << "\" "
            << "and num_nodes = " << num_nodes << ", got vtk_celltype = " << ctype << endl;
     return ctype;
@@ -1727,7 +1735,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
 
         topologicalDimension = MAX(topologicalDimension,
-            ExodusElemTypeAtt2TopoDim(connect_elem_type_attval));
+            ExodusElemTypeAtt2TopoDim(connect_elem_type_attval, spatialDimension));
         delete [] connect_elem_type_attval;
     }
 
@@ -1897,6 +1905,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
         CATCH(InvalidVariableException)
         {
+            debug5 << "Using exception to deduce \"" << vname << "\" was not already present in database metadata." << endl;
             AddVar(md, vname, topologicalDimension, ncomps, centering);
         }
         ENDTRY
@@ -2000,17 +2009,20 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
     }
 
     vtkDataArray *coords = 0;
+    int num_spatial_dims = -1;
     TRY
     {
         coords = GetVectorVar(ts, "coord");
+        num_spatial_dims = coords->GetNumberOfComponents();
     }
     CATCH(InvalidVariableException)
     {
+        num_spatial_dims = 3;
         vtkDataArray *coordx = GetVar(ts, "coordx");
         vtkDataArray *coordy = 0;
         vtkDataArray *coordz = 0;
-        TRY { coordy = GetVar(ts, "coordy"); } CATCH(InvalidVariableException) { } ENDTRY
-        TRY { coordz = GetVar(ts, "coordz"); } CATCH(InvalidVariableException) { } ENDTRY
+        TRY { coordy = GetVar(ts, "coordy"); } CATCH(InvalidVariableException) { num_spatial_dims--;} ENDTRY
+        TRY { coordz = GetVar(ts, "coordz"); } CATCH(InvalidVariableException) { num_spatial_dims--;} ENDTRY
         coords = ComposeCoords(coordx, coordy, coordz);
         coordx->Delete();
         if (coordy) coordy->Delete();
@@ -2018,7 +2030,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
     }
     ENDTRY
 
-    if (coords->GetNumberOfComponents() == 2)
+    if (num_spatial_dims == 2)
     {
         vtkDataArray *newcoords = ExtendCoords(coords);
         coords->Delete();
@@ -2094,7 +2106,150 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         char connect_varname[NC_MAX_NAME+1];
         SNPRINTF(connect_varname, sizeof(connect_varname), "connect%d", i+1);
         VisItNCErr = nc_inq_varid(ncExIIId, connect_varname, &connect_varid);
-        if (VisItNCErr != NC_NOERR) continue;
+
+        if (VisItNCErr != NC_NOERR)
+        {
+            // Check for possible arbitrary polyehdra connectivities
+
+            int nodelist_varid;
+            char nodelist_varname[NC_MAX_NAME+1];
+            SNPRINTF(nodelist_varname, sizeof(nodelist_varname), "fbconn%d", i+1);
+            VisItNCErr = nc_inq_varid(ncExIIId, nodelist_varname, &nodelist_varid);
+            if (VisItNCErr != NC_NOERR) continue;
+
+            char nodecnts_varname[NC_MAX_NAME+1];
+            int nodecnts_varid;
+            SNPRINTF(nodecnts_varname, sizeof(nodecnts_varname), "fbepecnt%d", i+1);
+            VisItNCErr = nc_inq_varid(ncExIIId, nodecnts_varname, &nodecnts_varid);
+            if (VisItNCErr != NC_NOERR) continue;
+
+            char facelist_varname[NC_MAX_NAME+1];
+            int facelist_varid;
+            SNPRINTF(facelist_varname, sizeof(facelist_varname), "facconn%d", i+1);
+            VisItNCErr = nc_inq_varid(ncExIIId, facelist_varname, &facelist_varid);
+            if (VisItNCErr != NC_NOERR) continue;
+
+            char facecnts_varname[NC_MAX_NAME+1];
+            int facecnts_varid;
+            SNPRINTF(facecnts_varname, sizeof(facecnts_varname), "ebepecnt%d", i+1);
+            VisItNCErr = nc_inq_varid(ncExIIId, facecnts_varname, &facecnts_varid);
+            if (VisItNCErr != NC_NOERR) continue;
+
+            char num_el_in_blk_dimname[NC_MAX_NAME+1];
+            SNPRINTF(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
+            int num_el_in_blk_dimId;
+            VisItNCErr = nc_inq_dimid(ncExIIId, num_el_in_blk_dimname, &num_el_in_blk_dimId);
+            CheckNCError(nc_inq_dimid);
+            size_t num_el_in_blk_len;
+            VisItNCErr = nc_inq_dimlen(ncExIIId, num_el_in_blk_dimId, &num_el_in_blk_len);
+            CheckNCError(nc_inq_dimlen);
+            int num_elems_in_blk = (int) num_el_in_blk_len;
+
+            char num_fa_in_blk_dimname[NC_MAX_NAME+1];
+            SNPRINTF(num_fa_in_blk_dimname, sizeof(num_fa_in_blk_dimname), "num_fa_in_blk%d", i+1);
+            int num_fa_in_blk_dimId;
+            VisItNCErr = nc_inq_dimid(ncExIIId, num_fa_in_blk_dimname, &num_fa_in_blk_dimId);
+            CheckNCError(nc_inq_dimid);
+            size_t num_fa_in_blk_len;
+            VisItNCErr = nc_inq_dimlen(ncExIIId, num_fa_in_blk_dimId, &num_fa_in_blk_len);
+            CheckNCError(nc_inq_dimlen);
+            int num_faces_in_blk = (int) num_fa_in_blk_len;
+
+            // Read the face counts array
+            int *facecnts_buf = new int[num_elems_in_blk];
+            VisItNCErr = nc_get_var_int(ncExIIId, facecnts_varid, facecnts_buf);
+            CheckNCError(nc_get_var_int);
+            if (VisItNCErr != NC_NOERR)
+            {
+                char msg[256];
+                SNPRINTF(msg, sizeof(msg), "Unable to read ebepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                delete [] facecnts_buf;
+                EXCEPTION1(InvalidFilesException, msg);
+            }
+
+            // Read the facelist array which enumerates the face ids comprising each elem
+            int facelist_len = 0;
+            for (int j = 0; j < num_elems_in_blk; j++)
+                facelist_len += facecnts_buf[j];
+            int *facelist_buf = new int[facelist_len];
+            VisItNCErr = nc_get_var_int(ncExIIId, facelist_varid, facelist_buf);
+            CheckNCError(nc_get_var_int);
+            if (VisItNCErr != NC_NOERR)
+            {
+                char msg[256];
+                SNPRINTF(msg, sizeof(msg), "Unable to read faconn%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                delete [] facecnts_buf;
+                delete [] facelist_buf;
+                EXCEPTION1(InvalidFilesException, msg);
+            }
+
+            // Read the node counts array
+            int *nodecnts_buf = new int[num_faces_in_blk];
+            VisItNCErr = nc_get_var_int(ncExIIId, nodecnts_varid, nodecnts_buf);
+            CheckNCError(nc_get_var_int);
+            if (VisItNCErr != NC_NOERR)
+            {
+                char msg[256];
+                SNPRINTF(msg, sizeof(msg), "Unable to read fbepecnt%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                delete [] facecnts_buf;
+                delete [] facelist_buf;
+                delete [] nodecnts_buf;
+                EXCEPTION1(InvalidFilesException, msg);
+            }
+
+            int nodelist_len = 0;
+            int *nodelist_offsets = new int[num_faces_in_blk];
+            for (int j = 0; j < num_faces_in_blk; j++)
+            {
+                nodelist_offsets[j] = nodelist_len;
+                nodelist_len += nodecnts_buf[j];
+            }
+            int *nodelist_buf = new int[nodelist_len];
+            VisItNCErr = nc_get_var_int(ncExIIId, nodelist_varid, nodelist_buf);
+            CheckNCError(nc_get_var_int);
+            if (VisItNCErr != NC_NOERR)
+            {
+                char msg[256];
+                SNPRINTF(msg, sizeof(msg), "Unable to read fbconn%d: \"%s\"", i+1, nc_strerror(VisItNCErr));
+                delete [] facecnts_buf;
+                delete [] facelist_buf;
+                delete [] nodecnts_buf;
+                delete [] nodelist_offsets;
+                delete [] nodelist_buf;
+                EXCEPTION1(InvalidFilesException, msg);
+            }
+
+            // Ok, now loop to add all the arbitrary polyedra
+            int facelist_offset = 0;
+            for (int ii = 0; ii < num_elems_in_blk; ii++)
+            {
+                vtkIdType cellarr_buf[1024];
+                int const cellarr_buflen = (int) sizeof(cellarr_buf)/sizeof(cellarr_buf[0]);
+                int qq = 0;
+                int nfaces = facecnts_buf[ii];
+                for (int jj = 0; jj < nfaces; jj++)
+                {
+                    int exface_id = facelist_buf[facelist_offset+jj];
+                    int nodecnt = nodecnts_buf[exface_id-1];
+                    int nodelist_offset = nodelist_offsets[exface_id-1];
+                    cellarr_buf[qq++] = nodecnt;
+                    for (int kk = 0; kk < nodecnt && qq < cellarr_buflen; kk++)
+                        cellarr_buf[qq++] = nodelist_buf[nodelist_offset+kk]-1; 
+                }
+                ugrid->InsertNextCell(VTK_POLYHEDRON, nfaces, cellarr_buf);
+                facelist_offset += nfaces;
+            }
+
+            // cleanup
+            delete [] nodelist_buf;
+            delete [] nodecnts_buf;
+            delete [] nodelist_offsets;
+            delete [] facelist_buf;
+            delete [] facecnts_buf;
+ 
+            continue;
+        }
+
         int connect_vardimids[NC_MAX_VAR_DIMS];
         nc_inq_var(ncExIIId, connect_varid, 0, 0, 0, connect_vardimids, 0);
         size_t connect_dim0varlen;
@@ -2129,7 +2284,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         VisItNCErr = nc_inq_dimlen(ncExIIId, num_nod_per_dimId, &num_nod_per_len);
         CheckNCError(nc_inq_dimlen);
         int num_nodes_per_elem = (int) num_nod_per_len;
-        int vtk_celltype = ExodusElemTypeAtt2VTKCellType(connect_elem_type_attval, num_nodes_per_elem);
+        int vtk_celltype = ExodusElemTypeAtt2VTKCellType(connect_elem_type_attval, num_nodes_per_elem, num_spatial_dims);
         delete [] connect_elem_type_attval;
 
         int *ebepecnt_buf = 0;
@@ -2485,15 +2640,34 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
     }
     else if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        vtkDataArray *gnodeIds=GetVar(ts, "node_num_map");
-        if (gnodeIds != NULL)
-            gnodeIds->Register(NULL);
+        vtkDataArray *gnodeIds = 0;
+        TRY
+        {
+            gnodeIds = GetVar(ts, "node_num_map");
+        }
+        CATCH(InvalidVariableException)
+        {
+            ; // no-op
+        }
+        ENDTRY
+        if (!gnodeIds) return 0;
+        gnodeIds->Register(NULL);
         df = avtVariableCache::DestructVTKObject;
         return (void*) gnodeIds;
     }
     else if (strcmp(type, AUXILIARY_DATA_GLOBAL_ZONE_IDS) == 0)
     {
-        vtkDataArray *gzoneIds =GetVar(ts, "elem_num_map");
+        vtkDataArray *gzoneIds = 0;
+        TRY
+        {
+            gzoneIds = GetVar(ts, "elem_num_map");
+        }
+        CATCH(InvalidVariableException)
+        {
+            ; // no-op
+        }
+        ENDTRY
+        if (!gzoneIds) return 0;
         gzoneIds->Register(NULL);
         df = avtVariableCache::DestructVTKObject;
         return (void*) gzoneIds;
