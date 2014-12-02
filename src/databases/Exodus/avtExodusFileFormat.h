@@ -119,6 +119,7 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     void                        GetTimesteps(int *ntimes, std::vector<double> *times);
     void                        AddVar(avtDatabaseMetaData *md, char const *vname,
                                     int topo_dim, int ncomps, avtCentering centering);
+    vtkDataArray*               GetEBDecompAsEnumScalar();
 
     int                         numBlocks;
     int                         numNodes; // this 'domain'
