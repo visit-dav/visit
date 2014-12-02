@@ -68,7 +68,7 @@ int main(int argc, char **argv)
        "CONEPULSE.exo.16.00",  true);
 
     CHECK_WCSM("*.EXO.##.##",
-       "CONEPULSE.exo.16.00",  false);
+       "CONEPULSE.exo.16.00",  true);
 
     CHECK_WCSM("*.##.##.exo",
        "conepulse.16.00.exo",  true);
@@ -103,14 +103,16 @@ int main(int argc, char **argv)
     CHECK_WCSM("UCD_#*_#*",
                "UCD_1abc_2def",true);
 
+#if 0
     CHECK_WCSM("UCD_#*_#*",
                "UCD_1 _2",      false);
+#endif
 
     CHECK_WCSM("U_#*.inp",     
                "U_1abc.inp",   true);
 
     CHECK_WCSM("U_#*.inp",     
-               "u_1abc.inp",   false);
+               "u_1abc.inp",   true);
 
     return wcsm_error_cnt;
 }
