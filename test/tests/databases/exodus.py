@@ -128,6 +128,14 @@ v.imageZoom = 1.5
 SetView3D(v)
 Test("exodus_09")
 
+DeleteAllPlots()
+CloseDatabase(data_path("exodus_test_data/kassbohm1.exo"))
+OpenDatabase(data_path("exodus_test_data/dodecahedron.exo"))
+AddPlot("Mesh","Mesh")
+DrawPlots()
+ResetView()
+Test("exodus_10")
+
 Exit()
 
 
