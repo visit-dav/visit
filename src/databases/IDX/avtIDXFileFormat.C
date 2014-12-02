@@ -176,6 +176,7 @@ int avtIDXFileFormat::num_instances=0;
 avtIDXFileFormat::avtIDXFileFormat(const char *filename)
 : avtMTMDFileFormat(filename)
 {
+  first_time = true;
     resolution = -1;
     haveData=false;
 
@@ -206,13 +207,7 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename)
     this->dataflow.reset(new Dataflow);
     this->dataflow->oninput.connect(bind(&avtIDXFileFormat::onDataflowInput,this));
 
-#if 1
     string name("file://"); name += Path(filename).toString();
-#else
-    //<ctc> todo: add http:// url to ".urlidx" file and read it, or just open selected file directly
-    string name(Path(filename).getFileNameWithoutExtension());
-    name="http://atlantis.sci.utah.edu/mod_visus?dataset="+name; //<ctc> works!
-#endif
 
     //try to open a dataset
     dataset.reset(Dataset::loadDataset(name));
@@ -221,13 +216,13 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename)
         VisusError()<<"could not load "<<name;
         VisusAssert(false); //<ctc> this shouldn't be done in the constructor: no way to fail if there is a problem.
     }
-    dim=dataset->dimension; //<ctc> how do we tell it when to extract only a slice? maybe it just works...
+    dim=dataset->dimension; //<ctc> //NOTE: it doesn't work like we want. Instead, when a slice (or box) is added, the full data is read from disk then cropped to the desired subregion. Thus, I/O is never avoided.
 
     //connect dataset
     DatasetNode *dataflow_dataset = new DatasetNode;
     dataflow_dataset->setDataset(dataset);
 
-    VisusInfo()<<"creating the query node...";
+    //VisusInfo()<<"creating the query node...";
     query=new avtIDXQueryNode(this);
 
     //position
@@ -237,6 +232,10 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename)
         if (dim==3)
         {
             position->box=position->box.scaleAroundCenter(1.0);
+            //VisusInfo()<<"setting estimate_hz to true";
+            query->getInputPort("estimate_hz")->writeValue(SharedPtr<BoolObject>(new BoolObject(false)));
+            //VisusInfo()<<"done setting estimate_hz";
+            resolution=dataset->max_resolution/2;
         }
         else
         {
@@ -244,13 +243,14 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename)
             double Z=position->box.center()[ref];
             position->box.p1[ref]=Z;
             position->box.p2[ref]=Z;
+            query->getInputPort("estimate_hz")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
         }
         query->getInputPort("position")->writeValue(SharedPtr<Object>(position));
     }
 
     query->setAccessIndex(0);//<ctc> I think default (0) is fine...
 
-    VisusInfo()<<"adding the dataflow_dataset to the dataflow...";
+    //VisusInfo()<<"adding the dataflow_dataset to the dataflow...";
     dataflow->addNode(dataflow_dataset);
     dataflow->addNode(query);
     this->dataflow->connectNodes(dataflow_dataset,"dataset","dataset",query);
@@ -319,7 +319,7 @@ void avtIDXFileFormat::onDataflowInput(DataflowNode *dnode)
 
     //VisusInfo()<<"calling dnode->processInput()...";
     bool ret=dnode->processInput();
-    VisusInfo()<<"avtIDXFileFormat::onDataflowInput: dnode->processInput() returned "<<ret;
+    VisusInfo()<<"avtIDXFileFormat::onDataflowInput: dnode->processInput() returned "<<ret;  //true == success
 }
 
 // ****************************************************************************
@@ -538,7 +538,7 @@ avtIDXFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     this->dataflow->oninput.emitSignal(query);
 
-    VisusInfo()<<"query started, waiting for data...";
+    VisusInfo()<<"query started (Scalar), waiting for data...";
     Clock t0(Clock::now());
 
     //Ack! What if the onDataflowInput that calls query->processInput returns false?!
@@ -684,7 +684,7 @@ avtIDXFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 
     this->dataflow->oninput.emitSignal(query);
 
-    VisusInfo()<<"query started, waiting for data...";
+    VisusInfo()<<"query started (Vector), waiting for data...";
     Clock t0(Clock::now());
 
     //Ack! What if the onDataflowInput that calls query->processInput returns false?!
@@ -900,6 +900,9 @@ avtIDXFileFormat::CalculateMesh(int timestate)
     visus_frustum->loadProjection(mvp);
     visus_frustum->setViewport(visus_viewport);
 
+    //<ctc> this may be the problem loading session files: these viewports are not yet valid...
+
+
     //
     // Set up the view selection.
     //
@@ -908,7 +911,11 @@ avtIDXFileFormat::CalculateMesh(int timestate)
         //
         // Go with the fixed resolution from the MultiresControl.
         //
-        query->getInputPort("enable_viewdep")->writeValue(SharedPtr<BoolObject>(new BoolObject(false)));
+        query->getInputPort("enable_viewdep")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
+        if (!first_time)
+          query->getInputPort("viewdep")->writeValue(visus_frustum);
+        else
+          first_time = false;
         query->getInputPort("resolution")->writeValue(SharedPtr<IntObject>(new IntObject(this->resolution)));
         query->getInputPort("position_only")->writeValue(SharedPtr<BoolObject>(new BoolObject(true)));
         this->dataflow->oninput.emitSignal(query);

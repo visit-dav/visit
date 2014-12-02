@@ -56,7 +56,7 @@ class avtIDXQueryNode : public Visus::QueryNode
 public:
     
     //constructor
-    avtIDXQueryNode(avtIDXFileFormat *node_):node(node_) {VisusAssert(node);}
+    avtIDXQueryNode(avtIDXFileFormat *node_):Visus::QueryNode("avtIDXQueryNode"),node(node_) {VisusAssert(node);}
     
     //destructor
     ~avtIDXQueryNode() {}
@@ -149,6 +149,7 @@ class avtIDXFileFormat : public avtMTMDFileFormat, public Visus::Object
     double                 frustum2d[6];
     double                 frustum3d[6];
 
+  bool first_time;
     int                    resolution;
 
     int                    nblocks;
