@@ -498,7 +498,8 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
         tsocket->disconnectFromHost();
         if(tsocket->state() != QAbstractSocket::UnconnectedState)
             tsocket->waitForDisconnected();
-        tsocket->deleteLater();
+        //HKTODO: Do not delete connection (test fix for ORNL machines)
+        //tsocket->deleteLater();
     }
     else
     {
