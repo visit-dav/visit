@@ -929,15 +929,25 @@ avtSpecFEMFileFormat::GetVariable(const string &str)
 //
 // Modifications:
 //
+//   Dave Pugmire, Wed Dec  3 16:45:27 EST 2014
+//   Fix conversion....
+//
 //****************************************************************************
 
 static inline void
 convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz)
 {
-    double RR = x*x + y*y;
-    double R = sqrt(RR + z*z);
+    const double twopi = 2.0*M_PI;
+    const double toDeg = 180./M_PI;
 
+    double R = sqrt(x*x + y*y + z*z);
     nx = R;
-    ny = (R==0.0 ? 0.0 : acos(z/R));
-    nz = (RR==0.0 ? 0.0 : M_PI + atan2(-y, -x));
+    ny = acos(z/R);
+    nz = atan2(y, x);
+    if (nz < 0.0)
+        nz += twopi;
+    
+    //nx *= 6371.0; //Convert to km
+    ny *= toDeg;
+    nz *= toDeg;
 }
